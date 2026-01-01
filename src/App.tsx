@@ -2,6 +2,12 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { AuthLayout, UserDashboardLayout } from "@/components/layouts";
 import {
+  ManagerDashboardPage,
+  MentorManagementPage,
+  SessionManagementPage,
+  UserManagementPage,
+} from "@/pages/Manager";
+import {
   LoginPage,
   MentorRegisterPage,
   SelectRolePage,
@@ -95,6 +101,12 @@ function App() {
           {/* Account routes */}
           <Route path="/dashboard/account" element={<AccountPage />} />
         </Route>
+
+        {/* Admin Management routes */}
+        <Route path="/manager" element={<ManagerDashboardPage />} />
+        <Route path="/admin/mentors" element={<MentorManagementPage />} />
+        <Route path="/admin/users" element={<UserManagementPage />} />
+        <Route path="/admin/sessions" element={<SessionManagementPage />} />
       </Routes>
     </BrowserRouter>
   );

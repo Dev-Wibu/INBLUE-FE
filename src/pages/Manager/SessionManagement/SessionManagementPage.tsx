@@ -1,0 +1,278 @@
+import { Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { sessionManager } from "@/services";
+import { toast } from "sonner";
+
+import {
+  CancelSessionDialog,
+  SessionFormDialog,
+  SessionTable,
+  ViewSessionDialog,
+} from "./components";
+import type { Session, SessionFormData } from "./types";
+
+export function SessionManagementPage() {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [formData, setFormData] = useState<Partial<SessionFormData>>({});
+
+  // Load sessions using the session manager service
+  const loadSessions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await sessionManager.getAll();
+      if (response.success && response.data) {
+        // Handle both paginated and array responses
+        const sessionData = Array.isArray(response.data) ? response.data : response.data.data;
+        setSessions(sessionData as Session[]);
+      } else {
+        toast.error(response.error || "Failed to load sessions");
+      }
+    } catch (error) {
+      console.error("Error loading sessions:", error);
+      toast.error("Failed to load sessions");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
+
+  // Filter sessions based on search query and status filter
+  const filteredSessions = sessions.filter((session) => {
+    // Filter by search query
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      const matchesSearch =
+        session.roomName?.toLowerCase().includes(lowerQuery) ||
+        session.id?.toString().includes(lowerQuery) ||
+        session.userId?.toString().includes(lowerQuery) ||
+        session.userId2?.toString().includes(lowerQuery);
+      if (!matchesSearch) return false;
+    }
+
+    // Filter by status
+    if (statusFilter !== "all" && session.status !== statusFilter) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const handleCreate = () => {
+    setFormData({ status: "SCHEDULED" });
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleView = (session: Session) => {
+    setSelectedSession(session);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleEdit = (session: Session) => {
+    setSelectedSession(session);
+    setFormData({
+      roomName: session.roomName,
+      userId: session.userId,
+      userId2: session.userId2,
+      status: session.status,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCancel = (session: Session) => {
+    setSelectedSession(session);
+    setIsCancelDialogOpen(true);
+  };
+
+  const handleSubmitCreate = async () => {
+    try {
+      const response = await sessionManager.create(formData);
+      if (response.success) {
+        toast.success("Session created successfully");
+        setIsCreateDialogOpen(false);
+        loadSessions(); // Refresh the list
+      } else {
+        toast.error(response.error || "Failed to create session");
+      }
+    } catch (error) {
+      console.error("Error creating session:", error);
+      toast.error("Failed to create session");
+    }
+  };
+
+  const handleSubmitEdit = async () => {
+    if (!selectedSession?.id) return;
+
+    try {
+      const response = await sessionManager.update(selectedSession.id, formData);
+      if (response.success) {
+        toast.success("Session updated successfully");
+        setIsEditDialogOpen(false);
+        loadSessions(); // Refresh the list
+      } else {
+        toast.error(response.error || "Failed to update session");
+      }
+    } catch (error) {
+      console.error("Error updating session:", error);
+      toast.error("Failed to update session");
+    }
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!selectedSession?.id) return;
+
+    try {
+      const response = await sessionManager.delete(selectedSession.id);
+      if (response.success) {
+        toast.success("Session canceled successfully");
+        setIsCancelDialogOpen(false);
+        loadSessions(); // Refresh the list
+      } else {
+        toast.error(response.error || "Failed to cancel session");
+      }
+    } catch (error) {
+      console.error("Error canceling session:", error);
+      toast.error("Failed to cancel session");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="font-['Inter'] text-lg text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800">Session Management</h1>
+        <p className="font-['Inter'] text-base text-gray-600">
+          Manage interview sessions, view recordings, and track session status
+        </p>
+      </div>
+
+      {/* Action Bar */}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          {/* Search Input */}
+          <div className="relative w-96">
+            <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500" />
+            <Input
+              type="text"
+              placeholder="Search by ID, room name, user ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+              <SelectItem value="ONGOING">Ongoing</SelectItem>
+              <SelectItem value="COMPLETED">Completed</SelectItem>
+              <SelectItem value="CANCELED">Canceled</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Create Button */}
+        <Button onClick={handleCreate} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Create Session
+        </Button>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-lg border bg-white shadow-sm">
+        <SessionTable
+          sessions={filteredSessions}
+          onView={handleView}
+          onEdit={handleEdit}
+          onCancel={handleCancel}
+        />
+
+        {/* Empty State with Clear Filters */}
+        {filteredSessions.length === 0 && (searchQuery || statusFilter !== "all") && (
+          <div className="flex justify-center pb-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+              }}>
+              Clear Filters
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* View Dialog */}
+      <ViewSessionDialog
+        isOpen={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+        session={selectedSession}
+      />
+
+      {/* Create Dialog */}
+      <SessionFormDialog
+        isOpen={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        formData={formData}
+        onFormChange={setFormData}
+        onSubmit={handleSubmitCreate}
+        title="Create New Session"
+        description="Fill in the information to create a new session."
+        submitLabel="Create Session"
+      />
+
+      {/* Edit Dialog */}
+      <SessionFormDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        formData={formData}
+        onFormChange={setFormData}
+        onSubmit={handleSubmitEdit}
+        title="Edit Session"
+        description="Update the session information."
+        submitLabel="Save Changes"
+      />
+
+      {/* Cancel Confirmation Dialog */}
+      <CancelSessionDialog
+        isOpen={isCancelDialogOpen}
+        onOpenChange={setIsCancelDialogOpen}
+        session={selectedSession}
+        onConfirm={handleConfirmCancel}
+      />
+    </div>
+  );
+}
