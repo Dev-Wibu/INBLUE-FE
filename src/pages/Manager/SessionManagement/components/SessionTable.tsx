@@ -1,0 +1,138 @@
+import { Edit, Eye, Search, XCircle } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import type { Session } from "../types";
+
+interface SessionTableProps {
+  sessions: Session[];
+  onView: (session: Session) => void;
+  onEdit: (session: Session) => void;
+  onCancel: (session: Session) => void;
+}
+
+const getStatusBadgeClass = (status?: string): string => {
+  switch (status) {
+    case "COMPLETED":
+      return "bg-green-600 hover:bg-green-600 text-white";
+    case "ONGOING":
+      return "bg-blue-600 hover:bg-blue-600 text-white";
+    case "SCHEDULED":
+      return "bg-yellow-500 hover:bg-yellow-500 text-white";
+    case "CANCELED":
+      return "bg-red-600 hover:bg-red-600 text-white";
+    default:
+      return "";
+  }
+};
+
+const formatDateTime = (dateString?: string) => {
+  if (!dateString) return "-";
+  try {
+    return new Date(dateString).toLocaleString();
+  } catch {
+    return "-";
+  }
+};
+
+const formatDuration = (seconds?: number) => {
+  if (!seconds) return "-";
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+};
+
+export function SessionTable({ sessions, onView, onEdit, onCancel }: SessionTableProps) {
+  if (sessions.length === 0) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center gap-4">
+        <Search className="h-12 w-12 text-gray-400" />
+        <p className="font-['Inter'] text-lg text-gray-500">No sessions found</p>
+      </div>
+    );
+  }
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-16">ID</TableHead>
+          <TableHead>Room Name</TableHead>
+          <TableHead className="w-24">User ID</TableHead>
+          <TableHead className="w-24">Mentor ID</TableHead>
+          <TableHead>Start Time</TableHead>
+          <TableHead className="w-24">Duration</TableHead>
+          <TableHead className="w-28">Status</TableHead>
+          <TableHead className="w-28 text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {sessions.map((session) => (
+          <TableRow key={session.id}>
+            <TableCell className="font-medium">{session.id}</TableCell>
+            <TableCell className="max-w-xs truncate font-medium">
+              {session.roomName || "-"}
+            </TableCell>
+            <TableCell>
+              <Badge variant="outline">{session.userId || "-"}</Badge>
+            </TableCell>
+            <TableCell>
+              <Badge variant="secondary">{session.userId2 || "-"}</Badge>
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {formatDateTime(session.startTime1)}
+            </TableCell>
+            <TableCell>{formatDuration(session.durationSeconds1)}</TableCell>
+            <TableCell>
+              <Badge variant="default" className={getStatusBadgeClass(session.status)}>
+                {session.status}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onView(session)}
+                  className="h-8 w-8 p-0 hover:bg-green-50"
+                  title="View Details">
+                  <Eye className="h-4 w-4 text-green-600" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(session)}
+                  className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50"
+                  disabled={session.status === "COMPLETED" || session.status === "CANCELED"}
+                  title="Edit Session">
+                  <Edit className="h-4 w-4 text-blue-600" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onCancel(session)}
+                  className="h-8 w-8 p-0 hover:bg-red-50 disabled:opacity-50"
+                  disabled={session.status === "COMPLETED" || session.status === "CANCELED"}
+                  title="Cancel Session">
+                  <XCircle className="h-4 w-4 text-red-600" />
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
