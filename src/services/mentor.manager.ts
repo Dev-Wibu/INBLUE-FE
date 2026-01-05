@@ -179,7 +179,7 @@ export class MentorManager implements BaseManager<Mentor> {
     try {
       // According to schema, createMentor uses multipart/form-data
       const formData = new FormData();
-      
+
       // Prepare MentorInfo data (JSON string)
       // Note: Password should be handled securely by the backend (e.g., hashing)
       // The frontend sends the password in plain text over HTTPS
@@ -193,9 +193,9 @@ export class MentorManager implements BaseManager<Mentor> {
         linkedInUrl: _data.linkedInUrl,
         currentCompany: _data.currentCompany,
       };
-      
+
       formData.append("data", JSON.stringify(mentorInfo));
-      
+
       // Add optional file fields
       const createData = _data as CreateMentorData;
       if (createData.avatar) {
@@ -210,7 +210,7 @@ export class MentorManager implements BaseManager<Mentor> {
       if (createData.otherFile) {
         formData.append("otherFile", createData.otherFile);
       }
-      
+
       const response = await this.api.post(API_ENDPOINTS.MENTOR.CREATE, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
