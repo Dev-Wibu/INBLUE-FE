@@ -51,15 +51,17 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="h-full w-80 overflow-hidden bg-slate-50">
+    <aside className="flex h-screen w-72 flex-col bg-slate-50 border-r border-slate-100">
       {/* Logo */}
-      <div className="flex h-28 items-center gap-2 px-4">
-        <Cpu className="h-12 w-12 text-blue-800" />
-        <span className="font-['Orelega_One'] text-xl font-normal text-blue-800">AI INTERVIEW</span>
+      <div className="flex h-16 items-center gap-2 px-6 border-b border-slate-100">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#0047AB] to-[#007BFF]">
+          <Cpu className="h-5 w-5 text-white" />
+        </div>
+        <span className="text-lg font-bold text-[#002654]">INBLUE AI</span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex flex-col items-center gap-12 px-4 pt-10">
+      <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -67,30 +69,25 @@ export function Sidebar() {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex h-20 w-full items-center gap-5 px-5 ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                  ? "rounded-[20px] bg-white outline outline-1 outline-offset-[-1px] outline-black"
-                  : ""
+                  ? "bg-[#0047AB]/10 text-[#0047AB]"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               }`}>
-              <Icon className={`h-11 w-11 ${active ? "text-black" : "text-gray-600"}`} />
-              <span
-                className={`font-['Open_Sans'] text-2xl leading-5 font-normal ${
-                  active ? "text-black" : "text-black"
-                }`}>
-                {item.label}
-              </span>
+              <Icon className={`h-5 w-5 ${active ? "text-[#0047AB]" : "text-slate-500"}`} />
+              <span>{item.label}</span>
             </Link>
           );
         })}
-
-        {/* Logout button */}
-        <button className="flex h-20 w-full items-center gap-5 px-5 text-left">
-          <LogOut className="h-11 w-11 text-gray-600" />
-          <span className="font-['Open_Sans'] text-2xl leading-5 font-normal text-black">
-            Đăng xuất
-          </span>
-        </button>
       </nav>
+
+      {/* Logout button */}
+      <div className="border-t border-slate-100 p-3">
+        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900">
+          <LogOut className="h-5 w-5 text-slate-500" />
+          <span>Đăng xuất</span>
+        </button>
+      </div>
     </aside>
   );
 }
