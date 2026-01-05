@@ -4,7 +4,13 @@
  * Based on schema-from-be.d.ts API specification
  */
 
-import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams, User } from "@/interfaces";
+import type {
+  ApiResponse,
+  BaseManager,
+  PaginatedResponse,
+  PaginationParams,
+  User,
+} from "@/interfaces";
 
 import { API_ENDPOINTS, MANAGER_MODE, apiConfig, buildEndpoint } from "@/constants/api.config";
 import * as usersMock from "@/mocks/users-admin.mock";
@@ -132,7 +138,7 @@ export class UsersAdminManager implements BaseManager<User> {
     try {
       // According to schema, createUser uses multipart/form-data
       const formData = new FormData();
-      
+
       // Prepare UserInfo data (JSON string)
       // Note: Password should be handled securely by the backend (e.g., hashing)
       // The frontend sends the password in plain text over HTTPS
@@ -146,9 +152,9 @@ export class UsersAdminManager implements BaseManager<User> {
         targetPosition: _data.targetPosition,
         targetLevel: _data.targetLevel,
       };
-      
+
       formData.append("data", JSON.stringify(userInfo));
-      
+
       // Add optional file fields
       const createData = _data as CreateUserData;
       if (createData.avatar) {
@@ -157,7 +163,7 @@ export class UsersAdminManager implements BaseManager<User> {
       if (createData.cvFile) {
         formData.append("cvFile", createData.cvFile);
       }
-      
+
       const response = await this.api.post(API_ENDPOINTS.USERS.CREATE, formData, {
         headers: {
           "Content-Type": "multipart/form-data",

@@ -162,12 +162,12 @@ export class SessionManager implements BaseManager<Session> {
       // According to schema, createSession is POST /api/sessions/create-session
       // with SessionCreationRequest body
       let requestData: SessionCreationRequest;
-      
+
       // Type guard: check if the data has SessionCreationRequest specific property
       const isSessionCreationRequest = (data: unknown): data is SessionCreationRequest => {
-        return typeof data === 'object' && data !== null && 'dailyCoCreationRequest' in data;
+        return typeof data === "object" && data !== null && "dailyCoCreationRequest" in data;
       };
-      
+
       if (isSessionCreationRequest(_data)) {
         // If it's already a SessionCreationRequest
         requestData = _data;
@@ -190,7 +190,7 @@ export class SessionManager implements BaseManager<Session> {
           },
         };
       }
-      
+
       const response = await this.api.post(API_ENDPOINTS.SESSIONS.CREATE, requestData);
       return {
         success: true,
