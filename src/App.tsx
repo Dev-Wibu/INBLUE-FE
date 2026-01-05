@@ -2,12 +2,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { AuthLayout, UserDashboardLayout } from "@/components/layouts";
 import {
-  ManagerDashboardPage,
-  MentorManagementPage,
-  SessionManagementPage,
-  UserManagementPage,
-} from "@/pages/Manager";
-import {
   LoginPage,
   MentorRegisterPage,
   SelectRolePage,
@@ -15,6 +9,12 @@ import {
   WaitingAcceptMentorPage,
 } from "@/pages/Auth";
 import { HomePage } from "@/pages/Homepage";
+import {
+  ManagerDashboardPage,
+  MentorManagementPage,
+  SessionManagementPage,
+  UserManagementPage,
+} from "@/pages/Manager";
 import {
   AccountPage,
   AIChatConversationPage,
