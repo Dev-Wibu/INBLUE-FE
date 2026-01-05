@@ -1,8 +1,12 @@
-import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { mockSignup } from "@/mocks/auth.mock";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { authManager } from "@/services/auth.manager";
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -43,7 +47,7 @@ export function SignupPage() {
 
     setIsLoading(true);
 
-    const result = await mockSignup({
+    const result = await authManager.signup({
       fullName: formData.fullName,
       email: formData.email,
       phone: formData.phone,
@@ -67,25 +71,20 @@ export function SignupPage() {
   };
 
   return (
-    <div className="flex w-full max-w-[720px] flex-col items-center py-8">
-      {/* Card Container */}
-      <div className="w-full rounded-[30px] bg-white/40 px-[121px] py-8 outline outline-1 outline-offset-[-1px] outline-black/60">
-        {/* Title */}
-        <h1 className="mb-2 text-center font-['Markazi_Text'] text-5xl font-semibold text-indigo-600">
-          Đăng ký
-        </h1>
+    <Card className="w-full max-w-md">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl text-[#0047AB]">Đăng ký</CardTitle>
+        <CardDescription>Chào mừng đến với InBlue. Vui lòng điền thông tin</CardDescription>
+      </CardHeader>
 
-        {/* Subtitle */}
-        <p className="mb-8 text-center font-['Markazi_Text'] text-2xl font-normal text-black/70">
-          Chào mừng đến với InBlue. Vui lòng điền thông tin
-        </p>
-
+      <CardContent className="space-y-6">
         {/* Google Signup Button */}
-        <button
+        <Button
           type="button"
-          onClick={handleGoogleSignup}
-          className="mb-8 flex h-16 w-full items-center justify-center gap-3 rounded-[20px] outline outline-1 outline-offset-[-1px] outline-black/40 transition-colors hover:bg-gray-50">
-          <svg className="h-8 w-8" viewBox="0 0 24 24">
+          variant="outline"
+          className="w-full gap-3"
+          onClick={handleGoogleSignup}>
+          <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -103,154 +102,130 @@ export function SignupPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          <span className="font-['Markazi_Text'] text-3xl font-medium text-black">
-            Tiếp tục với Google
-          </span>
-        </button>
+          Tiếp tục với Google
+        </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-slate-500">hoặc</span>
+          </div>
+        </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit}>
-          {/* Full Name Field */}
-          <div className="mb-4">
-            <label className="mb-1 block font-['Markazi_Text'] text-3xl font-medium text-black/40">
-              Họ và tên
-            </label>
-            <div className="h-px w-full rounded-sm border border-neutral-200/60 bg-neutral-700" />
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              className="mt-2 h-10 w-full border-b border-neutral-700 bg-transparent font-['Markazi_Text'] text-2xl font-normal text-black focus:border-indigo-500 focus:outline-none"
-              required
-            />
-          </div>
-
-          {/* Email Field */}
-          <div className="mb-4">
-            <label className="mb-1 block font-['Markazi_Text'] text-3xl font-medium text-black/40">
-              Email
-            </label>
-            <div className="h-px w-full rounded-sm border border-neutral-200/60 bg-neutral-700" />
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="mt-2 h-10 w-full border-b border-neutral-700 bg-transparent font-['Markazi_Text'] text-2xl font-normal text-black focus:border-indigo-500 focus:outline-none"
-              required
-            />
-          </div>
-
-          {/* Phone Field */}
-          <div className="mb-4">
-            <label className="mb-1 block font-['Markazi_Text'] text-3xl font-medium text-black/40">
-              Số điện thoại
-            </label>
-            <div className="h-px w-full rounded-sm border border-neutral-200/60 bg-neutral-700" />
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="mt-2 h-10 w-full border-b border-neutral-700 bg-transparent font-['Markazi_Text'] text-2xl font-normal text-black focus:border-indigo-500 focus:outline-none"
-              required
-            />
-          </div>
-
-          {/* Birthday Field */}
-          <div className="mb-4">
-            <label className="mb-1 block font-['Markazi_Text'] text-3xl font-medium text-black/40">
-              Ngày sinh
-            </label>
-            <div className="h-px w-full rounded-sm border border-neutral-200/60 bg-neutral-700" />
-            <div className="relative mt-2">
-              <input
-                type="date"
-                name="birthday"
-                value={formData.birthday}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Họ và tên</Label>
+              <Input
+                id="fullName"
+                name="fullName"
+                value={formData.fullName}
                 onChange={handleChange}
-                className="h-10 w-full border-b border-neutral-700 bg-transparent font-['Markazi_Text'] text-2xl font-normal text-black focus:border-indigo-500 focus:outline-none"
+                placeholder="Nguyễn Văn A"
                 required
               />
-              <CalendarIcon className="pointer-events-none absolute top-1/2 right-2 h-7 w-7 -translate-y-1/2 text-black/70" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="email@example.com"
+                required
+              />
             </div>
           </div>
 
-          {/* Password Field */}
-          <div className="mb-4">
-            <label className="mb-1 block font-['Markazi_Text'] text-3xl font-medium text-black/40">
-              Mật khẩu
-            </label>
-            <div className="h-px w-full rounded-sm border border-neutral-200/60 bg-neutral-700" />
-            <input
-              type="password"
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">Số điện thoại</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="0912345678"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="birthday">Ngày sinh</Label>
+              <Input
+                id="birthday"
+                name="birthday"
+                type="date"
+                value={formData.birthday}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Mật khẩu</Label>
+            <Input
+              id="password"
               name="password"
+              type="password"
               value={formData.password}
               onChange={handleChange}
-              className="mt-2 h-10 w-full border-b border-neutral-700 bg-transparent font-['Markazi_Text'] text-2xl font-normal text-black focus:border-indigo-500 focus:outline-none"
+              placeholder="Nhập mật khẩu"
               required
             />
           </div>
 
-          {/* Confirm Password Field */}
-          <div className="mb-4">
-            <label className="mb-1 block font-['Markazi_Text'] text-3xl font-medium text-black/40">
-              Xác nhận mật khẩu
-            </label>
-            <div className="h-px w-full rounded-sm border border-neutral-200/60 bg-neutral-700" />
-            <input
-              type="password"
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+            <Input
+              id="confirmPassword"
               name="confirmPassword"
+              type="password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="mt-2 h-10 w-full border-b border-neutral-700 bg-transparent font-['Markazi_Text'] text-2xl font-normal text-black focus:border-indigo-500 focus:outline-none"
+              placeholder="Nhập lại mật khẩu"
               required
             />
           </div>
 
-          {/* Terms Checkbox */}
-          <div className="mb-6 flex items-center gap-3">
-            <input
-              type="checkbox"
+          <div className="flex items-center space-x-2">
+            <Checkbox
               id="agreeTerms"
               checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.target.checked)}
-              className="h-6 w-6 rounded-[5px] border border-purple-600"
+              onCheckedChange={(checked) => setAgreeTerms(checked === true)}
             />
-            <label
-              htmlFor="agreeTerms"
-              className="font-['Markazi_Text'] text-3xl font-medium text-black/40">
-              Tôi đồng ý với các điều khoản của InBlue
+            <label htmlFor="agreeTerms" className="text-sm text-slate-600">
+              Tôi đồng ý với các{" "}
+              <Link to="/terms" className="text-[#0047AB] hover:underline">
+                điều khoản
+              </Link>{" "}
+              của InBlue
             </label>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <p className="mb-4 text-center font-['Markazi_Text'] text-xl text-red-500">{error}</p>
-          )}
+          {error && <p className="text-center text-sm text-red-500">{error}</p>}
 
-          {/* Signup Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="h-16 w-full rounded-[20px] bg-gradient-to-r from-violet-400 via-violet-400 to-indigo-600 font-['Markazi_Text'] text-3xl font-normal text-white outline outline-1 outline-offset-[-1px] outline-black/40 transition-opacity hover:opacity-90 disabled:opacity-50">
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Đang đăng ký..." : "Đăng ký"}
-          </button>
+          </Button>
         </form>
 
         {/* Login Link */}
-        <p className="mt-6 text-center">
-          <span className="font-['Markazi_Text'] text-2xl font-normal text-black">
-            Bạn đã có tài khoản?{" "}
-          </span>
-          <Link
-            to="/login"
-            className="font-['Markazi_Text'] text-2xl font-normal text-indigo-600 hover:underline">
+        <p className="text-center text-sm">
+          <span className="text-slate-600">Bạn đã có tài khoản? </span>
+          <Link to="/login" className="font-medium text-[#0047AB] hover:underline">
             Đăng nhập ngay
           </Link>
         </p>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

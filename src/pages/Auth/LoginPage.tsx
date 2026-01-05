@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { DemoLoginButton } from "@/components/DemoLoginButton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { authManager } from "@/services/auth.manager";
 
 export function LoginPage() {
@@ -46,25 +50,20 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex w-full max-w-[582px] flex-col items-center">
-      {/* Card Container */}
-      <div className="w-full rounded-[30px] border border-black/60 bg-white/40 px-10 py-8">
-        {/* Title */}
-        <h1 className="mb-2 text-center font-['Markazi_Text'] text-5xl font-semibold text-indigo-600">
-          Đăng nhập
-        </h1>
+    <Card className="w-full max-w-md">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl text-[#0047AB]">Đăng nhập</CardTitle>
+        <CardDescription>Chào mừng quay trở lại. Vui lòng điền thông tin đăng nhập</CardDescription>
+      </CardHeader>
 
-        {/* Subtitle */}
-        <p className="mb-8 text-center font-['Markazi_Text'] text-2xl font-normal text-black/70">
-          Chào mừng quay trở lại. Vui lòng điền thông tin đăng nhập
-        </p>
-
+      <CardContent className="space-y-6">
         {/* Google Login Button */}
-        <button
+        <Button
           type="button"
-          onClick={handleGoogleLogin}
-          className="mb-8 flex h-16 w-full items-center justify-center gap-3 rounded-[20px] outline outline-1 outline-offset-[-1px] outline-black/40 transition-colors hover:bg-gray-50">
-          <svg className="h-8 w-8" viewBox="0 0 24 24">
+          variant="outline"
+          className="w-full gap-3"
+          onClick={handleGoogleLogin}>
+          <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -82,81 +81,68 @@ export function LoginPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          <span className="font-['Markazi_Text'] text-3xl font-medium text-black">
-            Tiếp tục với Google
-          </span>
-        </button>
+          Tiếp tục với Google
+        </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-slate-500">hoặc</span>
+          </div>
+        </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit}>
-          {/* Email Field */}
-          <div className="mb-4">
-            <label className="mb-2 block font-['Markazi_Text'] text-3xl font-medium text-black">
-              Email
-            </label>
-            <input
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Nhập email"
-              className="h-16 w-full rounded-[20px] px-4 font-['Markazi_Text'] text-3xl font-normal text-black/50 outline outline-1 outline-offset-[-1px] outline-black/40 placeholder:text-black/50 focus:outline-indigo-500"
               required
             />
           </div>
 
-          {/* Password Field */}
-          <div className="mb-2">
-            <label className="mb-2 block font-['Markazi_Text'] text-3xl font-medium text-black">
-              Mật khẩu
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="password">Mật khẩu</Label>
+            <Input
+              id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Nhập mật khẩu"
-              className="h-16 w-full rounded-[20px] px-4 font-['Markazi_Text'] text-3xl font-normal text-black/50 outline outline-1 outline-offset-[-1px] outline-black/40 placeholder:text-black/50 focus:outline-indigo-500"
               required
             />
           </div>
 
-          {/* Forgot Password Link */}
-          <div className="mb-4 text-left">
-            <Link
-              to="/forgot-password"
-              className="font-['Markazi_Text'] text-2xl font-normal text-violet-600 hover:underline">
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm text-[#0047AB] hover:underline">
               Quên mật khẩu?
             </Link>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <p className="mb-4 text-center font-['Markazi_Text'] text-xl text-red-500">{error}</p>
-          )}
+          {error && <p className="text-center text-sm text-red-500">{error}</p>}
 
-          {/* Login Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="h-16 w-full rounded-[20px] bg-gradient-to-r from-violet-400 via-violet-400 to-indigo-600 font-['Markazi_Text'] text-3xl font-normal text-white outline outline-1 outline-offset-[-1px] outline-black/40 transition-opacity hover:opacity-90 disabled:opacity-50">
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
-          </button>
+          </Button>
         </form>
 
         {/* Demo Login Button - Remove this component and its import when real accounts are available */}
         <DemoLoginButton onSelectAccount={handleDemoAccountSelect} />
 
         {/* Signup Link */}
-        <p className="mt-6 text-center">
-          <span className="font-['Markazi_Text'] text-2xl font-normal text-black">
-            Bạn có tài khoản chưa?{" "}
-          </span>
-          <Link
-            to="/signup"
-            className="font-['Markazi_Text'] text-2xl font-normal text-indigo-600 hover:underline">
+        <p className="text-center text-sm">
+          <span className="text-slate-600">Bạn có tài khoản chưa? </span>
+          <Link to="/signup" className="font-medium text-[#0047AB] hover:underline">
             Đăng ký ngay
           </Link>
         </p>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
