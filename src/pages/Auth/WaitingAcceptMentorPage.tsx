@@ -27,7 +27,7 @@ export function WaitingAcceptMentorPage() {
 
           <CardContent className="space-y-6">
             {/* Info Box */}
-            <div className="rounded-xl bg-slate-50 p-5 space-y-3">
+            <div className="space-y-3 rounded-xl bg-slate-50 p-5">
               <div className="flex items-center gap-3">
                 <Clock className="h-5 w-5 text-amber-600" />
                 <p className="text-sm text-slate-700">
@@ -55,21 +55,23 @@ export function WaitingAcceptMentorPage() {
               {/* Step 1: Submitted */}
               <div className="flex gap-3">
                 <div className="flex flex-col items-center">
-                  <div className="h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500">
                     <CheckCircle className="h-4 w-4 text-white" />
                   </div>
                   <div className="h-8 w-0.5 bg-slate-200" />
                 </div>
                 <div>
                   <h5 className="font-medium text-slate-900">Đã nộp đơn</h5>
-                  <p className="text-sm text-slate-500">Đơn đăng ký của bạn đã được gửi thành công</p>
+                  <p className="text-sm text-slate-500">
+                    Đơn đăng ký của bạn đã được gửi thành công
+                  </p>
                 </div>
               </div>
 
               {/* Step 2: Reviewing */}
               <div className="flex gap-3">
                 <div className="flex flex-col items-center">
-                  <div className="h-6 w-6 rounded-full bg-amber-500 flex items-center justify-center">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500">
                     <Clock className="h-3 w-3 text-white" />
                   </div>
                   <div className="h-8 w-0.5 bg-slate-200" />

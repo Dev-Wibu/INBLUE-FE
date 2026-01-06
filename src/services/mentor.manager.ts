@@ -177,15 +177,29 @@ export class MentorManager implements BaseManager<Mentor> {
     }
 
     try {
+      // Validate required fields
+      if (!_data.name || !_data.name.trim()) {
+        return {
+          success: false,
+          error: "Name is required to create a mentor",
+        };
+      }
+      if (!_data.email || !_data.email.trim()) {
+        return {
+          success: false,
+          error: "Email is required to create a mentor",
+        };
+      }
+
       // According to schema, createMentor uses multipart/form-data
       const formData = new FormData();
 
-      // Prepare MentorInfo data (JSON string)
+      // Prepare MentorInfo data (JSON object)
       // Note: Password should be handled securely by the backend (e.g., hashing)
       // The frontend sends the password in plain text over HTTPS
       const mentorInfo: MentorInfo = {
-        name: _data.name,
-        email: _data.email,
+        name: _data.name.trim(),
+        email: _data.email.trim(),
         password: _data.password,
         bio: _data.bio,
         expertise: _data.expertise,
@@ -194,7 +208,9 @@ export class MentorManager implements BaseManager<Mentor> {
         currentCompany: _data.currentCompany,
       };
 
-      formData.append("data", JSON.stringify(mentorInfo));
+      // Append the 'data' field as a Blob with application/json content type
+      // This ensures the backend receives proper JSON data within multipart/form-data
+      formData.append("data", new Blob([JSON.stringify(mentorInfo)], { type: "application/json" }));
 
       // Add optional file fields
       const createData = _data as CreateMentorData;
@@ -211,11 +227,8 @@ export class MentorManager implements BaseManager<Mentor> {
         formData.append("otherFile", createData.otherFile);
       }
 
-      const response = await this.api.post(API_ENDPOINTS.MENTOR.CREATE, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      // Let axios set Content-Type automatically with proper boundary for multipart/form-data
+      const response = await this.api.post(API_ENDPOINTS.MENTOR.CREATE, formData);
       return {
         success: true,
         data: response.data,
