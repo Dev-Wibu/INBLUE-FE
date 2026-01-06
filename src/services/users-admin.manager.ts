@@ -136,15 +136,30 @@ export class UsersAdminManager implements BaseManager<User> {
     }
 
     try {
+      // Validate required fields
+      if (!_data.name || !_data.name.trim()) {
+        return {
+          success: false,
+          error: "Name is required to create a user",
+        };
+      }
+      if (!_data.email || !_data.email.trim()) {
+        return {
+          success: false,
+          error: "Email is required to create a user",
+        };
+      }
+
       // According to schema, createUser uses multipart/form-data
       const formData = new FormData();
 
-      // Prepare UserInfo data (JSON string)
+      // Prepare UserInfo data object
+      // This will be serialized to JSON and sent as a Blob with application/json content type
       // Note: Password should be handled securely by the backend (e.g., hashing)
       // The frontend sends the password in plain text over HTTPS
       const userInfo: UserInfo = {
-        name: _data.name,
-        email: _data.email,
+        name: _data.name.trim(),
+        email: _data.email.trim(),
         password: _data.password,
         bio: _data.bio,
         university: _data.university,
@@ -153,7 +168,10 @@ export class UsersAdminManager implements BaseManager<User> {
         targetLevel: _data.targetLevel,
       };
 
-      formData.append("data", JSON.stringify(userInfo));
+      // Append the 'data' field as a JSON Blob
+      // This is the standard way to send JSON data within multipart/form-data
+      // The Blob with type "application/json" tells the server this part is JSON
+      formData.append("data", new Blob([JSON.stringify(userInfo)], { type: "application/json" }));
 
       // Add optional file fields
       const createData = _data as CreateUserData;
@@ -164,11 +182,8 @@ export class UsersAdminManager implements BaseManager<User> {
         formData.append("cvFile", createData.cvFile);
       }
 
-      const response = await this.api.post(API_ENDPOINTS.USERS.CREATE, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      // Let axios set Content-Type automatically with proper boundary for multipart/form-data
+      const response = await this.api.post(API_ENDPOINTS.USERS.CREATE, formData);
       return {
         success: true,
         data: response.data,

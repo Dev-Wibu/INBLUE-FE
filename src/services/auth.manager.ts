@@ -41,9 +41,33 @@ export class AuthManager {
   private api = axios.create(apiConfig);
 
   /**
+   * Check if credentials match demo accounts
+   * Demo accounts work in both mock and api modes for testing purposes
+   */
+  private isDemoAccount(email: string, password: string): boolean {
+    return (
+      (email === "user@example.com" && password === "user123") ||
+      (email === "admin@example.com" && password === "admin123")
+    );
+  }
+
+  /**
    * Login user
+   * Supports both mock and api modes
+   * Demo accounts work in both modes for testing purposes
    */
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token?: string }>> {
+    // Check for demo accounts first - they work in both mock and api modes
+    if (this.isDemoAccount(credentials.email, credentials.password)) {
+      const result = await authMock.mockLogin(credentials.email, credentials.password);
+      return {
+        success: result.success,
+        data: result.user ? { user: result.user } : undefined,
+        error: result.error,
+      };
+    }
+
+    // For non-demo accounts, use the configured mode
     if (this.mode === "mock") {
       const result = await authMock.mockLogin(credentials.email, credentials.password);
       return {

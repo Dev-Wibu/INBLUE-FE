@@ -39,6 +39,10 @@ export interface SessionCreationRequest {
   mentorId?: number;
 }
 
+// Room name generation constants
+const ROOM_NAME_PREFIX = "interview";
+const RANDOM_SUFFIX_MAX = 1000;
+
 export class SessionManager implements BaseManager<Session> {
   private mode = MANAGER_MODE;
   private api = axios.create(apiConfig);
@@ -174,11 +178,31 @@ export class SessionManager implements BaseManager<Session> {
       } else {
         // Convert from Session partial to SessionCreationRequest
         const sessionData = _data as Partial<Session>;
+
+        // Validate required fields
+        if (!sessionData.userId) {
+          return {
+            success: false,
+            error: "User ID is required to create a session",
+          };
+        }
+        if (!sessionData.userId2) {
+          return {
+            success: false,
+            error: "Mentor ID is required to create a session",
+          };
+        }
+
+        // Generate a unique room name if not provided using constants
+        const roomName =
+          sessionData.roomName ||
+          `${ROOM_NAME_PREFIX}-${Date.now()}-${Math.floor(Math.random() * RANDOM_SUFFIX_MAX)}`;
+
         requestData = {
           userId: sessionData.userId,
           mentorId: sessionData.userId2, // userId2 is the mentor
           dailyCoCreationRequest: {
-            name: sessionData.roomName,
+            name: roomName,
             privacy: "public",
             properties: {
               max_participants: 2,

@@ -51,9 +51,9 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-72 flex-col bg-slate-50 border-r border-slate-100">
+    <aside className="flex h-screen w-72 flex-col border-r border-slate-100 bg-slate-50">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 px-6 border-b border-slate-100">
+      <div className="flex h-16 items-center gap-2 border-b border-slate-100 px-6">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#0047AB] to-[#007BFF]">
           <Cpu className="h-5 w-5 text-white" />
         </div>
