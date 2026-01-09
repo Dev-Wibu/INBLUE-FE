@@ -71,10 +71,12 @@ export function SignupPage() {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl text-[#0047AB]">Đăng ký</CardTitle>
-        <CardDescription>Chào mừng đến với InBlue. Vui lòng điền thông tin</CardDescription>
+        <CardTitle className="text-2xl text-[#0047AB] dark:text-[#66B2FF]">Đăng ký</CardTitle>
+        <CardDescription className="dark:text-slate-400">
+          Chào mừng đến với InBlue. Vui lòng điền thông tin
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -82,7 +84,7 @@ export function SignupPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full gap-3"
+          className="w-full gap-3 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           onClick={handleGoogleSignup}>
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
@@ -107,10 +109,12 @@ export function SignupPage() {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t dark:border-slate-700" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-slate-500">hoặc</span>
+            <span className="bg-white px-2 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+              hoặc
+            </span>
           </div>
         </div>
 
@@ -118,7 +122,9 @@ export function SignupPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Họ và tên</Label>
+              <Label htmlFor="fullName" className="dark:text-slate-300">
+                Họ và tên
+              </Label>
               <Input
                 id="fullName"
                 name="fullName"
@@ -126,11 +132,14 @@ export function SignupPage() {
                 onChange={handleChange}
                 placeholder="Nguyễn Văn A"
                 required
+                className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="dark:text-slate-300">
+                Email
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -139,13 +148,16 @@ export function SignupPage() {
                 onChange={handleChange}
                 placeholder="email@example.com"
                 required
+                className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Số điện thoại</Label>
+              <Label htmlFor="phone" className="dark:text-slate-300">
+                Số điện thoại
+              </Label>
               <Input
                 id="phone"
                 name="phone"
@@ -154,11 +166,14 @@ export function SignupPage() {
                 onChange={handleChange}
                 placeholder="0912345678"
                 required
+                className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="birthday">Ngày sinh</Label>
+              <Label htmlFor="birthday" className="dark:text-slate-300">
+                Ngày sinh
+              </Label>
               <Input
                 id="birthday"
                 name="birthday"
@@ -166,12 +181,15 @@ export function SignupPage() {
                 value={formData.birthday}
                 onChange={handleChange}
                 required
+                className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Mật khẩu</Label>
+            <Label htmlFor="password" className="dark:text-slate-300">
+              Mật khẩu
+            </Label>
             <Input
               id="password"
               name="password"
@@ -180,11 +198,14 @@ export function SignupPage() {
               onChange={handleChange}
               placeholder="Nhập mật khẩu"
               required
+              className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
+            <Label htmlFor="confirmPassword" className="dark:text-slate-300">
+              Xác nhận mật khẩu
+            </Label>
             <Input
               id="confirmPassword"
               name="confirmPassword"
@@ -193,6 +214,7 @@ export function SignupPage() {
               onChange={handleChange}
               placeholder="Nhập lại mật khẩu"
               required
+              className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
 
@@ -202,9 +224,9 @@ export function SignupPage() {
               checked={agreeTerms}
               onCheckedChange={(checked) => setAgreeTerms(checked === true)}
             />
-            <label htmlFor="agreeTerms" className="text-sm text-slate-600">
+            <label htmlFor="agreeTerms" className="text-sm text-slate-600 dark:text-slate-400">
               Tôi đồng ý với các{" "}
-              <Link to="/terms" className="text-[#0047AB] hover:underline">
+              <Link to="/terms" className="text-[#0047AB] hover:underline dark:text-[#66B2FF]">
                 điều khoản
               </Link>{" "}
               của InBlue
@@ -220,8 +242,10 @@ export function SignupPage() {
 
         {/* Login Link */}
         <p className="text-center text-sm">
-          <span className="text-slate-600">Bạn đã có tài khoản? </span>
-          <Link to="/login" className="font-medium text-[#0047AB] hover:underline">
+          <span className="text-slate-600 dark:text-slate-400">Bạn đã có tài khoản? </span>
+          <Link
+            to="/login"
+            className="font-medium text-[#0047AB] hover:underline dark:text-[#66B2FF]">
             Đăng nhập ngay
           </Link>
         </p>
