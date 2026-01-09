@@ -285,21 +285,45 @@ export class MentorManager implements BaseManager<Mentor> {
 
     try {
       // According to schema, updateMentor is PUT /api/mentors with JSON body
-      // Remove undefined/null values to prevent backend deserialization errors
-      // Backend doesn't accept null for primitive types like boolean
-      const mentorData: Mentor = { ..._data, id: Number(_id) };
+      // Backend requires complete Mentor object, doesn't accept null for primitive boolean
 
-      // Filter out undefined/null values to prevent "Cannot map null into type boolean" error
-      const cleanedData = Object.fromEntries(
-        Object.entries(mentorData).filter(([_, value]) => value !== undefined && value !== null)
-      ) as Mentor;
+      // Build payload with only provided values + id
+      const payload: Record<string, unknown> = {
+        id: Number(_id),
+      };
 
-      const response = await this.api.put(API_ENDPOINTS.MENTOR.UPDATE, cleanedData);
+      // Add all non-null, non-undefined values from _data
+      Object.entries(_data).forEach(([key, value]) => {
+        // Skip undefined values but keep false/0 as they are valid
+        if (value !== undefined && value !== null) {
+          payload[key] = value;
+        }
+      });
+
+      // Critical: Ensure active field is a proper boolean if provided
+      if ("active" in _data) {
+        payload.active = Boolean(_data.active);
+      }
+
+      console.log("Update mentor payload:", JSON.stringify(payload, null, 2));
+
+      const response = await this.api.put(API_ENDPOINTS.MENTOR.UPDATE, payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
       return {
         success: true,
         data: response.data,
       };
     } catch (error) {
+      console.error("Update mentor error:", error);
+      // Log full error response for debugging
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as { response?: { data?: unknown } };
+        console.error("Backend error response:", axiosError.response?.data);
+      }
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to update mentor",

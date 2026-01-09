@@ -71,7 +71,7 @@ export function MentorManagementPage() {
       linkedInUrl: mentor.linkedInUrl,
       currentCompany: mentor.currentCompany,
       rate: mentor.rate,
-      active: mentor.active,
+      active: mentor.active ?? true, // Ensure boolean value, default to true if null/undefined
     });
     setIsEditDialogOpen(true);
   };
@@ -101,6 +101,7 @@ export function MentorManagementPage() {
     if (!selectedMentor?.id) return;
 
     try {
+      console.log("Updating mentor with formData:", formData);
       const response = await mentorManager.update(selectedMentor.id, formData);
       if (response.success) {
         toast.success("Mentor updated successfully");
