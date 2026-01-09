@@ -50,10 +50,12 @@ export function LoginPage() {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md dark:border-slate-800 dark:bg-slate-900">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl text-[#0047AB]">Đăng nhập</CardTitle>
-        <CardDescription>Chào mừng quay trở lại. Vui lòng điền thông tin đăng nhập</CardDescription>
+        <CardTitle className="text-2xl text-[#0047AB] dark:text-[#66B2FF]">Đăng nhập</CardTitle>
+        <CardDescription className="dark:text-slate-400">
+          Chào mừng quay trở lại. Vui lòng điền thông tin đăng nhập
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -61,7 +63,7 @@ export function LoginPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full gap-3"
+          className="w-full gap-3 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           onClick={handleGoogleLogin}>
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
@@ -86,17 +88,21 @@ export function LoginPage() {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t dark:border-slate-700" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-slate-500">hoặc</span>
+            <span className="bg-white px-2 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+              hoặc
+            </span>
           </div>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="dark:text-slate-300">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -104,11 +110,14 @@ export function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Nhập email"
               required
+              className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Mật khẩu</Label>
+            <Label htmlFor="password" className="dark:text-slate-300">
+              Mật khẩu
+            </Label>
             <Input
               id="password"
               type="password"
@@ -116,11 +125,14 @@ export function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Nhập mật khẩu"
               required
+              className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
 
           <div className="text-right">
-            <Link to="/forgot-password" className="text-sm text-[#0047AB] hover:underline">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-[#0047AB] hover:underline dark:text-[#66B2FF]">
               Quên mật khẩu?
             </Link>
           </div>
@@ -137,8 +149,10 @@ export function LoginPage() {
 
         {/* Signup Link */}
         <p className="text-center text-sm">
-          <span className="text-slate-600">Bạn có tài khoản chưa? </span>
-          <Link to="/signup" className="font-medium text-[#0047AB] hover:underline">
+          <span className="text-slate-600 dark:text-slate-400">Bạn có tài khoản chưa? </span>
+          <Link
+            to="/signup"
+            className="font-medium text-[#0047AB] hover:underline dark:text-[#66B2FF]">
             Đăng ký ngay
           </Link>
         </p>
