@@ -130,6 +130,7 @@ export const API_ENDPOINTS = {
     CREATE: "/api/question-sets",
     UPDATE: "/api/question-sets",
     DELETE: "/api/question-sets/:id",
+    BY_LEVEL: "/api/question-sets/level/:level",
   },
 
   // Question Categories endpoints - Based on schema-from-be.d.ts
@@ -150,6 +151,17 @@ export const API_ENDPOINTS = {
     DELETE: "/api/question-majors/:id",
   },
 
+  // Question Set Items endpoints - Based on schema-from-be.d.ts
+  QUESTION_SET_ITEMS: {
+    LIST: "/api/question-set-items",
+    DETAIL: "/api/question-set-items/:id",
+    CREATE: "/api/question-set-items",
+    CREATE_BULK: "/api/question-set-items/create-items",
+    UPDATE: "/api/question-set-items",
+    DELETE: "/api/question-set-items/:id",
+    BY_QUESTION_SET: "/api/question-set-items/by-question-set/:id",
+  },
+
   // Notifications endpoints - Based on schema-from-be.d.ts
   NOTIFICATIONS: {
     LIST: "/api/notifications/:id",
@@ -163,6 +175,15 @@ export const API_ENDPOINTS = {
     DETAIL: "/api/mentor-reviews/:id",
     CREATE: "/api/mentor-reviews",
     UPDATE: "/api/mentor-reviews",
+  },
+
+  // Mentor Feedbacks endpoints - Based on schema-from-be.d.ts
+  MENTOR_FEEDBACKS: {
+    LIST: "/api/mentor-feedbacks",
+    DETAIL: "/api/mentor-feedbacks/:id",
+    CREATE: "/api/mentor-feedbacks",
+    UPDATE: "/api/mentor-feedbacks",
+    BY_MENTOR: "/api/mentor-feedbacks/mentor/:mentorId",
   },
 } as const;
 

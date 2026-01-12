@@ -50,7 +50,7 @@ export function HomePage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-[#DCEEFF]/30 py-20 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 lg:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-[#DCEEFF]/30 py-20 lg:py-32 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
         {/* Decorative background elements */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-20 left-1/4 h-72 w-72 rounded-full bg-[#66B2FF]/30 blur-3xl dark:bg-[#0047AB]/20" />
@@ -70,7 +70,7 @@ export function HomePage() {
               </Badge>
 
               {/* Title */}
-              <h1 className="mb-6 text-4xl font-bold tracking-tight text-slate-900 dark:text-white lg:text-6xl">
+              <h1 className="mb-6 text-4xl font-bold tracking-tight text-slate-900 lg:text-6xl dark:text-white">
                 Phỏng vấn thành công với{" "}
                 <span className="bg-gradient-to-r from-[#0047AB] to-[#007BFF] bg-clip-text text-transparent">
                   Chuyên gia AI
