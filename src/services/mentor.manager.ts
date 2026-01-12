@@ -264,7 +264,8 @@ export class MentorManager implements BaseManager<Mentor> {
 
   /**
    * Update mentor
-   * PUT /api/mentors (JSON body with Mentor object)
+   * POST /api/mentors (JSON body with Mentor object)
+   * Note: Schema defines PUT but backend team confirmed POST should be used for updates
    */
   async update(_id: string | number, _data: Partial<Mentor>): Promise<ApiResponse<Mentor>> {
     if (this.mode === "mock") {
@@ -284,8 +285,8 @@ export class MentorManager implements BaseManager<Mentor> {
     }
 
     try {
-      // According to schema, updateMentor is PUT /api/mentors with JSON body
-      // Backend requires complete Mentor object, doesn't accept null for primitive boolean
+      // Backend requires Mentor object in JSON body
+      // Note: Using POST instead of PUT as confirmed by backend team
 
       // Build payload with only provided values + id
       const payload: Record<string, unknown> = {
@@ -307,7 +308,8 @@ export class MentorManager implements BaseManager<Mentor> {
 
       console.log("Update mentor payload:", JSON.stringify(payload, null, 2));
 
-      const response = await this.api.put(API_ENDPOINTS.MENTOR.UPDATE, payload, {
+      // Note: Backend confirmed POST should be used for updates (not PUT)
+      const response = await this.api.post(API_ENDPOINTS.MENTOR.UPDATE, payload, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -354,8 +356,9 @@ export class MentorManager implements BaseManager<Mentor> {
 
     try {
       // Backend doesn't have DELETE endpoint, use soft delete via update
+      // Note: Backend confirmed POST should be used for updates (not PUT)
       const mentorData: Mentor = { id: Number(_id), active: false };
-      await this.api.put(API_ENDPOINTS.MENTOR.UPDATE, mentorData);
+      await this.api.post(API_ENDPOINTS.MENTOR.UPDATE, mentorData);
       return {
         success: true,
       };
