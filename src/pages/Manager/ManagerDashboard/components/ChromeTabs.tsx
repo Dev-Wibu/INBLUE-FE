@@ -1,9 +1,15 @@
-import { Plus, UserCog, Users, Video, X } from "lucide-react";
+import { BookOpen, FolderOpen, GraduationCap, Plus, UserCog, Users, Video, X } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-export type TabType = "users" | "mentors" | "sessions";
+export type TabType =
+  | "users"
+  | "mentors"
+  | "sessions"
+  | "questionCategories"
+  | "questionMajors"
+  | "questionSets";
 
 export interface Tab {
   id: string;
@@ -23,12 +29,18 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   users: Users,
   mentors: UserCog,
   sessions: Video,
+  questionCategories: FolderOpen,
+  questionMajors: GraduationCap,
+  questionSets: BookOpen,
 };
 
 const TAB_COLORS: Record<TabType, string> = {
   users: "text-blue-600",
   mentors: "text-orange-600",
   sessions: "text-green-600",
+  questionCategories: "text-purple-600",
+  questionMajors: "text-pink-600",
+  questionSets: "text-teal-600",
 };
 
 export function ChromeTabs({
@@ -115,6 +127,34 @@ export function ChromeTabs({
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
                 <Video className="h-4 w-4 text-green-600" />
                 Session Management
+              </button>
+              <div className="my-1 border-t dark:border-slate-600" />
+              <button
+                onClick={() => {
+                  onNewTab("questionCategories");
+                  setShowNewTabMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
+                <FolderOpen className="h-4 w-4 text-purple-600" />
+                Question Categories
+              </button>
+              <button
+                onClick={() => {
+                  onNewTab("questionMajors");
+                  setShowNewTabMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
+                <GraduationCap className="h-4 w-4 text-pink-600" />
+                Question Majors
+              </button>
+              <button
+                onClick={() => {
+                  onNewTab("questionSets");
+                  setShowNewTabMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
+                <BookOpen className="h-4 w-4 text-teal-600" />
+                Question Sets
               </button>
             </div>
           </>

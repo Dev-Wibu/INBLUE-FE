@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react";
 
 import { MentorManagementPage } from "../MentorManagement";
+import { QuestionCategoryManagementPage } from "../QuestionCategoryManagement";
+import { QuestionMajorManagementPage } from "../QuestionMajorManagement";
+import { QuestionSetManagementPage } from "../QuestionSetManagement";
 import { SessionManagementPage } from "../SessionManagement";
 import { UserManagementPage } from "../UserManagement";
 import type { Tab, TabType } from "./components";
@@ -18,6 +21,12 @@ const getTabTitle = (type: TabType): string => {
       return "Mentor Management";
     case "sessions":
       return "Session Management";
+    case "questionCategories":
+      return "Question Categories";
+    case "questionMajors":
+      return "Question Majors";
+    case "questionSets":
+      return "Question Sets";
     default:
       return "New Tab";
   }
@@ -91,6 +100,12 @@ export function ManagerDashboardPage() {
         return <MentorManagementPage />;
       case "sessions":
         return <SessionManagementPage />;
+      case "questionCategories":
+        return <QuestionCategoryManagementPage />;
+      case "questionMajors":
+        return <QuestionMajorManagementPage />;
+      case "questionSets":
+        return <QuestionSetManagementPage />;
       default:
         return <div>Unknown tab type</div>;
     }
