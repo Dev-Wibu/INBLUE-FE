@@ -1,4 +1,14 @@
-import { LayoutDashboard, LogOut, Settings, UserCog, Users, Video } from "lucide-react";
+import {
+  BookOpen,
+  FolderOpen,
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  UserCog,
+  Users,
+  Video,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -18,6 +28,27 @@ const MENU_ITEMS = [
   { type: "users" as TabType, icon: Users, label: "Users", color: "text-blue-600" },
   { type: "mentors" as TabType, icon: UserCog, label: "Mentors", color: "text-orange-600" },
   { type: "sessions" as TabType, icon: Video, label: "Sessions", color: "text-green-600" },
+];
+
+const QUESTION_MENU_ITEMS = [
+  {
+    type: "questionCategories" as TabType,
+    icon: FolderOpen,
+    label: "Categories",
+    color: "text-purple-600",
+  },
+  {
+    type: "questionMajors" as TabType,
+    icon: GraduationCap,
+    label: "Majors",
+    color: "text-pink-600",
+  },
+  {
+    type: "questionSets" as TabType,
+    icon: BookOpen,
+    label: "Question Sets",
+    color: "text-teal-600",
+  },
 ];
 
 export function Sidebar({ onNavigate, currentView }: SidebarProps) {
@@ -57,6 +88,24 @@ export function Sidebar({ onNavigate, currentView }: SidebarProps) {
           Management
         </p>
         {MENU_ITEMS.map((item) => (
+          <button
+            key={item.type}
+            onClick={() => onNavigate(item.type)}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              currentView === item.type
+                ? "bg-gray-100 text-gray-900 dark:bg-slate-800 dark:text-white"
+                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            )}>
+            <item.icon className={cn("h-5 w-5", item.color)} />
+            {item.label}
+          </button>
+        ))}
+
+        <p className="mt-4 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-slate-400">
+          Questions
+        </p>
+        {QUESTION_MENU_ITEMS.map((item) => (
           <button
             key={item.type}
             onClick={() => onNavigate(item.type)}
