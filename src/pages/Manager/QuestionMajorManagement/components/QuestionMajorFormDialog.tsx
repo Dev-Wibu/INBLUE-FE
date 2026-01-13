@@ -1,0 +1,74 @@
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+import type { MajorFormData } from "../types";
+
+interface QuestionMajorFormDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  formData: Partial<MajorFormData>;
+  onFormChange: (data: Partial<MajorFormData>) => void;
+  onSubmit: () => void;
+  title: string;
+  description: string;
+  submitLabel: string;
+}
+
+export function QuestionMajorFormDialog({
+  isOpen,
+  onOpenChange,
+  formData,
+  onFormChange,
+  onSubmit,
+  title,
+  description,
+  submitLabel,
+}: QuestionMajorFormDialogProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div>
+            <Label htmlFor="majorName">Major Name *</Label>
+            <Input
+              id="majorName"
+              value={formData.majorName || ""}
+              onChange={(e) => onFormChange({ ...formData, majorName: e.target.value })}
+              placeholder="Enter major name"
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description || ""}
+              onChange={(e) => onFormChange({ ...formData, description: e.target.value })}
+              placeholder="Enter description"
+              rows={3}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={onSubmit}>{submitLabel}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

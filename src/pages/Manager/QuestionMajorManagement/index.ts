@@ -1,0 +1,1 @@
+export { QuestionMajorManagementPage } from "./QuestionMajorManagementPage";
