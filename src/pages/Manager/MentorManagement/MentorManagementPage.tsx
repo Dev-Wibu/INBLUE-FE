@@ -3,6 +3,13 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { mentorManager } from "@/services";
 import { toast } from "sonner";
 
@@ -13,6 +20,7 @@ export function MentorManagementPage() {
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("active"); // Default to show only active mentors
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -43,8 +51,19 @@ export function MentorManagementPage() {
     loadMentors();
   }, [loadMentors]);
 
-  // Filter mentors based on search query
+  // Filter mentors based on search query and status filter
   const filteredMentors = mentors.filter((mentor) => {
+    // Filter by status (active/inactive/all) - default shows active only
+    // Note: active can be true, false, or undefined (not set)
+    // Mentors with active === undefined are treated as active (default state)
+    // Only mentors with active === false are considered inactive (soft deleted)
+    if (statusFilter === "active" && mentor.active === false) {
+      return false;
+    }
+    if (statusFilter === "inactive" && mentor.active !== false) {
+      return false;
+    }
+
     if (!searchQuery) return true;
     const lowerQuery = searchQuery.toLowerCase();
     return (
@@ -156,16 +175,30 @@ export function MentorManagementPage() {
 
       {/* Action Bar */}
       <div className="mb-6 flex items-center justify-between gap-4">
-        {/* Search Input */}
-        <div className="relative w-96">
-          <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
-          <Input
-            type="text"
-            placeholder="Search mentors by name, email, expertise..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex items-center gap-4">
+          {/* Search Input */}
+          <div className="relative w-96">
+            <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Search mentors by name, email, expertise..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Status Filter - Default shows active mentors only */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Active Only</SelectItem>
+              <SelectItem value="inactive">Inactive Only</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Create Button */}
@@ -183,11 +216,16 @@ export function MentorManagementPage() {
           onDelete={handleDelete}
         />
 
-        {/* Empty State with Clear Search */}
-        {filteredMentors.length === 0 && searchQuery && (
+        {/* Empty State with Clear Filters */}
+        {filteredMentors.length === 0 && (searchQuery || statusFilter !== "active") && (
           <div className="flex justify-center pb-4">
-            <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Clear Search
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("active");
+              }}>
+              Clear Filters
             </Button>
           </div>
         )}
@@ -215,6 +253,7 @@ export function MentorManagementPage() {
         title="Edit Mentor"
         description="Update the mentor information."
         submitLabel="Save Changes"
+        selectedMentor={selectedMentor}
       />
 
       {/* Delete Confirmation Dialog */}
