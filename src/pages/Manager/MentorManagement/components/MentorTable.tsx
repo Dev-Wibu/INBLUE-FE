@@ -1,4 +1,4 @@
-import { Edit, Search, Trash2 } from "lucide-react";
+import { Edit, Power, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,8 +59,8 @@ export function MentorTable({ mentors, onEdit, onDelete }: MentorTableProps) {
               <Badge variant="secondary">{mentor.totalSession || 0}</Badge>
             </TableCell>
             <TableCell>
-              <Badge variant={mentor.active ? "default" : "destructive"}>
-                {mentor.active ? "Active" : "Inactive"}
+              <Badge variant={mentor.active !== false ? "default" : "destructive"}>
+                {mentor.active !== false ? "Active" : "Inactive"}
               </Badge>
             </TableCell>
             <TableCell className="text-right">
@@ -69,15 +69,19 @@ export function MentorTable({ mentors, onEdit, onDelete }: MentorTableProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => onEdit(mentor)}
-                  className="h-8 w-8 p-0 hover:bg-blue-50">
+                  className="h-8 w-8 p-0 hover:bg-blue-50"
+                  title="Edit mentor">
                   <Edit className="h-4 w-4 text-blue-600" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onDelete(mentor)}
-                  className="h-8 w-8 p-0 hover:bg-red-50">
-                  <Trash2 className="h-4 w-4 text-red-600" />
+                  className={`h-8 w-8 p-0 ${mentor.active !== false ? "hover:bg-red-50" : "hover:bg-green-50"}`}
+                  title={mentor.active !== false ? "Deactivate mentor" : "Activate mentor"}>
+                  <Power
+                    className={`h-4 w-4 ${mentor.active !== false ? "text-red-600" : "text-green-600"}`}
+                  />
                 </Button>
               </div>
             </TableCell>
