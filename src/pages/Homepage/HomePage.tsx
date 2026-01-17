@@ -209,16 +209,18 @@ export function HomePage() {
                 </CardContent>
               </Card>
             ))}
-            <Card className="group cursor-pointer border-dashed border-slate-300 transition-all hover:border-[#007BFF] dark:border-slate-600 dark:bg-slate-800">
-              <CardContent className="flex flex-col items-center justify-center p-6">
-                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700">
-                  <ArrowRight className="h-6 w-6 text-slate-400 group-hover:text-[#0047AB] dark:group-hover:text-[#66B2FF]" />
-                </div>
-                <span className="text-center text-sm font-semibold text-slate-500 group-hover:text-[#0047AB] dark:text-slate-400 dark:group-hover:text-[#66B2FF]">
-                  Xem tất cả
-                </span>
-              </CardContent>
-            </Card>
+            <Link to="/login">
+              <Card className="group h-full cursor-pointer border-dashed border-slate-300 transition-all hover:border-[#007BFF] dark:border-slate-600 dark:bg-slate-800">
+                <CardContent className="flex h-full flex-col items-center justify-center p-6">
+                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700">
+                    <ArrowRight className="h-6 w-6 text-slate-400 group-hover:text-[#0047AB] dark:group-hover:text-[#66B2FF]" />
+                  </div>
+                  <span className="text-center text-sm font-semibold text-slate-500 group-hover:text-[#0047AB] dark:text-slate-400 dark:group-hover:text-[#66B2FF]">
+                    Xem tất cả
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
       </section>

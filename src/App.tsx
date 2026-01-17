@@ -8,7 +8,15 @@ import {
   SignupPage,
   WaitingAcceptMentorPage,
 } from "@/pages/Auth";
-import { HomePage } from "@/pages/Homepage";
+import {
+  AIInterviewFeaturePage,
+  BlogPage,
+  FAQPage,
+  HomePage,
+  InterviewTipsPage,
+  MentorInterviewFeaturePage,
+  QuestionBankPage,
+} from "@/pages/Homepage";
 import {
   ManagerDashboardPage,
   MentorManagementPage,
@@ -42,6 +50,18 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<HomePage />} />
+
+        {/* Questions pages (public) */}
+        <Route path="/questions/bank" element={<QuestionBankPage />} />
+        <Route path="/questions/tips" element={<InterviewTipsPage />} />
+
+        {/* Features pages (public) */}
+        <Route path="/features/ai-interview" element={<AIInterviewFeaturePage />} />
+        <Route path="/features/mentor-interview" element={<MentorInterviewFeaturePage />} />
+
+        {/* Resources pages (public) */}
+        <Route path="/resources/faq" element={<FAQPage />} />
+        <Route path="/resources/blog" element={<BlogPage />} />
 
         {/* Auth routes with AuthLayout */}
         <Route element={<AuthLayout />}>
