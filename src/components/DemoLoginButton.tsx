@@ -2,13 +2,16 @@
  * Demo Login Button Component
  *
  * This component displays mock account credentials for testing purposes.
- * When the user clicks the button, it shows a popup with demo user and admin accounts.
+ * When the user clicks the button, it shows a popup with demo user accounts.
  *
  * TO REMOVE THIS COMPONENT:
  * 1. Delete this file (src/components/DemoLoginButton.tsx)
  * 2. Remove the import and usage from LoginPage.tsx
  *
  * The component is self-contained in a single file for easy removal.
+ *
+ * NOTE: Admin account has been disabled for security reasons.
+ * External users should not have access to the admin panel.
  */
 
 import { useState } from "react";
@@ -20,18 +23,13 @@ interface DemoAccount {
   description: string;
 }
 
+// NOTE: Admin account removed for security - external users should not access admin panel
 const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     role: "USER",
     email: "user@example.com",
     password: "user123",
     description: "Tài khoản người dùng thông thường để trải nghiệm các tính năng cơ bản",
-  },
-  {
-    role: "ADMIN",
-    email: "admin@example.com",
-    password: "admin123",
-    description: "Tài khoản quản trị viên để truy cập trang quản lý",
   },
 ];
 
