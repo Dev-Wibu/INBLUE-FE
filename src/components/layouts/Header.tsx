@@ -1,9 +1,17 @@
-import { ChevronDown } from "lucide-react";
+import { BookOpen, Bot, HelpCircle, Lightbulb, Newspaper, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import icon2 from "@/assets/icon2.svg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 export function Header() {
   return (
@@ -18,20 +26,132 @@ export function Header() {
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden items-center gap-6 md:flex">
-          <button className="flex items-center gap-1 text-sm font-medium text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-            <span>Câu hỏi</span>
-            <ChevronDown className="h-4 w-4" />
-          </button>
-          <button className="flex items-center gap-1 text-sm font-medium text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-            <span>Tính năng</span>
-            <ChevronDown className="h-4 w-4" />
-          </button>
-          <button className="flex items-center gap-1 text-sm font-medium text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-            <span>Tài nguyên</span>
-            <ChevronDown className="h-4 w-4" />
-          </button>
-        </nav>
+        <NavigationMenu className="hidden md:flex">
+          <NavigationMenuList>
+            {/* Questions Menu */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent text-sm font-medium text-slate-600 hover:bg-transparent hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]">
+                Câu hỏi
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-2 p-4 md:w-[500px] md:grid-cols-2">
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to="/questions/bank"
+                        className="flex flex-col gap-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-[#DCEEFF] hover:text-[#0047AB] dark:hover:bg-[#0047AB]/20 dark:hover:text-[#66B2FF]">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
+                          <span className="text-sm font-medium">Ngân hàng câu hỏi</span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Hơn 1,500+ câu hỏi phỏng vấn thực tế
+                        </p>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to="/questions/tips"
+                        className="flex flex-col gap-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-[#DCEEFF] hover:text-[#0047AB] dark:hover:bg-[#0047AB]/20 dark:hover:text-[#66B2FF]">
+                        <div className="flex items-center gap-2">
+                          <Lightbulb className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
+                          <span className="text-sm font-medium">Mẹo phỏng vấn</span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Bí quyết phỏng vấn từ chuyên gia
+                        </p>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            {/* Features Menu */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent text-sm font-medium text-slate-600 hover:bg-transparent hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]">
+                Tính năng
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-2 p-4 md:w-[500px] md:grid-cols-2">
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to="/features/ai-interview"
+                        className="flex flex-col gap-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-[#DCEEFF] hover:text-[#0047AB] dark:hover:bg-[#0047AB]/20 dark:hover:text-[#66B2FF]">
+                        <div className="flex items-center gap-2">
+                          <Bot className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
+                          <span className="text-sm font-medium">AI Interview</span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Phỏng vấn với trí tuệ nhân tạo 24/7
+                        </p>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to="/features/mentor-interview"
+                        className="flex flex-col gap-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-[#DCEEFF] hover:text-[#0047AB] dark:hover:bg-[#0047AB]/20 dark:hover:text-[#66B2FF]">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
+                          <span className="text-sm font-medium">Mock Interview</span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Phỏng vấn với mentor chuyên nghiệp
+                        </p>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            {/* Resources Menu */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent text-sm font-medium text-slate-600 hover:bg-transparent hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]">
+                Tài nguyên
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-2 p-4 md:w-[500px] md:grid-cols-2">
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to="/resources/faq"
+                        className="flex flex-col gap-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-[#DCEEFF] hover:text-[#0047AB] dark:hover:bg-[#0047AB]/20 dark:hover:text-[#66B2FF]">
+                        <div className="flex items-center gap-2">
+                          <HelpCircle className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
+                          <span className="text-sm font-medium">Câu hỏi thường gặp</span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Giải đáp thắc mắc phổ biến
+                        </p>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                  <li>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to="/resources/blog"
+                        className="flex flex-col gap-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-[#DCEEFF] hover:text-[#0047AB] dark:hover:bg-[#0047AB]/20 dark:hover:text-[#66B2FF]">
+                        <div className="flex items-center gap-2">
+                          <Newspaper className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
+                          <span className="text-sm font-medium">Blog</span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Kiến thức và hướng dẫn phỏng vấn
+                        </p>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
 
         {/* Auth Buttons & Theme Toggle */}
         <div className="flex items-center gap-3">
