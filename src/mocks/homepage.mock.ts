@@ -90,6 +90,7 @@ export const mockTestimonials = [
     content:
       "I always felt confident about coding, but behavioral questions were a different story. AMA Interview helped me practice clear, impactful answers using the STAR method. It gave me the confidence to handle even the toughest behavioral rounds.",
     avatar: null,
+    rating: 5,
   },
   {
     id: 2,
@@ -98,6 +99,7 @@ export const mockTestimonials = [
     content:
       "The AI interview practice sessions were incredibly helpful. I could practice anytime, anywhere, and the feedback was detailed and actionable. After two weeks of practice, I landed my dream job at a top tech company.",
     avatar: null,
+    rating: 5,
   },
   {
     id: 3,
@@ -106,6 +108,34 @@ export const mockTestimonials = [
     content:
       "As a PM transitioning from engineering, I needed help with product sense questions. InBlue Interview's curated questions and AI feedback helped me understand what interviewers look for. Highly recommend!",
     avatar: null,
+    rating: 5,
+  },
+  {
+    id: 4,
+    name: "Phạm Văn Hùng",
+    role: "Frontend Developer",
+    content:
+      "Tôi đã chuẩn bị rất nhiều cho các buổi phỏng vấn kỹ thuật nhưng vẫn thất bại. InBlue AI đã giúp tôi thực hành với các câu hỏi thực tế và nhận feedback chi tiết. Sau 1 tháng, tôi đã nhận được offer từ công ty mơ ước!",
+    avatar: null,
+    rating: 5,
+  },
+  {
+    id: 5,
+    name: "Hoàng Thị Linh",
+    role: "UX Designer",
+    content:
+      "Các câu hỏi phỏng vấn thiết kế rất khó tìm trên mạng. InBlue AI cung cấp những câu hỏi thực tế từ các công ty lớn và hướng dẫn cách trả lời hiệu quả. Tuyệt vời!",
+    avatar: null,
+    rating: 4,
+  },
+  {
+    id: 6,
+    name: "Ngô Đình Khoa",
+    role: "Backend Engineer",
+    content:
+      "AI Interview giúp tôi tự tin hơn rất nhiều khi trả lời các câu hỏi behavioral. Feedback chi tiết và gợi ý cải thiện rất hữu ích. Đã recommend cho tất cả bạn bè!",
+    avatar: null,
+    rating: 5,
   },
 ];
 

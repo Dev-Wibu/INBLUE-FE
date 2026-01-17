@@ -8,22 +8,26 @@ import {
   Database,
   FileText,
   Megaphone,
-  MessageSquare,
   Mic,
   Palette,
   Play,
   Sparkles,
-  Star,
   Video,
   Zap,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import image1 from "@/assets/image1.svg";
+import image2 from "@/assets/image2.svg";
+import image3 from "@/assets/image3.svg";
+import image4 from "@/assets/image4.svg";
+
 import { Footer, Header } from "@/components/layouts";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+// import { ImageCarousel } from "@/components/ui/image-carousel";
+import { TestimonialCarousel } from "@/components/ui/testimonial-carousel";
 import {
   mockFeatures,
   mockInterviewModes,
@@ -31,6 +35,14 @@ import {
   mockStats,
   mockTestimonials,
 } from "@/mocks/homepage.mock";
+
+// Banner images - empty placeholders for now
+// const bannerImages = [
+//   { src: "", alt: "Banner 1 - Phỏng vấn thành công" },
+//   { src: "", alt: "Banner 2 - AI Interview" },
+//   { src: "", alt: "Banner 3 - Mentor hàng đầu" },
+//   { src: "", alt: "Banner 4 - Cơ hội việc làm" },
+// ];
 
 // Icon mapping for job roles - using blue color from color.md
 const jobRoleIcons: Record<string, React.ReactNode> = {
@@ -47,6 +59,18 @@ export function HomePage() {
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
       {/* Header - Using shared component */}
       <Header />
+
+      {/* Hero Banner Carousel */}
+      {/* <section className="relative w-full bg-gradient-to-b from-slate-50 to-white pt-4 pb-8 dark:from-slate-900 dark:to-slate-950">
+        <div className="mx-auto max-w-7xl px-6">
+          <ImageCarousel
+            images={bannerImages}
+            autoPlay={true}
+            interval={5000}
+            className="shadow-xl"
+          />
+        </div>
+      </section> */}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-[#DCEEFF]/30 py-20 lg:py-32 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
@@ -133,11 +157,8 @@ export function HomePage() {
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-[#66B2FF]/20 to-[#A5C8F2]/20 blur-2xl" />
               <Card className="relative w-[400px] overflow-hidden border-slate-200/50 shadow-2xl lg:w-[500px]">
-                <div className="flex h-[400px] items-center justify-center bg-gradient-to-br from-[#F0F8FF] to-[#DCEEFF]">
-                  <div className="relative">
-                    <div className="absolute -inset-8 rounded-full bg-[#007BFF]/10 blur-xl" />
-                    <Bot className="relative h-32 w-32 text-[#0047AB]" />
-                  </div>
+                <div className="relative h-[400px] overflow-hidden bg-gradient-to-br from-[#F0F8FF] to-[#DCEEFF]">
+                  <img src={image1} alt="AI Interviewer" className="h-full w-full object-cover" />
                 </div>
                 <CardContent className="border-t bg-white p-6">
                   <div className="flex items-center gap-3">
@@ -254,8 +275,12 @@ export function HomePage() {
               <div className="relative flex-1">
                 <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-[#DCEEFF] to-[#A5C8F2] blur-xl dark:from-[#0047AB]/30 dark:to-[#007BFF]/30" />
                 <Card className="relative overflow-hidden dark:border-slate-700">
-                  <CardContent className="flex h-80 items-center justify-center bg-gradient-to-br from-[#F0F8FF] to-[#DCEEFF] p-0 dark:from-slate-800 dark:to-slate-800/50">
-                    <Bot className="h-24 w-24 text-[#0047AB] dark:text-[#66B2FF]" />
+                  <CardContent className="relative h-80 overflow-hidden bg-gradient-to-br from-[#F0F8FF] to-[#DCEEFF] p-0 dark:from-slate-800 dark:to-slate-800/50">
+                    <img
+                      src={image2}
+                      alt="Trải nghiệm cá nhân hóa"
+                      className="h-full w-full object-cover"
+                    />
                   </CardContent>
                 </Card>
               </div>
@@ -300,8 +325,12 @@ export function HomePage() {
               <div className="relative flex-1">
                 <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-green-100 to-emerald-100 blur-xl dark:from-green-900/30 dark:to-emerald-900/30" />
                 <Card className="relative overflow-hidden dark:border-slate-700">
-                  <CardContent className="flex h-80 items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 p-0 dark:from-slate-800 dark:to-slate-800/50">
-                    <MessageSquare className="h-24 w-24 text-green-500" />
+                  <CardContent className="relative h-80 overflow-hidden bg-gradient-to-br from-green-50 to-emerald-50 p-0 dark:from-slate-800 dark:to-slate-800/50">
+                    <img
+                      src={image3}
+                      alt="Làm chủ các câu hỏi thực tế"
+                      className="h-full w-full object-cover"
+                    />
                   </CardContent>
                 </Card>
               </div>
@@ -312,8 +341,12 @@ export function HomePage() {
               <div className="relative flex-1">
                 <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-[#66B2FF]/30 to-[#A5C8F2]/30 blur-xl dark:from-[#0047AB]/20 dark:to-[#007BFF]/20" />
                 <Card className="relative overflow-hidden dark:border-slate-700">
-                  <CardContent className="flex h-80 items-center justify-center bg-gradient-to-br from-[#F0F8FF] to-[#DCEEFF] p-0 dark:from-slate-800 dark:to-slate-800/50">
-                    <FileText className="h-24 w-24 text-[#0047AB] dark:text-[#66B2FF]" />
+                  <CardContent className="relative h-80 overflow-hidden bg-gradient-to-br from-[#F0F8FF] to-[#DCEEFF] p-0 dark:from-slate-800 dark:to-slate-800/50">
+                    <img
+                      src={image4}
+                      alt="Thực hành từ mô tả công việc"
+                      className="h-full w-full object-cover"
+                    />
                   </CardContent>
                 </Card>
               </div>
@@ -407,44 +440,16 @@ export function HomePage() {
               Mọi người nói gì về chúng tôi
             </h2>
           </div>
-
-          {/* Testimonial Cards */}
-          <div className="grid gap-6 md:grid-cols-3">
-            {mockTestimonials.map((testimonial) => (
-              <Card
-                key={testimonial.id}
-                className="border-slate-200 bg-white/50 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/50">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12 border-2 border-[#DCEEFF] dark:border-[#0047AB]/50">
-                      <AvatarFallback className="bg-gradient-to-br from-[#0047AB] to-[#007BFF] text-white">
-                        {testimonial.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-base font-semibold dark:text-white">
-                        {testimonial.name}
-                      </CardTitle>
-                      <CardDescription className="text-sm dark:text-slate-400">
-                        {testimonial.role}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-3 flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="h-4 w-4 fill-[#FFD700] text-[#FFD700]" />
-                    ))}
-                  </div>
-                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    "{testimonial.content}"
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="mt-8">
+            <TestimonialCarousel
+              testimonials={mockTestimonials}
+              speed={40}
+              pauseOnHover={true}
+              className="py-4"
+            />
           </div>
         </div>
+        {/* Scrolling Testimonial Carousel */}{" "}
       </section>
 
       {/* Footer - Using shared component */}
