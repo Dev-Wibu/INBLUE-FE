@@ -1,14 +1,24 @@
 /**
  * Auth Manager
  * Handles authentication operations
+ *
+ * TEMPORARY IMPLEMENTATION:
+ * - Login: Fetches all users from /api/users and compares credentials
+ * - Signup: Creates new user via POST /api/users
+ * - TODO: Replace with proper /auth/login and /auth/signup endpoints when available
  */
 
 import type { ApiResponse } from "@/interfaces";
 import type { MentorRegistration, User } from "@/mocks/auth.mock";
+import type { components } from "../../schema-from-be";
 
 import { API_ENDPOINTS, MANAGER_MODE, apiConfig } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 import * as authMock from "@/mocks/auth.mock";
 import axios from "axios";
+
+// Type from backend schema
+type BackendUser = components["schemas"]["User"];
 
 export interface LoginCredentials {
   email: string;
@@ -53,21 +63,13 @@ export class AuthManager {
 
   /**
    * Login user
-   * Supports both mock and api modes
-   * Demo accounts work in both modes for testing purposes
+   * TEMPORARY IMPLEMENTATION:
+   * - Fetches all users from /api/users
+   * - Finds user by email and compares password
+   * - TODO: Replace with proper /auth/login endpoint when available
    */
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token?: string }>> {
-    // Check for demo accounts first - they work in both mock and api modes
-    if (this.isDemoAccount(credentials.email, credentials.password)) {
-      const result = await authMock.mockLogin(credentials.email, credentials.password);
-      return {
-        success: result.success,
-        data: result.user ? { user: result.user } : undefined,
-        error: result.error,
-      };
-    }
-
-    // For non-demo accounts, use the configured mode
+    // For mock mode, use mock implementation
     if (this.mode === "mock") {
       const result = await authMock.mockLogin(credentials.email, credentials.password);
       return {
@@ -77,22 +79,70 @@ export class AuthManager {
       };
     }
 
+    // TEMPORARY: Fetch all users and compare credentials
     try {
-      const response = await this.api.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
+      const { data: users, error } = await fetchClient.GET("/api/users");
+
+      if (error || !users) {
+        return {
+          success: false,
+          error: "Không thể kết nối đến server",
+        };
+      }
+
+      // Find user by email
+      const foundUser = (users as BackendUser[]).find(
+        (u) => u.email?.toLowerCase() === credentials.email.toLowerCase()
+      );
+
+      if (!foundUser) {
+        return {
+          success: false,
+          error: "Email không tồn tại trong hệ thống",
+        };
+      }
+
+      // Compare password (TEMPORARY - insecure, for development only)
+      if (foundUser.password !== credentials.password) {
+        return {
+          success: false,
+          error: "Mật khẩu không chính xác",
+        };
+      }
+
+      // Map backend user to frontend User type
+      const user: User = {
+        id: String(foundUser.id || ""),
+        email: foundUser.email || "",
+        fullName: foundUser.name || "",
+        role: foundUser.role === "ADMIN" ? "admin" : "user",
+        avatar: foundUser.avatarUrl,
+        phone: "",
+        bio: foundUser.bio,
+      };
+
       return {
         success: true,
-        data: response.data,
+        data: {
+          user,
+          token: `temp-token-${foundUser.id}`, // Temporary token
+        },
       };
     } catch (error) {
+      console.error("Login error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Login failed",
+        error: error instanceof Error ? error.message : "Đăng nhập thất bại",
       };
     }
   }
 
   /**
    * Signup new user
+   * TEMPORARY IMPLEMENTATION:
+   * - First checks if email already exists in /api/users
+   * - Creates new user via POST /api/users using multipart/form-data (same as users-admin.manager.ts)
+   * - TODO: Replace with proper /auth/signup endpoint when available
    */
   async signup(data: SignupData): Promise<ApiResponse<{ user: User; token?: string }>> {
     if (this.mode === "mock") {
@@ -104,16 +154,76 @@ export class AuthManager {
       };
     }
 
+    // TEMPORARY: Create user via /api/users using multipart/form-data
     try {
-      const response = await this.api.post(API_ENDPOINTS.AUTH.SIGNUP, data);
+      // First check if email already exists
+      const existingUsersResponse = await this.api.get(API_ENDPOINTS.USERS.LIST);
+      const existingUsers = existingUsersResponse.data as BackendUser[];
+
+      const emailExists = existingUsers?.some(
+        (u) => u.email?.toLowerCase() === data.email.toLowerCase()
+      );
+
+      if (emailExists) {
+        return {
+          success: false,
+          error: "Email đã được sử dụng. Vui lòng sử dụng email khác.",
+        };
+      }
+
+      // Create new user using multipart/form-data (same format as users-admin.manager.ts)
+      const formData = new FormData();
+
+      // Prepare UserInfo data object - will be serialized to JSON
+      const userInfo = {
+        name: data.fullName.trim(),
+        email: data.email.trim(),
+        password: data.password, // TEMPORARY - insecure, for development only
+        role: "USER",
+        isActive: true,
+        // Include empty public_id fields for Cloudinary
+        public_id: "",
+        cv_public_id: "",
+      };
+
+      // Append the 'data' field as a JSON Blob (required by backend)
+      formData.append("data", new Blob([JSON.stringify(userInfo)], { type: "application/json" }));
+
+      // Send empty file placeholders to avoid backend NullPointerException
+      const emptyFile = new File([], "empty.txt", { type: "text/plain" });
+      formData.append("avatar", emptyFile);
+      formData.append("cvFile", emptyFile);
+
+      // Send request with multipart/form-data
+      const response = await this.api.post(API_ENDPOINTS.USERS.CREATE, formData, {
+        headers: {
+          "Content-Type": undefined, // Let axios set multipart boundary automatically
+        },
+      });
+
+      const backendUser = response.data as BackendUser;
+
+      // Map backend user to frontend User type
+      const user: User = {
+        id: String(backendUser.id || ""),
+        email: backendUser.email || "",
+        fullName: backendUser.name || "",
+        role: "user",
+        phone: "",
+      };
+
       return {
         success: true,
-        data: response.data,
+        data: {
+          user,
+          token: `temp-token-${backendUser.id}`, // Temporary token
+        },
       };
     } catch (error) {
+      console.error("Signup error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Signup failed",
+        error: error instanceof Error ? error.message : "Đăng ký thất bại",
       };
     }
   }

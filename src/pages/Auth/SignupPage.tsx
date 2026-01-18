@@ -7,9 +7,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authManager } from "@/services/auth.manager";
+import { useAuthStore } from "@/stores/authStore";
 
 export function SignupPage() {
   const navigate = useNavigate();
+  const { setUser, setToken, setIsLoggedIn } = useAuthStore();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -55,7 +57,17 @@ export function SignupPage() {
       password: formData.password,
     });
 
-    if (result.success) {
+    if (result.success && result.data?.user) {
+      // Store auth state after successful signup
+      setUser({
+        id: result.data.user.id,
+        name: result.data.user.fullName,
+        email: result.data.user.email,
+        role: "USER",
+      });
+      setToken(result.data.token || null);
+      setIsLoggedIn(true);
+
       // Navigate to select role page after successful signup
       navigate("/select-role");
     } else {
