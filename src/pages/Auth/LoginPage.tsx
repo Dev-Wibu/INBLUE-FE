@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { DemoLoginButton } from "@/components/DemoLoginButton";
+// TEMPORARILY DISABLED: Demo login button
+// import { DemoLoginButton } from "@/components/DemoLoginButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authManager } from "@/services/auth.manager";
+import { useAuthStore } from "@/stores/authStore";
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const { setUser, setToken, setIsLoggedIn } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +26,17 @@ export function LoginPage() {
     const result = await authManager.login({ email, password });
 
     if (result.success && result.data?.user) {
+      // Store auth state
+      setUser({
+        id: result.data.user.id,
+        name: result.data.user.fullName,
+        email: result.data.user.email,
+        role: result.data.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR",
+        avatarUrl: result.data.user.avatar,
+      });
+      setToken(result.data.token || null);
+      setIsLoggedIn(true);
+
       // Navigate based on user role
       const userRole = result.data.user.role;
       if (userRole === "admin") {
@@ -144,8 +158,9 @@ export function LoginPage() {
           </Button>
         </form>
 
-        {/* Demo Login Button - Remove this component and its import when real accounts are available */}
+        {/* TEMPORARILY DISABLED: Demo Login Button
         <DemoLoginButton onSelectAccount={handleDemoAccountSelect} />
+        */}
 
         {/* Signup Link */}
         <p className="text-center text-sm">

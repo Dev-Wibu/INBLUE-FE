@@ -76,8 +76,13 @@ export function SelectRolePage() {
                 <BenefitItem text="Linh hoạt thời gian làm việc" />
                 <BenefitItem text="Nhận thu nhập hấp dẫn" />
               </div>
-              <Button variant="outline" className="w-full" onClick={handleMentorSelect}>
-                Đăng ký Mentor
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleMentorSelect}
+                disabled
+                title="Tính năng đang được phát triển">
+                Đăng ký Mentor (Tạm khóa)
               </Button>
             </CardContent>
           </Card>
