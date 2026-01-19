@@ -60,7 +60,7 @@ export function HomePage() {
       {/* Header - Using shared component */}
       <Header />
 
-      {/* Hero Banner Carousel */}
+      {/* Hero Banner Carousel - Temporarily disabled */}
       {/* <section className="relative w-full bg-gradient-to-b from-slate-50 to-white pt-4 pb-8 dark:from-slate-900 dark:to-slate-950">
         <div className="mx-auto max-w-7xl px-6">
           <ImageCarousel

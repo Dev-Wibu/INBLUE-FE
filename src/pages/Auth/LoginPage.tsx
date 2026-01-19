@@ -1,8 +1,8 @@
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-// TEMPORARILY DISABLED: Demo login button
-// import { DemoLoginButton } from "@/components/DemoLoginButton";
+import { DemoLoginButton } from "@/components/DemoLoginButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ export function LoginPage() {
   const { setUser, setToken, setIsLoggedIn } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -132,15 +133,23 @@ export function LoginPage() {
             <Label htmlFor="password" className="dark:text-slate-300">
               Mật khẩu
             </Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nhập mật khẩu"
-              required
-              className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Nhập mật khẩu"
+                required
+                className="pr-10 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300">
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
 
           <div className="text-right">
@@ -158,9 +167,7 @@ export function LoginPage() {
           </Button>
         </form>
 
-        {/* TEMPORARILY DISABLED: Demo Login Button
         <DemoLoginButton onSelectAccount={handleDemoAccountSelect} />
-        */}
 
         {/* Signup Link */}
         <p className="text-center text-sm">
