@@ -23,13 +23,18 @@ interface DemoAccount {
   description: string;
 }
 
-// NOTE: Admin account removed for security - external users should not access admin panel
 const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     role: "USER",
     email: "user@example.com",
     password: "user123",
     description: "Tài khoản người dùng thông thường để trải nghiệm các tính năng cơ bản",
+  },
+  {
+    role: "ADMIN",
+    email: "admin@example.com",
+    password: "admin123",
+    description: "Tài khoản quản trị viên để quản lý hệ thống",
   },
 ];
 
