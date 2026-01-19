@@ -69,6 +69,27 @@ export class AuthManager {
    * - TODO: Replace with proper /auth/login endpoint when available
    */
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token?: string }>> {
+    // Demo account exception - works in both mock and api modes
+    if (this.isDemoAccount(credentials.email, credentials.password)) {
+      const demoUser: User = {
+        id: credentials.email === "admin@example.com" ? "demo-admin" : "demo-user",
+        email: credentials.email,
+        fullName: credentials.email === "admin@example.com" ? "Demo Admin" : "Demo User",
+        role: credentials.email === "admin@example.com" ? "admin" : "user",
+        avatar: undefined,
+        phone: "",
+        bio: "Demo account for testing",
+      };
+
+      return {
+        success: true,
+        data: {
+          user: demoUser,
+          token: `demo-token-${demoUser.id}`,
+        },
+      };
+    }
+
     // For mock mode, use mock implementation
     if (this.mode === "mock") {
       const result = await authMock.mockLogin(credentials.email, credentials.password);

@@ -251,8 +251,18 @@ export class UsersAdminManager implements BaseManager<User> {
    *
    * NOTE: UserInfo schema only contains: id, name, email, password, bio, university, major, targetPosition, targetLevel
    * It does NOT contain: role, isActive, avatarUrl, cvUrl (these are in User schema only)
+   *
+   * @param _id - User ID to update
+   * @param _data - User data to update
+   * @param avatar - Optional avatar file to upload
+   * @param cvFile - Optional CV file to upload
    */
-  async update(_id: string | number, _data: Partial<User>): Promise<ApiResponse<User>> {
+  async update(
+    _id: string | number,
+    _data: Partial<User>,
+    avatar?: File,
+    cvFile?: File
+  ): Promise<ApiResponse<User>> {
     if (this.mode === "mock") {
       // In mock mode, simulate updating a user
       const index = usersMock.mockUsers.findIndex((u) => u.id === Number(_id));
@@ -273,8 +283,10 @@ export class UsersAdminManager implements BaseManager<User> {
       // According to schema, use multipart/form-data with JSON 'data' field (same as create)
       const formData = new FormData();
 
-      // Handle optional file fields
+      // Use explicitly passed files if provided, otherwise check _data for files
       const updateData = _data as CreateUserData;
+      const avatarFile = avatar || updateData.avatar;
+      const cvFileToUpload = cvFile || updateData.cvFile;
 
       // Build UserInfo object with fields to update
       // Note: role and isActive are not in official UserInfo schema but we include them
@@ -295,25 +307,25 @@ export class UsersAdminManager implements BaseManager<User> {
         // Include Cloudinary public_id for avatar - required for update/delete operations
         // Use empty string "" as fallback when uploading new file but no existing public_id
         // Error "Missing required parameter - public_id" occurs when this field is missing
-        public_id: _data.public_id ?? (updateData.avatar ? "" : undefined),
+        public_id: _data.public_id ?? (avatarFile ? "" : undefined),
         // Include Cloudinary public_id for CV - required for update/delete operations
         // Use empty string "" as fallback when uploading new file but no existing cv_public_id
-        cv_public_id: _data.cv_public_id ?? (updateData.cvFile ? "" : undefined),
+        cv_public_id: _data.cv_public_id ?? (cvFileToUpload ? "" : undefined),
       };
 
       // Append the 'data' field as a JSON Blob (same format as create)
       formData.append("data", new Blob([JSON.stringify(userInfo)], { type: "application/json" }));
 
       // Avatar file - send placeholder if not provided to avoid backend NullPointerException
-      if (updateData.avatar) {
-        formData.append("avatar", updateData.avatar);
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
       } else {
         formData.append("avatar", createEmptyFilePlaceholder());
       }
 
       // CV file - send placeholder if not provided to avoid backend NullPointerException
-      if (updateData.cvFile) {
-        formData.append("cvFile", updateData.cvFile);
+      if (cvFileToUpload) {
+        formData.append("cvFile", cvFileToUpload);
       } else {
         formData.append("cvFile", createEmptyFilePlaceholder());
       }
