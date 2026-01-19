@@ -163,6 +163,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/python-test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["testPythonApi"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/food-test-hash": {
         parameters: {
             query?: never;
@@ -304,6 +320,18 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * json mẫu: {
+         *       "id": 0,
+         *       "user": {
+         *         "id":1
+         *       },
+         *       "title": "string",
+         *       "message": "string",
+         *       "isRead": true,
+         *       "createAt": "2026-01-17T09:35:10.823Z"
+         *     }
+         */
         post: operations["createNotification"];
         delete?: never;
         options?: never;
@@ -858,6 +886,43 @@ export interface components {
             /** Format: int32 */
             rating?: number;
             comment?: string;
+        };
+        CVParserResponse: {
+            targetRole?: string;
+            targetLevel?: string;
+            introduction?: string;
+            technicalSkills?: string[];
+            softSkills?: string[];
+            tools?: string[];
+            certifications?: string[];
+            achievements?: string[];
+            educations?: components["schemas"]["EducationDTO"][];
+            workExperiences?: components["schemas"]["WorkExperienceDTO"][];
+            projects?: components["schemas"]["ProjectDTO"][];
+        };
+        EducationDTO: {
+            school?: string;
+            major?: string;
+            degree?: string;
+            gpa?: string;
+            start_date?: string;
+            end_date?: string;
+        };
+        ProjectDTO: {
+            name?: string;
+            description?: string;
+            role?: string;
+            /** Format: int32 */
+            teamSize?: number;
+            usedTools?: string[];
+            outcome?: string;
+        };
+        WorkExperienceDTO: {
+            company?: string;
+            position?: string;
+            description?: string;
+            start_date?: string;
+            end_date?: string;
         };
         UserInfo: {
             /** Format: int32 */
@@ -1576,6 +1641,33 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Major"];
+                };
+            };
+        };
+    };
+    testPythonApi: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CVParserResponse"];
                 };
             };
         };
