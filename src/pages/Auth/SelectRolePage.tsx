@@ -4,9 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { Footer, Header } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuthStore } from "@/stores/authStore";
 
 export function SelectRolePage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+
+  // Check if user is already a mentor (role === "MENTOR" or "mentor")
+  const isMentor = user?.role?.toUpperCase() === "MENTOR" || user?.role?.toLowerCase() === "mentor";
 
   const handleUserSelect = () => {
     // Navigate to user dashboard
@@ -14,8 +19,13 @@ export function SelectRolePage() {
   };
 
   const handleMentorSelect = () => {
-    // Navigate to mentor registration
-    navigate("/mentor-register");
+    if (isMentor) {
+      // If user is already a mentor, go directly to mentor dashboard
+      navigate("/mentor");
+    } else {
+      // Navigate to mentor registration
+      navigate("/mentor-register");
+    }
   };
 
   return (
@@ -67,22 +77,32 @@ export function SelectRolePage() {
               </div>
               <CardTitle className="mt-4">Mentor</CardTitle>
               <CardDescription>
-                Chia sẻ kinh nghiệm và giúp đỡ người khác phát triển sự nghiệp của họ
+                {isMentor
+                  ? "Truy cập trang quản lý mentor của bạn"
+                  : "Chia sẻ kinh nghiệm và giúp đỡ người khác phát triển sự nghiệp của họ"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <BenefitItem text="Hỗ trợ người học trên toàn quốc" />
-                <BenefitItem text="Linh hoạt thời gian làm việc" />
-                <BenefitItem text="Nhận thu nhập hấp dẫn" />
+                {isMentor ? (
+                  <>
+                    <BenefitItem text="Quản lý phiên phỏng vấn" />
+                    <BenefitItem text="Xem đánh giá từ học viên" />
+                    <BenefitItem text="Theo dõi thu nhập" />
+                  </>
+                ) : (
+                  <>
+                    <BenefitItem text="Hỗ trợ người học trên toàn quốc" />
+                    <BenefitItem text="Linh hoạt thời gian làm việc" />
+                    <BenefitItem text="Nhận thu nhập hấp dẫn" />
+                  </>
+                )}
               </div>
               <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleMentorSelect}
-                disabled
-                title="Tính năng đang được phát triển">
-                Đăng ký Mentor (Tạm khóa)
+                variant={isMentor ? "default" : "outline"}
+                className={isMentor ? "w-full bg-emerald-600 hover:bg-emerald-700" : "w-full"}
+                onClick={handleMentorSelect}>
+                {isMentor ? "Vào trang Mentor" : "Đăng ký Mentor"}
               </Button>
             </CardContent>
           </Card>

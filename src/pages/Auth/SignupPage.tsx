@@ -16,8 +16,8 @@ export function SignupPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: "",
-    birthday: "",
+    university: "",
+    major: "",
     password: "",
     confirmPassword: "",
   });
@@ -55,9 +55,9 @@ export function SignupPage() {
     const result = await authManager.signup({
       fullName: formData.fullName,
       email: formData.email,
-      phone: formData.phone,
-      birthday: formData.birthday,
       password: formData.password,
+      university: formData.university,
+      major: formData.major,
     });
 
     if (result.success && result.data?.user) {
@@ -170,31 +170,30 @@ export function SignupPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone" className="dark:text-slate-300">
-                Số điện thoại
+              <Label htmlFor="university" className="dark:text-slate-300">
+                Trường đại học
               </Label>
               <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
+                id="university"
+                name="university"
+                value={formData.university}
                 onChange={handleChange}
-                placeholder="0912345678"
+                placeholder="ĐH Bách Khoa Hà Nội"
                 required
                 className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="birthday" className="dark:text-slate-300">
-                Ngày sinh
+              <Label htmlFor="major" className="dark:text-slate-300">
+                Chuyên ngành
               </Label>
               <Input
-                id="birthday"
-                name="birthday"
-                type="date"
-                value={formData.birthday}
+                id="major"
+                name="major"
+                value={formData.major}
                 onChange={handleChange}
+                placeholder="Khoa học máy tính"
                 required
                 className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
               />
