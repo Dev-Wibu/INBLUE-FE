@@ -163,6 +163,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/candidate-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllProfile"];
+        put: operations["updateProfile"];
+        post: operations["createProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/python-test": {
         parameters: {
             query?: never;
@@ -206,6 +222,22 @@ export interface paths {
         put?: never;
         /** dùng chung cho create và update user, nếu create thì ko có id còn update thì có id gửi kèm trong json data á */
         post: operations["createUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/upload-cv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["uploadCv"];
         delete?: never;
         options?: never;
         head?: never;
@@ -723,6 +755,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/candidate-profiles/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getByUserId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -860,13 +908,10 @@ export interface components {
             /** @enum {string} */
             role?: "MENTOR" | "ADMIN" | "STAFF" | "USER";
             isActive?: boolean;
-            bio?: string;
             avatarUrl?: string;
             public_id?: string;
             university?: string;
             major?: string;
-            targetPosition?: string;
-            targetLevel?: string;
             cvUrl?: string;
             cv_public_id?: string;
         };
@@ -886,6 +931,51 @@ export interface components {
             /** Format: int32 */
             rating?: number;
             comment?: string;
+        };
+        CandidateProfile: {
+            /** Format: int32 */
+            id?: number;
+            user?: components["schemas"]["User"];
+            targetRole?: string;
+            targetLevel?: string;
+            introduction?: string;
+            technicalSkills?: string[];
+            softSkills?: string[];
+            tools?: string[];
+            projects?: components["schemas"]["ProjectDetail"][];
+            workExperiences?: components["schemas"]["WorkExperience"][];
+            educations?: components["schemas"]["EducationEntry"][];
+            certifications?: string[];
+            achievements?: string[];
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        EducationEntry: {
+            schoolName?: string;
+            major?: string;
+            degree?: string;
+            /** Format: double */
+            gpa?: number;
+            startDate?: string;
+            endDate?: string;
+        };
+        ProjectDetail: {
+            name?: string;
+            description?: string;
+            role?: string;
+            /** Format: int32 */
+            teamSize?: number;
+            usedTools?: string[];
+            outcome?: string;
+        };
+        WorkExperience: {
+            companyName?: string;
+            position?: string;
+            startDate?: string;
+            endDate?: string;
+            description?: string;
         };
         CVParserResponse: {
             targetRole?: string;
@@ -930,11 +1020,8 @@ export interface components {
             name?: string;
             email?: string;
             password?: string;
-            bio?: string;
             university?: string;
             major?: string;
-            targetPosition?: string;
-            targetLevel?: string;
         };
         DailyWebHookPayload: {
             event?: string;
@@ -1645,6 +1732,74 @@ export interface operations {
             };
         };
     };
+    getAllProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CandidateProfile"][];
+                };
+            };
+        };
+    };
+    updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateProfile"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CandidateProfile"];
+                };
+            };
+        };
+    };
+    createProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateProfile"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CandidateProfile"];
+                };
+            };
+        };
+    };
     testPythonApi: {
         parameters: {
             query?: never;
@@ -1745,6 +1900,35 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["User"];
+                };
+            };
+        };
+    };
+    uploadCv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: int32 */
+                    userId: number;
+                    /** Format: binary */
+                    cvFile?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CandidateProfile"];
                 };
             };
         };
@@ -2516,6 +2700,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": boolean;
+                };
+            };
+        };
+    };
+    getByUserId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CandidateProfile"];
                 };
             };
         };
