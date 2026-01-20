@@ -63,7 +63,7 @@
     "generate-schema": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "openapi-typescript https://api.kdz.asia/v3/api-docs -o ./schema-from-be.d.ts"
+        "command": "pnpm exec openapi-typescript https://api.kdz.asia/v3/api-docs -o ./schema-from-be.d.ts"
       }
     },
     "cypress:open": {
