@@ -10,8 +10,10 @@
  *
  * The component is self-contained in a single file for easy removal.
  *
- * NOTE: Admin account has been disabled for security reasons.
- * External users should not have access to the admin panel.
+ * NOTE: Different account types are provided for testing different roles:
+ * - USER: Regular user to test basic features
+ * - ADMIN: Admin user to test management features
+ * - MENTOR: Mentor user to test mentor dashboard
  */
 
 import { useState } from "react";
@@ -35,6 +37,12 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     email: "admin@example.com",
     password: "admin123",
     description: "Tài khoản quản trị viên để quản lý hệ thống",
+  },
+  {
+    role: "MENTOR",
+    email: "mentor@example.com",
+    password: "mentor123",
+    description: "Tài khoản mentor để quản lý phiên phỏng vấn và hỗ trợ học viên",
   },
 ];
 
@@ -140,7 +148,9 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
                       className={`rounded-full px-3 py-1 text-xs font-semibold ${
                         account.role === "ADMIN"
                           ? "bg-purple-100 text-purple-700"
-                          : "bg-blue-100 text-blue-700"
+                          : account.role === "MENTOR"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-blue-100 text-blue-700"
                       }`}>
                       {account.role}
                     </span>

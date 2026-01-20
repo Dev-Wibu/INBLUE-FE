@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-import { AuthLayout, UserDashboardLayout } from "@/components/layouts";
+import { AuthLayout, MentorDashboardLayout, UserDashboardLayout } from "@/components/layouts";
 import {
   LoginPage,
   MentorRegisterPage,
@@ -23,6 +23,7 @@ import {
   SessionManagementPage,
   UserManagementPage,
 } from "@/pages/Manager";
+import { MentorAccountPage, MentorOverviewPage } from "@/pages/Mentor";
 import {
   AccountPage,
   AIChatConversationPage,
@@ -120,6 +121,12 @@ function App() {
 
           {/* Account routes */}
           <Route path="/dashboard/account" element={<AccountPage />} />
+        </Route>
+
+        {/* Mentor Dashboard routes with MentorDashboardLayout */}
+        <Route element={<MentorDashboardLayout />}>
+          <Route path="/mentor" element={<MentorOverviewPage />} />
+          <Route path="/mentor/account" element={<MentorAccountPage />} />
         </Route>
 
         {/* Admin Management routes */}

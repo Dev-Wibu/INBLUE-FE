@@ -82,15 +82,17 @@ export function MentorRegisterPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: "",
+    password: "",
+    confirmPassword: "",
+    bio: "",
     yearsOfExperience: "",
-    company: "",
-    position: "",
     expertise: "",
+    linkedInUrl: "",
+    currentCompany: "",
   });
-  const [cvFile, setCvFile] = useState<File | null>(null);
-  const [certificateFile, setCertificateFile] = useState<File | null>(null);
-  const [idCardFile, setIdCardFile] = useState<File | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [identityFile, setIdentityFile] = useState<File | null>(null);
+  const [degreeFile, setDegreeFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -104,13 +106,27 @@ export function MentorRegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
     setIsLoading(true);
 
     const result = await authManager.registerMentor({
-      ...formData,
-      cvFile: cvFile ?? undefined,
-      certificateFile: certificateFile ?? undefined,
-      idCardFile: idCardFile ?? undefined,
+      fullName: formData.fullName,
+      email: formData.email,
+      password: formData.password,
+      bio: formData.bio || undefined,
+      yearsOfExperience: formData.yearsOfExperience,
+      expertise: formData.expertise,
+      linkedInUrl: formData.linkedInUrl || undefined,
+      currentCompany: formData.currentCompany,
+      avatar: avatarFile ?? undefined,
+      identityFile: identityFile ?? undefined,
+      degreeFile: degreeFile ?? undefined,
     });
 
     if (result.success) {
@@ -149,9 +165,9 @@ export function MentorRegisterPage() {
 
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Section 1: Personal Information */}
+                {/* Section 1: Account Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-slate-900">Thông tin cá nhân</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Thông tin tài khoản</h3>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
@@ -184,16 +200,54 @@ export function MentorRegisterPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phone">
-                        Số điện thoại <span className="text-red-500">*</span>
+                      <Label htmlFor="password">
+                        Mật khẩu <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          name="password"
+                          type="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          placeholder="Nhập mật khẩu"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">
+                        Xác nhận mật khẩu <span className="text-red-500">*</span>
                       </Label>
                       <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
                         onChange={handleChange}
-                        placeholder="0912345678"
+                        placeholder="Nhập lại mật khẩu"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 2: Professional Information */}
+                <div className="space-y-4 border-t pt-6">
+                  <h3 className="text-lg font-semibold text-slate-900">Thông tin nghề nghiệp</h3>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentCompany">
+                        Công ty hiện tại <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="currentCompany"
+                        name="currentCompany"
+                        value={formData.currentCompany}
+                        onChange={handleChange}
+                        placeholder="Google Vietnam"
                         required
                       />
                     </div>
@@ -207,43 +261,20 @@ export function MentorRegisterPage() {
                         name="yearsOfExperience"
                         value={formData.yearsOfExperience}
                         onChange={handleChange}
-                        placeholder="5 năm"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section 2: Professional Information */}
-                <div className="space-y-4 border-t pt-6">
-                  <h3 className="text-lg font-semibold text-slate-900">Thông tin nghề nghiệp</h3>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="company">
-                        Công ty hiện tại <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="company"
-                        name="company"
-                        value={formData.company}
-                        onChange={handleChange}
-                        placeholder="Google Vietnam"
+                        placeholder="5"
                         required
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="position">
-                        Vị trí công việc <span className="text-red-500">*</span>
-                      </Label>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="linkedInUrl">LinkedIn Profile</Label>
                       <Input
-                        id="position"
-                        name="position"
-                        value={formData.position}
+                        id="linkedInUrl"
+                        name="linkedInUrl"
+                        type="url"
+                        value={formData.linkedInUrl}
                         onChange={handleChange}
-                        placeholder="Senior Software Engineer"
-                        required
+                        placeholder="https://linkedin.com/in/your-profile"
                       />
                     </div>
                   </div>
@@ -262,38 +293,50 @@ export function MentorRegisterPage() {
                       required
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Giới thiệu bản thân</Label>
+                    <Textarea
+                      id="bio"
+                      name="bio"
+                      value={formData.bio}
+                      onChange={handleChange}
+                      placeholder="Viết vài dòng giới thiệu về kinh nghiệm và phong cách mentoring của bạn..."
+                      className="min-h-[100px]"
+                    />
+                  </div>
                 </div>
 
                 {/* Section 3: Documents */}
                 <div className="space-y-4 border-t pt-6">
                   <h3 className="text-lg font-semibold text-slate-900">Giấy tờ chứng minh</h3>
+                  <p className="text-sm text-slate-500">
+                    Upload các giấy tờ để xác minh danh tính và năng lực của bạn
+                  </p>
 
                   <div className="grid gap-4 sm:grid-cols-3">
                     <FileUploadBox
-                      label="CV/Resume"
-                      required
-                      acceptedTypes="PDF, DOC, DOCX"
+                      label="Ảnh đại diện"
+                      acceptedTypes="JPG, PNG"
                       maxSize="5MB"
-                      icon={<FileText className="h-8 w-8" />}
-                      onFileSelect={setCvFile}
-                      selectedFile={cvFile}
+                      icon={<User className="h-8 w-8" />}
+                      onFileSelect={setAvatarFile}
+                      selectedFile={avatarFile}
                       accept={{
-                        "application/pdf": [".pdf"],
-                        "application/msword": [".doc"],
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
-                          ".docx",
-                        ],
+                        "image/jpeg": [".jpg", ".jpeg"],
+                        "image/png": [".png"],
                       }}
                       maxSizeBytes={5 * 1024 * 1024}
                     />
 
                     <FileUploadBox
-                      label="Chứng chỉ/Bằng cấp"
-                      acceptedTypes="PDF, JPG, PNG"
+                      label="CCCD/CMND"
+                      required
+                      acceptedTypes="JPG, PNG, PDF"
                       maxSize="5MB"
-                      icon={<Award className="h-8 w-8" />}
-                      onFileSelect={setCertificateFile}
-                      selectedFile={certificateFile}
+                      icon={<FileText className="h-8 w-8" />}
+                      onFileSelect={setIdentityFile}
+                      selectedFile={identityFile}
                       accept={{
                         "application/pdf": [".pdf"],
                         "image/jpeg": [".jpg", ".jpeg"],
@@ -303,13 +346,14 @@ export function MentorRegisterPage() {
                     />
 
                     <FileUploadBox
-                      label="CCCD/CMND"
-                      acceptedTypes="JPG, PNG"
+                      label="Bằng cấp/Chứng chỉ"
+                      acceptedTypes="PDF, JPG, PNG"
                       maxSize="5MB"
-                      icon={<User className="h-8 w-8" />}
-                      onFileSelect={setIdCardFile}
-                      selectedFile={idCardFile}
+                      icon={<Award className="h-8 w-8" />}
+                      onFileSelect={setDegreeFile}
+                      selectedFile={degreeFile}
                       accept={{
+                        "application/pdf": [".pdf"],
                         "image/jpeg": [".jpg", ".jpeg"],
                         "image/png": [".png"],
                       }}
