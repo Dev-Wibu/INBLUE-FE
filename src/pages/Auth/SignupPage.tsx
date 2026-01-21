@@ -63,7 +63,10 @@ export function SignupPage() {
     if (result.success && result.data?.user) {
       // Store auth state after successful signup
       setUser({
-        id: result.data.user.id,
+        id:
+          typeof result.data.user.id === "string"
+            ? parseInt(result.data.user.id)
+            : result.data.user.id,
         name: result.data.user.fullName,
         email: result.data.user.email,
         role: "USER",

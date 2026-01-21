@@ -29,13 +29,16 @@ export function LoginPage() {
     if (result.success && result.data?.user) {
       // Store auth state
       setUser({
-        id: result.data.user.id,
+        id:
+          typeof result.data.user.id === "string"
+            ? parseInt(result.data.user.id)
+            : result.data.user.id,
         name: result.data.user.fullName,
         email: result.data.user.email,
         role: result.data.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR",
-        avatarUrl: result.data.user.avatar,
+        avatarUrl: result.data.user.avatar || undefined,
       });
-      setToken(result.data.token || null);
+      setToken(result.data.token ?? null);
       setIsLoggedIn(true);
 
       // Navigate based on user role
