@@ -37,15 +37,16 @@ export interface MentorRegisterData {
   fullName: string;
   email: string;
   password: string;
-  bio?: string;
+  phone: string;
   yearsOfExperience: string;
+  company: string;
+  position: string;
   expertise: string;
+  bio?: string;
   linkedInUrl?: string;
-  currentCompany: string;
-  avatar?: File;
-  identityFile?: File;
-  degreeFile?: File;
-  otherFile?: File;
+  cvFile?: File;
+  certificateFile?: File;
+  idCardFile?: File;
 }
 
 export class AuthManager {
