@@ -37,8 +37,11 @@ export interface MentorRegisterData {
   fullName: string;
   email: string;
   password: string;
+  phone: string;
   bio?: string;
   yearsOfExperience: string;
+  company: string;
+  position: string;
   expertise: string;
   linkedInUrl?: string;
   currentCompany: string;
@@ -90,8 +93,6 @@ export class AuthManager {
         fullName: role === "admin" ? "Demo Admin" : role === "mentor" ? "Demo Mentor" : "Demo User",
         role: role,
         avatar: undefined,
-        phone: "",
-        bio: "Demo account for testing",
       };
 
       return {
@@ -151,8 +152,6 @@ export class AuthManager {
         fullName: foundUser.name || "",
         role: foundUser.role === "ADMIN" ? "admin" : "user",
         avatar: foundUser.avatarUrl,
-        phone: "",
-        bio: foundUser.bio,
       };
 
       return {
