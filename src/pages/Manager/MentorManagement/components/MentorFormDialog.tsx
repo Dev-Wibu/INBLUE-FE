@@ -306,18 +306,6 @@ export function MentorFormDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="rate">Giá mỗi buổi (VND)</Label>
-              <Input
-                id="rate"
-                type="number"
-                value={formData.rate || ""}
-                onChange={(e) => onFormChange({ ...formData, rate: parseInt(e.target.value) || 0 })}
-                placeholder="500000"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
               <Label htmlFor="currentCompany">Công ty hiện tại</Label>
               <Input
                 id="currentCompany"
@@ -326,15 +314,17 @@ export function MentorFormDialog({
                 placeholder="Tên công ty"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="linkedInUrl">LinkedIn URL</Label>
-              <Input
-                id="linkedInUrl"
-                value={formData.linkedInUrl || ""}
-                onChange={(e) => onFormChange({ ...formData, linkedInUrl: e.target.value })}
-                placeholder="https://linkedin.com/in/..."
-              />
-            </div>
+          </div>
+          {/* Note: Rate field removed as MentorInfo schema doesn't include it */}
+          {/* MentorInfo only contains: id, name, email, password, bio, expertise, yearsOfExperience, linkedInUrl, currentCompany */}
+          <div className="space-y-1.5">
+            <Label htmlFor="linkedInUrl">LinkedIn URL</Label>
+            <Input
+              id="linkedInUrl"
+              value={formData.linkedInUrl || ""}
+              onChange={(e) => onFormChange({ ...formData, linkedInUrl: e.target.value })}
+              placeholder="https://linkedin.com/in/..."
+            />
           </div>
           {/* File Upload Section with Previews */}
           <div className="mt-2 border-t pt-4">

@@ -12,13 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 import type { User, UserFormData } from "../types";
 
@@ -169,25 +162,9 @@ export function UserFormDialog({
               />
             </div>
           </div>
+          {/* Note: Role field removed as UserInfo schema (used for createUser) does not include role */}
+          {/* Backend UserInfo only contains: id, name, email, password, university, major */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="role">Vai trò *</Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) =>
-                  onFormChange({ ...formData, role: value as UserFormData["role"] })
-                }>
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn vai trò" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USER">Người dùng</SelectItem>
-                  <SelectItem value="MENTOR">Mentor</SelectItem>
-                  <SelectItem value="STAFF">Nhân viên</SelectItem>
-                  <SelectItem value="ADMIN">Quản trị viên</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div className="space-y-1.5">
               <Label htmlFor="university">Trường đại học</Label>
               <Input
@@ -197,8 +174,6 @@ export function UserFormDialog({
                 placeholder="Tên trường đại học"
               />
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="major">Chuyên ngành</Label>
               <Input
