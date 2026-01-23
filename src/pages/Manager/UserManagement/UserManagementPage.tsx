@@ -93,16 +93,18 @@ export function UserManagementPage() {
   });
 
   const handleCreate = () => {
-    setFormData({ role: "USER", isActive: true });
+    // Note: Role removed from form as UserInfo schema doesn't include it
+    // New users will be created with default role from backend
+    setFormData({ isActive: true });
     setIsCreateDialogOpen(true);
   };
 
   const handleEdit = (user: User) => {
     setSelectedUser(user);
+    // Note: Role not editable via form as UserInfo schema doesn't include it
     setFormData({
       name: user.name || "",
       email: user.email || "",
-      role: user.role || "USER",
       university: user.university,
       major: user.major,
       isActive: user.isActive,

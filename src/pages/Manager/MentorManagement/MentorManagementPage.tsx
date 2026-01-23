@@ -81,6 +81,7 @@ export function MentorManagementPage() {
 
   const handleEdit = (mentor: Mentor) => {
     setSelectedMentor(mentor);
+    // Note: Rate not editable via form as MentorInfo schema doesn't include it
     setFormData({
       name: mentor.name || "",
       email: mentor.email || "",
@@ -89,7 +90,6 @@ export function MentorManagementPage() {
       yearsOfExperience: mentor.yearsOfExperience,
       linkedInUrl: mentor.linkedInUrl,
       currentCompany: mentor.currentCompany,
-      rate: mentor.rate,
       active: mentor.active ?? true, // Ensure boolean value, default to true if null/undefined
     });
     setIsEditDialogOpen(true);
