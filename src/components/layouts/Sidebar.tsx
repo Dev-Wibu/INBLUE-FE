@@ -1,8 +1,10 @@
 import {
+  Bell,
   Bot,
   ChevronLeft,
   ChevronRight,
   CircleHelp,
+  History,
   LayoutDashboard,
   LogOut,
   MessageSquare,
@@ -34,6 +36,17 @@ const menuItems = [
     label: "Phỏng vấn với Mentor",
     icon: Users,
     path: "/dashboard/mock-interview",
+    exactMatch: true,
+  },
+  {
+    label: "Lịch sử phỏng vấn",
+    icon: History,
+    path: "/dashboard/mock-interview/history",
+  },
+  {
+    label: "Phản hồi từ Mentor",
+    icon: MessageSquare,
+    path: "/dashboard/feedback",
   },
   {
     label: "Phỏng vấn với AI",
@@ -49,6 +62,11 @@ const menuItems = [
     label: "Bộ câu hỏi",
     icon: CircleHelp,
     path: "/dashboard/questions",
+  },
+  {
+    label: "Thông báo",
+    icon: Bell,
+    path: "/dashboard/notifications",
   },
   {
     label: "Tài khoản",
