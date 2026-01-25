@@ -34,19 +34,18 @@ export interface SignupData {
 }
 
 export interface MentorRegisterData {
-  fullName: string;
+  name: string;
   email: string;
   password: string;
-  phone: string;
-  yearsOfExperience: string;
-  company: string;
-  position: string;
-  expertise: string;
   bio?: string;
+  expertise: string;
+  yearsOfExperience?: number;
   linkedInUrl?: string;
-  cvFile?: File;
-  certificateFile?: File;
-  idCardFile?: File;
+  currentCompany: string;
+  avatar?: File;
+  identityFile?: File;
+  degreeFile?: File;
+  otherFile?: File;
 }
 
 export class AuthManager {
@@ -277,6 +276,8 @@ export class AuthManager {
 
   /**
    * Register as mentor
+   * POST /api/mentors (multipart/form-data)
+   * Schema: { data: MentorInfo, avatar?: File, identityFile?: File, degreeFile?: File, otherFile?: File }
    */
   async registerMentor(data: MentorRegisterData): Promise<
     ApiResponse<{
@@ -284,7 +285,18 @@ export class AuthManager {
     }>
   > {
     if (this.mode === "mock") {
-      const result = await authMock.mockMentorRegister(data);
+      const result = await authMock.mockMentorRegister({
+        fullName: data.name,
+        email: data.email,
+        password: data.password,
+        phone: "",
+        yearsOfExperience: String(data.yearsOfExperience || 0),
+        company: data.currentCompany,
+        position: "",
+        expertise: data.expertise,
+        bio: data.bio,
+        linkedInUrl: data.linkedInUrl,
+      });
       return {
         success: result.success,
         data: result.registration ? { registration: result.registration } : undefined,
@@ -293,26 +305,54 @@ export class AuthManager {
     }
 
     try {
-      // For file uploads, use FormData
+      // Create FormData for multipart/form-data request
       const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value instanceof File) {
-          formData.append(key, value);
-        } else if (value !== undefined) {
-          formData.append(key, String(value));
-        }
-      });
 
-      const response = await this.api.post(API_ENDPOINTS.AUTH.MENTOR_REGISTER, formData, {
+      // Prepare MentorInfo data object (JSON)
+      const mentorInfo = {
+        name: data.name.trim(),
+        email: data.email.trim(),
+        password: data.password,
+        bio: data.bio?.trim() || "",
+        expertise: data.expertise.trim(),
+        yearsOfExperience: data.yearsOfExperience || 0,
+        linkedInUrl: data.linkedInUrl?.trim() || "",
+        currentCompany: data.currentCompany.trim(),
+      };
+
+      // Append the 'data' field as a JSON Blob
+      formData.append("data", new Blob([JSON.stringify(mentorInfo)], { type: "application/json" }));
+
+      // Helper to create empty file placeholder
+      const emptyFile = new File([], "empty.txt", { type: "text/plain" });
+
+      // Add file fields - send placeholder if not provided to avoid backend NullPointerException
+      formData.append("avatar", data.avatar || emptyFile);
+      formData.append("identityFile", data.identityFile || emptyFile);
+      formData.append("degreeFile", data.degreeFile || emptyFile);
+      formData.append("otherFile", data.otherFile || emptyFile);
+
+      const response = await this.api.post(API_ENDPOINTS.MENTOR.CREATE, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": undefined, // Let axios set multipart boundary automatically
         },
       });
+
       return {
         success: true,
-        data: response.data,
+        data: {
+          registration: {
+            id: String(response.data.id || ""),
+            fullName: response.data.name || "",
+            email: response.data.email || "",
+            status: "pending",
+            submittedAt: new Date().toISOString(),
+            reviewedAt: null,
+          },
+        },
       };
     } catch (error) {
+      console.error("Mentor registration error:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Mentor registration failed",

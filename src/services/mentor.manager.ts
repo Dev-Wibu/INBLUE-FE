@@ -21,6 +21,7 @@ export type { Mentor } from "@/interfaces";
 
 /**
  * MentorInfo type for create operations (matches backend schema)
+ * From schema-from-be.d.ts components["schemas"]["MentorInfo"]
  */
 export interface MentorInfo {
   id?: number;
@@ -36,12 +37,14 @@ export interface MentorInfo {
 
 /**
  * Extended mentor data for creation with file uploads
+ * Files: avatar, identityFile, degreeFile, otherFile
  */
 export interface CreateMentorData extends MentorInfo {
   avatar?: File;
   identityFile?: File;
   degreeFile?: File;
   otherFile?: File;
+  active?: boolean;
 }
 
 /**
@@ -353,11 +356,11 @@ export class MentorManager implements BaseManager<Mentor> {
   }
 
   /**
-   * Delete mentor
-   * Note: Backend schema does not define DELETE for /api/mentors
-   * This is a soft delete by setting active to false
+   * Toggle mentor active status
+   * GET /api/mentors/toggle/{id}
+   * According to schema-from-be.d.ts
    */
-  async delete(_id: string | number): Promise<ApiResponse<void>> {
+  async toggleActive(_id: string | number): Promise<ApiResponse<Mentor>> {
     if (this.mode === "mock") {
       const mentors = await this.getMockMentors();
       const index = mentors.findIndex((m) => m.id === Number(_id));
@@ -367,26 +370,39 @@ export class MentorManager implements BaseManager<Mentor> {
           error: "Mentor not found",
         };
       }
-      mockMentorsData?.splice(index, 1);
+      // Toggle active status
+      mockMentorsData![index].active = !mockMentorsData![index].active;
       return {
         success: true,
+        data: mockMentorsData![index],
       };
     }
 
     try {
-      // Backend doesn't have DELETE endpoint, use soft delete via update
-      // Note: Backend confirmed POST should be used for updates (not PUT)
-      const mentorData: Mentor = { id: Number(_id), active: false };
-      await this.api.post(API_ENDPOINTS.MENTOR.UPDATE, mentorData);
+      const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR.TOGGLE, { id: _id });
+      const response = await this.api.get(endpoint);
       return {
         success: true,
+        data: response.data,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to delete mentor",
+        error: error instanceof Error ? error.message : "Failed to toggle mentor active status",
       };
     }
+  }
+
+  /**
+   * Delete mentor (kept for compatibility, actually toggles active status)
+   * @deprecated Use toggleActive instead for better UX
+   */
+  async delete(_id: string | number): Promise<ApiResponse<void>> {
+    const result = await this.toggleActive(_id);
+    return {
+      success: result.success,
+      error: result.error,
+    };
   }
 }
 
