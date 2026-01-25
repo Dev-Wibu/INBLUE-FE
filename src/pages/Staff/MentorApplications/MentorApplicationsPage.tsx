@@ -189,7 +189,10 @@ export function MentorApplicationsPage() {
                 <TableCell className="text-right">
                   {app.status === "pending" && (
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-green-600 hover:bg-green-50">
                         <CheckCircle className="mr-1 h-4 w-4" />
                         Duyệt
                       </Button>
