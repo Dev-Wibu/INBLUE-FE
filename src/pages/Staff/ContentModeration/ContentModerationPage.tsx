@@ -180,7 +180,9 @@ export function ContentModerationPage() {
                 <TableCell>
                   <Badge variant="outline">📝 Câu hỏi</Badge>
                 </TableCell>
-                <TableCell className="max-w-[300px] truncate font-medium">{content.title}</TableCell>
+                <TableCell className="max-w-[300px] truncate font-medium">
+                  {content.title}
+                </TableCell>
                 <TableCell>{content.author}</TableCell>
                 <TableCell>{content.category}</TableCell>
                 <TableCell>{content.createdAt}</TableCell>

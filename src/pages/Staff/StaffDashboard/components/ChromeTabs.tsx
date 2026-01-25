@@ -3,11 +3,7 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export type TabType =
-  | "mentorApplications"
-  | "sessions"
-  | "userSupport"
-  | "contentModeration";
+export type TabType = "mentorApplications" | "sessions" | "userSupport" | "contentModeration";
 
 export interface Tab {
   id: string;
@@ -49,7 +45,7 @@ export function ChromeTabs({
                 e.stopPropagation();
                 onTabClose(tab.id);
               }}
-              className="flex h-4 w-4 items-center justify-center rounded opacity-0 transition-opacity hover:bg-gray-200 group-hover:opacity-100 dark:hover:bg-slate-600">
+              className="flex h-4 w-4 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-200 dark:hover:bg-slate-600">
               <X className="h-3 w-3" />
             </button>
           )}
