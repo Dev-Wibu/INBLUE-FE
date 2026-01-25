@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "generate-schema": "pnpm exec openapi-typescript https://api.kdz.asia/v3/api-docs -o ./schema-from-be.d.ts",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -113,6 +114,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
+    "vite-plugin-checker": "^0.12.0",
     "vitest": "^4.0.15"
   }
 }
