@@ -1,4 +1,5 @@
 import {
+  Bell,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -43,6 +44,11 @@ const menuItems = [
     label: "Đánh giá",
     icon: Star,
     path: "/mentor/reviews",
+  },
+  {
+    label: "Thông báo",
+    icon: Bell,
+    path: "/mentor/notifications",
   },
   {
     label: "Tài khoản",
