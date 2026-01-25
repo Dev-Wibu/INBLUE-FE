@@ -171,6 +171,10 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getAllProfile"];
+        /**
+         * Cập nhật hồ sơ ứng viên
+         * @description Sau khi import cv thì trả về candidate profile rồi thì cho người dùng chỉnh sửa tay sau đó gọi hàm này để cập nhật
+         */
         put: operations["updateProfile"];
         post: operations["createProfile"];
         delete?: never;
@@ -237,6 +241,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** hàm này để upload cv và parse cv trả về thằng candidate profile */
         post: operations["uploadCv"];
         delete?: never;
         options?: never;
@@ -683,6 +688,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getMentorById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mentors/toggle/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["toggleActive"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2591,6 +2612,26 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["Mentor"];
                 };
+            };
+        };
+    };
+    toggleActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
