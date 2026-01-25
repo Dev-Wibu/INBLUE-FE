@@ -62,11 +62,13 @@ export const API_ENDPOINTS = {
   // POST /api/mentors - createMentor (multipart/form-data)
   // PUT /api/mentors - updateMentor (JSON body)
   // GET /api/mentors/{id} - getMentorById
+  // GET /api/mentors/toggle/{id} - toggleActive
   MENTOR: {
     LIST: "/api/mentors",
-    DETAIL: "/api/mentors/:id",
+    DETAIL: "/api/mentors/{id}",
     CREATE: "/api/mentors",
     UPDATE: "/api/mentors",
+    TOGGLE: "/api/mentors/toggle/{id}",
   },
 
   // AI Interview endpoints
