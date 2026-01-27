@@ -38,3 +38,6 @@ export { FeedbackDetailPage, UserFeedbackListPage } from "./Feedback";
 
 // Notifications exports
 export { UserNotificationsPage } from "./Notifications";
+
+// User Dashboard with Chrome Tabs
+export { UserDashboardPage } from "./UserDashboard";

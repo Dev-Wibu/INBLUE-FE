@@ -514,6 +514,14 @@ export class UsersAdminManager implements BaseManager<User> {
     }
 
     try {
+      // Validate userId
+      if (userId === null || userId === undefined) {
+        return {
+          success: false,
+          error: "User ID is required to upload CV",
+        };
+      }
+
       // Validate file type - only PDF allowed
       if (!cvFile.type.includes("pdf") && !cvFile.name.toLowerCase().endsWith(".pdf")) {
         return {
@@ -523,7 +531,12 @@ export class UsersAdminManager implements BaseManager<User> {
       }
 
       const formData = new FormData();
-      formData.append("userId", String(userId));
+      // userId must be sent with application/json content-type as per BE requirement
+      // curl example: -F 'userId=4;type=application/json'
+      formData.append(
+        "userId",
+        new Blob([String(userId)], { type: "application/json" })
+      );
       formData.append("cvFile", cvFile);
 
       const response = await this.api.post(API_ENDPOINTS.USERS.UPLOAD_CV, formData, {
