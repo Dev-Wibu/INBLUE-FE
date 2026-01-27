@@ -1,4 +1,16 @@
-import { BookOpen, FolderOpen, GraduationCap, Plus, UserCog, Users, Video, X } from "lucide-react";
+import {
+  Bell,
+  BookOpen,
+  FolderOpen,
+  GraduationCap,
+  MessageSquare,
+  Plus,
+  Star,
+  UserCog,
+  Users,
+  Video,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -7,6 +19,9 @@ export type TabType =
   | "users"
   | "mentors"
   | "sessions"
+  | "reviews"
+  | "feedback"
+  | "notifications"
   | "questionCategories"
   | "questionMajors"
   | "questionSets";
@@ -29,6 +44,9 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   users: Users,
   mentors: UserCog,
   sessions: Video,
+  reviews: Star,
+  feedback: MessageSquare,
+  notifications: Bell,
   questionCategories: FolderOpen,
   questionMajors: GraduationCap,
   questionSets: BookOpen,
@@ -38,6 +56,9 @@ const TAB_COLORS: Record<TabType, string> = {
   users: "text-blue-600",
   mentors: "text-orange-600",
   sessions: "text-green-600",
+  reviews: "text-yellow-600",
+  feedback: "text-cyan-600",
+  notifications: "text-red-600",
   questionCategories: "text-purple-600",
   questionMajors: "text-pink-600",
   questionSets: "text-teal-600",
@@ -127,6 +148,34 @@ export function ChromeTabs({
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
                 <Video className="h-4 w-4 text-green-600" />
                 Session Management
+              </button>
+              <div className="my-1 border-t dark:border-slate-600" />
+              <button
+                onClick={() => {
+                  onNewTab("reviews");
+                  setShowNewTabMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
+                <Star className="h-4 w-4 text-yellow-600" />
+                Review Management
+              </button>
+              <button
+                onClick={() => {
+                  onNewTab("feedback");
+                  setShowNewTabMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
+                <MessageSquare className="h-4 w-4 text-cyan-600" />
+                Feedback Management
+              </button>
+              <button
+                onClick={() => {
+                  onNewTab("notifications");
+                  setShowNewTabMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
+                <Bell className="h-4 w-4 text-red-600" />
+                Notification Management
               </button>
               <div className="my-1 border-t dark:border-slate-600" />
               <button

@@ -1,4 +1,5 @@
 import {
+  Bell,
   BookOpen,
   ChevronLeft,
   ChevronRight,
@@ -6,7 +7,9 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Settings,
+  Star,
   UserCog,
   Users,
   Video,
@@ -36,6 +39,17 @@ const MENU_ITEMS = [
   { type: "users" as TabType, icon: Users, label: "Users", color: "text-blue-600" },
   { type: "mentors" as TabType, icon: UserCog, label: "Mentors", color: "text-orange-600" },
   { type: "sessions" as TabType, icon: Video, label: "Sessions", color: "text-green-600" },
+];
+
+const REVIEW_MENU_ITEMS = [
+  { type: "reviews" as TabType, icon: Star, label: "Reviews", color: "text-yellow-600" },
+  { type: "feedback" as TabType, icon: MessageSquare, label: "Feedback", color: "text-cyan-600" },
+  {
+    type: "notifications" as TabType,
+    icon: Bell,
+    label: "Notifications",
+    color: "text-red-600",
+  },
 ];
 
 const QUESTION_MENU_ITEMS = [
@@ -174,6 +188,14 @@ export function Sidebar({ onNavigate, currentView }: SidebarProps) {
             </p>
           )}
           {MENU_ITEMS.map(renderMenuItem)}
+
+          {!isCollapsed && (
+            <p className="mt-4 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-slate-400">
+              Reviews & Feedback
+            </p>
+          )}
+          {isCollapsed && <div className="my-2 border-t dark:border-slate-700" />}
+          {REVIEW_MENU_ITEMS.map(renderMenuItem)}
 
           {!isCollapsed && (
             <p className="mt-4 mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-slate-400">
