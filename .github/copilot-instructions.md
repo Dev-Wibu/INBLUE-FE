@@ -18,13 +18,13 @@ React + Vite web application for interview practice platform with type-safe back
 **File structure patterns**:
 
 - **Services**: `services/session.manager.ts` exports manager classes with CRUD methods
-- **Pages**: `pages/Manager/UserManagement/` auto-registers routes via React Router
+- **Pages**: `pages/Admin/UserManagement/` auto-registers routes via React Router
 - **State**: Zustand stores in `stores/` with localStorage persistence (see `authStore.ts` pattern)
 - **Types**: `schema-from-be.d.ts` auto-generated (**NEVER edit manually**)
 
 **Critical constraints**:
 
-- **Role separation**: USER → `(tabs)` routes, ADMIN → `/manager` routes
+- **Role separation**: USER → `(tabs)` routes, ADMIN → `/admin` routes
 - **Auth flow**: JWT stored in `authStore` → auto-injected via `lib/api.ts` middleware
 - **Fetch rule**: Prefer `$api` client from `lib/api.ts` for type-safe API calls
 - **⚠️ IMPORTANT - HTTP Methods**: Backend team confirmed that **all UPDATE operations must use POST method, NOT PUT**. Always use `api.post()` for updates in service managers, even though the schema shows `put`. This applies to all CRUD operations in `services/*.manager.ts` files.
@@ -39,7 +39,7 @@ React + Vite web application for interview practice platform with type-safe back
 
 1. **Dual-Interface Architecture**:
    - USER role → `app/(tabs)/` - Interview practice interface
-   - ADMIN role → `app/manager/` - Management dashboard
+   - ADMIN role → `app/admin/` - Management dashboard
 
 2. **Type-Safe Backend Integration**:
    - Backend OpenAPI spec → `npm run generate-schema` → `schema-from-be.d.ts` (auto-generated)
