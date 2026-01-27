@@ -154,9 +154,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["getAllQuestionMajors"];
-        put: operations["updateQuestionMajor"];
-        post: operations["createQuestionMajor"];
+        get: operations["getAllMajors"];
+        put: operations["updateMajor"];
+        post: operations["createMajor"];
         delete?: never;
         options?: never;
         head?: never;
@@ -342,6 +342,23 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["createQuestionSetItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create post */
+        post: operations["createPost"];
         delete?: never;
         options?: never;
         head?: never;
@@ -799,10 +816,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["getQuestionMajorById"];
+        get: operations["getMajorById"];
         put?: never;
         post?: never;
-        delete: operations["deleteQuestionMajor"];
+        delete: operations["deleteMajor"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1023,13 +1040,12 @@ export interface components {
             updatedAt?: string;
         };
         EducationEntry: {
-            schoolName?: string;
+            school?: string;
             major?: string;
             degree?: string;
-            /** Format: double */
-            gpa?: number;
-            startDate?: string;
-            endDate?: string;
+            gpa?: string;
+            start_date?: string;
+            end_date?: string;
         };
         ProjectDetail: {
             name?: string;
@@ -1041,11 +1057,11 @@ export interface components {
             outcome?: string;
         };
         WorkExperience: {
-            companyName?: string;
+            company?: string;
             position?: string;
-            startDate?: string;
-            endDate?: string;
             description?: string;
+            start_date?: string;
+            end_date?: string;
         };
         CVParserResponse: {
             targetRole?: string;
@@ -1142,6 +1158,42 @@ export interface components {
             api_created?: unknown;
             created_at?: string;
             config?: components["schemas"]["RoomConfig"];
+        };
+        /** @description Post create request */
+        PostCreateRequest: {
+            title?: string;
+            content?: string;
+            summary?: string;
+            /** Format: int32 */
+            authorId?: number;
+            /** Format: int32 */
+            majorId?: number;
+            /** Format: binary */
+            coverImg?: string;
+            tags?: string[];
+            /**
+             * @example PUBLISHED || DRAFT || ARCHIVED
+             * @enum {string}
+             */
+            status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+        };
+        Post: {
+            /** Format: int32 */
+            postId?: number;
+            title?: string;
+            content?: string;
+            summary?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+            author?: components["schemas"]["User"];
+            /** Format: date-time */
+            creationDate?: string;
+            /** Format: date-time */
+            lastModifiedDate?: string;
+            major?: components["schemas"]["Major"];
+            coverImgUrl?: string;
+            public_id?: string;
+            tags?: string[];
         };
         Notification: {
             /** Format: int32 */
@@ -1772,7 +1824,7 @@ export interface operations {
             };
         };
     };
-    getAllQuestionMajors: {
+    getAllMajors: {
         parameters: {
             query?: never;
             header?: never;
@@ -1792,7 +1844,7 @@ export interface operations {
             };
         };
     };
-    updateQuestionMajor: {
+    updateMajor: {
         parameters: {
             query: {
                 major: components["schemas"]["Major"];
@@ -1814,7 +1866,7 @@ export interface operations {
             };
         };
     };
-    createQuestionMajor: {
+    createMajor: {
         parameters: {
             query: {
                 major: components["schemas"]["Major"];
@@ -2151,6 +2203,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["QuestionSetItem"][];
+                };
+            };
+        };
+    };
+    createPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": components["schemas"]["PostCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Post"];
                 };
             };
         };
@@ -2830,7 +2906,7 @@ export interface operations {
             };
         };
     };
-    getQuestionMajorById: {
+    getMajorById: {
         parameters: {
             query?: never;
             header?: never;
@@ -2852,7 +2928,7 @@ export interface operations {
             };
         };
     };
-    deleteQuestionMajor: {
+    deleteMajor: {
         parameters: {
             query?: never;
             header?: never;
