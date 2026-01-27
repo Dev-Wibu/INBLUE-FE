@@ -84,7 +84,9 @@ export function UserTable({ users, onEdit, onDelete, onUploadCV }: UserTableProp
                   onClick={() => onUploadCV(user)}
                   className="h-8 w-8 p-0 hover:bg-green-50"
                   title={user.cvUrl ? "Cập nhật CV" : "Upload CV"}>
-                  <FileText className={`h-4 w-4 ${user.cvUrl ? "text-green-600" : "text-gray-400"}`} />
+                  <FileText
+                    className={`h-4 w-4 ${user.cvUrl ? "text-green-600" : "text-gray-400"}`}
+                  />
                 </Button>
                 <Button
                   variant="ghost"
