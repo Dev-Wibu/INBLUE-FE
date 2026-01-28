@@ -131,3 +131,177 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Toast styling enhancements (Toaster component) */
+.toaster {
+  --toast-max-width: 420px;
+  z-index: 9999; /* ensure it's above most UI layers */
+  pointer-events: none; /* container doesn't block clicks */
+}
+
+/* Target toast items via common ARIA roles used by toast libraries */
+.toaster [role="status"],
+.toaster [role="alert"] {
+  pointer-events: auto; /* allow interactions inside the toast */
+  width: var(--toast-max-width);
+  max-width: calc(100vw - 2rem);
+  background: var(--normal-bg, var(--popover)) !important;
+  color: var(--normal-text, var(--popover-foreground)) !important;
+  border: 1px solid var(--normal-border, var(--border)) !important;
+  border-radius: calc(var(--radius) + 0.125rem);
+  padding: 0.75rem 1rem;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.35);
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  align-self: flex-start;
+  transform-origin: top right;
+  transform: translateY(-6px) scale(0.995);
+  opacity: 0;
+  animation: toast-in 240ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+  }
+}
+
+/* Make icons slightly larger and more consistent */
+.toaster svg {
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+}
+
+/* Toast theme variables per type */
+:root {
+  --toast-success-bg: linear-gradient(135deg, rgba(0, 123, 255, 0.08), rgba(0, 123, 255, 0.04));
+  --toast-success-border: rgba(0, 123, 255, 0.15);
+  --toast-success-accent: #007bff;
+
+  --toast-error-bg: linear-gradient(135deg, rgba(220, 38, 38, 0.06), rgba(220, 38, 38, 0.03));
+  --toast-error-border: rgba(220, 38, 38, 0.12);
+  --toast-error-accent: #dc2626;
+
+  --toast-info-bg: linear-gradient(135deg, rgba(14, 165, 233, 0.06), rgba(14, 165, 233, 0.03));
+  --toast-info-border: rgba(14, 165, 233, 0.12);
+  --toast-info-accent: #0ea5e9;
+
+  --toast-warning-bg: linear-gradient(135deg, rgba(250, 204, 21, 0.06), rgba(250, 204, 21, 0.03));
+  --toast-warning-border: rgba(250, 204, 21, 0.12);
+  --toast-warning-accent: #facc15;
+}
+
+.dark {
+  --toast-success-bg: linear-gradient(135deg, rgba(0, 123, 255, 0.12), rgba(0, 123, 255, 0.06));
+  --toast-success-border: rgba(0, 123, 255, 0.18);
+  --toast-success-accent: #66b2ff;
+
+  --toast-error-bg: linear-gradient(135deg, rgba(220, 38, 38, 0.08), rgba(220, 38, 38, 0.04));
+  --toast-error-border: rgba(220, 38, 38, 0.16);
+  --toast-error-accent: #ff7b7b;
+
+  --toast-info-bg: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(14, 165, 233, 0.04));
+  --toast-info-border: rgba(14, 165, 233, 0.16);
+  --toast-info-accent: #7dd3fc;
+
+  --toast-warning-bg: linear-gradient(135deg, rgba(250, 204, 21, 0.08), rgba(250, 204, 21, 0.04));
+  --toast-warning-border: rgba(250, 204, 21, 0.14);
+  --toast-warning-accent: #ffec99;
+}
+
+/* Type-specific styling (sonner adds data attributes like data-sn-type) */
+.toaster [data-sn-type="success"],
+.toaster [data-sn-type="info"] {
+  background: var(--toast-success-bg, var(--popover)) !important;
+  border: 1px solid var(--toast-success-border, var(--border)) !important;
+}
+
+.toaster [data-sn-type="error"] {
+  background: var(--toast-error-bg, var(--popover)) !important;
+  border: 1px solid var(--toast-error-border, var(--border)) !important;
+}
+
+.toaster [data-sn-type="warning"] {
+  background: var(--toast-warning-bg, var(--popover)) !important;
+  border: 1px solid var(--toast-warning-border, var(--border)) !important;
+}
+
+/* Add a left accent strip to emphasize toast type */
+.toaster [role="status"]::before,
+.toaster [role="alert"]::before,
+.toaster [data-sn-type]::before {
+  content: "";
+  width: 6px;
+  height: calc(100% - 0.6rem);
+  margin-left: -1rem;
+  border-radius: 4px;
+  transform: translateX(-6px);
+}
+
+.toaster [data-sn-type="success"]::before {
+  background: var(--toast-success-accent);
+}
+.toaster [data-sn-type="error"]::before {
+  background: var(--toast-error-accent);
+}
+.toaster [data-sn-type="info"]::before {
+  background: var(--toast-info-accent);
+}
+.toaster [data-sn-type="warning"]::before {
+  background: var(--toast-warning-accent);
+}
+
+/* Smooth hover and focus */
+.toaster [role="status"]:hover,
+.toaster [role="alert"]:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 18px 50px rgba(2, 6, 23, 0.5);
+}
+
+/* Ensure long content wraps nicely */
+.toaster [role="status"] .sn-toaster-content,
+.toaster [role="alert"] .sn-toaster-content {
+  word-break: break-word;
+}
+
+/* Progress bar (sonner uses .sn-progress or similar) */
+.toaster .sn-progress,
+.toaster .sn-toaster-progress {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.toaster .sn-progress > div,
+.toaster .sn-toaster-progress > div {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3));
+  transition: width linear;
+}
+
+/* Focus visibility for keyboard users */
+.toaster [role="status"]:focus,
+.toaster [role="alert"]:focus {
+  outline: 3px solid rgba(0, 123, 255, 0.18);
+  outline-offset: 4px;
+}

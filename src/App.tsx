@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { AuthLayout, MentorDashboardLayout, UserDashboardLayout } from "@/components/layouts";
+import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AdminDashboardPage } from "@/pages/Admin";
 import {
@@ -71,6 +72,7 @@ import {
 function App() {
   return (
     <QueryProvider>
+      <Toaster />
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
