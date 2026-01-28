@@ -533,10 +533,7 @@ export class UsersAdminManager implements BaseManager<User> {
       const formData = new FormData();
       // userId must be sent with application/json content-type as per BE requirement
       // curl example: -F 'userId=4;type=application/json'
-      formData.append(
-        "userId",
-        new Blob([String(userId)], { type: "application/json" })
-      );
+      formData.append("userId", new Blob([String(userId)], { type: "application/json" }));
       formData.append("cvFile", cvFile);
 
       const response = await this.api.post(API_ENDPOINTS.USERS.UPLOAD_CV, formData, {
