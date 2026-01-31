@@ -63,10 +63,10 @@ export function SessionManagementPage() {
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
       const matchesSearch =
-        session.roomName?.toLowerCase().includes(lowerQuery) ||
         session.id?.toString().includes(lowerQuery) ||
         session.userId?.toString().includes(lowerQuery) ||
-        session.userId2?.toString().includes(lowerQuery);
+        session.userId2?.toString().includes(lowerQuery) ||
+        session.roomUrl?.toLowerCase().includes(lowerQuery);
       if (!matchesSearch) return false;
     }
 
@@ -79,7 +79,7 @@ export function SessionManagementPage() {
   });
 
   const handleCreate = () => {
-    setFormData({ status: "SCHEDULED" });
+    setFormData({ status: "SCHEDULED", start_video_off: true, start_audio_off: true });
     setIsCreateDialogOpen(true);
   };
 
@@ -91,10 +91,11 @@ export function SessionManagementPage() {
   const handleEdit = (session: Session) => {
     setSelectedSession(session);
     setFormData({
-      roomName: session.roomName,
       userId: session.userId,
       userId2: session.userId2,
       status: session.status,
+      start_video_off: true,
+      start_audio_off: true,
     });
     setIsEditDialogOpen(true);
   };
@@ -184,7 +185,7 @@ export function SessionManagementPage() {
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo ID, tên phòng, ID người dùng..."
+              placeholder="Tìm kiếm theo ID, ID người dùng..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
