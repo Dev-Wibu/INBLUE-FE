@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 import type { SessionFormData, SessionStatus } from "../types";
 
@@ -51,15 +52,6 @@ export function SessionFormDialog({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="roomName">Tên phòng</Label>
-            <Input
-              id="roomName"
-              value={formData.roomName || ""}
-              onChange={(e) => onFormChange({ ...formData, roomName: e.target.value })}
-              placeholder="Nhập tên phòng (tùy chọn)"
-            />
-          </div>
-          <div className="grid gap-2">
             <Label htmlFor="userId">ID người dùng</Label>
             <Input
               id="userId"
@@ -81,6 +73,34 @@ export function SessionFormDialog({
                 onFormChange({ ...formData, userId2: parseInt(e.target.value) || undefined })
               }
               placeholder="Nhập ID mentor"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="exp">Thời gian hết hạn (giây)</Label>
+            <Input
+              id="exp"
+              type="number"
+              value={formData.exp || ""}
+              onChange={(e) =>
+                onFormChange({ ...formData, exp: parseInt(e.target.value) || undefined })
+              }
+              placeholder="Nhập thời gian hết hạn (mặc định: 120 giây)"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="start_video_off">Tắt video khi bắt đầu</Label>
+            <Switch
+              id="start_video_off"
+              checked={formData.start_video_off ?? true}
+              onCheckedChange={(checked) => onFormChange({ ...formData, start_video_off: checked })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="start_audio_off">Tắt audio khi bắt đầu</Label>
+            <Switch
+              id="start_audio_off"
+              checked={formData.start_audio_off ?? true}
+              onCheckedChange={(checked) => onFormChange({ ...formData, start_audio_off: checked })}
             />
           </div>
           <div className="grid gap-2">

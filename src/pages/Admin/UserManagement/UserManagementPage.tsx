@@ -21,7 +21,6 @@ export function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("active"); // Default to show only active users
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -57,7 +56,7 @@ export function UserManagementPage() {
     loadUsers();
   }, [loadUsers]);
 
-  // Filter users based on search query, role filter, and status filter
+  // Filter users based on search query and status filter
   const filteredUsers = users.filter((user) => {
     // Filter by status (active/inactive/all) - default shows active only
     // Backend can return isActive as: true (active), false (deactivated), or null/undefined (not set)
@@ -87,11 +86,6 @@ export function UserManagementPage() {
         user.university?.toLowerCase().includes(lowerQuery) ||
         user.major?.toLowerCase().includes(lowerQuery);
       if (!matchesSearch) return false;
-    }
-
-    // Filter by role
-    if (roleFilter !== "all" && user.role !== roleFilter) {
-      return false;
     }
 
     return true;
@@ -244,20 +238,6 @@ export function UserManagementPage() {
             />
           </div>
 
-          {/* Role Filter */}
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Lọc theo vai trò" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả vai trò</SelectItem>
-              <SelectItem value="USER">Người dùng</SelectItem>
-              <SelectItem value="MENTOR">Mentor</SelectItem>
-              <SelectItem value="STAFF">Nhân viên</SelectItem>
-              <SelectItem value="ADMIN">Quản trị viên</SelectItem>
-            </SelectContent>
-          </Select>
-
           {/* Status Filter - Default shows active users only */}
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-40">
@@ -288,20 +268,18 @@ export function UserManagementPage() {
         />
 
         {/* Empty State with Clear Filters */}
-        {filteredUsers.length === 0 &&
-          (searchQuery || roleFilter !== "all" || statusFilter !== "active") && (
-            <div className="flex justify-center pb-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchQuery("");
-                  setRoleFilter("all");
-                  setStatusFilter("active");
-                }}>
-                Xóa bộ lọc
-              </Button>
-            </div>
-          )}
+        {filteredUsers.length === 0 && (searchQuery || statusFilter !== "active") && (
+          <div className="flex justify-center pb-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("active");
+              }}>
+              Xóa bộ lọc
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Create Dialog */}
