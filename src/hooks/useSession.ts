@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { Session } from "@/interfaces";
-import type { SessionCreationRequest } from "@/services/session.manager";
+import type { JoinSessionRequest, SessionCreationRequest } from "@/services/session.manager";
 import { sessionManager } from "@/services/session.manager";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -185,5 +185,29 @@ export const useCancelSession = () => {
   });
 };
 
+/**
+ * Hook to join a session (for tracking purposes with Daily.co)
+ */
+export const useJoinSession = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: JoinSessionRequest) => {
+      const response = await sessionManager.joinSession(data);
+      if (!response.success) {
+        throw new Error(response.error || "Không thể tham gia phiên phỏng vấn");
+      }
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+      toast.success("Đã tham gia phiên phỏng vấn");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+};
+
 // Re-export types
-export type { Session, SessionCreationRequest };
+export type { JoinSessionRequest, Session, SessionCreationRequest };

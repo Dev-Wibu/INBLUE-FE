@@ -7,4 +7,5 @@ export { MockInterviewSchedulePage } from "./MockInterviewSchedulePage";
 export { MockInterviewSelectMentorPage } from "./MockInterviewSelectMentorPage";
 export { SessionDetailPage } from "./SessionDetailPage";
 export { SessionHistoryPage } from "./SessionHistoryPage";
+export { SessionRoomPage } from "./SessionRoomPage";
 export { WriteReviewPage } from "./WriteReviewPage";
