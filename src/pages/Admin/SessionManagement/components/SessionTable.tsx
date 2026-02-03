@@ -1,5 +1,6 @@
 import { Edit, Eye, Search, XCircle } from "lucide-react";
 
+import { SortButton, type SortDirection } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,11 +14,17 @@ import {
 
 import type { Session } from "../types";
 
+interface SortProps {
+  direction: SortDirection;
+  onChange: (direction: SortDirection) => void;
+}
+
 interface SessionTableProps {
   sessions: Session[];
   onView: (session: Session) => void;
   onEdit: (session: Session) => void;
   onCancel: (session: Session) => void;
+  getSortProps?: (key: keyof Session) => SortProps;
 }
 
 const getStatusBadgeClass = (status?: string): string => {
@@ -54,7 +61,13 @@ const formatDuration = (seconds?: number) => {
   return `${minutes}p`;
 };
 
-export function SessionTable({ sessions, onView, onEdit, onCancel }: SessionTableProps) {
+export function SessionTable({
+  sessions,
+  onView,
+  onEdit,
+  onCancel,
+  getSortProps,
+}: SessionTableProps) {
   if (sessions.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
@@ -72,9 +85,21 @@ export function SessionTable({ sessions, onView, onEdit, onCancel }: SessionTabl
           <TableHead>Tên phòng</TableHead>
           <TableHead className="w-24">ID người dùng</TableHead>
           <TableHead className="w-24">ID Mentor</TableHead>
-          <TableHead>Thời gian bắt đầu</TableHead>
+          <TableHead>
+            {getSortProps ? (
+              <SortButton {...getSortProps("startTime1")}>Thời gian bắt đầu</SortButton>
+            ) : (
+              "Thời gian bắt đầu"
+            )}
+          </TableHead>
           <TableHead className="w-24">Thời lượng</TableHead>
-          <TableHead className="w-28">Trạng thái</TableHead>
+          <TableHead className="w-28">
+            {getSortProps ? (
+              <SortButton {...getSortProps("status")}>Trạng thái</SortButton>
+            ) : (
+              "Trạng thái"
+            )}
+          </TableHead>
           <TableHead className="w-28 text-right">Thao tác</TableHead>
         </TableRow>
       </TableHeader>

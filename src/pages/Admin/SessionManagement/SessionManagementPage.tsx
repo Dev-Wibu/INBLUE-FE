@@ -1,6 +1,7 @@
 import { Plus, Search } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePagination } from "@/hooks/usePagination";
+import { useSortable } from "@/hooks/useSortable";
 import { sessionManager } from "@/services";
 import { toast } from "sonner";
 
@@ -58,25 +61,42 @@ export function SessionManagementPage() {
   }, [loadSessions]);
 
   // Filter sessions based on search query and status filter
-  const filteredSessions = sessions.filter((session) => {
-    // Filter by search query
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
-      const matchesSearch =
-        session.id?.toString().includes(lowerQuery) ||
-        session.userId?.toString().includes(lowerQuery) ||
-        session.userId2?.toString().includes(lowerQuery) ||
-        session.roomUrl?.toLowerCase().includes(lowerQuery);
-      if (!matchesSearch) return false;
-    }
+  const filteredSessions = useMemo(() => {
+    return sessions.filter((session) => {
+      // Filter by search query
+      if (searchQuery) {
+        const lowerQuery = searchQuery.toLowerCase();
+        const matchesSearch =
+          session.id?.toString().includes(lowerQuery) ||
+          session.userId?.toString().includes(lowerQuery) ||
+          session.userId2?.toString().includes(lowerQuery) ||
+          session.roomUrl?.toLowerCase().includes(lowerQuery);
+        if (!matchesSearch) return false;
+      }
 
-    // Filter by status
-    if (statusFilter !== "all" && session.status !== statusFilter) {
-      return false;
-    }
+      // Filter by status
+      if (statusFilter !== "all" && session.status !== statusFilter) {
+        return false;
+      }
 
-    return true;
+      return true;
+    });
+  }, [sessions, searchQuery, statusFilter]);
+
+  // Sorting
+  const { sortedData, getSortProps } = useSortable(filteredSessions);
+
+  // Pagination
+  const [pageSize, setPageSize] = useState(10);
+  const pagination = usePagination({
+    totalCount: sortedData.length,
+    pageSize,
   });
+
+  // Get current page data
+  const pageData = useMemo(() => {
+    return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
   const handleCreate = () => {
     setFormData({ status: "SCHEDULED", start_video_off: true, start_audio_off: true });
@@ -217,14 +237,20 @@ export function SessionManagementPage() {
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <SessionTable
-          sessions={filteredSessions.slice().reverse()}
+          sessions={pageData}
           onView={handleView}
           onEdit={handleEdit}
           onCancel={handleCancel}
+          getSortProps={getSortProps}
         />
 
+        {/* Pagination */}
+        {sortedData.length > 0 && (
+          <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
+        )}
+
         {/* Empty State with Clear Filters */}
-        {filteredSessions.length === 0 && (searchQuery || statusFilter !== "all") && (
+        {sortedData.length === 0 && (searchQuery || statusFilter !== "all") && (
           <div className="flex justify-center pb-4">
             <Button
               variant="outline"

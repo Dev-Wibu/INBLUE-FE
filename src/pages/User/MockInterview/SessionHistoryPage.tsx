@@ -4,15 +4,20 @@
  */
 
 import { Calendar, Clock, Star, User, Video } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { PaginationControl } from "@/components/shared/PaginationControl";
+import { SortButton } from "@/components/shared/SortButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingCardList } from "@/components/ui/loading-card";
 import { useMentorReviews } from "@/hooks/useMentorReview";
+import { usePagination } from "@/hooks/usePagination";
 import { useUserSessions } from "@/hooks/useSession";
+import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 
 // Status badge mapping
@@ -94,6 +99,7 @@ function SessionCard({ session, hasReview, onViewDetails, onWriteReview }: Sessi
 
 export function SessionHistoryPage() {
   const navigate = useNavigate();
+  const [pageSize, setPageSize] = useState(10);
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions();
   const { data: reviews = [], isLoading: reviewsLoading } = useMentorReviews();
 
@@ -104,8 +110,19 @@ export function SessionHistoryPage() {
     reviews.map((r: { session?: { id?: number } }) => r.session?.id).filter(Boolean)
   );
 
-  // Sort sessions by ID descending (newest first)
-  const sortedSessions = [...sessions].sort((a, b) => (b.id || 0) - (a.id || 0));
+  // Apply sorting
+  const { sortedData, getSortProps } = useSortable(sessions);
+
+  // Apply pagination
+  const pagination = usePagination({
+    totalCount: sortedData.length,
+    pageSize,
+  });
+
+  // Get current page data
+  const pageData = useMemo(() => {
+    return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
   const handleViewDetails = (session: Session) => {
     navigate(`/dashboard/mock-interview/history/${session.id}`);
@@ -177,17 +194,37 @@ export function SessionHistoryPage() {
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {sortedSessions.map((session) => (
-            <SessionCard
-              key={session.id}
-              session={session}
-              hasReview={reviewedSessionIds.has(session.id)}
-              onViewDetails={() => handleViewDetails(session)}
-              onWriteReview={() => handleWriteReview(session)}
-            />
-          ))}
-        </div>
+        <>
+          {/* Sort Controls */}
+          <Card className="p-4">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Sắp xếp theo:
+              </span>
+              <SortButton {...getSortProps("id")}>ID</SortButton>
+              <SortButton {...getSortProps("status")}>Trạng thái</SortButton>
+            </div>
+          </Card>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {pageData.map((session) => (
+              <SessionCard
+                key={session.id}
+                session={session}
+                hasReview={reviewedSessionIds.has(session.id)}
+                onViewDetails={() => handleViewDetails(session)}
+                onWriteReview={() => handleWriteReview(session)}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          <PaginationControl
+            pagination={pagination}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[5, 10, 20, 50]}
+          />
+        </>
       )}
     </div>
   );

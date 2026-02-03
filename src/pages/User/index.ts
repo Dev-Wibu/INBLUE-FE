@@ -21,6 +21,7 @@ export {
   MockInterviewSelectMentorPage,
   SessionDetailPage,
   SessionHistoryPage,
+  SessionRoomPage,
   WriteReviewPage,
 } from "./MockInterview";
 
