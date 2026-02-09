@@ -3,7 +3,7 @@
  * Displays student profile and session/feedback history
  */
 
-import { ArrowLeft, Calendar, Mail, MessageSquare, School, Star, User } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Mail, MessageSquare, School, Star, User } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { FeedbackCard } from "@/components/feedback";
@@ -19,7 +19,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMentorFeedbacks } from "@/hooks/useMentorFeedback";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
+import type { CandidateProfile } from "@/interfaces/schema.types";
 import type { Session } from "@/interfaces";
+import { useCandidateProfile } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 
 export function StudentDetailPage() {
@@ -32,8 +34,10 @@ export function StudentDetailPage() {
   const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
   const { data: allFeedbacks = [], isLoading: feedbacksLoading } = useMentorFeedbacks();
   const { data: allReviews = [], isLoading: reviewsLoading } = useMentorReviews();
+  const { data: candidateProfileData, isLoading: profileLoading } = useCandidateProfile(studentId);
+  const candidateProfile = (candidateProfileData as unknown as CandidateProfile) ?? null;
 
-  const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading;
+  const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading || profileLoading;
 
   // Filter sessions for this student with current mentor
   const studentSessions = allSessions.filter(
@@ -184,10 +188,14 @@ export function StudentDetailPage() {
 
       {/* Tabs: Sessions, Feedbacks, Reviews */}
       <Tabs defaultValue="sessions">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="sessions">Phiên ({totalSessions})</TabsTrigger>
           <TabsTrigger value="feedbacks">Phản hồi ({totalFeedbacks})</TabsTrigger>
           <TabsTrigger value="reviews">Đánh giá ({totalReviews})</TabsTrigger>
+          <TabsTrigger value="profile">
+            <FileText className="mr-1 h-4 w-4" />
+            Hồ sơ
+          </TabsTrigger>
         </TabsList>
 
         {/* Sessions Tab */}
@@ -293,6 +301,164 @@ export function StudentDetailPage() {
                       showUser={false}
                     />
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Profile Tab */}
+        <TabsContent value="profile" className="mt-4">
+          <Card className="border-emerald-100 dark:border-slate-800">
+            <CardHeader>
+              <CardTitle>Hồ Sơ Ứng Viên</CardTitle>
+              <CardDescription>Thông tin hồ sơ ứng viên của học viên</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!candidateProfile?.id ? (
+                <EmptyState
+                  icon={FileText}
+                  title="Chưa có hồ sơ ứng viên"
+                  description="Học viên này chưa tạo hồ sơ ứng viên."
+                />
+              ) : (
+                <div className="space-y-6">
+                  {/* Basic Info */}
+                  <div>
+                    <h4 className="mb-2 font-semibold">Thông tin cơ bản</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-gray-500 dark:text-slate-400">Vai trò mục tiêu:</span>{" "}
+                        {candidateProfile.targetRole || "—"}
+                      </div>
+                      <div>
+                        <span className="text-gray-500 dark:text-slate-400">Cấp độ:</span>{" "}
+                        {candidateProfile.targetLevel || "—"}
+                      </div>
+                    </div>
+                    {candidateProfile.introduction && (
+                      <p className="mt-2 text-sm">{candidateProfile.introduction}</p>
+                    )}
+                  </div>
+
+                  {/* Skills */}
+                  <div>
+                    <h4 className="mb-2 font-semibold">Kỹ năng</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng kỹ thuật:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {(candidateProfile.technicalSkills ?? []).map((s) => (
+                            <Badge key={s} variant="secondary">{s}</Badge>
+                          ))}
+                          {(candidateProfile.technicalSkills ?? []).length === 0 && (
+                            <span className="text-sm text-gray-400">—</span>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng mềm:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {(candidateProfile.softSkills ?? []).map((s) => (
+                            <Badge key={s} variant="outline">{s}</Badge>
+                          ))}
+                          {(candidateProfile.softSkills ?? []).length === 0 && (
+                            <span className="text-sm text-gray-400">—</span>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm text-gray-500 dark:text-slate-400">Công cụ:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {(candidateProfile.tools ?? []).map((t) => (
+                            <Badge key={t} variant="secondary">{t}</Badge>
+                          ))}
+                          {(candidateProfile.tools ?? []).length === 0 && (
+                            <span className="text-sm text-gray-400">—</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Projects */}
+                  {(candidateProfile.projects ?? []).length > 0 && (
+                    <div>
+                      <h4 className="mb-2 font-semibold">Dự án</h4>
+                      <div className="space-y-2">
+                        {candidateProfile.projects!.map((p, i) => (
+                          <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
+                            <p className="font-medium">{p.name}</p>
+                            <p className="text-gray-600 dark:text-slate-300">{p.description}</p>
+                            <p className="text-gray-500 dark:text-slate-400">
+                              {p.role} · Đội {p.teamSize} người · {p.outcome}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Work Experience */}
+                  {(candidateProfile.workExperiences ?? []).length > 0 && (
+                    <div>
+                      <h4 className="mb-2 font-semibold">Kinh nghiệm làm việc</h4>
+                      <div className="space-y-2">
+                        {candidateProfile.workExperiences!.map((w, i) => (
+                          <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
+                            <p className="font-medium">{w.position} — {w.company}</p>
+                            <p className="text-gray-600 dark:text-slate-300">{w.description}</p>
+                            <p className="text-xs text-gray-400">
+                              {w.start_date} — {w.end_date || "Hiện tại"}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Education */}
+                  {(candidateProfile.educations ?? []).length > 0 && (
+                    <div>
+                      <h4 className="mb-2 font-semibold">Học vấn</h4>
+                      <div className="space-y-2">
+                        {candidateProfile.educations!.map((e, i) => (
+                          <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
+                            <p className="font-medium">{e.school}</p>
+                            <p className="text-gray-600 dark:text-slate-300">{e.major} — {e.degree}</p>
+                            {e.gpa && <p>GPA: {e.gpa}</p>}
+                            <p className="text-xs text-gray-400">
+                              {e.start_date} — {e.end_date || "Hiện tại"}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Certifications */}
+                  {(candidateProfile.certifications ?? []).length > 0 && (
+                    <div>
+                      <h4 className="mb-2 font-semibold">Chứng chỉ</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {candidateProfile.certifications!.map((c) => (
+                          <Badge key={c} variant="secondary">{c}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Achievements */}
+                  {(candidateProfile.achievements ?? []).length > 0 && (
+                    <div>
+                      <h4 className="mb-2 font-semibold">Thành tích</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {candidateProfile.achievements!.map((a) => (
+                          <Badge key={a} variant="outline">{a}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

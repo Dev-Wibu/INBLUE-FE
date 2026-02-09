@@ -1,9 +1,9 @@
 /**
  * Mentor Sessions Page
- * Displays mentor's interview sessions with option to write feedback
+ * Displays mentor's interview sessions with option to join video call or write feedback
  */
 
-import { Calendar, Clock, MessageSquare, User, Video } from "lucide-react";
+import { Calendar, Clock, LogIn, MessageSquare, User, Video } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -24,26 +24,29 @@ import { useAuthStore } from "@/stores/authStore";
 // Status badge mapping
 const statusMap: Record<
   string,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline"; color: string }
 > = {
-  SCHEDULED: { label: "Đã lên lịch", variant: "secondary" },
-  ACTIVE: { label: "Đang diễn ra", variant: "default" },
-  COMPLETED: { label: "Hoàn thành", variant: "outline" },
-  CANCELED: { label: "Đã hủy", variant: "destructive" },
+  SCHEDULED: { label: "Sắp diễn ra", variant: "secondary", color: "bg-blue-100 text-blue-700" },
+  ONGOING: { label: "Đang diễn ra", variant: "default", color: "bg-green-100 text-green-700" },
+  COMPLETED: { label: "Hoàn thành", variant: "outline", color: "bg-slate-100 text-slate-600" },
+  CANCELED: { label: "Đã hủy", variant: "destructive", color: "bg-red-100 text-red-600" },
 };
 
 interface SessionCardProps {
   session: Session;
   hasFeedback: boolean;
+  onJoinSession: () => void;
   onWriteFeedback: () => void;
 }
 
-function SessionCard({ session, hasFeedback, onWriteFeedback }: SessionCardProps) {
+function SessionCard({ session, hasFeedback, onJoinSession, onWriteFeedback }: SessionCardProps) {
   const status = statusMap[session.status || "SCHEDULED"] || statusMap.SCHEDULED;
   const isCompleted = session.status === "COMPLETED";
+  const canJoin =
+    (session.status === "SCHEDULED" || session.status === "ONGOING") && !!session.roomUrl;
 
   return (
-    <Card className="border-emerald-100 transition-shadow hover:shadow-md dark:border-slate-800">
+    <Card className="border-emerald-100 transition-all hover:shadow-md dark:border-slate-800">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -60,19 +63,46 @@ function SessionCard({ session, hasFeedback, onWriteFeedback }: SessionCardProps
               </CardDescription>
             </div>
           </div>
-          <Badge variant={status.variant}>{status.label}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={status.color}>{status.label}</Badge>
+            {canJoin && (
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onJoinSession();
+                }}
+                className="gap-1 bg-emerald-600 hover:bg-emerald-700">
+                <LogIn className="h-3.5 w-3.5" />
+                Join
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="mb-4 flex items-center gap-4 text-sm text-slate-500">
-          <span className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            ID: {session.id}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {session.status}
-          </span>
+          {session.startTime1 && (
+            <>
+              <span className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                {new Date(session.startTime1).toLocaleDateString("vi-VN")}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {new Date(session.startTime1).toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </>
+          )}
+          {!session.startTime1 && (
+            <span className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              Phiên #{session.id}
+            </span>
+          )}
         </div>
 
         <div className="flex gap-2">
@@ -91,10 +121,8 @@ function SessionCard({ session, hasFeedback, onWriteFeedback }: SessionCardProps
               Đã gửi phản hồi
             </Button>
           )}
-          {!isCompleted && (
-            <span className="text-sm text-slate-500 italic">
-              Chờ phiên hoàn thành để gửi phản hồi
-            </span>
+          {!isCompleted && !canJoin && (
+            <span className="text-sm text-slate-500 italic">Phiên đã kết thúc hoặc bị hủy</span>
           )}
         </div>
       </CardContent>
@@ -133,9 +161,20 @@ export function MentorSessionsPage() {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
+  const handleJoinSession = (session: Session) => {
+    if (session.roomUrl) {
+      navigate(`/mentor/sessions/room/${session.id}`);
+    }
+  };
+
   const handleWriteFeedback = (session: Session) => {
     navigate(`/mentor/sessions/${session.id}/feedback`);
   };
+
+  // Stats
+  const scheduledCount = mentorSessions.filter(
+    (s: Session) => s.status === "SCHEDULED" || s.status === "ONGOING"
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -143,7 +182,7 @@ export function MentorSessionsPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Phiên Phỏng Vấn</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Quản lý các phiên phỏng vấn và gửi phản hồi cho học viên
+          Quản lý các phiên phỏng vấn và tham gia video call với học viên
         </p>
       </div>
 
@@ -157,17 +196,15 @@ export function MentorSessionsPage() {
         </Card>
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardHeader className="pb-2">
-            <CardDescription>Hoàn thành</CardDescription>
-            <CardTitle className="text-2xl text-green-600">
-              {mentorSessions.filter((s: Session) => s.status === "COMPLETED").length}
-            </CardTitle>
+            <CardDescription>Sắp diễn ra</CardDescription>
+            <CardTitle className="text-2xl text-blue-600">{scheduledCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardHeader className="pb-2">
-            <CardDescription>Đã phản hồi</CardDescription>
-            <CardTitle className="text-2xl text-emerald-600">
-              {mentorSessions.filter((s: Session) => feedbackSessionIds.has(s.id)).length}
+            <CardDescription>Hoàn thành</CardDescription>
+            <CardTitle className="text-2xl text-green-600">
+              {mentorSessions.filter((s: Session) => s.status === "COMPLETED").length}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -213,6 +250,7 @@ export function MentorSessionsPage() {
                 key={session.id}
                 session={session}
                 hasFeedback={feedbackSessionIds.has(session.id)}
+                onJoinSession={() => handleJoinSession(session)}
                 onWriteFeedback={() => handleWriteFeedback(session)}
               />
             ))}

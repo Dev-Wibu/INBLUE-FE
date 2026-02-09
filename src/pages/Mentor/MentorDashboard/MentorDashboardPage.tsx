@@ -9,6 +9,7 @@ import { MentorOverviewPage } from "../Overview";
 import { MentorReviewsPage } from "../Reviews";
 import { MentorSessionsPage } from "../Sessions";
 import { StudentsListPage } from "../Students";
+import { PostListPage } from "../../User/Community";
 import type { Tab, TabType } from "./components";
 import { ChromeTabs, Sidebar } from "./components";
 
@@ -21,6 +22,7 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "students", label: "Học viên" },
   { type: "reviews", label: "Đánh giá" },
   { type: "feedback", label: "Phản hồi đã gửi" },
+  { type: "community", label: "Cộng đồng" },
   { type: "notifications", label: "Thông báo" },
   { type: "account", label: "Tài khoản" },
 ];
@@ -94,6 +96,8 @@ export function MentorDashboardPage() {
         return <MentorReviewsPage />;
       case "feedback":
         return <GivenFeedbackListPage />;
+      case "community":
+        return <PostListPage />;
       case "notifications":
         return <MentorNotificationsPage />;
       case "account":

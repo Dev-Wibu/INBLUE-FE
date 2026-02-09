@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  Newspaper,
   Star,
   User,
   Users,
@@ -61,6 +62,12 @@ const MENU_ITEMS = [
     icon: MessageSquare,
     label: "Phản hồi đã gửi",
     color: "text-cyan-600",
+  },
+  {
+    type: "community" as TabType,
+    icon: Newspaper,
+    label: "Cộng đồng",
+    color: "text-orange-500",
   },
 ];
 
