@@ -5,7 +5,7 @@
  */
 
 import { AlertCircle } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +34,12 @@ export function VideoCallRoom({
   className,
 }: VideoCallRoomProps) {
   const { joinRoom, roomState, error, callObject } = useVideoCall();
+  const hasCalledOnJoined = useRef(false);
+
+  // Reset the flag when roomUrl changes (new room)
+  useEffect(() => {
+    hasCalledOnJoined.current = false;
+  }, [roomUrl]);
 
   // Join room on mount
   useEffect(() => {
@@ -49,11 +55,12 @@ export function VideoCallRoom({
     }
   }, [error, onError]);
 
-  // Handle joined callback
+  // Handle joined callback - fire only once per room
   useEffect(() => {
-    if (roomState === "joined" && callObject && onJoined) {
+    if (roomState === "joined" && callObject && onJoined && !hasCalledOnJoined.current) {
       const localParticipant = callObject.participants()?.local;
       if (localParticipant?.session_id) {
+        hasCalledOnJoined.current = true;
         onJoined(localParticipant.session_id);
       }
     }
@@ -94,6 +101,16 @@ export function VideoCallRoom({
       <Card className={cn("w-full", className)}>
         <CardContent className="flex items-center justify-center p-8">
           <VideoCallLoader message="Đang rời khỏi phòng họp..." />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (roomState === "idle") {
+    return (
+      <Card className={cn("w-full", className)}>
+        <CardContent className="flex items-center justify-center p-8">
+          <VideoCallLoader message="Đang chuẩn bị kết nối..." />
         </CardContent>
       </Card>
     );

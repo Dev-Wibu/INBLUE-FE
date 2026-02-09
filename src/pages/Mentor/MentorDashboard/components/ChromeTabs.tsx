@@ -3,6 +3,7 @@ import {
   Calendar,
   LayoutDashboard,
   MessageSquare,
+  Newspaper,
   Plus,
   Star,
   User,
@@ -19,6 +20,7 @@ export type TabType =
   | "students"
   | "reviews"
   | "feedback"
+  | "community"
   | "notifications"
   | "account";
 
@@ -42,6 +44,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   students: Users,
   reviews: Star,
   feedback: MessageSquare,
+  community: Newspaper,
   notifications: Bell,
   account: User,
 };
@@ -52,6 +55,7 @@ const TAB_COLORS: Record<TabType, string> = {
   students: "text-purple-600",
   reviews: "text-yellow-600",
   feedback: "text-cyan-600",
+  community: "text-orange-500",
   notifications: "text-red-600",
   account: "text-gray-600",
 };
@@ -159,6 +163,15 @@ export function ChromeTabs({
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-700">
                 <MessageSquare className="h-4 w-4 text-cyan-600" />
                 Phản hồi đã gửi
+              </button>
+              <button
+                onClick={() => {
+                  onNewTab("community");
+                  setShowNewTabMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-700">
+                <Newspaper className="h-4 w-4 text-orange-500" />
+                Cộng đồng
               </button>
               <div className="my-1 border-t dark:border-slate-600" />
               <button
