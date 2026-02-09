@@ -2,7 +2,8 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { fetchQuestionSetDetail, type QuestionSetDetail } from "@/mocks/questions.mock";
+import type { QuestionSetDetail } from "@/mocks/questions.mock";
+import { questionManager } from "@/services";
 
 export function QuestionDetailPage() {
   const navigate = useNavigate();
@@ -23,8 +24,13 @@ export function QuestionDetailPage() {
 
       setLoading(true);
       try {
-        const data = await fetchQuestionSetDetail(numericId);
-        setQuestionSet(data);
+        const response = await questionManager.getById(numericId);
+        if (response.success && response.data) {
+          setQuestionSet(response.data);
+        } else {
+          console.error("Error loading question set:", response.error);
+          setQuestionSet(null);
+        }
       } catch (error) {
         console.error("Error loading question set:", error);
         setQuestionSet(null);

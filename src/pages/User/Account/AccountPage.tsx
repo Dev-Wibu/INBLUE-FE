@@ -50,6 +50,8 @@ import { usersAdminManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 
+import { CandidateProfileTab } from "./CandidateProfileTab";
+
 // Extended profile type based on schema-from-be User type
 // Updated: Removed bio, targetPosition, targetLevel per BE requirement (2026-01-20)
 interface UserProfileData {
@@ -71,7 +73,7 @@ export function AccountPage() {
   const [wallet] = useState<Wallet>(mockWallet);
   const [settings] = useState<UserSettings>(mockUserSettings);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"profile" | "wallet" | "settings">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "wallet" | "settings" | "candidateProfile">("profile");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -310,6 +312,8 @@ export function AccountPage() {
         return renderWalletTab();
       case "settings":
         return renderSettingsTab();
+      case "candidateProfile":
+        return <CandidateProfileTab />;
       default:
         return renderProfileTab();
     }
@@ -815,6 +819,16 @@ export function AccountPage() {
               : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300"
           }`}>
           Cài đặt
+        </button>
+        <button
+          onClick={() => setActiveTab("candidateProfile")}
+          className={`flex items-center gap-2 px-6 py-3 font-['Inter'] text-base font-medium transition-colors ${
+            activeTab === "candidateProfile"
+              ? "border-b-2 border-[#0047AB] text-[#0047AB] dark:border-[#66B2FF] dark:text-[#66B2FF]"
+              : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300"
+          }`}>
+          <FileText className="h-4 w-4" />
+          Hồ sơ ứng viên
         </button>
       </div>
 

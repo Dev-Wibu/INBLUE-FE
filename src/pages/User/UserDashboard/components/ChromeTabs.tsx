@@ -5,6 +5,7 @@ import {
   History,
   LayoutDashboard,
   MessageSquare,
+  Newspaper,
   Plus,
   User,
   Users,
@@ -22,6 +23,7 @@ export type TabType =
   | "aiInterview"
   | "aiChat"
   | "questions"
+  | "community"
   | "notifications"
   | "account";
 
@@ -47,6 +49,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   aiInterview: Bot,
   aiChat: MessageSquare,
   questions: CircleHelp,
+  community: Newspaper,
   notifications: Bell,
   account: User,
 };
@@ -59,6 +62,7 @@ const TAB_COLORS: Record<TabType, string> = {
   aiInterview: "text-green-600",
   aiChat: "text-teal-600",
   questions: "text-yellow-600",
+  community: "text-orange-500",
   notifications: "text-red-600",
   account: "text-gray-600",
 };
@@ -184,6 +188,15 @@ export function ChromeTabs({
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700">
                 <CircleHelp className="h-4 w-4 text-yellow-600" />
                 Bộ câu hỏi
+              </button>
+              <button
+                onClick={() => {
+                  onNewTab("community");
+                  setShowNewTabMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700">
+                <Newspaper className="h-4 w-4 text-orange-500" />
+                Cộng đồng
               </button>
               <div className="my-1 border-t dark:border-slate-600" />
               <button

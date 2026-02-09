@@ -1,16 +1,36 @@
 import { MessageCircle, Plus, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ChatSession } from "@/mocks/chat.mock";
-import { mockChatSessions } from "@/mocks/chat.mock";
+import { chatManager } from "@/services";
 
 export function AIChatListPage() {
   const navigate = useNavigate();
-  const [chatSessions] = useState<ChatSession[]>(mockChatSessions);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadChatSessions = async () => {
+      setLoading(true);
+      try {
+        const response = await chatManager.getChatSessions();
+        if (response.success && response.data) {
+          const sessions = Array.isArray(response.data) ? response.data : [];
+          setChatSessions(sessions);
+        }
+      } catch (error) {
+        console.error("Error loading chat sessions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChatSessions();
+  }, []);
 
   const handleNewChat = () => {
     // Navigate to a new chat conversation
@@ -59,73 +79,70 @@ export function AIChatListPage() {
         </div>
 
         {/* Chat History Cards */}
-        <Card className="divide-y">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Cuộc trò chuyện gần đây</CardTitle>
-            <CardDescription>Click vào để tiếp tục cuộc trò chuyện</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            {chatSessions.map((session, index) => (
-              <div
-                key={session.id}
-                onClick={() => handleOpenChat(session.id)}
-                className={`group hover:bg-muted/50 flex cursor-pointer items-center gap-4 px-6 py-4 transition-colors ${
-                  index !== chatSessions.length - 1 ? "border-b" : ""
-                }`}>
-                {/* Icon */}
-                <div className="bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full">
-                  <MessageCircle className="text-primary h-6 w-6" />
+        {loading ? (
+          <Card className="p-6 text-center">
+            <p className="text-muted-foreground">Đang tải...</p>
+          </Card>
+        ) : (
+          <Card className="divide-y">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg">Cuộc trò chuyện gần đây</CardTitle>
+              <CardDescription>Click vào để tiếp tục cuộc trò chuyện</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {chatSessions.length === 0 ? (
+                <div className="p-6 text-center">
+                  <p className="text-muted-foreground">Chưa có cuộc trò chuyện nào</p>
                 </div>
+              ) : (
+                chatSessions.map((session, index) => (
+                  <div
+                    key={session.id}
+                    onClick={() => handleOpenChat(session.id)}
+                    className={`group hover:bg-muted/50 flex cursor-pointer items-center gap-4 px-6 py-4 transition-colors ${
+                      index !== chatSessions.length - 1 ? "border-b" : ""
+                    }`}>
+                    {/* Icon */}
+                    <div className="bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full">
+                      <MessageCircle className="text-primary h-6 w-6" />
+                    </div>
 
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="group-hover:text-primary font-semibold text-zinc-800">
-                      {session.title}
-                    </h3>
-                    <Badge variant="secondary" className="text-xs">
-                      {session.lastMessageTime}
-                    </Badge>
+                    {/* Content */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="group-hover:text-primary font-semibold text-zinc-800">
+                          {session.title}
+                        </h3>
+                        <Badge variant="secondary" className="text-xs">
+                          {session.lastMessageTime}
+                        </Badge>
+                      </div>
+                      <p className="text-muted-foreground mt-1 truncate text-sm">
+                        {session.lastMessage}
+                      </p>
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-1">
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
                   </div>
-                  <p className="text-muted-foreground mt-1 truncate text-sm">
-                    {session.lastMessage}
-                  </p>
-                </div>
-
-                {/* Arrow */}
-                <div className="text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-1">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              </div>
-            ))}
-
-            {/* Empty state if no chat sessions */}
-            {chatSessions.length === 0 && (
-              <div className="flex h-64 flex-col items-center justify-center gap-4 p-6">
-                <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
-                  <MessageCircle className="text-muted-foreground h-8 w-8" />
-                </div>
-                <div className="text-center">
-                  <p className="font-medium text-zinc-800">Chưa có cuộc trò chuyện nào</p>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Bắt đầu cuộc trò chuyện mới để luyện tập phỏng vấn!
-                  </p>
-                </div>
-                <Button onClick={handleNewChat} className="mt-2 gap-2">
-                  <Plus className="h-4 w-4" />
-                  Bắt đầu ngay
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

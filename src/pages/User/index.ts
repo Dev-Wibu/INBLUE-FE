@@ -42,3 +42,15 @@ export { UserNotificationsPage } from "./Notifications";
 
 // User Dashboard with Chrome Tabs
 export { UserDashboardPage } from "./UserDashboard";
+
+// Practice exports
+export {
+  PracticeQuestionsPage,
+  PracticeSetDetailPage,
+  PracticeSetsPage,
+  QuizPage,
+  QuizResultPage,
+} from "./Practice";
+
+// Community exports
+export { CreatePostPage, PostDetailPage, PostListPage } from "./Community";

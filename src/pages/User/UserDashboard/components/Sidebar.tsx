@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  Newspaper,
   User,
   Users,
 } from "lucide-react";
@@ -77,6 +78,12 @@ const AI_MENU_ITEMS = [
     icon: CircleHelp,
     label: "Bộ câu hỏi",
     color: "text-yellow-600",
+  },
+  {
+    type: "community" as TabType,
+    icon: Newspaper,
+    label: "Cộng đồng",
+    color: "text-orange-500",
   },
 ];
 

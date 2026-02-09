@@ -1,6 +1,6 @@
 /**
  * Session History Page
- * Displays user's completed interview sessions with option to write reviews
+ * Displays user's interview sessions with option to join or write reviews
  */
 
 import { Calendar, Clock, Star, User, Video } from "lucide-react";
@@ -23,12 +23,12 @@ import type { Session } from "@/interfaces";
 // Status badge mapping
 const statusMap: Record<
   string,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline"; color: string }
 > = {
-  SCHEDULED: { label: "Đã lên lịch", variant: "secondary" },
-  ACTIVE: { label: "Đang diễn ra", variant: "default" },
-  COMPLETED: { label: "Hoàn thành", variant: "outline" },
-  CANCELED: { label: "Đã hủy", variant: "destructive" },
+  SCHEDULED: { label: "Sắp diễn ra", variant: "secondary", color: "bg-blue-100 text-blue-700" },
+  ONGOING: { label: "Đang diễn ra", variant: "default", color: "bg-green-100 text-green-700" },
+  COMPLETED: { label: "Hoàn thành", variant: "outline", color: "bg-slate-100 text-slate-600" },
+  CANCELED: { label: "Đã hủy", variant: "destructive", color: "bg-red-100 text-red-600" },
 };
 
 interface SessionCardProps {
@@ -43,7 +43,7 @@ function SessionCard({ session, hasReview, onViewDetails, onWriteReview }: Sessi
   const isCompleted = session.status === "COMPLETED";
 
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card className="transition-all hover:shadow-md">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -60,19 +60,32 @@ function SessionCard({ session, hasReview, onViewDetails, onWriteReview }: Sessi
               </CardDescription>
             </div>
           </div>
-          <Badge variant={status.variant}>{status.label}</Badge>
+          <Badge className={status.color}>{status.label}</Badge>
         </div>
       </CardHeader>
       <CardContent>
         <div className="mb-4 flex items-center gap-4 text-sm text-slate-500">
-          <span className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            ID: {session.id}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            {session.status}
-          </span>
+          {session.startTime1 && (
+            <>
+              <span className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                {new Date(session.startTime1).toLocaleDateString("vi-VN")}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {new Date(session.startTime1).toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </>
+          )}
+          {!session.startTime1 && (
+            <span className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              Phiên #{session.id}
+            </span>
+          )}
         </div>
 
         <div className="flex gap-2">
@@ -132,14 +145,30 @@ export function SessionHistoryPage() {
     navigate(`/dashboard/mock-interview/history/${session.id}/review`);
   };
 
+  // Stats
+  const scheduledCount = sessions.filter(
+    (s) => s.status === "SCHEDULED" || s.status === "ONGOING"
+  ).length;
+  const completedCount = sessions.filter((s) => s.status === "COMPLETED").length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Lịch Sử Phỏng Vấn</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Xem lại các phiên phỏng vấn và viết đánh giá cho mentor
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            Lịch Sử Phỏng Vấn
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Xem lại các phiên phỏng vấn và viết đánh giá cho mentor
+          </p>
+        </div>
+        <Button
+          onClick={() => navigate("/dashboard/mock-interview/schedule")}
+          className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
+          <Video className="h-4 w-4" />
+          Đặt lịch phỏng vấn mới
+        </Button>
       </div>
 
       {/* Stats */}
@@ -150,20 +179,16 @@ export function SessionHistoryPage() {
             <CardTitle className="text-2xl">{sessions.length}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="border-blue-200 dark:border-blue-900">
           <CardHeader className="pb-2">
-            <CardDescription>Hoàn thành</CardDescription>
-            <CardTitle className="text-2xl text-green-600">
-              {sessions.filter((s) => s.status === "COMPLETED").length}
-            </CardTitle>
+            <CardDescription>Sắp diễn ra</CardDescription>
+            <CardTitle className="text-2xl text-blue-600">{scheduledCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Đã đánh giá</CardDescription>
-            <CardTitle className="text-2xl text-[#0047AB]">
-              {sessions.filter((s) => reviewedSessionIds.has(s.id)).length}
-            </CardTitle>
+            <CardDescription>Hoàn thành</CardDescription>
+            <CardTitle className="text-2xl text-green-600">{completedCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -188,7 +213,7 @@ export function SessionHistoryPage() {
           title="Chưa có phiên phỏng vấn"
           description="Bạn chưa có phiên phỏng vấn nào. Hãy đặt lịch phỏng vấn với mentor!"
           action={
-            <Button onClick={() => navigate("/dashboard/mock-interview/select-mentor")}>
+            <Button onClick={() => navigate("/dashboard/mock-interview/schedule")}>
               Đặt lịch phỏng vấn
             </Button>
           }
