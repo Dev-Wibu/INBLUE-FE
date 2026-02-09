@@ -10,6 +10,7 @@ import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
 import { UserNotificationsPage } from "../Notifications";
 import { OverviewPage } from "../Overview";
 import { QuestionListPage } from "../Question";
+import { PostListPage } from "../Community";
 import type { Tab, TabType } from "./components";
 import { ChromeTabs, Sidebar } from "./components";
 
@@ -24,6 +25,7 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "aiInterview", label: "Phỏng vấn với AI" },
   { type: "aiChat", label: "AI Chat" },
   { type: "questions", label: "Bộ câu hỏi" },
+  { type: "community", label: "Cộng đồng" },
   { type: "notifications", label: "Thông báo" },
   { type: "account", label: "Tài khoản" },
 ];
@@ -101,6 +103,8 @@ export function UserDashboardPage() {
         return <AIChatListPage />;
       case "questions":
         return <QuestionListPage />;
+      case "community":
+        return <PostListPage />;
       case "notifications":
         return <UserNotificationsPage />;
       case "account":

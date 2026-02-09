@@ -115,19 +115,18 @@ export function SessionDetailPage() {
               <span className="text-slate-600 dark:text-slate-400">Trạng thái:</span>
               <span className="font-medium">{session.status}</span>
             </div>
-            {session.roomUrl && (
-              <div className="flex items-center gap-2 text-sm">
-                <Video className="h-4 w-4 text-slate-400" />
-                <span className="text-slate-600 dark:text-slate-400">Room:</span>
-                <a
-                  href={session.roomUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-[#0047AB] hover:underline">
-                  Tham gia phòng
-                </a>
-              </div>
-            )}
+            {session.roomUrl &&
+              (session.status === "SCHEDULED" || session.status === "ONGOING") && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Video className="h-4 w-4 text-slate-400" />
+                  <span className="text-slate-600 dark:text-slate-400">Room:</span>
+                  <button
+                    onClick={() => navigate(`/dashboard/mock-interview/room/${session.id}`)}
+                    className="font-medium text-[#0047AB] hover:underline">
+                    Tham gia phòng
+                  </button>
+                </div>
+              )}
           </div>
 
           {/* Action Buttons */}

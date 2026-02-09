@@ -3,12 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import type { ChatMessage } from "@/mocks/chat.mock";
-import {
-  fetchChatMessages,
-  fetchChatSession,
-  getAIResponse,
-  sendChatMessage,
-} from "@/mocks/chat.mock";
+import { chatManager } from "@/services";
 
 export function AIChatConversationPage() {
   const navigate = useNavigate();
@@ -41,13 +36,19 @@ export function AIChatConversationPage() {
           },
         ]);
       } else {
-        const session = await fetchChatSession(sessionId);
-        if (session) {
-          setChatTitle(session.title);
+        try {
+          const sessionResponse = await chatManager.getChatSession(sessionId);
+          if (sessionResponse.success && sessionResponse.data) {
+            setChatTitle(sessionResponse.data.title);
+          }
+          const messagesResponse = await chatManager.getChatMessages(sessionId);
+          if (messagesResponse.success && messagesResponse.data) {
+            const chatMessages = Array.isArray(messagesResponse.data) ? messagesResponse.data : [];
+            setMessages(chatMessages);
+          }
+        } catch (error) {
+          console.error("Error loading chat:", error);
         }
-        const chatMessages = await fetchChatMessages(sessionId);
-        // Set messages from API response, or use mock data for demo purposes
-        setMessages(chatMessages);
       }
     };
     loadChat();
@@ -69,13 +70,25 @@ export function AIChatConversationPage() {
     setInputValue("");
     setIsLoading(true);
 
-    // Add user message
-    const userMessage = await sendChatMessage(sessionId, messageContent);
-    setMessages((prev) => [...prev, userMessage]);
-
-    // Get AI response
     try {
-      const aiResponse = await getAIResponse(sessionId);
+      // Add user message
+      const userMessageResponse = await chatManager.sendMessage(sessionId, messageContent);
+      if (userMessageResponse.success && userMessageResponse.data) {
+        setMessages((prev) => [...prev, userMessageResponse.data!]);
+      }
+
+      // Get AI response - would need a separate API method
+      // For now, we simulate AI response
+      const aiResponse: ChatMessage = {
+        id: Date.now(),
+        sender: "ai",
+        content: "Đây là câu trả lời mẫu từ AI. API thật sẽ được tích hợp sau.",
+        time: new Date().toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      };
       setMessages((prev) => [...prev, aiResponse]);
     } catch (error) {
       console.error("Error getting AI response:", error);

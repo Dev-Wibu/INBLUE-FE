@@ -1,302 +1,601 @@
-import { Calendar, Check, ChevronLeft, ChevronRight, Clock, Timer, User } from "lucide-react";
-import { useState } from "react";
+/**
+ * MockInterviewSchedulePage.tsx
+ * Redesigned "Schedule a New Interview" page
+ * Steps: Select Mentor → Choose Date/Time (expiration) → Review & Create
+ *
+ * BE requirement: User chooses a date/time, website auto-converts to seconds (exp) and sends to BE
+ * The exp field in DailyCoCreationRequest.properties is the expiration in seconds.
+ */
+
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarIcon,
+  Check,
+  Clock,
+  Search,
+  Star,
+  User,
+  Users,
+  Video,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { mockMentors, mockUnavailableDates } from "@/mocks/mentors.mock";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LoadingCardList } from "@/components/ui/loading-card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+
+import { useMentors } from "@/hooks/useMentor";
+import { useCreateSession } from "@/hooks/useSession";
+import { useAuthStore } from "@/stores/authStore";
+
+// Step definitions
+const STEPS = [
+  { id: 1, label: "Chọn Mentor", icon: Users },
+  { id: 2, label: "Chọn thời gian", icon: CalendarIcon },
+  { id: 3, label: "Xác nhận", icon: Check },
+] as const;
+
+// Time options for the select dropdown
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({
+  value: String(i).padStart(2, "0"),
+  label: String(i).padStart(2, "0"),
+}));
+
+const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
+  value: String(i * 5).padStart(2, "0"),
+  label: String(i * 5).padStart(2, "0"),
+}));
+
+// Minimum time offset in milliseconds (1 minute)
+const MIN_FUTURE_OFFSET_MS = 60 * 1000;
 
 export function MockInterviewSchedulePage() {
   const navigate = useNavigate();
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 8, 1)); // September 2025
-  const [selectedDate, setSelectedDate] = useState<number | null>(12);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const { data: mentors = [], isLoading } = useMentors();
+  const createSession = useCreateSession();
 
-  const mentor = mockMentors[0]; // Using first mentor for demo
+  // Step state
+  const [currentStep, setCurrentStep] = useState(1);
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("vi-VN").format(amount) + " VNĐ";
+  // Step 1: Mentor selection
+  const [selectedMentorId, setSelectedMentorId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Step 2: Date/Time selection
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedHour, setSelectedHour] = useState("09");
+  const [selectedMinute, setSelectedMinute] = useState("00");
+
+  // Step 3: Creating
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Filtered mentors
+  const filteredMentors = useMemo(() => {
+    const activeMentors = mentors.filter((m) => m.active !== false);
+    if (!searchQuery) return activeMentors;
+    const q = searchQuery.toLowerCase();
+    return activeMentors.filter(
+      (m) =>
+        m.name?.toLowerCase().includes(q) ||
+        m.expertise?.toLowerCase().includes(q) ||
+        m.currentCompany?.toLowerCase().includes(q)
+    );
+  }, [mentors, searchQuery]);
+
+  // Selected mentor data
+  const selectedMentor = mentors.find((m) => m.id === selectedMentorId);
+
+  // Calculate expiration in seconds from selected date/time
+  const calculateExpSeconds = (): number => {
+    if (!selectedDate) return 3600; // Default: 1 hour
+    const expirationDate = new Date(selectedDate);
+    expirationDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
+    const now = new Date();
+    const diffMs = expirationDate.getTime() - now.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+    return Math.max(diffSeconds, 60); // Minimum 60 seconds
   };
 
-  const getDaysInMonth = (date: Date): number => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  // Format selected date/time for display
+  const formatSelectedDateTime = (): string => {
+    if (!selectedDate) return "Chưa chọn";
+    const d = new Date(selectedDate);
+    d.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
+    return d.toLocaleString("vi-VN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
-  const getFirstDayOfMonth = (date: Date): number => {
-    // Returns 0-6 where 0 = Sunday, matching weekDays array order
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  // Format duration for display
+  const formatDuration = (): string => {
+    const seconds = calculateExpSeconds();
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    if (hours > 0 && mins > 0) return `${hours} giờ ${mins} phút`;
+    if (hours > 0) return `${hours} giờ`;
+    return `${mins} phút`;
   };
 
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const weekDays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-    setSelectedDate(null);
+  // Validation
+  const isDateTimeValid = (): boolean => {
+    if (!selectedDate) return false;
+    const expirationDate = new Date(selectedDate);
+    expirationDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
+    return expirationDate.getTime() > Date.now() + MIN_FUTURE_OFFSET_MS;
   };
 
-  const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-    setSelectedDate(null);
+  const canProceedStep1 = selectedMentorId !== null;
+  const canProceedStep2 = isDateTimeValid();
+
+  // Render stars
+  const renderStars = (rating?: number) => {
+    const r = rating ?? 0;
+    const fullStars = Math.floor(r);
+    return (
+      <div className="flex items-center gap-0.5">
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            className={`h-3.5 w-3.5 ${i < fullStars ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+          />
+        ))}
+        {r > 0 && <span className="ml-1 text-xs text-slate-500">({r})</span>}
+      </div>
+    );
   };
 
-  const handleDateClick = (day: number) => {
-    if (!mockUnavailableDates.includes(day)) {
-      setSelectedDate(day);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (selectedDate) {
-      navigate("/dashboard/mock-interview/confirm");
-    }
-  };
-
-  const renderCalendar = () => {
-    const daysInMonth = getDaysInMonth(currentMonth);
-    const firstDay = getFirstDayOfMonth(currentMonth);
-    const days = [];
-
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-10 w-20" />);
-    }
-
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const isUnavailable = mockUnavailableDates.includes(day);
-      const isSelected = selectedDate === day;
-      // Day 18 is disabled based on mock design
-      const isDisabled = day === 18;
-
-      let className =
-        "flex h-10 w-20 items-center justify-center rounded-[28px] cursor-pointer transition-colors";
-
-      if (isUnavailable) {
-        className +=
-          " bg-rose-400 shadow-[0px_0px_0px_3px_rgba(255,204,204,1.00)] text-white cursor-not-allowed";
-      } else if (isSelected) {
-        className += " bg-indigo-100 outline outline-2 outline-offset-[-2px] outline-indigo-500";
-      } else if (isDisabled) {
-        className += " bg-stone-50 text-stone-300 cursor-not-allowed";
+  // Handle session creation
+  const handleCreateSession = async () => {
+    if (!selectedMentorId || !user?.id) return;
+    setIsCreating(true);
+    try {
+      const expSeconds = calculateExpSeconds();
+      const result = await createSession.mutateAsync({
+        userId: user.id,
+        mentorId: selectedMentorId,
+        dailyCoCreationRequest: {
+          name: "",
+          privacy: "public",
+          properties: {
+            max_participants: 2,
+            start_video_off: true,
+            start_audio_off: true,
+            enable_screenshare: true,
+            exp: expSeconds,
+            enable_recording: "cloud",
+          },
+        },
+      });
+      if (result?.id) {
+        navigate(`/dashboard/mock-interview/room/${result.id}`);
       } else {
-        className += " hover:bg-gray-100";
+        navigate("/dashboard/mock-interview/history");
       }
-
-      days.push(
-        <button
-          key={day}
-          onClick={() => handleDateClick(day)}
-          disabled={isUnavailable || isDisabled}
-          className={className}>
-          <span
-            className={`font-['Inter'] text-base font-medium ${
-              isUnavailable ? "text-white" : isDisabled ? "text-stone-300" : "text-zinc-800"
-            }`}>
-            {day}
-          </span>
-        </button>
-      );
+    } catch {
+      // Error toast handled by useCreateSession hook
+    } finally {
+      setIsCreating(false);
     }
-
-    return days;
   };
 
   return (
-    <div className="min-h-screen bg-white pb-10">
-      {/* Progress Stepper */}
-      <div className="relative mx-auto mt-10 flex w-full max-w-4xl items-center justify-center">
-        {/* Step 1: Chọn mentor - Completed */}
-        <div className="flex flex-col items-center">
-          <div className="flex h-32 w-28 items-center justify-center rounded-full bg-emerald-500">
-            <Check className="h-16 w-16 text-white" />
-          </div>
-          <span className="mt-4 font-['Markazi_Text'] text-3xl leading-5 font-normal text-black">
-            Chọn mentor
-          </span>
-        </div>
-
-        {/* Line 1 */}
-        <div className="mx-4 h-0.5 w-40 bg-blue-800/50" />
-
-        {/* Step 2: Lên lịch - Active */}
-        <div className="flex flex-col items-center">
-          <div className="flex h-32 w-28 items-center justify-center rounded-full bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-600">
-            <Calendar className="h-16 w-16 text-white" />
-          </div>
-          <span className="mt-4 font-['Markazi_Text'] text-3xl leading-5 font-normal text-black">
-            Lên lịch
-          </span>
-        </div>
-
-        {/* Line 2 */}
-        <div className="mx-4 h-0.5 w-40 bg-blue-800/50" />
-
-        {/* Step 3: Xác nhận - Inactive */}
-        <div className="flex flex-col items-center">
-          <div className="flex h-32 w-28 items-center justify-center rounded-full bg-neutral-200">
-            <div className="h-20 w-20 rounded-full bg-neutral-300" />
-          </div>
-          <span className="mt-4 font-['Markazi_Text'] text-3xl leading-5 font-normal text-black">
-            Xác nhận
-          </span>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/mock-interview")}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Quay lại
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            Đặt lịch phỏng vấn mới
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Chọn mentor, thời gian và tạo phiên phỏng vấn
+          </p>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto mt-16 flex max-w-5xl gap-8 px-6">
-        {/* Left Column */}
-        <div className="flex-1">
-          {/* Mentor Info Card */}
-          <div className="h-24 w-full rounded-lg bg-indigo-100 p-4">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-stone-300">
-                <User className="h-6 w-6 text-stone-600" />
+      {/* Step Indicator */}
+      <div className="flex items-center justify-center gap-2">
+        {STEPS.map((step, index) => {
+          const StepIcon = step.icon;
+          const isActive = currentStep === step.id;
+          const isCompleted = currentStep > step.id;
+          return (
+            <div key={step.id} className="flex items-center gap-2">
+              <div
+                className={cn(
+                  "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                  isActive && "bg-[#0047AB] text-white",
+                  isCompleted && "bg-green-100 text-green-700",
+                  !isActive && !isCompleted && "bg-slate-100 text-slate-400"
+                )}>
+                {isCompleted ? <Check className="h-4 w-4" /> : <StepIcon className="h-4 w-4" />}
+                <span className="hidden sm:inline">{step.label}</span>
+                <span className="sm:hidden">{step.id}</span>
               </div>
-              <div>
-                <h3 className="font-['Inter'] text-lg font-bold text-zinc-800">{mentor.name}</h3>
-                <p className="font-['Inter'] text-sm font-normal text-stone-500">
-                  {mentor.company} - {mentor.position}
+              {index < STEPS.length - 1 && (
+                <div className={cn("h-0.5 w-8", isCompleted ? "bg-green-400" : "bg-slate-200")} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Step 1: Select Mentor */}
+      {currentStep === 1 && (
+        <div className="space-y-4">
+          {/* Search */}
+          <div className="relative max-w-md">
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Tìm kiếm theo tên, chuyên môn..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Mentor List */}
+          {isLoading ? (
+            <LoadingCardList count={4} />
+          ) : filteredMentors.length === 0 ? (
+            <Card className="py-12 text-center">
+              <CardContent>
+                <User className="mx-auto mb-3 h-12 w-12 text-slate-300" />
+                <p className="font-medium text-slate-600">
+                  {searchQuery ? "Không tìm thấy mentor phù hợp" : "Chưa có mentor nào"}
                 </p>
-                <div className="mt-2 flex gap-2">
-                  {mentor.skills.map((skill, index) => {
-                    const colors = [
-                      { bg: "bg-rose-100", text: "text-pink-600" },
-                      { bg: "bg-sky-100", text: "text-sky-500" },
-                      { bg: "bg-green-100", text: "text-green-500" },
-                    ];
-                    const color = colors[index % colors.length];
-                    return (
-                      <span
-                        key={skill}
-                        className={`${color.bg} rounded-xl px-2 py-0.5 font-['Inter'] text-xs font-bold ${color.text}`}>
-                        {skill}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
+                <p className="mt-1 text-sm text-slate-400">Hãy thử tìm kiếm với từ khóa khác</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {filteredMentors.map((mentor) => {
+                const isSelected = selectedMentorId === mentor.id;
+                return (
+                  <Card
+                    key={mentor.id}
+                    className={cn(
+                      "cursor-pointer transition-all hover:shadow-md",
+                      isSelected &&
+                        "border-[#0047AB] bg-blue-50/50 ring-2 ring-[#0047AB]/20 dark:bg-blue-950/20"
+                    )}
+                    onClick={() => setSelectedMentorId(mentor.id ?? null)}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-blue-500">
+                            {mentor.avatarUrl ? (
+                              <img
+                                src={mentor.avatarUrl}
+                                alt={mentor.name}
+                                className="h-11 w-11 rounded-full object-cover"
+                              />
+                            ) : (
+                              <User className="h-5 w-5 text-white" />
+                            )}
+                          </div>
+                          <div>
+                            <CardTitle className="text-base">{mentor.name || "Mentor"}</CardTitle>
+                            <CardDescription>
+                              {mentor.currentCompany || "Chuyên gia phỏng vấn"}
+                            </CardDescription>
+                          </div>
+                        </div>
+                        {isSelected && <Badge className="bg-[#0047AB] text-white">✓ Đã chọn</Badge>}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {renderStars(mentor.rate)}
+                        {mentor.expertise && (
+                          <div className="flex flex-wrap gap-1">
+                            {mentor.expertise.split(",").map((skill) => (
+                              <Badge key={skill.trim()} variant="secondary" className="text-xs">
+                                {skill.trim()}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          {mentor.totalSession != null && (
+                            <span>{mentor.totalSession} buổi phỏng vấn</span>
+                          )}
+                          {mentor.yearsOfExperience != null && (
+                            <span>{mentor.yearsOfExperience} năm KN</span>
+                          )}
+                        </div>
+                        {mentor.bio && (
+                          <p className="line-clamp-2 text-xs text-slate-500">{mentor.bio}</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
-          </div>
+          )}
 
-          {/* Calendar Card */}
-          <div className="mt-4 rounded-[10px] bg-white p-6 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.05)]">
-            {/* Month Navigation */}
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handlePrevMonth}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100">
-                <ChevronLeft className="h-5 w-5 text-gray-600" />
-              </button>
-              <h3 className="font-['Inter'] text-lg font-bold text-zinc-800">
-                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-              </h3>
-              <button
-                onClick={handleNextMonth}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-gray-100">
-                <ChevronRight className="h-5 w-5 text-gray-600" />
-              </button>
-            </div>
-
-            {/* Week Days Header */}
-            <div className="mt-6 grid grid-cols-7 gap-2">
-              {weekDays.map((day) => (
-                <div
-                  key={day}
-                  className="text-center font-['Inter'] text-sm font-bold text-indigo-500">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar Grid */}
-            <div className="mt-4 grid grid-cols-7 gap-2">{renderCalendar()}</div>
-          </div>
-
-          {/* Time Selection */}
-          <div className="mt-6">
-            <h3 className="font-['Inter'] text-3xl font-bold text-zinc-800">Chọn giờ</h3>
-            <div className="mt-4 flex h-16 w-full items-center justify-center rounded-lg bg-white">
-              <Clock className="h-8 w-8 text-indigo-500" />
-              <span className="ml-4 font-['Inter'] text-xl font-medium text-stone-500">
-                {selectedDate ? "Chọn giờ phỏng vấn" : "Vui lòng chọn ngày trước"}
-              </span>
-            </div>
-            {selectedDate && (
-              <div className="mt-4 grid grid-cols-4 gap-2">
-                {["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"].map((time) => (
-                  <button
-                    key={time}
-                    onClick={() => setSelectedTime(time)}
-                    className={`h-10 rounded-lg ${
-                      selectedTime === time
-                        ? "bg-indigo-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    } font-['Inter'] text-sm font-medium`}>
-                    {time}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Next Button */}
+          <div className="flex justify-end pt-4">
+            <Button
+              size="lg"
+              onClick={() => setCurrentStep(2)}
+              disabled={!canProceedStep1}
+              className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
+              Tiếp theo
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
+      )}
 
-        {/* Right Column - Summary Card */}
-        <div className="w-96 rounded-[10px] bg-white p-5 shadow-[0px_2px_10px_0px_rgba(0,0,0,0.05)]">
-          <div className="border-b border-zinc-100 pb-4">
-            <div className="flex items-center gap-4">
-              <span className="text-xl text-indigo-500">📅</span>
-              <span className="font-['Inter'] text-xl font-medium text-zinc-800">
-                {selectedDate ? `${selectedDate}/09/2025` : "--/--/----"}
-              </span>
-            </div>
-          </div>
+      {/* Step 2: Choose Date/Time */}
+      {currentStep === 2 && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5 text-[#0047AB]" />
+                Chọn thời gian hết hạn phiên
+              </CardTitle>
+              <CardDescription>
+                Chọn ngày và giờ mà phiên phỏng vấn sẽ hết hạn. Hệ thống sẽ tự động tính thời lượng
+                và gửi tới server.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Date Picker */}
+              <div className="space-y-2">
+                <Label>Ngày hết hạn</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal sm:w-[320px]",
+                        !selectedDate && "text-muted-foreground"
+                      )}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedDate
+                        ? selectedDate.toLocaleDateString("vi-VN", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "Chọn ngày"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return date < today;
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-          <div className="border-b border-zinc-100 py-4">
-            <div className="flex items-center gap-4">
-              <span className="text-xl text-indigo-500">🕒</span>
-              <span className="font-['Inter'] text-xl font-medium text-zinc-800">
-                {selectedTime || "--:--"}
-              </span>
-            </div>
-          </div>
+              {/* Time Picker */}
+              <div className="space-y-2">
+                <Label>Giờ hết hạn</Label>
+                <div className="flex items-center gap-2">
+                  <Select value={selectedHour} onValueChange={setSelectedHour}>
+                    <SelectTrigger className="w-24">
+                      <SelectValue placeholder="Giờ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HOUR_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span className="text-lg font-bold">:</span>
+                  <Select value={selectedMinute} onValueChange={setSelectedMinute}>
+                    <SelectTrigger className="w-24">
+                      <SelectValue placeholder="Phút" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MINUTE_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-          <div className="border-b border-zinc-100 py-4">
-            <div className="flex items-center gap-4">
-              <Timer className="h-5 w-5 text-indigo-500" />
-              <span className="font-['Inter'] text-xl font-medium text-zinc-800">90 phút</span>
-            </div>
-          </div>
+              {/* Duration Preview */}
+              {selectedDate && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/20">
+                  <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
+                    <Clock className="h-4 w-4" />
+                    <span>Thông tin thời gian</span>
+                  </div>
+                  <div className="mt-2 space-y-1 text-sm text-blue-600 dark:text-blue-400">
+                    <p>Hết hạn lúc: {formatSelectedDateTime()}</p>
+                    <p>Thời lượng: {formatDuration()}</p>
+                    <p className="text-xs text-blue-500">
+                      (≈ {calculateExpSeconds().toLocaleString()} giây sẽ được gửi tới server)
+                    </p>
+                  </div>
+                </div>
+              )}
 
-          <div className="flex items-center justify-between border-t-2 border-neutral-200 pt-4">
-            <span className="font-['Inter'] text-lg font-medium text-zinc-800">TỔNG:</span>
-            <span className="font-['Inter'] text-xl font-bold text-indigo-500">
-              {formatCurrency(440000)}
-            </span>
-          </div>
+              {/* Warning if date is in the past */}
+              {selectedDate && !isDateTimeValid() && (
+                <p className="text-sm text-red-500">
+                  ⚠ Thời gian hết hạn phải lớn hơn thời gian hiện tại ít nhất 1 phút.
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedDate || !selectedTime}
-              className="flex h-12 w-12 items-center justify-center rounded-3xl bg-indigo-500 shadow-[0px_4px_10px_0px_rgba(93,93,219,0.40)] hover:bg-indigo-600 disabled:cursor-not-allowed disabled:bg-indigo-300">
-              <span className="text-2xl text-white">↗</span>
-            </button>
+          {/* Navigation */}
+          <div className="flex justify-between pt-4">
+            <Button variant="outline" onClick={() => setCurrentStep(1)} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Quay lại
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => setCurrentStep(3)}
+              disabled={!canProceedStep2}
+              className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
+              Tiếp theo
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Step 3: Confirm & Create */}
+      {currentStep === 3 && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Check className="h-5 w-5 text-green-600" />
+                Xác nhận thông tin phiên phỏng vấn
+              </CardTitle>
+              <CardDescription>
+                Kiểm tra lại thông tin trước khi tạo phiên phỏng vấn
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Mentor Info */}
+              <div>
+                <h3 className="mb-3 text-sm font-semibold text-slate-500 uppercase">
+                  Mentor đã chọn
+                </h3>
+                {selectedMentor && (
+                  <div className="flex items-center gap-4 rounded-lg border p-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-blue-500">
+                      {selectedMentor.avatarUrl ? (
+                        <img
+                          src={selectedMentor.avatarUrl}
+                          alt={selectedMentor.name}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-6 w-6 text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{selectedMentor.name || "Mentor"}</p>
+                      <p className="text-sm text-slate-500">
+                        {selectedMentor.currentCompany || "Chuyên gia phỏng vấn"}
+                      </p>
+                      {renderStars(selectedMentor.rate)}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Time Info */}
+              <div>
+                <h3 className="mb-3 text-sm font-semibold text-slate-500 uppercase">
+                  Thời gian phiên
+                </h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-center gap-2 rounded-lg border p-3">
+                    <CalendarIcon className="h-4 w-4 text-slate-400" />
+                    <div>
+                      <p className="text-xs text-slate-500">Hết hạn lúc</p>
+                      <p className="text-sm font-medium">{formatSelectedDateTime()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-lg border p-3">
+                    <Clock className="h-4 w-4 text-slate-400" />
+                    <div>
+                      <p className="text-xs text-slate-500">Thời lượng</p>
+                      <p className="text-sm font-medium">{formatDuration()}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Room Config Info */}
+              <div>
+                <h3 className="mb-3 text-sm font-semibold text-slate-500 uppercase">
+                  Cấu hình phòng
+                </h3>
+                <div className="grid gap-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Số người tham gia tối đa</span>
+                    <span className="font-medium">2</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Chia sẻ màn hình</span>
+                    <span className="font-medium text-green-600">Bật</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Ghi hình</span>
+                    <span className="font-medium text-green-600">Cloud</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Thời hạn (giây)</span>
+                    <span className="font-medium">{calculateExpSeconds().toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Navigation */}
+          <div className="flex justify-between pt-4">
+            <Button variant="outline" onClick={() => setCurrentStep(2)} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Quay lại
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleCreateSession}
+              disabled={isCreating}
+              className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
+              <Video className="h-5 w-5" />
+              {isCreating ? "Đang tạo..." : "Tạo phiên phỏng vấn"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
