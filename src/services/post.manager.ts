@@ -14,12 +14,11 @@ import {
 } from "@/constants/api.config";
 import type {
   Post,
-  PostCreateRequest,
-  PostCommentResponse,
   PostCommentRequest,
+  PostCommentResponse,
+  PostCreateRequest,
   PostLikeRequest,
   PostLikeResponse,
-  User,
 } from "@/interfaces";
 
 // Mock data for development
@@ -474,9 +473,7 @@ export class PostManager implements BaseManager<Post> {
   }
 
   // BaseManager interface methods
-  async getAll(
-    _params?: PaginationParams
-  ): Promise<ApiResponse<PaginatedResponse<Post> | Post[]>> {
+  async getAll(_params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<Post> | Post[]>> {
     if (this.mode === "mock") {
       return { success: true, data: [...mockPosts] };
     }
@@ -528,7 +525,8 @@ export class PostManager implements BaseManager<Post> {
 
     return {
       success: false,
-      error: "Update operation not supported directly — schema does not define PUT/POST for updating posts",
+      error:
+        "Update operation not supported directly — schema does not define PUT/POST for updating posts",
     };
   }
 
@@ -544,7 +542,8 @@ export class PostManager implements BaseManager<Post> {
 
     return {
       success: false,
-      error: "Delete operation not supported — schema does not define DELETE /api/posts/{postId}. Use status change to ARCHIVED instead.",
+      error:
+        "Delete operation not supported — schema does not define DELETE /api/posts/{postId}. Use status change to ARCHIVED instead.",
     };
   }
 }
@@ -556,15 +555,26 @@ export const postManager = new PostManager();
 import { $api } from "@/lib/api";
 
 export const useCreatePost = () => $api.useMutation("post", "/api/posts");
-export const usePostComments = (postId: number) => $api.useQuery("get", "/api/posts/{postId}/comments", { params: { path: { postId } } });
-export const usePostCommentsCount = (postId: number) => $api.useQuery("get", "/api/posts/{postId}/comments/count", { params: { path: { postId } } });
+export const usePostComments = (postId: number) =>
+  $api.useQuery("get", "/api/posts/{postId}/comments", { params: { path: { postId } } });
+export const usePostCommentsCount = (postId: number) =>
+  $api.useQuery("get", "/api/posts/{postId}/comments/count", { params: { path: { postId } } });
 export const useCreateComment = () => $api.useMutation("post", "/api/posts/comments");
-export const useCommentDetail = (commentId: number) => $api.useQuery("get", "/api/posts/comments/{commentId}", { params: { path: { commentId } } });
+export const useCommentDetail = (commentId: number) =>
+  $api.useQuery("get", "/api/posts/comments/{commentId}", { params: { path: { commentId } } });
 export const useUpdateComment = () => $api.useMutation("put", "/api/posts/comments/{commentId}");
 export const useDeleteComment = () => $api.useMutation("delete", "/api/posts/comments/{commentId}");
-export const useCommentReplies = (parentCommentId: number) => $api.useQuery("get", "/api/posts/comments/{parentCommentId}/replies", { params: { path: { parentCommentId } } });
+export const useCommentReplies = (parentCommentId: number) =>
+  $api.useQuery("get", "/api/posts/comments/{parentCommentId}/replies", {
+    params: { path: { parentCommentId } },
+  });
 export const useLikePost = () => $api.useMutation("post", "/api/posts/likes");
-export const usePostLikes = (postId: number) => $api.useQuery("get", "/api/posts/likes/{postId}", { params: { path: { postId } } });
-export const usePostLikesCount = (postId: number) => $api.useQuery("get", "/api/posts/likes/{postId}/count", { params: { path: { postId } } });
-export const useCheckLiked = (postId: number, userId: number) => $api.useQuery("get", "/api/posts/likes/{postId}/check/{userId}", { params: { path: { postId, userId } } });
+export const usePostLikes = (postId: number) =>
+  $api.useQuery("get", "/api/posts/likes/{postId}", { params: { path: { postId } } });
+export const usePostLikesCount = (postId: number) =>
+  $api.useQuery("get", "/api/posts/likes/{postId}/count", { params: { path: { postId } } });
+export const useCheckLiked = (postId: number, userId: number) =>
+  $api.useQuery("get", "/api/posts/likes/{postId}/check/{userId}", {
+    params: { path: { postId, userId } },
+  });
 export const useUnlikePost = () => $api.useMutation("delete", "/api/posts/likes/{postId}/{userId}");

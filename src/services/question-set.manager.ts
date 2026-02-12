@@ -30,7 +30,7 @@ export interface QuestionSet {
   level?: QuestionSetLevel;
   major?: Major;
   startDate?: string;
-  user?: { id?: number; name?: string; email?: string; };
+  user?: { id?: number; name?: string; email?: string };
 }
 
 /**
@@ -283,9 +283,7 @@ export class QuestionSetManager implements BaseManager<QuestionSet> {
    * GET /api/practice-sets/full-set/{id}
    * Returns PracticeSetResponse = { practiceSet, practiceSetItem[] }
    */
-  async getFullSet(
-    id: string | number
-  ): Promise<
+  async getFullSet(id: string | number): Promise<
     ApiResponse<{
       practiceSet: QuestionSet;
       practiceSetItem: QuestionSetItem[];
