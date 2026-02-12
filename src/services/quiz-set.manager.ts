@@ -162,10 +162,7 @@ export class QuizSetManager {
    * POST /api/quiz-sets/submit/{quizId}
    * Body: Record<string, string> (question → answer mapping)
    */
-  async submit(
-    quizId: number,
-    answers: Record<string, string>
-  ): Promise<ApiResponse<QuizSet>> {
+  async submit(quizId: number, answers: Record<string, string>): Promise<ApiResponse<QuizSet>> {
     if (this.mode === "mock") {
       return {
         success: false,

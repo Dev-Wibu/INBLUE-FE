@@ -12,10 +12,7 @@ import {
   buildEndpoint,
   createApiInstance,
 } from "@/constants/api.config";
-import type {
-  CandidateProfile,
-  User,
-} from "@/interfaces";
+import type { CandidateProfile } from "@/interfaces";
 
 // Mock data for development
 const mockCandidateProfiles: CandidateProfile[] = [
@@ -123,7 +120,9 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
     }
 
     try {
-      const response = await this.api.get(API_ENDPOINTS.CANDIDATE_PROFILES.LIST, { params: _params });
+      const response = await this.api.get(API_ENDPOINTS.CANDIDATE_PROFILES.LIST, {
+        params: _params,
+      });
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -254,6 +253,7 @@ export const candidateProfileManager = new CandidateProfileManager();
 import { $api } from "@/lib/api";
 
 export const useCandidateProfiles = () => $api.useQuery("get", "/api/candidate-profiles");
-export const useCandidateProfile = (userId: number) => $api.useQuery("get", "/api/candidate-profiles/{userId}", { params: { path: { userId } } });
+export const useCandidateProfile = (userId: number) =>
+  $api.useQuery("get", "/api/candidate-profiles/{userId}", { params: { path: { userId } } });
 export const useCreateCandidateProfile = () => $api.useMutation("post", "/api/candidate-profiles");
 export const useUpdateCandidateProfile = () => $api.useMutation("put", "/api/candidate-profiles");

@@ -169,9 +169,7 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     questionSetId: string | number
   ): Promise<ApiResponse<QuestionSetItem[]>> {
     if (this.mode === "mock") {
-      const items = mockQuestionSetItems.filter(
-        (i) => i.practiceSet?.id === Number(questionSetId)
-      );
+      const items = mockQuestionSetItems.filter((i) => i.practiceSet?.id === Number(questionSetId));
       return {
         success: true,
         data: items,

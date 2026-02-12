@@ -265,7 +265,9 @@ export class QuestionManager implements BaseManager<QuestionSet> {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "Failed to fetch questions by category and level",
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch questions by category and level",
       };
     }
   }
