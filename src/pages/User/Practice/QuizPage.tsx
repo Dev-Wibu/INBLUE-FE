@@ -3,13 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { quizSetManager } from "@/services";
 import type { QuizItem, QuizSet } from "@/services/quiz-set.manager";
@@ -176,9 +170,7 @@ export function QuizPage() {
               <span className="text-muted-foreground">
                 Câu {currentIndex + 1} / {totalQuestions}
               </span>
-              <span className="text-muted-foreground">
-                {Math.round(progress)}%
-              </span>
+              <span className="text-muted-foreground">{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
           </CardContent>

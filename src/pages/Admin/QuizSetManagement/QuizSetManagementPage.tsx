@@ -252,8 +252,8 @@ export function QuizSetManagementPage() {
           <DialogHeader>
             <DialogTitle>Xác nhận xóa</DialogTitle>
             <DialogDescription>
-              Bạn có chắc chắn muốn xóa quiz &quot;{selectedQuizSet?.quizName}&quot;? Hành
-              động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa quiz &quot;{selectedQuizSet?.quizName}&quot;? Hành động này
+              không thể hoàn tác.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -289,7 +289,9 @@ export function QuizSetManagementPage() {
                   </p>
                   <div className="mt-1 text-xs text-gray-500">
                     {item.correctAnswer && <span>Đáp án: {item.correctAnswer}</span>}
-                    {item.userResponse && <span className="ml-4">Trả lời: {item.userResponse}</span>}
+                    {item.userResponse && (
+                      <span className="ml-4">Trả lời: {item.userResponse}</span>
+                    )}
                   </div>
                 </div>
               ))}

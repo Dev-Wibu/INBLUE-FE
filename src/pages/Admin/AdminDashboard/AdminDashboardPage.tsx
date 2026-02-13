@@ -2,20 +2,20 @@ import { useCallback, useMemo } from "react";
 
 import { useTabsState } from "@/hooks/useTabsState";
 
+import { CandidateProfileManagementPage } from "../CandidateProfileManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
 import { MentorManagementPage } from "../MentorManagement";
 import { NotificationManagementPage } from "../NotificationManagement";
+import { PostManagementPage } from "../PostManagement";
+import { PracticeQuestionManagementPage } from "../PracticeQuestionManagement";
+import { PracticeSetManagementPage } from "../PracticeSetManagement";
 import { QuestionCategoryManagementPage } from "../QuestionCategoryManagement";
 import { QuestionMajorManagementPage } from "../QuestionMajorManagement";
-import { QuestionSetManagementPage } from "../QuestionSetManagement";
-import { PracticeQuestionManagementPage } from "../PracticeQuestionManagement";
 import { QuizSetManagementPage } from "../QuizSetManagement";
 import { ReviewManagementPage } from "../ReviewManagement";
 import { SessionManagementPage } from "../SessionManagement";
 import { UserManagementPage } from "../UserManagement";
-import { CandidateProfileManagementPage } from "../CandidateProfileManagement";
-import { PostManagementPage } from "../PostManagement";
 import type { Tab, TabType } from "./components";
 import { ChromeTabs, Sidebar } from "./components";
 
@@ -33,7 +33,7 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "notifications", label: "Notification Management" },
   { type: "questionCategories", label: "Question Categories" },
   { type: "questionMajors", label: "Question Majors" },
-  { type: "questionSets", label: "Question Sets" },
+  { type: "practiceSets", label: "Practice Sets" },
   { type: "practiceQuestions", label: "Practice Questions" },
   { type: "quizSets", label: "Quiz Sets" },
   { type: "posts", label: "Quản lý bài viết" },
@@ -115,8 +115,8 @@ export function AdminDashboardPage() {
         return <QuestionCategoryManagementPage />;
       case "questionMajors":
         return <QuestionMajorManagementPage />;
-      case "questionSets":
-        return <QuestionSetManagementPage />;
+      case "practiceSets":
+        return <PracticeSetManagementPage />;
       case "practiceQuestions":
         return <PracticeQuestionManagementPage />;
       case "quizSets":

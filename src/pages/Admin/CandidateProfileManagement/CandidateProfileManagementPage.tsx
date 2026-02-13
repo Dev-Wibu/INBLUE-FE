@@ -68,7 +68,7 @@ export function CandidateProfileManagementPage() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
           className="pl-10"
           placeholder="Tìm kiếm theo tên, email, vai trò..."
@@ -118,10 +118,7 @@ export function CandidateProfileManagementPage() {
                         : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedProfile(profile)}>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedProfile(profile)}>
                         <Eye className="mr-1 h-4 w-4" />
                         Xem
                       </Button>
@@ -169,7 +166,9 @@ export function CandidateProfileManagementPage() {
                 <h4 className="mb-2 font-semibold">Kỹ năng</h4>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng kỹ thuật:</span>
+                    <span className="text-sm text-gray-500 dark:text-slate-400">
+                      Kỹ năng kỹ thuật:
+                    </span>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {(selectedProfile.technicalSkills ?? []).map((s) => (
                         <Badge key={s} variant="secondary">
