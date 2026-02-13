@@ -1,4 +1,14 @@
-import { ArrowRight, BookOpen, Calendar, Clock, Search, Tag, TrendingUp, User } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Calendar,
+  Loader2,
+  Search,
+  Tag,
+  TrendingUp,
+  User,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Footer, Header } from "@/components/layouts";
@@ -6,87 +16,63 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
-const blogPosts = [
-  {
-    id: 1,
-    title: "10 lỗi phổ biến nhất khi phỏng vấn và cách khắc phục",
-    excerpt:
-      "Tìm hiểu những sai lầm thường gặp mà ứng viên hay mắc phải và học cách tránh chúng để tăng cơ hội thành công.",
-    category: "Mẹo phỏng vấn",
-    author: "Nguyễn Văn An",
-    date: "15/01/2026",
-    readTime: "8 phút",
-    image: null,
-  },
-  {
-    id: 2,
-    title: "Phương pháp STAR: Hướng dẫn chi tiết từ A-Z",
-    excerpt:
-      "Học cách áp dụng phương pháp STAR (Situation, Task, Action, Result) để trả lời các câu hỏi hành vi một cách hiệu quả.",
-    category: "Kỹ năng",
-    author: "Trần Thị Bình",
-    date: "12/01/2026",
-    readTime: "10 phút",
-    image: null,
-  },
-  {
-    id: 3,
-    title: "Xu hướng tuyển dụng Tech 2026: Bạn cần biết gì?",
-    excerpt:
-      "Cập nhật những xu hướng mới nhất trong lĩnh vực công nghệ và cách chuẩn bị để đón đầu cơ hội việc làm.",
-    category: "Xu hướng",
-    author: "Lê Minh Châu",
-    date: "10/01/2026",
-    readTime: "12 phút",
-    image: null,
-  },
-  {
-    id: 4,
-    title: "Đàm phán lương như chuyên gia: Bí quyết từ HR",
-    excerpt:
-      "Những kỹ năng và chiến lược đàm phán lương được chia sẻ bởi các chuyên gia HR từ các công ty hàng đầu.",
-    category: "Đàm phán",
-    author: "Phạm Văn Đức",
-    date: "08/01/2026",
-    readTime: "7 phút",
-    image: null,
-  },
-  {
-    id: 5,
-    title: "Chuẩn bị phỏng vấn Product Manager: Từ PM cho PM",
-    excerpt:
-      "Hướng dẫn toàn diện về cách chuẩn bị cho vị trí Product Manager tại các công ty công nghệ lớn.",
-    category: "Ngành nghề",
-    author: "Hoàng Thị Lan",
-    date: "05/01/2026",
-    readTime: "15 phút",
-    image: null,
-  },
-  {
-    id: 6,
-    title: "Phỏng vấn online: 5 mẹo để gây ấn tượng qua màn hình",
-    excerpt:
-      "Những lưu ý quan trọng khi phỏng vấn qua video call và cách tạo ấn tượng tốt với nhà tuyển dụng.",
-    category: "Mẹo phỏng vấn",
-    author: "Ngô Quang Minh",
-    date: "02/01/2026",
-    readTime: "6 phút",
-    image: null,
-  },
-];
-
-const categories = [
-  { name: "Tất cả", count: 24 },
-  { name: "Mẹo phỏng vấn", count: 8 },
-  { name: "Kỹ năng", count: 6 },
-  { name: "Xu hướng", count: 4 },
-  { name: "Đàm phán", count: 3 },
-  { name: "Ngành nghề", count: 3 },
-];
+import type { Post } from "@/interfaces/schema.types";
+import { extractDataArray } from "@/lib/utils";
+import { postManager } from "@/services/post.manager";
 
 export function BlogPage() {
   const navigate = useNavigate();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadPosts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await postManager.getAll();
+      if (response.success) {
+        const allPosts = extractDataArray<Post>(response);
+        // Show only published posts on public blog page
+        setPosts(allPosts.filter((p) => p.status === "PUBLISHED"));
+      }
+    } catch (error) {
+      console.error("Error loading blog posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
+
+  // Build categories from unique tags/majors
+  const categories = (() => {
+    const tagCounts = new Map<string, number>();
+    let total = 0;
+    posts.forEach((post) => {
+      total++;
+      post.tags?.forEach((tag) => {
+        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+      });
+      if (post.major?.name) {
+        tagCounts.set(post.major.name, (tagCounts.get(post.major.name) || 0) + 1);
+      }
+    });
+    const result = [{ name: "Tất cả", count: total }];
+    tagCounts.forEach((count, name) => {
+      result.push({ name, count });
+    });
+    return result.slice(0, 6);
+  })();
+
+  const formatDate = (dateStr?: string): string => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
   return (
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
@@ -146,49 +132,75 @@ export function BlogPage() {
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
-                {blogPosts.map((post) => (
-                  <Card
-                    key={post.id}
-                    className="group cursor-pointer transition-all hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
-                    onClick={() => navigate("/login")}>
-                    {/* Image placeholder */}
-                    <div className="h-48 w-full bg-gradient-to-br from-[#DCEEFF] to-[#A5C8F2] dark:from-slate-700 dark:to-slate-600" />
-                    <CardHeader>
-                      <div className="mb-2 flex items-center gap-2">
-                        <Badge
-                          variant="secondary"
-                          className="text-xs dark:bg-slate-700 dark:text-slate-300">
-                          <Tag className="mr-1 h-3 w-3" />
-                          {post.category}
-                        </Badge>
-                      </div>
-                      <CardTitle className="line-clamp-2 text-lg transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
-                        {post.title}
-                      </CardTitle>
-                      <CardDescription className="line-clamp-2 dark:text-slate-400">
-                        {post.excerpt}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-                        <div className="flex items-center gap-4">
+                {loading ? (
+                  <div className="col-span-2 flex items-center justify-center py-16">
+                    <Loader2 className="h-8 w-8 animate-spin text-[#0047AB]" />
+                  </div>
+                ) : posts.length === 0 ? (
+                  <div className="col-span-2 py-16 text-center">
+                    <p className="text-muted-foreground">Chưa có bài viết nào</p>
+                  </div>
+                ) : (
+                  posts.map((post) => (
+                    <Card
+                      key={post.postId}
+                      className="group cursor-pointer transition-all hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
+                      onClick={() => navigate("/login")}>
+                      {/* Image */}
+                      {post.coverImgUrl ? (
+                        <div className="h-48 w-full overflow-hidden">
+                          <img
+                            src={post.coverImgUrl}
+                            alt={post.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-48 w-full bg-gradient-to-br from-[#DCEEFF] to-[#A5C8F2] dark:from-slate-700 dark:to-slate-600" />
+                      )}
+                      <CardHeader>
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          {post.tags?.slice(0, 2).map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="text-xs dark:bg-slate-700 dark:text-slate-300">
+                              <Tag className="mr-1 h-3 w-3" />
+                              {tag}
+                            </Badge>
+                          ))}
+                          {post.major?.name && (
+                            <Badge
+                              variant="outline"
+                              className="text-xs dark:border-slate-600 dark:text-slate-300">
+                              {post.major.name}
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="line-clamp-2 text-lg transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
+                          {post.title}
+                        </CardTitle>
+                        <CardDescription className="line-clamp-2 dark:text-slate-400">
+                          {post.summary || post.content}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+                          <div className="flex items-center gap-4">
+                            <span className="flex items-center gap-1">
+                              <User className="h-4 w-4" />
+                              {post.author?.name ?? "Ẩn danh"}
+                            </span>
+                          </div>
                           <span className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            {post.author}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {post.readTime}
+                            <Calendar className="h-4 w-4" />
+                            {formatDate(post.creationDate)}
                           </span>
                         </div>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {post.date}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </div>
 
               <div className="mt-8 text-center">

@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { useTabsState } from "@/hooks/useTabsState";
 
+import { PostListPage } from "../../User/Community";
 import { MentorAccountPage } from "../Account";
 import { GivenFeedbackListPage } from "../Feedback";
 import { MentorNotificationsPage } from "../Notifications";
@@ -9,7 +10,6 @@ import { MentorOverviewPage } from "../Overview";
 import { MentorReviewsPage } from "../Reviews";
 import { MentorSessionsPage } from "../Sessions";
 import { StudentsListPage } from "../Students";
-import { PostListPage } from "../../User/Community";
 import type { Tab, TabType } from "./components";
 import { ChromeTabs, Sidebar } from "./components";
 

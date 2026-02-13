@@ -1,18 +1,18 @@
+import { ArrowLeft, Edit } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useAuthStore } from "@/stores/authStore";
-import { postManager } from "@/services/post.manager";
 import type { Post } from "@/interfaces/schema.types";
+import { postManager } from "@/services/post.manager";
+import { useAuthStore } from "@/stores/authStore";
 
+import { CommentSection } from "./components/CommentSection";
 import { LikeButton } from "./components/LikeButton";
 import { LikeListModal } from "./components/LikeListModal";
-import { CommentSection } from "./components/CommentSection";
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "";
@@ -70,19 +70,23 @@ export function PostDetailPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <Button variant="ghost" onClick={() => navigate("..")}>
-        <ArrowLeft className="mr-1 h-4 w-4" />
-        Quay lại
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={() => navigate("..")}>
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Quay lại
+        </Button>
+        {user?.id && post.author?.id === user.id && (
+          <Button variant="outline" size="sm" onClick={() => navigate(`${postId}/edit`)}>
+            <Edit className="mr-1 h-4 w-4" />
+            Chỉnh sửa
+          </Button>
+        )}
+      </div>
 
       <Card>
         {post.coverImgUrl && (
           <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-            <img
-              src={post.coverImgUrl}
-              alt={post.title}
-              className="h-full w-full object-cover"
-            />
+            <img src={post.coverImgUrl} alt={post.title} className="h-full w-full object-cover" />
           </div>
         )}
         <CardHeader>
@@ -94,7 +98,7 @@ export function PostDetailPage() {
             </Avatar>
             <div>
               <p className="text-sm font-medium">{post.author?.name ?? "Ẩn danh"}</p>
-              <p className="text-xs text-muted-foreground">{formatDate(post.creationDate)}</p>
+              <p className="text-muted-foreground text-xs">{formatDate(post.creationDate)}</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-1 pt-2">
@@ -111,22 +115,17 @@ export function PostDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {post.summary && (
-            <p className="italic text-muted-foreground">{post.summary}</p>
-          )}
+          {post.summary && <p className="text-muted-foreground italic">{post.summary}</p>}
           <div className="whitespace-pre-wrap">{post.content}</div>
 
           <div className="flex items-center gap-2 border-t pt-4">
-            {user?.id && post.postId && (
-              <LikeButton postId={post.postId} userId={user.id} />
-            )}
+            {user?.id && post.postId && <LikeButton postId={post.postId} userId={user.id} />}
             {post.postId && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs text-muted-foreground"
-                onClick={() => setLikeModalOpen(true)}
-              >
+                className="text-muted-foreground text-xs"
+                onClick={() => setLikeModalOpen(true)}>
                 Xem ai đã thích
               </Button>
             )}
@@ -137,11 +136,7 @@ export function PostDetailPage() {
       {post.postId && <CommentSection postId={post.postId} />}
 
       {post.postId && (
-        <LikeListModal
-          postId={post.postId}
-          open={likeModalOpen}
-          onOpenChange={setLikeModalOpen}
-        />
+        <LikeListModal postId={post.postId} open={likeModalOpen} onOpenChange={setLikeModalOpen} />
       )}
     </div>
   );

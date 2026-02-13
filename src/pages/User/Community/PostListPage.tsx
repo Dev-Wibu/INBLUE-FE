@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
+import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,8 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { postManager } from "@/services/post.manager";
+import { usePagination } from "@/hooks/usePagination";
 import type { Post } from "@/interfaces/schema.types";
+import { extractDataArray } from "@/lib/utils";
+import { postManager } from "@/services/post.manager";
 
 import { PostCard } from "./components/PostCard";
 
@@ -28,8 +31,7 @@ export function PostListPage() {
       setLoading(true);
       const result = await postManager.getAll();
       if (result.success && result.data) {
-        const data = Array.isArray(result.data) ? result.data : [];
-        setPosts(data);
+        setPosts(extractDataArray<Post>(result));
       }
       setLoading(false);
     };
@@ -38,15 +40,28 @@ export function PostListPage() {
 
   const allMajors = [...new Set(posts.map((p) => p.major?.name).filter(Boolean))] as string[];
 
-  const filtered = posts.filter((p) => {
-    if (tagFilter && !p.tags?.some((t) => t.toLowerCase().includes(tagFilter.toLowerCase()))) {
-      return false;
-    }
-    if (majorFilter !== "all" && p.major?.name !== majorFilter) {
-      return false;
-    }
-    return true;
+  const filtered = useMemo(() => {
+    return posts.filter((p) => {
+      if (tagFilter && !p.tags?.some((t) => t.toLowerCase().includes(tagFilter.toLowerCase()))) {
+        return false;
+      }
+      if (majorFilter !== "all" && p.major?.name !== majorFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [posts, tagFilter, majorFilter]);
+
+  // Pagination
+  const [pageSize, setPageSize] = useState(9);
+  const pagination = usePagination({
+    totalCount: filtered.length,
+    pageSize,
   });
+
+  const pageData = useMemo(() => {
+    return filtered.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [filtered, pagination.startIndex, pagination.endIndex]);
 
   return (
     <div className="space-y-6">
@@ -59,10 +74,6 @@ export function PostListPage() {
           <Plus className="mr-1 h-4 w-4" />
           Tạo bài viết mới
         </Button>
-      </div>
-
-      <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
-        ⚠️ Tính năng danh sách bài viết đang sử dụng dữ liệu mẫu. API GET /api/posts cần được triển khai từ phía Backend.
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -79,7 +90,9 @@ export function PostListPage() {
           <SelectContent>
             <SelectItem value="all">Tất cả chuyên ngành</SelectItem>
             {allMajors.map((m) => (
-              <SelectItem key={m} value={m}>{m}</SelectItem>
+              <SelectItem key={m} value={m}>
+                {m}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -90,15 +103,16 @@ export function PostListPage() {
       ) : filtered.length === 0 ? (
         <p className="text-muted-foreground">Chưa có bài viết nào</p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((post) => (
-            <PostCard
-              key={post.postId}
-              post={post}
-              onClick={() => navigate(`${post.postId}`)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {pageData.map((post) => (
+              <PostCard key={post.postId} post={post} onClick={() => navigate(`${post.postId}`)} />
+            ))}
+          </div>
+          {filtered.length > pageSize && (
+            <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
+          )}
+        </>
       )}
     </div>
   );

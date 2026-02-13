@@ -1,19 +1,19 @@
-import { useState } from "react";
 import { Send } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { queryClient } from "@/lib/queryClient";
-import { useAuthStore } from "@/stores/authStore";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
+import { queryClient } from "@/lib/queryClient";
 import {
-  usePostComments,
+  useCommentReplies,
   useCreateComment,
   useDeleteComment,
+  usePostComments,
   useUpdateComment,
-  useCommentReplies,
 } from "@/services/post.manager";
+import { useAuthStore } from "@/stores/authStore";
 
 import { CommentItem } from "./CommentItem";
 
@@ -21,7 +21,13 @@ interface CommentSectionProps {
   postId: number;
 }
 
-function RepliesBlock({ parentCommentId, currentUserId, onReply, onEdit, onDelete }: {
+function RepliesBlock({
+  parentCommentId,
+  currentUserId,
+  onReply,
+  onEdit,
+  onDelete,
+}: {
   parentCommentId: number;
   currentUserId?: number;
   onReply: (c: PostCommentResponse) => void;
@@ -65,7 +71,10 @@ export function CommentSection({ postId }: CommentSectionProps) {
   const deleteComment = useDeleteComment();
   const updateComment = useUpdateComment();
 
-  const comments = (Array.isArray(commentsData) ? commentsData : (commentsData as unknown as PostCommentResponse[])) ?? [];
+  const comments =
+    (Array.isArray(commentsData)
+      ? commentsData
+      : (commentsData as unknown as PostCommentResponse[])) ?? [];
 
   const [newContent, setNewContent] = useState("");
   const [replyTo, setReplyTo] = useState<PostCommentResponse | null>(null);
@@ -104,13 +113,10 @@ export function CommentSection({ postId }: CommentSectionProps) {
 
   const handleDelete = (comment: PostCommentResponse) => {
     if (!confirm("Bạn có chắc muốn xóa bình luận này?")) return;
-    deleteComment.mutate(
-      { params: { path: { commentId: comment.id! } } } as never,
-      {
-        onSuccess: () => invalidate(),
-        onError: () => toast.error("Không thể xóa bình luận"),
-      }
-    );
+    deleteComment.mutate({ params: { path: { commentId: comment.id! } } } as never, {
+      onSuccess: () => invalidate(),
+      onError: () => toast.error("Không thể xóa bình luận"),
+    });
   };
 
   const handleEditStart = (comment: PostCommentResponse) => {
@@ -145,7 +151,7 @@ export function CommentSection({ postId }: CommentSectionProps) {
       <h3 className="text-lg font-semibold">Bình luận</h3>
 
       {comments.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Chưa có bình luận nào</p>
+        <p className="text-muted-foreground text-sm">Chưa có bình luận nào</p>
       ) : (
         <div className="space-y-1 divide-y">
           {comments.map((comment) => (
@@ -157,8 +163,12 @@ export function CommentSection({ postId }: CommentSectionProps) {
                     onChange={(e) => setEditContent(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleEditSave()}
                   />
-                  <Button size="sm" onClick={handleEditSave}>Lưu</Button>
-                  <Button size="sm" variant="ghost" onClick={() => setEditingComment(null)}>Hủy</Button>
+                  <Button size="sm" onClick={handleEditSave}>
+                    Lưu
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setEditingComment(null)}>
+                    Hủy
+                  </Button>
                 </div>
               ) : (
                 <CommentItem
@@ -182,9 +192,13 @@ export function CommentSection({ postId }: CommentSectionProps) {
       )}
 
       {replyTo && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-2 text-sm">
           <span>Trả lời {replyTo.userName}</span>
-          <Button variant="ghost" size="sm" className="h-5 px-1 text-xs" onClick={() => setReplyTo(null)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 px-1 text-xs"
+            onClick={() => setReplyTo(null)}>
             ✕
           </Button>
         </div>

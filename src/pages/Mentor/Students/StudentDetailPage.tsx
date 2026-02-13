@@ -3,7 +3,16 @@
  * Displays student profile and session/feedback history
  */
 
-import { ArrowLeft, Calendar, FileText, Mail, MessageSquare, School, Star, User } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  FileText,
+  Mail,
+  MessageSquare,
+  School,
+  Star,
+  User,
+} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { FeedbackCard } from "@/components/feedback";
@@ -19,8 +28,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMentorFeedbacks } from "@/hooks/useMentorFeedback";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
-import type { CandidateProfile } from "@/interfaces/schema.types";
 import type { Session } from "@/interfaces";
+import type { CandidateProfile } from "@/interfaces/schema.types";
 import { useCandidateProfile } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -346,10 +355,14 @@ export function StudentDetailPage() {
                     <h4 className="mb-2 font-semibold">Kỹ năng</h4>
                     <div className="space-y-2">
                       <div>
-                        <span className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng kỹ thuật:</span>
+                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                          Kỹ năng kỹ thuật:
+                        </span>
                         <div className="mt-1 flex flex-wrap gap-1">
                           {(candidateProfile.technicalSkills ?? []).map((s) => (
-                            <Badge key={s} variant="secondary">{s}</Badge>
+                            <Badge key={s} variant="secondary">
+                              {s}
+                            </Badge>
                           ))}
                           {(candidateProfile.technicalSkills ?? []).length === 0 && (
                             <span className="text-sm text-gray-400">—</span>
@@ -357,10 +370,14 @@ export function StudentDetailPage() {
                         </div>
                       </div>
                       <div>
-                        <span className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng mềm:</span>
+                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                          Kỹ năng mềm:
+                        </span>
                         <div className="mt-1 flex flex-wrap gap-1">
                           {(candidateProfile.softSkills ?? []).map((s) => (
-                            <Badge key={s} variant="outline">{s}</Badge>
+                            <Badge key={s} variant="outline">
+                              {s}
+                            </Badge>
                           ))}
                           {(candidateProfile.softSkills ?? []).length === 0 && (
                             <span className="text-sm text-gray-400">—</span>
@@ -371,7 +388,9 @@ export function StudentDetailPage() {
                         <span className="text-sm text-gray-500 dark:text-slate-400">Công cụ:</span>
                         <div className="mt-1 flex flex-wrap gap-1">
                           {(candidateProfile.tools ?? []).map((t) => (
-                            <Badge key={t} variant="secondary">{t}</Badge>
+                            <Badge key={t} variant="secondary">
+                              {t}
+                            </Badge>
                           ))}
                           {(candidateProfile.tools ?? []).length === 0 && (
                             <span className="text-sm text-gray-400">—</span>
@@ -406,7 +425,9 @@ export function StudentDetailPage() {
                       <div className="space-y-2">
                         {candidateProfile.workExperiences!.map((w, i) => (
                           <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
-                            <p className="font-medium">{w.position} — {w.company}</p>
+                            <p className="font-medium">
+                              {w.position} — {w.company}
+                            </p>
                             <p className="text-gray-600 dark:text-slate-300">{w.description}</p>
                             <p className="text-xs text-gray-400">
                               {w.start_date} — {w.end_date || "Hiện tại"}
@@ -425,7 +446,9 @@ export function StudentDetailPage() {
                         {candidateProfile.educations!.map((e, i) => (
                           <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
                             <p className="font-medium">{e.school}</p>
-                            <p className="text-gray-600 dark:text-slate-300">{e.major} — {e.degree}</p>
+                            <p className="text-gray-600 dark:text-slate-300">
+                              {e.major} — {e.degree}
+                            </p>
                             {e.gpa && <p>GPA: {e.gpa}</p>}
                             <p className="text-xs text-gray-400">
                               {e.start_date} — {e.end_date || "Hiện tại"}
@@ -442,7 +465,9 @@ export function StudentDetailPage() {
                       <h4 className="mb-2 font-semibold">Chứng chỉ</h4>
                       <div className="flex flex-wrap gap-1">
                         {candidateProfile.certifications!.map((c) => (
-                          <Badge key={c} variant="secondary">{c}</Badge>
+                          <Badge key={c} variant="secondary">
+                            {c}
+                          </Badge>
                         ))}
                       </div>
                     </div>
@@ -454,7 +479,9 @@ export function StudentDetailPage() {
                       <h4 className="mb-2 font-semibold">Thành tích</h4>
                       <div className="flex flex-wrap gap-1">
                         {candidateProfile.achievements!.map((a) => (
-                          <Badge key={a} variant="outline">{a}</Badge>
+                          <Badge key={a} variant="outline">
+                            {a}
+                          </Badge>
                         ))}
                       </div>
                     </div>

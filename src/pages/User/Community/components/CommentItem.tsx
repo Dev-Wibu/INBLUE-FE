@@ -50,21 +50,33 @@ export function CommentItem({
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{comment.userName ?? "Ẩn danh"}</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">
             {getRelativeTime(comment.createdAt)}
           </span>
         </div>
         <p className="mt-1 text-sm">{comment.content}</p>
         <div className="mt-1 flex gap-2">
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => onReply?.(comment)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-xs"
+            onClick={() => onReply?.(comment)}>
             Trả lời
           </Button>
           {isOwn && (
             <>
-              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => onEdit?.(comment)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => onEdit?.(comment)}>
                 Sửa
               </Button>
-              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-destructive" onClick={() => onDelete?.(comment)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive h-6 px-2 text-xs"
+                onClick={() => onDelete?.(comment)}>
                 Xóa
               </Button>
             </>
