@@ -4,13 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -20,8 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { extractDataArray } from "@/lib/utils";
-import { questionSetManager } from "@/services";
-import type { QuestionSet } from "@/services/question-set.manager";
+import { practiceSetManager } from "@/services";
+import type { PracticeSet } from "@/services/practice-set.manager";
 import { toast } from "sonner";
 
 const levelBadgeMap: Record<string, string> = {
@@ -33,7 +27,7 @@ const levelBadgeMap: Record<string, string> = {
 
 export function PracticeSetsPage() {
   const navigate = useNavigate();
-  const [practiceSets, setPracticeSets] = useState<QuestionSet[]>([]);
+  const [practiceSets, setPracticeSets] = useState<PracticeSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
@@ -41,9 +35,9 @@ export function PracticeSetsPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await questionSetManager.getAll();
+      const response = await practiceSetManager.getAll();
       if (response.success) {
-        setPracticeSets(extractDataArray<QuestionSet>(response));
+        setPracticeSets(extractDataArray<PracticeSet>(response));
       } else {
         toast.error(response.error || "Không thể tải danh sách bộ luyện tập");
       }

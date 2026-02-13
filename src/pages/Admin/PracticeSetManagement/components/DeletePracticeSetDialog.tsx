@@ -9,28 +9,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import type { QuestionSet } from "../types";
+import type { PracticeSet } from "../types";
 
-interface DeleteQuestionSetDialogProps {
+interface DeletePracticeSetDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  questionSet: QuestionSet | null;
+  practiceSet: PracticeSet | null;
   onConfirm: () => void;
 }
 
-export function DeleteQuestionSetDialog({
+export function DeletePracticeSetDialog({
   isOpen,
   onOpenChange,
-  questionSet,
+  practiceSet,
   onConfirm,
-}: DeleteQuestionSetDialogProps) {
+}: DeletePracticeSetDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Xóa Bộ Câu Hỏi</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn xóa bộ câu hỏi &quot;{questionSet?.practiceSetName}&quot;? Hành
+            Bạn có chắc chắn muốn xóa bộ câu hỏi &quot;{practiceSet?.practiceSetName}&quot;? Hành
             động này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>

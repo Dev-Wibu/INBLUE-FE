@@ -14,14 +14,14 @@ import {
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { extractDataArray } from "@/lib/utils";
-import { questionMajorManager, questionSetManager } from "@/services";
+import { practiceSetManager, questionMajorManager } from "@/services";
 import { toast } from "sonner";
 
-import { DeleteQuestionSetDialog, QuestionSetFormDialog, QuestionSetTable } from "./components";
-import type { Major, QuestionSet, QuestionSetFormData } from "./types";
+import { DeletePracticeSetDialog, PracticeSetFormDialog, PracticeSetTable } from "./components";
+import type { Major, PracticeSet, PracticeSetFormData } from "./types";
 
-export function QuestionSetManagementPage() {
-  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
+export function PracticeSetManagementPage() {
+  const [practiceSets, setPracticeSets] = useState<PracticeSet[]>([]);
   const [majors, setMajors] = useState<Major[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,22 +29,22 @@ export function QuestionSetManagementPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedQuestionSet, setSelectedQuestionSet] = useState<QuestionSet | null>(null);
-  const [formData, setFormData] = useState<Partial<QuestionSetFormData>>({});
+  const [selectedPracticeSet, setSelectedPracticeSet] = useState<PracticeSet | null>(null);
+  const [formData, setFormData] = useState<Partial<PracticeSetFormData>>({});
 
-  // Load question sets and majors
+  // Load practice sets and majors
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [questionSetsResponse, majorsResponse] = await Promise.all([
-        questionSetManager.getAll(),
+      const [practiceSetsResponse, majorsResponse] = await Promise.all([
+        practiceSetManager.getAll(),
         questionMajorManager.getAll(),
       ]);
 
-      if (questionSetsResponse.success) {
-        setQuestionSets(extractDataArray<QuestionSet>(questionSetsResponse));
+      if (practiceSetsResponse.success) {
+        setPracticeSets(extractDataArray<PracticeSet>(practiceSetsResponse));
       } else {
-        toast.error(questionSetsResponse.error || "Không thể tải danh sách bộ câu hỏi");
+        toast.error(practiceSetsResponse.error || "Không thể tải danh sách bộ câu hỏi");
       }
 
       if (majorsResponse.success) {
@@ -62,30 +62,30 @@ export function QuestionSetManagementPage() {
     loadData();
   }, [loadData]);
 
-  // Filter question sets based on search query and level filter
-  const filteredQuestionSets = useMemo(() => {
-    return questionSets.filter((questionSet) => {
+  // Filter practice sets based on search query and level filter
+  const filteredPracticeSets = useMemo(() => {
+    return practiceSets.filter((ps) => {
       // Filter by search query
       if (searchQuery) {
         const lowerQuery = searchQuery.toLowerCase();
         const matchesSearch =
-          questionSet.practiceSetName?.toLowerCase().includes(lowerQuery) ||
-          questionSet.objective?.toLowerCase().includes(lowerQuery) ||
-          questionSet.major?.majorName?.toLowerCase().includes(lowerQuery);
+          ps.practiceSetName?.toLowerCase().includes(lowerQuery) ||
+          ps.objective?.toLowerCase().includes(lowerQuery) ||
+          ps.major?.majorName?.toLowerCase().includes(lowerQuery);
         if (!matchesSearch) return false;
       }
 
       // Filter by level
-      if (levelFilter !== "all" && questionSet.level !== levelFilter) {
+      if (levelFilter !== "all" && ps.level !== levelFilter) {
         return false;
       }
 
       return true;
     });
-  }, [questionSets, searchQuery, levelFilter]);
+  }, [practiceSets, searchQuery, levelFilter]);
 
   // Sorting
-  const { sortedData, getSortProps } = useSortable(filteredQuestionSets);
+  const { sortedData, getSortProps } = useSortable(filteredPracticeSets);
 
   // Pagination
   const [pageSize, setPageSize] = useState(10);
@@ -104,31 +104,31 @@ export function QuestionSetManagementPage() {
     setIsCreateDialogOpen(true);
   };
 
-  const handleEdit = (questionSet: QuestionSet) => {
-    setSelectedQuestionSet(questionSet);
+  const handleEdit = (practiceSet: PracticeSet) => {
+    setSelectedPracticeSet(practiceSet);
     setFormData({
-      practiceSetName: questionSet.practiceSetName || "",
-      objective: questionSet.objective,
-      level: questionSet.level,
-      majorId: questionSet.major?.id,
+      practiceSetName: practiceSet.practiceSetName || "",
+      objective: practiceSet.objective,
+      level: practiceSet.level,
+      majorId: practiceSet.major?.id,
     });
     setIsEditDialogOpen(true);
   };
 
-  const handleDelete = (questionSet: QuestionSet) => {
-    setSelectedQuestionSet(questionSet);
+  const handleDelete = (practiceSet: PracticeSet) => {
+    setSelectedPracticeSet(practiceSet);
     setIsDeleteDialogOpen(true);
   };
 
   const handleSubmitCreate = async () => {
     try {
-      const createData: Partial<QuestionSet> = {
+      const createData: Partial<PracticeSet> = {
         practiceSetName: formData.practiceSetName,
         objective: formData.objective,
         level: formData.level,
         major: formData.majorId ? { id: formData.majorId } : undefined,
       };
-      const response = await questionSetManager.create(createData);
+      const response = await practiceSetManager.create(createData);
       if (response.success) {
         toast.success("Đã tạo bộ câu hỏi thành công");
         setIsCreateDialogOpen(false);
@@ -137,25 +137,22 @@ export function QuestionSetManagementPage() {
         toast.error(response.error || "Không thể tạo bộ câu hỏi");
       }
     } catch (error) {
-      console.error("Error creating question set:", error);
+      console.error("Error creating practice set:", error);
       toast.error("Không thể tạo bộ câu hỏi");
     }
   };
 
   const handleSubmitEdit = async () => {
-    if (!selectedQuestionSet?.id) return;
+    if (!selectedPracticeSet?.id) return;
 
     try {
-      const updateData: Partial<QuestionSet> = {
+      const updateData: Partial<PracticeSet> = {
         practiceSetName: formData.practiceSetName,
         objective: formData.objective,
         level: formData.level,
         major: formData.majorId ? { id: formData.majorId } : undefined,
       };
-      const response = await questionSetManager.update(
-        selectedQuestionSet.id,
-        updateData
-      );
+      const response = await practiceSetManager.update(selectedPracticeSet.id, updateData);
       if (response.success) {
         toast.success("Đã cập nhật bộ câu hỏi thành công");
         setIsEditDialogOpen(false);
@@ -164,16 +161,16 @@ export function QuestionSetManagementPage() {
         toast.error(response.error || "Không thể cập nhật bộ câu hỏi");
       }
     } catch (error) {
-      console.error("Error updating question set:", error);
+      console.error("Error updating practice set:", error);
       toast.error("Không thể cập nhật bộ câu hỏi");
     }
   };
 
   const handleConfirmDelete = async () => {
-    if (!selectedQuestionSet?.id) return;
+    if (!selectedPracticeSet?.id) return;
 
     try {
-      const response = await questionSetManager.delete(selectedQuestionSet.id);
+      const response = await practiceSetManager.delete(selectedPracticeSet.id);
       if (response.success) {
         toast.success("Đã xóa bộ câu hỏi thành công");
         setIsDeleteDialogOpen(false);
@@ -182,7 +179,7 @@ export function QuestionSetManagementPage() {
         toast.error(response.error || "Không thể xóa bộ câu hỏi");
       }
     } catch (error) {
-      console.error("Error deleting question set:", error);
+      console.error("Error deleting practice set:", error);
       toast.error("Không thể xóa bộ câu hỏi");
     }
   };
@@ -246,8 +243,8 @@ export function QuestionSetManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <QuestionSetTable
-          questionSets={pageData}
+        <PracticeSetTable
+          practiceSets={pageData}
           onEdit={handleEdit}
           onDelete={handleDelete}
           getSortProps={getSortProps}
@@ -274,7 +271,7 @@ export function QuestionSetManagementPage() {
       </div>
 
       {/* Create Dialog */}
-      <QuestionSetFormDialog
+      <PracticeSetFormDialog
         isOpen={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         formData={formData}
@@ -287,7 +284,7 @@ export function QuestionSetManagementPage() {
       />
 
       {/* Edit Dialog */}
-      <QuestionSetFormDialog
+      <PracticeSetFormDialog
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         formData={formData}
@@ -300,10 +297,10 @@ export function QuestionSetManagementPage() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <DeleteQuestionSetDialog
+      <DeletePracticeSetDialog
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        questionSet={selectedQuestionSet}
+        practiceSet={selectedPracticeSet}
         onConfirm={handleConfirmDelete}
       />
     </div>

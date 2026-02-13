@@ -12,21 +12,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import type { QuestionSet, QuestionSetLevel } from "../types";
+import type { PracticeSet, PracticeSetLevel } from "../types";
 
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
 
-interface QuestionSetTableProps {
-  questionSets: QuestionSet[];
-  onEdit: (questionSet: QuestionSet) => void;
-  onDelete: (questionSet: QuestionSet) => void;
-  getSortProps?: (key: keyof QuestionSet) => SortProps;
+interface PracticeSetTableProps {
+  practiceSets: PracticeSet[];
+  onEdit: (practiceSet: PracticeSet) => void;
+  onDelete: (practiceSet: PracticeSet) => void;
+  getSortProps?: (key: keyof PracticeSet) => SortProps;
 }
 
-const getLevelBadgeClass = (level?: QuestionSetLevel): string => {
+const getLevelBadgeClass = (level?: PracticeSetLevel): string => {
   switch (level) {
     case "INTERN":
       return "bg-gray-500 hover:bg-gray-500";
@@ -41,13 +41,13 @@ const getLevelBadgeClass = (level?: QuestionSetLevel): string => {
   }
 };
 
-export function QuestionSetTable({
-  questionSets,
+export function PracticeSetTable({
+  practiceSets,
   onEdit,
   onDelete,
   getSortProps,
-}: QuestionSetTableProps) {
-  if (questionSets.length === 0) {
+}: PracticeSetTableProps) {
+  if (practiceSets.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
         <Search className="h-12 w-12 text-gray-400" />
@@ -77,29 +77,27 @@ export function QuestionSetTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {questionSets.map((questionSet) => (
-          <TableRow key={questionSet.id}>
-            <TableCell className="font-medium">{questionSet.id}</TableCell>
-            <TableCell className="font-medium">{questionSet.practiceSetName}</TableCell>
+        {practiceSets.map((ps) => (
+          <TableRow key={ps.id}>
+            <TableCell className="font-medium">{ps.id}</TableCell>
+            <TableCell className="font-medium">{ps.practiceSetName}</TableCell>
             <TableCell className="text-muted-foreground max-w-xs truncate">
-              {questionSet.objective || "-"}
+              {ps.objective || "-"}
             </TableCell>
             <TableCell>
-              {questionSet.level && (
-                <Badge
-                  variant="default"
-                  className={`text-white ${getLevelBadgeClass(questionSet.level)}`}>
-                  {questionSet.level}
+              {ps.level && (
+                <Badge variant="default" className={`text-white ${getLevelBadgeClass(ps.level)}`}>
+                  {ps.level}
                 </Badge>
               )}
             </TableCell>
-            <TableCell>{questionSet.major?.majorName || "-"}</TableCell>
+            <TableCell>{ps.major?.majorName || "-"}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onEdit(questionSet)}
+                  onClick={() => onEdit(ps)}
                   className="h-8 w-8 p-0 hover:bg-blue-50"
                   title="Chỉnh sửa">
                   <Edit className="h-4 w-4 text-blue-600" />
@@ -107,7 +105,7 @@ export function QuestionSetTable({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onDelete(questionSet)}
+                  onClick={() => onDelete(ps)}
                   className="h-8 w-8 p-0 hover:bg-red-50"
                   title="Xóa">
                   <Power className="h-4 w-4 text-red-600" />

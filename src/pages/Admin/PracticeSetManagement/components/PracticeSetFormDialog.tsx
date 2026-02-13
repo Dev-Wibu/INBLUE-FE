@@ -18,13 +18,13 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-import type { Major, QuestionSetFormData, QuestionSetLevel } from "../types";
+import type { Major, PracticeSetFormData, PracticeSetLevel } from "../types";
 
-interface QuestionSetFormDialogProps {
+interface PracticeSetFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  formData: Partial<QuestionSetFormData>;
-  onFormChange: (data: Partial<QuestionSetFormData>) => void;
+  formData: Partial<PracticeSetFormData>;
+  onFormChange: (data: Partial<PracticeSetFormData>) => void;
   onSubmit: () => void;
   title: string;
   description: string;
@@ -32,7 +32,7 @@ interface QuestionSetFormDialogProps {
   majors: Major[];
 }
 
-export function QuestionSetFormDialog({
+export function PracticeSetFormDialog({
   isOpen,
   onOpenChange,
   formData,
@@ -42,7 +42,7 @@ export function QuestionSetFormDialog({
   description,
   submitLabel,
   majors,
-}: QuestionSetFormDialogProps) {
+}: PracticeSetFormDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -66,7 +66,7 @@ export function QuestionSetFormDialog({
               <Select
                 value={formData.level}
                 onValueChange={(value) =>
-                  onFormChange({ ...formData, level: value as QuestionSetLevel })
+                  onFormChange({ ...formData, level: value as PracticeSetLevel })
                 }>
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn cấp độ" />

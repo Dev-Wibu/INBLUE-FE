@@ -3,13 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -184,7 +178,8 @@ export function PracticeQuestionsPage() {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <Badge className={levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"}>
+                <Badge
+                  className={levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"}>
                   {question.level}
                 </Badge>
                 {question.lesson?.lessonName && (
