@@ -179,7 +179,10 @@ export function PracticeQuestionManagementPage() {
         answer: formData.answer,
         hint: formData.hint,
       };
-      const response = await questionManager.update(selectedQuestion.questionId, updateData as never);
+      const response = await questionManager.update(
+        selectedQuestion.questionId,
+        updateData as never
+      );
       if (response.success) {
         toast.success("Đã cập nhật câu hỏi thành công");
         setIsEditDialogOpen(false);
@@ -306,7 +309,9 @@ export function PracticeQuestionManagementPage() {
                   <TableCell className="font-medium">{question.title}</TableCell>
                   <TableCell>
                     <Badge
-                      className={levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"}>
+                      className={
+                        levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"
+                      }>
                       {question.level}
                     </Badge>
                   </TableCell>
@@ -379,8 +384,8 @@ export function PracticeQuestionManagementPage() {
           <DialogHeader>
             <DialogTitle>Xác nhận xóa</DialogTitle>
             <DialogDescription>
-              Bạn có chắc chắn muốn xóa câu hỏi &quot;{selectedQuestion?.title}&quot;? Hành động
-              này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa câu hỏi &quot;{selectedQuestion?.title}&quot;? Hành động này
+              không thể hoàn tác.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

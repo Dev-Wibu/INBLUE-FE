@@ -5,12 +5,12 @@ import { useTabsState } from "@/hooks/useTabsState";
 import { AccountPage } from "../Account";
 import { AIChatListPage } from "../AIChat";
 import { AIInterviewListPage } from "../AIInterview";
+import { PostListPage } from "../Community";
 import { UserFeedbackListPage } from "../Feedback";
 import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
 import { UserNotificationsPage } from "../Notifications";
 import { OverviewPage } from "../Overview";
 import { QuestionListPage } from "../Question";
-import { PostListPage } from "../Community";
 import type { Tab, TabType } from "./components";
 import { ChromeTabs, Sidebar } from "./components";
 

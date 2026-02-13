@@ -1,6 +1,6 @@
 /**
- * Question Set Item Manager
- * Handles question set item CRUD operations for admin management
+ * Practice Set Item Manager
+ * Handles practice set item CRUD operations for admin management
  * Based on schema-from-be.d.ts API specification
  */
 
@@ -12,7 +12,7 @@ import {
   buildEndpoint,
   createApiInstance,
 } from "@/constants/api.config";
-import type { QuestionSet } from "./question-set.manager";
+import type { PracticeSet } from "./practice-set.manager";
 
 /**
  * Question level enum based on backend schema
@@ -38,26 +38,26 @@ export interface Question {
 }
 
 /**
- * QuestionSetItem type based on backend schema
+ * PracticeSetItem type based on backend schema
  */
-export interface QuestionSetItem {
+export interface PracticeSetItem {
   id?: number;
   practiceQuestion?: Question;
-  practiceSet?: QuestionSet;
+  practiceSet?: PracticeSet;
   orderIndex?: number;
 }
 
 /**
  * Form data for create/update operations
  */
-export interface QuestionSetItemFormData {
+export interface PracticeSetItemFormData {
   questionId: number;
-  questionSetId: number;
+  practiceSetId: number;
   orderIndex?: number;
 }
 
 // Mock data for development
-const mockQuestionSetItems: QuestionSetItem[] = [
+const mockPracticeSetItems: PracticeSetItem[] = [
   {
     id: 1,
     practiceQuestion: {
@@ -93,26 +93,26 @@ const mockQuestionSetItems: QuestionSetItem[] = [
   },
 ];
 
-export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
+export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
   private mode = MANAGER_MODE;
   private api = createApiInstance();
 
   /**
-   * Get all question set items
+   * Get all practice set items
    * GET /api/practice-set-items
    */
   async getAll(
     _params?: PaginationParams
-  ): Promise<ApiResponse<PaginatedResponse<QuestionSetItem> | QuestionSetItem[]>> {
+  ): Promise<ApiResponse<PaginatedResponse<PracticeSetItem> | PracticeSetItem[]>> {
     if (this.mode === "mock") {
       return {
         success: true,
-        data: [...mockQuestionSetItems],
+        data: [...mockPracticeSetItems],
       };
     }
 
     try {
-      const response = await this.api.get(API_ENDPOINTS.QUESTION_SET_ITEMS.LIST, {
+      const response = await this.api.get(API_ENDPOINTS.PRACTICE_SET_ITEMS.LIST, {
         params: _params,
       });
       return {
@@ -122,22 +122,22 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch question set items",
+        error: error instanceof Error ? error.message : "Failed to fetch practice set items",
       };
     }
   }
 
   /**
-   * Get question set item by ID
+   * Get practice set item by ID
    * GET /api/practice-set-items/{id}
    */
-  async getById(id: string | number): Promise<ApiResponse<QuestionSetItem>> {
+  async getById(id: string | number): Promise<ApiResponse<PracticeSetItem>> {
     if (this.mode === "mock") {
-      const item = mockQuestionSetItems.find((i) => i.id === Number(id));
+      const item = mockPracticeSetItems.find((i) => i.id === Number(id));
       if (!item) {
         return {
           success: false,
-          error: "Question set item not found",
+          error: "Practice set item not found",
         };
       }
       return {
@@ -147,7 +147,7 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     }
 
     try {
-      const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_SET_ITEMS.DETAIL, { id });
+      const endpoint = buildEndpoint(API_ENDPOINTS.PRACTICE_SET_ITEMS.DETAIL, { id });
       const response = await this.api.get(endpoint);
       return {
         success: true,
@@ -156,20 +156,20 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch question set item",
+        error: error instanceof Error ? error.message : "Failed to fetch practice set item",
       };
     }
   }
 
   /**
-   * Get question set items by question set ID
+   * Get practice set items by practice set ID
    * GET /api/practice-set-items/by-question-set/{id}
    */
-  async getByQuestionSetId(
-    questionSetId: string | number
-  ): Promise<ApiResponse<QuestionSetItem[]>> {
+  async getByPracticeSetId(
+    practiceSetId: string | number
+  ): Promise<ApiResponse<PracticeSetItem[]>> {
     if (this.mode === "mock") {
-      const items = mockQuestionSetItems.filter((i) => i.practiceSet?.id === Number(questionSetId));
+      const items = mockPracticeSetItems.filter((i) => i.practiceSet?.id === Number(practiceSetId));
       return {
         success: true,
         data: items,
@@ -177,8 +177,8 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     }
 
     try {
-      const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_SET_ITEMS.BY_QUESTION_SET, {
-        id: questionSetId,
+      const endpoint = buildEndpoint(API_ENDPOINTS.PRACTICE_SET_ITEMS.BY_QUESTION_SET, {
+        id: practiceSetId,
       });
       const response = await this.api.get(endpoint);
       return {
@@ -189,25 +189,25 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "Failed to fetch question set items by set ID",
+          error instanceof Error ? error.message : "Failed to fetch practice set items by set ID",
       };
     }
   }
 
   /**
-   * Create new question set item
+   * Create new practice set item
    * POST /api/practice-set-items (JSON body)
    */
-  async create(data: Partial<QuestionSetItem>): Promise<ApiResponse<QuestionSetItem>> {
+  async create(data: Partial<PracticeSetItem>): Promise<ApiResponse<PracticeSetItem>> {
     if (this.mode === "mock") {
-      const newId = Math.max(...mockQuestionSetItems.map((i) => i.id || 0)) + 1;
-      const newItem: QuestionSetItem = {
+      const newId = Math.max(...mockPracticeSetItems.map((i) => i.id || 0)) + 1;
+      const newItem: PracticeSetItem = {
         id: newId,
         practiceQuestion: data.practiceQuestion,
         practiceSet: data.practiceSet,
         orderIndex: data.orderIndex,
       };
-      mockQuestionSetItems.push(newItem);
+      mockPracticeSetItems.push(newItem);
       return {
         success: true,
         data: newItem,
@@ -215,7 +215,7 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     }
 
     try {
-      const response = await this.api.post(API_ENDPOINTS.QUESTION_SET_ITEMS.CREATE, data);
+      const response = await this.api.post(API_ENDPOINTS.PRACTICE_SET_ITEMS.CREATE, data);
       return {
         success: true,
         data: response.data,
@@ -223,19 +223,19 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create question set item",
+        error: error instanceof Error ? error.message : "Failed to create practice set item",
       };
     }
   }
 
   /**
-   * Create multiple question set items
+   * Create multiple practice set items
    * POST /api/practice-set-items/create-items
    */
   async createBulk(
-    questionSet: QuestionSet,
+    practiceSet: PracticeSet,
     counts: { easy: number; medium: number; hard: number }
-  ): Promise<ApiResponse<QuestionSetItem[]>> {
+  ): Promise<ApiResponse<PracticeSetItem[]>> {
     if (this.mode === "mock") {
       return {
         success: false,
@@ -245,8 +245,8 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
 
     try {
       const response = await this.api.post(
-        API_ENDPOINTS.QUESTION_SET_ITEMS.CREATE_BULK,
-        questionSet,
+        API_ENDPOINTS.PRACTICE_SET_ITEMS.CREATE_BULK,
+        practiceSet,
         {
           params: counts,
         }
@@ -258,39 +258,39 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create question set items",
+        error: error instanceof Error ? error.message : "Failed to create practice set items",
       };
     }
   }
 
   /**
-   * Update question set item
+   * Update practice set item
    * POST /api/practice-set-items (JSON body)
    * Note: Backend confirmed POST should be used for updates (not PUT)
    */
   async update(
     id: string | number,
-    data: Partial<QuestionSetItem>
-  ): Promise<ApiResponse<QuestionSetItem>> {
+    data: Partial<PracticeSetItem>
+  ): Promise<ApiResponse<PracticeSetItem>> {
     if (this.mode === "mock") {
-      const index = mockQuestionSetItems.findIndex((i) => i.id === Number(id));
+      const index = mockPracticeSetItems.findIndex((i) => i.id === Number(id));
       if (index === -1) {
         return {
           success: false,
-          error: "Question set item not found",
+          error: "Practice set item not found",
         };
       }
-      mockQuestionSetItems[index] = { ...mockQuestionSetItems[index], ...data };
+      mockPracticeSetItems[index] = { ...mockPracticeSetItems[index], ...data };
       return {
         success: true,
-        data: mockQuestionSetItems[index],
+        data: mockPracticeSetItems[index],
       };
     }
 
     try {
-      const itemData: QuestionSetItem = { ...data, id: Number(id) };
+      const itemData: PracticeSetItem = { ...data, id: Number(id) };
       // Note: Backend confirmed POST should be used for updates (not PUT)
-      const response = await this.api.post(API_ENDPOINTS.QUESTION_SET_ITEMS.UPDATE, itemData);
+      const response = await this.api.post(API_ENDPOINTS.PRACTICE_SET_ITEMS.UPDATE, itemData);
       return {
         success: true,
         data: response.data,
@@ -298,33 +298,33 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to update question set item",
+        error: error instanceof Error ? error.message : "Failed to update practice set item",
       };
     }
   }
 
   /**
-   * Delete question set item
+   * Delete practice set item
    * POST /api/practice-set-items/{id}
    * Note: Backend requires POST method for all operations including delete (PUT/DELETE not used)
    */
   async delete(id: string | number): Promise<ApiResponse<void>> {
     if (this.mode === "mock") {
-      const index = mockQuestionSetItems.findIndex((i) => i.id === Number(id));
+      const index = mockPracticeSetItems.findIndex((i) => i.id === Number(id));
       if (index === -1) {
         return {
           success: false,
-          error: "Question set item not found",
+          error: "Practice set item not found",
         };
       }
-      mockQuestionSetItems.splice(index, 1);
+      mockPracticeSetItems.splice(index, 1);
       return {
         success: true,
       };
     }
 
     try {
-      const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_SET_ITEMS.DELETE, { id });
+      const endpoint = buildEndpoint(API_ENDPOINTS.PRACTICE_SET_ITEMS.DELETE, { id });
       // Note: Backend requires POST method for delete operations (PUT/DELETE not used)
       await this.api.post(endpoint);
       return {
@@ -333,11 +333,11 @@ export class QuestionSetItemManager implements BaseManager<QuestionSetItem> {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to delete question set item",
+        error: error instanceof Error ? error.message : "Failed to delete practice set item",
       };
     }
   }
 }
 
 // Export singleton instance
-export const questionSetItemManager = new QuestionSetItemManager();
+export const practiceSetItemManager = new PracticeSetItemManager();

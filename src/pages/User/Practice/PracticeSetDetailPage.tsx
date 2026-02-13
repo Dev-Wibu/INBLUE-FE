@@ -4,16 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { questionSetManager, quizSetManager } from "@/services";
-import type { QuestionSet } from "@/services/question-set.manager";
-import type { QuestionSetItem } from "@/services/question-set-item.manager";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { practiceSetManager, quizSetManager } from "@/services";
+import type { PracticeSetItem } from "@/services/practice-set-item.manager";
+import type { PracticeSet } from "@/services/practice-set.manager";
 import type { QuizSet } from "@/services/quiz-set.manager";
 import { toast } from "sonner";
 
@@ -26,8 +20,8 @@ const questionLevelBadgeMap: Record<string, string> = {
 export function PracticeSetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [practiceSet, setPracticeSet] = useState<QuestionSet | null>(null);
-  const [items, setItems] = useState<QuestionSetItem[]>([]);
+  const [practiceSet, setPracticeSet] = useState<PracticeSet | null>(null);
+  const [items, setItems] = useState<PracticeSetItem[]>([]);
   const [quizHistory, setQuizHistory] = useState<QuizSet[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +30,7 @@ export function PracticeSetDetailPage() {
     setLoading(true);
     try {
       const [fullSetResponse, quizResponse] = await Promise.all([
-        questionSetManager.getFullSet(id),
+        practiceSetManager.getFullSet(id),
         quizSetManager.getByPracticeSet(Number(id)),
       ]);
 
@@ -78,7 +72,10 @@ export function PracticeSetDetailPage() {
       <div className="bg-background flex min-h-screen items-center justify-center">
         <Card className="p-8 text-center">
           <p className="text-foreground font-medium">Không tìm thấy bộ luyện tập</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/dashboard/practice")}>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => navigate("/dashboard/practice")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Quay lại
           </Button>
@@ -90,7 +87,10 @@ export function PracticeSetDetailPage() {
   return (
     <div className="bg-background min-h-screen p-8">
       {/* Back Button */}
-      <Button variant="ghost" className="mb-4 gap-2" onClick={() => navigate("/dashboard/practice")}>
+      <Button
+        variant="ghost"
+        className="mb-4 gap-2"
+        onClick={() => navigate("/dashboard/practice")}>
         <ArrowLeft className="h-4 w-4" />
         Quay lại danh sách
       </Button>
@@ -136,9 +136,7 @@ export function PracticeSetDetailPage() {
               ) : (
                 <div className="space-y-3">
                   {items.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-4 rounded-lg border p-4">
+                    <div key={item.id} className="flex items-center gap-4 rounded-lg border p-4">
                       <span className="text-muted-foreground text-sm font-medium">
                         {index + 1}.
                       </span>
