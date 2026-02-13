@@ -458,7 +458,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Lấy tất cả bài viết */
+        get: operations["getAllPosts"];
         put?: never;
         /** Create post */
         post: operations["createPost"];
@@ -961,6 +962,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/posts/published": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy tất cả bài viết đã publish */
+        get: operations["getPublishedPosts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/posts/likes/{postId}": {
         parameters: {
             query?: never;
@@ -1021,6 +1039,23 @@ export interface paths {
         };
         /** Lấy replies của một comment */
         get: operations["getReplies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/posts/change-status/{postId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Thay đổi trạng thái bài viết */
+        get: operations["changeStatus"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1760,6 +1795,15 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        PostResponse: {
+            post?: components["schemas"]["Post"];
+            /** Format: int32 */
+            likeCount?: number;
+            /** Format: int32 */
+            commentCount?: number;
+            postLikes?: components["schemas"]["PostLike"][];
+            postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PostLikeResponse: {
             /** Format: int32 */
@@ -2911,6 +2955,26 @@ export interface operations {
             };
         };
     };
+    getAllPosts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PostResponse"][];
+                };
+            };
+        };
+    };
     createPost: {
         parameters: {
             query?: never;
@@ -3680,6 +3744,26 @@ export interface operations {
             };
         };
     };
+    getPublishedPosts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PostResponse"][];
+                };
+            };
+        };
+    };
     getLikesByPostId: {
         parameters: {
             query?: never;
@@ -3767,6 +3851,32 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PostCommentResponse"][];
+                };
+            };
+        };
+    };
+    changeStatus: {
+        parameters: {
+            query: {
+                status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+            };
+            header?: never;
+            path: {
+                postId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": {
+                        [key: string]: string;
+                    };
                 };
             };
         };

@@ -76,9 +76,9 @@ const QUESTION_MENU_ITEMS = [
     color: "text-pink-600",
   },
   {
-    type: "questionSets" as TabType,
+    type: "practiceSets" as TabType,
     icon: BookOpen,
-    label: "Question Sets",
+    label: "Practice Sets",
     color: "text-teal-600",
   },
   {

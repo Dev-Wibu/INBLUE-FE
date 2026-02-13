@@ -30,7 +30,7 @@ export type TabType =
   | "notifications"
   | "questionCategories"
   | "questionMajors"
-  | "questionSets"
+  | "practiceSets"
   | "practiceQuestions"
   | "quizSets"
   | "posts"
@@ -60,7 +60,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   notifications: Bell,
   questionCategories: FolderOpen,
   questionMajors: GraduationCap,
-  questionSets: BookOpen,
+  practiceSets: BookOpen,
   practiceQuestions: FileQuestion,
   quizSets: Trophy,
   posts: Newspaper,
@@ -77,7 +77,7 @@ const TAB_COLORS: Record<TabType, string> = {
   notifications: "text-red-600",
   questionCategories: "text-purple-600",
   questionMajors: "text-pink-600",
-  questionSets: "text-teal-600",
+  practiceSets: "text-teal-600",
   practiceQuestions: "text-emerald-600",
   quizSets: "text-amber-600",
   posts: "text-purple-500",
@@ -228,12 +228,12 @@ export function ChromeTabs({
               </button>
               <button
                 onClick={() => {
-                  onNewTab("questionSets");
+                  onNewTab("practiceSets");
                   setShowNewTabMenu(false);
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:text-slate-200 dark:hover:bg-slate-700">
                 <BookOpen className="h-4 w-4 text-teal-600" />
-                Question Sets
+                Practice Sets
               </button>
               <div className="my-1 border-t dark:border-slate-600" />
               <button

@@ -4,13 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { quizSetManager } from "@/services";
 import type { QuizItem, QuizSet } from "@/services/quiz-set.manager";
 import { toast } from "sonner";

@@ -137,8 +137,8 @@ export const API_ENDPOINTS = {
     JOIN: "/api/sessions/join-session",
   },
 
-  // Question Sets endpoints - Based on schema-from-be.d.ts
-  QUESTION_SETS: {
+  // Practice Sets endpoints - Based on schema-from-be.d.ts
+  PRACTICE_SETS: {
     LIST: "/api/practice-sets",
     DETAIL: "/api/practice-sets/:id",
     CREATE: "/api/practice-sets",
@@ -170,8 +170,8 @@ export const API_ENDPOINTS = {
     DELETE: "/api/majors/:id",
   },
 
-  // Question Set Items endpoints - Based on schema-from-be.d.ts
-  QUESTION_SET_ITEMS: {
+  // Practice Set Items endpoints - Based on schema-from-be.d.ts
+  PRACTICE_SET_ITEMS: {
     LIST: "/api/practice-set-items",
     DETAIL: "/api/practice-set-items/:id",
     CREATE: "/api/practice-set-items",
@@ -252,7 +252,11 @@ export const API_ENDPOINTS = {
   // GET /api/posts/likes/{postId}/check/{userId} - checkLiked
   // DELETE /api/posts/likes/{postId}/{userId} - unlikePost
   POSTS: {
+    LIST: "/api/posts",
+    DETAIL: "/api/posts/:postId",
     CREATE: "/api/posts",
+    UPDATE: "/api/posts",
+    DELETE: "/api/posts/:postId",
     COMMENTS: "/api/posts/:postId/comments",
     COMMENTS_COUNT: "/api/posts/:postId/comments/count",
     CREATE_COMMENT: "/api/posts/comments",

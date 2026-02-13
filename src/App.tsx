@@ -43,7 +43,12 @@ import {
   StudentsListPage,
   WriteFeedbackPage,
 } from "@/pages/Mentor";
-import { FeedbackModerationPage, PostModerationPage, ReviewModerationPage, StaffDashboardPage } from "@/pages/Staff";
+import {
+  FeedbackModerationPage,
+  PostModerationPage,
+  ReviewModerationPage,
+  StaffDashboardPage,
+} from "@/pages/Staff";
 import {
   AccountPage,
   AIChatConversationPage,
@@ -54,6 +59,8 @@ import {
   AIInterviewPaymentSuccessPage,
   AIInterviewResultPage,
   AIInterviewSessionPage,
+  CreatePostPage,
+  EditPostPage,
   FeedbackDetailPage,
   MockInterviewListPage,
   MockInterviewPaymentRedirectPage,
@@ -61,6 +68,8 @@ import {
   MockInterviewSchedulePage,
   MockInterviewSelectMentorPage,
   OverviewPage,
+  PostDetailPage,
+  PostListPage,
   PracticeQuestionsPage,
   PracticeSetDetailPage,
   PracticeSetsPage,
@@ -76,7 +85,6 @@ import {
   UserNotificationsPage,
   WriteReviewPage,
 } from "@/pages/User";
-import { PostListPage, CreatePostPage, PostDetailPage } from "@/pages/User";
 
 function App() {
   return (
@@ -175,7 +183,10 @@ function App() {
               <Route path="/dashboard/practice/questions" element={<PracticeQuestionsPage />} />
               <Route path="/dashboard/practice/:id" element={<PracticeSetDetailPage />} />
               <Route path="/dashboard/practice/:id/quiz" element={<QuizPage />} />
-              <Route path="/dashboard/practice/:id/quiz/:quizId/result" element={<QuizResultPage />} />
+              <Route
+                path="/dashboard/practice/:id/quiz/:quizId/result"
+                element={<QuizResultPage />}
+              />
 
               {/* Feedback routes */}
               <Route path="/dashboard/feedback" element={<UserFeedbackListPage />} />
@@ -191,6 +202,7 @@ function App() {
               <Route path="/dashboard/community" element={<PostListPage />} />
               <Route path="/dashboard/community/create" element={<CreatePostPage />} />
               <Route path="/dashboard/community/:postId" element={<PostDetailPage />} />
+              <Route path="/dashboard/community/:postId/edit" element={<EditPostPage />} />
             </Route>
 
             {/* User Dashboard with Chrome Tabs (alternative route) */}
@@ -245,6 +257,7 @@ function App() {
               <Route path="/mentor/community" element={<PostListPage />} />
               <Route path="/mentor/community/create" element={<CreatePostPage />} />
               <Route path="/mentor/community/:postId" element={<PostDetailPage />} />
+              <Route path="/mentor/community/:postId/edit" element={<EditPostPage />} />
             </Route>
 
             {/* Mentor Dashboard with Chrome Tabs (alternative route) */}
@@ -308,19 +321,24 @@ function App() {
               element={<Navigate to="/admin?tab=questionMajors" replace />}
             />
             <Route
+              path="/admin/practiceSets"
+              element={<Navigate to="/admin?tab=practiceSets" replace />}
+            />
+            {/* Backward compatibility redirect */}
+            <Route
               path="/admin/questionSets"
-              element={<Navigate to="/admin?tab=questionSets" replace />}
+              element={<Navigate to="/admin?tab=practiceSets" replace />}
             />
             <Route
               path="/admin/practiceQuestions"
               element={<Navigate to="/admin?tab=practiceQuestions" replace />}
             />
-            <Route
-              path="/admin/quizSets"
-              element={<Navigate to="/admin?tab=quizSets" replace />}
-            />
+            <Route path="/admin/quizSets" element={<Navigate to="/admin?tab=quizSets" replace />} />
             <Route path="/admin/posts" element={<Navigate to="/admin?tab=posts" replace />} />
-            <Route path="/admin/candidateProfiles" element={<Navigate to="/admin?tab=candidateProfiles" replace />} />
+            <Route
+              path="/admin/candidateProfiles"
+              element={<Navigate to="/admin?tab=candidateProfiles" replace />}
+            />
 
             {/* Staff Dashboard routes */}
             <Route path="/staff" element={<StaffDashboardPage />} />

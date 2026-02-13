@@ -12,7 +12,7 @@ import {
   buildEndpoint,
   createApiInstance,
 } from "@/constants/api.config";
-import type { QuestionSet } from "./question-set.manager";
+import type { PracticeSet } from "./practice-set.manager";
 
 /**
  * QuizSet type based on backend schema
@@ -21,7 +21,7 @@ export interface QuizSet {
   quizId?: number;
   quizName?: string;
   score?: number;
-  practiceSet?: QuestionSet;
+  practiceSet?: PracticeSet;
   createdAt?: string;
   submitted?: boolean;
 }
