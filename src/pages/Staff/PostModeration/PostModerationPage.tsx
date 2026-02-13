@@ -360,9 +360,7 @@ export function PostModerationPage() {
               {/* Meta Info */}
               <div className="flex flex-wrap gap-2">
                 {getStatusBadge(selectedPost.status)}
-                {selectedPost.major && (
-                  <Badge variant="outline">{selectedPost.major.name}</Badge>
-                )}
+                {selectedPost.major && <Badge variant="outline">{selectedPost.major.name}</Badge>}
                 {selectedPost.tags?.map((tag) => (
                   <Badge key={tag} variant="secondary">
                     {tag}
@@ -377,7 +375,7 @@ export function PostModerationPage() {
 
               {/* Content */}
               <div className="rounded-lg bg-gray-50 p-4 dark:bg-slate-800">
-                <p className="whitespace-pre-wrap text-sm">{selectedPost.content}</p>
+                <p className="text-sm whitespace-pre-wrap">{selectedPost.content}</p>
               </div>
 
               {/* Moderation Actions */}

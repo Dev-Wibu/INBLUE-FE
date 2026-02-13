@@ -53,4 +53,4 @@ export {
 } from "./Practice";
 
 // Community exports
-export { CreatePostPage, PostDetailPage, PostListPage } from "./Community";
+export { CreatePostPage, EditPostPage, PostDetailPage, PostListPage } from "./Community";

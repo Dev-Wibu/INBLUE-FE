@@ -73,7 +73,9 @@ export function AccountPage() {
   const [wallet] = useState<Wallet>(mockWallet);
   const [settings] = useState<UserSettings>(mockUserSettings);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"profile" | "wallet" | "settings" | "candidateProfile">("profile");
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "wallet" | "settings" | "candidateProfile"
+  >("profile");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 

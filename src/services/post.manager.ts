@@ -479,7 +479,7 @@ export class PostManager implements BaseManager<Post> {
     }
 
     try {
-      const response = await this.api.get(API_ENDPOINTS.POSTS.CREATE, { params: _params });
+      const response = await this.api.get(API_ENDPOINTS.POSTS.LIST, { params: _params });
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -499,7 +499,8 @@ export class PostManager implements BaseManager<Post> {
     }
 
     try {
-      const response = await this.api.get(`/api/posts/${id}`);
+      const endpoint = buildEndpoint(API_ENDPOINTS.POSTS.DETAIL, { postId: id });
+      const response = await this.api.get(endpoint);
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -523,11 +524,19 @@ export class PostManager implements BaseManager<Post> {
       return { success: true, data: mockPosts[index] };
     }
 
-    return {
-      success: false,
-      error:
-        "Update operation not supported directly — schema does not define PUT/POST for updating posts",
-    };
+    try {
+      // Note: Backend confirmed POST should be used for updates (not PUT)
+      const response = await this.api.post(API_ENDPOINTS.POSTS.UPDATE, {
+        ...data,
+        postId: Number(id),
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to update post",
+      };
+    }
   }
 
   async delete(id: string | number): Promise<ApiResponse<void>> {
@@ -540,11 +549,16 @@ export class PostManager implements BaseManager<Post> {
       return { success: true };
     }
 
-    return {
-      success: false,
-      error:
-        "Delete operation not supported — schema does not define DELETE /api/posts/{postId}. Use status change to ARCHIVED instead.",
-    };
+    try {
+      const endpoint = buildEndpoint(API_ENDPOINTS.POSTS.DELETE, { postId: id });
+      await this.api.delete(endpoint);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to delete post",
+      };
+    }
   }
 }
 

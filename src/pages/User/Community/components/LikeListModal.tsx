@@ -1,12 +1,7 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { usePostLikes } from "@/services/post.manager";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { PostLikeResponse } from "@/interfaces/schema.types";
+import { usePostLikes } from "@/services/post.manager";
 
 interface LikeListModalProps {
   postId: number;
@@ -25,7 +20,7 @@ export function LikeListModal({ postId, open, onOpenChange }: LikeListModalProps
           <DialogTitle>Người đã thích</DialogTitle>
         </DialogHeader>
         {likes.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground py-4 text-center text-sm">
             Chưa có ai thích bài viết này
           </p>
         ) : (

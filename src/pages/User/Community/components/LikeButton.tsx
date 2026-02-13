@@ -1,13 +1,13 @@
-import { useState } from "react";
 import { Heart } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { queryClient } from "@/lib/queryClient";
 import {
   useCheckLiked,
-  usePostLikesCount,
   useLikePost,
+  usePostLikesCount,
   useUnlikePost,
 } from "@/services/post.manager";
 
@@ -33,7 +33,9 @@ export function LikeButton({ postId, userId, onLikeChange }: LikeButtonProps) {
   const likeCount = optimisticCount !== null ? optimisticCount : count;
 
   const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ["get", `/api/posts/likes/${postId}/check/${userId}`] });
+    queryClient.invalidateQueries({
+      queryKey: ["get", `/api/posts/likes/${postId}/check/${userId}`],
+    });
     queryClient.invalidateQueries({ queryKey: ["get", `/api/posts/likes/${postId}/count`] });
   };
 
@@ -41,41 +43,35 @@ export function LikeButton({ postId, userId, onLikeChange }: LikeButtonProps) {
     if (isLiked) {
       setOptimisticLiked(false);
       setOptimisticCount(Math.max(0, likeCount - 1));
-      unlikeMutation.mutate(
-        { params: { path: { postId, userId } } } as never,
-        {
-          onSuccess: () => {
-            invalidateQueries();
-            setOptimisticLiked(null);
-            setOptimisticCount(null);
-            onLikeChange?.(false);
-          },
-          onError: () => {
-            setOptimisticLiked(null);
-            setOptimisticCount(null);
-            toast.error("Không thể bỏ thích bài viết");
-          },
-        }
-      );
+      unlikeMutation.mutate({ params: { path: { postId, userId } } } as never, {
+        onSuccess: () => {
+          invalidateQueries();
+          setOptimisticLiked(null);
+          setOptimisticCount(null);
+          onLikeChange?.(false);
+        },
+        onError: () => {
+          setOptimisticLiked(null);
+          setOptimisticCount(null);
+          toast.error("Không thể bỏ thích bài viết");
+        },
+      });
     } else {
       setOptimisticLiked(true);
       setOptimisticCount(likeCount + 1);
-      likeMutation.mutate(
-        { body: { postId, userId } } as never,
-        {
-          onSuccess: () => {
-            invalidateQueries();
-            setOptimisticLiked(null);
-            setOptimisticCount(null);
-            onLikeChange?.(true);
-          },
-          onError: () => {
-            setOptimisticLiked(null);
-            setOptimisticCount(null);
-            toast.error("Không thể thích bài viết");
-          },
-        }
-      );
+      likeMutation.mutate({ body: { postId, userId } } as never, {
+        onSuccess: () => {
+          invalidateQueries();
+          setOptimisticLiked(null);
+          setOptimisticCount(null);
+          onLikeChange?.(true);
+        },
+        onError: () => {
+          setOptimisticLiked(null);
+          setOptimisticCount(null);
+          toast.error("Không thể thích bài viết");
+        },
+      });
     }
   };
 
@@ -87,11 +83,8 @@ export function LikeButton({ postId, userId, onLikeChange }: LikeButtonProps) {
         e.stopPropagation();
         handleToggle();
       }}
-      className="gap-1"
-    >
-      <Heart
-        className={`h-4 w-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`}
-      />
+      className="gap-1">
+      <Heart className={`h-4 w-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
       <span>{likeCount}</span>
     </Button>
   );

@@ -131,7 +131,11 @@ export function CandidateProfileTab() {
     }));
   };
 
-  const updateProject = (index: number, field: keyof ProjectDetail, value: string | number | string[]) => {
+  const updateProject = (
+    index: number,
+    field: keyof ProjectDetail,
+    value: string | number | string[]
+  ) => {
     setFormData((prev) => {
       const projects = [...(prev.projects ?? [])];
       projects[index] = { ...projects[index], [field]: value };
@@ -278,7 +282,9 @@ export function CandidateProfileTab() {
                 <Label>Cấp độ</Label>
                 <Input
                   value={formData.targetLevel ?? ""}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, targetLevel: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, targetLevel: e.target.value }))
+                  }
                   placeholder="VD: Senior, Junior, Mid"
                 />
               </div>
@@ -615,37 +621,43 @@ export function CandidateProfileTab() {
           <div>
             <Label className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng kỹ thuật</Label>
             <div className="mt-1 flex flex-wrap gap-2">
-              {(profile.technicalSkills ?? []).length > 0
-                ? profile.technicalSkills!.map((skill) => (
-                    <Badge key={skill} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))
-                : <span className="text-sm text-gray-400">—</span>}
+              {(profile.technicalSkills ?? []).length > 0 ? (
+                profile.technicalSkills!.map((skill) => (
+                  <Badge key={skill} variant="secondary">
+                    {skill}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">—</span>
+              )}
             </div>
           </div>
           <div>
             <Label className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng mềm</Label>
             <div className="mt-1 flex flex-wrap gap-2">
-              {(profile.softSkills ?? []).length > 0
-                ? profile.softSkills!.map((skill) => (
-                    <Badge key={skill} variant="outline">
-                      {skill}
-                    </Badge>
-                  ))
-                : <span className="text-sm text-gray-400">—</span>}
+              {(profile.softSkills ?? []).length > 0 ? (
+                profile.softSkills!.map((skill) => (
+                  <Badge key={skill} variant="outline">
+                    {skill}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">—</span>
+              )}
             </div>
           </div>
           <div>
             <Label className="text-sm text-gray-500 dark:text-slate-400">Công cụ</Label>
             <div className="mt-1 flex flex-wrap gap-2">
-              {(profile.tools ?? []).length > 0
-                ? profile.tools!.map((tool) => (
-                    <Badge key={tool} variant="secondary">
-                      {tool}
-                    </Badge>
-                  ))
-                : <span className="text-sm text-gray-400">—</span>}
+              {(profile.tools ?? []).length > 0 ? (
+                profile.tools!.map((tool) => (
+                  <Badge key={tool} variant="secondary">
+                    {tool}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">—</span>
+              )}
             </div>
           </div>
         </CardContent>
@@ -740,25 +752,29 @@ export function CandidateProfileTab() {
           <div>
             <Label className="text-sm text-gray-500 dark:text-slate-400">Chứng chỉ</Label>
             <div className="mt-1 flex flex-wrap gap-2">
-              {(profile.certifications ?? []).length > 0
-                ? profile.certifications!.map((cert) => (
-                    <Badge key={cert} variant="secondary">
-                      {cert}
-                    </Badge>
-                  ))
-                : <span className="text-sm text-gray-400">—</span>}
+              {(profile.certifications ?? []).length > 0 ? (
+                profile.certifications!.map((cert) => (
+                  <Badge key={cert} variant="secondary">
+                    {cert}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">—</span>
+              )}
             </div>
           </div>
           <div>
             <Label className="text-sm text-gray-500 dark:text-slate-400">Thành tích</Label>
             <div className="mt-1 flex flex-wrap gap-2">
-              {(profile.achievements ?? []).length > 0
-                ? profile.achievements!.map((ach) => (
-                    <Badge key={ach} variant="outline">
-                      {ach}
-                    </Badge>
-                  ))
-                : <span className="text-sm text-gray-400">—</span>}
+              {(profile.achievements ?? []).length > 0 ? (
+                profile.achievements!.map((ach) => (
+                  <Badge key={ach} variant="outline">
+                    {ach}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-sm text-gray-400">—</span>
+              )}
             </div>
           </div>
         </CardContent>
