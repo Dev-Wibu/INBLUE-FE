@@ -1,6 +1,7 @@
 /**
  * ParticipantGrid.tsx
- * Display video participants in a grid layout
+ * Legacy participant grid component - no longer needed when using createFrame (iframe has built-in UI)
+ * Kept for backwards compatibility
  */
 
 import type { DailyParticipant } from "@daily-co/daily-js";
@@ -67,12 +68,18 @@ function ParticipantTile({ participant, isLocal }: ParticipantTileProps) {
 
 interface ParticipantGridProps {
   className?: string;
+  participants?: Record<string, DailyParticipant>;
 }
 
-export function ParticipantGrid({ className }: ParticipantGridProps) {
-  const { participants } = useVideoCall();
+export function ParticipantGrid({
+  className,
+  participants: externalParticipants,
+}: ParticipantGridProps) {
+  const { callObject } = useVideoCall();
 
-  const participantList = Object.values(participants);
+  // Get participants from callObject or external prop
+  const currentParticipants = externalParticipants || (callObject?.participants() ?? {});
+  const participantList = Object.values(currentParticipants);
   const participantCount = participantList.length;
 
   // Grid layout based on participant count

@@ -1,9 +1,11 @@
 /**
  * VideoControls.tsx
- * Mute/unmute, camera toggle, leave call controls
+ * Legacy controls component - no longer needed when using createFrame (iframe has built-in controls)
+ * Kept for backwards compatibility
  */
 
 import { Mic, MicOff, Phone, Video, VideoOff } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,11 +18,27 @@ interface VideoControlsProps {
 }
 
 export function VideoControls({ onLeave, className }: VideoControlsProps) {
-  const { localVideo, localAudio, toggleVideo, toggleAudio, leaveRoom, roomState } = useVideoCall();
+  const { callObject, leaveRoom, roomState } = useVideoCall();
+  const [localVideo, setLocalVideo] = useState(false);
+  const [localAudio, setLocalAudio] = useState(false);
 
   const handleLeave = async () => {
     await leaveRoom();
     onLeave?.();
+  };
+
+  const toggleVideo = () => {
+    if (!callObject) return;
+    const newState = !localVideo;
+    callObject.setLocalVideo(newState);
+    setLocalVideo(newState);
+  };
+
+  const toggleAudio = () => {
+    if (!callObject) return;
+    const newState = !localAudio;
+    callObject.setLocalAudio(newState);
+    setLocalAudio(newState);
   };
 
   const isDisabled = roomState !== "joined";

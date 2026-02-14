@@ -66,15 +66,13 @@ export function MentorSessionRoomPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-6xl py-6">
+      <div className="container max-w-7xl py-4">
         <Skeleton className="h-8 w-48" />
-        <div className="mt-6 grid gap-6 lg:grid-cols-4">
-          <div className="lg:col-span-3">
-            <Skeleton className="h-[500px] w-full rounded-lg" />
-          </div>
-          <div className="lg:col-span-1">
-            <Skeleton className="h-48 w-full rounded-lg" />
-          </div>
+        <div className="mt-4">
+          <Skeleton className="h-[70vh] w-full rounded-lg" />
+        </div>
+        <div className="mt-4">
+          <Skeleton className="h-24 w-full rounded-lg" />
         </div>
       </div>
     );
@@ -117,9 +115,9 @@ export function MentorSessionRoomPage() {
   }
 
   return (
-    <div className="container max-w-6xl py-6">
+    <div className="container max-w-7xl py-4">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-4">
+      <div className="mb-4 flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Quay lại
@@ -127,83 +125,92 @@ export function MentorSessionRoomPage() {
         <h1 className="text-2xl font-bold">Phòng phỏng vấn (Mentor)</h1>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-4">
-        {/* Main Video Area */}
-        <div className="lg:col-span-3">
-          <VideoCallProvider>
-            <VideoCallRoom
-              roomUrl={session.roomUrl!}
-              userName={user?.name || "Mentor"}
-              onLeave={handleLeave}
-              onError={handleError}
-              onJoined={handleJoined}
-              className="min-h-[500px]"
-            />
-          </VideoCallProvider>
-        </div>
+      {/* Main Video Area - Full width for maximum screen usage */}
+      <div className="w-full">
+        <VideoCallProvider>
+          <VideoCallRoom
+            roomUrl={session.roomUrl!}
+            userName={user?.name || "Mentor"}
+            onLeave={handleLeave}
+            onError={handleError}
+            onJoined={handleJoined}
+            className="min-h-[70vh]"
+          />
+        </VideoCallProvider>
+      </div>
 
-        {/* Session Info Sidebar */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Thông tin phiên</CardTitle>
+      {/* Session Info - Below video like YouTube description */}
+      <Card className="mt-4">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Thông tin phiên phỏng vấn</CardTitle>
               <CardDescription>Chi tiết buổi phỏng vấn</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2 text-sm">
-                <UserIcon className="text-muted-foreground h-4 w-4" />
-                <span>Phòng: {session.roomName}</span>
-              </div>
-              {session.startTime1 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="text-muted-foreground h-4 w-4" />
-                  <span>
-                    {new Date(session.startTime1).toLocaleDateString("vi-VN", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </span>
-                </div>
-              )}
-              {session.startTime1 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="text-muted-foreground h-4 w-4" />
-                  <span>
-                    {new Date(session.startTime1).toLocaleTimeString("vi-VN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-              )}
-              <div className="pt-2">
-                <span
-                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                    session.status === "ONGOING"
-                      ? "bg-green-100 text-green-700"
-                      : session.status === "SCHEDULED"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-700"
-                  }`}>
-                  {session.status === "ONGOING" && "Đang diễn ra"}
-                  {session.status === "SCHEDULED" && "Đã lên lịch"}
-                </span>
-              </div>
-
-              {/* Action buttons for mentor */}
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                  session.status === "ONGOING"
+                    ? "bg-green-100 text-green-700"
+                    : session.status === "SCHEDULED"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-gray-700"
+                }`}>
+                {session.status === "ONGOING" && "Đang diễn ra"}
+                {session.status === "SCHEDULED" && "Đã lên lịch"}
+                {session.status === "COMPLETED" && "Đã kết thúc"}
+                {session.status === "CANCELED" && "Đã hủy"}
+              </span>
               {session.status === "COMPLETED" && (
                 <Button
-                  className="mt-4 w-full"
+                  size="sm"
                   onClick={() => navigate(`/mentor/sessions/${sessionId}/feedback`)}>
                   Viết nhận xét
                 </Button>
               )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-center gap-2 text-sm">
+              <UserIcon className="text-muted-foreground h-4 w-4 shrink-0" />
+              <span>Phòng: {session.roomName}</span>
+            </div>
+            {session.startTime1 && (
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="text-muted-foreground h-4 w-4 shrink-0" />
+                <span>
+                  {new Date(session.startTime1).toLocaleDateString("vi-VN", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+            )}
+            {session.startTime1 && (
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="text-muted-foreground h-4 w-4 shrink-0" />
+                <span>
+                  Bắt đầu:{" "}
+                  {new Date(session.startTime1).toLocaleTimeString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            )}
+            {session.durationSeconds1 && session.durationSeconds1 > 0 && (
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="text-muted-foreground h-4 w-4 shrink-0" />
+                <span>Thời lượng: {Math.floor(session.durationSeconds1 / 60)} phút</span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
