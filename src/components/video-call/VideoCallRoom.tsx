@@ -1,27 +1,24 @@
 /**
  * VideoCallRoom.tsx
- * Main video call room component
- * Integrates VideoCallProvider, ParticipantGrid, VideoControls
+ * Main video call room component using Daily.co iframe (createFrame)
+ * Matches VideoCall-Fe: full Daily.co UI with pre-call lobby, device settings, call controls
  */
 
 import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-import { ParticipantGrid } from "./ParticipantGrid";
 import { useVideoCall } from "./useVideoCall";
-import { VideoCallLoader } from "./VideoCallLoader";
-import { VideoControls } from "./VideoControls";
 
 interface VideoCallRoomProps {
   roomUrl: string;
   userName: string;
   onLeave?: () => void;
-  onError?: (error: string) => void;
-  onJoined?: (participantId: string) => void;
+  onError?: (_error: string) => void;
+  onJoined?: (_participantId: string) => void;
   className?: string;
 }
 
@@ -34,17 +31,27 @@ export function VideoCallRoom({
   className,
 }: VideoCallRoomProps) {
   const { joinRoom, roomState, error, callObject } = useVideoCall();
+  const containerRef = useRef<HTMLDivElement>(null);
   const hasCalledOnJoined = useRef(false);
+  const hasStartedJoin = useRef(false);
 
-  // Reset the flag when roomUrl changes (new room)
+  // Reset flags when roomUrl changes (new room)
   useEffect(() => {
     hasCalledOnJoined.current = false;
+    hasStartedJoin.current = false;
   }, [roomUrl]);
 
-  // Join room on mount
+  // Join room on mount - pass container element for iframe
   useEffect(() => {
-    if (roomUrl && userName && roomState === "idle") {
-      joinRoom(roomUrl, userName);
+    if (
+      roomUrl &&
+      userName &&
+      roomState === "idle" &&
+      containerRef.current &&
+      !hasStartedJoin.current
+    ) {
+      hasStartedJoin.current = true;
+      joinRoom(roomUrl, userName, containerRef.current);
     }
   }, [roomUrl, userName, roomState, joinRoom]);
 
@@ -71,7 +78,14 @@ export function VideoCallRoom({
     onLeave?.();
   }, [onLeave]);
 
-  // Render based on room state
+  // Trigger leave callback when room state becomes "left"
+  useEffect(() => {
+    if (roomState === "left") {
+      handleLeave();
+    }
+  }, [roomState, handleLeave]);
+
+  // Render error state
   if (roomState === "error") {
     return (
       <Card className={cn("w-full", className)}>
@@ -86,54 +100,23 @@ export function VideoCallRoom({
     );
   }
 
-  if (roomState === "joining") {
+  // Render left state
+  if (roomState === "left") {
     return (
       <Card className={cn("w-full", className)}>
-        <CardContent className="flex items-center justify-center p-8">
-          <VideoCallLoader message="Đang kết nối vào phòng họp..." />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (roomState === "leaving") {
-    return (
-      <Card className={cn("w-full", className)}>
-        <CardContent className="flex items-center justify-center p-8">
-          <VideoCallLoader message="Đang rời khỏi phòng họp..." />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (roomState === "idle") {
-    return (
-      <Card className={cn("w-full", className)}>
-        <CardContent className="flex items-center justify-center p-8">
-          <VideoCallLoader message="Đang chuẩn bị kết nối..." />
+        <CardContent className="flex flex-col items-center justify-center gap-4 p-8">
+          <p className="text-muted-foreground text-lg">Bạn đã rời khỏi phòng họp.</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className={cn("flex h-full w-full flex-col", className)}>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2">
-          <span className="h-3 w-3 animate-pulse rounded-full bg-green-500" />
-          Phòng phỏng vấn
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-4">
-        {/* Participant Grid */}
-        <div className="bg-muted/30 flex-1 overflow-hidden rounded-lg border">
-          <ParticipantGrid className="h-full p-4" />
-        </div>
-
-        {/* Video Controls */}
-        <div className="flex justify-center border-t pt-4">
-          <VideoControls onLeave={handleLeave} />
-        </div>
+    <Card className={cn("flex h-full w-full flex-col overflow-hidden", className)}>
+      <CardContent className="relative flex-1 p-0">
+        {/* Daily.co iframe container - matches VideoCall-Fe #video-container */}
+        {/* Daily.co iframe handles its own pre-call lobby, device settings, and call controls */}
+        <div ref={containerRef} className="h-full min-h-[600px] w-full" />
       </CardContent>
     </Card>
   );

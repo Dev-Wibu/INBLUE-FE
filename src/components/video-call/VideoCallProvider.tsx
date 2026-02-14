@@ -1,11 +1,11 @@
 /**
  * VideoCallProvider.tsx
- * Manages Daily.co callObject lifecycle
- * Provides context for room state, participants, errors
+ * Manages Daily.co callObject lifecycle using createFrame (iframe-based)
+ * Matches VideoCall-Fe reference: full Daily.co UI (pre-call lobby, device settings, controls)
  * Based on VideoCall-Fe reference implementation
  */
 
-import type { DailyCall, DailyParticipant } from "@daily-co/daily-js";
+import type { DailyCall } from "@daily-co/daily-js";
 import DailyIframe from "@daily-co/daily-js";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,11 +19,8 @@ interface VideoCallProviderProps {
 
 export function VideoCallProvider({ children }: VideoCallProviderProps) {
   const [callObject, setCallObject] = useState<DailyCall | null>(null);
-  const [participants, setParticipants] = useState<Record<string, DailyParticipant>>({});
   const [roomState, setRoomState] = useState<RoomState>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [localVideo, setLocalVideo] = useState(true);
-  const [localAudio, setLocalAudio] = useState(true);
 
   // Use ref to track callObject for stable callbacks (avoids stale closures)
   const callObjectRef = useRef<DailyCall | null>(null);
@@ -42,79 +39,75 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
     };
   }, []);
 
-  // Join room handler
-  const joinRoom = useCallback(async (roomUrl: string, userName: string) => {
-    if (!roomUrl) {
-      setError("Thiếu URL phòng họp.");
-      return;
-    }
-
-    try {
-      setRoomState("joining");
-      setError(null);
-
-      // Destroy existing call object if any (avoid duplicate)
-      if (callObjectRef.current) {
-        await callObjectRef.current.destroy();
-        callObjectRef.current = null;
-        setCallObject(null);
+  // Join room handler - uses createFrame (iframe-based, full Daily.co UI)
+  const joinRoom = useCallback(
+    async (roomUrl: string, userName: string, container: HTMLElement) => {
+      if (!roomUrl) {
+        setError("Thiếu URL phòng họp.");
+        return;
       }
 
-      // Also check for any existing Daily instance globally (prevent "Duplicate DailyIframe")
       try {
-        const existingInstance = DailyIframe.getCallInstance();
-        if (existingInstance) {
-          await existingInstance.destroy();
+        setRoomState("joining");
+        setError(null);
+
+        // Destroy existing call object if any (avoid duplicate)
+        if (callObjectRef.current) {
+          await callObjectRef.current.destroy();
+          callObjectRef.current = null;
+          setCallObject(null);
         }
-      } catch {
-        // Ignore cleanup errors - proceed with creating new instance
-      }
 
-      // Create new Daily call frame
-      const newCallObject = DailyIframe.createCallObject({
-        url: roomUrl,
-      });
+        // Also check for any existing Daily instance globally (prevent "Duplicate DailyIframe")
+        try {
+          const existingInstance = DailyIframe.getCallInstance();
+          if (existingInstance) {
+            await existingInstance.destroy();
+          }
+        } catch {
+          // Ignore cleanup errors - proceed with creating new instance
+        }
 
-      // Set up event listeners
-      newCallObject.on("joined-meeting", () => {
-        setRoomState("joined");
-        setParticipants(newCallObject.participants());
-      });
+        // Create Daily.co iframe frame (matches VideoCall-Fe: DailyIframe.createFrame)
+        // This provides full Daily.co UI: pre-call lobby, device settings, call controls
+        const newCallObject = DailyIframe.createFrame(container, {
+          iframeStyle: { width: "100%", height: "100%", border: "none" },
+          url: roomUrl,
+          showLeaveButton: true,
+        });
 
-      newCallObject.on("left-meeting", () => {
-        setRoomState("idle");
-        setParticipants({});
-      });
+        // Set up event listeners
+        newCallObject.on("joined-meeting", () => {
+          setRoomState("joined");
+        });
 
-      newCallObject.on("participant-joined", () => {
-        setParticipants(newCallObject.participants());
-      });
+        newCallObject.on("left-meeting", () => {
+          setRoomState("left");
+          // Destroy frame on leave (matches VideoCall-Fe behavior)
+          newCallObject.destroy();
+          callObjectRef.current = null;
+          setCallObject(null);
+        });
 
-      newCallObject.on("participant-updated", () => {
-        setParticipants(newCallObject.participants());
-      });
+        newCallObject.on("error", (event) => {
+          setError(event?.errorMsg || "Đã xảy ra lỗi khi kết nối cuộc gọi.");
+          setRoomState("error");
+        });
 
-      newCallObject.on("participant-left", () => {
-        setParticipants(newCallObject.participants());
-      });
+        callObjectRef.current = newCallObject;
+        setCallObject(newCallObject);
 
-      newCallObject.on("error", (event) => {
-        setError(event?.errorMsg || "Đã xảy ra lỗi khi kết nối cuộc gọi.");
+        // Join the meeting (matches VideoCall-Fe: callObject.join with userName)
+        await newCallObject.join({
+          userName,
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Không thể tham gia phòng họp.");
         setRoomState("error");
-      });
-
-      callObjectRef.current = newCallObject;
-      setCallObject(newCallObject);
-
-      // Join the meeting
-      await newCallObject.join({
-        userName,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Không thể tham gia phòng họp.");
-      setRoomState("error");
-    }
-  }, []);
+      }
+    },
+    []
+  );
 
   // Leave room handler
   const leaveRoom = useCallback(async () => {
@@ -126,59 +119,22 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
       await callObjectRef.current.destroy();
       callObjectRef.current = null;
       setCallObject(null);
-      setParticipants({});
-      setRoomState("idle");
+      setRoomState("left");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Không thể rời phòng họp.");
     }
-  }, []);
-
-  // Toggle video handler
-  const toggleVideo = useCallback(() => {
-    if (!callObjectRef.current) return;
-    setLocalVideo((prev) => {
-      const newState = !prev;
-      callObjectRef.current?.setLocalVideo(newState);
-      return newState;
-    });
-  }, []);
-
-  // Toggle audio handler
-  const toggleAudio = useCallback(() => {
-    if (!callObjectRef.current) return;
-    setLocalAudio((prev) => {
-      const newState = !prev;
-      callObjectRef.current?.setLocalAudio(newState);
-      return newState;
-    });
   }, []);
 
   // Memoize context value
   const value = useMemo<VideoCallContextValue>(
     () => ({
       callObject,
-      participants,
       roomState,
       error,
-      localVideo,
-      localAudio,
       joinRoom,
       leaveRoom,
-      toggleVideo,
-      toggleAudio,
     }),
-    [
-      callObject,
-      participants,
-      roomState,
-      error,
-      localVideo,
-      localAudio,
-      joinRoom,
-      leaveRoom,
-      toggleVideo,
-      toggleAudio,
-    ]
+    [callObject, roomState, error, joinRoom, leaveRoom]
   );
 
   return <VideoCallContext.Provider value={value}>{children}</VideoCallContext.Provider>;
