@@ -52,28 +52,30 @@ export function QuestionListPage() {
     loadQuestionSets();
   }, []);
 
-  // Filter question sets based on search and filters
-  const filteredQuestionSets = questionSets.filter((qs) => {
-    // Filter by search query
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
-      const matchesTitle = qs.title.toLowerCase().includes(lowerQuery);
-      const matchesTags = qs.tags.some((tag) => tag.toLowerCase().includes(lowerQuery));
-      if (!matchesTitle && !matchesTags) return false;
-    }
+  // Filter question sets based on search and filters (newest first)
+  const filteredQuestionSets = questionSets
+    .filter((qs) => {
+      // Filter by search query
+      if (searchQuery) {
+        const lowerQuery = searchQuery.toLowerCase();
+        const matchesTitle = qs.title.toLowerCase().includes(lowerQuery);
+        const matchesTags = qs.tags.some((tag) => tag.toLowerCase().includes(lowerQuery));
+        if (!matchesTitle && !matchesTags) return false;
+      }
 
-    // Filter by industry
-    if (selectedIndustry !== "Tất cả Ngành" && qs.industry !== selectedIndustry) {
-      return false;
-    }
+      // Filter by industry
+      if (selectedIndustry !== "Tất cả Ngành" && qs.industry !== selectedIndustry) {
+        return false;
+      }
 
-    // Filter by level
-    if (selectedLevel !== "Tất cả Cấp độ" && qs.level !== selectedLevel) {
-      return false;
-    }
+      // Filter by level
+      if (selectedLevel !== "Tất cả Cấp độ" && qs.level !== selectedLevel) {
+        return false;
+      }
 
-    return true;
-  });
+      return true;
+    })
+    .reverse();
 
   if (loading) {
     return (

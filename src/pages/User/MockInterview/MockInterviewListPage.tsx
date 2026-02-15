@@ -14,9 +14,9 @@ export function MockInterviewListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { data: sessions = [], isLoading } = useUserSessions();
 
-  // Transform sessions to interview format for display
+  // Transform sessions to interview format for display (newest first)
   const interviews = useMemo(() => {
-    return sessions.map((session) => ({
+    return [...sessions].reverse().map((session) => ({
       id: session.id,
       title: session.roomName || `Phiên #${session.id}`,
       mentorName: `Mentor #${session.userId2 || "N/A"}`,

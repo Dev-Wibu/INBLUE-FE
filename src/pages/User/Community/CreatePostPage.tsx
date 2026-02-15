@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
+import { type Major, questionMajorManager } from "@/services/question-major.manager";
 import { useAuthStore } from "@/stores/authStore";
 
 export function CreatePostPage() {
@@ -30,6 +31,19 @@ export function CreatePostPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [majorId, setMajorId] = useState<number | undefined>(undefined);
+  const [majors, setMajors] = useState<Major[]>([]);
+
+  useEffect(() => {
+    const fetchMajors = async () => {
+      const result = await questionMajorManager.getAll();
+      if (result.success && result.data) {
+        const list = Array.isArray(result.data) ? result.data : (result.data.data ?? []);
+        setMajors(list);
+      }
+    };
+    fetchMajors();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,6 +74,7 @@ export function CreatePostPage() {
         content: content.trim() || undefined,
         summary: summary.trim() || undefined,
         authorId: user?.id,
+        majorId,
         coverImg: coverFile ?? undefined,
         tags: tagList.length > 0 ? tagList : undefined,
         status,
@@ -129,6 +144,24 @@ export function CreatePostPage() {
                   className="mt-2 max-h-48 rounded-md object-cover"
                 />
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Chuyên ngành</Label>
+              <Select
+                value={majorId?.toString()}
+                onValueChange={(v) => setMajorId(v ? Number(v) : undefined)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn chuyên ngành" />
+                </SelectTrigger>
+                <SelectContent>
+                  {majors.map((m) => (
+                    <SelectItem key={m.id} value={String(m.id)}>
+                      {m.majorName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

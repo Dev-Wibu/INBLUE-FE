@@ -12,15 +12,17 @@ export function AIInterviewListPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter interviews based on search query
-  const filteredInterviews = mockAIInterviews.filter((interview) => {
-    if (!searchQuery) return true;
-    const lowerQuery = searchQuery.toLowerCase();
-    return (
-      interview.title.toLowerCase().includes(lowerQuery) ||
-      interview.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
-    );
-  });
+  // Filter interviews based on search query (newest first)
+  const filteredInterviews = mockAIInterviews
+    .filter((interview) => {
+      if (!searchQuery) return true;
+      const lowerQuery = searchQuery.toLowerCase();
+      return (
+        interview.title.toLowerCase().includes(lowerQuery) ||
+        interview.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+      );
+    })
+    .reverse();
 
   return (
     <div className="bg-background min-h-screen p-8">
