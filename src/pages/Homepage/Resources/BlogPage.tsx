@@ -140,7 +140,7 @@ export function BlogPage() {
                     <p className="text-muted-foreground">Chưa có bài viết nào</p>
                   </div>
                 ) : (
-                  posts.map((post) => (
+                  [...posts].reverse().map((post) => (
                     <Card
                       key={post.postId}
                       className="group cursor-pointer transition-all hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"

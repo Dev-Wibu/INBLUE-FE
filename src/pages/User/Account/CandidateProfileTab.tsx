@@ -106,11 +106,13 @@ export function CandidateProfileTab() {
     try {
       if (hasProfile) {
         await updateMutation.mutateAsync({
-          body: { id: profile.id, ...payload } as never,
+          body: { id: profile.id, user: profile.user, ...payload } as never,
         });
         toast.success("Cập nhật hồ sơ thành công!");
       } else {
-        await createMutation.mutateAsync({ body: payload as never });
+        await createMutation.mutateAsync({
+          body: { user: { id: userId }, ...payload } as never,
+        });
         toast.success("Tạo hồ sơ thành công!");
       }
       queryClient.invalidateQueries({ queryKey: ["get", `/api/candidate-profiles/${userId}`] });

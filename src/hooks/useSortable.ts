@@ -71,9 +71,10 @@ export function useSortable<T>(initialData: T[]) {
   const [sortDirection, setSortDirection] = React.useState<SortDirection>("none");
 
   // Sort the data based on current sort configuration
+  // Default: reverse order (newest first) when no sort is applied
   const sortedData = React.useMemo(() => {
     if (sortDirection === "none" || !sortKey) {
-      return initialData;
+      return [...initialData].reverse();
     }
 
     return [...initialData].sort((a, b) => {

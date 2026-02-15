@@ -75,20 +75,22 @@ export function PracticeQuestionsPage() {
   };
 
   const filteredQuestions = useMemo(() => {
-    return questions.filter((q) => {
-      if (searchQuery) {
-        const lowerQuery = searchQuery.toLowerCase();
-        const matchesSearch =
-          q.title?.toLowerCase().includes(lowerQuery) ||
-          q.content?.toLowerCase().includes(lowerQuery) ||
-          q.lesson?.lessonName?.toLowerCase().includes(lowerQuery);
-        if (!matchesSearch) return false;
-      }
-      if (levelFilter !== "all" && q.level !== levelFilter) {
-        return false;
-      }
-      return true;
-    });
+    return questions
+      .filter((q) => {
+        if (searchQuery) {
+          const lowerQuery = searchQuery.toLowerCase();
+          const matchesSearch =
+            q.title?.toLowerCase().includes(lowerQuery) ||
+            q.content?.toLowerCase().includes(lowerQuery) ||
+            q.lesson?.lessonName?.toLowerCase().includes(lowerQuery);
+          if (!matchesSearch) return false;
+        }
+        if (levelFilter !== "all" && q.level !== levelFilter) {
+          return false;
+        }
+        return true;
+      })
+      .reverse();
   }, [questions, searchQuery, levelFilter]);
 
   if (loading) {

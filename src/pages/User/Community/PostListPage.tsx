@@ -41,15 +41,17 @@ export function PostListPage() {
   const allMajors = [...new Set(posts.map((p) => p.major?.name).filter(Boolean))] as string[];
 
   const filtered = useMemo(() => {
-    return posts.filter((p) => {
-      if (tagFilter && !p.tags?.some((t) => t.toLowerCase().includes(tagFilter.toLowerCase()))) {
-        return false;
-      }
-      if (majorFilter !== "all" && p.major?.name !== majorFilter) {
-        return false;
-      }
-      return true;
-    });
+    return posts
+      .filter((p) => {
+        if (tagFilter && !p.tags?.some((t) => t.toLowerCase().includes(tagFilter.toLowerCase()))) {
+          return false;
+        }
+        if (majorFilter !== "all" && p.major?.name !== majorFilter) {
+          return false;
+        }
+        return true;
+      })
+      .reverse();
   }, [posts, tagFilter, majorFilter]);
 
   // Pagination

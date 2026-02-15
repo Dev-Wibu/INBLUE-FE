@@ -95,7 +95,7 @@ export function AIChatListPage() {
                   <p className="text-muted-foreground">Chưa có cuộc trò chuyện nào</p>
                 </div>
               ) : (
-                chatSessions.map((session, index) => (
+                [...chatSessions].reverse().map((session, index) => (
                   <div
                     key={session.id}
                     onClick={() => handleOpenChat(session.id)}
