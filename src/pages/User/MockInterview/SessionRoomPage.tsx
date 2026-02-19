@@ -49,7 +49,7 @@ export function SessionRoomPage() {
 
   // Handle when user leaves the call
   const handleLeave = () => {
-    navigate("/dashboard/mock-interview/history");
+    navigate("/dashboard/mock-interview");
   };
 
   // Handle errors from video call
@@ -60,7 +60,7 @@ export function SessionRoomPage() {
   // Redirect if session is not available
   useEffect(() => {
     if (!isLoading && !session) {
-      navigate("/dashboard/mock-interview/history");
+      navigate("/dashboard/mock-interview");
     }
   }, [isLoading, session, navigate]);
 
