@@ -191,7 +191,7 @@ export function MockInterviewSchedulePage() {
       if (result?.id) {
         navigate(`/dashboard/mock-interview/room/${result.id}`);
       } else {
-        navigate("/dashboard/mock-interview/history");
+        navigate("/dashboard/mock-interview");
       }
     } catch {
       // Error toast handled by useCreateSession hook

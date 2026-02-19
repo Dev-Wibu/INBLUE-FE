@@ -1,4 +1,15 @@
-import { Calendar, Clock, LogIn, Search, User as UserIcon, Users, Video } from "lucide-react";
+import {
+  Ban,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  LoaderCircle,
+  LogIn,
+  Search,
+  User as UserIcon,
+  Users,
+  Video,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -16,25 +27,26 @@ export function MockInterviewListPage() {
 
   // Transform sessions to interview format for display (newest first)
   const interviews = useMemo(() => {
-    return [...sessions].reverse().map((session) => ({
-      id: session.id,
-      title: session.roomName || `Phiên #${session.id}`,
-      mentorName: `Mentor #${session.userId2 || "N/A"}`,
-      date: session.startTime1 ? new Date(session.startTime1).toLocaleDateString("vi-VN") : "N/A",
-      time: session.startTime1 ? new Date(session.startTime1).toLocaleTimeString("vi-VN") : "N/A",
-      status:
-        session.status === "COMPLETED"
-          ? "completed"
-          : session.status === "SCHEDULED"
+    return [...sessions]
+      .filter((session) => session.status !== "COMPLETED")
+      .reverse()
+      .map((session) => ({
+        id: session.id,
+        title: session.roomName || `Phiên #${session.id}`,
+        mentorName: `Mentor #${session.userId2 || "N/A"}`,
+        date: session.startTime1 ? new Date(session.startTime1).toLocaleDateString("vi-VN") : "N/A",
+        time: session.startTime1 ? new Date(session.startTime1).toLocaleTimeString("vi-VN") : "N/A",
+        status:
+          session.status === "SCHEDULED"
             ? "upcoming"
             : session.status === "CANCELED"
               ? "cancelled"
               : session.status === "ONGOING"
                 ? "ongoing"
                 : "upcoming",
-      canJoin:
-        (session.status === "SCHEDULED" || session.status === "ONGOING") && !!session.roomUrl,
-    }));
+        canJoin:
+          (session.status === "SCHEDULED" || session.status === "ONGOING") && !!session.roomUrl,
+      }));
   }, [sessions]);
 
   // Filter interviews based on search query
@@ -52,18 +64,32 @@ export function MockInterviewListPage() {
     switch (status) {
       case "completed":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">✓ Đã hoàn thành</Badge>
+          <Badge className="inline-flex items-center gap-1 border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700 hover:bg-emerald-100">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Đã hoàn thành
+          </Badge>
         );
       case "upcoming":
         return (
-          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">📅 Sắp diễn ra</Badge>
+          <Badge className="inline-flex items-center gap-1 border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-700 hover:bg-sky-100">
+            <Calendar className="h-3.5 w-3.5" />
+            Sắp diễn ra
+          </Badge>
         );
       case "ongoing":
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">🟢 Đang diễn ra</Badge>
+          <Badge className="inline-flex items-center gap-1 border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700 hover:bg-emerald-100">
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            Đang diễn ra
+          </Badge>
         );
       case "cancelled":
-        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">✗ Đã hủy</Badge>;
+        return (
+          <Badge className="inline-flex items-center gap-1 border border-rose-200 bg-rose-50 px-2.5 py-1 text-rose-700 hover:bg-rose-100">
+            <Ban className="h-3.5 w-3.5" />
+            Đã hủy
+          </Badge>
+        );
       default:
         return null;
     }
@@ -102,9 +128,9 @@ export function MockInterviewListPage() {
       {/* Search Section */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-foreground text-2xl font-bold">Lịch sử phỏng vấn</h2>
+          <h2 className="text-foreground text-2xl font-bold">Phiên chưa hoàn thành</h2>
           <p className="text-muted-foreground text-sm">
-            Xem lại các buổi phỏng vấn với mentor trước đây
+            Danh sách các phiên sắp diễn ra, đang diễn ra hoặc đã hủy
           </p>
         </div>
         <div className="relative w-80">
@@ -119,7 +145,7 @@ export function MockInterviewListPage() {
         </div>
       </div>
 
-      {/* Interview History Cards */}
+      {/* Active/Incomplete Interview Cards */}
       {isLoading ? (
         <LoadingCardList count={4} />
       ) : (
@@ -183,12 +209,12 @@ export function MockInterviewListPage() {
               </div>
               <div className="text-center">
                 <p className="text-foreground font-medium">
-                  {searchQuery ? "Không tìm thấy buổi phỏng vấn nào" : "Chưa có buổi phỏng vấn"}
+                  {searchQuery ? "Không tìm thấy phiên phù hợp" : "Không có phiên chưa hoàn thành"}
                 </p>
                 <p className="text-muted-foreground mt-1 text-sm">
                   {searchQuery
                     ? "Hãy thử tìm kiếm với từ khóa khác"
-                    : "Hãy đặt lịch phỏng vấn với mentor ngay hôm nay"}
+                    : "Bạn đang không có phiên chờ xử lý nào"}
                 </p>
               </div>
             </Card>
