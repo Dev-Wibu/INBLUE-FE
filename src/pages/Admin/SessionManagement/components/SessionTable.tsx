@@ -92,6 +92,7 @@ export function SessionTable({
               "Thời gian bắt đầu"
             )}
           </TableHead>
+          <TableHead>Giờ họp</TableHead>
           <TableHead className="w-24">Thời lượng</TableHead>
           <TableHead className="w-28">
             {getSortProps ? (
@@ -118,6 +119,9 @@ export function SessionTable({
             </TableCell>
             <TableCell className="text-muted-foreground">
               {formatDateTime(session.startTime1)}
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {formatDateTime(session.joinTime)}
             </TableCell>
             <TableCell>{formatDuration(session.durationSeconds1)}</TableCell>
             <TableCell>

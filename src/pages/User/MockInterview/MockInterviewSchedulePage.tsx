@@ -1,10 +1,9 @@
 /**
  * MockInterviewSchedulePage.tsx
  * Redesigned "Schedule a New Interview" page
- * Steps: Select Mentor → Choose Date/Time (expiration) → Review & Create
+ * Steps: Select Mentor → Choose Date/Time (joinTime) → Review & Create
  *
- * BE requirement: User chooses a date/time, website auto-converts to seconds (exp) and sends to BE
- * The exp field in DailyCoCreationRequest.properties is the expiration in seconds.
+ * BE requirement: User chooses a date/time for meeting start (joinTime). exp defaults to 0.
  */
 
 import {
@@ -82,6 +81,7 @@ export function MockInterviewSchedulePage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedHour, setSelectedHour] = useState("09");
   const [selectedMinute, setSelectedMinute] = useState("00");
+  const [recordingMode, setRecordingMode] = useState<string>("cloud");
 
   // Step 3: Creating
   const [isCreating, setIsCreating] = useState(false);
@@ -102,15 +102,12 @@ export function MockInterviewSchedulePage() {
   // Selected mentor data
   const selectedMentor = mentors.find((m) => m.id === selectedMentorId);
 
-  // Calculate expiration in seconds from selected date/time
-  const calculateExpSeconds = (): number => {
-    if (!selectedDate) return 3600; // Default: 1 hour
-    const expirationDate = new Date(selectedDate);
-    expirationDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
-    const now = new Date();
-    const diffMs = expirationDate.getTime() - now.getTime();
-    const diffSeconds = Math.floor(diffMs / 1000);
-    return Math.max(diffSeconds, 60); // Minimum 60 seconds
+  // Calculate joinTime ISO string from selected date/time
+  const calculateJoinTime = (): string | undefined => {
+    if (!selectedDate) return undefined;
+    const joinDate = new Date(selectedDate);
+    joinDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
+    return joinDate.toISOString();
   };
 
   // Format selected date/time for display
@@ -128,22 +125,12 @@ export function MockInterviewSchedulePage() {
     });
   };
 
-  // Format duration for display
-  const formatDuration = (): string => {
-    const seconds = calculateExpSeconds();
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    if (hours > 0 && mins > 0) return `${hours} giờ ${mins} phút`;
-    if (hours > 0) return `${hours} giờ`;
-    return `${mins} phút`;
-  };
-
   // Validation
   const isDateTimeValid = (): boolean => {
     if (!selectedDate) return false;
-    const expirationDate = new Date(selectedDate);
-    expirationDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
-    return expirationDate.getTime() > Date.now() + MIN_FUTURE_OFFSET_MS;
+    const joinDate = new Date(selectedDate);
+    joinDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
+    return joinDate.getTime() > Date.now() + MIN_FUTURE_OFFSET_MS;
   };
 
   const canProceedStep1 = selectedMentorId !== null;
@@ -171,10 +158,11 @@ export function MockInterviewSchedulePage() {
     if (!selectedMentorId || !user?.id) return;
     setIsCreating(true);
     try {
-      const expSeconds = calculateExpSeconds();
+      const joinTime = calculateJoinTime();
       const result = await createSession.mutateAsync({
         userId: user.id,
         mentorId: selectedMentorId,
+        joinTime,
         dailyCoCreationRequest: {
           name: "",
           privacy: "public",
@@ -183,8 +171,8 @@ export function MockInterviewSchedulePage() {
             start_video_off: true,
             start_audio_off: true,
             enable_screenshare: true,
-            exp: expSeconds,
-            enable_recording: "cloud",
+            exp: 0,
+            enable_recording: recordingMode,
           },
         },
       });
@@ -361,17 +349,16 @@ export function MockInterviewSchedulePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5 text-[#0047AB]" />
-                Chọn thời gian hết hạn phiên
+                Chọn thời gian bắt đầu cuộc họp
               </CardTitle>
               <CardDescription>
-                Chọn ngày và giờ mà phiên phỏng vấn sẽ hết hạn. Hệ thống sẽ tự động tính thời lượng
-                và gửi tới server.
+                Chọn ngày và giờ bắt đầu cuộc phỏng vấn. Đây là thời gian cuộc họp sẽ bắt đầu.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Date Picker */}
               <div className="space-y-2">
-                <Label>Ngày hết hạn</Label>
+                <Label>Ngày bắt đầu</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -408,7 +395,7 @@ export function MockInterviewSchedulePage() {
 
               {/* Time Picker */}
               <div className="space-y-2">
-                <Label>Giờ hết hạn</Label>
+                <Label>Giờ bắt đầu</Label>
                 <div className="flex items-center gap-2">
                   <Select value={selectedHour} onValueChange={setSelectedHour}>
                     <SelectTrigger className="w-24">
@@ -438,7 +425,7 @@ export function MockInterviewSchedulePage() {
                 </div>
               </div>
 
-              {/* Duration Preview */}
+              {/* Time Preview */}
               {selectedDate && (
                 <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/20">
                   <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
@@ -446,11 +433,7 @@ export function MockInterviewSchedulePage() {
                     <span>Thông tin thời gian</span>
                   </div>
                   <div className="mt-2 space-y-1 text-sm text-blue-600 dark:text-blue-400">
-                    <p>Hết hạn lúc: {formatSelectedDateTime()}</p>
-                    <p>Thời lượng: {formatDuration()}</p>
-                    <p className="text-xs text-blue-500">
-                      (≈ {calculateExpSeconds().toLocaleString()} giây sẽ được gửi tới server)
-                    </p>
+                    <p>Bắt đầu lúc: {formatSelectedDateTime()}</p>
                   </div>
                 </div>
               )}
@@ -458,9 +441,23 @@ export function MockInterviewSchedulePage() {
               {/* Warning if date is in the past */}
               {selectedDate && !isDateTimeValid() && (
                 <p className="text-sm text-red-500">
-                  ⚠ Thời gian hết hạn phải lớn hơn thời gian hiện tại ít nhất 1 phút.
+                  ⚠ Thời gian bắt đầu phải lớn hơn thời gian hiện tại ít nhất 1 phút.
                 </p>
               )}
+
+              {/* Recording mode */}
+              <div className="space-y-2">
+                <Label>Chế độ ghi hình</Label>
+                <Select value={recordingMode} onValueChange={setRecordingMode}>
+                  <SelectTrigger className="w-full sm:w-[320px]">
+                    <SelectValue placeholder="Chọn chế độ ghi hình" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cloud">Cloud (đám mây)</SelectItem>
+                    <SelectItem value="local">Local (máy tính)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </Card>
 
@@ -536,15 +533,8 @@ export function MockInterviewSchedulePage() {
                   <div className="flex items-center gap-2 rounded-lg border p-3">
                     <CalendarIcon className="h-4 w-4 text-slate-400" />
                     <div>
-                      <p className="text-xs text-slate-500">Hết hạn lúc</p>
+                      <p className="text-xs text-slate-500">Bắt đầu lúc</p>
                       <p className="text-sm font-medium">{formatSelectedDateTime()}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-lg border p-3">
-                    <Clock className="h-4 w-4 text-slate-400" />
-                    <div>
-                      <p className="text-xs text-slate-500">Thời lượng</p>
-                      <p className="text-sm font-medium">{formatDuration()}</p>
                     </div>
                   </div>
                 </div>
@@ -568,11 +558,9 @@ export function MockInterviewSchedulePage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Ghi hình</span>
-                    <span className="font-medium text-green-600">Cloud</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Thời hạn (giây)</span>
-                    <span className="font-medium">{calculateExpSeconds().toLocaleString()}</span>
+                    <span className="font-medium text-green-600">
+                      {recordingMode === "cloud" ? "Cloud (đám mây)" : "Local (máy tính)"}
+                    </span>
                   </div>
                 </div>
               </div>

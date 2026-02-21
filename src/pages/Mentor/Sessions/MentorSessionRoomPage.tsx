@@ -4,7 +4,7 @@
  * Route: /mentor/sessions/room/:sessionId
  */
 
-import { AlertCircle, ArrowLeft, Calendar, Clock, User as UserIcon } from "lucide-react";
+import { AlertCircle, ArrowLeft, Calendar, Clock, Settings, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { VideoCallProvider, VideoCallRoom } from "@/components/video-call";
+import { DeviceCheckDialog, VideoCallProvider, VideoCallRoom } from "@/components/video-call";
 import { useJoinSession, useSessionById } from "@/hooks/useSession";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -21,6 +21,7 @@ export function MentorSessionRoomPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [hasJoinedTracking, setHasJoinedTracking] = useState(false);
+  const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(false);
 
   const { data: session, isLoading, error } = useSessionById(Number(sessionId));
   const joinSessionMutation = useJoinSession();
@@ -123,7 +124,20 @@ export function MentorSessionRoomPage() {
           Quay lại
         </Button>
         <h1 className="text-2xl font-bold">Phòng phỏng vấn (Mentor)</h1>
+        <div className="ml-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsDeviceCheckOpen(true)}
+            className="gap-2">
+            <Settings className="h-4 w-4" />
+            Kiểm tra thiết bị
+          </Button>
+        </div>
       </div>
+
+      {/* Device Check Dialog */}
+      <DeviceCheckDialog isOpen={isDeviceCheckOpen} onOpenChange={setIsDeviceCheckOpen} />
 
       {/* Main Video Area - Full width for maximum screen usage */}
       <div className="w-full">
@@ -177,15 +191,18 @@ export function MentorSessionRoomPage() {
               <UserIcon className="text-muted-foreground h-4 w-4 shrink-0" />
               <span>Phòng: {session.roomName}</span>
             </div>
-            {session.startTime1 && (
+            {session.joinTime && (
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="text-muted-foreground h-4 w-4 shrink-0" />
                 <span>
-                  {new Date(session.startTime1).toLocaleDateString("vi-VN", {
+                  Giờ họp:{" "}
+                  {new Date(session.joinTime).toLocaleString("vi-VN", {
                     weekday: "long",
                     year: "numeric",
                     month: "long",
                     day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </span>
               </div>

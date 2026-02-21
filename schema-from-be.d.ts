@@ -1271,6 +1271,8 @@ export interface components {
             /** Format: int64 */
             durationSeconds2?: number;
             roomUrl?: string;
+            /** Format: date-time */
+            joinTime?: string;
             recordUrl?: string;
             /** @enum {string} */
             status?: "SCHEDULED" | "ONGOING" | "COMPLETED" | "CANCELED";
@@ -1581,6 +1583,8 @@ export interface components {
             userId?: number;
             /** Format: int32 */
             mentorId?: number;
+            /** Format: date-time */
+            joinTime?: string;
         };
         RoomConfig: {
             nbf?: string;

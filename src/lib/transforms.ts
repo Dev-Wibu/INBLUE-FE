@@ -111,7 +111,7 @@ export const transformSessionCreateRequest = (formData: SessionCreateFormData) =
       start_video_off: false,
       start_audio_off: false,
       enable_screenshare: true,
-      exp: Math.floor(Date.now() / 1000) + 86400, // 24 hours from now
+      exp: 0,
       enable_recording: "cloud",
     },
   },

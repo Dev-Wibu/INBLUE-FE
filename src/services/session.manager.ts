@@ -35,6 +35,8 @@ export interface SessionCreationRequest {
   };
   userId?: number;
   mentorId?: number;
+  /** Meeting start time (ISO date-time string) */
+  joinTime?: string;
 }
 
 /**
@@ -130,11 +132,12 @@ export class SessionManager implements BaseManager<Session> {
       } else {
         // Convert from Session partial to SessionCreationRequest
         const sessionData = _data as Partial<Session> & {
-          exp?: number;
           start_video_off?: boolean;
           start_audio_off?: boolean;
           max_participants?: number;
           enable_screenshare?: boolean;
+          joinTime?: string;
+          enable_recording?: string;
         };
 
         if (!sessionData.userId) {
@@ -153,6 +156,7 @@ export class SessionManager implements BaseManager<Session> {
         requestData = {
           userId: sessionData.userId,
           mentorId: sessionData.userId2,
+          joinTime: sessionData.joinTime,
           dailyCoCreationRequest: {
             name: "",
             privacy: "public",
@@ -161,8 +165,8 @@ export class SessionManager implements BaseManager<Session> {
               start_video_off: sessionData.start_video_off ?? true,
               start_audio_off: sessionData.start_audio_off ?? true,
               enable_screenshare: sessionData.enable_screenshare ?? true,
-              exp: sessionData.exp ?? 120,
-              enable_recording: "cloud",
+              exp: 0,
+              enable_recording: sessionData.enable_recording ?? "cloud",
             },
           },
         };

@@ -146,6 +146,12 @@ export function ViewSessionDialog({ isOpen, onOpenChange, session }: ViewSession
           <div>
             <h4 className="mb-2 text-sm font-semibold">Liên Kết Buổi Học</h4>
             <div className="space-y-2">
+              {session.joinTime && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Thời gian bắt đầu cuộc họp</p>
+                  <p className="text-sm">{formatDateTime(session.joinTime)}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm font-medium text-gray-500">URL Phòng</p>
                 {session.roomUrl ? (

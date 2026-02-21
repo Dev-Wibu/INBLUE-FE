@@ -110,20 +110,20 @@ export interface Session {
   endTime2?: string;
   durationSeconds2?: number;
   roomUrl?: string;
+  /** Meeting start time set by user (date-time) */
+  joinTime?: string;
   recordUrl?: string;
   status?: SessionStatus;
 }
 
 /**
  * Session form data for create/update operations
- * Updated: Removed roomName (auto-generated), added exp (expiration time), start_audio_off, start_video_off
+ * Updated: exp defaults to 0 (no user-defined exp), added joinTime for meeting start time
  */
 export interface SessionFormData {
   userId?: number;
   userId2?: number;
   status?: SessionStatus;
-  /** Session expiration time in seconds for the user */
-  exp?: number;
   /** Start with video off (default: true) */
   start_video_off?: boolean;
   /** Start with audio off (default: true) */
@@ -132,6 +132,10 @@ export interface SessionFormData {
   max_participants?: number;
   /** Enable screenshare */
   enable_screenshare?: boolean;
+  /** Meeting start time (ISO date-time string) set by user */
+  joinTime?: string;
+  /** Recording mode: "cloud" or "local" (default: "cloud") */
+  enable_recording?: string;
 }
 
 /**
