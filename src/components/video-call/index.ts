@@ -3,6 +3,7 @@
  * Exports all video call related components for Daily.co integration
  */
 
+export { DeviceCheckDialog } from "./DeviceCheckDialog";
 export { ParticipantGrid } from "./ParticipantGrid";
 export { useVideoCall } from "./useVideoCall";
 export { VideoCallLoader } from "./VideoCallLoader";

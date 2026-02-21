@@ -76,15 +76,17 @@ export function SessionFormDialog({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="exp">Thời gian hết hạn (giây)</Label>
+            <Label htmlFor="joinTime">Thời gian bắt đầu cuộc họp</Label>
             <Input
-              id="exp"
-              type="number"
-              value={formData.exp || ""}
+              id="joinTime"
+              type="datetime-local"
+              value={formData.joinTime ? formData.joinTime.slice(0, 16) : ""}
               onChange={(e) =>
-                onFormChange({ ...formData, exp: parseInt(e.target.value) || undefined })
+                onFormChange({
+                  ...formData,
+                  joinTime: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                })
               }
-              placeholder="Nhập thời gian hết hạn (mặc định: 120 giây)"
             />
           </div>
           <div className="flex items-center justify-between">
@@ -102,6 +104,20 @@ export function SessionFormDialog({
               checked={formData.start_audio_off ?? true}
               onCheckedChange={(checked) => onFormChange({ ...formData, start_audio_off: checked })}
             />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="enable_recording">Ghi hình</Label>
+            <Select
+              value={formData.enable_recording || "cloud"}
+              onValueChange={(value) => onFormChange({ ...formData, enable_recording: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn chế độ ghi hình" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cloud">Cloud (đám mây)</SelectItem>
+                <SelectItem value="local">Local (máy tính)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="status">Trạng thái</Label>
