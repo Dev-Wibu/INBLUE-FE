@@ -16,7 +16,7 @@ export interface MajorOption {
 export const MAJOR_OPTIONS: MajorOption[] = [
   {
     value: "CNTT",
-    label: "Công nghệ thông tin (CNTT)",
+    label: "Công nghệ thông tin",
     description: "Khoa học máy tính, phần mềm, hệ thống thông tin",
   },
   {

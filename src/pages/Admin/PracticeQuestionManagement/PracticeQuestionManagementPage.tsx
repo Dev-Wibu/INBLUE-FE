@@ -33,6 +33,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { questionManager } from "@/services";
+import {
+  questionCategoryManager,
+  type QuestionCategory,
+} from "@/services/question-category.manager";
 import type { PracticeQuestion } from "@/services/question.manager";
 import { toast } from "sonner";
 
@@ -48,6 +52,7 @@ interface QuestionFormData {
   level: "EASY" | "MEDIUM" | "HARD";
   answer: string;
   hint: string;
+  categoryId: string;
 }
 
 const emptyFormData: QuestionFormData = {
@@ -56,10 +61,12 @@ const emptyFormData: QuestionFormData = {
   level: "EASY",
   answer: "",
   hint: "",
+  categoryId: "",
 };
 
 export function PracticeQuestionManagementPage() {
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
+  const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
@@ -72,13 +79,21 @@ export function PracticeQuestionManagementPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await questionManager.getAll();
-      if (response.success && response.data) {
-        const raw = response.data;
+      const [questionsRes, categoriesRes] = await Promise.all([
+        questionManager.getAll(),
+        questionCategoryManager.getAll(),
+      ]);
+      if (questionsRes.success && questionsRes.data) {
+        const raw = questionsRes.data;
         const arr = Array.isArray(raw) ? raw : "data" in raw ? raw.data : [];
         setQuestions(arr as unknown as PracticeQuestion[]);
       } else {
-        toast.error(response.error || "Không thể tải danh sách câu hỏi");
+        toast.error(questionsRes.error || "Không thể tải danh sách câu hỏi");
+      }
+      if (categoriesRes.success && categoriesRes.data) {
+        const raw = categoriesRes.data;
+        const arr = Array.isArray(raw) ? raw : "data" in raw ? raw.data : [];
+        setCategories(arr as QuestionCategory[]);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -137,6 +152,7 @@ export function PracticeQuestionManagementPage() {
       level: question.level || "EASY",
       answer: question.answer || "",
       hint: question.hint || "",
+      categoryId: question.lesson?.id?.toString() || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -148,12 +164,18 @@ export function PracticeQuestionManagementPage() {
 
   const handleSubmitCreate = async () => {
     try {
+      const selectedCategory = formData.categoryId
+        ? categories.find((c) => c.id?.toString() === formData.categoryId)
+        : undefined;
       const createData: Partial<PracticeQuestion> = {
         title: formData.title,
         content: formData.content,
         level: formData.level,
         answer: formData.answer,
         hint: formData.hint,
+        ...(selectedCategory && {
+          lesson: { id: selectedCategory.id, lessonName: selectedCategory.categoryName },
+        }),
       };
       const response = await questionManager.create(createData as never);
       if (response.success) {
@@ -172,12 +194,18 @@ export function PracticeQuestionManagementPage() {
   const handleSubmitEdit = async () => {
     if (!selectedQuestion?.questionId) return;
     try {
+      const selectedCategory = formData.categoryId
+        ? categories.find((c) => c.id?.toString() === formData.categoryId)
+        : undefined;
       const updateData: Partial<PracticeQuestion> = {
         title: formData.title,
         content: formData.content,
         level: formData.level,
         answer: formData.answer,
         hint: formData.hint,
+        ...(selectedCategory && {
+          lesson: { id: selectedCategory.id, lessonName: selectedCategory.categoryName },
+        }),
       };
       const response = await questionManager.update(
         selectedQuestion.questionId,
@@ -364,6 +392,7 @@ export function PracticeQuestionManagementPage() {
         title="Thêm Câu Hỏi Mới"
         description="Điền thông tin để tạo câu hỏi luyện tập mới."
         submitLabel="Tạo câu hỏi"
+        categories={categories}
       />
 
       {/* Edit Dialog */}
@@ -376,6 +405,7 @@ export function PracticeQuestionManagementPage() {
         title="Chỉnh Sửa Câu Hỏi"
         description="Cập nhật thông tin câu hỏi."
         submitLabel="Lưu thay đổi"
+        categories={categories}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -412,6 +442,7 @@ interface QuestionFormDialogProps {
   title: string;
   description: string;
   submitLabel: string;
+  categories: QuestionCategory[];
 }
 
 function QuestionFormDialog({
@@ -423,6 +454,7 @@ function QuestionFormDialog({
   title,
   description,
   submitLabel,
+  categories,
 }: QuestionFormDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -451,22 +483,41 @@ function QuestionFormDialog({
               rows={3}
             />
           </div>
-          <div>
-            <Label htmlFor="level">Cấp độ</Label>
-            <Select
-              value={formData.level}
-              onValueChange={(value) =>
-                onFormChange({ ...formData, level: value as "EASY" | "MEDIUM" | "HARD" })
-              }>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="EASY">Dễ</SelectItem>
-                <SelectItem value="MEDIUM">Trung bình</SelectItem>
-                <SelectItem value="HARD">Khó</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="level">Cấp độ</Label>
+              <Select
+                value={formData.level}
+                onValueChange={(value) =>
+                  onFormChange({ ...formData, level: value as "EASY" | "MEDIUM" | "HARD" })
+                }>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EASY">Dễ</SelectItem>
+                  <SelectItem value="MEDIUM">Trung bình</SelectItem>
+                  <SelectItem value="HARD">Khó</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="categoryId">Danh mục</Label>
+              <Select
+                value={formData.categoryId}
+                onValueChange={(value) => onFormChange({ ...formData, categoryId: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn danh mục" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id?.toString() || ""}>
+                      {cat.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div>
             <Label htmlFor="answer">Đáp án</Label>

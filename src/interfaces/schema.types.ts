@@ -80,6 +80,7 @@ export interface UserFormData {
 export interface MentorFormData {
   name: string;
   email: string;
+  password?: string;
   bio?: string;
   expertise?: string;
   yearsOfExperience?: number;
@@ -253,6 +254,25 @@ export interface WorkExperience {
   description?: string;
   start_date?: string;
   end_date?: string;
+}
+
+/**
+ * Interview config option item (from GET /api/interview-sessions/config-options)
+ */
+export interface InterviewConfigOptionItem {
+  key: string;
+  label: string;
+  description: string;
+}
+
+/**
+ * Interview config options response (from GET /api/interview-sessions/config-options)
+ */
+export interface InterviewConfigOptions {
+  interview_modes: InterviewConfigOptionItem[];
+  languages: InterviewConfigOptionItem[];
+  difficulties: InterviewConfigOptionItem[];
+  domains: InterviewConfigOptionItem[];
 }
 
 /**
