@@ -89,6 +89,14 @@ export function MockInterviewSchedulePage() {
   );
   const [recordingMode, setRecordingMode] = useState<string>("cloud");
 
+  // helper to quickly fill current time (+small offset to satisfy validation)
+  const handleSetNow = () => {
+    const now = new Date(Date.now() + MIN_FUTURE_OFFSET_MS * 2);
+    setSelectedDate(now);
+    setSelectedHour(String(now.getHours()).padStart(2, "0"));
+    setSelectedMinute(String(now.getMinutes()).padStart(2, "0"));
+  };
+
   // Step 3: Creating
   const [isCreating, setIsCreating] = useState(false);
 
@@ -364,7 +372,9 @@ export function MockInterviewSchedulePage() {
             <CardContent className="space-y-6">
               {/* Date Picker */}
               <div className="space-y-2">
-                <Label>Ngày bắt đầu</Label>
+                <div className="ju flex items-center">
+                  <Label>Ngày bắt đầu</Label>
+                </div>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -384,6 +394,9 @@ export function MockInterviewSchedulePage() {
                         : "Chọn ngày"}
                     </Button>
                   </PopoverTrigger>
+                  <Button variant="outline" size="sm" onClick={handleSetNow}>
+                    Bây giờ
+                  </Button>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"

@@ -1,240 +1,1110 @@
-import { Calendar, Clock, CreditCard, FileText, Landmark, Video, Wallet } from "lucide-react";
-import { useState } from "react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  BookOpen,
+  Briefcase,
+  Check,
+  CheckCircle2,
+  FileText,
+  Globe,
+  Layers,
+  Loader2,
+  Settings,
+  Sparkles,
+  Target,
+  Upload,
+  User,
+} from "lucide-react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
-import { mockInterviewInfo, mockPaymentInfo, mockPaymentMethods } from "@/mocks/interviews.mock";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import type { InterviewConfigOptionItem, InterviewConfigOptions } from "@/interfaces/schema.types";
+import { $api } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { useCandidateProfile } from "@/services/candidate-profile.manager";
+import { useAuthStore } from "@/stores/authStore";
+// Mock data giữ lại để tham khảo khi cần thiết
+// import { mockInterviewInfo, mockPaymentInfo, mockPaymentMethods } from "@/mocks/interviews.mock";
+// const MOCK_PAYMENT_INFO = { interviewFee: 200000, serviceFee: 20000, total: 220000 };
+// const MOCK_PAYMENT_METHODS = [
+//   { id: "wallet", name: "Ví INTELITE", icon: "wallet", description: "...", balance: 1500000 },
+//   { id: "bank", name: "Chuyển khoản ngân hàng", icon: "bank", description: "..." },
+//   { id: "card", name: "Thẻ tín dụng/Ghi nợ", icon: "credit-card", description: "..." },
+// ];
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const STEPS = [
+  { id: 1, label: "Cấu hình", icon: Settings },
+  { id: 2, label: "Hồ sơ ứng viên", icon: User },
+  { id: 3, label: "Yêu cầu công việc", icon: Briefcase },
+] as const;
+
+const CATEGORY_ICONS = {
+  interview_modes: <Layers className="h-5 w-5" />,
+  difficulties: <Target className="h-5 w-5" />,
+  languages: <Globe className="h-5 w-5" />,
+  domains: <BookOpen className="h-5 w-5" />,
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  interview_modes: "Chế độ phỏng vấn",
+  difficulties: "Độ khó",
+  languages: "Ngôn ngữ",
+  domains: "Lĩnh vực",
+};
+
+const CATEGORY_COLORS: Record<string, { bg: string; border: string; text: string; icon: string }> =
+  {
+    interview_modes: {
+      bg: "bg-violet-50",
+      border: "border-violet-500",
+      text: "text-violet-700",
+      icon: "text-violet-600",
+    },
+    difficulties: {
+      bg: "bg-amber-50",
+      border: "border-amber-500",
+      text: "text-amber-700",
+      icon: "text-amber-600",
+    },
+    languages: {
+      bg: "bg-blue-50",
+      border: "border-blue-500",
+      text: "text-blue-700",
+      icon: "text-blue-600",
+    },
+    domains: {
+      bg: "bg-emerald-50",
+      border: "border-emerald-500",
+      text: "text-emerald-700",
+      icon: "text-emerald-600",
+    },
+  };
+
+type ConfigCategoryKey = keyof InterviewConfigOptions;
+
+/** Candidate profile form state (for manual entry) */
+interface CandidateFormData {
+  targetRole: string;
+  targetLevel: string;
+  introduction: string;
+  technicalSkills: string;
+  softSkills: string;
+  tools: string;
+}
+
+const INITIAL_CANDIDATE_FORM: CandidateFormData = {
+  targetRole: "",
+  targetLevel: "",
+  introduction: "",
+  technicalSkills: "",
+  softSkills: "",
+  tools: "",
+};
+
+// ============================================================================
+// Sub-components
+// ============================================================================
+
+function StepIndicator({ currentStep }: { currentStep: number }) {
+  return (
+    <div className="flex items-center justify-center gap-2">
+      {STEPS.map((step, index) => {
+        const StepIcon = step.icon;
+        const isActive = currentStep === step.id;
+        const isCompleted = currentStep > step.id;
+        return (
+          <div key={step.id} className="flex items-center gap-2">
+            <div
+              className={cn(
+                "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                isActive && "bg-[#0047AB] text-white",
+                isCompleted && "bg-green-100 text-green-700",
+                !isActive && !isCompleted && "bg-slate-100 text-slate-400"
+              )}>
+              {isCompleted ? <Check className="h-4 w-4" /> : <StepIcon className="h-4 w-4" />}
+              <span className="hidden sm:inline">{step.label}</span>
+              <span className="sm:hidden">{step.id}</span>
+            </div>
+            {index < STEPS.length - 1 && (
+              <div className={cn("h-0.5 w-8", isCompleted ? "bg-green-400" : "bg-slate-200")} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ConfigOptionCard({
+  item,
+  isSelected,
+  onSelect,
+  categoryKey,
+}: {
+  item: InterviewConfigOptionItem;
+  isSelected: boolean;
+  onSelect: () => void;
+  categoryKey: ConfigCategoryKey;
+}) {
+  const colors = CATEGORY_COLORS[categoryKey];
+  return (
+    <button
+      onClick={onSelect}
+      className={`relative flex w-full flex-col gap-1.5 rounded-lg border-2 p-4 text-left transition-all ${
+        isSelected
+          ? `${colors.bg} ${colors.border} shadow-sm`
+          : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+      }`}>
+      {isSelected && (
+        <CheckCircle2
+          className={`absolute top-3 right-3 h-5 w-5 ${colors.text}`}
+          fill="currentColor"
+          strokeWidth={0}
+        />
+      )}
+      <span className={`text-sm font-semibold ${isSelected ? colors.text : "text-gray-900"}`}>
+        {item.label}
+      </span>
+      <span className="pr-6 text-xs leading-relaxed text-gray-500">{item.description}</span>
+    </button>
+  );
+}
+
+function ConfigSection({
+  categoryKey,
+  items,
+  selectedKey,
+  onSelect,
+}: {
+  categoryKey: ConfigCategoryKey;
+  items: InterviewConfigOptionItem[];
+  selectedKey: string | null;
+  onSelect: (_key: string) => void;
+}) {
+  const colors = CATEGORY_COLORS[categoryKey];
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <div
+          className={`flex h-8 w-8 items-center justify-center rounded-lg ${colors.bg} ${colors.icon}`}>
+          {CATEGORY_ICONS[categoryKey]}
+        </div>
+        <h4 className="text-sm font-semibold text-gray-900">{CATEGORY_LABELS[categoryKey]}</h4>
+      </div>
+      <div
+        className={`grid gap-3 ${
+          items.length <= 2
+            ? "grid-cols-1 sm:grid-cols-2"
+            : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+        }`}>
+        {items.map((item) => (
+          <ConfigOptionCard
+            key={item.key}
+            item={item}
+            isSelected={selectedKey === item.key}
+            onSelect={() => onSelect(item.key)}
+            categoryKey={categoryKey}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-8 rounded-lg" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-24 rounded-lg" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// Main Component
+// ============================================================================
 
 export function AIInterviewPaymentPage() {
   const navigate = useNavigate();
-  const [selectedMethod, setSelectedMethod] = useState<string>("wallet");
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const userId = user?.id;
 
-  const getPaymentIcon = (iconName: string) => {
-    switch (iconName) {
-      case "wallet":
-        return <Wallet className="h-5 w-5 text-violet-600" />;
-      case "bank":
-        return <Landmark className="h-5 w-5 text-gray-500" />;
-      case "credit-card":
-        return <CreditCard className="h-5 w-5 text-gray-500" />;
-      default:
-        return <Wallet className="h-5 w-5 text-gray-500" />;
+  // Step navigation
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // Step 1: Config state
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+
+  // Step 2: Candidate profile state
+  const [profileMode, setProfileMode] = useState<"existing" | "manual" | "upload">("existing");
+  const [candidateForm, setCandidateForm] = useState<CandidateFormData>(INITIAL_CANDIDATE_FORM);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedProfile, setUploadedProfile] = useState<Record<string, unknown> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Step 3: Job requirement state
+  const [jobDescription, setJobDescription] = useState("");
+  const [isGeneratingJR, setIsGeneratingJR] = useState(false);
+  const [generatedJR, setGeneratedJR] = useState<Record<string, unknown> | null>(null);
+
+  // Creating session state
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+
+  // API: config options
+  const {
+    data: configData,
+    isLoading: configLoading,
+    isError: configError,
+  } = $api.useQuery("get", "/api/interview-sessions/config-options");
+  const configOptions = configData as InterviewConfigOptions | undefined;
+
+  // API: existing candidate profile
+  const { data: existingProfile, isLoading: profileLoading } = useCandidateProfile(userId ?? 0);
+  const hasExistingProfile =
+    existingProfile && typeof existingProfile === "object" && "id" in existingProfile;
+
+  // API mutations
+  const createSessionMutation = $api.useMutation("post", "/api/interview-sessions/create-session");
+  const uploadCvMutation = $api.useMutation("post", "/api/users/upload-cv");
+  const generateJRMutation = $api.useMutation(
+    "post",
+    "/api/interview-sessions/generate-job-requirement"
+  );
+
+  // ---- Step validation ----
+  const isStep1Complete =
+    selectedMode !== null &&
+    selectedDifficulty !== null &&
+    selectedLanguage !== null &&
+    selectedDomain !== null;
+
+  const isStep2Complete = (() => {
+    if (profileMode === "existing") return !!hasExistingProfile;
+    if (profileMode === "upload") return !!uploadedProfile;
+    if (profileMode === "manual")
+      return candidateForm.targetRole.trim() !== "" && candidateForm.introduction.trim() !== "";
+    return false;
+  })();
+
+  const isStep3Complete = !!generatedJR;
+
+  // ---- Helpers ----
+  const getSelectedLabel = (categoryKey: ConfigCategoryKey, selectedKey: string | null): string => {
+    if (!configOptions || !selectedKey) return "Chưa chọn";
+    const items = configOptions[categoryKey];
+    const found = items?.find((item: InterviewConfigOptionItem) => item.key === selectedKey);
+    return found?.label ?? "Chưa chọn";
+  };
+
+  const updateCandidateForm = (field: keyof CandidateFormData, value: string) => {
+    setCandidateForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // ---- Actions ----
+  const handleUploadCV = async (file: File) => {
+    if (!userId) return;
+    setIsUploading(true);
+    try {
+      const result = await uploadCvMutation.mutateAsync({
+        body: { userId: String(userId), cvFile: file as unknown as string },
+      });
+      setUploadedProfile(result as unknown as Record<string, unknown>);
+      setProfileMode("upload");
+      toast.success("Upload CV thành công! Hồ sơ đã được tạo từ CV.");
+    } catch {
+      toast.error("Upload CV thất bại. Vui lòng thử lại.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("vi-VN").format(amount) + " đ";
-  };
-
-  const handleConfirm = () => {
-    if (!agreedToTerms) {
+  const handleGenerateJR = async () => {
+    if (!jobDescription.trim()) {
+      toast.error("Vui lòng nhập mô tả công việc.");
       return;
     }
-    navigate("/dashboard/ai-interview/payment-redirect");
+    setIsGeneratingJR(true);
+    try {
+      const result = await generateJRMutation.mutateAsync({
+        body: jobDescription as unknown as never,
+      });
+      setGeneratedJR(result as unknown as Record<string, unknown>);
+      toast.success("Đã tạo yêu cầu công việc thành công!");
+    } catch {
+      toast.error("Không thể tạo yêu cầu công việc. Vui lòng thử lại.");
+    } finally {
+      setIsGeneratingJR(false);
+    }
   };
 
+  const buildCandidateProfile = () => {
+    if (profileMode === "existing" && hasExistingProfile) return existingProfile;
+    if (profileMode === "upload" && uploadedProfile) return uploadedProfile;
+    // manual
+    return {
+      targetRole: candidateForm.targetRole,
+      targetLevel: candidateForm.targetLevel,
+      introduction: candidateForm.introduction,
+      technicalSkills: candidateForm.technicalSkills
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      softSkills: candidateForm.softSkills
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      tools: candidateForm.tools
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    };
+  };
+
+  const handleCreateSession = async () => {
+    if (!isStep1Complete || !isStep2Complete || !isStep3Complete || !userId) return;
+    setIsCreatingSession(true);
+    try {
+      const body = {
+        user_id: userId,
+        candidate_profile: buildCandidateProfile(),
+        job_requirement: generatedJR,
+        session_config: {
+          interview_mode: selectedMode,
+          difficulty: selectedDifficulty,
+          language: selectedLanguage,
+          domain: selectedDomain,
+        },
+      };
+      await createSessionMutation.mutateAsync({ body: body as never });
+      toast.success("Đã tạo phiên phỏng vấn thành công!");
+      navigate("/dashboard/ai-interview/session");
+    } catch {
+      toast.error("Không thể tạo phiên phỏng vấn. Vui lòng thử lại.");
+    } finally {
+      setIsCreatingSession(false);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep === 1 && isStep1Complete) setCurrentStep(2);
+    else if (currentStep === 2 && isStep2Complete) setCurrentStep(3);
+    else if (currentStep === 3 && isStep3Complete) handleCreateSession();
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    else navigate("/dashboard/ai-interview");
+  };
+
+  const canProceed =
+    (currentStep === 1 && isStep1Complete) ||
+    (currentStep === 2 && isStep2Complete) ||
+    (currentStep === 3 && isStep3Complete);
+
+  // ============================================================================
+  // Render
+  // ============================================================================
+
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="bg-background min-h-screen p-6">
+      {/* Header */}
+      <div className="mb-6 flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={handleBack} className="shrink-0">
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-foreground text-2xl font-bold">Thiết lập phỏng vấn mới</h1>
+          <p className="text-muted-foreground text-sm">
+            Hoàn thành 3 bước để bắt đầu buổi phỏng vấn AI
+          </p>
+        </div>
+      </div>
+
+      {/* Step Indicator */}
+      <div className="mb-8">
+        <StepIndicator currentStep={currentStep} />
+      </div>
+
       <div className="flex gap-6">
-        {/* Left Column - Info Cards */}
+        {/* Left Column - Step Content */}
         <div className="flex flex-1 flex-col gap-6">
-          {/* Interview Info Card */}
-          <div className="rounded-lg bg-white p-6 outline outline-1 outline-offset-[-1px] outline-gray-200">
-            <h3 className="font-['Roboto'] text-lg font-bold text-gray-900">
-              Thông tin buổi phỏng vấn
-            </h3>
+          {/* ======================== STEP 1: Config ======================== */}
+          {currentStep === 1 && (
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-violet-600" />
+                  <CardTitle className="text-lg">Cấu hình buổi phỏng vấn</CardTitle>
+                </div>
+                <CardDescription>
+                  Chọn chế độ, độ khó, ngôn ngữ và lĩnh vực cho buổi phỏng vấn
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {configLoading && <LoadingSkeleton />}
 
-            <div className="mt-6 grid grid-cols-2 gap-6">
-              {/* Date */}
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100">
-                  <Calendar className="h-5 w-5 text-violet-600" />
-                </div>
-                <div>
-                  <p className="font-['Roboto'] text-sm font-normal text-gray-500">
-                    Ngày phỏng vấn
-                  </p>
-                  <p className="font-['Roboto'] text-base font-bold text-gray-900">
-                    {mockInterviewInfo.date}
-                  </p>
-                  <p className="font-['Roboto'] text-sm font-normal text-gray-700">
-                    {mockInterviewInfo.fullDate}
-                  </p>
-                </div>
-              </div>
-
-              {/* Time */}
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-['Roboto'] text-sm font-normal text-gray-500">Thời gian</p>
-                  <p className="font-['Roboto'] text-base font-bold text-gray-900">
-                    {mockInterviewInfo.time}
-                  </p>
-                  <p className="font-['Roboto'] text-sm font-normal text-gray-700">
-                    ({mockInterviewInfo.duration})
-                  </p>
-                </div>
-              </div>
-
-              {/* Format */}
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100">
-                  <Video className="h-5 w-5 text-emerald-600" />
-                </div>
-                <div>
-                  <p className="font-['Roboto'] text-sm font-normal text-gray-500">Hình thức</p>
-                  <p className="font-['Roboto'] text-base font-bold text-gray-900">
-                    {mockInterviewInfo.format}
-                  </p>
-                  <p className="font-['Roboto'] text-sm font-normal text-gray-700">
-                    {mockInterviewInfo.type}
-                  </p>
-                </div>
-              </div>
-
-              {/* Interview Type */}
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-200">
-                  <FileText className="h-5 w-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="font-['Roboto'] text-sm font-normal text-gray-500">
-                    Loại phỏng vấn
-                  </p>
-                  <p className="font-['Roboto'] text-base font-bold text-gray-900">
-                    {mockInterviewInfo.interviewType}
-                  </p>
-                  <p className="font-['Roboto'] text-sm font-normal text-gray-700">
-                    {mockInterviewInfo.position}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Methods Card */}
-          <div className="rounded-lg bg-white p-6 outline outline-1 outline-offset-[-1px] outline-gray-200">
-            <h3 className="font-['Roboto'] text-lg font-bold text-gray-900">
-              Phương thức thanh toán
-            </h3>
-
-            <div className="mt-4 flex flex-col gap-4">
-              {mockPaymentMethods.map((method) => (
-                <button
-                  key={method.id}
-                  onClick={() => setSelectedMethod(method.id)}
-                  className={`flex items-start gap-4 rounded-lg p-4 ${
-                    selectedMethod === method.id
-                      ? "bg-purple-50 outline outline-2 outline-offset-[-2px] outline-violet-500"
-                      : "bg-white outline outline-2 outline-offset-[-2px] outline-gray-200"
-                  }`}>
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                      selectedMethod === method.id ? "bg-violet-100" : "bg-gray-100"
-                    }`}>
-                    {getPaymentIcon(method.icon)}
+                {configError && (
+                  <div className="flex flex-col items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+                    <AlertCircle className="h-8 w-8 text-red-500" />
+                    <p className="font-medium text-red-700">Không thể tải cấu hình phỏng vấn</p>
+                    <p className="text-sm text-red-600">Vui lòng thử lại sau</p>
                   </div>
-                  <div className="flex-1 text-left">
-                    <p
-                      className={`font-['Inter'] text-sm font-bold ${
-                        selectedMethod === method.id ? "text-gray-900" : "text-gray-900"
-                      }`}>
-                      {method.name}
-                    </p>
-                    <p className="font-['Inter'] text-sm font-normal text-gray-500">
-                      {method.description}
-                    </p>
-                    {method.balance && (
-                      <p className="font-['Inter'] text-sm font-medium text-emerald-600">
-                        Số dư: {formatCurrency(method.balance)}
+                )}
+
+                {configOptions && !configLoading && !configError && (
+                  <>
+                    {configOptions.interview_modes && (
+                      <ConfigSection
+                        categoryKey="interview_modes"
+                        items={configOptions.interview_modes}
+                        selectedKey={selectedMode}
+                        onSelect={setSelectedMode}
+                      />
+                    )}
+                    {configOptions.difficulties && (
+                      <ConfigSection
+                        categoryKey="difficulties"
+                        items={configOptions.difficulties}
+                        selectedKey={selectedDifficulty}
+                        onSelect={setSelectedDifficulty}
+                      />
+                    )}
+                    {configOptions.languages && (
+                      <ConfigSection
+                        categoryKey="languages"
+                        items={configOptions.languages}
+                        selectedKey={selectedLanguage}
+                        onSelect={setSelectedLanguage}
+                      />
+                    )}
+                    {configOptions.domains && (
+                      <ConfigSection
+                        categoryKey="domains"
+                        items={configOptions.domains}
+                        selectedKey={selectedDomain}
+                        onSelect={setSelectedDomain}
+                      />
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ======================== STEP 2: Candidate Profile ======================== */}
+          {currentStep === 2 && (
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-blue-600" />
+                  <CardTitle className="text-lg">Hồ sơ ứng viên</CardTitle>
+                </div>
+                <CardDescription>
+                  Chọn hồ sơ có sẵn, upload CV hoặc nhập thông tin thủ công
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Profile mode selector */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {/* Existing profile option */}
+                  <button
+                    onClick={() => setProfileMode("existing")}
+                    disabled={!hasExistingProfile && !profileLoading}
+                    className={cn(
+                      "relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all",
+                      profileMode === "existing"
+                        ? "border-blue-500 bg-blue-50 shadow-sm"
+                        : "border-gray-200 bg-white hover:border-gray-300",
+                      !hasExistingProfile && !profileLoading && "cursor-not-allowed opacity-50"
+                    )}>
+                    {profileMode === "existing" && (
+                      <CheckCircle2
+                        className="absolute top-2 right-2 h-4 w-4 text-blue-600"
+                        fill="currentColor"
+                        strokeWidth={0}
+                      />
+                    )}
+                    <FileText className="h-6 w-6 text-blue-600" />
+                    <span className="text-sm font-semibold text-gray-900">Hồ sơ có sẵn</span>
+                    <span className="text-xs text-gray-500">
+                      {profileLoading
+                        ? "Đang tải..."
+                        : hasExistingProfile
+                          ? "Sử dụng hồ sơ đã lưu"
+                          : "Chưa có hồ sơ"}
+                    </span>
+                  </button>
+
+                  {/* Upload CV option */}
+                  <button
+                    onClick={() => {
+                      setProfileMode("upload");
+                      if (!uploadedProfile) fileInputRef.current?.click();
+                    }}
+                    className={cn(
+                      "relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all",
+                      profileMode === "upload"
+                        ? "border-emerald-500 bg-emerald-50 shadow-sm"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    )}>
+                    {profileMode === "upload" && (
+                      <CheckCircle2
+                        className="absolute top-2 right-2 h-4 w-4 text-emerald-600"
+                        fill="currentColor"
+                        strokeWidth={0}
+                      />
+                    )}
+                    <Upload className="h-6 w-6 text-emerald-600" />
+                    <span className="text-sm font-semibold text-gray-900">Upload CV</span>
+                    <span className="text-xs text-gray-500">Tạo hồ sơ từ CV</span>
+                  </button>
+
+                  {/* Manual entry option */}
+                  <button
+                    onClick={() => setProfileMode("manual")}
+                    className={cn(
+                      "relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all",
+                      profileMode === "manual"
+                        ? "border-violet-500 bg-violet-50 shadow-sm"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    )}>
+                    {profileMode === "manual" && (
+                      <CheckCircle2
+                        className="absolute top-2 right-2 h-4 w-4 text-violet-600"
+                        fill="currentColor"
+                        strokeWidth={0}
+                      />
+                    )}
+                    <Sparkles className="h-6 w-6 text-violet-600" />
+                    <span className="text-sm font-semibold text-gray-900">Nhập thủ công</span>
+                    <span className="text-xs text-gray-500">Tự điền thông tin</span>
+                  </button>
+                </div>
+
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUploadCV(file);
+                  }}
+                />
+
+                {/* Existing profile display */}
+                {profileMode === "existing" && hasExistingProfile && (
+                  <div className="space-y-3 rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+                    <h4 className="text-sm font-semibold text-blue-800">Hồ sơ hiện tại của bạn</h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-gray-500">Vị trí mục tiêu: </span>
+                        <span className="font-medium">
+                          {((existingProfile as Record<string, unknown>).targetRole as string) ||
+                            "Chưa cập nhật"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Cấp độ: </span>
+                        <span className="font-medium">
+                          {((existingProfile as Record<string, unknown>).targetLevel as string) ||
+                            "Chưa cập nhật"}
+                        </span>
+                      </div>
+                    </div>
+                    {Boolean((existingProfile as Record<string, unknown>).introduction) && (
+                      <p className="text-sm text-gray-600">
+                        {String((existingProfile as Record<string, unknown>).introduction)}
                       </p>
                     )}
+                    {Array.isArray(
+                      (existingProfile as Record<string, unknown>).technicalSkills
+                    ) && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {(
+                          (existingProfile as Record<string, unknown>).technicalSkills as string[]
+                        ).map((skill) => (
+                          <Badge key={skill} variant="secondary" className="text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {selectedMethod === method.id && (
-                    <div className="flex h-5 w-5 items-center justify-center">
-                      <div className="h-4 w-4 rounded-full border-2 border-violet-500 bg-violet-500" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+                )}
 
-          {/* Terms Checkbox */}
-          <div className="flex items-start gap-4 rounded-lg bg-blue-50 p-4 outline outline-1 outline-offset-[-1px] outline-blue-200">
-            <input
-              type="checkbox"
-              id="terms"
-              checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
-              className="mt-1 h-5 w-5 rounded border-neutral-500 bg-white"
-            />
-            <label htmlFor="terms" className="font-['Roboto'] text-sm leading-5 font-normal">
-              <span className="text-gray-700">Tôi đồng ý với </span>
-              <span className="font-medium text-violet-600">điều khoản và điều kiện</span>
-              <span className="text-gray-700">
-                {" "}
-                của INTELITE. Tôi hiểu rằng buổi phỏng vấn sẽ được ghi lại để phục vụ mục đích đánh
-                giá và cải thiện chất lượng dịch vụ.
-              </span>
-            </label>
-          </div>
+                {profileMode === "existing" && !hasExistingProfile && !profileLoading && (
+                  <div className="flex flex-col items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-6 text-center">
+                    <AlertCircle className="h-6 w-6 text-amber-500" />
+                    <p className="text-sm font-medium text-amber-700">
+                      Bạn chưa có hồ sơ ứng viên. Vui lòng upload CV hoặc nhập thủ công.
+                    </p>
+                  </div>
+                )}
+
+                {/* Upload CV result or uploading state */}
+                {profileMode === "upload" && (
+                  <div className="space-y-3">
+                    {isUploading && (
+                      <div className="flex flex-col items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-6">
+                        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                        <p className="text-sm font-medium text-emerald-700">
+                          Đang upload và phân tích CV...
+                        </p>
+                      </div>
+                    )}
+                    {!isUploading && !uploadedProfile && (
+                      <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-8">
+                        <Upload className="h-10 w-10 text-emerald-400" />
+                        <p className="text-sm text-gray-600">
+                          Kéo thả hoặc bấm để chọn file CV (.pdf, .doc, .docx)
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}>
+                          Chọn file
+                        </Button>
+                      </div>
+                    )}
+                    {uploadedProfile !== null && (
+                      <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                          <h4 className="text-sm font-semibold text-emerald-800">
+                            Hồ sơ đã được tạo từ CV
+                          </h4>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Vị trí: {(uploadedProfile.targetRole as string) || "N/A"} • Cấp độ:{" "}
+                          {(uploadedProfile.targetLevel as string) || "N/A"}
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setUploadedProfile(null);
+                            fileInputRef.current?.click();
+                          }}>
+                          Upload lại
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Manual entry form */}
+                {profileMode === "manual" && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="targetRole">
+                          Vị trí mục tiêu <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="targetRole"
+                          placeholder="VD: Backend Developer"
+                          value={candidateForm.targetRole}
+                          onChange={(e) => updateCandidateForm("targetRole", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="targetLevel">Cấp độ</Label>
+                        <Input
+                          id="targetLevel"
+                          placeholder="VD: Junior, Senior"
+                          value={candidateForm.targetLevel}
+                          onChange={(e) => updateCandidateForm("targetLevel", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="introduction">
+                        Giới thiệu bản thân <span className="text-red-500">*</span>
+                      </Label>
+                      <Textarea
+                        id="introduction"
+                        placeholder="Mô tả ngắn về bản thân, kinh nghiệm..."
+                        value={candidateForm.introduction}
+                        onChange={(e) => updateCandidateForm("introduction", e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="technicalSkills">Kỹ năng kỹ thuật</Label>
+                      <Input
+                        id="technicalSkills"
+                        placeholder="Java, React, Spring Boot (phân cách bằng dấu phẩy)"
+                        value={candidateForm.technicalSkills}
+                        onChange={(e) => updateCandidateForm("technicalSkills", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="softSkills">Kỹ năng mềm</Label>
+                      <Input
+                        id="softSkills"
+                        placeholder="Giao tiếp, Teamwork (phân cách bằng dấu phẩy)"
+                        value={candidateForm.softSkills}
+                        onChange={(e) => updateCandidateForm("softSkills", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="tools">Công cụ</Label>
+                      <Input
+                        id="tools"
+                        placeholder="Git, Docker, VS Code (phân cách bằng dấu phẩy)"
+                        value={candidateForm.tools}
+                        onChange={(e) => updateCandidateForm("tools", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ======================== STEP 3: Job Requirement ======================== */}
+          {currentStep === 3 && (
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5 text-amber-600" />
+                  <CardTitle className="text-lg">Yêu cầu công việc</CardTitle>
+                </div>
+                <CardDescription>
+                  Nhập mô tả công việc (Job Description) để hệ thống tạo yêu cầu phỏng vấn phù hợp
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="jobDescription">
+                    Mô tả công việc (Job Description) <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="jobDescription"
+                    placeholder="Dán hoặc nhập mô tả công việc bạn muốn phỏng vấn. VD: Tuyển Backend Developer có kinh nghiệm Java, Spring Boot, microservices..."
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    rows={8}
+                    className="resize-y"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Hệ thống sẽ phân tích JD và tạo yêu cầu phỏng vấn chi tiết (kỹ năng, công cụ,
+                    trách nhiệm...) để AI đặt câu hỏi chính xác hơn.
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleGenerateJR}
+                  disabled={!jobDescription.trim() || isGeneratingJR}
+                  className="bg-amber-600 text-white hover:bg-amber-700">
+                  {isGeneratingJR ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang phân tích JD...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Tạo yêu cầu công việc
+                    </>
+                  )}
+                </Button>
+
+                {/* Generated JR result */}
+                {generatedJR !== null && (
+                  <div className="space-y-4 rounded-lg border border-green-200 bg-green-50/50 p-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <h4 className="text-sm font-semibold text-green-800">
+                        Yêu cầu công việc đã được tạo
+                      </h4>
+                    </div>
+
+                    {/* Basic info */}
+                    {Boolean(generatedJR.basic_info) &&
+                      typeof generatedJR.basic_info === "object" && (
+                        <div className="space-y-1 text-sm">
+                          <p>
+                            <span className="text-gray-500">Vị trí: </span>
+                            <span className="font-medium">
+                              {String(
+                                (generatedJR.basic_info as Record<string, string>).job_title ||
+                                  "N/A"
+                              )}
+                            </span>
+                          </p>
+                          <p>
+                            <span className="text-gray-500">Lĩnh vực: </span>
+                            <span className="font-medium">
+                              {String(
+                                (generatedJR.basic_info as Record<string, string>)
+                                  .industry_domain || "N/A"
+                              )}
+                            </span>
+                          </p>
+                          <p>
+                            <span className="text-gray-500">Cấp độ: </span>
+                            <span className="font-medium">
+                              {String(
+                                (generatedJR.basic_info as Record<string, string>)
+                                  .seniority_level || "N/A"
+                              )}
+                            </span>
+                          </p>
+                        </div>
+                      )}
+
+                    {/* Competencies */}
+                    {Boolean(generatedJR.competencies) &&
+                      typeof generatedJR.competencies === "object" && (
+                        <div className="space-y-2">
+                          {Array.isArray(
+                            (generatedJR.competencies as Record<string, unknown>).hard_skills
+                          ) && (
+                            <div>
+                              <span className="text-xs font-medium text-gray-500">
+                                Hard Skills:
+                              </span>
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {(
+                                  (generatedJR.competencies as Record<string, unknown>)
+                                    .hard_skills as string[]
+                                ).map((s) => (
+                                  <Badge key={s} variant="secondary" className="text-xs">
+                                    {s}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {Array.isArray(
+                            (generatedJR.competencies as Record<string, unknown>).soft_skills
+                          ) && (
+                            <div>
+                              <span className="text-xs font-medium text-gray-500">
+                                Soft Skills:
+                              </span>
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {(
+                                  (generatedJR.competencies as Record<string, unknown>)
+                                    .soft_skills as string[]
+                                ).map((s) => (
+                                  <Badge key={s} variant="outline" className="text-xs">
+                                    {s}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {Array.isArray(
+                            (generatedJR.competencies as Record<string, unknown>)
+                              .tools_and_platforms
+                          ) && (
+                            <div>
+                              <span className="text-xs font-medium text-gray-500">
+                                Tools & Platforms:
+                              </span>
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {(
+                                  (generatedJR.competencies as Record<string, unknown>)
+                                    .tools_and_platforms as string[]
+                                ).map((s) => (
+                                  <Badge key={s} variant="secondary" className="text-xs">
+                                    {s}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                    {/* Responsibilities */}
+                    {Array.isArray(generatedJR.responsibilities) && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-500">
+                          Trách nhiệm chính:
+                        </span>
+                        <ul className="mt-1 list-inside list-disc space-y-0.5 text-sm text-gray-700">
+                          {(generatedJR.responsibilities as string[]).map((r, i) => (
+                            <li key={i}>{r}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <Button variant="outline" size="sm" onClick={() => setGeneratedJR(null)}>
+                      Tạo lại
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        {/* Right Column - Payment Summary */}
-        <div className="w-96">
-          <div className="rounded-lg bg-white p-6 outline outline-1 outline-offset-[-1px] outline-gray-200">
-            <h3 className="font-['Roboto'] text-lg font-bold text-gray-900">Chi tiết thanh toán</h3>
-
-            <div className="mt-6 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="font-['Roboto'] text-base font-normal text-gray-700">
-                  Phí buổi phỏng vấn
-                </span>
-                <span className="font-['Roboto'] text-base font-medium text-gray-700">
-                  {formatCurrency(mockPaymentInfo.interviewFee)}
-                </span>
+        {/* Right Column - Summary */}
+        <div className="w-96 shrink-0">
+          <Card className="sticky top-6">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg">Tóm tắt thiết lập</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Step 1 summary */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  {isStep1Complete ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Settings className="h-4 w-4 text-gray-400" />
+                  )}
+                  Bước 1: Cấu hình
+                </div>
+                <div className="space-y-1.5 pl-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Chế độ</span>
+                    <Badge
+                      variant={selectedMode ? "default" : "secondary"}
+                      className="max-w-40 truncate text-xs">
+                      {getSelectedLabel("interview_modes", selectedMode)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Độ khó</span>
+                    <Badge
+                      variant={selectedDifficulty ? "default" : "secondary"}
+                      className="max-w-40 truncate text-xs">
+                      {getSelectedLabel("difficulties", selectedDifficulty)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Ngôn ngữ</span>
+                    <Badge
+                      variant={selectedLanguage ? "default" : "secondary"}
+                      className="max-w-40 truncate text-xs">
+                      {getSelectedLabel("languages", selectedLanguage)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Lĩnh vực</span>
+                    <Badge
+                      variant={selectedDomain ? "default" : "secondary"}
+                      className="max-w-40 truncate text-xs">
+                      {getSelectedLabel("domains", selectedDomain)}
+                    </Badge>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="font-['Roboto'] text-base font-normal text-gray-700">
-                  Phí dịch vụ
-                </span>
-                <span className="font-['Roboto'] text-base font-medium text-gray-700">
-                  {formatCurrency(mockPaymentInfo.serviceFee)}
-                </span>
+              <div className="border-t border-gray-200" />
+
+              {/* Step 2 summary */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  {isStep2Complete ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <User className="h-4 w-4 text-gray-400" />
+                  )}
+                  Bước 2: Hồ sơ ứng viên
+                </div>
+                <div className="pl-6">
+                  {isStep2Complete ? (
+                    <Badge variant="default" className="text-xs">
+                      {profileMode === "existing"
+                        ? "Hồ sơ có sẵn"
+                        : profileMode === "upload"
+                          ? "Từ CV upload"
+                          : "Nhập thủ công"}
+                    </Badge>
+                  ) : (
+                    <span className="text-xs text-gray-400">Chưa hoàn thành</span>
+                  )}
+                </div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                <span className="font-['Roboto'] text-lg font-bold text-gray-900">Tổng cộng</span>
-                <span className="font-['Roboto'] text-2xl font-bold text-violet-500">
-                  {formatCurrency(mockPaymentInfo.total)}
-                </span>
+              <div className="border-t border-gray-200" />
+
+              {/* Step 3 summary */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  {isStep3Complete ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Briefcase className="h-4 w-4 text-gray-400" />
+                  )}
+                  Bước 3: Yêu cầu công việc
+                </div>
+                <div className="pl-6">
+                  {isStep3Complete ? (
+                    <Badge variant="default" className="text-xs">
+                      Đã tạo yêu cầu
+                    </Badge>
+                  ) : (
+                    <span className="text-xs text-gray-400">Chưa hoàn thành</span>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <button
-              onClick={handleConfirm}
-              disabled={!agreedToTerms}
-              aria-disabled={!agreedToTerms}
-              aria-label={
-                agreedToTerms ? "Xác nhận thanh toán" : "Vui lòng đồng ý với điều khoản để tiếp tục"
-              }
-              className={`mt-6 flex h-10 w-full items-center justify-center rounded-lg ${
-                agreedToTerms
-                  ? "bg-violet-500 hover:bg-violet-600"
-                  : "cursor-not-allowed bg-violet-300"
-              }`}>
-              <span className="font-['Inter'] text-xl font-medium text-white">Xác nhận</span>
-            </button>
+              <div className="border-t border-gray-200" />
 
-            <p className="mt-4 text-center font-['Roboto'] text-base font-normal text-gray-900">
-              Bạn sẽ được gửi email xác nhận sau khi thanh toán
-            </p>
-          </div>
+              {/* Navigation buttons */}
+              <div className="flex gap-3">
+                {currentStep > 1 && (
+                  <Button variant="outline" className="flex-1" onClick={handleBack}>
+                    Quay lại
+                  </Button>
+                )}
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceed || isCreatingSession}
+                  className="flex-1 bg-[#0047AB] text-white hover:bg-[#005B9A] disabled:bg-slate-300"
+                  size="lg">
+                  {isCreatingSession ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Đang tạo...
+                    </>
+                  ) : currentStep === 3 ? (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Bắt đầu phỏng vấn
+                    </>
+                  ) : (
+                    "Tiếp theo"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
