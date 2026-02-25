@@ -13,6 +13,7 @@ import type {
 } from "@/interfaces";
 
 import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { formatToVietnamISOString } from "@/lib/utils";
 
 // Re-export Session type for convenience
 export type { Session } from "@/interfaces";
@@ -41,13 +42,13 @@ export interface SessionCreationRequest {
 
 /**
  * Join session request (matches backend schema JoinSessionDtoRequest)
- * Note: mentor must be explicitly true or false (backend cannot deserialize null to boolean)
+ * Note: isMentor must be explicitly true or false (backend cannot deserialize null to boolean)
  */
 export interface JoinSessionRequest {
   sessionName?: string;
   userId?: number;
   participantId?: string;
-  mentor: boolean;
+  isMentor: boolean;
 }
 
 export class SessionManager implements BaseManager<Session> {
@@ -130,7 +131,7 @@ export class SessionManager implements BaseManager<Session> {
       if (isSessionCreationRequest(_data)) {
         requestData = {
           ..._data,
-          joinTime: _data.joinTime || new Date().toISOString(),
+          joinTime: _data.joinTime || formatToVietnamISOString(new Date()),
         };
       } else {
         // Convert from Session partial to SessionCreationRequest
@@ -159,7 +160,7 @@ export class SessionManager implements BaseManager<Session> {
         requestData = {
           userId: sessionData.userId,
           mentorId: sessionData.userId2,
-          joinTime: sessionData.joinTime || new Date().toISOString(),
+          joinTime: sessionData.joinTime || formatToVietnamISOString(new Date()),
           dailyCoCreationRequest: {
             name: "",
             privacy: "public",

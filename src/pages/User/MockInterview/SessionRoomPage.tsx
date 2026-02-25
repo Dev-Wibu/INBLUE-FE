@@ -23,6 +23,7 @@ export function SessionRoomPage() {
   const [hasJoinedTracking, setHasJoinedTracking] = useState(false);
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
+  const [displayName, setDisplayName] = useState("");
 
   const { data: session, isLoading, error } = useSessionById(Number(sessionId));
   const joinSessionMutation = useJoinSession();
@@ -43,7 +44,7 @@ export function SessionRoomPage() {
       sessionName: session.roomName,
       userId: user.id,
       participantId,
-      mentor: false, // User is not a mentor
+      isMentor: false, // User is not a mentor
     });
 
     setHasJoinedTracking(true);
@@ -141,6 +142,8 @@ export function SessionRoomPage() {
       <DeviceCheckDialog
         isOpen={isDeviceCheckOpen}
         onOpenChange={setIsDeviceCheckOpen}
+        displayName={displayName}
+        onDisplayNameChange={setDisplayName}
         onConfirm={() => {
           setIsDeviceCheckOpen(false);
           setHasConfirmedDevices(true);
@@ -153,7 +156,7 @@ export function SessionRoomPage() {
           <VideoCallProvider>
             <VideoCallRoom
               roomUrl={session.roomUrl!}
-              userName={user?.name || "Người dùng"}
+              userName={displayName.trim() || user?.name || "Người dùng"}
               onLeave={handleLeave}
               onError={handleError}
               onJoined={handleJoined}

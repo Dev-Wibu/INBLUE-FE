@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { datetimeLocalToVietnamISOString } from "@/lib/utils";
 
 import type { SessionFormData, SessionStatus } from "../types";
 
@@ -84,7 +85,9 @@ export function SessionFormDialog({
               onChange={(e) =>
                 onFormChange({
                   ...formData,
-                  joinTime: e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                  joinTime: e.target.value
+                    ? datetimeLocalToVietnamISOString(e.target.value)
+                    : undefined,
                 })
               }
             />
