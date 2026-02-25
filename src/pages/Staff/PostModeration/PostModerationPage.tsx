@@ -54,7 +54,9 @@ export function PostModerationPage() {
     try {
       const response = await postManager.getAll();
       if (response.success && response.data) {
-        const postData = Array.isArray(response.data) ? response.data : response.data.data;
+        const postData = Array.isArray(response.data)
+          ? response.data
+          : ((response.data as { data?: Post[] }).data ?? []);
         setPosts(postData as Post[]);
       } else {
         toast.error(response.error || "Không thể tải danh sách bài viết");
@@ -297,7 +299,7 @@ export function PostModerationPage() {
                   {post.title || "—"}
                 </TableCell>
                 <TableCell>{post.author?.name || "—"}</TableCell>
-                <TableCell>{post.major?.name || "—"}</TableCell>
+                <TableCell>{post.major?.name || post.major?.majorName || "—"}</TableCell>
                 <TableCell>{formatDate(post.creationDate)}</TableCell>
                 <TableCell>{getStatusBadge(post.status)}</TableCell>
                 <TableCell className="text-right">
@@ -360,7 +362,11 @@ export function PostModerationPage() {
               {/* Meta Info */}
               <div className="flex flex-wrap gap-2">
                 {getStatusBadge(selectedPost.status)}
-                {selectedPost.major && <Badge variant="outline">{selectedPost.major.name}</Badge>}
+                {selectedPost.major && (
+                  <Badge variant="outline">
+                    {selectedPost.major.name || selectedPost.major.majorName}
+                  </Badge>
+                )}
                 {selectedPost.tags?.map((tag) => (
                   <Badge key={tag} variant="secondary">
                     {tag}

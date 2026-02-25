@@ -156,10 +156,26 @@ export interface Post {
   author?: User;
   creationDate?: string;
   lastModifiedDate?: string;
-  major?: { id?: number; name?: string; description?: string };
+  major?: { id?: number; name?: string; majorName?: string; description?: string };
   coverImgUrl?: string;
   public_id?: string;
   tags?: string[];
+  /** Embedded from PostResponse wrapper (populated after normalization) */
+  likeCount?: number;
+  /** Embedded from PostResponse wrapper (populated after normalization) */
+  commentCount?: number;
+}
+
+/**
+ * Backend PostResponse wrapper
+ * GET /api/posts and GET /api/posts/published return PostResponse[]
+ */
+export interface PostResponseWrapper {
+  post?: Post;
+  likeCount?: number;
+  commentCount?: number;
+  postLikes?: PostLikeResponse[];
+  postComments?: PostCommentResponse[];
 }
 
 /**

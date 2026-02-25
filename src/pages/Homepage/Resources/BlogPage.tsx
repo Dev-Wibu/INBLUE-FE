@@ -53,8 +53,9 @@ export function BlogPage() {
       post.tags?.forEach((tag) => {
         tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
       });
-      if (post.major?.name) {
-        tagCounts.set(post.major.name, (tagCounts.get(post.major.name) || 0) + 1);
+      if (post.major?.name || post.major?.majorName) {
+        const majorLabel = post.major.name || post.major.majorName || "";
+        tagCounts.set(majorLabel, (tagCounts.get(majorLabel) || 0) + 1);
       }
     });
     const result = [{ name: "Tất cả", count: total }];
@@ -168,11 +169,11 @@ export function BlogPage() {
                               {tag}
                             </Badge>
                           ))}
-                          {post.major?.name && (
+                          {(post.major?.name || post.major?.majorName) && (
                             <Badge
                               variant="outline"
                               className="text-xs dark:border-slate-600 dark:text-slate-300">
-                              {post.major.name}
+                              {post.major?.name || post.major?.majorName}
                             </Badge>
                           )}
                         </div>
