@@ -107,9 +107,9 @@ export function PostDetailPage() {
                 {tag}
               </Badge>
             ))}
-            {post.major?.name && (
+            {(post.major?.name || post.major?.majorName) && (
               <Badge variant="outline" className="text-xs">
-                {post.major.name}
+                {post.major?.name || post.major?.majorName}
               </Badge>
             )}
           </div>

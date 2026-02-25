@@ -5,6 +5,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { QuestionSetDetail } from "@/mocks/questions.mock";
 import { questionManager } from "@/services";
 
+interface DisplayQuestion {
+  id: number;
+  text: string;
+  answer?: string;
+}
+
 export function QuestionDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -54,6 +60,57 @@ export function QuestionDetailPage() {
     });
   };
 
+  const normalizedQuestions: DisplayQuestion[] = (() => {
+    if (!questionSet) {
+      return [];
+    }
+
+    const directQuestions = (questionSet as QuestionSetDetail & { questions?: unknown }).questions;
+    if (Array.isArray(directQuestions)) {
+      return directQuestions.map((question, index) => {
+        const questionData = question as {
+          id?: number;
+          questionId?: number;
+          text?: string;
+          title?: string;
+          content?: string;
+          answer?: string;
+        };
+
+        return {
+          id: questionData.id ?? questionData.questionId ?? index + 1,
+          text:
+            questionData.text ??
+            questionData.title ??
+            questionData.content ??
+            `Câu hỏi ${index + 1}`,
+          answer: questionData.answer,
+        };
+      });
+    }
+
+    const singleQuestion = questionSet as {
+      id?: number;
+      questionId?: number;
+      text?: string;
+      title?: string;
+      content?: string;
+      answer?: string;
+    };
+
+    if (singleQuestion.text || singleQuestion.title || singleQuestion.content) {
+      return [
+        {
+          id: singleQuestion.id ?? singleQuestion.questionId ?? 1,
+          text: singleQuestion.text ?? singleQuestion.title ?? singleQuestion.content ?? "Câu hỏi",
+          answer: singleQuestion.answer,
+        },
+      ];
+    }
+
+    return [];
+  })();
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
@@ -88,7 +145,9 @@ export function QuestionDetailPage() {
 
         {/* Title with Border */}
         <div className="h-12 border-b-[3px] border-indigo-500">
-          <h1 className="font-['Inter'] text-3xl font-bold text-zinc-800">{questionSet.title}</h1>
+          <h1 className="font-['Inter'] text-3xl font-bold text-zinc-800">
+            {questionSet.title || "Chi tiết câu hỏi"}
+          </h1>
         </div>
       </div>
 
@@ -96,24 +155,25 @@ export function QuestionDetailPage() {
       <div className="relative h-28 rounded-[10px] bg-white px-5 py-4 shadow-[0px_2px_8px_0px_rgba(0,0,0,0.05)]">
         {/* Description */}
         <p className="mb-4 font-['Inter'] text-sm leading-6 font-normal text-stone-500">
-          {questionSet.description}
+          {questionSet.description || "Chi tiết bộ câu hỏi"}
         </p>
 
         {/* Metadata Row */}
         <div className="flex items-center gap-0">
           <div className="border-r border-zinc-100 pr-6">
             <span className="font-['Inter'] text-xs font-normal text-zinc-500">
-              Ngành: <strong>{questionSet.industry}</strong>
+              Ngành: <strong>{questionSet.industry || "N/A"}</strong>
             </span>
           </div>
           <div className="border-r border-zinc-100 px-6">
             <span className="font-['Inter'] text-xs font-normal text-zinc-500">
-              Cấp độ: <strong>{questionSet.level}</strong>
+              Cấp độ: <strong>{questionSet.level || "N/A"}</strong>
             </span>
           </div>
           <div className="px-6">
             <span className="font-['Inter'] text-xs font-normal text-zinc-500">
-              Số lượng: <strong>{questionSet.questionCount} câu</strong>
+              Số lượng: <strong>{questionSet.questionCount ?? normalizedQuestions.length}</strong>{" "}
+              câu
             </span>
           </div>
         </div>
@@ -121,10 +181,10 @@ export function QuestionDetailPage() {
 
       {/* Questions List */}
       <div className="flex flex-col gap-4">
-        {questionSet.questions.map((question) => (
+        {normalizedQuestions.map((question) => (
           <div
             key={question.id}
-            className="relative overflow-hidden rounded-lg bg-white shadow-[0px_1px_4px_0px_rgba(0,0,0,0.03)] outline outline-1 outline-offset-[-1px] outline-neutral-200">
+            className="relative overflow-hidden rounded-lg bg-white shadow-[0px_1px_4px_0px_rgba(0,0,0,0.03)] outline-1 -outline-offset-1 outline-neutral-200">
             <div className="flex h-14 items-center bg-stone-50 px-5">
               {/* Question Number */}
               <span className="mr-3 font-['Inter'] text-2xl font-bold text-indigo-500">
@@ -159,6 +219,12 @@ export function QuestionDetailPage() {
             )}
           </div>
         ))}
+
+        {normalizedQuestions.length === 0 && (
+          <div className="rounded-lg border border-dashed border-neutral-300 bg-white p-6 text-center">
+            <p className="font-['Inter'] text-sm text-gray-500">Chưa có câu hỏi để hiển thị</p>
+          </div>
+        )}
       </div>
     </div>
   );

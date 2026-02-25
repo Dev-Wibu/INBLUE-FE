@@ -19,7 +19,46 @@ import type {
   PostCreateRequest,
   PostLikeRequest,
   PostLikeResponse,
+  PostResponseWrapper,
 } from "@/interfaces";
+
+/**
+ * Normalize a Post object from backend:
+ * - Maps major.majorName → major.name (backend uses majorName)
+ */
+function normalizePost(post: Post): Post {
+  if (post.major && !post.major.name && post.major.majorName) {
+    return {
+      ...post,
+      major: { ...post.major, name: post.major.majorName },
+    };
+  }
+  return post;
+}
+
+/**
+ * Unwrap backend PostResponse[] into Post[] with embedded counts.
+ * Backend wraps each post inside { post, likeCount, commentCount, ... }
+ */
+function unwrapPostResponses(data: unknown): Post[] {
+  if (!Array.isArray(data)) return [];
+
+  return data.map((item: PostResponseWrapper | Post, index: number) => {
+    // Check if this is a PostResponse wrapper (has .post property)
+    if (item && typeof item === "object" && "post" in item && item.post) {
+      const wrapper = item as PostResponseWrapper;
+      return normalizePost({
+        ...wrapper.post,
+        likeCount: wrapper.likeCount ?? 0,
+        commentCount: wrapper.commentCount ?? 0,
+      });
+    }
+
+    // Already a flat Post object (mock mode or already unwrapped)
+    void index;
+    return normalizePost(item as Post);
+  });
+}
 
 // Mock data for development
 const mockPosts: Post[] = [
@@ -480,7 +519,9 @@ export class PostManager implements BaseManager<Post> {
 
     try {
       const response = await this.api.get(API_ENDPOINTS.POSTS.LIST, { params: _params });
-      return { success: true, data: response.data };
+      // Backend returns PostResponse[] wrapper — unwrap into Post[]
+      const posts = unwrapPostResponses(response.data);
+      return { success: true, data: posts };
     } catch (error) {
       return {
         success: false,
@@ -501,7 +542,20 @@ export class PostManager implements BaseManager<Post> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.POSTS.DETAIL, { postId: id });
       const response = await this.api.get(endpoint);
-      return { success: true, data: response.data };
+      // Handle if backend returns PostResponse wrapper or flat Post
+      const raw = response.data;
+      if (raw && typeof raw === "object" && "post" in raw && raw.post) {
+        const wrapper = raw as PostResponseWrapper;
+        return {
+          success: true,
+          data: normalizePost({
+            ...wrapper.post,
+            likeCount: wrapper.likeCount ?? 0,
+            commentCount: wrapper.commentCount ?? 0,
+          }),
+        };
+      }
+      return { success: true, data: normalizePost(raw as Post) };
     } catch (error) {
       return {
         success: false,
@@ -522,7 +576,9 @@ export class PostManager implements BaseManager<Post> {
 
     try {
       const response = await this.api.get(API_ENDPOINTS.POSTS.PUBLISHED);
-      return { success: true, data: response.data };
+      // Backend returns PostResponse[] wrapper — unwrap into Post[]
+      const posts = unwrapPostResponses(response.data);
+      return { success: true, data: posts };
     } catch (error) {
       return {
         success: false,

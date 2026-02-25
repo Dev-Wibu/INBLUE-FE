@@ -38,7 +38,9 @@ export function PostListPage() {
     fetchPosts();
   }, []);
 
-  const allMajors = [...new Set(posts.map((p) => p.major?.name).filter(Boolean))] as string[];
+  const allMajors = [
+    ...new Set(posts.map((p) => p.major?.name || p.major?.majorName).filter(Boolean)),
+  ] as string[];
 
   const filtered = useMemo(() => {
     return posts
@@ -46,7 +48,7 @@ export function PostListPage() {
         if (tagFilter && !p.tags?.some((t) => t.toLowerCase().includes(tagFilter.toLowerCase()))) {
           return false;
         }
-        if (majorFilter !== "all" && p.major?.name !== majorFilter) {
+        if (majorFilter !== "all" && (p.major?.name || p.major?.majorName) !== majorFilter) {
           return false;
         }
         return true;

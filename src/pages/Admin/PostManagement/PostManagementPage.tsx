@@ -43,8 +43,6 @@ export function PostManagementPage() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [postComments, setPostComments] = useState<PostCommentResponse[]>([]);
-  const [likesCount, setLikesCount] = useState<Record<number, number>>({});
-  const [commentsCount, setCommentsCount] = useState<Record<number, number>>({});
 
   // Delete comment confirmation
   const [commentToDelete, setCommentToDelete] = useState<PostCommentResponse | null>(null);
@@ -55,24 +53,10 @@ export function PostManagementPage() {
     try {
       const response = await postManager.getAll();
       if (response.success && response.data) {
-        const postData = Array.isArray(response.data) ? response.data : response.data.data;
+        const postData = Array.isArray(response.data)
+          ? response.data
+          : ((response.data as { data?: Post[] }).data ?? []);
         setPosts(postData as Post[]);
-
-        // Load counts for each post
-        const lCounts: Record<number, number> = {};
-        const cCounts: Record<number, number> = {};
-        for (const post of postData as Post[]) {
-          if (post.postId) {
-            const [likesRes, commentsRes] = await Promise.all([
-              postManager.getLikesCount(post.postId),
-              postManager.getCommentsCount(post.postId),
-            ]);
-            if (likesRes.success) lCounts[post.postId] = likesRes.data ?? 0;
-            if (commentsRes.success) cCounts[post.postId] = commentsRes.data ?? 0;
-          }
-        }
-        setLikesCount(lCounts);
-        setCommentsCount(cCounts);
       } else {
         toast.error(response.error || "Không thể tải danh sách bài viết");
       }
@@ -150,15 +134,8 @@ export function PostManagementPage() {
         setIsDeleteCommentOpen(false);
         setCommentToDelete(null);
         // Refresh comments count
-        if (selectedPost?.postId) {
-          const countRes = await postManager.getCommentsCount(selectedPost.postId);
-          if (countRes.success) {
-            setCommentsCount((prev) => ({
-              ...prev,
-              [selectedPost.postId!]: countRes.data ?? 0,
-            }));
-          }
-        }
+        // Refresh posts list to get updated counts
+        loadPosts();
       } else {
         toast.error(response.error || "Không thể xóa bình luận");
       }
@@ -175,6 +152,14 @@ export function PostManagementPage() {
       month: "2-digit",
       day: "2-digit",
     });
+  };
+
+  const getPostRowKey = (post: Post, index: number) => {
+    if (post.postId) {
+      return `post-${post.postId}`;
+    }
+
+    return `post-fallback-${post.creationDate ?? "no-date"}-${post.title ?? "untitled"}-${index}`;
   };
 
   if (loading) {
@@ -245,25 +230,25 @@ export function PostManagementPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredPosts.map((post) => (
-              <TableRow key={post.postId}>
+            {filteredPosts.map((post, index) => (
+              <TableRow key={getPostRowKey(post, index)}>
                 <TableCell className="max-w-[250px] truncate font-medium">
                   {post.title || "—"}
                 </TableCell>
                 <TableCell>{post.author?.name || "—"}</TableCell>
                 <TableCell>{getStatusBadge(post.status)}</TableCell>
-                <TableCell>{post.major?.name || "—"}</TableCell>
+                <TableCell>{post.major?.name || post.major?.majorName || "—"}</TableCell>
                 <TableCell>{formatDate(post.creationDate)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <ThumbsUp className="h-3 w-3 text-gray-400" />
-                    {post.postId ? (likesCount[post.postId] ?? 0) : 0}
+                    {post.likeCount ?? 0}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <MessageSquare className="h-3 w-3 text-gray-400" />
-                    {post.postId ? (commentsCount[post.postId] ?? 0) : 0}
+                    {post.commentCount ?? 0}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
@@ -306,7 +291,11 @@ export function PostManagementPage() {
               {/* Meta Info */}
               <div className="flex flex-wrap gap-2">
                 {getStatusBadge(selectedPost.status)}
-                {selectedPost.major && <Badge variant="outline">{selectedPost.major.name}</Badge>}
+                {selectedPost.major && (
+                  <Badge variant="outline">
+                    {selectedPost.major.name || selectedPost.major.majorName}
+                  </Badge>
+                )}
                 {selectedPost.tags?.map((tag) => (
                   <Badge key={tag} variant="secondary">
                     {tag}
