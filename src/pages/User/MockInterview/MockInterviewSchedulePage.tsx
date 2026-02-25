@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { cn, formatToVietnamISOString } from "@/lib/utils";
 
 import { useMentors } from "@/hooks/useMentor";
 import { useCreateSession } from "@/hooks/useSession";
@@ -116,12 +116,12 @@ export function MockInterviewSchedulePage() {
   // Selected mentor data
   const selectedMentor = mentors.find((m) => m.id === selectedMentorId);
 
-  // Calculate joinTime ISO string from selected date/time
+  // Calculate joinTime in Vietnam timezone (+07:00)
   const calculateJoinTime = (): string | undefined => {
     if (!selectedDate) return undefined;
     const joinDate = new Date(selectedDate);
     joinDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
-    return joinDate.toISOString();
+    return formatToVietnamISOString(joinDate);
   };
 
   // Format selected date/time for display

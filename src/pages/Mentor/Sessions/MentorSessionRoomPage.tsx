@@ -23,6 +23,7 @@ export function MentorSessionRoomPage() {
   const [hasJoinedTracking, setHasJoinedTracking] = useState(false);
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
+  const [displayName, setDisplayName] = useState("");
 
   const { data: session, isLoading, error } = useSessionById(Number(sessionId));
   const joinSessionMutation = useJoinSession();
@@ -43,7 +44,7 @@ export function MentorSessionRoomPage() {
       sessionName: session.roomName,
       userId: user.id,
       participantId,
-      mentor: true, // Mentor is joining
+      isMentor: true, // Mentor is joining
     });
 
     setHasJoinedTracking(true);
@@ -141,6 +142,8 @@ export function MentorSessionRoomPage() {
       <DeviceCheckDialog
         isOpen={isDeviceCheckOpen}
         onOpenChange={setIsDeviceCheckOpen}
+        displayName={displayName}
+        onDisplayNameChange={setDisplayName}
         onConfirm={() => {
           setIsDeviceCheckOpen(false);
           setHasConfirmedDevices(true);
@@ -153,11 +156,11 @@ export function MentorSessionRoomPage() {
           <VideoCallProvider>
             <VideoCallRoom
               roomUrl={session.roomUrl!}
-              userName={user?.name || "Mentor"}
+              userName={displayName.trim() || user?.name || "Mentor"}
               onLeave={handleLeave}
               onError={handleError}
               onJoined={handleJoined}
-              className="min-h-[70vh]"
+              className="h-[80vh] w-full"
             />
           </VideoCallProvider>
         </div>
