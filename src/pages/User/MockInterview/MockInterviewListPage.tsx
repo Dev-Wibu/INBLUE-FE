@@ -66,7 +66,9 @@ export function MockInterviewListPage() {
                   ? "ongoing"
                   : "upcoming",
           canJoin:
-            (session.status === "SCHEDULED" || session.status === "ONGOING") &&
+            (session.status === "DRAFT" ||
+              session.status === "SCHEDULED" ||
+              session.status === "ONGOING") &&
             !!session.roomUrl &&
             isTimeReached,
           isTimeReached,

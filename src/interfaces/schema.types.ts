@@ -92,7 +92,13 @@ export interface MentorFormData {
 /**
  * Session status enum
  */
-export type SessionStatus = "SCHEDULED" | "ONGOING" | "COMPLETED" | "CANCELED";
+export type SessionStatus =
+  | "DRAFT"
+  | "SCHEDULED"
+  | "REJECTED"
+  | "ONGOING"
+  | "COMPLETED"
+  | "CANCELED";
 
 /**
  * Session type based on backend schema

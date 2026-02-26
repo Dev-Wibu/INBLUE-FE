@@ -219,7 +219,9 @@ export function SessionManagementPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả trạng thái</SelectItem>
+              <SelectItem value="DRAFT">Chờ duyệt</SelectItem>
               <SelectItem value="SCHEDULED">Đã lên lịch</SelectItem>
+              <SelectItem value="REJECTED">Bị từ chối</SelectItem>
               <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
               <SelectItem value="COMPLETED">Đã hoàn thành</SelectItem>
               <SelectItem value="CANCELED">Đã hủy</SelectItem>

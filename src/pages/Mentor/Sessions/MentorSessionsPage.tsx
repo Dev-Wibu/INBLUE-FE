@@ -26,9 +26,11 @@ const statusMap: Record<
   string,
   { label: string; variant: "default" | "secondary" | "destructive" | "outline"; color: string }
 > = {
+  DRAFT: { label: "Chờ duyệt", variant: "secondary", color: "bg-amber-100 text-amber-700" },
   SCHEDULED: { label: "Sắp diễn ra", variant: "secondary", color: "bg-blue-100 text-blue-700" },
   ONGOING: { label: "Đang diễn ra", variant: "default", color: "bg-green-100 text-green-700" },
   COMPLETED: { label: "Hoàn thành", variant: "outline", color: "bg-slate-100 text-slate-600" },
+  REJECTED: { label: "Bị từ chối", variant: "destructive", color: "bg-red-100 text-red-600" },
   CANCELED: { label: "Đã hủy", variant: "destructive", color: "bg-red-100 text-red-600" },
 };
 
@@ -51,7 +53,9 @@ function SessionCard({
   const isCompleted = session.status === "COMPLETED";
   const isTimeReached = session.joinTime ? new Date(session.joinTime).getTime() <= now : true;
   const canJoin =
-    (session.status === "SCHEDULED" || session.status === "ONGOING") &&
+    (session.status === "DRAFT" ||
+      session.status === "SCHEDULED" ||
+      session.status === "ONGOING") &&
     !!session.roomUrl &&
     isTimeReached;
 
@@ -212,7 +216,7 @@ export function MentorSessionsPage() {
 
   // Stats
   const scheduledCount = mentorSessions.filter(
-    (s: Session) => s.status === "SCHEDULED" || s.status === "ONGOING"
+    (s: Session) => s.status === "DRAFT" || s.status === "SCHEDULED" || s.status === "ONGOING"
   ).length;
 
   return (
