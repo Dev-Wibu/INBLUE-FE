@@ -37,12 +37,15 @@ export const useAuthStore = create<AuthState>()(
       setToken: (token) => set({ token }),
       setIsLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
       setIsLoading: (isLoading) => set({ isLoading }),
-      clearAuth: () =>
+      clearAuth: () => {
+        // Remove current user ID from localStorage on logout
+        localStorage.removeItem("current-user-id");
         set({
           isLoggedIn: false,
           user: null,
           token: null,
-        }),
+        });
+      },
     }),
     {
       name: "auth-storage",

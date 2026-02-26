@@ -100,10 +100,58 @@ export class AuthManager {
    * - Finds user by email and compares password
    * - TODO: Replace with proper /auth/login endpoint when available
    */
+  /**
+   * Map of demo accounts to their real backend IDs.
+   * USER and MENTOR use real user id=2; ADMIN/STAFF stay as demo placeholders.
+   */
+  private readonly DEMO_REAL_IDS: Record<string, number | null> = {
+    user: 2,
+    mentor: 2,
+    admin: null,
+    staff: null,
+  };
+
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token?: string }>> {
     // Demo account exception - works in both mock and api modes
     if (this.isDemoAccount(credentials.email, credentials.password)) {
       const role = this.getDemoUserRole(credentials.email);
+      const realId = this.DEMO_REAL_IDS[role];
+
+      // For USER and MENTOR: fetch real user from backend by id
+      if (realId !== null) {
+        try {
+          const endpoint = role === "mentor" ? `/api/mentors/${realId}` : `/api/users/${realId}`;
+          const { data: backendUser } = await fetchClient.GET(endpoint as "/api/users/{id}", {
+            params: { path: { id: realId } },
+          });
+
+          if (backendUser) {
+            const bu = backendUser as BackendUser;
+            const user: User = {
+              id: String(bu.id || realId),
+              email: bu.email || credentials.email,
+              fullName: bu.name || `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+              role: this.mapBackendRoleToFrontend(bu.role) || role,
+              avatar: bu.avatarUrl,
+            };
+
+            return {
+              success: true,
+              data: {
+                user,
+                token: `demo-token-${bu.id || realId}`,
+              },
+            };
+          }
+        } catch (error) {
+          console.warn(
+            `Failed to fetch real ${role} id=${realId}, falling back to demo user`,
+            error
+          );
+        }
+      }
+
+      // Fallback for ADMIN, STAFF, or if real fetch failed
       const demoUser: User = {
         id: `demo-${role}`,
         email: credentials.email,

@@ -27,12 +27,14 @@ export function LoginPage() {
     const result = await authManager.login({ email, password });
 
     if (result.success && result.data?.user) {
+      const userId =
+        typeof result.data.user.id === "string"
+          ? parseInt(result.data.user.id)
+          : result.data.user.id;
+
       // Store auth state
       setUser({
-        id:
-          typeof result.data.user.id === "string"
-            ? parseInt(result.data.user.id)
-            : result.data.user.id,
+        id: userId,
         name: result.data.user.fullName,
         email: result.data.user.email,
         role: result.data.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
@@ -40,6 +42,11 @@ export function LoginPage() {
       });
       setToken(result.data.token ?? null);
       setIsLoggedIn(true);
+
+      // Store current user ID in localStorage for BE queries
+      if (userId && !isNaN(userId)) {
+        localStorage.setItem("current-user-id", String(userId));
+      }
 
       // Navigate based on user role
       const userRole = result.data.user.role;
