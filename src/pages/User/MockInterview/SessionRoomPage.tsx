@@ -31,7 +31,9 @@ export function SessionRoomPage() {
   // Validate session and user
   const canJoin =
     session &&
-    (session.status === "SCHEDULED" || session.status === "ONGOING") &&
+    (session.status === "DRAFT" ||
+      session.status === "SCHEDULED" ||
+      session.status === "ONGOING") &&
     session.roomUrl &&
     user;
 

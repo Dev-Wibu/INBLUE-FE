@@ -32,7 +32,14 @@ interface SessionFormDialogProps {
   submitLabel: string;
 }
 
-const SESSION_STATUSES: SessionStatus[] = ["SCHEDULED", "ONGOING", "COMPLETED", "CANCELED"];
+const SESSION_STATUSES: SessionStatus[] = [
+  "DRAFT",
+  "SCHEDULED",
+  "REJECTED",
+  "ONGOING",
+  "COMPLETED",
+  "CANCELED",
+];
 
 export function SessionFormDialog({
   isOpen,

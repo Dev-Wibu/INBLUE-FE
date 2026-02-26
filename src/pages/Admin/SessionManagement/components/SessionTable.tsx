@@ -33,8 +33,12 @@ const getStatusBadgeClass = (status?: string): string => {
       return "bg-green-600 hover:bg-green-600 text-white";
     case "ONGOING":
       return "bg-blue-600 hover:bg-blue-600 text-white";
+    case "DRAFT":
+      return "bg-amber-500 hover:bg-amber-500 text-white";
     case "SCHEDULED":
       return "bg-yellow-500 hover:bg-yellow-500 text-white";
+    case "REJECTED":
+      return "bg-rose-600 hover:bg-rose-600 text-white";
     case "CANCELED":
       return "bg-red-600 hover:bg-red-600 text-white";
     default:

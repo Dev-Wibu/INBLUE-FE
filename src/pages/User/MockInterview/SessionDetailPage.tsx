@@ -21,9 +21,12 @@ const statusMap: Record<
   string,
   { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
 > = {
+  DRAFT: { label: "Chờ duyệt", variant: "secondary" },
   SCHEDULED: { label: "Đã lên lịch", variant: "secondary" },
   ACTIVE: { label: "Đang diễn ra", variant: "default" },
+  ONGOING: { label: "Đang diễn ra", variant: "default" },
   COMPLETED: { label: "Hoàn thành", variant: "outline" },
+  REJECTED: { label: "Bị từ chối", variant: "destructive" },
   CANCELED: { label: "Đã hủy", variant: "destructive" },
 };
 
@@ -116,7 +119,9 @@ export function SessionDetailPage() {
               <span className="font-medium">{session.status}</span>
             </div>
             {session.roomUrl &&
-              (session.status === "SCHEDULED" || session.status === "ONGOING") && (
+              (session.status === "DRAFT" ||
+                session.status === "SCHEDULED" ||
+                session.status === "ONGOING") && (
                 <div className="flex items-center gap-2 text-sm">
                   <Video className="h-4 w-4 text-slate-400" />
                   <span className="text-slate-600 dark:text-slate-400">Phòng:</span>
