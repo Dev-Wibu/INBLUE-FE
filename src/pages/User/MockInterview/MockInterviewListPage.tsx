@@ -1,7 +1,5 @@
 import {
-  Ban,
   Calendar,
-  CheckCircle2,
   Clock,
   LoaderCircle,
   LogIn,
@@ -33,9 +31,10 @@ export function MockInterviewListPage() {
   }, []);
 
   // Transform sessions to interview format for display (newest first)
+  // Only show sessions with SCHEDULED or ONGOING status
   const interviews = useMemo(() => {
     return [...sessions]
-      .filter((session) => session.status !== "COMPLETED")
+      .filter((session) => session.status === "SCHEDULED" || session.status === "ONGOING")
       .reverse()
       .map((session) => {
         const isTimeReached = session.joinTime ? new Date(session.joinTime).getTime() <= now : true;
@@ -57,18 +56,9 @@ export function MockInterviewListPage() {
               ? new Date(session.startTime1).toLocaleTimeString("vi-VN")
               : "N/A",
           joinTime: session.joinTime,
-          status:
-            session.status === "SCHEDULED"
-              ? "upcoming"
-              : session.status === "CANCELED"
-                ? "cancelled"
-                : session.status === "ONGOING"
-                  ? "ongoing"
-                  : "upcoming",
+          status: session.status === "ONGOING" ? "ongoing" : "upcoming",
           canJoin:
-            (session.status === "DRAFT" ||
-              session.status === "SCHEDULED" ||
-              session.status === "ONGOING") &&
+            (session.status === "SCHEDULED" || session.status === "ONGOING") &&
             !!session.roomUrl &&
             isTimeReached,
           isTimeReached,
@@ -89,13 +79,6 @@ export function MockInterviewListPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "completed":
-        return (
-          <Badge className="inline-flex items-center gap-1 border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700 hover:bg-emerald-100">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Đã hoàn thành
-          </Badge>
-        );
       case "upcoming":
         return (
           <Badge className="inline-flex items-center gap-1 border border-sky-200 bg-sky-50 px-2.5 py-1 text-sky-700 hover:bg-sky-100">
@@ -108,13 +91,6 @@ export function MockInterviewListPage() {
           <Badge className="inline-flex items-center gap-1 border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700 hover:bg-emerald-100">
             <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
             Đang diễn ra
-          </Badge>
-        );
-      case "cancelled":
-        return (
-          <Badge className="inline-flex items-center gap-1 border border-rose-200 bg-rose-50 px-2.5 py-1 text-rose-700 hover:bg-rose-100">
-            <Ban className="h-3.5 w-3.5" />
-            Đã hủy
           </Badge>
         );
       default:
@@ -155,9 +131,9 @@ export function MockInterviewListPage() {
       {/* Search Section */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-foreground text-2xl font-bold">Phiên chưa hoàn thành</h2>
+          <h2 className="text-foreground text-2xl font-bold">Phiên sắp diễn ra</h2>
           <p className="text-muted-foreground text-sm">
-            Danh sách các phiên sắp diễn ra, đang diễn ra hoặc đã hủy
+            Danh sách các phiên sắp diễn ra hoặc đang diễn ra
           </p>
         </div>
         <div className="relative w-80">
