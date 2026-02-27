@@ -541,6 +541,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPayments"];
+        put?: never;
+        post: operations["createPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["handlePayOsWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createPaymentLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -1104,6 +1152,22 @@ export interface paths {
         };
         /** Thay đổi trạng thái bài viết */
         get: operations["changeStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPayment"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1727,6 +1791,8 @@ export interface components {
         PracticeRequest: {
             /** Format: int32 */
             aiInterviewId?: number;
+            /** Format: int32 */
+            userId?: number;
             practiceSetName?: string;
             objective?: string;
             /** @enum {string} */
@@ -1738,6 +1804,8 @@ export interface components {
             questions?: components["schemas"]["PracticeQuestionRequest"][];
         };
         PracticeGenerateRequest: {
+            /** Format: int32 */
+            userId?: number;
             /** Format: int32 */
             aiInterviewId?: number;
             /** Format: int32 */
@@ -1792,6 +1860,47 @@ export interface components {
             content?: string;
             /** Format: int32 */
             parentCommentId?: number;
+        };
+        Payment: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int64 */
+            amount?: number;
+            description?: string;
+            user?: components["schemas"]["User"];
+            /** @enum {string} */
+            status?: "PENDING" | "COMPLETED" | "FAILED";
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            payAt?: string;
+        };
+        Webhook: {
+            code?: string;
+            desc?: string;
+            success?: boolean;
+            data?: components["schemas"]["WebhookData"];
+            signature?: string;
+        };
+        WebhookData: {
+            /** Format: int64 */
+            orderCode?: number;
+            /** Format: int64 */
+            amount?: number;
+            description?: string;
+            accountNumber?: string;
+            reference?: string;
+            transactionDateTime?: string;
+            currency?: string;
+            paymentLinkId?: string;
+            code?: string;
+            desc?: string;
+            counterAccountBankId?: string;
+            counterAccountBankName?: string;
+            counterAccountName?: string;
+            counterAccountNumber?: string;
+            virtualAccountName?: string;
+            virtualAccountNumber?: string;
         };
         Notification: {
             /** Format: int32 */
@@ -3260,6 +3369,94 @@ export interface operations {
             };
         };
     };
+    getPayments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Payment"][];
+                };
+            };
+        };
+    };
+    createPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Payment"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Payment"];
+                };
+            };
+        };
+    };
+    handlePayOsWebhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Webhook"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createPaymentLink: {
+        parameters: {
+            query: {
+                paymentId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
     createNotification: {
         parameters: {
             query?: never;
@@ -4111,6 +4308,28 @@ export interface operations {
                     "*/*": {
                         [key: string]: string;
                     };
+                };
+            };
+        };
+    };
+    getPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Payment"];
                 };
             };
         };

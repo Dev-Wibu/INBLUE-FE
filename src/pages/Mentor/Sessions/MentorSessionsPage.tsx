@@ -3,7 +3,7 @@
  * Displays mentor's interview sessions with option to join video call or write feedback
  */
 
-import { Calendar, Clock, LogIn, MessageSquare, User, Video } from "lucide-react";
+import { Calendar, Check, Clock, LogIn, MessageSquare, User, Video, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -17,7 +17,7 @@ import { LoadingCardList } from "@/components/ui/loading-card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useMentorFeedbacks } from "@/hooks/useMentorFeedback";
 import { usePagination } from "@/hooks/usePagination";
-import { useSessions } from "@/hooks/useSession";
+import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import { useAuthStore } from "@/stores/authStore";
@@ -41,6 +41,9 @@ interface SessionCardProps {
   now: number;
   onJoinSession: () => void;
   onWriteFeedback: () => void;
+  onAcceptSession: () => void;
+  onRejectSession: () => void;
+  isUpdatingStatus: boolean;
 }
 
 function SessionCard({
@@ -49,6 +52,9 @@ function SessionCard({
   now,
   onJoinSession,
   onWriteFeedback,
+  onAcceptSession,
+  onRejectSession,
+  isUpdatingStatus,
 }: SessionCardProps) {
   const status = statusMap[session.status || "SCHEDULED"] || statusMap.SCHEDULED;
   const isCompleted = session.status === "COMPLETED";
@@ -101,17 +107,45 @@ function SessionCard({
               </Button>
             )}
             {isDraft && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge className="cursor-help border-amber-200 bg-amber-50 text-amber-700">
-                      <Clock className="mr-1 h-3 w-3" />
-                      Chờ xét duyệt
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>Yêu cầu từ học viên, đang chờ Staff xét duyệt</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <div className="flex items-center gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAcceptSession();
+                        }}
+                        disabled={isUpdatingStatus}
+                        className="gap-1 bg-emerald-600 hover:bg-emerald-700">
+                        <Check className="h-3.5 w-3.5" />
+                        Duyệt
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Chấp nhận phiên phỏng vấn</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRejectSession();
+                        }}
+                        disabled={isUpdatingStatus}
+                        className="gap-1">
+                        <X className="h-3.5 w-3.5" />
+                        Từ chối
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Từ chối phiên phỏng vấn</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             )}
           </div>
         </div>
@@ -185,6 +219,7 @@ export function MentorSessionsPage() {
   const [pageSize, setPageSize] = useState(10);
   const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
   const { data: feedbacks = [], isLoading: feedbacksLoading } = useMentorFeedbacks();
+  const updateStatusMutation = useUpdateSessionStatus();
 
   // Current time state for joinTime-based blocking (updates every 30s)
   const [now, setNow] = useState(() => Date.now());
@@ -225,6 +260,18 @@ export function MentorSessionsPage() {
 
   const handleWriteFeedback = (session: Session) => {
     navigate(`/mentor/sessions/${session.id}/feedback`);
+  };
+
+  const handleAcceptSession = (session: Session) => {
+    if (session.id) {
+      updateStatusMutation.mutate({ sessionId: session.id, isApproved: true });
+    }
+  };
+
+  const handleRejectSession = (session: Session) => {
+    if (session.id) {
+      updateStatusMutation.mutate({ sessionId: session.id, isApproved: false });
+    }
   };
 
   // Stats — DRAFT is counted separately, not in "Sắp diễn ra"
@@ -318,6 +365,9 @@ export function MentorSessionsPage() {
                 now={now}
                 onJoinSession={() => handleJoinSession(session)}
                 onWriteFeedback={() => handleWriteFeedback(session)}
+                onAcceptSession={() => handleAcceptSession(session)}
+                onRejectSession={() => handleRejectSession(session)}
+                isUpdatingStatus={updateStatusMutation.isPending}
               />
             ))}
           </div>

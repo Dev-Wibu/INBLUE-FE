@@ -1,16 +1,9 @@
-import {
-  BookOpen,
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Target,
-} from "lucide-react";
-import { useState } from "react";
+import { BookOpen, ChevronLeft, ChevronRight, Target, Video } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { CalendarEvent } from "@/mocks/overview.mock";
-import { mockCalendarEvents, mockDashboardStats } from "@/mocks/overview.mock";
+import { useUserSessions } from "@/hooks/useSession";
 
 // Calendar utility functions
 const getDaysInMonth = (year: number, month: number): number => {
@@ -39,9 +32,25 @@ const getMonthName = (month: number): string => {
   return months[month];
 };
 
+interface SessionEvent {
+  date: string;
+  title: string;
+  color: "green" | "sky" | "purple" | "orange" | "zinc";
+}
+
+// Map session status to calendar event color
+const statusColorMap: Record<string, SessionEvent["color"]> = {
+  SCHEDULED: "sky",
+  ONGOING: "green",
+  COMPLETED: "purple",
+  DRAFT: "orange",
+  REJECTED: "zinc",
+  CANCELED: "zinc",
+};
+
 // Map color to Tailwind classes
-const getEventColorClasses = (color: CalendarEvent["color"]): { bg: string; text: string } => {
-  const colorMap: Record<CalendarEvent["color"], { bg: string; text: string }> = {
+const getEventColorClasses = (color: SessionEvent["color"]): { bg: string; text: string } => {
+  const colorMap: Record<SessionEvent["color"], { bg: string; text: string }> = {
     green: { bg: "bg-green-500", text: "text-white" },
     sky: { bg: "bg-sky-500", text: "text-white" },
     purple: { bg: "bg-purple-500", text: "text-white" },
@@ -56,17 +65,50 @@ const getEventForDate = (
   year: number,
   month: number,
   day: number,
-  events: CalendarEvent[]
-): CalendarEvent | undefined => {
+  events: SessionEvent[]
+): SessionEvent | undefined => {
   const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   return events.find((event) => event.date === dateStr);
 };
 
 export function OverviewPage() {
-  // Initialize with July 2025 to match the mock data events
-  // This ensures the demo calendar shows events properly
-  const [currentYear, setCurrentYear] = useState(2025);
-  const [currentMonth, setCurrentMonth] = useState(6); // July (0-indexed)
+  const { data: sessions = [] } = useUserSessions();
+
+  // Convert sessions to calendar events
+  const calendarEvents: SessionEvent[] = useMemo(() => {
+    return sessions
+      .filter((s) => s.joinTime || s.startTime1)
+      .map((s) => {
+        const dateObj = new Date(s.joinTime || s.startTime1 || "");
+        const dateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`;
+        const statusLabel =
+          s.status === "SCHEDULED"
+            ? "Sắp diễn ra"
+            : s.status === "ONGOING"
+              ? "Đang diễn ra"
+              : s.status === "COMPLETED"
+                ? "Hoàn thành"
+                : s.status === "DRAFT"
+                  ? "Chờ duyệt"
+                  : s.status === "CANCELED"
+                    ? "Đã hủy"
+                    : s.status || "";
+        return {
+          date: dateStr,
+          title: `${s.roomName || `Phiên #${s.id}`} - ${statusLabel}`,
+          color: statusColorMap[s.status || "SCHEDULED"] || ("sky" as SessionEvent["color"]),
+        };
+      });
+  }, [sessions]);
+
+  // Compute dashboard stats from actual sessions
+  const totalInterviews = sessions.length;
+  const completedInterviews = sessions.filter((s) => s.status === "COMPLETED").length;
+
+  // Initialize with current date
+  const today = new Date();
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
 
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDayOfMonth = getFirstDayOfMonth(currentYear, currentMonth);
@@ -122,7 +164,7 @@ export function OverviewPage() {
     if (day === null) {
       return { event: undefined, colorClasses: null };
     }
-    const event = getEventForDate(currentYear, currentMonth, day, mockCalendarEvents);
+    const event = getEventForDate(currentYear, currentMonth, day, calendarEvents);
     const colorClasses = event ? getEventColorClasses(event.color) : null;
     return { event, colorClasses };
   };
@@ -141,7 +183,9 @@ export function OverviewPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <CardDescription className="text-base text-white/90">
-              {mockDashboardStats.todayPlan}
+              {sessions.filter((s) => s.status === "SCHEDULED" || s.status === "ONGOING").length > 0
+                ? "Bạn có phiên phỏng vấn sắp tới, hãy chuẩn bị nhé!"
+                : "Sẵn sàng để trang bị cho hành trình mới"}
             </CardDescription>
             <Button variant="secondary" className="mt-2">
               Thực hành ngay
@@ -159,9 +203,7 @@ export function OverviewPage() {
           </CardHeader>
           <CardContent className="flex items-end justify-between">
             <CardDescription className="text-white/80">Số câu hỏi đã hoàn thành</CardDescription>
-            <span className="text-6xl font-bold text-white">
-              {mockDashboardStats.totalQuestions}
-            </span>
+            <span className="text-6xl font-bold text-white">0</span>
           </CardContent>
         </Card>
 
@@ -169,15 +211,15 @@ export function OverviewPage() {
         <Card className="overflow-hidden border-0 bg-gradient-to-br from-emerald-400 to-emerald-600">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <CalendarIcon className="h-6 w-6 text-white" />
+              <Video className="h-6 w-6 text-white" />
               <CardTitle className="text-xl text-white">Buổi phỏng vấn</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="flex items-end justify-between">
-            <CardDescription className="text-white/80">Tổng số buổi đã tham gia</CardDescription>
-            <span className="text-6xl font-bold text-white">
-              {mockDashboardStats.totalInterviews}
-            </span>
+            <CardDescription className="text-white/80">
+              Hoàn thành: {completedInterviews} / {totalInterviews}
+            </CardDescription>
+            <span className="text-6xl font-bold text-white">{totalInterviews}</span>
           </CardContent>
         </Card>
       </div>
