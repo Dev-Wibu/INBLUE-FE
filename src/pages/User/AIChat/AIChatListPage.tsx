@@ -38,7 +38,7 @@ export function AIChatListPage() {
   };
 
   const handleOpenChat = (sessionId: number) => {
-    navigate(`/dashboard/ai-chat/${sessionId}`);
+    navigate(`/user/ai-chat/${sessionId}`);
   };
 
   return (

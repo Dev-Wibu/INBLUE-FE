@@ -52,7 +52,7 @@ export function WriteFeedbackPage() {
         },
         {
           onSuccess: () => {
-            navigate("/mentor/sessions");
+            navigate("/mentor?tab=sessions");
           },
         }
       );
@@ -67,7 +67,7 @@ export function WriteFeedbackPage() {
         },
         {
           onSuccess: () => {
-            navigate("/mentor/sessions");
+            navigate("/mentor?tab=sessions");
           },
         }
       );
@@ -147,7 +147,7 @@ export function WriteFeedbackPage() {
   return (
     <div className="space-y-6">
       {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/mentor/sessions")}>
+      <Button variant="ghost" onClick={() => navigate("/mentor?tab=sessions")}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Quay lại danh sách phiên
       </Button>
@@ -187,7 +187,7 @@ export function WriteFeedbackPage() {
             userId={session.userId || 0}
             existingFeedback={existingFeedback}
             onSubmit={handleSubmit}
-            onCancel={() => navigate("/mentor/sessions")}
+            onCancel={() => navigate("/mentor?tab=sessions")}
             isLoading={isSubmitting}
           />
         </CardContent>

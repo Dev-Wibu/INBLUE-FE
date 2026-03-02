@@ -129,7 +129,7 @@ export function MockInterviewListPage() {
             <Card
               key={interview.id}
               className="hover:border-primary/50 cursor-pointer transition-all hover:shadow-md"
-              onClick={() => navigate(`/dashboard/mock-interview/history/${interview.id}`)}>
+              onClick={() => navigate(`/user/mock-interview/history/${interview.id}`)}>
               <CardContent className="flex items-center gap-6 p-6">
                 {/* Sequential Number */}
                 <div className="bg-primary/10 text-primary flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-bold">
@@ -169,7 +169,7 @@ export function MockInterviewListPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/dashboard/mock-interview/room/${interview.id}`);
+                        navigate(`/user/mock-interview/room/${interview.id}`);
                       }}
                       className="gap-1 bg-green-600 hover:bg-green-700">
                       <LogIn className="h-3.5 w-3.5" />

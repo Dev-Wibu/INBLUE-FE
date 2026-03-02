@@ -177,11 +177,11 @@ export function SessionHistoryPage() {
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
   const handleViewDetails = (session: Session) => {
-    navigate(`/dashboard/mock-interview/history/${session.id}`);
+    navigate(`/user/mock-interview/history/${session.id}`);
   };
 
   const handleWriteReview = (session: Session) => {
-    navigate(`/dashboard/mock-interview/history/${session.id}/review`);
+    navigate(`/user/mock-interview/history/${session.id}/review`);
   };
 
   // Stats — DRAFT is counted separately

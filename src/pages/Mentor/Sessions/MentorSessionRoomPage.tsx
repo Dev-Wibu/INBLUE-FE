@@ -52,7 +52,7 @@ export function MentorSessionRoomPage() {
 
   // Handle when mentor leaves the call
   const handleLeave = () => {
-    navigate("/mentor/sessions");
+    navigate("/mentor?tab=sessions");
   };
 
   // Handle errors from video call
@@ -63,7 +63,7 @@ export function MentorSessionRoomPage() {
   // Redirect if session is not available
   useEffect(() => {
     if (!isLoading && !session) {
-      navigate("/mentor/sessions");
+      navigate("/mentor?tab=sessions");
     }
   }, [isLoading, session, navigate]);
 

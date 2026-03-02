@@ -64,7 +64,7 @@ export function WriteReviewPage() {
         },
         {
           onSuccess: () => {
-            navigate(`/dashboard/mock-interview/history/${sessionId}`);
+            navigate(`/user/mock-interview/history/${sessionId}`);
           },
         }
       );
@@ -85,7 +85,7 @@ export function WriteReviewPage() {
         },
         {
           onSuccess: () => {
-            navigate(`/dashboard/mock-interview/history/${sessionId}`);
+            navigate(`/user/mock-interview/history/${sessionId}`);
           },
         }
       );
@@ -144,9 +144,7 @@ export function WriteReviewPage() {
   return (
     <div className="space-y-6">
       {/* Back Button */}
-      <Button
-        variant="ghost"
-        onClick={() => navigate(`/dashboard/mock-interview/history/${sessionId}`)}>
+      <Button variant="ghost" onClick={() => navigate(`/user/mock-interview/history/${sessionId}`)}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Quay lại chi tiết phiên
       </Button>
@@ -171,7 +169,7 @@ export function WriteReviewPage() {
             userId={user?.id || 0}
             existingReview={existingReview}
             onSubmit={handleSubmit}
-            onCancel={() => navigate(`/dashboard/mock-interview/history/${sessionId}`)}
+            onCancel={() => navigate(`/user/mock-interview/history/${sessionId}`)}
             isLoading={isSubmitting}
           />
         </CardContent>

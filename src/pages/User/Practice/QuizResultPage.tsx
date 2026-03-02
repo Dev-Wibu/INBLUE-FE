@@ -84,14 +84,14 @@ export function QuizResultPage() {
           <Button
             variant="outline"
             className="gap-2"
-            onClick={() => navigate(`/dashboard/practice/${id}/quiz`)}>
+            onClick={() => navigate(`/user/practice/${id}/quiz`)}>
             <RefreshCw className="h-4 w-4" />
             Làm lại bài trắc nghiệm
           </Button>
           <Button
             variant="outline"
             className="gap-2"
-            onClick={() => navigate(`/dashboard/practice/${id}`)}>
+            onClick={() => navigate(`/user/practice/${id}`)}>
             <ArrowLeft className="h-4 w-4" />
             Quay lại bộ luyện tập
           </Button>

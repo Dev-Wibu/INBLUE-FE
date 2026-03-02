@@ -74,7 +74,7 @@ export function PostListPage() {
           <h1 className="text-2xl font-bold">Cộng đồng</h1>
           <p className="text-muted-foreground">Bài viết</p>
         </div>
-        <Button onClick={() => navigate("create")}>
+        <Button onClick={() => navigate("community/create")}>
           <Plus className="mr-1 h-4 w-4" />
           Tạo bài viết mới
         </Button>
@@ -110,7 +110,11 @@ export function PostListPage() {
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {pageData.map((post) => (
-              <PostCard key={post.postId} post={post} onClick={() => navigate(`${post.postId}`)} />
+              <PostCard
+                key={post.postId}
+                post={post}
+                onClick={() => navigate(`community/${post.postId}`)}
+              />
             ))}
           </div>
           {filtered.length > pageSize && (

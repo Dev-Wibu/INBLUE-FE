@@ -1,7 +1,7 @@
 /**
  * SessionRoomPage.tsx
  * Active video call room for user mock interviews
- * Route: /dashboard/mock-interview/room/:sessionId
+ * Route: /user/mock-interview/room/:sessionId
  */
 
 import { AlertCircle, ArrowLeft, Calendar, Clock, Settings, User as UserIcon } from "lucide-react";
@@ -52,7 +52,7 @@ export function SessionRoomPage() {
 
   // Handle when user leaves the call
   const handleLeave = () => {
-    navigate("/user/mock-interview");
+    navigate("/user?tab=mockInterview");
   };
 
   // Handle errors from video call
@@ -63,7 +63,7 @@ export function SessionRoomPage() {
   // Redirect if session is not available
   useEffect(() => {
     if (!isLoading && !session) {
-      navigate("/user/mock-interview");
+      navigate("/user?tab=mockInterview");
     }
   }, [isLoading, session, navigate]);
 

@@ -93,7 +93,7 @@ export function StudentDetailPage() {
   if (!studentInfo || totalSessions === 0) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" onClick={() => navigate("/mentor/students")}>
+        <Button variant="ghost" onClick={() => navigate("/mentor?tab=students")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Quay lại
         </Button>
@@ -113,7 +113,7 @@ export function StudentDetailPage() {
   return (
     <div className="space-y-6">
       {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/mentor/students")}>
+      <Button variant="ghost" onClick={() => navigate("/mentor?tab=students")}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Quay lại danh sách
       </Button>

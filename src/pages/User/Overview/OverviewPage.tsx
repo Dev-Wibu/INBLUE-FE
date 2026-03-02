@@ -195,9 +195,9 @@ export function OverviewPage() {
 
   const navigateToSession = (sessionId?: number) => {
     if (sessionId) {
-      navigate(`/dashboard/mock-interview/history/${sessionId}`);
+      navigate(`/user/mock-interview/history/${sessionId}`);
     } else {
-      navigate(`/dashboard/mock-interview/history`);
+      navigate(`/user?tab=interviewHistory`);
     }
   };
 

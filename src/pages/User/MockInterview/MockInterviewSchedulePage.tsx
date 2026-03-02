@@ -208,7 +208,7 @@ export function MockInterviewSchedulePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/user/mock-interview")}>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/user?tab=mockInterview")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Quay lại
         </Button>

@@ -546,7 +546,7 @@ export function useAIInterviewSetup() {
       }
 
       toast.success("Đã tạo phiên phỏng vấn thành công!");
-      navigate(`/dashboard/ai-interview/session?sessionKey=${key}`);
+      navigate(`/user/ai-interview/session?sessionKey=${key}`);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Không thể tạo phiên phỏng vấn. Vui lòng thử lại."

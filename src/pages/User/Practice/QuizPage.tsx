@@ -111,7 +111,7 @@ export function QuizPage() {
       const response = await quizSetManager.submit(quizId, answers);
       if (response.success) {
         toast.success("Đã nộp bài thành công!");
-        navigate(`/dashboard/practice/${id}/quiz/${quizId}/result`);
+        navigate(`/user/practice/${id}/quiz/${quizId}/result`);
       } else {
         toast.error(response.error || "Không thể nộp bài");
       }
@@ -144,7 +144,7 @@ export function QuizPage() {
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => navigate(`/dashboard/practice/${id}`)}>
+            onClick={() => navigate(`/user/practice/${id}`)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Quay lại
           </Button>
@@ -160,7 +160,7 @@ export function QuizPage() {
         <Button
           variant="ghost"
           className="mb-4 gap-2"
-          onClick={() => navigate(`/dashboard/practice/${id}`)}>
+          onClick={() => navigate(`/user/practice/${id}`)}>
           <ArrowLeft className="h-4 w-4" />
           Quay lại bộ luyện tập
         </Button>
