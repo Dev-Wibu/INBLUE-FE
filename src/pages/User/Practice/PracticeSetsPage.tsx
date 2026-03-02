@@ -137,7 +137,7 @@ export function PracticeSetsPage() {
           <Card
             key={ps.id}
             className="hover:border-primary/50 cursor-pointer transition-all hover:shadow-lg"
-            onClick={() => navigate(`/dashboard/practice/${ps.id}`)}>
+            onClick={() => navigate(`/user/practice/${ps.id}`)}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-4">
                 <CardTitle className="text-primary text-lg">{ps.practiceSetName}</CardTitle>

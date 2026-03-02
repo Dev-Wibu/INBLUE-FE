@@ -446,7 +446,7 @@ export function useAIInterviewSession() {
     const resolvedId =
       sessionId ?? (sessionKey ? localStorage.getItem(`interview-session-id-${sessionKey}`) : null);
     if (resolvedId) {
-      navigate(`/dashboard/ai-interview/result/${resolvedId}`);
+      navigate(`/user/ai-interview/result/${resolvedId}`);
     } else {
       navigate("/user?tab=aiInterview");
     }

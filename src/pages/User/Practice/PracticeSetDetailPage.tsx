@@ -170,7 +170,7 @@ export function PracticeSetDetailPage() {
       <div className="bg-background flex min-h-screen items-center justify-center">
         <Card className="p-8 text-center">
           <p className="text-foreground font-medium">Không tìm thấy bộ luyện tập</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/user/practice")}>
+          <Button variant="outline" className="mt-4" onClick={() => navigate("/user?tab=practice")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Quay lại
           </Button>
@@ -182,7 +182,7 @@ export function PracticeSetDetailPage() {
   return (
     <div className="bg-background min-h-screen p-8">
       {/* Back Button */}
-      <Button variant="ghost" className="mb-4 gap-2" onClick={() => navigate("/user/practice")}>
+      <Button variant="ghost" className="mb-4 gap-2" onClick={() => navigate("/user?tab=practice")}>
         <ArrowLeft className="h-4 w-4" />
         Quay lại danh sách
       </Button>
@@ -247,7 +247,7 @@ export function PracticeSetDetailPage() {
             <CardContent>
               <Button
                 className="w-full gap-2"
-                onClick={() => navigate(`/dashboard/practice/${id}/quiz`)}>
+                onClick={() => navigate(`/user/practice/${id}/quiz`)}>
                 <Play className="h-4 w-4" />
                 Bắt đầu trắc nghiệm
               </Button>

@@ -58,7 +58,7 @@ export function LoginPage() {
         navigate("/staff");
       } else {
         // For regular users, go directly to dashboard
-        navigate("/dashboard");
+        navigate("/user");
       }
     } else {
       setError(result.error || "Đăng nhập thất bại");
@@ -69,7 +69,7 @@ export function LoginPage() {
 
   const handleGoogleLogin = () => {
     // Mock Google login - redirect to dashboard for regular users
-    navigate("/dashboard");
+    navigate("/user");
   };
 
   // Handler for demo account selection - auto-fills credentials
@@ -168,9 +168,7 @@ export function LoginPage() {
           </div>
 
           <div className="text-right">
-            <Link
-              to="/forgot-password"
-              className="text-sm text-[#0047AB] hover:underline dark:text-[#66B2FF]">
+            <Link to="#" className="text-sm text-[#0047AB] hover:underline dark:text-[#66B2FF]">
               Quên mật khẩu?
             </Link>
           </div>

@@ -85,7 +85,7 @@ export function SignupPage() {
       setIsLoggedIn(true);
 
       // Navigate to user dashboard after successful signup
-      navigate("/dashboard");
+      navigate("/user");
     } else {
       setError(result.error || "Đăng ký thất bại");
     }
@@ -95,7 +95,7 @@ export function SignupPage() {
 
   const handleGoogleSignup = () => {
     // Mock Google signup - redirect to dashboard
-    navigate("/dashboard");
+    navigate("/user");
   };
 
   return (
@@ -276,7 +276,7 @@ export function SignupPage() {
             />
             <label htmlFor="agreeTerms" className="text-sm text-slate-600 dark:text-slate-400">
               Tôi đồng ý với các{" "}
-              <Link to="/terms" className="text-[#0047AB] hover:underline dark:text-[#66B2FF]">
+              <Link to="#" className="text-[#0047AB] hover:underline dark:text-[#66B2FF]">
                 điều khoản
               </Link>{" "}
               của InBlue

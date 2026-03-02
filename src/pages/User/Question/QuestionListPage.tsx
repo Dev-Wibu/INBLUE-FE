@@ -171,7 +171,7 @@ export function QuestionListPage() {
             <QuestionSetCard
               key={questionSet.id}
               questionSet={questionSet}
-              onClick={() => navigate(`/dashboard/questions/${questionSet.id}`)}
+              onClick={() => navigate(`/user/questions/${questionSet.id}`)}
             />
           ))}
         </div>

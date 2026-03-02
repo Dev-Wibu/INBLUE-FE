@@ -10,13 +10,13 @@ export function Footer() {
         <div className="flex items-center gap-1 text-sm">
           <span className="text-slate-500 dark:text-slate-400">All Rights Reserved | </span>
           <Link
-            to="/terms"
+            to="#"
             className="text-[#0047AB] hover:underline dark:text-[#66B2FF] dark:hover:text-[#A5C8F2]">
             Terms and Conditions
           </Link>
           <span className="text-slate-500 dark:text-slate-400"> | </span>
           <Link
-            to="/privacy"
+            to="#"
             className="text-[#0047AB] hover:underline dark:text-[#66B2FF] dark:hover:text-[#A5C8F2]">
             Privacy Policy
           </Link>

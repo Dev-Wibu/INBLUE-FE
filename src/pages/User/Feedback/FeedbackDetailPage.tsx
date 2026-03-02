@@ -53,7 +53,7 @@ export function FeedbackDetailPage() {
   return (
     <div className="space-y-6">
       {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/user/feedback")}>
+      <Button variant="ghost" onClick={() => navigate("/user?tab=feedback")}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Quay lại danh sách
       </Button>

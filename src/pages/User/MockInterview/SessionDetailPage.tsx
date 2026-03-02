@@ -78,7 +78,7 @@ export function SessionDetailPage() {
   return (
     <div className="space-y-6">
       {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/user/mock-interview")}>
+      <Button variant="ghost" onClick={() => navigate("/user?tab=interviewHistory")}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Quay lại lịch sử
       </Button>
@@ -126,7 +126,7 @@ export function SessionDetailPage() {
                   <Video className="h-4 w-4 text-slate-400" />
                   <span className="text-slate-600 dark:text-slate-400">Phòng:</span>
                   <button
-                    onClick={() => navigate(`/dashboard/mock-interview/room/${session.id}`)}
+                    onClick={() => navigate(`/user/mock-interview/room/${session.id}`)}
                     className="font-medium text-[#0047AB] hover:underline">
                     Tham gia phòng
                   </button>
@@ -138,7 +138,7 @@ export function SessionDetailPage() {
           {isCompleted && !review && (
             <div className="border-t pt-4">
               <Button
-                onClick={() => navigate(`/dashboard/mock-interview/history/${session.id}/review`)}
+                onClick={() => navigate(`/user/mock-interview/history/${session.id}/review`)}
                 className="gap-2">
                 <Star className="h-4 w-4" />
                 Viết đánh giá cho Mentor
@@ -168,7 +168,7 @@ export function SessionDetailPage() {
               <Button
                 variant="outline"
                 className="mt-4"
-                onClick={() => navigate(`/dashboard/mock-interview/history/${session.id}/review`)}>
+                onClick={() => navigate(`/user/mock-interview/history/${session.id}/review`)}>
                 Viết đánh giá
               </Button>
             </div>

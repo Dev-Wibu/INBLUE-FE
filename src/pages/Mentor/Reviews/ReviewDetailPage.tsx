@@ -53,7 +53,7 @@ export function ReviewDetailPage() {
   return (
     <div className="space-y-6">
       {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/mentor/reviews")}>
+      <Button variant="ghost" onClick={() => navigate("/mentor?tab=reviews")}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Quay lại danh sách
       </Button>

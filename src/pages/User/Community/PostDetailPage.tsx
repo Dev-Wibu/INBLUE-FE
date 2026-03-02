@@ -69,7 +69,7 @@ export function PostDetailPage() {
           Quay lại
         </Button>
         {user?.id && post.author?.id === user.id && (
-          <Button variant="outline" size="sm" onClick={() => navigate(`${postId}/edit`)}>
+          <Button variant="outline" size="sm" onClick={() => navigate("edit")}>
             <Edit className="mr-1 h-4 w-4" />
             Chỉnh sửa
           </Button>

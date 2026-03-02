@@ -59,7 +59,12 @@ export function DashboardChromeTabs({
   const [showNewTabMenu, setShowNewTabMenu] = useState(false);
 
   const newTabButton = (
-    <div className={cn("relative", compact ? "" : "mb-1 ml-1 flex-shrink-0")}>
+    <div
+      className={cn(
+        "relative",
+        showNewTabMenu && "z-20",
+        compact ? "" : "mb-1 ml-1 flex-shrink-0"
+      )}>
       <button
         onClick={() => setShowNewTabMenu(!showNewTabMenu)}
         className={cn(
