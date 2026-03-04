@@ -1,5 +1,5 @@
 import { ArrowLeft, Edit } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { formatDate } from "@/lib/formatting";
@@ -8,8 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { Post } from "@/interfaces/schema.types";
-import { postManager } from "@/services/post.manager";
+import { usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 
 import { CommentSection } from "./components/CommentSection";
@@ -21,31 +20,22 @@ export function PostDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
   const [likeModalOpen, setLikeModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!postId) return;
-    const fetchPost = async () => {
-      setLoading(true);
-      const result = await postManager.getById(postId);
-      if (result.success && result.data) {
-        setPost(result.data);
-      }
-      setLoading(false);
-    };
-    fetchPost();
-  }, [postId]);
+  const numericPostId = Number(postId);
+  const { data, isLoading } = usePostById(numericPostId);
 
-  if (loading) {
+  // data is PostResponse: { post: PostDetailResponse, likeCount, commentCount, ... }
+  const post = data?.post;
+
+  if (isLoading) {
     return <p className="text-muted-foreground">Đang tải bài viết...</p>;
   }
 
   if (!post) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" onClick={() => navigate("..")}>
+        <Button variant="ghost" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           Quay lại
         </Button>
@@ -61,6 +51,9 @@ export function PostDetailPage() {
     .slice(0, 2)
     .toUpperCase();
 
+  // AuthorResponse has no id field — compare by name as best-effort check
+  const isOwner = !!user?.name && post.author?.name === user.name;
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
@@ -68,7 +61,7 @@ export function PostDetailPage() {
           <ArrowLeft className="mr-1 h-4 w-4" />
           Quay lại
         </Button>
-        {user?.id && post.author?.id === user.id && (
+        {isOwner && (
           <Button variant="outline" size="sm" onClick={() => navigate("edit")}>
             <Edit className="mr-1 h-4 w-4" />
             Chỉnh sửa
@@ -86,7 +79,7 @@ export function PostDetailPage() {
           <h1 className="text-2xl font-bold">{post.title}</h1>
           <div className="flex items-center gap-3 pt-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={post.author?.avatarUrl} alt={post.author?.name} />
+              <AvatarImage src={post.author?.avatar} alt={post.author?.name} />
               <AvatarFallback>{authorInitials || "?"}</AvatarFallback>
             </Avatar>
             <div>
@@ -100,9 +93,9 @@ export function PostDetailPage() {
                 {tag}
               </Badge>
             ))}
-            {(post.major?.name || post.major?.majorName) && (
+            {post.majorName && (
               <Badge variant="outline" className="text-xs">
-                {post.major?.name || post.major?.majorName}
+                {post.majorName}
               </Badge>
             )}
           </div>

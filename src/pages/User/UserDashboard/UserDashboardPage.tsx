@@ -7,6 +7,7 @@ import {
   History,
   LayoutDashboard,
   MessageSquare,
+  Newspaper,
   User,
   Users,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import { AccountPage } from "../Account";
 import { AIChatListPage } from "../AIChat";
 import { AIInterviewListPage } from "../AIInterview";
 import { UserFeedbackListPage } from "../Feedback";
+import { HomeFeedPage } from "../HomeFeed";
 import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
 import { UserNotificationsPage } from "../Notifications";
 import { OverviewPage } from "../Overview";
@@ -31,6 +33,7 @@ import { PracticeQuestionsPage, PracticeSetsPage } from "../Practice";
 import { QuestionListPage } from "../Question";
 
 type TabType =
+  | "homeFeed"
   | "overview"
   | "mockInterview"
   | "interviewHistory"
@@ -44,6 +47,7 @@ type TabType =
   | "account";
 
 const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
+  { type: "homeFeed", label: "Trang chủ" },
   { type: "overview", label: "Tổng quan" },
   { type: "mockInterview", label: "Phỏng vấn với Mentor" },
   { type: "interviewHistory", label: "Lịch sử phỏng vấn" },
@@ -62,6 +66,10 @@ const isValidTabType = (value: string): value is TabType => {
 };
 
 const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
+  {
+    label: "Trang chủ",
+    items: [{ type: "homeFeed", icon: Newspaper, label: "Trang chủ", color: "text-orange-600" }],
+  },
   {
     label: "Phỏng vấn",
     items: [
@@ -134,7 +142,7 @@ const USER_SIDEBAR_LOGO_COLLAPSED = (
   <img src={icon2} alt="INBLUE AI" className="h-9 w-9 flex-shrink-0" />
 );
 
-const DEFAULT_TAB: TabType = "overview";
+const DEFAULT_TAB: TabType = "homeFeed";
 
 export function UserDashboardPage() {
   const navigate = useNavigate();
@@ -162,6 +170,8 @@ export function UserDashboardPage() {
 
   const renderContent = () => {
     switch (typedActiveTab) {
+      case "homeFeed":
+        return <HomeFeedPage />;
       case "overview":
         return <OverviewPage />;
       case "mockInterview":

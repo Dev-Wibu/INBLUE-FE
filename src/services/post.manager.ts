@@ -685,11 +685,23 @@ export const usePostLikes = (postId: number) =>
   $api.useQuery("get", "/api/posts/likes/{postId}", { params: { path: { postId } } });
 export const usePostLikesCount = (postId: number) =>
   $api.useQuery("get", "/api/posts/likes/{postId}/count", { params: { path: { postId } } });
-export const useCheckLiked = (postId: number, userId: number) =>
-  $api.useQuery("get", "/api/posts/likes/{postId}/check/{userId}", {
-    params: { path: { postId, userId } },
-  });
+export const useCheckLiked = (postId: number, userId: number, enabled = true) =>
+  $api.useQuery(
+    "get",
+    "/api/posts/likes/{postId}/check/{userId}",
+    { params: { path: { postId, userId } } },
+    { enabled: enabled && postId > 0 && userId > 0 }
+  );
 export const useUnlikePost = () => $api.useMutation("delete", "/api/posts/likes/{postId}/{userId}");
 export const usePublishedPosts = () => $api.useQuery("get", "/api/posts/published");
 export const useChangePostStatus = () =>
   $api.useMutation("get", "/api/posts/change-status/{postId}");
+export const useNewFeed = (params?: { page?: number; size?: number }) =>
+  $api.useQuery("get", "/api/posts/feed", { params: { query: params } });
+export const usePostById = (postId: number) =>
+  $api.useQuery(
+    "get",
+    "/api/posts/{postId}",
+    { params: { path: { postId } } },
+    { enabled: postId > 0 }
+  );

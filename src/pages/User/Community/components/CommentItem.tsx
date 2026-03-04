@@ -6,8 +6,6 @@ interface CommentItemProps {
   comment: PostCommentResponse;
   currentUserId?: number;
   onReply?: (comment: PostCommentResponse) => void;
-  onEdit?: (comment: PostCommentResponse) => void;
-  onDelete?: (comment: PostCommentResponse) => void;
 }
 
 function getRelativeTime(dateStr?: string): string {
@@ -26,14 +24,7 @@ function getRelativeTime(dateStr?: string): string {
   return `${diffMonths} tháng trước`;
 }
 
-export function CommentItem({
-  comment,
-  currentUserId,
-  onReply,
-  onEdit,
-  onDelete,
-}: CommentItemProps) {
-  const isOwn = currentUserId != null && comment.userId === currentUserId;
+export function CommentItem({ comment, onReply }: CommentItemProps) {
   const initials = comment.userName
     ?.split(" ")
     .map((w) => w[0])
@@ -54,34 +45,16 @@ export function CommentItem({
             {getRelativeTime(comment.createdAt)}
           </span>
         </div>
-        <p className="mt-1 text-sm">{comment.content}</p>
-        <div className="mt-1 flex gap-2">
+        <p className="mt-1 text-sm wrap-break-word whitespace-pre-wrap">{comment.content}</p>
+        {onReply && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-xs"
-            onClick={() => onReply?.(comment)}>
+            className="mt-1 h-6 px-2 text-xs"
+            onClick={() => onReply(comment)}>
             Trả lời
           </Button>
-          {isOwn && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={() => onEdit?.(comment)}>
-                Sửa
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive h-6 px-2 text-xs"
-                onClick={() => onDelete?.(comment)}>
-                Xóa
-              </Button>
-            </>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

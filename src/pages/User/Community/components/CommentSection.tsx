@@ -3,16 +3,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { queryClient } from "@/lib/queryClient";
-import {
-  useCommentReplies,
-  useCreateComment,
-  useDeleteComment,
-  usePostComments,
-  useUpdateComment,
-} from "@/services/post.manager";
+import { useCommentReplies, useCreateComment, usePostComments } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 
 import { CommentItem } from "./CommentItem";
@@ -24,15 +18,9 @@ interface CommentSectionProps {
 function RepliesBlock({
   parentCommentId,
   currentUserId,
-  onReply,
-  onEdit,
-  onDelete,
 }: {
   parentCommentId: number;
   currentUserId?: number;
-  onReply: (c: PostCommentResponse) => void;
-  onEdit: (c: PostCommentResponse) => void;
-  onDelete: (c: PostCommentResponse) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const { data } = useCommentReplies(parentCommentId);
@@ -52,9 +40,7 @@ function RepliesBlock({
             key={reply.id}
             comment={reply}
             currentUserId={currentUserId}
-            onReply={onReply}
-            onEdit={onEdit}
-            onDelete={onDelete}
+            onReply={undefined}
           />
         ))
       )}
@@ -68,150 +54,151 @@ export function CommentSection({ postId }: CommentSectionProps) {
 
   const { data: commentsData } = usePostComments(postId);
   const createComment = useCreateComment();
-  const deleteComment = useDeleteComment();
-  const updateComment = useUpdateComment();
 
-  const comments =
+  const allComments =
     (Array.isArray(commentsData)
       ? commentsData
       : (commentsData as unknown as PostCommentResponse[])) ?? [];
 
+  // Filter only top-level comments — the API returns all comments including replies,
+  // filtering here prevents double-rendering replies that RepliesBlock already shows
+  const topLevelComments = allComments.filter((c) => !c.parentCommentId);
+
   const [newContent, setNewContent] = useState("");
-  const [replyTo, setReplyTo] = useState<PostCommentResponse | null>(null);
-  const [editingComment, setEditingComment] = useState<PostCommentResponse | null>(null);
-  const [editContent, setEditContent] = useState("");
+  // Track which top-level comment has its inline reply box open
+  const [replyingToId, setReplyingToId] = useState<number | null>(null);
+  const [replyContent, setReplyContent] = useState("");
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["get", `/api/posts/${postId}/comments`] });
-    queryClient.invalidateQueries({ queryKey: ["get", `/api/posts/${postId}/comments/count`] });
-    queryClient.invalidateQueries({ queryKey: ["get", "/api/posts/comments/"] });
-  };
-
-  const handleSubmit = () => {
-    const content = newContent.trim();
-    if (!content || !currentUserId) return;
-
-    createComment.mutate(
-      {
-        body: {
-          postId,
-          userId: currentUserId,
-          content,
-          parentCommentId: replyTo?.id,
-        },
-      } as never,
-      {
-        onSuccess: () => {
-          setNewContent("");
-          setReplyTo(null);
-          invalidate();
-        },
-        onError: () => toast.error("Không thể gửi bình luận"),
-      }
-    );
-  };
-
-  const handleDelete = (comment: PostCommentResponse) => {
-    if (!confirm("Bạn có chắc muốn xóa bình luận này?")) return;
-    deleteComment.mutate({ params: { path: { commentId: comment.id! } } } as never, {
-      onSuccess: () => invalidate(),
-      onError: () => toast.error("Không thể xóa bình luận"),
+    queryClient.invalidateQueries({
+      queryKey: ["get", "/api/posts/{postId}/comments", { params: { path: { postId } } }],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["get", "/api/posts/{postId}/comments/count", { params: { path: { postId } } }],
     });
   };
 
-  const handleEditStart = (comment: PostCommentResponse) => {
-    setEditingComment(comment);
-    setEditContent(comment.content ?? "");
+  const invalidateReplies = (parentCommentId: number) => {
+    queryClient.invalidateQueries({
+      queryKey: [
+        "get",
+        "/api/posts/comments/{commentId}/replies",
+        { params: { path: { commentId: parentCommentId } } },
+      ],
+    });
   };
 
-  const handleEditSave = () => {
-    if (!editingComment || !editContent.trim()) return;
-    updateComment.mutate(
-      {
-        params: { path: { commentId: editingComment.id! } },
-        body: { content: editContent.trim() },
-      } as never,
+  const handleCommentSubmit = () => {
+    const content = newContent.trim();
+    if (!content || !currentUserId) return;
+
+    createComment.mutate({ body: { postId, userId: currentUserId, content } } as never, {
+      onSuccess: () => {
+        setNewContent("");
+        invalidate();
+      },
+      onError: () => toast.error("Không thể gửi bình luận"),
+    });
+  };
+
+  const handleReplySubmit = (parentCommentId: number) => {
+    const content = replyContent.trim();
+    if (!content || !currentUserId) return;
+
+    createComment.mutate(
+      { body: { postId, userId: currentUserId, content, parentCommentId } } as never,
       {
         onSuccess: () => {
-          setEditingComment(null);
-          setEditContent("");
+          setReplyContent("");
+          setReplyingToId(null);
           invalidate();
+          invalidateReplies(parentCommentId);
         },
-        onError: () => toast.error("Không thể cập nhật bình luận"),
+        onError: () => toast.error("Không thể gửi phản hồi"),
       }
     );
   };
 
+  // Fix: parentCommentId may be 0 (falsy) for root comments from BE — use explicit > 0 check
   const handleReply = (comment: PostCommentResponse) => {
-    setReplyTo(comment);
+    const topLevelId =
+      comment.parentCommentId && comment.parentCommentId > 0
+        ? comment.parentCommentId
+        : comment.id!;
+    setReplyingToId(topLevelId);
+    setReplyContent("");
   };
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Bình luận</h3>
 
-      {comments.length === 0 ? (
+      {topLevelComments.length === 0 ? (
         <p className="text-muted-foreground text-sm">Chưa có bình luận nào</p>
       ) : (
         <div className="space-y-1 divide-y">
-          {comments.map((comment) => (
+          {topLevelComments.map((comment) => (
             <div key={comment.id}>
-              {editingComment?.id === comment.id ? (
-                <div className="flex gap-2 py-3">
-                  <Input
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleEditSave()}
+              <CommentItem comment={comment} currentUserId={currentUserId} onReply={handleReply} />
+
+              <RepliesBlock parentCommentId={comment.id!} currentUserId={currentUserId} />
+
+              {/* Inline reply input shown directly under this comment thread */}
+              {replyingToId === comment.id && (
+                <div className="mt-2 ml-8 flex gap-2">
+                  <Textarea
+                    autoFocus
+                    placeholder="Trả lời bình luận... (Ctrl+Enter để gửi)"
+                    value={replyContent}
+                    rows={2}
+                    className="max-h-32 resize-none overflow-auto"
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && e.ctrlKey) handleReplySubmit(comment.id!);
+                    }}
                   />
-                  <Button size="sm" onClick={handleEditSave}>
-                    Lưu
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setEditingComment(null)}>
-                    Hủy
-                  </Button>
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      size="sm"
+                      onClick={() => handleReplySubmit(comment.id!)}
+                      disabled={!replyContent.trim()}>
+                      <Send className="mr-1 h-4 w-4" />
+                      Gửi
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setReplyingToId(null);
+                        setReplyContent("");
+                      }}>
+                      Hủy
+                    </Button>
+                  </div>
                 </div>
-              ) : (
-                <CommentItem
-                  comment={comment}
-                  currentUserId={currentUserId}
-                  onReply={handleReply}
-                  onEdit={handleEditStart}
-                  onDelete={handleDelete}
-                />
               )}
-              <RepliesBlock
-                parentCommentId={comment.id!}
-                currentUserId={currentUserId}
-                onReply={handleReply}
-                onEdit={handleEditStart}
-                onDelete={handleDelete}
-              />
             </div>
           ))}
         </div>
       )}
 
-      {replyTo && (
-        <div className="text-muted-foreground flex items-center gap-2 text-sm">
-          <span>Trả lời {replyTo.userName}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-5 px-1 text-xs"
-            onClick={() => setReplyTo(null)}>
-            ✕
-          </Button>
-        </div>
-      )}
-
+      {/* Main comment input */}
       <div className="flex gap-2">
-        <Input
-          placeholder="Viết bình luận..."
+        <Textarea
+          placeholder="Viết bình luận... (Ctrl+Enter để gửi)"
           value={newContent}
+          rows={2}
+          className="max-h-32 resize-none overflow-auto"
           onChange={(e) => setNewContent(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.ctrlKey) handleCommentSubmit();
+          }}
         />
-        <Button size="sm" onClick={handleSubmit} disabled={!newContent.trim()}>
+        <Button
+          size="sm"
+          className="self-end"
+          onClick={handleCommentSubmit}
+          disabled={!newContent.trim()}>
           <Send className="mr-1 h-4 w-4" />
           Gửi
         </Button>
