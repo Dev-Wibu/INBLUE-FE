@@ -1513,12 +1513,6 @@ export interface components {
             description?: string;
             urlTutorial?: string;
         };
-        Major: {
-            /** Format: int32 */
-            id?: number;
-            majorName?: string;
-            description?: string;
-        };
         PracticeQuestion: {
             /** Format: int32 */
             questionId?: number;
@@ -1539,7 +1533,8 @@ export interface components {
             level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: date-time */
             startDate?: string;
-            major?: components["schemas"]["Major"];
+            /** @enum {string} */
+            major?: "CNTT" | "Marketing";
             user?: components["schemas"]["User"];
             questions?: components["schemas"]["PracticeQuestion"][];
             /** Format: int32 */
@@ -1557,7 +1552,8 @@ export interface components {
             avatarUrl?: string;
             public_id?: string;
             university?: string;
-            major?: string;
+            /** @enum {string} */
+            major?: "CNTT" | "Marketing";
             cvUrl?: string;
             cv_public_id?: string;
         };
@@ -1654,6 +1650,12 @@ export interface components {
             /** Format: int32 */
             rating?: number;
             comment?: string;
+        };
+        Major: {
+            /** Format: int32 */
+            id?: number;
+            majorName?: string;
+            description?: string;
         };
         CandidateProfile: {
             /** Format: int32 */
@@ -1867,8 +1869,6 @@ export interface components {
             /** @enum {string} */
             target?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: int32 */
-            majorId?: number;
-            /** Format: int32 */
             dateNumber?: number;
             questions?: components["schemas"]["PracticeQuestionRequest"][];
         };
@@ -2078,9 +2078,27 @@ export interface components {
             status?: "TURNING_LEFT" | "TURNING_RIGHT" | "BOWING_HEAD" | "LOOKING_UP_HEAD" | "TOO_CLOSE" | "TOO_FAR" | "GLANCING_LEFT" | "GLANCING_RIGHT" | "LOOKING_UP_EYES" | "LOOKING_DOWN_EYES" | "NORMAL" | "UNKNOWN";
             warning?: boolean;
         };
+        PracticeQuestionDto: {
+            /** Format: int32 */
+            questionId?: number;
+            title?: string;
+            content?: string;
+            /** @enum {string} */
+            level?: "EASY" | "MEDIUM" | "HARD";
+            lessonName?: string;
+            answer?: string;
+            hint?: string;
+        };
         PracticeSetResponse: {
-            practiceSet?: components["schemas"]["PracticeSet"];
-            practiceSetItem?: components["schemas"]["PracticeSetItem"][];
+            /** Format: int32 */
+            id?: number;
+            practiceSetName?: string;
+            objective?: string;
+            /** @enum {string} */
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+            /** Format: date-time */
+            startDate?: string;
+            questions?: components["schemas"]["PracticeQuestionDto"][];
         };
         AuthorResponse: {
             name?: string;
@@ -2134,10 +2152,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -2149,17 +2167,17 @@ export interface components {
         PageableObject: {
             /** Format: int32 */
             pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         InterviewBlueprintResponse: {
@@ -4131,7 +4149,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PracticeSet"][];
+                    "*/*": components["schemas"]["PracticeSetResponse"][];
                 };
             };
         };

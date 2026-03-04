@@ -1,6 +1,9 @@
 // User pages exports
 export { OverviewPage } from "./Overview";
 
+// Home Feed exports
+export { HomeFeedPage } from "./HomeFeed";
+
 // AI Interview exports
 export {
   AIInterviewListPage,
