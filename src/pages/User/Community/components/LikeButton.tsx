@@ -17,18 +17,26 @@ interface LikeButtonProps {
   /** When true renders "Thích" label (action bar style); when false renders numeric count */
   showLabel?: boolean;
   onLikeChange?: (liked: boolean) => void;
+  /** When provided, skips the internal usePostLikesCount request and uses this as the base count */
+  externalLikeCount?: number;
 }
 
-export function LikeButton({ postId, userId, showLabel = false, onLikeChange }: LikeButtonProps) {
+export function LikeButton({
+  postId,
+  userId,
+  showLabel = false,
+  onLikeChange,
+  externalLikeCount,
+}: LikeButtonProps) {
   const { data: likedData } = useCheckLiked(postId, userId);
-  const { data: countData } = usePostLikesCount(postId);
+  const { data: countData } = usePostLikesCount(postId, externalLikeCount === undefined);
   const likeMutation = useLikePost();
   const unlikeMutation = useUnlikePost();
 
   // checkLiked returns { [key: string]: boolean } — e.g. { "liked": false }
   // Casting the object directly as boolean would always be truthy, so extract the first value
   const liked = Object.values((likedData ?? {}) as Record<string, boolean>)[0] ?? false;
-  const count = (countData as unknown as number) ?? 0;
+  const count = externalLikeCount !== undefined ? externalLikeCount : (countData ?? 0);
 
   const [optimisticLiked, setOptimisticLiked] = useState<boolean | null>(null);
   const [optimisticCount, setOptimisticCount] = useState<number | null>(null);

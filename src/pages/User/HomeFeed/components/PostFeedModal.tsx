@@ -1,5 +1,6 @@
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, Send } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -7,13 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/formatting";
-import {
-  useCheckLiked,
-  usePostCommentsCount,
-  usePostLikes,
-  usePostLikesCount,
-} from "@/services/post.manager";
+import { queryClient } from "@/lib/queryClient";
+import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import type { components } from "../../../../../schema-from-be";
 
@@ -24,6 +22,7 @@ import { ImageViewerModal } from "./ImageViewerModal";
 
 type PostResponse = components["schemas"]["PostResponse"];
 type PostLikeResponse = components["schemas"]["PostLikeResponse"];
+type PostCommentResponse = components["schemas"]["PostCommentResponse"];
 
 interface PostFeedModalProps {
   item: PostResponse;
@@ -38,19 +37,41 @@ export function PostFeedModal({ item, open, onOpenChange }: PostFeedModalProps) 
 
   const [likesOpen, setLikesOpen] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const createComment = useCreateComment();
 
+  // Fetch live post detail only when the modal is open — covers likeCount, commentCount,
+  // postLikes, and postComments in a single request (replaces 4 separate queries)
   const enabled = open && postId > 0;
+  const { data: liveRaw } = usePostById(postId, enabled);
+  const live = liveRaw as unknown as PostResponse | undefined;
+
   const { data: likedData } = useCheckLiked(postId, user?.id ?? 0, enabled && !!user?.id);
-  const { data: countData } = usePostLikesCount(postId);
-  const { data: likesData } = usePostLikes(postId);
-  const { data: commentCountData } = usePostCommentsCount(postId);
+
+  const invalidateLivePost = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["get", "/api/posts/{postId}", { params: { path: { postId } } }],
+    });
+  };
+
+  const handleCommentSubmit = () => {
+    const content = newComment.trim();
+    if (!content || !user?.id) return;
+    createComment.mutate({ body: { postId, userId: user.id, content } } as never, {
+      onSuccess: () => {
+        setNewComment("");
+        invalidateLivePost();
+      },
+      onError: () => toast.error("Không thể gửi bình luận"),
+    });
+  };
 
   // checkLiked returns { [key: string]: boolean } — extract the first value
   const isLiked = Object.values((likedData ?? {}) as Record<string, boolean>)[0] ?? false;
-  const likeCount = (countData as unknown as number) ?? item.likeCount ?? 0;
-  const likers =
-    (Array.isArray(likesData) ? likesData : (likesData as unknown as PostLikeResponse[])) ?? [];
-  const liveCommentCount = (commentCountData as unknown as number) ?? item.commentCount ?? 0;
+  const likeCount = live?.likeCount ?? item.likeCount ?? 0;
+  const likers = (live?.postLikes ?? item.postLikes ?? []) as PostLikeResponse[];
+  const liveCommentCount = live?.commentCount ?? item.commentCount ?? 0;
+  const postComments = (live?.postComments ?? item.postComments ?? []) as PostCommentResponse[];
 
   const authorName = post?.author?.name ?? "Ẩn danh";
   const authorInitials = authorName
@@ -197,7 +218,13 @@ export function PostFeedModal({ item, open, onOpenChange }: PostFeedModalProps) 
             {/* Action row */}
             <div className="flex items-center gap-1 px-4 py-1">
               {user?.id && postId > 0 ? (
-                <LikeButton postId={postId} userId={user.id} showLabel />
+                <LikeButton
+                  postId={postId}
+                  userId={user.id}
+                  showLabel
+                  externalLikeCount={likeCount}
+                  onLikeChange={invalidateLivePost}
+                />
               ) : (
                 <span className="text-muted-foreground flex-1 text-center text-sm">Thích</span>
               )}
@@ -205,11 +232,7 @@ export function PostFeedModal({ item, open, onOpenChange }: PostFeedModalProps) 
                 variant="ghost"
                 size="sm"
                 className="flex-1 justify-center gap-1.5"
-                onClick={() => {
-                  document.getElementById(`comment-section-${postId}`)?.scrollIntoView({
-                    behavior: "smooth",
-                  });
-                }}>
+                onClick={() => document.getElementById(`comment-input-${postId}`)?.focus()}>
                 <MessageCircle className="h-4 w-4" />
                 <span>Bình luận</span>
               </Button>
@@ -217,25 +240,61 @@ export function PostFeedModal({ item, open, onOpenChange }: PostFeedModalProps) 
 
             <Separator className="mx-6" />
 
-            {/* Comment section */}
+            {/* Comment thread (no input box — input is in sticky bottom bar) */}
             {postId > 0 && (
-              <div id={`comment-section-${postId}`} className="px-6 py-4">
-                <CommentSection postId={postId} />
+              <div className="px-6 py-4">
+                <CommentSection
+                  key={postId}
+                  postId={postId}
+                  externalComments={postComments}
+                  onExternalInvalidate={invalidateLivePost}
+                  hideInput
+                />
               </div>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Full-screen image viewer */}
-      {post?.coverImgUrl && (
-        <ImageViewerModal
-          src={post.coverImgUrl}
-          alt={post.title ?? ""}
-          open={imageViewerOpen}
-          onClose={() => setImageViewerOpen(false)}
-        />
-      )}
+          {/* Sticky comment input — always visible at modal bottom */}
+          {postId > 0 && user?.id && (
+            <div className="flex shrink-0 items-end gap-2 border-t px-4 py-3">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? ""} />
+                <AvatarFallback className="bg-[#0047AB]/10 text-xs font-semibold text-[#0047AB]">
+                  {(user.name ?? "?").slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <Textarea
+                id={`comment-input-${postId}`}
+                placeholder="Viết bình luận... (Ctrl+Enter để gửi)"
+                value={newComment}
+                rows={1}
+                className="max-h-28 flex-1 resize-none overflow-auto"
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && e.ctrlKey) handleCommentSubmit();
+                }}
+              />
+              <Button
+                size="sm"
+                className="shrink-0"
+                onClick={handleCommentSubmit}
+                disabled={!newComment.trim() || createComment.isPending}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+
+        {/* Full-screen image viewer — inside DialogContent so Radix treats it as internal */}
+        {post?.coverImgUrl && (
+          <ImageViewerModal
+            src={post.coverImgUrl}
+            alt={post.title ?? ""}
+            open={imageViewerOpen}
+            onClose={() => setImageViewerOpen(false)}
+          />
+        )}
+      </Dialog>
     </>
   );
 }

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/lib/formatting";
-import { useCheckLiked, usePostLikesCount } from "@/services/post.manager";
+import { useCheckLiked } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import type { components } from "../../../../../schema-from-be";
 
@@ -28,13 +28,13 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
   // Feed API already returns commentCount — no extra round-trip needed
   const commentCount = item.commentCount ?? 0;
 
-  // Use live query cache so count bar updates immediately after like toggle
+  // useCheckLiked provides the is-liked state per user; likeCount from feed data + local optimistic
   const { data: likedData } = useCheckLiked(postId, user?.id ?? 0, !!user?.id && postId > 0);
-  const { data: countData } = usePostLikesCount(postId);
+  const [localLikeAdjust, setLocalLikeAdjust] = useState(0);
 
   // checkLiked returns { [key: string]: boolean } — extract the first value
   const isLiked = Object.values((likedData ?? {}) as Record<string, boolean>)[0] ?? false;
-  const likeCount = (countData as unknown as number) ?? item.likeCount ?? 0;
+  const likeCount = (item.likeCount ?? 0) + localLikeAdjust;
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -160,7 +160,13 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
         {/* Action row */}
         <CardFooter className="flex items-center gap-1 pt-1 pb-2">
           {user?.id && postId > 0 ? (
-            <LikeButton postId={postId} userId={user.id} showLabel />
+            <LikeButton
+              postId={postId}
+              userId={user.id}
+              showLabel
+              externalLikeCount={likeCount}
+              onLikeChange={(liked) => setLocalLikeAdjust(liked ? 1 : -1)}
+            />
           ) : (
             <span className="text-muted-foreground flex-1 text-center text-sm">Thích</span>
           )}
