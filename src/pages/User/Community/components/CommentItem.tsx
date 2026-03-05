@@ -1,3 +1,5 @@
+import React from "react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
@@ -24,6 +26,20 @@ function getRelativeTime(dateStr?: string): string {
   return `${diffMonths} tháng trước`;
 }
 
+function renderContent(text?: string): (string | React.ReactElement)[] {
+  if (!text) return [];
+  const parts = text.split(/(@\S+)/g);
+  return parts.map((part, i) =>
+    /^@\S+$/.test(part) ? (
+      <span key={i} className="font-semibold text-[#007BFF]">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
 export function CommentItem({ comment, onReply }: CommentItemProps) {
   const initials = comment.userName
     ?.split(" ")
@@ -45,7 +61,9 @@ export function CommentItem({ comment, onReply }: CommentItemProps) {
             {getRelativeTime(comment.createdAt)}
           </span>
         </div>
-        <p className="mt-1 text-sm wrap-break-word whitespace-pre-wrap">{comment.content}</p>
+        <p className="mt-1 text-sm wrap-break-word whitespace-pre-wrap">
+          {renderContent(comment.content)}
+        </p>
         {onReply && (
           <Button
             variant="ghost"
