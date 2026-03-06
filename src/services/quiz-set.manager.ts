@@ -23,7 +23,26 @@ export interface QuizSet {
   score?: number;
   practiceSet?: PracticeSet;
   createdAt?: string;
+  questions?: QuizItem[];
   submitted?: boolean;
+}
+
+/**
+ * QuizItemResponse from createFullAi — only contains id, question, and options.
+ * Use QuizItem when loading an existing quiz via getQuizItems.
+ */
+export interface QuizItemResponse {
+  id?: number;
+  question?: string;
+  options?: string;
+}
+
+/**
+ * QuizResponse returned by createFullAi endpoint.
+ */
+export interface QuizResponse {
+  quizId?: number;
+  items?: QuizItemResponse[];
 }
 
 /**
@@ -162,7 +181,7 @@ export class QuizSetManager {
    * POST /api/quiz-sets/create-full-ai?practiceSetId={practiceSetId}
    * No body needed — AI generates the questions from the practice set content
    */
-  async createFullAi(practiceSetId: number): Promise<ApiResponse<QuizItem[]>> {
+  async createFullAi(practiceSetId: number): Promise<ApiResponse<QuizResponse>> {
     if (this.mode === "mock") {
       return {
         success: false,
@@ -171,8 +190,10 @@ export class QuizSetManager {
     }
 
     try {
+      // AI generation can take significantly longer than the default 30s timeout
       const response = await this.api.post(API_ENDPOINTS.QUIZ_SETS.CREATE_FULL_AI, null, {
         params: { practiceSetId },
+        timeout: 120000,
       });
       return { success: true, data: response.data };
     } catch (error) {

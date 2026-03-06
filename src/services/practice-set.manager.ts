@@ -40,6 +40,28 @@ export interface SessionQuestion {
 }
 
 /**
+ * Lightweight response shape returned by /api/practice-sets/user/{userId}
+ * Does NOT include `major` or `user` fields.
+ */
+export interface PracticeSetResponse {
+  id?: number;
+  practiceSetName?: string;
+  objective?: string;
+  level?: PracticeSetLevel;
+  startDate?: string;
+  interviewSessionId?: number;
+  questions?: Array<{
+    questionId?: number;
+    title?: string;
+    content?: string;
+    level?: "EASY" | "MEDIUM" | "HARD";
+    lessonName?: string;
+    answer?: string;
+    hint?: string;
+  }>;
+}
+
+/**
  * PracticeSet type based on backend schema
  */
 export interface PracticeSet {
@@ -378,6 +400,27 @@ export class PracticeSetManager implements BaseManager<PracticeSet> {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Không thể tạo lộ trình luyện tập AI",
+      };
+    }
+  }
+
+  /**
+   * Get all practice sets belonging to a specific user
+   * GET /api/practice-sets/user/{userId}
+   */
+  async getByUser(userId: number): Promise<ApiResponse<PracticeSetResponse[]>> {
+    if (this.mode === "mock") {
+      return { success: true, data: [] };
+    }
+
+    try {
+      const endpoint = buildEndpoint(API_ENDPOINTS.PRACTICE_SETS.BY_USER, { userId });
+      const response = await this.api.get(endpoint);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Không thể tải danh sách bộ luyện tập",
       };
     }
   }

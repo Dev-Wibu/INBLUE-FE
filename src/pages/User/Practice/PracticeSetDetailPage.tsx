@@ -3,9 +3,12 @@ import {
   ArrowLeft,
   BookOpen,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Eye,
   GraduationCap,
+  History,
   Lightbulb,
   Loader2,
   Lock,
@@ -18,13 +21,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { practiceSetItemManager, practiceSetManager, quizSetManager } from "@/services";
 import type { PracticeSetItem } from "@/services/practice-set-item.manager";
 import type { PracticeSet, SessionQuestion } from "@/services/practice-set.manager";
-import type { QuizSet } from "@/services/quiz-set.manager";
+import type { QuizResponse, QuizSet } from "@/services/quiz-set.manager";
 import { toast } from "sonner";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -143,27 +147,18 @@ function PracticeItemCard({ item, index, status, practiceSetId, lastQuizId }: It
                     Đáp án
                   </Button>
                 )}
-                {isDone ? (
+                {isDone && lastQuizId && (
                   <Button
                     size="sm"
                     variant="outline"
                     className="ml-auto h-6 gap-1 px-2 text-xs"
                     onClick={() =>
-                      lastQuizId
-                        ? navigate(`/user/practice/${practiceSetId}/quiz/${lastQuizId}/result`)
-                        : navigate(`/user/practice/${practiceSetId}/quiz`)
+                      navigate(`/user/practice/${practiceSetId}/quiz/${lastQuizId}/result`)
                     }>
                     Xem lại
                     <Eye className="h-3 w-3" />
                   </Button>
-                ) : isNext ? (
-                  <Button
-                    size="sm"
-                    className="ml-auto h-6 gap-1 bg-[#0047AB] px-3 text-xs text-white hover:bg-[#005B9A]"
-                    onClick={() => navigate(`/user/practice/${practiceSetId}/quiz`)}>
-                    Bắt đầu ngay
-                  </Button>
-                ) : null}
+                )}
               </>
             )}
 
@@ -203,11 +198,9 @@ interface SessionItemCardProps {
   question: SessionQuestion;
   index: number;
   status: ItemStatus;
-  psId: number;
 }
 
-function SessionQuestionCard({ question, index, status, psId }: SessionItemCardProps) {
-  const navigate = useNavigate();
+function SessionQuestionCard({ question, index, status }: SessionItemCardProps) {
   const [showHint, setShowHint] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
   const isDone = status === "DONE";
@@ -291,14 +284,6 @@ function SessionQuestionCard({ question, index, status, psId }: SessionItemCardP
                     Đáp án
                   </Button>
                 )}
-                {isNext && (
-                  <Button
-                    size="sm"
-                    className="ml-auto h-6 gap-1 bg-[#0047AB] px-3 text-xs text-white hover:bg-[#005B9A]"
-                    onClick={() => navigate(`/user/practice/${psId}/quiz`)}>
-                    Bắt đầu ngay
-                  </Button>
-                )}
               </>
             )}
 
@@ -335,23 +320,16 @@ function SessionQuestionCard({ question, index, status, psId }: SessionItemCardP
 interface QuizHistoryPopoverProps {
   quizHistory: QuizSet[];
   routePracticeSetId: string;
-  isCreating: boolean;
-  onCreateNew: () => void;
 }
 
-function QuizHistoryPopover({
-  quizHistory,
-  routePracticeSetId,
-  isCreating,
-  onCreateNew,
-}: QuizHistoryPopoverProps) {
+function QuizHistoryPopover({ quizHistory, routePracticeSetId }: QuizHistoryPopoverProps) {
   const navigate = useNavigate();
   const sorted = [...quizHistory].sort((a, b) => (b.quizId ?? 0) - (a.quizId ?? 0));
 
   return (
     <PopoverContent className="w-72 p-0" align="start">
       <div className="border-b px-3 py-2">
-        <p className="text-foreground text-xs font-semibold">Bộ kiểm tra của bạn</p>
+        <p className="text-foreground text-xs font-semibold">Lịch sử kiểm tra</p>
       </div>
       <div className="max-h-56 overflow-y-auto">
         {sorted.map((quiz) => (
@@ -378,16 +356,6 @@ function QuizHistoryPopover({
           </button>
         ))}
       </div>
-      <div className="border-t p-2">
-        <Button
-          size="sm"
-          className="w-full gap-1.5 bg-[#0047AB] text-xs text-white hover:bg-[#005B9A]"
-          disabled={isCreating}
-          onClick={onCreateNew}>
-          {isCreating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
-          Tạo quiz AI mới
-        </Button>
-      </div>
     </PopoverContent>
   );
 }
@@ -398,15 +366,17 @@ interface SessionDayGroupProps {
   ps: PracticeSet;
   dayNumber: number;
   dayStatus: DayStatus;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
-function SessionDayGroup({ ps, dayNumber, dayStatus }: SessionDayGroupProps) {
+function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: SessionDayGroupProps) {
   const navigate = useNavigate();
   const [quizHistory, setQuizHistory] = useState<QuizSet[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
-    if (dayStatus !== "IN_PROGRESS" || !ps.id) return;
+    if (dayStatus === "LOCKED" || !ps.id) return;
     quizSetManager.getByPracticeSet(ps.id).then((res) => {
       if (res.success && res.data) setQuizHistory(res.data);
     });
@@ -417,11 +387,18 @@ function SessionDayGroup({ ps, dayNumber, dayStatus }: SessionDayGroupProps) {
     setIsCreating(true);
     try {
       const res = await quizSetManager.createFullAi(ps.id);
-      if (res.success && res.data && res.data.length > 0) {
-        const newQuizId = res.data[0].quizSet?.quizId;
+      if (res.success && res.data) {
+        const newQuizId = (res.data as QuizResponse).quizId;
         if (newQuizId) {
           toast.success("Đã tạo bài kiểm tra AI!");
-          navigate(`/user/practice/${ps.id}/quiz/${newQuizId}`);
+          navigate(`/user/practice/${ps.id}/quiz/${newQuizId}`, {
+            state: {
+              initialItems: (res.data as QuizResponse).items,
+              backUrl: ps.interviewSessionId
+                ? `/user/practice/session/${ps.interviewSessionId}`
+                : `/user/practice/${ps.id}`,
+            },
+          });
         } else {
           toast.error("Không lấy được ID bài kiểm tra");
         }
@@ -460,55 +437,79 @@ function SessionDayGroup({ ps, dayNumber, dayStatus }: SessionDayGroupProps) {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <h2 className="text-foreground text-base font-bold">
-          {ps.practiceSetName ?? `Ngày ${dayNumber}`}
-        </h2>
-        <Badge className={`text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</Badge>
-        {dayStatus === "IN_PROGRESS" &&
-          (quizHistory.length === 0 ? (
-            <button
-              disabled={isCreating}
-              onClick={handleCreateAiQuiz}
-              title="Làm kiểm tra"
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0047AB] text-white transition-opacity hover:opacity-80 disabled:opacity-50">
-              {isCreating ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Plus className="h-3 w-3" />
-              )}
-            </button>
-          ) : (
-            <Popover>
-              <PopoverTrigger asChild>
+    <Collapsible open={isOpen} onOpenChange={onToggle}>
+      <div
+        className={`bg-card rounded-xl border shadow-sm ${
+          dayStatus === "IN_PROGRESS"
+            ? "border-[#0047AB]/40"
+            : dayStatus === "COMPLETED"
+              ? "border-emerald-200 dark:border-emerald-900/40"
+              : "border-border"
+        }`}>
+        <div className="flex items-center gap-3 px-4 py-3">
+          <h2 className="text-foreground text-base font-bold">
+            {ps.practiceSetName ?? `Ngày ${dayNumber}`}
+          </h2>
+          {ps.startDate && (
+            <span className="rounded-md bg-[#DCEEFF] px-2 py-0.5 text-xs font-bold text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-blue-300">
+              {format(new Date(ps.startDate), "dd/MM/yyyy")}
+            </span>
+          )}
+          <Badge className={`text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</Badge>
+          <div className="ml-auto flex items-center gap-1.5">
+            {(dayStatus === "IN_PROGRESS" || dayStatus === "COMPLETED") && (
+              <>
                 <button
-                  title="Làm kiểm tra"
-                  className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0047AB] text-white transition-opacity hover:opacity-80">
-                  <Plus className="h-3 w-3" />
+                  disabled={isCreating}
+                  onClick={handleCreateAiQuiz}
+                  title="Tạo quiz mới"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0047AB] text-white transition-opacity hover:opacity-80 disabled:opacity-50">
+                  {isCreating ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Plus className="h-3 w-3" />
+                  )}
                 </button>
-              </PopoverTrigger>
-              <QuizHistoryPopover
-                quizHistory={quizHistory}
-                routePracticeSetId={String(ps.id)}
-                isCreating={isCreating}
-                onCreateNew={handleCreateAiQuiz}
+                {quizHistory.length > 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        title="Xem lịch sử kiểm tra"
+                        className="flex h-6 w-6 items-center justify-center rounded-full border border-[#0047AB] text-[#0047AB] transition-colors hover:bg-[#DCEEFF] dark:hover:bg-[#0047AB]/20">
+                        <History className="h-3 w-3" />
+                      </button>
+                    </PopoverTrigger>
+                    <QuizHistoryPopover
+                      quizHistory={quizHistory}
+                      routePracticeSetId={String(ps.id)}
+                    />
+                  </Popover>
+                )}
+              </>
+            )}
+            <CollapsibleTrigger asChild>
+              <button
+                className="text-muted-foreground hover:text-foreground ml-1 flex h-6 w-6 items-center justify-center rounded transition-colors"
+                title={isOpen ? "Thu gọn" : "Mở rộng"}>
+                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+            </CollapsibleTrigger>
+          </div>
+        </div>
+        <CollapsibleContent>
+          <div className="border-border space-y-2 border-t px-4 pt-3 pb-4">
+            {questions.map((q, localIdx) => (
+              <SessionQuestionCard
+                key={q.questionId ?? localIdx}
+                question={q}
+                index={localIdx}
+                status={getItemStatus(localIdx)}
               />
-            </Popover>
-          ))}
+            ))}
+          </div>
+        </CollapsibleContent>
       </div>
-      <div className="space-y-2">
-        {questions.map((q, localIdx) => (
-          <SessionQuestionCard
-            key={q.questionId ?? localIdx}
-            question={q}
-            index={localIdx}
-            status={getItemStatus(localIdx)}
-            psId={ps.id!}
-          />
-        ))}
-      </div>
-    </div>
+    </Collapsible>
   );
 }
 
@@ -523,6 +524,8 @@ interface DayGroupProps {
   practiceSetId: string;
   lastQuizId?: number;
   quizHistory: QuizSet[];
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
 function DayGroup({
@@ -534,6 +537,8 @@ function DayGroup({
   practiceSetId,
   lastQuizId,
   quizHistory,
+  isOpen,
+  onToggle,
 }: DayGroupProps) {
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
@@ -542,11 +547,16 @@ function DayGroup({
     setIsCreating(true);
     try {
       const res = await quizSetManager.createFullAi(Number(practiceSetId));
-      if (res.success && res.data && res.data.length > 0) {
-        const newQuizId = res.data[0].quizSet?.quizId;
+      if (res.success && res.data) {
+        const newQuizId = (res.data as QuizResponse).quizId;
         if (newQuizId) {
           toast.success("Đã tạo bài kiểm tra AI!");
-          navigate(`/user/practice/${practiceSetId}/quiz/${newQuizId}`);
+          navigate(`/user/practice/${practiceSetId}/quiz/${newQuizId}`, {
+            state: {
+              initialItems: (res.data as QuizResponse).items,
+              backUrl: `/user/practice/${practiceSetId}`,
+            },
+          });
         } else {
           toast.error("Không lấy được ID bài kiểm tra");
         }
@@ -590,54 +600,74 @@ function DayGroup({
   const dayTitle = title ?? computedTitle;
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <h2 className="text-foreground text-base font-bold">{dayTitle}</h2>
-        <Badge className={`text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</Badge>
-        {dayStatus === "IN_PROGRESS" &&
-          (quizHistory.length === 0 ? (
-            <button
-              disabled={isCreating}
-              onClick={handleCreateAiQuiz}
-              title="Làm kiểm tra"
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0047AB] text-white transition-opacity hover:opacity-80 disabled:opacity-50">
-              {isCreating ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Plus className="h-3 w-3" />
-              )}
-            </button>
-          ) : (
-            <Popover>
-              <PopoverTrigger asChild>
+    <Collapsible open={isOpen} onOpenChange={onToggle}>
+      <div
+        className={`bg-card rounded-xl border shadow-sm ${
+          dayStatus === "IN_PROGRESS"
+            ? "border-[#0047AB]/40"
+            : dayStatus === "COMPLETED"
+              ? "border-emerald-200 dark:border-emerald-900/40"
+              : "border-border"
+        }`}>
+        <div className="flex items-center gap-3 px-4 py-3">
+          <h2 className="text-foreground text-base font-bold">{dayTitle}</h2>
+          <Badge className={`text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</Badge>
+          <div className="ml-auto flex items-center gap-1.5">
+            {(dayStatus === "IN_PROGRESS" || dayStatus === "COMPLETED") && (
+              <>
                 <button
-                  title="Làm kiểm tra"
-                  className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0047AB] text-white transition-opacity hover:opacity-80">
-                  <Plus className="h-3 w-3" />
+                  disabled={isCreating}
+                  onClick={handleCreateAiQuiz}
+                  title="Tạo quiz mới"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0047AB] text-white transition-opacity hover:opacity-80 disabled:opacity-50">
+                  {isCreating ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Plus className="h-3 w-3" />
+                  )}
                 </button>
-              </PopoverTrigger>
-              <QuizHistoryPopover
-                quizHistory={quizHistory}
-                routePracticeSetId={practiceSetId}
-                isCreating={isCreating}
-                onCreateNew={handleCreateAiQuiz}
+                {quizHistory.length > 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        title="Xem lịch sử kiểm tra"
+                        className="flex h-6 w-6 items-center justify-center rounded-full border border-[#0047AB] text-[#0047AB] transition-colors hover:bg-[#DCEEFF] dark:hover:bg-[#0047AB]/20">
+                        <History className="h-3 w-3" />
+                      </button>
+                    </PopoverTrigger>
+                    <QuizHistoryPopover
+                      quizHistory={quizHistory}
+                      routePracticeSetId={practiceSetId}
+                    />
+                  </Popover>
+                )}
+              </>
+            )}
+            <CollapsibleTrigger asChild>
+              <button
+                className="text-muted-foreground hover:text-foreground ml-1 flex h-6 w-6 items-center justify-center rounded transition-colors"
+                title={isOpen ? "Thu gọn" : "Mở rộng"}>
+                {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+            </CollapsibleTrigger>
+          </div>
+        </div>
+        <CollapsibleContent>
+          <div className="border-border space-y-2 border-t px-4 pt-3 pb-4">
+            {dayItems.map((item, localIdx) => (
+              <PracticeItemCard
+                key={item.id}
+                item={item}
+                index={localIdx}
+                status={getItemStatus(localIdx)}
+                practiceSetId={practiceSetId}
+                lastQuizId={lastQuizId}
               />
-            </Popover>
-          ))}
+            ))}
+          </div>
+        </CollapsibleContent>
       </div>
-      <div className="space-y-2">
-        {dayItems.map((item, localIdx) => (
-          <PracticeItemCard
-            key={item.id}
-            item={item}
-            index={localIdx}
-            status={getItemStatus(localIdx)}
-            practiceSetId={practiceSetId}
-            lastQuizId={lastQuizId}
-          />
-        ))}
-      </div>
-    </div>
+    </Collapsible>
   );
 }
 
@@ -654,6 +684,10 @@ export function PracticeSetDetailPage() {
   // State cho chế độ xem toàn session (nhiều practice-sets)
   const [sessionDays, setSessionDays] = useState<PracticeSet[]>([]);
   const [isSessionView, setIsSessionView] = useState(false);
+
+  // Collapse state — each day group can be expanded/collapsed independently
+  const [dayOpenStates, setDayOpenStates] = useState<boolean[]>([]);
+  const [sessionOpenStates, setSessionOpenStates] = useState<boolean[]>([]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -768,6 +802,15 @@ export function PracticeSetDetailPage() {
   const sessionProgressPct =
     totalDays === 0 ? 0 : Math.round((sessionElapsedCount / totalDays) * 100);
 
+  // Initialize collapse states when data loads (all open by default)
+  useEffect(() => {
+    setDayOpenStates(Array(dayGroups.length).fill(true));
+  }, [dayGroups.length]);
+
+  useEffect(() => {
+    setSessionOpenStates(Array(sessionDays.length).fill(true));
+  }, [sessionDays.length]);
+
   // ── render ───────────────────────────────────────────────────────────────
 
   if (loading) {
@@ -857,15 +900,46 @@ export function PracticeSetDetailPage() {
           </Card>
 
           {/* Day groups — one per practice-set, with embedded questions */}
-          <div className="space-y-8">
-            {sessionDays.map((ps, dayIdx) => (
-              <SessionDayGroup
-                key={ps.id ?? dayIdx}
-                ps={ps}
-                dayNumber={dayIdx + 1}
-                dayStatus={getSessionDayStatus(ps)}
-              />
-            ))}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+                Lộ trình học tập
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1.5 text-xs"
+                onClick={() => {
+                  const allOpen = sessionOpenStates.every(Boolean);
+                  setSessionOpenStates(sessionDays.map(() => !allOpen));
+                }}>
+                {sessionOpenStates.every(Boolean) ? (
+                  <>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    Thu gọn tất cả
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    Mở tất cả
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="space-y-8">
+              {sessionDays.map((ps, dayIdx) => (
+                <SessionDayGroup
+                  key={ps.id ?? dayIdx}
+                  ps={ps}
+                  dayNumber={dayIdx + 1}
+                  dayStatus={getSessionDayStatus(ps)}
+                  isOpen={sessionOpenStates[dayIdx] ?? true}
+                  onToggle={() =>
+                    setSessionOpenStates((prev) => prev.map((v, i) => (i === dayIdx ? !v : v)))
+                  }
+                />
+              ))}
+            </div>
           </div>
 
           {/* Bottom CTA */}
@@ -908,7 +982,9 @@ export function PracticeSetDetailPage() {
 
         {/* Title block */}
         <div>
-          <h1 className="text-foreground text-2xl font-bold">Lộ trình luyện tập theo Session</h1>
+          <h1 className="text-foreground text-2xl font-bold">
+            {practiceSet.practiceSetName ?? "Chi tiết bộ luyện tập"}
+          </h1>
           {practiceSet.objective && (
             <p className="text-muted-foreground mt-1 text-sm">{practiceSet.objective}</p>
           )}
@@ -962,19 +1038,50 @@ export function PracticeSetDetailPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-8">
-            {dayGroups.map((dayItems, dayIdx) => (
-              <DayGroup
-                key={dayIdx}
-                dayNumber={dayIdx + 1}
-                dayItems={dayItems}
-                dayStatus={getDayStatus(dayIdx)}
-                isCurrentDay={dayIdx === completedDays}
-                practiceSetId={id!}
-                lastQuizId={lastSubmittedQuiz?.quizId}
-                quizHistory={dayIdx === completedDays ? quizHistory : []}
-              />
-            ))}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+                Lộ trình học tập
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1.5 text-xs"
+                onClick={() => {
+                  const allOpen = dayOpenStates.every(Boolean);
+                  setDayOpenStates(dayGroups.map(() => !allOpen));
+                }}>
+                {dayOpenStates.every(Boolean) ? (
+                  <>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    Thu gọn tất cả
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    Mở tất cả
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="space-y-8">
+              {dayGroups.map((dayItems, dayIdx) => (
+                <DayGroup
+                  key={dayIdx}
+                  dayNumber={dayIdx + 1}
+                  dayItems={dayItems}
+                  dayStatus={getDayStatus(dayIdx)}
+                  isCurrentDay={dayIdx === completedDays}
+                  practiceSetId={id!}
+                  lastQuizId={lastSubmittedQuiz?.quizId}
+                  quizHistory={dayIdx === completedDays ? quizHistory : []}
+                  isOpen={dayOpenStates[dayIdx] ?? true}
+                  onToggle={() =>
+                    setDayOpenStates((prev) => prev.map((v, i) => (i === dayIdx ? !v : v)))
+                  }
+                />
+              ))}
+            </div>
           </div>
         )}
 

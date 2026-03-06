@@ -146,6 +146,7 @@ export const API_ENDPOINTS = {
     UPDATE: "/api/practice-sets",
     DELETE: "/api/practice-sets/:id",
     BY_LEVEL: "/api/practice-sets/level/:level",
+    BY_USER: "/api/practice-sets/user/:userId",
     BY_INTERVIEW_SESSION: "/api/practice-sets/interview-session/:interviewSessionId",
     FULL_SET: "/api/practice-sets/full-set/:id",
     CREATE_FULL: "/api/practice-sets/create-full",
