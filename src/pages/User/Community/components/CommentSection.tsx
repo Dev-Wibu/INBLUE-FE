@@ -1,4 +1,4 @@
-import { Send } from "lucide-react";
+﻿import { ChevronDown, ChevronUp, Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -47,24 +47,89 @@ function buildCommentTree(comments: PostCommentResponse[]): CommentNode[] {
   return roots;
 }
 
-// Indent per depth level — each level adds the same border+padding class so DOM nesting
-// creates natural visual hierarchy. Depth 3+ gets no additional margin, keeping deeply
-// nested replies at the same visual level as depth 2.
-const INDENT_CLASS = "ml-6 border-l border-slate-200 pl-3 dark:border-slate-700";
-const INDENT_CLASSES = ["", INDENT_CLASS, INDENT_CLASS, ""];
+// DFS-flatten all descendants of a node, sorted chronologically (oldest first)
+function flattenDescendants(node: CommentNode): PostCommentResponse[] {
+  const result: PostCommentResponse[] = [];
+  function dfs(children: CommentNode[]) {
+    for (const child of children) {
+      result.push(child.comment);
+      dfs(child.children);
+    }
+  }
+  dfs(node.children);
+  result.sort((a, b) => {
+    if (!a.createdAt || !b.createdAt) return 0;
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+  return result;
+}
 
-// Count all descendants recursively (not just direct children)
-function countDescendants(node: CommentNode): number {
-  return node.children.reduce((sum, child) => sum + 1 + countDescendants(child), 0);
+// Walk up the comment chain to find the root-level comment ID
+function findRootCommentId(
+  commentId: number,
+  commentById: Map<number, PostCommentResponse>,
+  rootIds: Set<number>
+): number {
+  if (rootIds.has(commentId)) return commentId;
+  const c = commentById.get(commentId);
+  if (!c?.parentCommentId) return commentId;
+  return findRootCommentId(c.parentCommentId, commentById, rootIds);
 }
 
 // ---------------------------------------------------------------------------
-// CommentThread — recursive component
+// ReplyInput — shared reply textarea block
+// ---------------------------------------------------------------------------
+
+interface ReplyInputProps {
+  userName: string;
+  value: string;
+  onChange: (_v: string) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+}
+
+function ReplyInput({ userName, value, onChange, onSubmit, onCancel }: ReplyInputProps) {
+  return (
+    <div className="mt-2 flex flex-col gap-1.5 pl-11">
+      <div className="flex items-center gap-1.5">
+        <span className="text-muted-foreground text-xs">Đang trả lời</span>
+        <span className="rounded bg-[#007BFF]/10 px-1.5 py-0.5 text-xs font-semibold text-[#007BFF]">
+          @{userName}
+        </span>
+      </div>
+      <div className="flex gap-2">
+        <Textarea
+          autoFocus
+          placeholder="Trả lời... (Ctrl+Enter để gửi)"
+          value={value}
+          rows={2}
+          className="max-h-32 flex-1 resize-none overflow-auto"
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.ctrlKey) onSubmit();
+          }}
+        />
+        <div className="flex flex-col gap-1">
+          <Button size="sm" onClick={onSubmit} disabled={!value.trim()}>
+            <Send className="mr-1 h-4 w-4" />
+            Gửi
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onCancel}>
+            Hủy
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CommentThread — Facebook-style flat display (all replies in one indented block,
+// single "Thu gọn" button at the bottom — no per-reply collapse buttons)
 // ---------------------------------------------------------------------------
 
 interface CommentThreadProps {
   node: CommentNode;
-  depth: number;
   currentUserId?: number;
   replyingToId: number | null;
   replyContent: string;
@@ -73,11 +138,13 @@ interface CommentThreadProps {
   onReplySubmit: (_parentCommentId: number) => void;
   expandedIds: Set<number>;
   onToggleExpand: (_id: number) => void;
+  commentById: Map<number, PostCommentResponse>;
+  highlightedCommentId: number | null;
+  onMentionClick: (_parentCommentId: number) => void;
 }
 
 function CommentThread({
   node,
-  depth,
   currentUserId,
   replyingToId,
   replyContent,
@@ -86,106 +153,103 @@ function CommentThread({
   onReplySubmit,
   expandedIds,
   onToggleExpand,
+  commentById,
+  highlightedCommentId,
+  onMentionClick,
 }: CommentThreadProps) {
-  const { comment, children } = node;
-  const indentClass = INDENT_CLASSES[Math.min(depth, 3)];
-  const isReplying = replyingToId === comment.id;
+  const { comment } = node;
   const isExpanded = comment.id != null && expandedIds.has(comment.id);
+  const allReplies = useMemo(() => flattenDescendants(node), [node]);
+  const isReplyingToRoot = replyingToId === comment.id;
 
   return (
-    <div className={indentClass}>
+    <div>
+      {/* Root comment */}
       <CommentItem
         comment={comment}
         currentUserId={currentUserId}
         onReply={(c) => {
           onSetReplyingId(c.id ?? null);
-          onReplyContentChange(""); // content starts empty; @username shown as visual prefix
+          onReplyContentChange("");
         }}
+        isHighlighted={highlightedCommentId === comment.id}
+        onMentionClick={onMentionClick}
       />
 
-      {/* Reply input — @username badge header + multiline textarea */}
-      {isReplying && (
-        <div className="mt-2 flex flex-col gap-1.5">
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground text-xs">Đang trả lời</span>
-            <span className="rounded bg-[#007BFF]/10 px-1.5 py-0.5 text-xs font-semibold text-[#007BFF]">
-              @{comment.userName ?? ""}
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <Textarea
-              autoFocus
-              placeholder="Trả lời... (Ctrl+Enter để gửi)"
-              value={replyContent}
-              rows={2}
-              className="max-h-32 flex-1 resize-none overflow-auto"
-              onChange={(e) => onReplyContentChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && e.ctrlKey && comment.id != null) {
-                  onReplySubmit(comment.id);
-                }
-              }}
-            />
-            <div className="flex flex-col gap-1">
-              <Button
-                size="sm"
-                onClick={() => comment.id != null && onReplySubmit(comment.id)}
-                disabled={!replyContent.trim()}>
-                <Send className="mr-1 h-4 w-4" />
-                Gửi
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  onSetReplyingId(null);
-                  onReplyContentChange("");
-                }}>
-                Hủy
-              </Button>
-            </div>
-          </div>
-        </div>
+      {/* Reply input for root comment */}
+      {isReplyingToRoot && (
+        <ReplyInput
+          userName={comment.userName ?? ""}
+          value={replyContent}
+          onChange={onReplyContentChange}
+          onSubmit={() => comment.id != null && onReplySubmit(comment.id)}
+          onCancel={() => {
+            onSetReplyingId(null);
+            onReplyContentChange("");
+          }}
+        />
       )}
 
-      {/* Collapsible children */}
-      {children.length > 0 && (
-        <>
+      {/* Flat reply block — single expand/collapse toggle for the whole thread */}
+      {allReplies.length > 0 && (
+        <div className="ml-11 border-l border-slate-200 pl-3 dark:border-slate-700">
           {!isExpanded ? (
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs"
+              className="text-muted-foreground gap-1 text-xs"
               onClick={() => comment.id != null && onToggleExpand(comment.id)}>
-              Xem {countDescendants(node)} phản hồi
+              <ChevronDown className="h-3.5 w-3.5" />
+              Xem {allReplies.length} phản hồi
             </Button>
           ) : (
             <>
-              {children.map((child) => (
-                <CommentThread
-                  key={child.comment.id}
-                  node={child}
-                  depth={depth + 1}
-                  currentUserId={currentUserId}
-                  replyingToId={replyingToId}
-                  replyContent={replyContent}
-                  onSetReplyingId={onSetReplyingId}
-                  onReplyContentChange={onReplyContentChange}
-                  onReplySubmit={onReplySubmit}
-                  expandedIds={expandedIds}
-                  onToggleExpand={onToggleExpand}
-                />
-              ))}
+              {allReplies.map((reply) => {
+                const isReplyingToThis = replyingToId === reply.id;
+                return (
+                  <div key={reply.id}>
+                    <CommentItem
+                      comment={reply}
+                      currentUserId={currentUserId}
+                      onReply={(c) => {
+                        onSetReplyingId(c.id ?? null);
+                        onReplyContentChange("");
+                      }}
+                      mentionedUserName={
+                        reply.parentCommentId
+                          ? commentById.get(reply.parentCommentId)?.userName
+                          : undefined
+                      }
+                      parentCommentId={reply.parentCommentId}
+                      isHighlighted={highlightedCommentId === reply.id}
+                      onMentionClick={onMentionClick}
+                    />
+                    {isReplyingToThis && (
+                      <ReplyInput
+                        userName={reply.userName ?? ""}
+                        value={replyContent}
+                        onChange={onReplyContentChange}
+                        onSubmit={() => reply.id != null && onReplySubmit(reply.id)}
+                        onCancel={() => {
+                          onSetReplyingId(null);
+                          onReplyContentChange("");
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs"
+                className="text-muted-foreground gap-1 text-xs"
                 onClick={() => comment.id != null && onToggleExpand(comment.id)}>
+                <ChevronUp className="h-3.5 w-3.5" />
                 Thu gọn
               </Button>
             </>
           )}
-        </>
+        </div>
       )}
     </div>
   );
@@ -228,10 +292,31 @@ export function CommentSection({
     return buildCommentTree(comments);
   }, [externalComments, commentsData]);
 
+  // Flat lookup map for all comments — used for @mention resolution and reply-submit root-finding
+  const commentById = useMemo(() => {
+    const map = new Map<number, PostCommentResponse>();
+    function addToMap(nodes: CommentNode[]) {
+      for (const n of nodes) {
+        if (n.comment.id != null) map.set(n.comment.id, n.comment);
+        addToMap(n.children);
+      }
+    }
+    addToMap(commentTree);
+    return map;
+  }, [commentTree]);
+
+  // IDs of root-level comments (no parentCommentId) — used to find which thread to expand
+  const rootIds = useMemo(
+    () => new Set(commentTree.map((n) => n.comment.id).filter((id): id is number => id != null)),
+    [commentTree]
+  );
+
   const [newContent, setNewContent] = useState("");
   const [replyingToId, setReplyingToId] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+  const [sortOrder, setSortOrder] = useState<"oldest" | "newest">("oldest");
+  const [highlightedCommentId, setHighlightedCommentId] = useState<number | null>(null);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["postComments", postId] });
@@ -256,15 +341,7 @@ export function CommentSection({
     const rawContent = replyContent.trim();
     if (!rawContent || !currentUserId) return;
 
-    // Find the parent comment to prepend @username so replies are traceable in thread
-    function findComment(nodes: CommentNode[], id: number): PostCommentResponse | undefined {
-      for (const n of nodes) {
-        if (n.comment.id === id) return n.comment;
-        const found = findComment(n.children, id);
-        if (found) return found;
-      }
-    }
-    const parentComment = findComment(commentTree, parentCommentId);
+    const parentComment = commentById.get(parentCommentId);
     const content = parentComment?.userName
       ? `@${parentComment.userName} ${rawContent}`
       : rawContent;
@@ -275,8 +352,9 @@ export function CommentSection({
         onSuccess: () => {
           setReplyContent("");
           setReplyingToId(null);
-          // Auto-expand the parent thread so the new reply is immediately visible
-          setExpandedIds((prev) => new Set(prev).add(parentCommentId));
+          // Expand the root thread so the new reply is immediately visible
+          const rootId = findRootCommentId(parentCommentId, commentById, rootIds);
+          setExpandedIds((prev) => new Set(prev).add(rootId));
           if (onExternalInvalidate) onExternalInvalidate();
           else invalidate();
         },
@@ -294,19 +372,60 @@ export function CommentSection({
     });
   };
 
+  const handleMentionClick = (parentCommentId: number) => {
+    // Expand the root thread that contains the target comment, then scroll to it
+    const rootId = findRootCommentId(parentCommentId, commentById, rootIds);
+    setExpandedIds((prev) => new Set(prev).add(rootId));
+    // Small delay so the DOM updates from the expand before we try to scroll
+    setTimeout(() => {
+      const el = document.querySelector(`[data-comment-id="${parentCommentId}"]`);
+      el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      setHighlightedCommentId(parentCommentId);
+      setTimeout(() => setHighlightedCommentId(null), 2000);
+    }, 50);
+  };
+
+  const sortedTree = useMemo(() => {
+    if (sortOrder === "oldest") return commentTree;
+    return [...commentTree].sort((a, b) => {
+      if (!a.comment.createdAt || !b.comment.createdAt) return 0;
+      return new Date(b.comment.createdAt).getTime() - new Date(a.comment.createdAt).getTime();
+    });
+  }, [commentTree, sortOrder]);
+
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Bình luận</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Bình luận</h3>
+        {commentTree.length > 1 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground gap-1 text-xs"
+            onClick={() => setSortOrder((prev) => (prev === "oldest" ? "newest" : "oldest"))}>
+            {sortOrder === "oldest" ? (
+              <>
+                <ChevronUp className="h-3.5 w-3.5" />
+                Cũ nhất
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3.5 w-3.5" />
+                Mới nhất
+              </>
+            )}
+          </Button>
+        )}
+      </div>
 
-      {commentTree.length === 0 ? (
+      {sortedTree.length === 0 ? (
         <p className="text-muted-foreground text-sm">Chưa có bình luận nào</p>
       ) : (
         <div className="space-y-1 divide-y">
-          {commentTree.map((node) => (
+          {sortedTree.map((node) => (
             <CommentThread
               key={node.comment.id}
               node={node}
-              depth={0}
               currentUserId={currentUserId}
               replyingToId={replyingToId}
               replyContent={replyContent}
@@ -315,6 +434,9 @@ export function CommentSection({
               onReplySubmit={handleReplySubmit}
               expandedIds={expandedIds}
               onToggleExpand={handleToggleExpand}
+              commentById={commentById}
+              highlightedCommentId={highlightedCommentId}
+              onMentionClick={handleMentionClick}
             />
           ))}
         </div>

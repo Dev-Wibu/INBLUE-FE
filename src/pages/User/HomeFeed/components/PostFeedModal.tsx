@@ -284,8 +284,8 @@ export function PostFeedModal({ item, open, onOpenChange }: PostFeedModalProps) 
             </div>
           )}
         </DialogContent>
-
-        {/* Full-screen image viewer — inside DialogContent so Radix treats it as internal */}
+        {/* Full-screen image viewer — inside DialogContent so Radix treats its DOM as internal,
+              preventing the DismissableLayer from closing the Dialog on backdrop/X click */}
         {post?.coverImgUrl && (
           <ImageViewerModal
             src={post.coverImgUrl}

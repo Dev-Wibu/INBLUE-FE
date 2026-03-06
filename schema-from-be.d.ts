@@ -165,6 +165,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/membership-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllPlans"];
+        put: operations["updatePlan"];
+        post: operations["createPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/majors": {
         parameters: {
             query?: never;
@@ -293,6 +309,22 @@ export interface paths {
         put?: never;
         /** hàm này để upload cv và parse cv trả về thằng candidate profile */
         post: operations["uploadCv"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/subscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["subscribePlan"];
         delete?: never;
         options?: never;
         head?: never;
@@ -768,6 +800,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["startInterview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/{userId}/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getActiveSubscription"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1268,6 +1316,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/membership-plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPlanById"];
+        put?: never;
+        post?: never;
+        delete: operations["deletePlan"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/majors/{id}": {
         parameters: {
             query?: never;
@@ -1440,6 +1504,22 @@ export interface components {
             description?: string;
             urlTutorial?: string;
         };
+        MemberShipPlan: {
+            /** Format: int32 */
+            id?: number;
+            /** @enum {string} */
+            name?: "NEW" | "FREE" | "BASIC" | "PREMIUM" | "TEST";
+            /** Format: int32 */
+            price?: number;
+            /** Format: int32 */
+            max_ai_interview?: number;
+            /** Format: int32 */
+            max_practice_sets?: number;
+            /** Format: int32 */
+            max_quiz_sets?: number;
+            /** Format: int32 */
+            durationDays?: number;
+        };
         PracticeQuestion: {
             /** Format: int32 */
             questionId?: number;
@@ -1483,6 +1563,7 @@ export interface components {
             major?: "CNTT" | "Marketing";
             cvUrl?: string;
             cv_public_id?: string;
+            membershipPlan?: components["schemas"]["MemberShipPlan"];
         };
         PracticeSetItem: {
             /** Format: int32 */
@@ -1783,6 +1864,11 @@ export interface components {
             question?: string;
             options?: string;
         };
+        QuizResponse: {
+            /** Format: int32 */
+            quizId?: number;
+            items?: components["schemas"]["QuizItemResponse"][];
+        };
         PracticeQuestionRequest: {
             title?: string;
             content?: string;
@@ -2010,6 +2096,35 @@ export interface components {
             status?: "TURNING_LEFT" | "TURNING_RIGHT" | "BOWING_HEAD" | "LOOKING_UP_HEAD" | "TOO_CLOSE" | "TOO_FAR" | "GLANCING_LEFT" | "GLANCING_RIGHT" | "LOOKING_UP_EYES" | "LOOKING_DOWN_EYES" | "NORMAL" | "UNKNOWN";
             warning?: boolean;
         };
+        UserSubscriptionResponse: {
+            /** @enum {string} */
+            planName?: "NEW" | "FREE" | "BASIC" | "PREMIUM" | "TEST";
+            /** Format: int32 */
+            price?: number;
+            /** Format: int32 */
+            durationDays?: number;
+            /** Format: int32 */
+            maxAiInterview?: number;
+            /** Format: int32 */
+            maxPracticeSets?: number;
+            /** Format: int32 */
+            maxQuizSets?: number;
+            /** Format: int32 */
+            aiInterviewUsed?: number;
+            /** Format: int32 */
+            practiceSetUsed?: number;
+            /** Format: int32 */
+            quizSetUsed?: number;
+            /** Format: int32 */
+            aiInterviewRemaining?: number;
+            /** Format: int32 */
+            practiceSetRemaining?: number;
+            /** Format: int32 */
+            quizSetRemaining?: number;
+            /** Format: date */
+            expiredAt?: string;
+            active?: boolean;
+        };
         PracticeQuestionDto: {
             /** Format: int32 */
             questionId?: number;
@@ -2030,7 +2145,18 @@ export interface components {
             level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: date-time */
             startDate?: string;
+            /** Format: int32 */
+            interviewSessionId?: number;
             questions?: components["schemas"]["PracticeQuestionDto"][];
+            quizzes?: components["schemas"]["Quiz"][];
+        };
+        Quiz: {
+            /** Format: int32 */
+            quizId?: number;
+            quizName?: string;
+            /** Format: int32 */
+            index?: number;
+            submit?: boolean;
         };
         AuthorResponse: {
             name?: string;
@@ -2083,7 +2209,6 @@ export interface components {
             totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
-            pageable?: components["schemas"]["PageableObject"];
             first?: boolean;
             last?: boolean;
             /** Format: int32 */
@@ -2094,6 +2219,7 @@ export interface components {
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         PageableObject: {
@@ -2101,16 +2227,16 @@ export interface components {
             /** Format: int32 */
             pageNumber?: number;
             paged?: boolean;
-            /** Format: int32 */
-            pageSize?: number;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            /** Format: int32 */
+            pageSize?: number;
         };
         SortObject: {
             unsorted?: boolean;
-            sorted?: boolean;
             empty?: boolean;
+            sorted?: boolean;
         };
         InterviewBlueprintResponse: {
             strategy_analysis?: string;
@@ -2787,6 +2913,74 @@ export interface operations {
             };
         };
     };
+    getAllPlans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MemberShipPlan"][];
+                };
+            };
+        };
+    };
+    updatePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberShipPlan"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MemberShipPlan"];
+                };
+            };
+        };
+    };
+    createPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberShipPlan"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MemberShipPlan"];
+                };
+            };
+        };
+    };
     getAllMajors: {
         parameters: {
             query?: never;
@@ -3096,6 +3290,29 @@ export interface operations {
             };
         };
     };
+    subscribePlan: {
+        parameters: {
+            query: {
+                userId: number;
+                planId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["User"];
+                };
+            };
+        };
+    };
     handleDailyCoWebhook: {
         parameters: {
             query?: never;
@@ -3266,6 +3483,7 @@ export interface operations {
         parameters: {
             query: {
                 practiceSetId: number;
+                userId: number;
             };
             header?: never;
             path?: never;
@@ -3279,7 +3497,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["QuizItemResponse"][];
+                    "*/*": components["schemas"]["QuizResponse"];
                 };
             };
         };
@@ -3781,6 +3999,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["QuestionResponse"];
+                };
+            };
+        };
+    };
+    getActiveSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserSubscriptionResponse"];
                 };
             };
         };
@@ -4547,6 +4787,48 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["MentorFeedback"][];
                 };
+            };
+        };
+    };
+    getPlanById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MemberShipPlan"];
+                };
+            };
+        };
+    };
+    deletePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
