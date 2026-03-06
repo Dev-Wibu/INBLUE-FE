@@ -346,11 +346,25 @@ export const ERROR_MESSAGES: Record<number, string> = {
 export const createApiInstance = (): AxiosInstance => {
   const instance = axios.create(apiConfig);
 
-  // Request interceptor - Add request ID for debugging
+  // Request interceptor - Add request ID and inject JWT token
   instance.interceptors.request.use((config) => {
-    // Generate unique request ID for debugging
     const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     config.headers["X-Request-ID"] = requestId;
+
+    // Inject JWT from persisted Zustand auth store (same key as authStore's `name`)
+    try {
+      const raw = localStorage.getItem("auth-storage");
+      if (raw) {
+        const parsed = JSON.parse(raw) as { state?: { token?: string } };
+        const token = parsed.state?.token;
+        if (token) {
+          config.headers["Authorization"] = `Bearer ${token}`;
+        }
+      }
+    } catch {
+      // localStorage unavailable or JSON malformed — proceed without token
+    }
+
     return config;
   });
 

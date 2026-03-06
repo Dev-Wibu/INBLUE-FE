@@ -21,7 +21,6 @@ import type { ChromeTabMenuGroup, SidebarMenuGroup } from "@/components/shared";
 import { DashboardChromeTabs, DashboardSidebar } from "@/components/shared";
 import { useTabsState } from "@/hooks/useTabsState";
 
-import { PostListPage } from "../../User/Community";
 import { CandidateProfileManagementPage } from "../CandidateProfileManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
@@ -36,6 +35,7 @@ import { QuizSetManagementPage } from "../QuizSetManagement";
 import { ReviewManagementPage } from "../ReviewManagement";
 import { SessionManagementPage } from "../SessionManagement";
 import { UserManagementPage } from "../UserManagement";
+import { CommunityTabView } from "./CommunityTabView";
 
 type TabType =
   | "dashboard"
@@ -319,7 +319,7 @@ export function AdminDashboardPage() {
       case "posts":
         return <PostManagementPage />;
       case "community":
-        return <PostListPage />;
+        return <CommunityTabView />;
       case "candidateProfiles":
         return <CandidateProfileManagementPage />;
       default:

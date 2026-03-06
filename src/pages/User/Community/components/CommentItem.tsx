@@ -8,6 +8,14 @@ interface CommentItemProps {
   comment: PostCommentResponse;
   currentUserId?: number;
   onReply?: (comment: PostCommentResponse) => void;
+  /** Full name of the @mentioned user (parent comment author). Enables exact multi-word matching. */
+  mentionedUserName?: string;
+  /** ID of the parent comment — used as jump target when @mention is clicked. */
+  parentCommentId?: number;
+  /** Called with the parent comment ID when the @mention span is clicked. */
+  onMentionClick?: (parentCommentId: number) => void;
+  /** When true, applies a brief highlight ring (used after jump-to-parent scroll). */
+  isHighlighted?: boolean;
 }
 
 function getRelativeTime(dateStr?: string): string {
@@ -26,8 +34,41 @@ function getRelativeTime(dateStr?: string): string {
   return `${diffMonths} tháng trước`;
 }
 
-function renderContent(text?: string): (string | React.ReactElement)[] {
+function renderContent(
+  text: string | undefined,
+  mentionedUserName: string | undefined,
+  parentCommentId: number | undefined,
+  onMentionClick: ((pid: number) => void) | undefined
+): (string | React.ReactElement)[] {
   if (!text) return [];
+
+  // If we know the exact mentioned username, match it precisely — handles multi-word names
+  // like "@Hoàng Tử Gió" that the generic \S+ regex would split at the first space.
+  if (mentionedUserName) {
+    const mention = `@${mentionedUserName}`;
+    if (text.startsWith(mention)) {
+      const rest = text.slice(mention.length);
+      const clickable = !!(onMentionClick && parentCommentId);
+      const mentionEl = (
+        <span
+          key="mention"
+          className={`font-semibold text-[#007BFF]${clickable ? "cursor-pointer hover:underline" : ""}`}
+          onClick={
+            clickable
+              ? (e) => {
+                  e.stopPropagation();
+                  onMentionClick!(parentCommentId!);
+                }
+              : undefined
+          }>
+          {mention}
+        </span>
+      );
+      return [mentionEl, ...renderContent(rest, undefined, undefined, undefined)];
+    }
+  }
+
+  // Fallback: regex match for single-word @mentions (no spaces)
   const parts = text.split(/(@\S+)/g);
   return parts.map((part, i) =>
     /^@\S+$/.test(part) ? (
@@ -40,7 +81,14 @@ function renderContent(text?: string): (string | React.ReactElement)[] {
   );
 }
 
-export function CommentItem({ comment, onReply }: CommentItemProps) {
+export function CommentItem({
+  comment,
+  onReply,
+  mentionedUserName,
+  parentCommentId,
+  onMentionClick,
+  isHighlighted,
+}: CommentItemProps) {
   const initials = comment.userName
     ?.split(" ")
     .map((w) => w[0])
@@ -49,7 +97,9 @@ export function CommentItem({ comment, onReply }: CommentItemProps) {
     .toUpperCase();
 
   return (
-    <div className="flex gap-3 py-3">
+    <div
+      data-comment-id={comment.id}
+      className={`flex gap-3 rounded py-3 transition-colors duration-500${isHighlighted ? "bg-[#007BFF]/10 ring-1 ring-[#007BFF]/30" : ""}`}>
       <Avatar className="h-8 w-8">
         <AvatarImage src={comment.userAvatar} alt={comment.userName} />
         <AvatarFallback>{initials || "?"}</AvatarFallback>
@@ -62,7 +112,7 @@ export function CommentItem({ comment, onReply }: CommentItemProps) {
           </span>
         </div>
         <p className="mt-1 text-sm wrap-break-word whitespace-pre-wrap">
-          {renderContent(comment.content)}
+          {renderContent(comment.content, mentionedUserName, parentCommentId, onMentionClick)}
         </p>
         {onReply && (
           <Button

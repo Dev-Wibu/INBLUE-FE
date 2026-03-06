@@ -637,6 +637,54 @@ export class PostManager implements BaseManager<Post> {
     }
   }
 
+  /**
+   * Update a post using multipart/form-data (same endpoint as create, with postId appended)
+   * POST /api/posts (multipart/form-data) — backend uses postId presence to detect update
+   */
+  async updatePost(id: string | number, data: PostCreateRequest): Promise<ApiResponse<Post>> {
+    if (this.mode === "mock") {
+      const index = mockPosts.findIndex((p) => p.postId === Number(id));
+      if (index === -1) {
+        return { success: false, error: "Post not found" };
+      }
+      mockPosts[index] = {
+        ...mockPosts[index],
+        title: data.title,
+        content: data.content,
+        summary: data.summary,
+        status: data.status ?? mockPosts[index].status,
+        tags: data.tags,
+        lastModifiedDate: new Date().toISOString(),
+      };
+      return { success: true, data: mockPosts[index] };
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("postId", String(id));
+      if (data.title) formData.append("title", data.title);
+      if (data.content) formData.append("content", data.content);
+      if (data.summary) formData.append("summary", data.summary);
+      if (data.authorId) formData.append("authorId", String(data.authorId));
+      if (data.majorId) formData.append("majorId", String(data.majorId));
+      if (data.coverImg) formData.append("coverImg", data.coverImg);
+      if (data.status) formData.append("status", data.status);
+      if (data.tags) {
+        data.tags.forEach((tag) => formData.append("tags", tag));
+      }
+
+      const response = await this.api.post(API_ENDPOINTS.POSTS.CREATE, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to update post",
+      };
+    }
+  }
+
   async delete(id: string | number): Promise<ApiResponse<void>> {
     if (this.mode === "mock") {
       const index = mockPosts.findIndex((p) => p.postId === Number(id));
