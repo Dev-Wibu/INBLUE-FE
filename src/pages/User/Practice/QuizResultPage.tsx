@@ -1,6 +1,6 @@
-import { ArrowLeft, CheckCircle, RefreshCw, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import { toast } from "sonner";
 export function QuizResultPage() {
   const { id, quizId } = useParams<{ id: string; quizId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const backUrl =
+    (location.state as { backUrl?: string } | null)?.backUrl ?? `/user/practice/${id ?? ""}`;
   const [quizSet, setQuizSet] = useState<QuizSet | null>(null);
   const [quizItems, setQuizItems] = useState<QuizItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,20 +23,15 @@ export function QuizResultPage() {
     if (!quizId) return;
     setLoading(true);
     try {
-      const [quizResponse, itemsResponse] = await Promise.all([
-        quizSetManager.getById(Number(quizId)),
-        quizSetManager.getQuizItems(Number(quizId)),
-      ]);
-
+      // GET /api/quiz-sets/{quizId} returns QuizSet with embedded questions[]
+      const quizResponse = await quizSetManager.getById(Number(quizId));
       if (quizResponse.success && quizResponse.data) {
         setQuizSet(quizResponse.data);
+        setQuizItems(quizResponse.data.questions ?? []);
+      } else {
+        toast.error("Không thể tải kết quả bài trắc nghiệm");
       }
-
-      if (itemsResponse.success && itemsResponse.data) {
-        setQuizItems(itemsResponse.data);
-      }
-    } catch (error) {
-      console.error("Error loading quiz result:", error);
+    } catch {
       toast.error("Không thể tải kết quả bài trắc nghiệm");
     } finally {
       setLoading(false);
@@ -80,18 +78,8 @@ export function QuizResultPage() {
         </Card>
 
         {/* Action Buttons */}
-        <div className="mb-8 flex items-center justify-center gap-4">
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => navigate(`/user/practice/${id}/quiz`)}>
-            <RefreshCw className="h-4 w-4" />
-            Làm lại bài trắc nghiệm
-          </Button>
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => navigate(`/user/practice/${id}`)}>
+        <div className="mb-8 flex items-center justify-center">
+          <Button variant="outline" className="gap-2" onClick={() => navigate(backUrl)}>
             <ArrowLeft className="h-4 w-4" />
             Quay lại bộ luyện tập
           </Button>

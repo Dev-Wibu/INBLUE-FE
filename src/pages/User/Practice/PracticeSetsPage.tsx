@@ -1,13 +1,4 @@
-import {
-  BookOpen,
-  Calendar,
-  ExternalLink,
-  Filter,
-  GraduationCap,
-  Plus,
-  Search,
-  Sparkles,
-} from "lucide-react";
+import { BookOpen, Calendar, ExternalLink, Filter, Plus, Search, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -25,9 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/formatting";
-import { cn, extractDataArray } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { practiceSetManager } from "@/services";
-import type { PracticeSet } from "@/services/practice-set.manager";
+import type { PracticeSetResponse } from "@/services/practice-set.manager";
+import { useAuthStore } from "@/stores";
 
 const levelBadgeMap: Record<string, string> = {
   INTERN: "bg-blue-100 text-blue-700",
@@ -41,7 +33,7 @@ function PracticeSetCard({
   index,
   navigate,
 }: {
-  ps: PracticeSet;
+  ps: PracticeSetResponse;
   index: number;
   navigate: (path: string) => void;
 }) {
@@ -70,12 +62,6 @@ function PracticeSetCard({
               <Badge
                 className={cn("text-xs", levelBadgeMap[ps.level] ?? "bg-gray-100 text-gray-700")}>
                 {ps.level}
-              </Badge>
-            )}
-            {ps.major?.majorName && (
-              <Badge variant="secondary" className="text-xs">
-                <GraduationCap className="mr-1 h-3 w-3" />
-                {ps.major.majorName}
               </Badge>
             )}
             {ps.startDate && (
@@ -109,7 +95,7 @@ function SessionGroupCard({
   navigate,
 }: {
   index: number;
-  sets: PracticeSet[];
+  sets: PracticeSetResponse[];
   navigate: (path: string) => void;
 }) {
   const first = sets[0];
@@ -150,12 +136,6 @@ function SessionGroupCard({
                 {first.level}
               </Badge>
             )}
-            {first.major?.majorName && (
-              <Badge variant="secondary" className="text-xs">
-                <GraduationCap className="mr-1 h-3 w-3" />
-                {first.major.majorName}
-              </Badge>
-            )}
             {first.startDate && (
               <span className="text-muted-foreground flex items-center gap-1 text-xs">
                 <Calendar className="h-3 w-3" />
@@ -183,17 +163,19 @@ function SessionGroupCard({
 
 export function PracticeSetsPage() {
   const navigate = useNavigate();
-  const [practiceSets, setPracticeSets] = useState<PracticeSet[]>([]);
+  const { user } = useAuthStore();
+  const [practiceSets, setPracticeSets] = useState<PracticeSetResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
 
   const loadData = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
     try {
-      const response = await practiceSetManager.getAll();
+      const response = await practiceSetManager.getByUser(user.id);
       if (response.success) {
-        setPracticeSets(extractDataArray<PracticeSet>(response));
+        setPracticeSets(response.data ?? []);
       } else {
         toast.error(response.error ?? "Không thể tải danh sách bộ luyện tập");
       }
@@ -202,7 +184,7 @@ export function PracticeSetsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     void loadData();
@@ -235,7 +217,7 @@ export function PracticeSetsPage() {
 
   // Gom nhóm các practice-set AI theo interviewSessionId — mỗi session = 1 thẻ
   const sessionGroups = useMemo(() => {
-    const map = new Map<number, PracticeSet[]>();
+    const map = new Map<number, PracticeSetResponse[]>();
     for (const ps of aiLinkedSets) {
       const key = ps.interviewSessionId!;
       const group = map.get(key) ?? [];
