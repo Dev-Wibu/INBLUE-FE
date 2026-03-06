@@ -2205,38 +2205,38 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
-            first?: boolean;
-            last?: boolean;
+            /** Format: int64 */
+            totalElements?: number;
+            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
+            paged?: boolean;
+            /** Format: int32 */
+            pageSize?: number;
             /** Format: int32 */
             pageNumber?: number;
-            paged?: boolean;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            /** Format: int32 */
-            pageSize?: number;
         };
         SortObject: {
+            sorted?: boolean;
             unsorted?: boolean;
             empty?: boolean;
-            sorted?: boolean;
         };
         InterviewBlueprintResponse: {
             strategy_analysis?: string;
