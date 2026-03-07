@@ -1,4 +1,4 @@
-import { FileText, User } from "lucide-react";
+import { Crown, FileText, User } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { CVUploadModal } from "@/components/ui/cv-upload-modal";
@@ -7,7 +7,7 @@ import { usersAdminManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 
-import { ProfileTab, SettingsTab, WalletTab } from "./AccountTabs";
+import { MembershipTab, ProfileTab, SettingsTab, WalletTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
@@ -18,7 +18,7 @@ export function AccountPage() {
   const [settings] = useState<UserSettings>(mockUserSettings);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "profile" | "wallet" | "settings" | "candidateProfile"
+    "profile" | "wallet" | "settings" | "candidateProfile" | "membership"
   >("profile");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -266,6 +266,8 @@ export function AccountPage() {
         return <SettingsTab settings={settings} />;
       case "candidateProfile":
         return <CandidateProfileTab />;
+      case "membership":
+        return <MembershipTab />;
       default:
         return userProfile ? (
           <ProfileTab
@@ -342,6 +344,16 @@ export function AccountPage() {
           }`}>
           <FileText className="h-4 w-4" />
           Hồ sơ ứng viên
+        </button>
+        <button
+          onClick={() => setActiveTab("membership")}
+          className={`flex items-center gap-2 px-6 py-3 font-['Inter'] text-base font-medium transition-colors ${
+            activeTab === "membership"
+              ? "border-b-2 border-[#0047AB] text-[#0047AB] dark:border-[#66B2FF] dark:text-[#66B2FF]"
+              : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300"
+          }`}>
+          <Crown className="h-4 w-4" />
+          Gói thành viên
         </button>
       </div>
 
