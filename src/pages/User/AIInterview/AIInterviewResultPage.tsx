@@ -721,14 +721,24 @@ export function AIInterviewResultPage() {
                 <div className="mt-4">
                   {existingPracticeSets.length > 0 ? (
                     // 1 session = 1 practice set: redirect khi đã tạo
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
-                      onClick={() => navigate(`/user/practice/session/${id}`)}>
-                      <BookOpen className="h-3.5 w-3.5" />
-                      Xem lộ trình luyện tập
-                    </Button>
+                    <div className="items-c flex gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                        onClick={() => setRoadmapOpen(true)}>
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Tạo lộ trình luyện tập mới
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                        onClick={() => navigate(`/user/practice/session/${id}`)}>
+                        <BookOpen className="h-3.5 w-3.5" />
+                        Xem lộ trình luyện tập
+                      </Button>
+                    </div>
                   ) : (
                     <Button
                       variant="outline"
