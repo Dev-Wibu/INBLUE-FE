@@ -247,7 +247,6 @@ export function CreatePostPage({ onSuccess, onCancel }: CreatePostPageProps = {}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="DRAFT">Bản nháp</SelectItem>
-                  <SelectItem value="PUBLISHED">Đã xuất bản</SelectItem>
                 </SelectContent>
               </Select>
             </div>

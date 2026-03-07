@@ -1,7 +1,8 @@
-import { Loader2, Search } from "lucide-react";
+import { Loader2, PenSquare, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,7 +19,7 @@ import { CreatePostModal } from "./components/CreatePostModal";
 import { PostFeedCard } from "./components/PostFeedCard";
 import { useHomeFeed } from "./useHomeFeed";
 
-type SortBy = "newest" | "popular";
+type SortBy = "newest" | "popular" | "recent_activity";
 
 export function HomeFeedPage() {
   const { user } = useAuthStore();
@@ -57,7 +58,25 @@ export function HomeFeedPage() {
         return matchSearch && matchMajor;
       })
       .sort((a, b) => {
-        if (sortBy === "popular") return (b.likeCount ?? 0) - (a.likeCount ?? 0);
+        if (sortBy === "popular") {
+          const scoreA = (a.likeCount ?? 0) + (a.commentCount ?? 0);
+          const scoreB = (b.likeCount ?? 0) + (b.commentCount ?? 0);
+          return scoreB - scoreA;
+        }
+        if (sortBy === "recent_activity") {
+          const latestComment = (items: typeof a.postComments) => {
+            if (!items?.length) return 0;
+            return items.reduce((latest, c) => {
+              const t = c.createdAt ? new Date(c.createdAt).getTime() : 0;
+              return t > latest ? t : latest;
+            }, 0);
+          };
+          const latestA = latestComment(a.postComments);
+          const latestB = latestComment(b.postComments);
+          const fallbackA = a.post?.creationDate ? new Date(a.post.creationDate).getTime() : 0;
+          const fallbackB = b.post?.creationDate ? new Date(b.post.creationDate).getTime() : 0;
+          return Math.max(latestB, fallbackB) - Math.max(latestA, fallbackA);
+        }
         return 0; // API already returns newest-first
       });
   }, [posts, search, majorFilter, sortBy]);
@@ -88,20 +107,30 @@ export function HomeFeedPage() {
         <p className="text-muted-foreground text-sm">Cập nhật bài viết mới nhất từ cộng đồng</p>
       </div>
 
-      {/* Create post prompt */}
-      <Card className="flex items-center gap-3 p-4">
-        <Avatar className="h-10 w-10 shrink-0">
-          <AvatarImage src={user?.avatarUrl ?? undefined} alt={authorName} />
-          <AvatarFallback className="bg-[#0047AB]/10 text-sm font-semibold text-[#0047AB]">
-            {authorInitials}
-          </AvatarFallback>
-        </Avatar>
-        <button
-          type="button"
-          className="text-muted-foreground hover:bg-muted flex-1 rounded-full border px-4 py-2.5 text-left text-sm transition-colors"
-          onClick={() => setCreateModalOpen(true)}>
-          Bạn đang nghĩ gì?
-        </button>
+      {/* Create post prompt — compact Facebook-style */}
+      <Card className="dark:border-sla0 overflow-hidden rounded-xl border-slate-200/70 py-0 shadow-sm">
+        <div className="flex items-center gap-3 px-4 py-2.5">
+          <Avatar className="h-9 w-9 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
+            <AvatarImage src={user?.avatarUrl ?? undefined} alt={authorName} />
+            <AvatarFallback className="bg-[#0047AB]/10 text-xs font-semibold text-[#0047AB]">
+              {authorInitials}
+            </AvatarFallback>
+          </Avatar>
+          <button
+            type="button"
+            className="text-muted-foreground hover:bg-muted flex-1 rounded-full border px-4 py-2 text-left text-sm transition-colors"
+            onClick={() => setCreateModalOpen(true)}>
+            Bạn đang nghĩ gì, {user?.name?.split(" ").pop() ?? "bạn"}?
+          </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-[#0047AB]"
+            onClick={() => setCreateModalOpen(true)}>
+            <PenSquare className="h-4 w-4" />
+            <span className="text-xs font-medium">Viết bài</span>
+          </Button>
+        </div>
       </Card>
 
       {/* Filter bar */}
@@ -131,12 +160,13 @@ export function HomeFeedPage() {
         </Select>
 
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="newest">Mới nhất</SelectItem>
+            <SelectItem value="newest">Bài mới nhất</SelectItem>
             <SelectItem value="popular">Phổ biến nhất</SelectItem>
+            <SelectItem value="recent_activity">Hoạt động gần đây</SelectItem>
           </SelectContent>
         </Select>
       </div>
