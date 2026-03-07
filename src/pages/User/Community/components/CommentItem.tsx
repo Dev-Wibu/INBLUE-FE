@@ -52,7 +52,7 @@ function renderContent(
       const mentionEl = (
         <span
           key="mention"
-          className={`inline-flex items-center rounded-md bg-[#007BFF]/10 px-1.5 py-0.5 text-xs font-semibold text-[#007BFF]${clickable ? " cursor-pointer hover:bg-[#007BFF]/20" : ""}`}
+          className={`inline-flex items-center rounded-md bg-[#007BFF]/10 px-1.5 py-0.5 text-xs font-semibold text-[#007BFF]${clickable ? "cursor-pointer hover:bg-[#007BFF]/20" : ""}`}
           onClick={
             clickable
               ? (e) => {

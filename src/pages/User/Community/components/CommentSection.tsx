@@ -64,6 +64,14 @@ function flattenDescendants(node: CommentNode): PostCommentResponse[] {
   return result;
 }
 
+function countAllDescendants(node: CommentNode): number {
+  let count = 0;
+  for (const child of node.children) {
+    count += 1 + countAllDescendants(child);
+  }
+  return count;
+}
+
 // Walk up the comment chain to find the root-level comment ID
 function findRootCommentId(
   commentId: number,
@@ -172,7 +180,7 @@ function CommentThread({
     [node, atMaxDepth]
   );
   const directChildren = atMaxDepth ? [] : node.children;
-  const totalReplies = atMaxDepth ? flatChildren.length : node.children.length;
+  const totalReplies = atMaxDepth ? flatChildren.length : countAllDescendants(node);
 
   return (
     <div>
