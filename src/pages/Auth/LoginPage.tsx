@@ -169,7 +169,7 @@ export function LoginPage() {
           </Button>
         </form>
 
-        <DemoLoginButton onSelectAccount={handleDemoAccountSelect} />
+        {import.meta.env.DEV && <DemoLoginButton onSelectAccount={handleDemoAccountSelect} />}
 
         {/* Signup Link */}
         <p className="text-center text-sm">
