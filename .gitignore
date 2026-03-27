@@ -50,3 +50,7 @@ cypress/screenshots/
 
 # Local tool config
 .cursor/mcp.json
+
+# Dependency directories
+package-lock.json
+yarn.lock
