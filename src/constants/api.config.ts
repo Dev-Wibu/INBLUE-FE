@@ -26,7 +26,7 @@ export const apiConfig: ApiConfig = {
 export const API_ENDPOINTS = {
   // Auth endpoints
   AUTH: {
-    LOGIN: "/auth/login",
+    LOGIN: "/api/auth/login",
     SIGNUP: "/auth/signup",
     LOGOUT: "/auth/logout",
     REFRESH: "/auth/refresh",

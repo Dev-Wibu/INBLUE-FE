@@ -71,12 +71,12 @@ export function SignupPage() {
     });
 
     if (result.success && result.data?.user) {
+      const parsedUserId = Number(result.data.user.id);
+      const userId = Number.isFinite(parsedUserId) ? parsedUserId : undefined;
+
       // Store auth state after successful signup
       setUser({
-        id:
-          typeof result.data.user.id === "string"
-            ? parseInt(result.data.user.id)
-            : result.data.user.id,
+        id: userId,
         name: result.data.user.fullName,
         email: result.data.user.email,
         role: "USER",

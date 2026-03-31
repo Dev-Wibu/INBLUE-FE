@@ -42,6 +42,14 @@ export const mockStaff: User = {
   avatar: null,
 };
 
+export const mockMentor: User = {
+  id: "3",
+  email: "mentor@example.com",
+  fullName: "Mentor Demo",
+  role: "MENTOR",
+  avatar: null,
+};
+
 export const mockMentorRegistration: MentorRegistration = {
   status: "pending",
   submittedAt: "2025-10-20T10:00:00Z",
@@ -70,6 +78,11 @@ export const mockLogin = async (
   // Demo staff account
   if (email === "staff@example.com" && password === "staff123") {
     return { success: true, user: mockStaff };
+  }
+
+  // Demo mentor account
+  if (email === "mentor@example.com" && password === "mentor123") {
+    return { success: true, user: mockMentor };
   }
 
   return { success: false, error: "Email hoặc mật khẩu không đúng" };
