@@ -27,10 +27,8 @@ export function LoginPage() {
     const result = await authManager.login({ email, password });
 
     if (result.success && result.data?.user) {
-      const userId =
-        typeof result.data.user.id === "string"
-          ? parseInt(result.data.user.id)
-          : result.data.user.id;
+      const parsedUserId = Number(result.data.user.id);
+      const userId = Number.isFinite(parsedUserId) ? parsedUserId : undefined;
 
       // Store auth state
       setUser({

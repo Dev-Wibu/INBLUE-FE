@@ -31,7 +31,9 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
+import { toast } from "sonner";
 
 /**
  * Get user initials for the avatar fallback.
@@ -50,9 +52,11 @@ export function Header() {
   const navigate = useNavigate();
   const { isLoggedIn, user, clearAuth } = useAuthStore();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authManager.logout();
     clearAuth();
-    navigate("/");
+    toast.success("Đăng xuất thành công");
+    navigate("/login");
   };
 
   const dashboardPath = getDashboardPath(user?.role);
