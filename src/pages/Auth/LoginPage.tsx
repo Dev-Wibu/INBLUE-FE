@@ -1,6 +1,6 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { DemoLoginButton } from "@/components/DemoLoginButton";
 import { Button } from "@/components/ui/button";
@@ -10,19 +10,29 @@ import { Label } from "@/components/ui/label";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 
+type LoginNavigationState = {
+  message?: string;
+  prefillEmail?: string;
+};
+
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationState = location.state as LoginNavigationState | null;
+  const isDemoLoginEnabled = import.meta.env.DEV || import.meta.env.MODE === "staging";
   const { setUser, setToken, setIsLoggedIn } = useAuthStore();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => navigationState?.prefillEmail || "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [infoMessage, setInfoMessage] = useState(() => navigationState?.message || "");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setInfoMessage("");
 
     const result = await authManager.login({ email, password });
 
@@ -55,8 +65,7 @@ export function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
-    // Mock Google login - redirect to dashboard for regular users
-    navigate("/user");
+    setError("Đăng nhập Google đang được phát triển. Vui lòng đăng nhập bằng email.");
   };
 
   // Handler for demo account selection - auto-fills credentials
@@ -64,6 +73,7 @@ export function LoginPage() {
     setEmail(demoEmail);
     setPassword(demoPassword);
     setError("");
+    setInfoMessage("");
   };
 
   return (
@@ -160,6 +170,7 @@ export function LoginPage() {
             </Link>
           </div>
 
+          {infoMessage && <p className="text-center text-sm text-emerald-600">{infoMessage}</p>}
           {error && <p className="text-center text-sm text-red-500">{error}</p>}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
@@ -167,7 +178,7 @@ export function LoginPage() {
           </Button>
         </form>
 
-        {import.meta.env.DEV && <DemoLoginButton onSelectAccount={handleDemoAccountSelect} />}
+        {isDemoLoginEnabled && <DemoLoginButton onSelectAccount={handleDemoAccountSelect} />}
 
         {/* Signup Link */}
         <p className="text-center text-sm">
