@@ -99,7 +99,9 @@ fetchClient.use({
     if (response.status === 401) {
       const { useAuthStore } = await import("@/stores/authStore");
       useAuthStore.getState().clearAuth();
-      window.location.href = "/login";
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
 
     return response;

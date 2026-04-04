@@ -4,7 +4,7 @@
  */
 
 import type { ApiConfig, ManagerMode } from "@/interfaces";
-import axios, { type AxiosInstance } from "axios";
+import axios, { AxiosHeaders, type AxiosInstance } from "axios";
 
 // Determine manager mode from environment variable or default to mock
 const envMode = import.meta.env.VITE_MANAGER_MODE as string;
@@ -42,6 +42,8 @@ export const API_ENDPOINTS = {
     SETTINGS: "/api/users/settings",
     WALLET: "/api/users/wallet",
     DEPOSIT: "/api/users/wallet/deposit",
+    SUBSCRIBE: "/api/users/subscribe",
+    ACTIVE_SUBSCRIPTION: "/api/users/:userId/subscription",
   },
 
   // Users management endpoints (for admin) - Based on schema-from-be.d.ts
@@ -99,6 +101,7 @@ export const API_ENDPOINTS = {
     SEND_MESSAGE: "/api/chat/sessions/:id/messages",
     AI_RESPONSE: "/api/chat/sessions/:id/messages/ai-response",
     CREATE_SESSION: "/api/chat/sessions",
+    HISTORY_BY_PARTICIPANTS: "/api/messages/:currentFullId/:recipientFullId",
   },
 
   // Question endpoints - Based on schema-from-be.d.ts
@@ -361,7 +364,19 @@ export const createApiInstance = (): AxiosInstance => {
   const instance = axios.create(apiConfig);
 
   // Request interceptor - Add request ID for debugging
-  instance.interceptors.request.use((config) => {
+  instance.interceptors.request.use(async (config) => {
+    // Keep auth behavior consistent across clients: always attach token when available.
+    const { useAuthStore } = await import("@/stores/authStore");
+    const token = useAuthStore.getState().token;
+
+    // Do not send stale bearer token when logging in.
+    if (token && !(config.url || "").includes(API_ENDPOINTS.AUTH.LOGIN)) {
+      const headers =
+        config.headers instanceof AxiosHeaders ? config.headers : AxiosHeaders.from(config.headers);
+      headers.set("Authorization", `Bearer ${token}`);
+      config.headers = headers;
+    }
+
     // Generate unique request ID for debugging
     const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     config.headers["X-Request-ID"] = requestId;
@@ -371,7 +386,7 @@ export const createApiInstance = (): AxiosInstance => {
   // Response interceptor - Global error handling (without toast to prevent duplicates)
   instance.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
       const status = error.response?.status;
 
       // Handle network errors (no response) - log but don't toast
@@ -387,9 +402,13 @@ export const createApiInstance = (): AxiosInstance => {
 
         // Redirect to login on 401 (unauthorized)
         if (status === 401) {
-          // Clear auth and redirect
-          localStorage.removeItem("auth-storage");
-          window.location.href = "/login";
+          // Clear full auth state consistently (token, user, current-user-id) before redirect.
+          const { useAuthStore } = await import("@/stores/authStore");
+          useAuthStore.getState().clearAuth();
+
+          if (window.location.pathname !== "/login") {
+            window.location.href = "/login";
+          }
         }
       }
 

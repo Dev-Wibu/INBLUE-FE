@@ -71,21 +71,40 @@ export function SignupPage() {
     });
 
     if (result.success && result.data?.user) {
+      const token = typeof result.data.token === "string" ? result.data.token.trim() : "";
       const parsedUserId = Number(result.data.user.id);
       const userId = Number.isFinite(parsedUserId) ? parsedUserId : undefined;
 
-      // Store auth state after successful signup
-      setUser({
-        id: userId,
-        name: result.data.user.fullName,
-        email: result.data.user.email,
-        role: "USER",
-      });
-      setToken(result.data.token || null);
-      setIsLoggedIn(true);
+      if (token) {
+        // Auto-login only when backend returns a valid token.
+        setUser({
+          id: userId,
+          name: result.data.user.fullName,
+          email: result.data.user.email,
+          role: "USER",
+        });
+        setToken(token);
+        setIsLoggedIn(true);
 
-      // Navigate to user dashboard after successful signup
-      navigate("/user");
+        if (userId && !isNaN(userId)) {
+          localStorage.setItem("current-user-id", String(userId));
+        }
+
+        navigate("/user");
+      } else {
+        // Do not create a logged-in state without token.
+        setUser(null);
+        setToken(null);
+        setIsLoggedIn(false);
+
+        navigate("/login", {
+          replace: true,
+          state: {
+            message: "Đăng ký thành công. Vui lòng đăng nhập để tiếp tục.",
+            prefillEmail: result.data.user.email,
+          },
+        });
+      }
     } else {
       setError(result.error || "Đăng ký thất bại");
     }
@@ -94,8 +113,7 @@ export function SignupPage() {
   };
 
   const handleGoogleSignup = () => {
-    // Mock Google signup - redirect to dashboard
-    navigate("/user");
+    setError("Đăng ký Google đang được phát triển. Vui lòng đăng ký bằng email.");
   };
 
   return (
