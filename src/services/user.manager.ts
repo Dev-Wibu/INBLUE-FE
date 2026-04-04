@@ -3,10 +3,15 @@
  * Handles user profile and wallet operations
  */
 
-import type { ApiResponse } from "@/interfaces";
+import type { ApiResponse, User, UserSubscriptionResponse } from "@/interfaces";
 import type { Transaction, UserProfile, UserSettings, Wallet } from "@/mocks/user.mock";
 
-import { API_ENDPOINTS, MANAGER_MODE, createApiInstance } from "@/constants/api.config";
+import {
+  API_ENDPOINTS,
+  MANAGER_MODE,
+  buildEndpoint,
+  createApiInstance,
+} from "@/constants/api.config";
 import * as userMock from "@/mocks/user.mock";
 
 export class UserManager {
@@ -197,6 +202,91 @@ export class UserManager {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to deposit to wallet",
+      };
+    }
+  }
+
+  /**
+   * Subscribe a user to a membership plan.
+   * POST /api/users/subscribe?userId=&planId=
+   */
+  async subscribePlan(
+    userId: number | string,
+    planId: number | string
+  ): Promise<ApiResponse<User>> {
+    if (this.mode === "mock") {
+      return {
+        success: true,
+        data: {
+          id: Number(userId),
+          membershipPlan: {
+            id: Number(planId),
+          },
+        } as User,
+      };
+    }
+
+    try {
+      const response = await this.api.post(API_ENDPOINTS.USER.SUBSCRIBE, null, {
+        params: {
+          userId: Number(userId),
+          planId: Number(planId),
+        },
+      });
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to subscribe membership plan",
+      };
+    }
+  }
+
+  /**
+   * Get active subscription and remaining quotas of a user.
+   * GET /api/users/{userId}/subscription
+   */
+  async getActiveSubscription(
+    userId: number | string
+  ): Promise<ApiResponse<UserSubscriptionResponse>> {
+    if (this.mode === "mock") {
+      return {
+        success: true,
+        data: {
+          planName: "FREE",
+          price: 0,
+          durationDays: 30,
+          maxAiInterview: 1,
+          maxPracticeSets: 2,
+          maxQuizSets: 2,
+          aiInterviewUsed: 0,
+          practiceSetUsed: 0,
+          quizSetUsed: 0,
+          aiInterviewRemaining: 1,
+          practiceSetRemaining: 2,
+          quizSetRemaining: 2,
+          active: true,
+        },
+      };
+    }
+
+    try {
+      const endpoint = buildEndpoint(API_ENDPOINTS.USER.ACTIVE_SUBSCRIPTION, {
+        userId: Number(userId),
+      });
+      const response = await this.api.get(endpoint);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch active subscription",
       };
     }
   }
