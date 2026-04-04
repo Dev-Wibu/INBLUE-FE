@@ -15,7 +15,7 @@ import { CandidateProfileTab } from "./CandidateProfile";
 export function AccountPage() {
   const { user: authUser, setUser } = useAuthStore();
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
-  const [wallet] = useState<Wallet>(mockWallet);
+  const [wallet, setWallet] = useState<Wallet>(mockWallet);
   const [settings] = useState<UserSettings>(mockUserSettings);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -59,6 +59,10 @@ export function AccountPage() {
           cv_public_id: userData.cv_public_id || null,
           createdAt: new Date().toISOString(), // Backend doesn't provide createdAt
         });
+
+        if (typeof userData.walletBalance === "number") {
+          setWallet((prev) => ({ ...prev, balance: userData.walletBalance || 0 }));
+        }
       } else {
         // Fallback to authUser data if API fails
         setUserProfile({

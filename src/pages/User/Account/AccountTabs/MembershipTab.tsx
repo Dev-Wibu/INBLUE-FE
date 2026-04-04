@@ -13,11 +13,14 @@ import {
   Star,
   Zap,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import type { UserSubscriptionResponse } from "@/interfaces";
 import { formatCurrency } from "@/lib/formatting";
+import { memberShipPlanManager, userManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
+import { toast } from "sonner";
 
 interface PlanFeature {
   text: string;
@@ -53,7 +56,6 @@ const MEMBERSHIP_PLANS: MembershipPlan[] = [
     buttonClass: "",
     iconBgClass: "bg-[#DCEEFF] dark:bg-[#0047AB]/20",
     icon: <Star className="h-6 w-6 text-[#0047AB] dark:text-[#66B2FF]" />,
-    isCurrent: true,
     features: [
       { text: "1 lượt phỏng vấn AI / tháng", included: true },
       { text: "2 bộ luyện tập / tháng", included: true },
@@ -148,11 +150,13 @@ function getRingClass(planId: string): string {
 function PlanCard({
   plan,
   isSelected,
+  isCurrent,
   onSelect,
 }: {
   plan: MembershipPlan;
   isSelected: boolean;
-  onSelect: (id: string) => void;
+  isCurrent: boolean;
+  onSelect: (_id: string) => void;
 }) {
   return (
     <div
@@ -216,7 +220,7 @@ function PlanCard({
       </ul>
 
       <div className="mt-auto">
-        {plan.isCurrent ? (
+        {isCurrent ? (
           <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#DCEEFF] py-3 font-['Inter'] text-sm font-semibold text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
             <Check className="h-4 w-4" />
             Đang sử dụng
@@ -237,11 +241,58 @@ function PlanCard({
 export function MembershipTab() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const [subscription, setSubscription] = useState<UserSubscriptionResponse | null>(null);
+  const [planIdByName, setPlanIdByName] = useState<Record<string, number>>({});
+  const [currentPlanName, setCurrentPlanName] = useState<string>("FREE");
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [copied, setCopied] = useState<"account" | "content" | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const paymentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (user?.id == null) {
+      return;
+    }
+    const userId = user.id;
+
+    const loadSubscriptionData = async () => {
+      setIsLoadingSubscription(true);
+      try {
+        const [plansResult, subscriptionResult] = await Promise.all([
+          memberShipPlanManager.getAll(),
+          userManager.getActiveSubscription(userId),
+        ]);
+
+        if (plansResult.success && plansResult.data) {
+          const plans = Array.isArray(plansResult.data) ? plansResult.data : [];
+          const nextPlanMap: Record<string, number> = {};
+
+          for (const plan of plans) {
+            if (plan.name && typeof plan.id === "number") {
+              nextPlanMap[plan.name] = plan.id;
+            }
+          }
+
+          setPlanIdByName(nextPlanMap);
+        }
+
+        if (subscriptionResult.success && subscriptionResult.data) {
+          setSubscription(subscriptionResult.data);
+          if (subscriptionResult.data.planName) {
+            setCurrentPlanName(subscriptionResult.data.planName);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load subscription data:", error);
+      } finally {
+        setIsLoadingSubscription(false);
+      }
+    };
+
+    void loadSubscriptionData();
+  }, [user?.id]);
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
@@ -257,12 +308,38 @@ export function MembershipTab() {
     });
   };
 
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
+    if (!selectedPlan || !user?.id) {
+      return;
+    }
+
+    const selectedPlanId = planIdByName[selectedPlan];
+    if (!selectedPlanId) {
+      toast.error("Không tìm thấy ID gói thành viên. Vui lòng tải lại trang.");
+      return;
+    }
+
     setIsConfirming(true);
-    setTimeout(() => {
-      setIsConfirming(false);
-      setShowSuccess(true);
-    }, 5000);
+    const response = await userManager.subscribePlan(user.id, selectedPlanId);
+    setIsConfirming(false);
+
+    if (!response.success) {
+      toast.error(response.error || "Kích hoạt gói thành viên thất bại.");
+      return;
+    }
+
+    const refreshResult = await userManager.getActiveSubscription(user.id);
+    if (refreshResult.success && refreshResult.data) {
+      setSubscription(refreshResult.data);
+      if (refreshResult.data.planName) {
+        setCurrentPlanName(refreshResult.data.planName);
+      }
+    } else {
+      setCurrentPlanName(selectedPlan);
+    }
+
+    setShowSuccess(true);
+    toast.success("Đã kích hoạt gói thành viên thành công.");
   };
 
   const userId = user?.id ?? "00000";
@@ -299,7 +376,7 @@ export function MembershipTab() {
               </div>
             )}
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/user?tab=account")}
               className="w-full rounded-xl bg-[#0047AB] px-6 py-3 font-['Inter'] text-sm font-semibold text-white transition-colors hover:bg-[#003d99]">
               OK — Về trang chủ
             </button>
@@ -307,7 +384,7 @@ export function MembershipTab() {
         </div>
       )}
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0047AB] via-[#0066CC] to-[#007BFF] p-8 text-white">
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#0047AB] via-[#0066CC] to-[#007BFF] p-8 text-white">
         <div className="-8op -ririghg-8 absolute h-40 w-40 rounded-full bg-white/5" />
         <div className="-h-24 absolute right-16 w-24 rounded-full bg-white/5" />
         <div className="relative flex flex-col items-center gap-2 text-center">
@@ -329,6 +406,39 @@ export function MembershipTab() {
         </div>
       </div>
 
+      {isLoadingSubscription ? (
+        <div className="rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          Đang tải thông tin gói thành viên...
+        </div>
+      ) : subscription ? (
+        <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-4 dark:border-slate-700 dark:bg-slate-900">
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Gói hiện tại</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              {subscription.planName || currentPlanName}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">AI Interview còn lại</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              {subscription.aiInterviewRemaining ?? "-"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Practice Set còn lại</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              {subscription.practiceSetRemaining ?? "-"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Quiz Set còn lại</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              {subscription.quizSetRemaining ?? "-"}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       {/* Plan Cards Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {MEMBERSHIP_PLANS.map((plan) => (
@@ -336,6 +446,7 @@ export function MembershipTab() {
             key={plan.id}
             plan={plan}
             isSelected={selectedPlan === plan.id}
+            isCurrent={currentPlanName === plan.id}
             onSelect={handleSelectPlan}
           />
         ))}

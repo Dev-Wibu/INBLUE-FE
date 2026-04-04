@@ -5,6 +5,7 @@
 
 import type { ApiResponse, PaginatedResponse, PaginationParams } from "@/interfaces";
 import type { ChatMessage, ChatSession } from "@/mocks/chat.mock";
+import type { components } from "../../schema-from-be";
 
 import {
   API_ENDPOINTS,
@@ -14,9 +15,75 @@ import {
 } from "@/constants/api.config";
 import * as chatMock from "@/mocks/chat.mock";
 
+type BackendChatMessage = components["schemas"]["ChatMessage"];
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null;
+};
+
+const mapBackendSenderToUi = (senderType?: string): "ai" | "user" => {
+  const normalized = senderType?.toUpperCase();
+  return normalized === "AI" ? "ai" : "user";
+};
+
+const formatTimeForUi = (timestamp?: string): string => {
+  if (!timestamp) {
+    return new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) {
+    return timestamp;
+  }
+
+  return parsed.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
 export class ChatManager {
   private mode = MANAGER_MODE;
   private api = createApiInstance();
+
+  private mapBackendMessageToUi(raw: BackendChatMessage | Record<string, unknown>): ChatMessage {
+    const idValue = raw.id;
+    const id =
+      typeof idValue === "number" ? idValue : Date.now() + Math.floor(Math.random() * 1000);
+
+    const senderTypeValue = raw.senderType;
+    const senderType = typeof senderTypeValue === "string" ? senderTypeValue : undefined;
+
+    const contentValue = raw.content;
+    const content = typeof contentValue === "string" ? contentValue : "";
+
+    const timestampValue = raw.timestamp;
+    const timestamp = typeof timestampValue === "string" ? timestampValue : undefined;
+
+    return {
+      id,
+      sender: mapBackendSenderToUi(senderType),
+      content,
+      time: formatTimeForUi(timestamp),
+    };
+  }
+
+  private normalizeMessagesFromApi(data: unknown): ChatMessage[] {
+    if (Array.isArray(data)) {
+      return data.filter(isRecord).map((item) => this.mapBackendMessageToUi(item));
+    }
+
+    if (isRecord(data) && Array.isArray(data.content)) {
+      return data.content.filter(isRecord).map((item) => this.mapBackendMessageToUi(item));
+    }
+
+    return [];
+  }
 
   /**
    * Get all chat sessions
@@ -99,6 +166,15 @@ export class ChatManager {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.CHAT.MESSAGES, { id: sessionId });
       const response = await this.api.get(endpoint, { params });
+      const normalizedMessages = this.normalizeMessagesFromApi(response.data);
+
+      if (normalizedMessages.length > 0) {
+        return {
+          success: true,
+          data: normalizedMessages,
+        };
+      }
+
       return {
         success: true,
         data: response.data,
@@ -107,6 +183,40 @@ export class ChatManager {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to fetch messages",
+      };
+    }
+  }
+
+  /**
+   * Get chat history by sender/recipient identifiers according to the updated schema.
+   * GET /api/messages/{currentFullId}/{recipientFullId}
+   */
+  async getChatHistoryByParticipants(
+    currentFullId: string,
+    recipientFullId: string
+  ): Promise<ApiResponse<ChatMessage[]>> {
+    if (this.mode === "mock") {
+      const messages = await chatMock.fetchChatMessages(0);
+      return {
+        success: true,
+        data: messages,
+      };
+    }
+
+    try {
+      const endpoint = buildEndpoint(API_ENDPOINTS.CHAT.HISTORY_BY_PARTICIPANTS, {
+        currentFullId,
+        recipientFullId,
+      });
+      const response = await this.api.get(endpoint);
+      return {
+        success: true,
+        data: this.normalizeMessagesFromApi(response.data),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch chat history",
       };
     }
   }

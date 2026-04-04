@@ -73,23 +73,29 @@ export function AIChatConversationPage() {
     try {
       // Add user message
       const userMessageResponse = await chatManager.sendMessage(sessionId, messageContent);
-      if (userMessageResponse.success && userMessageResponse.data) {
-        setMessages((prev) => [...prev, userMessageResponse.data!]);
+      const userMessage = userMessageResponse.data;
+      if (userMessageResponse.success && userMessage) {
+        setMessages((prev) => [...prev, userMessage]);
       }
 
-      // Get AI response - would need a separate API method
-      // For now, we simulate AI response
-      const aiResponse: ChatMessage = {
-        id: Date.now(),
-        sender: "ai",
-        content: "Đây là câu trả lời mẫu từ AI. API thật sẽ được tích hợp sau.",
-        time: new Date().toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
+      // Get AI response from service when available.
+      const aiResponseResult = await chatManager.getAIResponse(sessionId);
+      const aiMessage = aiResponseResult.data;
+      if (aiResponseResult.success && aiMessage) {
+        setMessages((prev) => [...prev, aiMessage]);
+      } else {
+        const fallbackMessage: ChatMessage = {
+          id: Date.now(),
+          sender: "ai",
+          content: aiResponseResult.error || "Hiện chưa lấy được phản hồi AI. Vui lòng thử lại.",
+          time: new Date().toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+        };
+        setMessages((prev) => [...prev, fallbackMessage]);
+      }
     } catch (error) {
       console.error("Error getting AI response:", error);
     } finally {
@@ -107,7 +113,7 @@ export function AIChatConversationPage() {
   return (
     <div className="flex h-full flex-col bg-white">
       {/* Chat Container */}
-      <div className="mx-auto flex h-full w-full max-w-[958px] flex-col outline outline-1 outline-offset-[-1px] outline-black/40">
+      <div className="mx-auto flex h-full w-full max-w-[958px] flex-col outline-1 -outline-offset-1 outline-black/40">
         {/* Header */}
         <div className="flex h-20 items-center gap-4 border-b border-neutral-200 bg-stone-50 px-8">
           <button
@@ -173,7 +179,7 @@ export function AIChatConversationPage() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Nhập câu trả lời của bạn hoặc câu hỏi tiếp theo..."
-              className="h-11 w-full rounded-lg bg-white px-4 font-['Inter'] text-base font-normal text-neutral-900 outline outline-1 outline-offset-[-1px] outline-stone-300 placeholder:text-neutral-500 focus:outline-indigo-500"
+              className="h-11 w-full rounded-lg bg-white px-4 font-['Inter'] text-base font-normal text-neutral-900 outline-1 -outline-offset-1 outline-stone-300 placeholder:text-neutral-500 focus:outline-indigo-500"
               disabled={isLoading}
               aria-label="Nhập tin nhắn"
               aria-disabled={isLoading}
