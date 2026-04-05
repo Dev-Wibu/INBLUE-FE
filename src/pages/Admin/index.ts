@@ -13,4 +13,5 @@ export { QuestionMajorManagementPage } from "./QuestionMajorManagement";
 export { QuizSetManagementPage } from "./QuizSetManagement";
 export { ReviewManagementPage } from "./ReviewManagement";
 export { SessionManagementPage } from "./SessionManagement";
+export { TransactionPaymentManagementPage } from "./TransactionPaymentManagement";
 export { UserManagementPage } from "./UserManagement";

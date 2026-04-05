@@ -15,6 +15,7 @@ import {
   UserCog,
   Users,
   Video,
+  Wallet,
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
@@ -36,6 +37,7 @@ import { QuestionMajorManagementPage } from "../QuestionMajorManagement";
 import { QuizSetManagementPage } from "../QuizSetManagement";
 import { ReviewManagementPage } from "../ReviewManagement";
 import { SessionManagementPage } from "../SessionManagement";
+import { TransactionPaymentManagementPage } from "../TransactionPaymentManagement";
 import { UserManagementPage } from "../UserManagement";
 import { CommunityTabView } from "./CommunityTabView";
 
@@ -55,7 +57,8 @@ type TabType =
   | "posts"
   | "candidateProfiles"
   | "community"
-  | "membershipPlans";
+  | "membershipPlans"
+  | "transactionsPayments";
 
 const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "dashboard", label: "Dashboard" },
@@ -74,6 +77,7 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "candidateProfiles", label: "Hồ sơ ứng viên" },
   { type: "community", label: "Cộng đồng" },
   { type: "membershipPlans", label: "Gói thành viên" },
+  { type: "transactionsPayments", label: "Transaction & Payment" },
 ];
 
 const isValidTabType = (value: string): value is TabType => {
@@ -97,6 +101,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   candidateProfiles: FileText,
   community: Globe,
   membershipPlans: CreditCard,
+  transactionsPayments: Wallet,
 };
 
 const TAB_COLORS: Record<TabType, string> = {
@@ -116,6 +121,7 @@ const TAB_COLORS: Record<TabType, string> = {
   candidateProfiles: "text-teal-600",
   community: "text-orange-500",
   membershipPlans: "text-rose-600",
+  transactionsPayments: "text-indigo-600",
 };
 
 const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
@@ -186,6 +192,12 @@ const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
         icon: CreditCard,
         iconColor: "text-rose-600",
       },
+      {
+        type: "transactionsPayments",
+        label: "Transaction & Payment",
+        icon: Wallet,
+        iconColor: "text-indigo-600",
+      },
     ],
   },
 ];
@@ -244,6 +256,12 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
         icon: CreditCard,
         label: "Gói thành viên",
         color: "text-rose-600",
+      },
+      {
+        type: "transactionsPayments",
+        icon: Wallet,
+        label: "Transaction & Payment",
+        color: "text-indigo-600",
       },
     ],
   },
@@ -342,6 +360,8 @@ export function AdminDashboardPage() {
         return <CandidateProfileManagementPage />;
       case "membershipPlans":
         return <MembershipPlanManagementPage />;
+      case "transactionsPayments":
+        return <TransactionPaymentManagementPage />;
       default:
         return <div>Loại tab không hợp lệ</div>;
     }

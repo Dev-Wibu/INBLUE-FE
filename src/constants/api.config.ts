@@ -46,6 +46,25 @@ export const API_ENDPOINTS = {
     ACTIVE_SUBSCRIPTION: "/api/users/:userId/subscription",
   },
 
+  // Transaction endpoints - schema-first mapping (skeleton phase: constants only)
+  TRANSACTIONS: {
+    LIST: "/api/transactions",
+    DETAIL: "/api/transactions/:transactionCode",
+    BY_USER: "/api/transactions/user/:userId",
+    TRANSFER_IN: "/api/transactions/transfer-in",
+    TRANSFER_OUT: "/api/transactions/transfer-out",
+    DELETE: "/api/transactions/:transactionCode",
+  },
+
+  // Payment endpoints - schema-first mapping (skeleton phase: constants only)
+  PAYMENTS: {
+    LIST: "/api/payments",
+    DETAIL: "/api/payments/:id",
+    PAY: "/api/payments/pay",
+    CANCEL: "/api/payments/cancel",
+    WEBHOOK: "/api/payments/webhook",
+  },
+
   // Users management endpoints (for admin) - Based on schema-from-be.d.ts
   // GET /api/users - getUsers
   // POST /api/users - createUser (multipart/form-data)

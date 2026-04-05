@@ -37,6 +37,7 @@ import {
   StudentDetailPage,
   WriteFeedbackPage,
 } from "@/pages/Mentor";
+import { PaymentCancelPage, PaymentSuccessPage } from "@/pages/Payment";
 import {
   ContentModerationPage,
   FeedbackModerationPage,
@@ -86,6 +87,8 @@ function App() {
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<HomePage />} />
+            <Route path="/payment/success" element={<PaymentSuccessPage />} />
+            <Route path="/payment/cancel" element={<PaymentCancelPage />} />
 
             {/* Questions pages (public) */}
             <Route path="/questions/bank" element={<QuestionBankPage />} />
