@@ -60,6 +60,7 @@ describe("AuthManager", () => {
           email: "mentor@test.com",
           password: "test123",
         },
+        parseAs: "text",
       });
     });
 
@@ -86,6 +87,30 @@ describe("AuthManager", () => {
       expect(result.data?.user.role).toBe("USER");
       expect(result.data?.user.fullName).toBe("Token User");
       expect(result.data?.token).toBe(token);
+    });
+
+    it("should unwrap quoted token string when response is text", async () => {
+      const token = createJwt({
+        sub: "34",
+        email: "quoted@test.com",
+        name: "Quoted Token User",
+        role: "ROLE_USER",
+      });
+
+      mockFetchPost.mockResolvedValueOnce({
+        data: `"${token}"`,
+        error: null,
+      });
+
+      const result = await authManager.login({
+        email: "quoted@test.com",
+        password: "pass123",
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.token).toBe(token);
+      expect(result.data?.user.id).toBe("34");
+      expect(result.data?.user.fullName).toBe("Quoted Token User");
     });
 
     it("should return locked message when account is inactive", async () => {

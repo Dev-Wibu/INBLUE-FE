@@ -109,7 +109,17 @@ export class AuthManager {
       return undefined;
     }
 
-    return token.replace(/^Bearer\s+/i, "").trim();
+    let normalized = token.trim();
+
+    if (normalized.startsWith('"') && normalized.endsWith('"')) {
+      normalized = normalized.slice(1, -1);
+    }
+
+    if (normalized.startsWith("'") && normalized.endsWith("'")) {
+      normalized = normalized.slice(1, -1);
+    }
+
+    return normalized.replace(/^Bearer\s+/i, "").trim();
   }
 
   private decodeJwtPayload(token: string): Record<string, unknown> | null {
@@ -273,6 +283,23 @@ export class AuthManager {
     };
   }
 
+  private normalizeLoginResponseData(data: unknown): unknown {
+    if (typeof data !== "string") {
+      return data;
+    }
+
+    const trimmed = data.trim();
+    if (trimmed.length === 0) {
+      return trimmed;
+    }
+
+    try {
+      return JSON.parse(trimmed) as unknown;
+    } catch {
+      return trimmed;
+    }
+  }
+
   private extractErrorMessage(error: unknown): string | undefined {
     if (typeof error === "string") {
       return error;
@@ -317,6 +344,7 @@ export class AuthManager {
           email: credentials.email.trim(),
           password: credentials.password,
         },
+        parseAs: "text",
       });
 
       if (error) {
@@ -333,7 +361,15 @@ export class AuthManager {
         };
       }
 
-      const userCandidate = this.extractUserCandidate(data);
+      const normalizedData = this.normalizeLoginResponseData(data);
+      if (typeof normalizedData === "string" && normalizedData.trim().length === 0) {
+        return {
+          success: false,
+          error: "Không nhận được dữ liệu đăng nhập từ máy chủ",
+        };
+      }
+
+      const userCandidate = this.extractUserCandidate(normalizedData);
       if (isRecord(userCandidate) && userCandidate.isActive === false) {
         return {
           success: false,
@@ -341,7 +377,7 @@ export class AuthManager {
         };
       }
 
-      const payload = this.parseLoginResponse(data, credentials.email.trim());
+      const payload = this.parseLoginResponse(normalizedData, credentials.email.trim());
 
       return {
         success: true,
