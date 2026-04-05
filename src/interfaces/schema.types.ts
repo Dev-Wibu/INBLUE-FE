@@ -14,6 +14,7 @@ export type SchemaMembershipPlan = components["schemas"]["MemberShipPlan"];
 export type SchemaCandidateProfile = components["schemas"]["CandidateProfile"];
 export type UserSubscriptionResponse = components["schemas"]["UserSubscriptionResponse"];
 export type TransactionEntity = components["schemas"]["Transaction"];
+export type PaymentEntity = components["schemas"]["Payment"];
 
 /**
  * User role enum

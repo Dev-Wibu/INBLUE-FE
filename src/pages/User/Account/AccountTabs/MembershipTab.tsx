@@ -14,11 +14,10 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import type { UserSubscriptionResponse } from "@/interfaces";
 import { formatCurrency } from "@/lib/formatting";
-import { memberShipPlanManager, userManager } from "@/services";
+import { memberShipPlanManager, paymentManager, userManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 
@@ -136,6 +135,8 @@ const BANK_INFO = {
   bank: "BIDV",
 };
 
+const SKELETON_PAYMENT_CONTEXT_KEY = "inblue.payment-context";
+
 function buildTransferContent(planId: string, userId: string | number): string {
   return `INBLUE${planId}${userId}`;
 }
@@ -240,7 +241,6 @@ function PlanCard({
 
 export function MembershipTab() {
   const { user } = useAuthStore();
-  const navigate = useNavigate();
   const [subscription, setSubscription] = useState<UserSubscriptionResponse | null>(null);
   const [planIdByName, setPlanIdByName] = useState<Record<string, number>>({});
   const [currentPlanName, setCurrentPlanName] = useState<string>("FREE");
@@ -248,7 +248,6 @@ export function MembershipTab() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [copied, setCopied] = useState<"account" | "content" | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const paymentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -319,27 +318,39 @@ export function MembershipTab() {
       return;
     }
 
-    setIsConfirming(true);
-    const response = await userManager.subscribePlan(user.id, selectedPlanId);
-    setIsConfirming(false);
+    const selectedPlanInfo = MEMBERSHIP_PLANS.find((plan) => plan.id === selectedPlan);
+    const paymentAmount = selectedPlanInfo?.price ?? 0;
 
-    if (!response.success) {
-      toast.error(response.error || "Kích hoạt gói thành viên thất bại.");
+    if (paymentAmount <= 0) {
+      toast.info("Gói FREE không cần thanh toán. Vui lòng chọn gói trả phí để test skeleton.");
       return;
     }
 
-    const refreshResult = await userManager.getActiveSubscription(user.id);
-    if (refreshResult.success && refreshResult.data) {
-      setSubscription(refreshResult.data);
-      if (refreshResult.data.planName) {
-        setCurrentPlanName(refreshResult.data.planName);
-      }
-    } else {
-      setCurrentPlanName(selectedPlan);
+    sessionStorage.setItem(
+      SKELETON_PAYMENT_CONTEXT_KEY,
+      JSON.stringify({
+        userId: Number(user.id),
+        planId: Number(selectedPlanId),
+        planName: selectedPlan,
+        amount: paymentAmount,
+        createdAt: new Date().toISOString(),
+      })
+    );
+
+    setIsConfirming(true);
+
+    const paymentResult = await paymentManager.create(paymentAmount, Number(user.id));
+    if (!paymentResult.success || !paymentResult.data) {
+      setIsConfirming(false);
+      toast.error(paymentResult.error || "Không thể tạo link thanh toán skeleton.");
+      return;
     }
 
-    setShowSuccess(true);
-    toast.success("Đã kích hoạt gói thành viên thành công.");
+    const redirectUrl = new URL(paymentResult.data, window.location.origin).toString();
+    toast.success("Đã tạo link thanh toán skeleton. Đang chuyển hướng...");
+    window.location.assign(redirectUrl);
+
+    setIsConfirming(false);
   };
 
   const userId = user?.id ?? "00000";
@@ -350,39 +361,6 @@ export function MembershipTab() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Success Modal */}
-      {showSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="mx-4 flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl bg-white p-8 text-center shadow-2xl dark:bg-slate-900">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-              <CheckCircle2 className="h-9 w-9 text-emerald-500" />
-            </div>
-            <div>
-              <h3 className="font-['Poppins'] text-xl font-bold text-zinc-800 dark:text-white">
-                Đã xác nhận thanh toán!
-              </h3>
-              <p className="mt-1 font-['Inter'] text-sm text-gray-500 dark:text-slate-400">
-                Hóa đơn của bạn đã gửi qua email, vui lòng kiểm tra.
-                <br />
-                Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi.
-              </p>
-            </div>
-            {selectedPlanInfo && (
-              <div className={`w-full rounded-xl px-4 py-3 ${selectedPlanInfo.iconBgClass}`}>
-                <p
-                  className={`font-['Inter'] text-sm font-semibold ${selectedPlanInfo.colorClass}`}>
-                  {selectedPlanInfo.displayName} — {formatCurrency(selectedPlanInfo.price)}
-                </p>
-              </div>
-            )}
-            <button
-              onClick={() => navigate("/user?tab=account")}
-              className="w-full rounded-xl bg-[#0047AB] px-6 py-3 font-['Inter'] text-sm font-semibold text-white transition-colors hover:bg-[#003d99]">
-              OK — Về trang chủ
-            </button>
-          </div>
-        </div>
-      )}
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#0047AB] via-[#0066CC] to-[#007BFF] p-8 text-white">
         <div className="-8op -ririghg-8 absolute h-40 w-40 rounded-full bg-white/5" />
@@ -593,12 +571,12 @@ export function MembershipTab() {
                   {isConfirming ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Hệ Thống đang kiểm tra giao dịch của bạn...
+                      Dang tao link thanh toan skeleton...
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="h-4 w-4" />
-                      Tôi đã chuyển khoản
+                      Tao link thanh toan (Skeleton)
                     </>
                   )}
                 </button>
@@ -652,8 +630,7 @@ export function MembershipTab() {
                   Mua gói thành viên
                 </p>
                 <p className="font-['Inter'] text-xs text-amber-600 dark:text-amber-500">
-                  Bước 1: Chuyển khoản với đúng nội dung →{" "}
-                  <strong>Bước 2: Liên hệ admin để xác nhận kích hoạt gói</strong>
+                  Skeleton flow: Nhan nut tao link de redirect callback mo phong success/cancel.
                 </p>
               </div>
             </div>
