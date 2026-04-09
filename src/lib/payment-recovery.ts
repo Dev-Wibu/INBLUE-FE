@@ -2,6 +2,7 @@ type PaymentRecoveryStorageRecord = {
   id: string;
   supportCode: string;
   orderCode?: string;
+  transactionCode?: string;
   userId: number;
   planId: number;
   planName?: string;
@@ -46,6 +47,7 @@ export type PaymentSupportLog = PaymentSupportLogStorageRecord;
 export interface UpsertPaymentRecoveryInput {
   supportCode?: string;
   orderCode?: string;
+  transactionCode?: string;
   userId: number;
   planId: number;
   planName?: string;
@@ -172,6 +174,7 @@ const parseRecoveryRecord = (value: unknown): PaymentRecoveryStorageRecord | nul
     id,
     supportCode,
     orderCode: asString(value.orderCode),
+    transactionCode: asString(value.transactionCode),
     userId,
     planId,
     planName: asString(value.planName),
@@ -295,6 +298,19 @@ export const extractOrderCodeFromUrl = (checkoutUrl: string): string | null => {
   }
 };
 
+export const extractTransactionCodeFromUrl = (checkoutUrl: string): string | null => {
+  try {
+    const url = new URL(checkoutUrl, window.location.origin);
+    const fromQuery =
+      asString(url.searchParams.get("transactionCode")) ||
+      asString(url.searchParams.get("transaction_code"));
+
+    return fromQuery || null;
+  } catch {
+    return null;
+  }
+};
+
 export const upsertPaymentRecoveryContext = (
   input: UpsertPaymentRecoveryInput
 ): PaymentRecoveryContext => {
@@ -317,6 +333,7 @@ export const upsertPaymentRecoveryContext = (
     const next: PaymentRecoveryStorageRecord = {
       ...prev,
       orderCode: input.orderCode || prev.orderCode,
+      transactionCode: input.transactionCode || prev.transactionCode,
       userId: input.userId,
       planId: input.planId,
       planName: input.planName || prev.planName,
@@ -338,6 +355,7 @@ export const upsertPaymentRecoveryContext = (
     id: newId(),
     supportCode,
     orderCode: input.orderCode,
+    transactionCode: input.transactionCode,
     userId: input.userId,
     planId: input.planId,
     planName: input.planName,

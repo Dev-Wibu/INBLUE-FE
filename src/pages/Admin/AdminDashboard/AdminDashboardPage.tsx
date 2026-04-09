@@ -77,7 +77,7 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "candidateProfiles", label: "Hồ sơ ứng viên" },
   { type: "community", label: "Cộng đồng" },
   { type: "membershipPlans", label: "Gói thành viên" },
-  { type: "transactionsPayments", label: "Transaction & Payment" },
+  { type: "transactionsPayments", label: "Giao dịch & Thanh toán" },
 ];
 
 const isValidTabType = (value: string): value is TabType => {
@@ -199,7 +199,7 @@ const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
       },
       {
         type: "transactionsPayments",
-        label: "Transaction & Payment",
+        label: "Giao dịch & Thanh toán",
         icon: Wallet,
         iconColor: "text-indigo-600",
       },
@@ -270,7 +270,7 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
       {
         type: "transactionsPayments",
         icon: Wallet,
-        label: "Transaction & Payment",
+        label: "Giao dịch & Thanh toán",
         color: "text-indigo-600",
       },
     ],

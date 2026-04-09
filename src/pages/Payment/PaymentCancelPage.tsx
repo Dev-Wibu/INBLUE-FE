@@ -1,12 +1,11 @@
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
   addPaymentSupportLog,
-  buildSupportPayload,
   clearPendingSessionPaymentContext,
-  formatSupportPayload,
+  extractTransactionCodeFromUrl,
   getPendingSessionPaymentContext,
   getRecoveryByOrderCode,
   type PaymentRecoveryContext,
@@ -16,11 +15,21 @@ import { paymentManager } from "@/services/payment.manager";
 import { transactionManager } from "@/services/transaction.manager";
 import { toast } from "sonner";
 
-type CancelChainResult = "idle" | "success" | "cancel-failed" | "delete-failed" | "missing-order";
+type CancelChainResult = "idle" | "success" | "failed" | "missing";
+
+const isNotFoundError = (error?: string): boolean => {
+  if (!error) {
+    return false;
+  }
+
+  const normalized = error.toLowerCase();
+  return normalized.includes("not found") || normalized.includes("404");
+};
 
 export function PaymentCancelPage() {
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
   const orderCode = query.get("orderCode")?.trim() || "";
+  const queryTransactionCode = query.get("transactionCode")?.trim() || "";
   const status = query.get("status")?.trim() || "CANCELLED";
   const pendingSessionPayment = useMemo(() => getPendingSessionPaymentContext(), []);
   const pendingSessionOrderCode = pendingSessionPayment?.orderCode?.trim() || "";
@@ -32,41 +41,36 @@ export function PaymentCancelPage() {
   );
   const [processing, setProcessing] = useState(false);
   const [chainResult, setChainResult] = useState<CancelChainResult>("idle");
-  const [resultMessage, setResultMessage] = useState("Chua bat dau xu ly cancel chain.");
+  const [resultMessage, setResultMessage] = useState("Đang xử lý yêu cầu của bạn...");
   const [recoveryContext, setRecoveryContext] = useState<PaymentRecoveryContext | null>(null);
-  const [supportCode, setSupportCode] = useState("");
-  const [isCopyingPayload, setIsCopyingPayload] = useState(false);
 
   const runCancelChain = useCallback(async () => {
-    if (!orderCode) {
-      const log = addPaymentSupportLog({
-        status: "UNMAPPED_ORDER",
-        message: "Callback cancel thieu orderCode.",
-        payload: {
-          status,
-        },
-      });
-      setSupportCode(log.supportCode);
-      setChainResult("missing-order");
-      setResultMessage("Khong co orderCode, bo qua cancel chain.");
-      return;
-    }
+    const context = orderCode ? recoveryContext || getRecoveryByOrderCode(orderCode) : null;
+    const transactionCodeFromContext = context?.transactionCode?.trim() || "";
+    const transactionCodeFromCheckoutUrl = context?.checkoutUrl
+      ? extractTransactionCodeFromUrl(context.checkoutUrl)?.trim() || ""
+      : "";
+    const resolvedTransactionCode =
+      queryTransactionCode ||
+      transactionCodeFromContext ||
+      transactionCodeFromCheckoutUrl ||
+      orderCode;
 
-    const context = recoveryContext || getRecoveryByOrderCode(orderCode);
     if (context) {
       const callbackContext = upsertPaymentRecoveryContext({
         supportCode: context.supportCode,
         orderCode,
+        transactionCode: resolvedTransactionCode || context.transactionCode,
         userId: context.userId,
         planId: context.planId,
         planName: context.planName,
         amount: context.amount,
         checkoutUrl: context.checkoutUrl,
         status: "CALLBACK_CANCEL",
-        note: "Da vao callback cancel page.",
+        note: "Người dùng đã quay về trang hủy thanh toán.",
       });
       setRecoveryContext(callbackContext);
-      setSupportCode(callbackContext.supportCode);
+
       addPaymentSupportLog({
         supportCode: callbackContext.supportCode,
         orderCode,
@@ -75,166 +79,171 @@ export function PaymentCancelPage() {
         planName: callbackContext.planName,
         amount: callbackContext.amount,
         status: "CALLBACK_CANCEL",
-        message: "Nguoi dung vao callback cancel.",
+        message: "Người dùng quay về trang hủy thanh toán.",
+        payload: {
+          transactionCode: resolvedTransactionCode || null,
+          callbackStatus: status,
+        },
       });
+    }
+
+    if (!resolvedTransactionCode) {
+      addPaymentSupportLog({
+        status: "UNMAPPED_ORDER",
+        message: "Thiếu mã giao dịch để thực hiện hủy thanh toán.",
+        payload: {
+          orderCode: orderCode || null,
+          transactionCode: queryTransactionCode || null,
+          status,
+        },
+      });
+      if (context) {
+        const failedContext = upsertPaymentRecoveryContext({
+          supportCode: context.supportCode,
+          orderCode,
+          transactionCode: context.transactionCode,
+          userId: context.userId,
+          planId: context.planId,
+          planName: context.planName,
+          amount: context.amount,
+          checkoutUrl: context.checkoutUrl,
+          status: "CANCEL_CHAIN_FAILED",
+          note: "Thiếu mã giao dịch để hủy thanh toán.",
+        });
+        setRecoveryContext(failedContext);
+      }
+      setChainResult("missing");
+      setResultMessage(
+        "Không tìm thấy thông tin giao dịch để hủy. Vui lòng thực hiện lại thao tác thanh toán."
+      );
+      toast.error("Không tìm thấy giao dịch cần hủy.");
+      return;
     }
 
     setProcessing(true);
     setChainResult("idle");
 
-    const cancelResult = await paymentManager.cancel(orderCode);
+    const cancelResult = await paymentManager.cancel(resolvedTransactionCode);
     if (!cancelResult.success) {
       const log = addPaymentSupportLog({
-        supportCode: context?.supportCode || supportCode || undefined,
+        supportCode: context?.supportCode || undefined,
         orderCode,
         userId: context?.userId,
         planId: context?.planId,
         planName: context?.planName,
         amount: context?.amount,
         status: "CANCEL_CHAIN_FAILED",
-        message: "cancelPayment that bai.",
+        message: "Hủy thanh toán thất bại.",
         payload: {
+          transactionCode: resolvedTransactionCode,
           error: cancelResult.error || null,
-          phase: "cancel",
         },
       });
 
-      if (!supportCode) {
-        setSupportCode(log.supportCode);
-      }
-
       if (context) {
         const failedContext = upsertPaymentRecoveryContext({
-          supportCode: context.supportCode,
+          supportCode: log.supportCode || context.supportCode,
           orderCode,
+          transactionCode: resolvedTransactionCode,
           userId: context.userId,
           planId: context.planId,
           planName: context.planName,
           amount: context.amount,
           checkoutUrl: context.checkoutUrl,
           status: "CANCEL_CHAIN_FAILED",
-          note: cancelResult.error || "cancelPayment that bai.",
+          note: cancelResult.error || "Hủy thanh toán thất bại.",
         });
         setRecoveryContext(failedContext);
-        setSupportCode(failedContext.supportCode);
       }
 
-      setChainResult("cancel-failed");
+      setChainResult("failed");
       setResultMessage(
-        cancelResult.error || "Khong the cap nhat trang thai huy thanh toan tren payment."
+        isNotFoundError(cancelResult.error)
+          ? "Không tìm thấy giao dịch cần hủy hoặc giao dịch đã được xử lý trước đó."
+          : "Không thể hủy thanh toán lúc này. Vui lòng thử lại sau ít phút."
       );
       setProcessing(false);
-      toast.error("Cancel payment that bai.");
+      toast.error("Không thể hủy thanh toán.");
       return;
     }
 
-    const deleteResult = await transactionManager.delete(orderCode);
+    const deleteResult = await transactionManager.delete(resolvedTransactionCode);
     if (!deleteResult.success) {
       const log = addPaymentSupportLog({
-        supportCode: context?.supportCode || supportCode || undefined,
+        supportCode: context?.supportCode || undefined,
         orderCode,
         userId: context?.userId,
         planId: context?.planId,
         planName: context?.planName,
         amount: context?.amount,
         status: "CANCEL_CHAIN_FAILED",
-        message: "deleteTransaction that bai sau khi cancelPayment thanh cong.",
+        message: "Xóa giao dịch thất bại sau khi hủy thanh toán.",
         payload: {
+          transactionCode: resolvedTransactionCode,
           error: deleteResult.error || null,
-          phase: "delete",
         },
       });
 
-      if (!supportCode) {
-        setSupportCode(log.supportCode);
-      }
-
       if (context) {
         const failedContext = upsertPaymentRecoveryContext({
-          supportCode: context.supportCode,
+          supportCode: log.supportCode || context.supportCode,
           orderCode,
+          transactionCode: resolvedTransactionCode,
           userId: context.userId,
           planId: context.planId,
           planName: context.planName,
           amount: context.amount,
           checkoutUrl: context.checkoutUrl,
           status: "CANCEL_CHAIN_FAILED",
-          note: deleteResult.error || "deleteTransaction that bai.",
+          note: deleteResult.error || "Xóa giao dịch thất bại.",
         });
         setRecoveryContext(failedContext);
-        setSupportCode(failedContext.supportCode);
       }
 
-      setChainResult("delete-failed");
+      setChainResult("failed");
       setResultMessage(
-        deleteResult.error ||
-          "cancelPayment thanh cong nhung deleteTransaction that bai. Ban co the thu lai."
+        "Thanh toán đã được hủy nhưng hệ thống đang hoàn tất bước cập nhật cuối cùng. Vui lòng thử lại sau."
       );
       setProcessing(false);
-      toast.error("Delete transaction that bai.");
+      toast.error("Không thể hoàn tất yêu cầu hủy.");
       return;
     }
 
     addPaymentSupportLog({
-      supportCode: context?.supportCode || supportCode || undefined,
+      supportCode: context?.supportCode || undefined,
       orderCode,
       userId: context?.userId,
       planId: context?.planId,
       planName: context?.planName,
       amount: context?.amount,
       status: "CANCEL_CHAIN_SUCCESS",
-      message: "Da thuc thi thanh cong chain cancelPayment -> deleteTransaction.",
+      message: "Đã hủy thanh toán thành công.",
+      payload: {
+        transactionCode: resolvedTransactionCode,
+      },
     });
 
     if (context) {
       const successContext = upsertPaymentRecoveryContext({
         supportCode: context.supportCode,
         orderCode,
+        transactionCode: resolvedTransactionCode,
         userId: context.userId,
         planId: context.planId,
         planName: context.planName,
         amount: context.amount,
         checkoutUrl: context.checkoutUrl,
         status: "CANCEL_CHAIN_SUCCESS",
-        note: "Da huy payment va xoa transaction thanh cong.",
+        note: "Đã hủy thanh toán thành công.",
       });
       setRecoveryContext(successContext);
-      setSupportCode(successContext.supportCode);
     }
 
     setChainResult("success");
-    setResultMessage("Da thuc thi chain: cancelPayment -> deleteTransaction thanh cong.");
+    setResultMessage("Yêu cầu hủy thanh toán đã được xử lý thành công.");
     setProcessing(false);
-    toast.success("Da xu ly huy thanh toan.");
-  }, [orderCode, recoveryContext, status, supportCode]);
-
-  const handleCopySupportPayload = useCallback(async () => {
-    if (isCopyingPayload) {
-      return;
-    }
-
-    setIsCopyingPayload(true);
-    try {
-      const payload = buildSupportPayload({
-        orderCode,
-        supportCode: supportCode || undefined,
-        context: recoveryContext,
-        extra: {
-          callbackStatus: status,
-          chainResult,
-          processing,
-          pathname: window.location.pathname,
-        },
-      });
-
-      await navigator.clipboard.writeText(formatSupportPayload(payload));
-      toast.success("Da sao chep payload ho tro.");
-    } catch {
-      toast.error("Khong the sao chep payload ho tro.");
-    } finally {
-      setIsCopyingPayload(false);
-    }
-  }, [chainResult, isCopyingPayload, orderCode, processing, recoveryContext, status, supportCode]);
+    toast.success("Đã hủy thanh toán thành công.");
+  }, [orderCode, queryTransactionCode, recoveryContext, status]);
 
   useEffect(() => {
     if (!pendingSessionPayment?.sessionId || !orderCode || !pendingSessionOrderCode) {
@@ -248,7 +257,7 @@ export function PaymentCancelPage() {
     addPaymentSupportLog({
       orderCode,
       status: "UNMAPPED_ORDER",
-      message: "Bo qua pending session payment o callback cancel do orderCode khong khop.",
+      message: "Bỏ qua phiên thanh toán cũ do mã đơn không trùng khớp.",
       payload: {
         pendingSessionOrderCode,
         callbackOrderCode: orderCode,
@@ -301,8 +310,7 @@ export function PaymentCancelPage() {
     );
   }
 
-  const canRetry =
-    !processing && (chainResult === "cancel-failed" || chainResult === "delete-failed");
+  const canRetry = !processing && (chainResult === "failed" || chainResult === "missing");
 
   return (
     <div className="min-h-screen bg-linear-to-br from-amber-50 to-rose-50 px-4 py-10 dark:from-slate-950 dark:to-slate-900">
@@ -313,32 +321,23 @@ export function PaymentCancelPage() {
           </div>
           <div>
             <h1 className="font-['Poppins'] text-2xl font-bold text-amber-700 dark:text-amber-300">
-              Thanh toan da bi huy
+              Thanh toán đã bị hủy
             </h1>
             <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
-              Callback cancel + cancel policy chain.
+              Chúng tôi đang cập nhật trạng thái thanh toán của bạn.
             </p>
           </div>
         </div>
 
-        <div className="grid gap-3 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/60">
-          <p className="font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-            OrderCode: <span className="font-semibold">{orderCode || "Khong co"}</span>
-          </p>
-          <p className="font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-            Status: <span className="font-semibold">{status}</span>
-          </p>
-          <p className="font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-            SupportCode: <span className="font-semibold">{supportCode || "Chua tao"}</span>
-          </p>
-          <p className="font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-            Trang thai xu ly:{" "}
-            <span className="font-semibold">{processing ? "Dang xu ly" : "Hoan tat"}</span>
-          </p>
-        </div>
-
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 font-['Inter'] text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {resultMessage}
+          {processing ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Đang xử lý yêu cầu hủy thanh toán...
+            </div>
+          ) : (
+            resultMessage
+          )}
         </div>
 
         {canRetry && (
@@ -346,27 +345,20 @@ export function PaymentCancelPage() {
             onClick={() => void runCancelChain()}
             disabled={processing}
             className="w-fit rounded-xl bg-amber-600 px-4 py-2 font-['Inter'] text-sm font-semibold text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60">
-            Thu xu ly lai cancel chain
+            Thử lại
           </button>
         )}
-
-        <button
-          onClick={() => void handleCopySupportPayload()}
-          disabled={isCopyingPayload}
-          className="w-fit rounded-xl border border-blue-300 px-4 py-2 font-['Inter'] text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/20">
-          {isCopyingPayload ? "Dang sao chep..." : "Sao chep payload ho tro"}
-        </button>
 
         <div className="flex flex-wrap gap-3">
           <Link
             to="/user?tab=account"
             className="rounded-xl bg-[#0047AB] px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-[#003b8d]">
-            Quay lai tai khoan
+            Quay lại tài khoản
           </Link>
           <Link
             to="/user?tab=account"
             className="rounded-xl border border-slate-300 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-            Thanh toan lai
+            Chọn gói thành viên khác
           </Link>
         </div>
       </div>
