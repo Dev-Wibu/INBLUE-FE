@@ -33,3 +33,4 @@ export * from "./session.manager";
 export * from "./transaction.manager";
 export * from "./user.manager";
 export * from "./users-admin.manager";
+export * from "./dashboard-admin.manager";
