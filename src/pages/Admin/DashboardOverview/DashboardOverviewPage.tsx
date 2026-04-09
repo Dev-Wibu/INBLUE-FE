@@ -1,441 +1,318 @@
 /**
  * Admin Dashboard Overview Page
- * First page users see when accessing the admin panel
- * Currently shows placeholder data - will be updated when BE implements dashboard API
+ * Updated: Separated Charts for Direct Income and Wallet Deposits
+ * Removed Pie chart as requested
  */
 
+import { useQuery } from "@tanstack/react-query";
+import { format, subDays } from "date-fns";
+import { vi } from "date-fns/locale";
 import {
   Activity,
-  ArrowDownRight,
   ArrowUpRight,
-  Bell,
-  Calendar,
+  CreditCard,
   DollarSign,
-  MessageSquare,
-  Star,
   TrendingUp,
   UserCheck,
-  UserPlus,
   Users,
-  Video,
+  Wallet,
 } from "lucide-react";
+import { useMemo } from "react";
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { dashboardAdminManager } from "@/services";
 
-// Placeholder stats for the dashboard
-const OVERVIEW_STATS = [
-  {
-    title: "Tổng người dùng",
-    value: "2.847",
-    change: "+12,5%",
-    trend: "up" as const,
-    icon: Users,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  },
-  {
-    title: "Mentor đang hoạt động",
-    value: "156",
-    change: "+8,2%",
-    trend: "up" as const,
-    icon: UserCheck,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
-  },
-  {
-    title: "Phiên trong tháng",
-    value: "423",
-    change: "+23,1%",
-    trend: "up" as const,
-    icon: Video,
-    color: "text-violet-600",
-    bgColor: "bg-violet-50 dark:bg-violet-950/30",
-  },
-  {
-    title: "Doanh thu",
-    value: "12.450.000₫",
-    change: "-4,3%",
-    trend: "down" as const,
-    icon: DollarSign,
-    color: "text-amber-600",
-    bgColor: "bg-amber-50 dark:bg-amber-950/30",
-  },
-];
-
-const SECONDARY_STATS = [
-  {
-    title: "Đăng ký mới",
-    value: "89",
-    subtitle: "Tuần này",
-    icon: UserPlus,
-    color: "text-cyan-600",
-  },
-  {
-    title: "Đánh giá chờ duyệt",
-    value: "24",
-    subtitle: "Cần xử lý",
-    icon: Star,
-    color: "text-yellow-600",
-  },
-  {
-    title: "Phản hồi chưa đọc",
-    value: "18",
-    subtitle: "Từ người dùng",
-    icon: MessageSquare,
-    color: "text-pink-600",
-  },
-  {
-    title: "Thông báo đã gửi",
-    value: "156",
-    subtitle: "7 ngày qua",
-    icon: Bell,
-    color: "text-red-600",
-  },
-];
-
-// Placeholder recent activity
-const RECENT_ACTIVITY = [
-  {
-    id: 1,
-    type: "user_registered",
-    title: "Người dùng mới đăng ký",
-    description: "Nguyễn Văn A đã tham gia nền tảng",
-    time: "2 phút trước",
-    avatar: null,
-    name: "Nguyễn Văn A",
-  },
-  {
-    id: 2,
-    type: "session_completed",
-    title: "Phiên phỏng vấn hoàn thành",
-    description: "Phiên phỏng vấn #423 đã kết thúc",
-    time: "15 phút trước",
-    avatar: null,
-    name: "Phiên",
-  },
-  {
-    id: 3,
-    type: "mentor_approved",
-    title: "Mentor được duyệt",
-    description: "Hồ sơ mentor của Trần Thị B đã được duyệt",
-    time: "1 giờ trước",
-    avatar: null,
-    name: "Trần Thị B",
-  },
-  {
-    id: 4,
-    type: "review_posted",
-    title: "Đánh giá mới",
-    description: "Đánh giá 5 sao cho mentor Lê Văn C",
-    time: "2 giờ trước",
-    avatar: null,
-    name: "Đánh giá",
-  },
-  {
-    id: 5,
-    type: "payment_received",
-    title: "Thanh toán nhận được",
-    description: "Thanh toán 500.000₫ cho phiên cao cấp",
-    time: "3 giờ trước",
-    avatar: null,
-    name: "Thanh toán",
-  },
-];
-
-// Placeholder upcoming sessions
-const UPCOMING_SESSIONS = [
-  {
-    id: 1,
-    mentor: "Ts. Nguyễn Thị Hương",
-    user: "Trần Văn Minh",
-    time: "Hôm nay, 14:00",
-    type: "Phỏng vấn kỹ thuật",
-    status: "confirmed",
-  },
-  {
-    id: 2,
-    mentor: "Lê Quốc Hưng",
-    user: "Phạm Thị Lan",
-    time: "Hôm nay, 16:30",
-    type: "Phỏng vấn hành vi",
-    status: "pending",
-  },
-  {
-    id: 3,
-    mentor: "Vương Thị Mai",
-    user: "Hoàng Văn Long",
-    time: "Ngày mai, 10:00",
-    type: "Phỏng vấn thử",
-    status: "confirmed",
-  },
-  {
-    id: 4,
-    mentor: "Bùi Văn Tùng",
-    user: "Trương Thị Thu",
-    time: "Ngày mai, 14:00",
-    type: "Thiết kế hệ thống",
-    status: "confirmed",
-  },
-];
-
-// Top performing mentors placeholder
-const TOP_MENTORS = [
-  { id: 1, name: "Ts. Nguyễn Thị Hương", sessions: 45, rating: 4.9, earnings: "2.850.000₫" },
-  { id: 2, name: "Lê Quốc Hưng", sessions: 38, rating: 4.8, earnings: "2.280.000₫" },
-  { id: 3, name: "Vương Thị Mai", sessions: 34, rating: 4.9, earnings: "2.040.000₫" },
-  { id: 4, name: "Bùi Văn Tùng", sessions: 31, rating: 4.7, earnings: "1.860.000₫" },
-  { id: 5, name: "Trần Thị Hà", sessions: 28, rating: 4.8, earnings: "1.680.000₫" },
-];
+// Helper to check for successful transaction states
+const isSuccessTransaction = (status?: string) => {
+  if (!status) return true;
+  const s = status.toUpperCase();
+  return s === "SUCCESS" || s === "COMPLETED" || s === "PAID" || s === "DONE";
+};
 
 export function DashboardOverviewPage() {
+  // Fetch real data from Dashboard API
+  const { data: userCount, isLoading: loadingUsers } = useQuery({
+    queryKey: ["admin", "total-users"],
+    queryFn: () => dashboardAdminManager.getTotalUsers(),
+  });
+
+  const { data: mentorCount, isLoading: loadingMentors } = useQuery({
+    queryKey: ["admin", "total-mentors"],
+    queryFn: () => dashboardAdminManager.getTotalMentors(),
+  });
+
+  const { data: incomeResponse, isLoading: loadingIncome } = useQuery({
+    queryKey: ["admin", "total-income"],
+    queryFn: () => dashboardAdminManager.getTotalIncome(),
+  });
+
+  const { data: transactionResponse, isLoading: loadingTransactions } = useQuery({
+    queryKey: ["admin", "total-transactions"],
+    queryFn: () => dashboardAdminManager.getTotalTransactions(),
+  });
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const directRevenue = (incomeResponse?.data || [])
+      .filter((t) => isSuccessTransaction(t.status))
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    const walletDeposits = (transactionResponse?.data || [])
+      .filter((t) => isSuccessTransaction(t.status))
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    return { directRevenue, walletDeposits };
+  }, [incomeResponse, transactionResponse]);
+
+  // Income Trend Data
+  const incomeTrendData = useMemo(() => {
+    const incomeData = (incomeResponse?.data || []).filter((t) => isSuccessTransaction(t.status));
+    const datesMap: Record<string, { date: string, amount: number }> = {};
+    for (let i = 14; i >= 0; i--) {
+      const dateStr = format(subDays(new Date(), i), "dd/MM");
+      datesMap[dateStr] = { date: dateStr, amount: 0 };
+    }
+    incomeData.forEach(t => {
+      const date = format(new Date(t.createdAt || ""), "dd/MM");
+      if (datesMap[date]) datesMap[date].amount += (t.amount || 0);
+    });
+    return Object.values(datesMap);
+  }, [incomeResponse]);
+
+  // Wallet Trend Data
+  const walletTrendData = useMemo(() => {
+    const walletData = (transactionResponse?.data || []).filter((t) => isSuccessTransaction(t.status));
+    const datesMap: Record<string, { date: string, amount: number }> = {};
+    for (let i = 14; i >= 0; i--) {
+      const dateStr = format(subDays(new Date(), i), "dd/MM");
+      datesMap[dateStr] = { date: dateStr, amount: 0 };
+    }
+    walletData.forEach(t => {
+      const date = format(new Date(t.createdAt || ""), "dd/MM");
+      if (datesMap[date]) datesMap[date].amount += (t.amount || 0);
+    });
+    return Object.values(datesMap);
+  }, [transactionResponse]);
+
+  // Formatting currency
+  const formatVND = (value: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value);
+  };
+
+  const OVERVIEW_STATS = [
+    {
+      title: "Tổng người dùng",
+      value: loadingUsers ? "..." : userCount?.data?.toLocaleString() || "0",
+      icon: Users,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    },
+    {
+      title: "Mentor",
+      value: loadingMentors ? "..." : mentorCount?.data?.toLocaleString() || "0",
+      icon: UserCheck,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
+    },
+    {
+      title: "Doanh thu trực tiếp",
+      value: loadingIncome ? "..." : formatVND(stats.directRevenue),
+      icon: DollarSign,
+      color: "text-violet-600",
+      bgColor: "bg-violet-50 dark:bg-violet-900/20",
+    },
+    {
+      title: "Tổng nạp ví",
+      value: loadingTransactions ? "..." : formatVND(stats.walletDeposits),
+      icon: Wallet,
+      color: "text-blue-500",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    },
+  ];
+
+  const recentTransactions = useMemo(() => {
+    const income = (incomeResponse?.data || []).map(t => ({ ...t, source: "INCOME" as const }));
+    const wallet = (transactionResponse?.data || []).map(t => ({ ...t, source: "WALLET" as const }));
+    return [...income, ...wallet]
+      .sort((a, b) => new Date(b.createdAt || "").getTime() - new Date(a.createdAt || "").getTime())
+      .slice(0, 8);
+  }, [incomeResponse, transactionResponse]);
+
   return (
     <div className="min-h-screen bg-gray-50 p-6 dark:bg-slate-950">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Tổng quan bảng điều khiển
-        </h1>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">
-          Chào mững trở lại! Dưới đây là những gì đang xảy ra trên nền tảng hôm nay.
-        </p>
+      <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Dashboard Overview
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            Theo dõi xu hướng doanh thu và nạp ví thời gian thực.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg bg-white p-2 shadow-sm dark:bg-slate-900">
+          <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-md">
+            <Activity className="text-primary h-4 w-4" />
+          </div>
+          <span className="text-sm font-medium dark:text-slate-300">
+            Hệ thống: <span className="text-emerald-500 font-bold">Hoạt động tốt</span>
+          </span>
+        </div>
       </div>
 
-      {/* Main Stats Grid */}
+      {/* Stats Cards */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {OVERVIEW_STATS.map((stat) => (
-          <Card
-            key={stat.title}
-            className="overflow-hidden border-0 shadow-sm dark:bg-slate-900 dark:shadow-slate-800/10">
+          <Card key={stat.title} className="border-0 shadow-sm dark:bg-slate-900 overflow-hidden relative">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {stat.title}
-                  </p>
-                  <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                    {stat.value}
-                  </p>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.title}</p>
+                  <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
                 </div>
                 <div className={cn("rounded-xl p-3", stat.bgColor)}>
                   <stat.icon className={cn("h-6 w-6", stat.color)} />
                 </div>
               </div>
-              <div className="mt-4 flex items-center text-sm">
-                {stat.trend === "up" ? (
-                  <ArrowUpRight className="mr-1 h-4 w-4 text-emerald-600" />
-                ) : (
-                  <ArrowDownRight className="mr-1 h-4 w-4 text-red-600" />
-                )}
-                <span className={stat.trend === "up" ? "text-emerald-600" : "text-red-600"}>
-                  {stat.change}
-                </span>
-                <span className="ml-1 text-slate-500 dark:text-slate-400">so với tháng trước</span>
-              </div>
             </CardContent>
+            <div className={cn("absolute -bottom-6 -right-6 h-20 w-20 rounded-full opacity-5 blur-xl", stat.bgColor)} />
           </Card>
         ))}
       </div>
 
-      {/* Secondary Stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {SECONDARY_STATS.map((stat) => (
-          <Card
-            key={stat.title}
-            className="border-0 shadow-sm dark:bg-slate-900 dark:shadow-slate-800/10">
-            <CardContent className="flex items-center gap-4 p-4">
-              <div
-                className={cn(
-                  "flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800"
-                )}>
-                <stat.icon className={cn("h-5 w-5", stat.color)} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{stat.title}</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">{stat.subtitle}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Activity */}
-        <Card className="border-0 shadow-sm lg:col-span-2 dark:bg-slate-900 dark:shadow-slate-800/10">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-violet-600" />
-              <CardTitle className="text-lg">Hoạt động gần đây</CardTitle>
-            </div>
-            <CardDescription>Cập nhật mới nhất từ nền tảng</CardDescription>
+      {/* Separated Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Income Chart */}
+        <Card className="border-0 shadow-sm dark:bg-slate-900">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg text-violet-600">
+               <TrendingUp className="h-5 w-5" />
+               Xu hướng Doanh thu trực tiếp
+            </CardTitle>
+            <CardDescription>Biến động doanh thu 15 ngày qua</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {RECENT_ACTIVITY.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center gap-4 rounded-lg p-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={activity.avatar || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-violet-500 to-purple-600 text-white">
-                      {activity.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-slate-900 dark:text-white">{activity.title}</p>
-                    <p className="truncate text-sm text-slate-500 dark:text-slate-400">
-                      {activity.description}
-                    </p>
-                  </div>
-                  <span className="flex-shrink-0 text-xs text-slate-400 dark:text-slate-500">
-                    {activity.time}
-                  </span>
-                </div>
-              ))}
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={incomeTrendData}>
+                  <defs>
+                    <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                  <RechartsTooltip content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="rounded-lg border bg-white p-2 shadow-lg dark:bg-slate-900 dark:border-slate-800">
+                          <p className="text-xs font-bold">{payload[0].payload.date}</p>
+                          <p className="text-sm font-black text-violet-600">{formatVND(payload[0].value as number)}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }} />
+                  <Area type="monotone" dataKey="amount" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorIncome)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        {/* Upcoming Sessions */}
-        <Card className="border-0 shadow-sm dark:bg-slate-900 dark:shadow-slate-800/10">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-emerald-600" />
-              <CardTitle className="text-lg">Phiên sắp tới</CardTitle>
-            </div>
-            <CardDescription>Các buổi phỏng vấn đã lịch</CardDescription>
+        {/* Wallet Chart */}
+        <Card className="border-0 shadow-sm dark:bg-slate-900">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg text-blue-500">
+               <Wallet className="h-5 w-5" />
+               Xu hướng Nạp tiền vào ví
+            </CardTitle>
+            <CardDescription>Biến động nạp tiền 15 ngày qua</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {UPCOMING_SESSIONS.map((session) => (
-                <div
-                  key={session.id}
-                  className="rounded-lg border border-slate-100 p-3 dark:border-slate-800">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-slate-900 dark:text-white">
-                      {session.mentor}
-                    </span>
-                    <Badge
-                      variant={session.status === "confirmed" ? "default" : "secondary"}
-                      className={
-                        session.status === "confirmed"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
-                          : ""
-                      }>
-                      {session.status}
-                    </Badge>
-                  </div>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    with {session.user}
-                  </p>
-                  <div className="mt-2 flex items-center justify-between text-xs">
-                    <span className="text-slate-400">{session.time}</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                      {session.type}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={walletTrendData}>
+                  <defs>
+                    <linearGradient id="colorWallet" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} />
+                  <RechartsTooltip content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="rounded-lg border bg-white p-2 shadow-lg dark:bg-slate-900 dark:border-slate-800">
+                          <p className="text-xs font-bold">{payload[0].payload.date}</p>
+                          <p className="text-sm font-black text-blue-600">{formatVND(payload[0].value as number)}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }} />
+                  <Area type="monotone" dataKey="amount" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorWallet)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Top Mentors */}
-      <Card className="mt-6 border-0 shadow-sm dark:bg-slate-900 dark:shadow-slate-800/10">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-amber-600" />
-            <CardTitle className="text-lg">Top Performing Mentors</CardTitle>
-          </div>
-          <CardDescription>Based on sessions completed this month</CardDescription>
+      {/* Transactions */}
+      <Card className="mt-8 border-0 shadow-sm dark:bg-slate-900">
+        <CardHeader>
+          <CardTitle className="text-lg">Giao dịch gần đây</CardTitle>
+          <CardDescription>Nhật ký thu chi mới nhất</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100 text-left dark:border-slate-800">
-                  <th className="pb-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Hạng
-                  </th>
-                  <th className="pb-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Mentor
-                  </th>
-                  <th className="pb-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Phiên
-                  </th>
-                  <th className="pb-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Đánh giá
-                  </th>
-                  <th className="pb-3 text-right text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Thu nhập
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {TOP_MENTORS.map((mentor, index) => (
-                  <tr
-                    key={mentor.id}
-                    className="border-b border-slate-50 last:border-0 dark:border-slate-800/50">
-                    <td className="py-3">
-                      <div
-                        className={cn(
-                          "flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold",
-                          index === 0
-                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-500"
-                            : index === 1
-                              ? "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                              : index === 2
-                                ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-500"
-                                : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                        )}>
-                        {index + 1}
+          <div className="grid gap-4 md:grid-cols-2">
+            {!loadingIncome && !loadingTransactions && recentTransactions.length === 0 ? (
+               <div className="col-span-2 text-center py-10 text-slate-400">Không có dữ liệu giao dịch.</div>
+            ) : (
+              recentTransactions.map((tx) => (
+                <div key={`${tx.id}-${tx.source}`} className="flex items-center justify-between rounded-xl border border-slate-100 p-4 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("h-10 w-10 flex items-center justify-center rounded-lg", tx.source === "INCOME" ? "bg-violet-100 text-violet-600" : "bg-blue-100 text-blue-600")}>
+                       {tx.source === "INCOME" ? <CreditCard className="h-5 w-5" /> : <Wallet className="h-5 w-5" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[150px]">{tx.description || tx.transactionCode}</p>
+                        <Badge className={cn("text-[8px] h-3.5", tx.source === "INCOME" ? "bg-violet-500" : "bg-blue-500")}>{tx.source === "INCOME" ? "THU NHẬP" : "NẠP VÍ"}</Badge>
                       </div>
-                    </td>
-                    <td className="py-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-xs text-white">
-                            {mentor.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium text-slate-900 dark:text-white">
-                          {mentor.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 text-slate-600 dark:text-slate-300">{mentor.sessions}</td>
-                    <td className="py-3">
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span className="text-slate-600 dark:text-slate-300">{mentor.rating}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 text-right font-medium text-emerald-600 dark:text-emerald-500">
-                      {mentor.earnings}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <p className="text-xs text-slate-500">{format(new Date(tx.createdAt || ""), "HH:mm, dd/MM", { locale: vi })}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={cn("text-sm font-black", isSuccessTransaction(tx.status) ? "text-emerald-600" : "text-amber-600")}>{formatVND(tx.amount || 0)}</p>
+                    <p className="text-[9px] font-bold text-slate-400">{tx.status}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
-
-      {/* Placeholder Note */}
-      <div className="mt-6 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
-        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-          <span className="font-medium">Lưu ý:</span> Bảng điều khiển này hiển thị dữ liệu mẫu.
-          Thống kê thực tế sẽ có khi backend triển khai API.
-        </p>
-      </div>
     </div>
   );
 }
