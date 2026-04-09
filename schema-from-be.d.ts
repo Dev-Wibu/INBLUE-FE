@@ -1591,6 +1591,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/dashboard/total-user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTotalUser"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dashboard/total-transaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTotalTransaction"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dashboard/total-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTotalSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dashboard/total-mentor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTotalMentor"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/dashboard/total-income": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTotalIncome"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/candidate-profiles/{userId}": {
         parameters: {
             query?: never;
@@ -2406,15 +2486,15 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
-            numberOfElements?: number;
+            totalPages?: number;
+            pageable?: components["schemas"]["PageableObject"];
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -2688,14 +2768,14 @@ export interface components {
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            errorOnUndeclaredNamespace?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
             trimDirectiveWhitespaces?: string;
-            elIgnored?: string;
-            isXml?: string;
-            urlPatterns?: string[];
             defaultContentType?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            urlPatterns?: string[];
             buffer?: string;
+            isXml?: string;
+            elIgnored?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -2729,14 +2809,12 @@ export interface components {
             };
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            requestCharacterEncoding?: string;
-            responseCharacterEncoding?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
+            requestCharacterEncoding?: string;
+            responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
@@ -2749,9 +2827,11 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             initParameterNames?: unknown;
-            virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -2831,10 +2911,10 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
+            path?: string;
+            secure?: boolean;
             domain?: string;
             httpOnly?: boolean;
-            secure?: boolean;
-            path?: string;
             name?: string;
             attributes?: {
                 [key: string]: string;
@@ -5702,6 +5782,106 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["InterviewSessionRedis"];
+                };
+            };
+        };
+    };
+    getTotalUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": number;
+                };
+            };
+        };
+    };
+    getTotalTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Transaction"][];
+                };
+            };
+        };
+    };
+    getTotalSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": number;
+                };
+            };
+        };
+    };
+    getTotalMentor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": number;
+                };
+            };
+        };
+    };
+    getTotalIncome: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["Payment"][];
                 };
             };
         };

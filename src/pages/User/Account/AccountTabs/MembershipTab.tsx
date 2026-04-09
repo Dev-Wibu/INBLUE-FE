@@ -13,22 +13,18 @@ import {
   Star,
   Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { UserSubscriptionResponse } from "@/interfaces";
 import {
   addPaymentSupportLog,
-  buildSupportPayload,
   extractOrderCodeFromUrl,
-  formatSupportPayload,
-  getLatestRecoveryForUser,
-  getSupportLogsBySupportCode,
-  type PaymentRecoveryContext,
-  type PaymentSupportLog,
+  extractTransactionCodeFromUrl,
   upsertPaymentRecoveryContext,
 } from "@/lib";
 import { formatCurrency } from "@/lib/formatting";
 import { memberShipPlanManager, userManager } from "@/services";
+import type { MemberShipPlan } from "@/services/membership-plan.manager";
 import { paymentManager } from "@/services/payment.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
@@ -38,8 +34,11 @@ interface PlanFeature {
   included: boolean;
 }
 
+type PlanName = "FREE" | "NEW" | "BASIC" | "PREMIUM";
+
 interface MembershipPlan {
-  id: string;
+  id: PlanName;
+  backendId: number;
   displayName: string;
   price: number;
   durationDays: number;
@@ -55,91 +54,136 @@ interface MembershipPlan {
   isCurrent?: boolean;
 }
 
-const MEMBERSHIP_PLANS: MembershipPlan[] = [
-  {
+type PlanVisualConfig = Omit<MembershipPlan, "backendId" | "price" | "durationDays" | "features">;
+
+const PLAN_DISPLAY_ORDER: PlanName[] = ["FREE", "NEW", "BASIC", "PREMIUM"];
+
+const PLAN_VISUALS: Record<PlanName, PlanVisualConfig> = {
+  FREE: {
     id: "FREE",
     displayName: "INBLUE FREE",
-    price: 0,
-    durationDays: 30,
     colorClass: "text-[#0047AB] dark:text-[#66B2FF]",
     bgClass: "bg-white dark:bg-slate-900",
     borderClass: "border-[#0047AB]/30 dark:border-[#66B2FF]/30",
     buttonClass: "",
     iconBgClass: "bg-[#DCEEFF] dark:bg-[#0047AB]/20",
     icon: <Star className="h-6 w-6 text-[#0047AB] dark:text-[#66B2FF]" />,
-    features: [
-      { text: "1 lượt phỏng vấn AI / tháng", included: true },
-      { text: "2 bộ luyện tập / tháng", included: true },
-      { text: "2 bộ quiz / tháng", included: true },
-      { text: "Truy cập câu hỏi cơ bản", included: true },
-      { text: "Hỗ trợ ưu tiên", included: false },
-      { text: "Không giới hạn lượt dùng", included: false },
-    ],
   },
-  {
+  NEW: {
     id: "NEW",
     displayName: "INBLUE NEW",
-    price: 4000,
-    durationDays: 30,
     colorClass: "text-cyan-500 dark:text-cyan-400",
     bgClass: "bg-white dark:bg-slate-900",
     borderClass: "border-cyan-400/40 dark:border-cyan-500/40",
-    buttonClass: "bg-cyan-500 hover:bg-cyan-600 text-white",
+    buttonClass: "bg-cyan-500 text-white hover:bg-cyan-600",
     iconBgClass: "bg-cyan-50 dark:bg-cyan-900/20",
     icon: <Zap className="h-6 w-6 text-cyan-500 dark:text-cyan-400" />,
-    features: [
-      { text: "5 lượt phỏng vấn AI / tháng", included: true },
-      { text: "10 bộ luyện tập / tháng", included: true },
-      { text: "10 bộ quiz / tháng", included: true },
-      { text: "Truy cập câu hỏi đa dạng", included: true },
-      { text: "Hỗ trợ ưu tiên", included: false },
-      { text: "Không giới hạn lượt dùng", included: false },
-    ],
   },
-  {
+  BASIC: {
     id: "BASIC",
     displayName: "INBLUE BASIC",
-    price: 99000,
-    durationDays: 30,
     colorClass: "text-violet-500 dark:text-violet-400",
     bgClass: "bg-white dark:bg-slate-900",
     borderClass: "border-violet-400/60 dark:border-violet-500/60",
-    buttonClass: "bg-violet-600 hover:bg-violet-700 text-white",
+    buttonClass: "bg-violet-600 text-white hover:bg-violet-700",
     iconBgClass: "bg-violet-50 dark:bg-violet-900/20",
     icon: <Crown className="h-6 w-6 text-violet-500 dark:text-violet-400" />,
     badge: "PHỔ BIẾN",
     badgeClass: "bg-violet-500 text-white",
-    features: [
-      { text: "15 lượt phỏng vấn AI / tháng", included: true },
-      { text: "30 bộ luyện tập / tháng", included: true },
-      { text: "30 bộ quiz / tháng", included: true },
-      { text: "Toàn bộ ngân hàng câu hỏi", included: true },
-      { text: "Hỗ trợ ưu tiên", included: true },
-      { text: "Không giới hạn lượt dùng", included: false },
-    ],
   },
-  {
+  PREMIUM: {
     id: "PREMIUM",
     displayName: "INBLUE PREMIUM",
-    price: 199000,
-    durationDays: 30,
     colorClass: "text-pink-500 dark:text-pink-400",
     bgClass: "bg-white dark:bg-slate-900",
     borderClass: "border-pink-400/50 dark:border-pink-500/50",
     buttonClass:
-      "bg-gradient-to-r from-pink-500 to-fuchsia-600 hover:from-pink-600 hover:to-fuchsia-700 text-white",
+      "bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white hover:from-pink-600 hover:to-fuchsia-700",
     iconBgClass: "bg-pink-50 dark:bg-pink-900/20",
     icon: <Diamond className="h-6 w-6 text-pink-500 dark:text-pink-400" />,
-    features: [
-      { text: "Không giới hạn phỏng vấn AI", included: true },
-      { text: "Không giới hạn bộ luyện tập", included: true },
-      { text: "Không giới hạn bộ quiz", included: true },
-      { text: "Toàn bộ ngân hàng câu hỏi", included: true },
-      { text: "Hỗ trợ ưu tiên 24/7", included: true },
-      { text: "Trải nghiệm không giới hạn", included: true },
-    ],
   },
-];
+};
+
+const isPlanName = (value?: string): value is PlanName => {
+  if (!value) {
+    return false;
+  }
+
+  return PLAN_DISPLAY_ORDER.includes(value as PlanName);
+};
+
+const isUnlimitedValue = (value?: number): boolean => {
+  if (typeof value !== "number") {
+    return false;
+  }
+
+  return value < 0 || value >= 999;
+};
+
+const formatQuotaText = (value: number | undefined, label: string): string => {
+  if (isUnlimitedValue(value)) {
+    return `Không giới hạn ${label}`;
+  }
+
+  const safeValue = Math.max(value ?? 0, 0);
+  return `${safeValue} ${label}`;
+};
+
+const formatDurationText = (durationDays: number | undefined): string => {
+  const safeDays = Math.max(durationDays ?? 0, 0);
+  if (safeDays >= 2147483647) {
+    return "Không giới hạn thời hạn sử dụng";
+  }
+
+  return `Sử dụng trong ${safeDays} ngày`;
+};
+
+const buildPlanFeatures = (plan: MemberShipPlan): PlanFeature[] => {
+  return [
+    {
+      text: formatQuotaText(plan.max_ai_interview, "lượt phỏng vấn AI"),
+      included: true,
+    },
+    {
+      text: formatQuotaText(plan.max_practice_sets, "bộ luyện tập"),
+      included: true,
+    },
+    {
+      text: formatQuotaText(plan.max_quiz_sets, "bộ quiz"),
+      included: true,
+    },
+    {
+      text: formatDurationText(plan.durationDays),
+      included: true,
+    },
+    {
+      text: "Ưu tiên hỗ trợ",
+      included: plan.name === "BASIC" || plan.name === "PREMIUM",
+    },
+    {
+      text: "Không giới hạn lượt sử dụng",
+      included:
+        isUnlimitedValue(plan.max_ai_interview) &&
+        isUnlimitedValue(plan.max_practice_sets) &&
+        isUnlimitedValue(plan.max_quiz_sets),
+    },
+  ];
+};
+
+const toMembershipPlan = (plan: MemberShipPlan): MembershipPlan | null => {
+  if (!isPlanName(plan.name)) {
+    return null;
+  }
+
+  const visual = PLAN_VISUALS[plan.name];
+  return {
+    ...visual,
+    backendId: Number(plan.id || 0),
+    price: Math.max(plan.price ?? 0, 0),
+    durationDays: Math.max(plan.durationDays ?? 0, 0),
+    features: buildPlanFeatures(plan),
+  };
+};
 
 const BANK_INFO = {
   owner: "NGUYỄN PHẠM THU HÀ",
@@ -151,7 +195,7 @@ function buildTransferContent(planId: string, userId: string | number): string {
   return `INBLUE${planId}${userId}`;
 }
 
-function getRingClass(planId: string): string {
+function getRingClass(planId: PlanName): string {
   if (planId === "NEW") return "ring-cyan-400";
   if (planId === "BASIC") return "ring-violet-500";
   if (planId === "PREMIUM") return "ring-pink-500";
@@ -167,7 +211,7 @@ function PlanCard({
   plan: MembershipPlan;
   isSelected: boolean;
   isCurrent: boolean;
-  onSelect: (_id: string) => void;
+  onSelect: (_id: PlanName) => void;
 }) {
   return (
     <div
@@ -251,31 +295,15 @@ function PlanCard({
 
 export function MembershipTab() {
   const { user } = useAuthStore();
+  const [membershipPlans, setMembershipPlans] = useState<MembershipPlan[]>([]);
   const [subscription, setSubscription] = useState<UserSubscriptionResponse | null>(null);
-  const [planIdByName, setPlanIdByName] = useState<Record<string, number>>({});
+  const [planIdByName, setPlanIdByName] = useState<Partial<Record<PlanName, number>>>({});
   const [currentPlanName, setCurrentPlanName] = useState<string>("FREE");
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<PlanName | null>(null);
   const [copied, setCopied] = useState<"account" | "content" | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
-  const [latestRecovery, setLatestRecovery] = useState<PaymentRecoveryContext | null>(null);
-  const [supportLogs, setSupportLogs] = useState<PaymentSupportLog[]>([]);
-  const [isCopyingSupportPayload, setIsCopyingSupportPayload] = useState(false);
   const paymentRef = useRef<HTMLDivElement>(null);
-
-  const refreshRecoveryState = useCallback(() => {
-    if (!user?.id) {
-      setLatestRecovery(null);
-      setSupportLogs([]);
-      return;
-    }
-
-    const nextRecovery = getLatestRecoveryForUser(Number(user.id));
-    setLatestRecovery(nextRecovery);
-    setSupportLogs(
-      nextRecovery?.supportCode ? getSupportLogsBySupportCode(nextRecovery.supportCode) : []
-    );
-  }, [user?.id]);
 
   useEffect(() => {
     if (user?.id == null) {
@@ -292,15 +320,26 @@ export function MembershipTab() {
         ]);
 
         if (plansResult.success && plansResult.data) {
-          const plans = Array.isArray(plansResult.data) ? plansResult.data : [];
-          const nextPlanMap: Record<string, number> = {};
+          const rawPlans = Array.isArray(plansResult.data) ? plansResult.data : [];
+          const dbPlans = rawPlans
+            .filter((plan): plan is MemberShipPlan => !!plan)
+            .filter((plan) => isPlanName(plan.name))
+            .map(toMembershipPlan)
+            .filter((plan): plan is MembershipPlan => !!plan)
+            .sort((a, b) => {
+              if (a.price !== b.price) {
+                return a.price - b.price;
+              }
 
-          for (const plan of plans) {
-            if (plan.name && typeof plan.id === "number") {
-              nextPlanMap[plan.name] = plan.id;
-            }
+              return PLAN_DISPLAY_ORDER.indexOf(a.id) - PLAN_DISPLAY_ORDER.indexOf(b.id);
+            });
+
+          const nextPlanMap: Partial<Record<PlanName, number>> = {};
+          for (const plan of dbPlans) {
+            nextPlanMap[plan.id] = plan.backendId;
           }
 
+          setMembershipPlans(dbPlans);
           setPlanIdByName(nextPlanMap);
         }
 
@@ -320,11 +359,7 @@ export function MembershipTab() {
     void loadSubscriptionData();
   }, [user?.id]);
 
-  useEffect(() => {
-    refreshRecoveryState();
-  }, [refreshRecoveryState]);
-
-  const handleSelectPlan = (planId: string) => {
+  const handleSelectPlan = (planId: PlanName) => {
     setSelectedPlan(planId);
     setTimeout(() => {
       paymentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -338,32 +373,6 @@ export function MembershipTab() {
     });
   };
 
-  const handleCopySupportPayload = async () => {
-    if (isCopyingSupportPayload || !latestRecovery) {
-      return;
-    }
-
-    setIsCopyingSupportPayload(true);
-    try {
-      const payload = buildSupportPayload({
-        orderCode: latestRecovery.orderCode,
-        supportCode: latestRecovery.supportCode,
-        context: latestRecovery,
-        extra: {
-          scope: "membership-tab",
-          logCount: supportLogs.length,
-        },
-      });
-
-      await navigator.clipboard.writeText(formatSupportPayload(payload));
-      toast.success("Đã sao chép payload hỗ trợ.");
-    } catch {
-      toast.error("Không thể sao chép payload hỗ trợ.");
-    } finally {
-      setIsCopyingSupportPayload(false);
-    }
-  };
-
   const handleConfirmPayment = async () => {
     if (!selectedPlan || !user?.id) {
       return;
@@ -375,11 +384,11 @@ export function MembershipTab() {
       return;
     }
 
-    const selectedPlanInfo = MEMBERSHIP_PLANS.find((plan) => plan.id === selectedPlan);
+    const selectedPlanInfo = membershipPlans.find((plan) => plan.id === selectedPlan);
     const paymentAmount = selectedPlanInfo?.price ?? 0;
 
     if (paymentAmount <= 0) {
-      toast.info("Gói FREE không cần thanh toán. Vui lòng chọn gói trả phí.");
+      toast.info("Gói này không cần thanh toán. Vui lòng chọn gói trả phí.");
       return;
     }
 
@@ -408,9 +417,11 @@ export function MembershipTab() {
 
       const redirectUrl = new URL(paymentResult.data, window.location.origin).toString();
       const orderCode = extractOrderCodeFromUrl(redirectUrl) || undefined;
+      const transactionCode = extractTransactionCodeFromUrl(redirectUrl) || undefined;
 
       const createdRecovery = upsertPaymentRecoveryContext({
         orderCode,
+        transactionCode,
         userId: Number(user.id),
         planId: Number(selectedPlanId),
         planName: selectedPlan,
@@ -431,12 +442,14 @@ export function MembershipTab() {
         message: "Da tao checkoutUrl thanh cong.",
         payload: {
           checkoutUrl: redirectUrl,
+          transactionCode: transactionCode || null,
         },
       });
 
       const redirectedRecovery = upsertPaymentRecoveryContext({
         supportCode: createdRecovery.supportCode,
         orderCode,
+        transactionCode,
         userId: createdRecovery.userId,
         planId: createdRecovery.planId,
         planName: createdRecovery.planName,
@@ -455,6 +468,9 @@ export function MembershipTab() {
         amount: redirectedRecovery.amount,
         status: "REDIRECTED",
         message: "Frontend chuan bi redirect den checkoutUrl.",
+        payload: {
+          transactionCode: transactionCode || null,
+        },
       });
 
       if (!orderCode) {
@@ -468,12 +484,10 @@ export function MembershipTab() {
           message: "Khong trich xuat duoc orderCode tu checkoutUrl, se can callback map fallback.",
           payload: {
             checkoutUrl: redirectUrl,
+            transactionCode: transactionCode || null,
           },
         });
       }
-
-      setLatestRecovery(redirectedRecovery);
-      setSupportLogs(getSupportLogsBySupportCode(redirectedRecovery.supportCode));
 
       toast.success("Đã tạo link thanh toán. Đang chuyển hướng...");
       window.location.assign(redirectUrl);
@@ -489,7 +503,6 @@ export function MembershipTab() {
       toast.error("Không thể tạo link thanh toán.");
     } finally {
       setIsConfirming(false);
-      refreshRecoveryState();
     }
   };
 
@@ -497,7 +510,7 @@ export function MembershipTab() {
   const transferContent = selectedPlan
     ? buildTransferContent(selectedPlan, userId)
     : "— Chọn gói bên trên —";
-  const selectedPlanInfo = MEMBERSHIP_PLANS.find((p) => p.id === selectedPlan);
+  const selectedPlanInfo = membershipPlans.find((p) => p.id === selectedPlan);
 
   return (
     <div className="flex flex-col gap-8">
@@ -557,59 +570,24 @@ export function MembershipTab() {
         </div>
       ) : null}
 
-      {latestRecovery && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/30 dark:bg-blue-900/10">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="font-['Inter'] text-sm font-semibold text-blue-700 dark:text-blue-300">
-              Trang thai giao dich gan nhat
-            </p>
-            <button
-              onClick={handleCopySupportPayload}
-              disabled={isCopyingSupportPayload}
-              className="rounded-lg border border-blue-300 px-3 py-1.5 font-['Inter'] text-xs font-semibold text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/20">
-              {isCopyingSupportPayload ? "Dang sao chep..." : "Sao chep payload ho tro"}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 gap-2 font-['Inter'] text-xs text-blue-700/90 md:grid-cols-2 dark:text-blue-300/90">
-            <p>SupportCode: {latestRecovery.supportCode}</p>
-            <p>OrderCode: {latestRecovery.orderCode || "Chua map"}</p>
-            <p>
-              Goi: {latestRecovery.planName || "-"} (planId: {latestRecovery.planId})
-            </p>
-            <p>Status: {latestRecovery.status}</p>
-            <p>So tien: {formatCurrency(latestRecovery.amount)}</p>
-            <p>Cap nhat: {new Date(latestRecovery.updatedAt).toLocaleString("vi-VN")}</p>
-          </div>
-
-          {(latestRecovery.status === "UNMAPPED_ORDER" ||
-            latestRecovery.status === "SUBSCRIBE_FAILED") && (
-            <p className="mt-3 font-['Inter'] text-xs text-rose-600 dark:text-rose-300">
-              Giao dich hien tai chua hoan tat. He thong se chan kich hoat va khuyen nghi thanh toan
-              lai.
-            </p>
-          )}
-
-          {supportLogs.length > 0 && (
-            <p className="mt-2 font-['Inter'] text-xs text-blue-600/90 dark:text-blue-300/80">
-              Da ghi nhan {supportLogs.length} log ho tro trong 24h gan nhat.
-            </p>
-          )}
+      {/* Plan Cards Grid */}
+      {membershipPlans.length === 0 ? (
+        <div className="rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          Hiện chưa có gói thành viên khả dụng.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {membershipPlans.map((plan) => (
+            <PlanCard
+              key={`${plan.id}-${plan.backendId}`}
+              plan={plan}
+              isSelected={selectedPlan === plan.id}
+              isCurrent={currentPlanName === plan.id}
+              onSelect={handleSelectPlan}
+            />
+          ))}
         </div>
       )}
-
-      {/* Plan Cards Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {MEMBERSHIP_PLANS.map((plan) => (
-          <PlanCard
-            key={plan.id}
-            plan={plan}
-            isSelected={selectedPlan === plan.id}
-            isCurrent={currentPlanName === plan.id}
-            onSelect={handleSelectPlan}
-          />
-        ))}
-      </div>
 
       {/* Payment Section */}
       <div ref={paymentRef} className="scroll-mt-6">
@@ -752,12 +730,12 @@ export function MembershipTab() {
                   {isConfirming ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Dang tao link thanh toan...
+                      Đang tạo liên kết thanh toán...
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="h-4 w-4" />
-                      Thanh toan voi PayOS
+                      Thanh toán ngay
                     </>
                   )}
                 </button>
@@ -811,7 +789,7 @@ export function MembershipTab() {
                   Mua gói thành viên
                 </p>
                 <p className="font-['Inter'] text-xs text-amber-600 dark:text-amber-500">
-                  Flow thanh toan: Tao link PayOS, thanh toan, quay lai trang xac nhan nang cap.
+                  Sau khi thanh toán thành công, quyền lợi gói sẽ được cập nhật tự động.
                 </p>
               </div>
             </div>
