@@ -107,8 +107,8 @@ export function DashboardOverviewPage() {
     queryKey: ["admin", "total-transactions"],
     queryFn: () => dashboardAdminManager.getTotalTransactions(),
   });
-  
-  const { data: usageResponse, isLoading: loadingUsage } = useQuery({
+
+  const { data: usageResponse } = useQuery({
     queryKey: ["admin", "feature-usage-logs"],
     queryFn: () => dashboardAdminManager.getFeatureUsageLogs(),
   });
@@ -398,7 +398,9 @@ export function DashboardOverviewPage() {
             <Activity className="h-5 w-5" />
             Mức độ sử dụng các tính năng
           </CardTitle>
-          <CardDescription>Thống kê số lượt sử dụng các tính năng chính trên hệ thống</CardDescription>
+          <CardDescription>
+            Thống kê số lượt sử dụng các tính năng chính trên hệ thống
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[350px] w-full">
@@ -435,9 +437,7 @@ export function DashboardOverviewPage() {
                     return (
                       <div className="rounded-lg border bg-white p-2 shadow-lg dark:border-slate-800 dark:bg-slate-900">
                         <p className="text-xs font-bold text-slate-500">{item.payload?.name}</p>
-                        <p
-                          className="text-lg font-black"
-                          style={{ color: item.payload?.color }}>
+                        <p className="text-lg font-black" style={{ color: item.payload?.color }}>
                           {item.value?.toLocaleString("vi-VN")} lượt
                         </p>
                       </div>
