@@ -1591,6 +1591,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/feature-usage-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAll_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/feature-usage-logs/by-feature": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getByFeature"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dashboard/total-user": {
         parameters: {
             query?: never;
@@ -2165,8 +2197,6 @@ export interface components {
         };
         PracticeGenerateRequest: {
             /** Format: int32 */
-            userId?: number;
-            /** Format: int32 */
             aiInterviewId?: number;
             /** Format: int32 */
             dateNumber?: number;
@@ -2486,15 +2516,15 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -2504,19 +2534,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -2658,10 +2688,20 @@ export interface components {
             currentQuestionType?: "BLUEPRINT" | "FOLLOW_UP";
             chatHistory?: components["schemas"]["InterviewExchange"][];
         };
+        FeatureUsageLog: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int32 */
+            userId?: number;
+            /** @enum {string} */
+            featureName?: "MENTOR_INTERVIEW" | "AI_INTERVIEW" | "PRACTICE" | "QUIZ";
+            /** Format: date-time */
+            useAt?: string;
+        };
         ApplicationContext: {
-            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: unknown;
             id?: string;
@@ -2759,8 +2799,8 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             errorOnELNotFound?: string;
@@ -2768,14 +2808,14 @@ export interface components {
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
+            elIgnored?: string;
+            isXml?: string;
             trimDirectiveWhitespaces?: string;
             defaultContentType?: string;
+            urlPatterns?: string[];
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
-            urlPatterns?: string[];
             buffer?: string;
-            isXml?: string;
-            elIgnored?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -2798,25 +2838,25 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
+            propagateQueryProperties?: boolean;
             attributesMap?: {
                 [key: string]: unknown;
             };
             attributes?: {
                 [key: string]: string;
             };
+            attributesCSV?: string;
         };
         ServletContext: {
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            /** Format: int32 */
+            sessionTimeout?: number;
+            initParameterNames?: unknown;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
+            serverInfo?: string;
             /** Format: int32 */
             effectiveMinorVersion?: number;
             servletContextName?: string;
@@ -2827,11 +2867,11 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
-            initParameterNames?: unknown;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -4056,7 +4096,6 @@ export interface operations {
         parameters: {
             query: {
                 practiceSetId: number;
-                userId: number;
             };
             header?: never;
             path?: never;
@@ -5782,6 +5821,48 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["InterviewSessionRedis"];
+                };
+            };
+        };
+    };
+    getAll_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FeatureUsageLog"][];
+                };
+            };
+        };
+    };
+    getByFeature: {
+        parameters: {
+            query: {
+                featureName: "MENTOR_INTERVIEW" | "AI_INTERVIEW" | "PRACTICE" | "QUIZ";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FeatureUsageLog"][];
                 };
             };
         };

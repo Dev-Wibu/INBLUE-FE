@@ -29,7 +29,6 @@ import { practiceSetItemManager, practiceSetManager, quizSetManager } from "@/se
 import type { PracticeSetItem } from "@/services/practice-set-item.manager";
 import type { PracticeSet, PracticeSetResponse } from "@/services/practice-set.manager";
 import type { QuizResponse, QuizSet } from "@/services/quiz-set.manager";
-import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -380,7 +379,6 @@ interface SessionDayGroupProps {
 
 function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: SessionDayGroupProps) {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const [quizHistory, setQuizHistory] = useState<QuizSet[]>(
     () =>
       ps.quizzes?.map((q) => ({
@@ -397,10 +395,10 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
   } | null>(null);
 
   const handleCreateAiQuiz = async () => {
-    if (!ps.id || !user?.id) return;
+    if (!ps.id) return;
     setIsCreating(true);
     try {
-      const res = await quizSetManager.createFullAi(ps.id, user.id);
+      const res = await quizSetManager.createFullAi(ps.id);
       if (res.success && res.data) {
         const newQuizId = (res.data as QuizResponse).quizId;
         if (newQuizId) {
@@ -602,14 +600,12 @@ function DayGroup({
   onToggle,
 }: DayGroupProps) {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreateAiQuiz = async () => {
-    if (!user?.id) return;
     setIsCreating(true);
     try {
-      const res = await quizSetManager.createFullAi(Number(practiceSetId), user.id);
+      const res = await quizSetManager.createFullAi(Number(practiceSetId));
       if (res.success && res.data) {
         const newQuizId = (res.data as QuizResponse).quizId;
         if (newQuizId) {
