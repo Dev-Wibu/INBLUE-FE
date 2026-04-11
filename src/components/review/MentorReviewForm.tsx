@@ -94,7 +94,7 @@ export function MentorReviewForm({
               <FormControl>
                 <StarRating value={field.value} onChange={field.onChange} size="lg" />
               </FormControl>
-              <FormDescription>Chọn số sao để đánh giá mentor (1-5 sao)</FormDescription>
+              <FormDescription>Chọn số sao để đánh giá học viên (1-5 sao)</FormDescription>
               <FormMessage />
             </FormItem>
           )}

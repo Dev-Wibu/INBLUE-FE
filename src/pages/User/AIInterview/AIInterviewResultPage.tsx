@@ -35,7 +35,6 @@ import { $api } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { practiceSetManager } from "@/services";
-import { useAuthStore } from "@/stores/authStore";
 import { SelectRoadmapModal } from "./components/SelectRoadmapModal";
 
 const RESULT_MAP: Record<string, { label: string; color: string; bg: string }> = {
@@ -250,7 +249,6 @@ function QACard({
 export function AIInterviewResultPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuthStore();
   const [roadmapOpen, setRoadmapOpen] = useState(false);
   const [roadmapLoading, setRoadmapLoading] = useState(false);
 
@@ -277,7 +275,6 @@ export function AIInterviewResultPage() {
     setRoadmapLoading(true);
     try {
       const result = await practiceSetManager.createByAI({
-        userId: user?.id,
         aiInterviewId: Number(id),
         dateNumber,
       });

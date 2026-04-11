@@ -390,7 +390,6 @@ export class PracticeSetManager implements BaseManager<PracticeSet> {
    * Body: PracticeGenerateRequest — session must be COMPLETED with a result
    */
   async createByAI(data: {
-    userId?: number;
     aiInterviewId?: number;
     dateNumber: number;
   }): Promise<ApiResponse<PracticeSet>> {

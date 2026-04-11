@@ -78,12 +78,12 @@ export function MentorFeedbackForm({
           name="rating"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Đánh giá học viên *</FormLabel>
+              <FormLabel>Đánh giá mentor *</FormLabel>
               <FormControl>
                 <StarRating value={field.value} onChange={field.onChange} size="lg" />
               </FormControl>
               <FormDescription>
-                Đánh giá hiệu suất của học viên trong buổi phỏng vấn (1-5 sao)
+                Đánh giá trải nghiệm làm việc với mentor trong buổi phỏng vấn (1-5 sao)
               </FormDescription>
               <FormMessage />
             </FormItem>
