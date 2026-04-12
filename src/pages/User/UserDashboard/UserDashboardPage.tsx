@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import {
-  Bell,
   Bot,
   CircleHelp,
   FileQuestion,
@@ -134,7 +133,6 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
     label: "Cá nhân",
     items: [
       { type: "messenger", icon: MessageSquare, label: "Tin nhắn", color: "text-blue-500" },
-      { type: "notifications", icon: Bell, label: "Thông báo", color: "text-red-600" },
       { type: "account", icon: UserIcon, label: "Tài khoản", color: "text-gray-600" },
     ],
   },

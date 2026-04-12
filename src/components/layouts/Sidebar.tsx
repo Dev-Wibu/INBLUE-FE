@@ -1,5 +1,4 @@
 import {
-  Bell,
   Bot,
   ChevronDown,
   ChevronLeft,
@@ -101,11 +100,6 @@ const menuItems: NavItem[] = [
         path: "/dashboard/practice/questions",
       },
     ],
-  },
-  {
-    label: "Thông báo",
-    icon: Bell,
-    path: "/dashboard/notifications",
   },
   {
     label: "Tài khoản",
