@@ -38,9 +38,9 @@ export function ChatBubble({
       {/* Avatar */}
       <div
         className={cn(
-          "flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full",
+          "flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-sm",
           isAI
-            ? "bg-gradient-to-br from-[#0047AB] to-[#007BFF]"
+            ? "bg-linear-to-br from-cyan-600 to-blue-700"
             : "bg-emerald-100 dark:bg-emerald-900/40"
         )}>
         {isAI ? (
@@ -53,7 +53,7 @@ export function ChatBubble({
       </div>
 
       {/* Bubble */}
-      <div className="group flex max-w-[75%] flex-col gap-1">
+      <div className="group flex max-w-[84%] flex-col gap-1 md:max-w-[74%]">
         {isAI &&
           message.meta?.questionType &&
           (() => {
@@ -62,7 +62,7 @@ export function ChatBubble({
               <Badge
                 variant="outline"
                 className={cn(
-                  "w-fit px-2 py-0.5 text-[10px] font-semibold",
+                  "w-fit rounded-full px-2.5 py-0.5 text-[10px] font-semibold",
                   typeConfig?.className
                 )}>
                 {typeConfig?.label ?? message.meta.questionType}
@@ -71,16 +71,16 @@ export function ChatBubble({
           })()}
         <div
           className={cn(
-            "rounded-2xl px-4 py-3",
+            "rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap shadow-sm",
             isAI
-              ? "rounded-tl-sm bg-slate-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
-              : "rounded-tr-sm bg-[#0047AB] text-white"
+              ? "rounded-tl-sm border border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              : "rounded-tr-sm bg-linear-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-500/20"
           )}>
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          <p>{message.content}</p>
         </div>
         <div className={cn("flex items-center gap-1", isAI ? "justify-start" : "justify-end")}>
           <span
-            className={cn("text-muted-foreground text-[11px]", isAI ? "text-left" : "text-right")}>
+            className={cn("text-muted-foreground text-[10px]", isAI ? "text-left" : "text-right")}>
             {message.timestamp}
           </span>
           {isAI && onSpeak && (
@@ -89,10 +89,10 @@ export function ChatBubble({
               title={isThisSpeaking ? "Dừng đọc" : "Đọc to tin nhắn"}
               className={cn(
                 "flex h-5 w-5 items-center justify-center rounded-full transition-all",
-                "opacity-0 group-hover:opacity-100 focus:opacity-100",
+                "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100",
                 isThisSpeaking
-                  ? "text-[#0047AB] opacity-100"
-                  : "text-muted-foreground hover:text-[#0047AB]"
+                  ? "text-cyan-600 opacity-100"
+                  : "text-muted-foreground hover:text-cyan-600"
               )}>
               {isThisSpeaking ? (
                 <VolumeX className="h-3.5 w-3.5" />
@@ -110,10 +110,10 @@ export function ChatBubble({
 export function TypingIndicator() {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#0047AB] to-[#007BFF]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-cyan-600 to-blue-700 shadow-sm">
         <img src={logo} alt="AI" className="h-6 w-6 object-contain" />
       </div>
-      <div className="rounded-2xl rounded-tl-sm bg-slate-100 px-4 py-3 dark:bg-zinc-800">
+      <div className="rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center gap-1.5">
           <div className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:0ms]" />
           <div className="h-2 w-2 animate-bounce rounded-full bg-zinc-400 [animation-delay:150ms]" />
@@ -127,13 +127,13 @@ export function TypingIndicator() {
 export function EvaluatingIndicator() {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#0047AB] to-[#007BFF]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-cyan-600 to-blue-700 shadow-sm">
         <img src={logo} alt="AI" className="h-6 w-6 object-contain" />
       </div>
-      <div className="rounded-2xl rounded-tl-sm bg-blue-50 px-4 py-3 dark:bg-blue-950/40">
+      <div className="rounded-2xl rounded-tl-sm border border-cyan-200/70 bg-cyan-50 px-4 py-3 shadow-sm dark:border-cyan-800/70 dark:bg-cyan-950/30">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 animate-pulse text-[#0047AB]" />
-          <span className="text-sm font-medium text-[#0047AB] dark:text-blue-300">
+          <Sparkles className="h-4 w-4 animate-pulse text-cyan-700 dark:text-cyan-300" />
+          <span className="text-sm font-medium text-cyan-700 dark:text-cyan-200">
             AI đang đánh giá buổi phỏng vấn...
           </span>
         </div>

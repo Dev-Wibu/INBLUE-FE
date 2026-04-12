@@ -75,8 +75,8 @@ function ChatInput({
     isListening && interimTranscript ? (value ? value + " " : "") + interimTranscript : value;
 
   return (
-    <div className="border-t bg-white p-4 dark:bg-zinc-900">
-      <div className="mx-auto flex max-w-4xl items-end gap-3">
+    <div className="border-t border-slate-200/80 bg-white/90 p-3 backdrop-blur-sm md:p-4 dark:border-slate-800 dark:bg-slate-900/90">
+      <div className="mx-auto flex max-w-5xl items-end gap-3 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm md:p-3 dark:border-slate-700 dark:bg-slate-900">
         {isSpeechSupported && (
           <Button
             onClick={() => (isListening ? onStopListening() : onStartListening())}
@@ -87,7 +87,7 @@ function ChatInput({
               "h-11 w-11 shrink-0 rounded-xl transition-all",
               isListening
                 ? "animate-pulse bg-red-500 text-white hover:bg-red-600"
-                : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-300"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
             )}>
             {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </Button>
@@ -108,10 +108,10 @@ function ChatInput({
             disabled={disabled}
             rows={1}
             className={cn(
-              "border-border focus:ring-primary/20 w-full resize-none rounded-xl border bg-white px-4 py-3 text-sm transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800",
+              "w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800",
               isListening
                 ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-                : "focus:border-[#0047AB] focus:ring-2"
+                : "focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 dark:focus:ring-cyan-900/40"
             )}
             aria-label="Nhập câu trả lời"
           />
@@ -120,7 +120,7 @@ function ChatInput({
           onClick={handleSend}
           disabled={!value.trim() || disabled}
           size="icon"
-          className="h-11 w-11 shrink-0 rounded-xl bg-[#0047AB] hover:bg-[#005B9A]">
+          className="h-11 w-11 shrink-0 rounded-xl bg-linear-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800">
           <Send className="h-5 w-5" />
         </Button>
       </div>
@@ -195,8 +195,8 @@ export function ChatPanel({
   return (
     <>
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl space-y-6 px-6 py-6">
+      <div className="flex-1 overflow-y-auto bg-linear-to-b from-slate-100/50 via-white to-slate-100/60 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
+        <div className="mx-auto max-w-5xl space-y-5 px-4 py-5 md:px-6 md:py-6">
           {messages.map((msg) => (
             <ChatBubble
               key={msg.id}
@@ -214,9 +214,9 @@ export function ChatPanel({
 
       {/* Input or completion actions */}
       {interviewFinished ? (
-        <div className="border-t bg-white p-4 dark:bg-zinc-900">
+        <div className="border-t border-slate-200/80 bg-white/90 p-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
           {sessionExpiredMidway ? (
-            <Card className="mx-auto max-w-4xl border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
+            <Card className="mx-auto max-w-5xl border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -233,14 +233,14 @@ export function ChatPanel({
                   </Button>
                   <Button
                     onClick={onNavigateToSetup}
-                    className="bg-[#0047AB] text-white hover:bg-[#005B9A]">
+                    className="bg-linear-to-r from-cyan-600 to-blue-700 text-white hover:from-cyan-700 hover:to-blue-800">
                     Tạo phỏng vấn mới
                   </Button>
                 </div>
               </CardContent>
             </Card>
           ) : (
-            <Card className="mx-auto max-w-4xl border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30">
+            <Card className="mx-auto max-w-5xl border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30">
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
