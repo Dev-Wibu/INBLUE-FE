@@ -16,6 +16,15 @@ import {
 import * as chatMock from "@/mocks/chat.mock";
 
 type BackendChatMessage = components["schemas"]["ChatMessage"];
+type BackendMentor = components["schemas"]["MentorResponse"];
+type BackendUser = components["schemas"]["User"];
+
+export type ChatHistoryMessage = BackendChatMessage & {
+  sender?: "ai" | "user" | "me";
+  sender_id?: number;
+  sender_type?: string;
+  time?: string;
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
@@ -194,29 +203,121 @@ export class ChatManager {
   async getChatHistoryByParticipants(
     currentFullId: string,
     recipientFullId: string
-  ): Promise<ApiResponse<ChatMessage[]>> {
+  ): Promise<ApiResponse<ChatHistoryMessage[]>> {
     if (this.mode === "mock") {
       const messages = await chatMock.fetchChatMessages(0);
       return {
         success: true,
-        data: messages,
+        data: messages.map((message) => ({
+          id: message.id,
+          content: message.content,
+          sender: message.sender,
+          time: message.time,
+        })),
       };
     }
 
     try {
-      const endpoint = buildEndpoint(API_ENDPOINTS.CHAT.HISTORY_BY_PARTICIPANTS, {
+      const endpoint = buildEndpoint(API_ENDPOINTS.MESSAGES.HISTORY, {
         currentFullId,
-        recipientFullId,
+        recipientFullId: recipientFullId,
       });
       const response = await this.api.get(endpoint);
       return {
         success: true,
-        data: this.normalizeMessagesFromApi(response.data),
+        data: response.data, // Trả về data thô để MessengerPage tự xử lý logic Me/Other
       };
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to fetch chat history",
+      };
+    }
+  }
+
+  /**
+   * Get contact list (IDs) for the current user
+   * GET /api/messages/contacts?myId={id}&role={ROLE}
+   */
+  async getContacts(myId: number, role: string): Promise<ApiResponse<number[]>> {
+    if (this.mode === "mock") {
+      return {
+        success: true,
+        data: [1, 2, 3],
+      };
+    }
+
+    try {
+      const response = await this.api.get(API_ENDPOINTS.MESSAGES.CONTACTS, {
+        params: { myId, role: role.toUpperCase() },
+      });
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch contacts",
+      };
+    }
+  }
+
+  /**
+   * Get all mentors
+   * GET /api/mentors
+   */
+  async getAllMentors(): Promise<ApiResponse<BackendMentor[]>> {
+    try {
+      const response = await this.api.get(API_ENDPOINTS.MENTOR.LIST);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch mentors",
+      };
+    }
+  }
+
+  /**
+   * Get mentor details
+   * GET /api/mentors/{id}
+   */
+  async getMentorDetail(id: number): Promise<ApiResponse<BackendMentor>> {
+    try {
+      const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR.DETAIL, { id });
+      const response = await this.api.get(endpoint);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch mentor details",
+      };
+    }
+  }
+
+  /**
+   * Get user details
+   * GET /api/users/find-by-id/{userId}
+   */
+  async getUserDetail(userId: number): Promise<ApiResponse<BackendUser>> {
+    try {
+      const endpoint = buildEndpoint(API_ENDPOINTS.USER.FIND_BY_ID, { userId });
+      const response = await this.api.get(endpoint);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch user details",
       };
     }
   }
