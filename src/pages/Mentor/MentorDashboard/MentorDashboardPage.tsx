@@ -1,4 +1,4 @@
-import { Bell, Calendar, LayoutDashboard, MessageSquare, Star, User, Users } from "lucide-react";
+import { Calendar, LayoutDashboard, MessageSquare, Star, User, Users } from "lucide-react";
 import { useCallback } from "react";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 
@@ -63,7 +63,6 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
     label: "Cá nhân",
     items: [
       { type: "messenger", icon: MessageSquare, label: "Tin nhắn", color: "text-emerald-500" },
-      { type: "notifications", icon: Bell, label: "Thông báo", color: "text-red-600" },
       { type: "account", icon: User, label: "Tài khoản", color: "text-gray-600" },
     ],
   },
