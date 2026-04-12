@@ -9,6 +9,7 @@ export interface MentorProfileData {
   yearsOfExperience?: number;
   linkedInUrl?: string;
   currentCompany?: string;
+  pricePerMinute?: number;
   averageRating?: number;
   identityImg?: string | null;
   public_id_identity?: string | null;

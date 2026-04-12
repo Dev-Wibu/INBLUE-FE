@@ -31,7 +31,7 @@ export function MentorSessionRoomPage() {
   // Validate session and user
   const canJoin =
     session &&
-    (session.status === "SCHEDULED" || session.status === "ONGOING") &&
+    (session.status === "PAID" || session.status === "ONGOING") &&
     session.roomUrl &&
     user;
 
@@ -105,7 +105,9 @@ export function MentorSessionRoomPage() {
           <AlertTitle>Không thể tham gia</AlertTitle>
           <AlertDescription>
             {session.status === "DRAFT" &&
-              "Phiên phỏng vấn chưa được duyệt. Vui lòng chờ Staff/Admin xét duyệt."}
+              "Phiên phỏng vấn chưa được duyệt. Vui lòng chờ mentor hoặc Staff/Admin xét duyệt."}
+            {session.status === "SCHEDULED" &&
+              "Phiên phỏng vấn chưa được thanh toán. Chỉ có thể vào phòng khi phiên đã thanh toán."}
             {session.status === "REJECTED" && "Phiên phỏng vấn này đã bị từ chối."}
             {session.status === "COMPLETED" && "Phiên phỏng vấn này đã kết thúc."}
             {session.status === "CANCELED" && "Phiên phỏng vấn này đã bị hủy."}
@@ -198,11 +200,14 @@ export function MentorSessionRoomPage() {
                 className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
                   session.status === "ONGOING"
                     ? "bg-green-100 text-green-700"
-                    : session.status === "SCHEDULED"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-gray-100 text-gray-700"
+                    : session.status === "PAID"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : session.status === "SCHEDULED"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-700"
                 }`}>
                 {session.status === "ONGOING" && "Đang diễn ra"}
+                {session.status === "PAID" && "Đã thanh toán"}
                 {session.status === "SCHEDULED" && "Đã lên lịch"}
                 {session.status === "COMPLETED" && "Đã kết thúc"}
                 {session.status === "CANCELED" && "Đã hủy"}

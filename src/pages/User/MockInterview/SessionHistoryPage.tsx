@@ -89,7 +89,7 @@ function SessionCard({
         {isDraft && (
           <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
             <Clock className="mr-1 inline h-3.5 w-3.5" />
-            Yêu cầu đang chờ Staff/Admin xét duyệt
+            Yêu cầu đang chờ mentor hoặc Staff/Admin xét duyệt
           </div>
         )}
         {/* REJECTED banner */}

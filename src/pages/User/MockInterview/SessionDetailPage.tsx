@@ -251,21 +251,17 @@ export function SessionDetailPage() {
               <span className="text-slate-600 dark:text-slate-400">Mã giao dịch:</span>
               <span className="font-medium">{session.transactionCode || "-"}</span>
             </div>
-            {session.roomUrl &&
-              (session.status === "DRAFT" ||
-                session.status === "SCHEDULED" ||
-                session.status === "PAID" ||
-                session.status === "ONGOING") && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Video className="h-4 w-4 text-slate-400" />
-                  <span className="text-slate-600 dark:text-slate-400">Phòng:</span>
-                  <button
-                    onClick={() => navigate(`/user/mock-interview/room/${session.id}`)}
-                    className="font-medium text-[#0047AB] hover:underline">
-                    Tham gia phòng
-                  </button>
-                </div>
-              )}
+            {session.roomUrl && (session.status === "PAID" || session.status === "ONGOING") && (
+              <div className="flex items-center gap-2 text-sm">
+                <Video className="h-4 w-4 text-slate-400" />
+                <span className="text-slate-600 dark:text-slate-400">Phòng:</span>
+                <button
+                  onClick={() => navigate(`/user/mock-interview/room/${session.id}`)}
+                  className="font-medium text-[#0047AB] hover:underline">
+                  Tham gia phòng
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
