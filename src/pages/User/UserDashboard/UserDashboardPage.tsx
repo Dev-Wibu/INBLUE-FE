@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import {
   Bell,
   Bot,
@@ -8,7 +9,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   Newspaper,
-  User,
+  User as UserIcon,
   Users,
 } from "lucide-react";
 import { useCallback } from "react";
@@ -26,6 +27,8 @@ import { AIChatListPage } from "../AIChat";
 import { AIInterviewListPage } from "../AIInterview";
 import { UserFeedbackListPage } from "../Feedback";
 import { HomeFeedPage } from "../HomeFeed";
+import { MentorListPage } from "../MentorList/MentorListPage";
+import { MessengerPage } from "../Messenger";
 import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
 import { UserNotificationsPage } from "../Notifications";
 import { OverviewPage } from "../Overview";
@@ -35,6 +38,7 @@ import { QuestionListPage } from "../Question";
 type TabType =
   | "homeFeed"
   | "overview"
+  | "mentors"
   | "mockInterview"
   | "interviewHistory"
   | "feedback"
@@ -44,11 +48,13 @@ type TabType =
   | "practice"
   | "practiceQuestions"
   | "notifications"
+  | "messenger"
   | "account";
 
 const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "homeFeed", label: "Trang chủ" },
   { type: "overview", label: "Tổng quan" },
+  { type: "mentors", label: "Danh sách Mentor" },
   { type: "mockInterview", label: "Phỏng vấn với Mentor" },
   { type: "interviewHistory", label: "Lịch sử phỏng vấn" },
   { type: "feedback", label: "Đánh giá từ Mentor" },
@@ -58,6 +64,7 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "practice", label: "Bộ luyện tập" },
   { type: "practiceQuestions", label: "Câu hỏi luyện tập" },
   { type: "notifications", label: "Thông báo" },
+  { type: "messenger", label: "Tin nhắn" },
   { type: "account", label: "Tài khoản" },
 ];
 
@@ -74,6 +81,7 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
     label: "Phỏng vấn",
     items: [
       { type: "overview", icon: LayoutDashboard, label: "Tổng quan", color: "text-blue-600" },
+      { type: "mentors", icon: UserIcon, label: "Danh sách Mentor", color: "text-indigo-600" },
       {
         type: "mockInterview",
         icon: Users,
@@ -125,8 +133,9 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
   {
     label: "Cá nhân",
     items: [
+      { type: "messenger", icon: MessageSquare, label: "Tin nhắn", color: "text-blue-500" },
       { type: "notifications", icon: Bell, label: "Thông báo", color: "text-red-600" },
-      { type: "account", icon: User, label: "Tài khoản", color: "text-gray-600" },
+      { type: "account", icon: UserIcon, label: "Tài khoản", color: "text-gray-600" },
     ],
   },
 ];
@@ -153,6 +162,7 @@ const ROUTE_TO_TAB: Record<string, TabType> = {
   feedback: "feedback",
   community: "homeFeed",
   questions: "questions",
+  messenger: "messenger",
 };
 
 function getTabFromRoute(pathname: string): TabType {
@@ -197,6 +207,8 @@ export function UserDashboardPage() {
         return <HomeFeedPage />;
       case "overview":
         return <OverviewPage />;
+      case "mentors":
+        return <MentorListPage />;
       case "mockInterview":
         return <MockInterviewListPage />;
       case "interviewHistory":
@@ -215,6 +227,8 @@ export function UserDashboardPage() {
         return <PracticeQuestionsPage />;
       case "notifications":
         return <UserNotificationsPage />;
+      case "messenger":
+        return <MessengerPage />;
       case "account":
         return <AccountPage />;
       default:
@@ -274,7 +288,13 @@ export function UserDashboardPage() {
         <div className="flex h-12 items-center justify-end px-4">
           <NotificationBell notificationsPath="/user?tab=notifications" />
         </div>
-        <div className="flex-1 overflow-auto p-6">{outlet ?? renderContent()}</div>
+        <div
+          className={cn(
+            "flex-1 overflow-hidden",
+            typedActiveTab === "messenger" ? "p-0" : "overflow-auto p-6"
+          )}>
+          {outlet ?? renderContent()}
+        </div>
       </div>
     </div>
   );
