@@ -63,7 +63,7 @@ function SessionCard({
   const isTimeReached = session.joinTime ? new Date(session.joinTime).getTime() <= now : true;
   const isDraft = session.status === "DRAFT";
   const canJoin =
-    (session.status === "SCHEDULED" || session.status === "ONGOING") &&
+    (session.status === "PAID" || session.status === "ONGOING") &&
     !!session.roomUrl &&
     isTimeReached;
 
@@ -207,7 +207,13 @@ function SessionCard({
             </Button>
           )}
           {!isCompleted && !canJoin && (
-            <span className="text-sm text-slate-500 italic">Phiên đã kết thúc hoặc bị hủy</span>
+            <span className="text-sm text-slate-500 italic">
+              {session.status === "SCHEDULED"
+                ? "Chờ học viên thanh toán để mở phòng"
+                : session.status === "PAID" && !isTimeReached
+                  ? "Chưa đến giờ tham gia phòng"
+                  : "Phiên chưa đủ điều kiện để vào phòng"}
+            </span>
           )}
         </div>
       </CardContent>
@@ -289,7 +295,7 @@ export function MentorSessionsPage() {
   // Stats — DRAFT is counted separately, not in "Sắp diễn ra"
   const draftCount = mentorSessions.filter((s: Session) => s.status === "DRAFT").length;
   const scheduledCount = mentorSessions.filter(
-    (s: Session) => s.status === "SCHEDULED" || s.status === "ONGOING"
+    (s: Session) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
   ).length;
 
   return (

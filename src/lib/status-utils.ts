@@ -113,6 +113,12 @@ export function getMentorApplicationBadge(isActive: boolean): StatusBadgeConfig 
 
 export function getMockInterviewStatusBadge(status?: string): StatusBadgeConfig {
   switch (status?.toLowerCase()) {
+    case "paid":
+      return {
+        label: "Đã thanh toán",
+        variant: "default",
+        className: "bg-emerald-100 text-emerald-700",
+      };
     case "ongoing":
       return {
         label: "Đang diễn ra",

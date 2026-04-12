@@ -57,6 +57,7 @@ export interface MentorCreateFormData {
   yearsOfExperience?: number;
   linkedInUrl?: string;
   currentCompany?: string;
+  pricePerMinute?: number;
 }
 
 /**
@@ -71,6 +72,7 @@ export const transformMentorCreateRequest = (formData: MentorCreateFormData) => 
   yearsOfExperience: formData.yearsOfExperience,
   linkedInUrl: formData.linkedInUrl?.trim(),
   currentCompany: formData.currentCompany?.trim(),
+  pricePerMinute: formData.pricePerMinute,
 });
 
 /**
@@ -90,6 +92,7 @@ export const transformMentorUpdateRequest = (
   yearsOfExperience: formData.yearsOfExperience ?? existingMentor?.yearsOfExperience,
   linkedInUrl: formData.linkedInUrl?.trim() || existingMentor?.linkedInUrl,
   currentCompany: formData.currentCompany?.trim() || existingMentor?.currentCompany,
+  pricePerMinute: formData.pricePerMinute ?? existingMentor?.pricePerMinute,
 });
 
 // ==================== Session Transforms ====================

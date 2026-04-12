@@ -25,10 +25,15 @@ export function MockInterviewListPage() {
   }, []);
 
   // Transform sessions to interview format for display (newest first)
-  // Only show sessions with SCHEDULED or ONGOING status
+  // Show upcoming sessions including SCHEDULED, PAID and ONGOING
   const interviews = useMemo(() => {
     return [...sessions]
-      .filter((session) => session.status === "SCHEDULED" || session.status === "ONGOING")
+      .filter(
+        (session) =>
+          session.status === "SCHEDULED" ||
+          session.status === "PAID" ||
+          session.status === "ONGOING"
+      )
       .reverse()
       .map((session) => {
         const isTimeReached = session.joinTime ? new Date(session.joinTime).getTime() <= now : true;
@@ -50,9 +55,14 @@ export function MockInterviewListPage() {
               ? new Date(session.startTime1).toLocaleTimeString("vi-VN")
               : "N/A",
           joinTime: session.joinTime,
-          status: session.status === "ONGOING" ? "ongoing" : "upcoming",
+          status:
+            session.status === "ONGOING"
+              ? "ongoing"
+              : session.status === "PAID"
+                ? "paid"
+                : "upcoming",
           canJoin:
-            (session.status === "SCHEDULED" || session.status === "ONGOING") &&
+            (session.status === "PAID" || session.status === "ONGOING") &&
             !!session.roomUrl &&
             isTimeReached,
           isTimeReached,

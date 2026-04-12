@@ -98,7 +98,6 @@ export function MentorManagementPage() {
 
   const handleEdit = (mentor: Mentor) => {
     setSelectedMentor(mentor);
-    // Note: Rate not editable via form as MentorInfo schema doesn't include it
     setFormData({
       name: mentor.name || "",
       email: mentor.email || "",

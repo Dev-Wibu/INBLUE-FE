@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -117,7 +118,9 @@ export function MockInterviewSchedulePage() {
 
   // Selected mentor data
   const selectedMentor = mentors.find((m) => m.id === selectedMentorId);
-  const mentorPricePerMinute = selectedMentor?.pricePerMinute ?? 0;
+  const mentorPricePerMinute =
+    typeof selectedMentor?.pricePerMinute === "number" ? selectedMentor.pricePerMinute : 0;
+  const hasValidMentorPrice = mentorPricePerMinute > 0;
   const totalPrice = useMemo(() => {
     if (durationMinutes <= 0 || mentorPricePerMinute <= 0) {
       return 0;
@@ -157,8 +160,8 @@ export function MockInterviewSchedulePage() {
     return joinDate.getTime() > Date.now() + MIN_FUTURE_OFFSET_MS;
   };
 
-  const canProceedStep1 = selectedMentorId !== null;
-  const canProceedStep2 = isDateTimeValid() && durationMinutes > 0;
+  const canProceedStep1 = selectedMentorId !== null && hasValidMentorPrice;
+  const canProceedStep2 = isDateTimeValid() && durationMinutes > 0 && hasValidMentorPrice;
 
   // Render stars
   const renderStars = (rating?: number) => {
@@ -181,10 +184,20 @@ export function MockInterviewSchedulePage() {
   const handleCreateSession = async () => {
     if (!selectedMentorId || !user?.id) return;
 
+    if (!hasValidMentorPrice) {
+      toast.error("Mentor chưa cấu hình đơn giá hợp lệ");
+      return;
+    }
+
     const normalizedUserId = Math.round(Number(user.id));
     const normalizedMentorId = Math.round(Number(selectedMentorId));
     const normalizedDuration = Math.max(1, Math.round(durationMinutes));
-    const normalizedTotalPrice = Math.max(1, Math.round(totalPrice));
+    const normalizedTotalPrice = Math.round(totalPrice);
+
+    if (!Number.isFinite(normalizedTotalPrice) || normalizedTotalPrice <= 0) {
+      toast.error("Không thể đặt lịch vì mentor chưa có đơn giá hợp lệ");
+      return;
+    }
 
     if (
       !Number.isFinite(normalizedUserId) ||
@@ -344,7 +357,7 @@ export function MockInterviewSchedulePage() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        {renderStars(mentor.averageRating ?? mentor.rate)}
+                        {renderStars(mentor.averageRating)}
                         {mentor.expertise && (
                           <div className="flex flex-wrap gap-1">
                             {mentor.expertise.split(",").map((skill) => (
@@ -367,6 +380,11 @@ export function MockInterviewSchedulePage() {
                                 {formatCurrency(mentor.pricePerMinute)} / phút
                               </span>
                             )}
+                          {(!mentor.pricePerMinute || mentor.pricePerMinute <= 0) && (
+                            <span className="font-medium text-amber-700">
+                              Chưa cấu hình đơn giá
+                            </span>
+                          )}
                         </div>
                         {mentor.bio && (
                           <p className="line-clamp-2 text-xs text-slate-500">{mentor.bio}</p>
@@ -381,6 +399,11 @@ export function MockInterviewSchedulePage() {
 
           {/* Next Button */}
           <div className="flex justify-end pt-4">
+            {selectedMentorId !== null && !hasValidMentorPrice && (
+              <p className="mr-auto text-sm text-amber-700">
+                Mentor đã chọn chưa có đơn giá hợp lệ. Vui lòng chọn mentor khác.
+              </p>
+            )}
             <Button
               size="lg"
               onClick={() => setCurrentStep(2)}
@@ -600,7 +623,7 @@ export function MockInterviewSchedulePage() {
                       <p className="text-sm text-slate-500">
                         {selectedMentor.currentCompany || "Chuyên gia phỏng vấn"}
                       </p>
-                      {renderStars(selectedMentor.averageRating ?? selectedMentor.rate)}
+                      {renderStars(selectedMentor.averageRating)}
                     </div>
                   </div>
                 )}

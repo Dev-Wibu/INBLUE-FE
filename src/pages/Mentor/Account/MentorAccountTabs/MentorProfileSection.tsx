@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDate } from "@/lib/formatting";
+import { formatCurrency, formatDate } from "@/lib/formatting";
 
 import type { MentorProfileData } from "./types";
 
@@ -33,9 +33,9 @@ interface MentorProfileSectionProps {
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onSaveProfile: () => void;
-  onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAvatarChange: (_e: React.ChangeEvent<HTMLInputElement>) => void;
   onClearAvatar: () => void;
-  onInputChange: (field: keyof MentorProfileData, value: string | number) => void;
+  onInputChange: (_field: keyof MentorProfileData, _value: string | number) => void;
 }
 
 export function MentorProfileSection({
@@ -311,6 +311,35 @@ export function MentorProfileSection({
               ) : (
                 <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
                   {mentorProfile.currentCompany || "Chưa cập nhật"}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Price per Minute - Editable */}
+          <div className="flex items-center gap-4 rounded-lg bg-gray-50 p-4 dark:bg-slate-800">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+              <Briefcase className="h-5 w-5 text-emerald-600" />
+            </div>
+            <div className="flex-1">
+              <Label className="text-sm text-gray-500 dark:text-slate-400">Đơn giá mỗi phút</Label>
+              {isEditing ? (
+                <Input
+                  type="number"
+                  min="0"
+                  value={formData.pricePerMinute ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    onInputChange("pricePerMinute", value === "" ? 0 : parseInt(value, 10));
+                  }}
+                  className="mt-1"
+                  placeholder="Nhập đơn giá (VNĐ)"
+                />
+              ) : (
+                <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
+                  {mentorProfile.pricePerMinute && mentorProfile.pricePerMinute > 0
+                    ? `${formatCurrency(mentorProfile.pricePerMinute)} / phút`
+                    : "Chưa cập nhật"}
                 </p>
               )}
             </div>
