@@ -8,6 +8,10 @@ import { toast } from "sonner";
 
 import { MentorFilters, MentorGridCard, MentorListHero } from "./components";
 
+function isActiveMentor(mentor: SchemaMentorResponse): boolean {
+  return mentor.active === true;
+}
+
 export function MentorListPage() {
   const navigate = useNavigate();
   const [mentors, setMentors] = useState<SchemaMentorResponse[]>([]);
@@ -21,7 +25,7 @@ export function MentorListPage() {
         setLoading(true);
         const res = await chatManager.getAllMentors();
         if (res.success && res.data) {
-          setMentors(res.data);
+          setMentors(res.data.filter(isActiveMentor));
         } else {
           toast.error("Không thể tải danh sách Mentor");
         }
@@ -55,6 +59,7 @@ export function MentorListPage() {
     const normalizedSearch = searchQuery.trim().toLowerCase();
 
     return mentors
+      .filter(isActiveMentor)
       .filter((mentor) => {
         const matchSearch =
           normalizedSearch.length === 0 ||
@@ -87,6 +92,11 @@ export function MentorListPage() {
   }, [mentors, expertiseOptions.length]);
 
   const handleStartChat = (mentor: SchemaMentorResponse) => {
+    if (!isActiveMentor(mentor)) {
+      toast.error("Mentor hiện không hoạt động");
+      return;
+    }
+
     if (mentor.id === undefined) {
       toast.error("Không đủ thông tin Mentor để bắt đầu hội thoại");
       return;
@@ -101,6 +111,11 @@ export function MentorListPage() {
   };
 
   const handleViewProfile = (mentor: SchemaMentorResponse) => {
+    if (!isActiveMentor(mentor)) {
+      toast.error("Mentor hiện không hoạt động");
+      return;
+    }
+
     if (mentor.id === undefined) {
       toast.error("Không đủ thông tin Mentor để xem hồ sơ");
       return;
@@ -110,7 +125,7 @@ export function MentorListPage() {
   };
 
   return (
-    <section className="relative h-full overflow-hidden rounded-3xl border border-slate-200/70 bg-gradient-to-br from-white via-slate-50 to-sky-50/40 dark:border-slate-800 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
+    <section className="relative h-full overflow-hidden rounded-3xl border border-slate-200/70 bg-linear-to-br from-white via-slate-50 to-sky-50/40 dark:border-slate-800 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
       <div className="pointer-events-none absolute -top-20 -left-14 h-72 w-72 rounded-full bg-blue-300/30 blur-3xl dark:bg-blue-900/25" />
       <div className="pointer-events-none absolute top-10 right-6 h-40 w-40 rounded-full bg-cyan-200/30 blur-3xl dark:bg-cyan-900/25" />
 

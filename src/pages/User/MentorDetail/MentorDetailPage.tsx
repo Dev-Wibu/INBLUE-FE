@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
+import { formatCurrency } from "@/lib/formatting";
 import { chatManager } from "@/services/chat.manager";
 import { ArrowLeft, ExternalLink, FileText, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -19,6 +20,10 @@ type MentorDocumentItem = {
   label: string;
   url: string;
 };
+
+function isActiveMentor(mentor: SchemaMentorResponse): boolean {
+  return mentor.active === true;
+}
 
 function documentItems(mentor: SchemaMentorResponse): MentorDocumentItem[] {
   return [
@@ -70,6 +75,45 @@ function buildSlaEstimate(mentor: SchemaMentorResponse | null): string {
   return "Thường phản hồi trong 24h";
 }
 
+function buildVerificationTags(mentor: SchemaMentorResponse): string[] {
+  const tags: string[] = [];
+
+  if (mentor.identityImg) {
+    tags.push("Đã xác minh định danh");
+  }
+
+  if (mentor.degreeImg) {
+    tags.push("Đã cung cấp bằng cấp");
+  }
+
+  if (mentor.otherFile) {
+    tags.push("Có tài liệu bổ sung");
+  }
+
+  if (tags.length === 0) {
+    tags.push("Đang cập nhật hồ sơ xác minh");
+  }
+
+  return tags;
+}
+
+function buildExpertiseTags(mentor: SchemaMentorResponse): string[] {
+  if (!mentor.expertise) {
+    return [];
+  }
+
+  const normalized = mentor.expertise
+    .split(/[,/|]/)
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+
+  if (normalized.length === 0) {
+    return [mentor.expertise.trim()];
+  }
+
+  return Array.from(new Set(normalized)).slice(0, 6);
+}
+
 export function MentorDetailPage() {
   const navigate = useNavigate();
   const { mentorId } = useParams<{ mentorId: string }>();
@@ -79,6 +123,9 @@ export function MentorDetailPage() {
 
   const [mentor, setMentor] = useState<SchemaMentorResponse | null>(null);
   const [allMentors, setAllMentors] = useState<SchemaMentorResponse[]>([]);
+  const [mentorUnavailableReason, setMentorUnavailableReason] = useState<
+    "inactive" | "not-found" | null
+  >(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,6 +136,9 @@ export function MentorDetailPage() {
 
     const fetchMentorData = async () => {
       setLoading(true);
+      setMentor(null);
+      setMentorUnavailableReason(null);
+
       try {
         const [detailRes, listRes] = await Promise.all([
           chatManager.getMentorDetail(parsedMentorId),
@@ -96,16 +146,22 @@ export function MentorDetailPage() {
         ]);
 
         if (detailRes.success && detailRes.data) {
-          setMentor(detailRes.data);
+          if (isActiveMentor(detailRes.data)) {
+            setMentor(detailRes.data);
+          } else {
+            setMentorUnavailableReason("inactive");
+          }
         } else {
+          setMentorUnavailableReason("not-found");
           toast.error("Không thể tải hồ sơ mentor");
         }
 
         if (listRes.success && listRes.data) {
-          setAllMentors(listRes.data);
+          setAllMentors(listRes.data.filter(isActiveMentor));
         }
       } catch (error) {
         console.error("Error fetching mentor detail:", error);
+        setMentorUnavailableReason("not-found");
         toast.error("Đã xảy ra lỗi khi tải dữ liệu mentor");
       } finally {
         setLoading(false);
@@ -115,14 +171,36 @@ export function MentorDetailPage() {
     fetchMentorData();
   }, [isMentorIdValid, parsedMentorId]);
 
-  const rating = useMemo(() => {
+  const ratingText = useMemo(() => {
     const raw = mentor?.averageRating;
     return typeof raw === "number" ? raw.toFixed(1) : "0.0";
   }, [mentor?.averageRating]);
 
+  const priceText = useMemo(() => {
+    const pricePerMinute = mentor?.pricePerMinute;
+    if (typeof pricePerMinute !== "number" || pricePerMinute <= 0) {
+      return "Chưa cập nhật giá";
+    }
+
+    return `${formatCurrency(pricePerMinute)}/phút`;
+  }, [mentor?.pricePerMinute]);
+
+  const totalSessions = useMemo(() => {
+    const raw = mentor?.totalSession;
+    if (typeof raw !== "number" || raw <= 0) {
+      return 0;
+    }
+
+    return raw;
+  }, [mentor?.totalSession]);
+
   const docs = useMemo(() => (mentor ? documentItems(mentor) : []), [mentor]);
 
   const highlights = useMemo(() => (mentor ? buildMentorHighlights(mentor) : []), [mentor]);
+
+  const verificationTags = useMemo(() => (mentor ? buildVerificationTags(mentor) : []), [mentor]);
+
+  const expertiseTags = useMemo(() => (mentor ? buildExpertiseTags(mentor) : []), [mentor]);
 
   const slaEstimate = useMemo(() => buildSlaEstimate(mentor), [mentor]);
 
@@ -132,7 +210,10 @@ export function MentorDetailPage() {
     }
 
     return allMentors
-      .filter((candidate) => candidate.id !== undefined && candidate.id !== mentor.id)
+      .filter(
+        (candidate) =>
+          candidate.id !== undefined && candidate.id !== mentor.id && isActiveMentor(candidate)
+      )
       .sort((candidateA, candidateB) => {
         const ratingDiff = (candidateB.averageRating || 0) - (candidateA.averageRating || 0);
         if (ratingDiff !== 0) {
@@ -150,6 +231,11 @@ export function MentorDetailPage() {
       return;
     }
 
+    if (!isActiveMentor(mentor)) {
+      toast.error("Mentor hiện không hoạt động");
+      return;
+    }
+
     navigate("/user?tab=messenger", {
       state: {
         openMentorId: mentor.id,
@@ -164,6 +250,11 @@ export function MentorDetailPage() {
       return;
     }
 
+    if (!isActiveMentor(mentor)) {
+      toast.error("Mentor hiện không hoạt động");
+      return;
+    }
+
     navigate("/user/mock-interview/schedule", {
       state: {
         preselectedMentorId: mentor.id,
@@ -172,6 +263,11 @@ export function MentorDetailPage() {
   };
 
   const handleViewSimilarProfile = (targetMentor: SchemaMentorResponse) => {
+    if (!isActiveMentor(targetMentor)) {
+      toast.error("Mentor hiện không hoạt động");
+      return;
+    }
+
     if (targetMentor.id === undefined) {
       toast.error("Không đủ thông tin để xem hồ sơ mentor");
       return;
@@ -208,13 +304,17 @@ export function MentorDetailPage() {
   }
 
   if (!mentor) {
+    const isInactiveMentor = mentorUnavailableReason === "inactive";
+
     return (
       <section className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <h1 className="text-2xl font-black text-slate-900 dark:text-white">
-          Không tìm thấy mentor
+          {isInactiveMentor ? "Mentor đang tạm dừng hoạt động" : "Không tìm thấy mentor"}
         </h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Hồ sơ mentor có thể đã bị ẩn hoặc chưa sẵn sàng.
+          {isInactiveMentor
+            ? "Mentor này hiện chưa nhận lịch mới. Vui lòng chọn mentor khác đang hoạt động trong danh sách."
+            : "Hồ sơ mentor có thể đã bị ẩn hoặc chưa sẵn sàng."}
         </p>
         <Button className="mt-5" variant="outline" onClick={() => navigate("/user?tab=mentors")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -225,14 +325,15 @@ export function MentorDetailPage() {
   }
 
   return (
-    <section className="relative h-full overflow-y-auto rounded-3xl border border-slate-200/80 bg-gradient-to-br from-blue-50 via-white to-cyan-50/60 p-5 text-slate-900 md:p-6 dark:border-slate-800 dark:from-slate-950 dark:via-[#0a1a4f] dark:to-slate-900 dark:text-slate-100">
+    <section className="relative h-full overflow-y-auto rounded-3xl border border-slate-200/80 bg-linear-to-br from-blue-50 via-white to-cyan-50/60 p-5 text-slate-900 md:p-6 dark:border-slate-800 dark:from-slate-950 dark:via-[#0a1a4f] dark:to-slate-900 dark:text-slate-100">
       <div className="pointer-events-none absolute -top-16 right-16 h-64 w-64 rounded-full bg-cyan-300/35 blur-3xl dark:bg-cyan-500/20" />
       <div className="pointer-events-none absolute -bottom-20 -left-10 h-72 w-72 rounded-full bg-indigo-200/35 blur-3xl dark:bg-indigo-500/25" />
 
       <div className="relative z-10 space-y-5">
         <MentorDetailHero
           mentor={mentor}
-          ratingText={rating}
+          ratingText={ratingText}
+          priceText={priceText}
           onBack={() => navigate("/user?tab=mentors")}
         />
 
@@ -246,7 +347,15 @@ export function MentorDetailPage() {
               </p>
             </Card>
 
-            <MentorHighlights highlights={highlights} slaEstimate={slaEstimate} />
+            <MentorHighlights
+              highlights={highlights}
+              slaEstimate={slaEstimate}
+              ratingText={ratingText}
+              totalSessions={totalSessions}
+              priceText={priceText}
+              verificationTags={verificationTags}
+              expertiseTags={expertiseTags}
+            />
 
             <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
               <h2 className="flex items-center text-lg font-bold text-slate-900 dark:text-white">

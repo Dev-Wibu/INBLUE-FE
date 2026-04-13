@@ -11,7 +11,9 @@ interface SimilarMentorsProps {
 }
 
 export function SimilarMentors({ mentors, onViewProfile }: SimilarMentorsProps) {
-  if (mentors.length === 0) {
+  const activeMentors = mentors.filter((mentor) => mentor.active === true);
+
+  if (activeMentors.length === 0) {
     return (
       <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Mentor tương tự</h2>
@@ -27,7 +29,7 @@ export function SimilarMentors({ mentors, onViewProfile }: SimilarMentorsProps) 
       <h2 className="text-lg font-bold text-slate-900 dark:text-white">Mentor tương tự</h2>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1">
-        {mentors.map((mentor, index) => (
+        {activeMentors.map((mentor, index) => (
           <div
             key={mentor.id ?? `${mentor.name ?? "mentor"}-${index}`}
             className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
@@ -58,7 +60,7 @@ export function SimilarMentors({ mentors, onViewProfile }: SimilarMentorsProps) 
             <Button
               type="button"
               size="sm"
-              className="mt-3 h-9 w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
+              className="mt-3 h-9 w-full bg-linear-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
               onClick={() => onViewProfile(mentor)}>
               <ArrowUpRight className="mr-1.5 h-4 w-4" />
               Xem hồ sơ

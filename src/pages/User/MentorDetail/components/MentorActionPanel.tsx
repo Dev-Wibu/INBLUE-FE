@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
-import { CalendarCheck2, ExternalLink, Linkedin, Mail, MessageSquare } from "lucide-react";
+import { CalendarCheck2, Copy, ExternalLink, Linkedin, Mail, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
 
 interface MentorActionPanelProps {
   mentor: SchemaMentorResponse;
@@ -10,6 +11,19 @@ interface MentorActionPanelProps {
 }
 
 export function MentorActionPanel({ mentor, onBookNow, onStartChat }: MentorActionPanelProps) {
+  const handleCopyEmail = async () => {
+    if (!mentor.email) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(mentor.email);
+      toast.success("Đã sao chép email mentor");
+    } catch {
+      toast.error("Không thể sao chép email. Vui lòng thử lại");
+    }
+  };
+
   return (
     <Card className="h-fit border-slate-200 bg-white/90 p-5 shadow-sm xl:sticky xl:top-6 dark:border-slate-700/70 dark:bg-slate-900/70">
       <h2 className="text-lg font-bold text-slate-900 dark:text-white">Hành động nhanh</h2>
@@ -20,7 +34,7 @@ export function MentorActionPanel({ mentor, onBookNow, onStartChat }: MentorActi
       <div className="mt-5 space-y-3">
         <Button
           type="button"
-          className="h-11 w-full bg-gradient-to-r from-cyan-500 to-blue-600 font-semibold text-white hover:from-cyan-600 hover:to-blue-700"
+          className="h-11 w-full bg-linear-to-r from-cyan-500 to-blue-600 font-semibold text-white hover:from-cyan-600 hover:to-blue-700"
           onClick={onBookNow}>
           <CalendarCheck2 className="mr-2 h-4 w-4" />
           Đặt lịch ngay
@@ -28,7 +42,7 @@ export function MentorActionPanel({ mentor, onBookNow, onStartChat }: MentorActi
 
         <Button
           type="button"
-          className="h-11 w-full bg-gradient-to-r from-indigo-600 to-violet-600 font-semibold text-white hover:from-indigo-700 hover:to-violet-700"
+          className="h-11 w-full bg-linear-to-r from-indigo-600 to-violet-600 font-semibold text-white hover:from-indigo-700 hover:to-violet-700"
           onClick={onStartChat}>
           <MessageSquare className="mr-2 h-4 w-4" />
           Bắt đầu hội thoại
@@ -39,15 +53,30 @@ export function MentorActionPanel({ mentor, onBookNow, onStartChat }: MentorActi
 
       <div className="space-y-3 text-sm text-slate-700 dark:text-slate-200">
         {mentor.email && (
-          <a
-            href={`mailto:${mentor.email}`}
-            className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800/70 dark:hover:border-slate-500">
-            <span className="flex items-center">
-              <Mail className="mr-2 h-4 w-4 text-cyan-600 dark:text-cyan-200" />
-              Email liên hệ
-            </span>
-            <ExternalLink className="h-4 w-4 text-slate-400" />
-          </a>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/70">
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center font-medium">
+                <Mail className="mr-2 h-4 w-4 text-cyan-600 dark:text-cyan-200" />
+                Email liên hệ
+              </span>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 border-slate-200 bg-white text-xs text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                onClick={handleCopyEmail}>
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+                Sao chép
+              </Button>
+            </div>
+
+            <p
+              className="mt-2 truncate text-xs text-slate-500 dark:text-slate-400"
+              title={mentor.email}>
+              {mentor.email}
+            </p>
+          </div>
         )}
 
         {mentor.linkedInUrl && (
