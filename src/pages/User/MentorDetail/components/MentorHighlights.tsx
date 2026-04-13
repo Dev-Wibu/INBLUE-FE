@@ -1,13 +1,35 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, GaugeCircle, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  GaugeCircle,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Tag,
+  Users,
+  Wallet,
+} from "lucide-react";
 
 interface MentorHighlightsProps {
   highlights: string[];
   slaEstimate: string;
+  ratingText: string;
+  totalSessions: number;
+  priceText: string;
+  verificationTags: string[];
+  expertiseTags: string[];
 }
 
-export function MentorHighlights({ highlights, slaEstimate }: MentorHighlightsProps) {
+export function MentorHighlights({
+  highlights,
+  slaEstimate,
+  ratingText,
+  totalSessions,
+  priceText,
+  verificationTags,
+  expertiseTags,
+}: MentorHighlightsProps) {
   return (
     <Card className="space-y-4 border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -16,6 +38,34 @@ export function MentorHighlights({ highlights, slaEstimate }: MentorHighlightsPr
           <GaugeCircle className="mr-1 h-3.5 w-3.5" />
           {slaEstimate}
         </Badge>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
+          <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <Wallet className="mr-1.5 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-300" />
+            Giá tư vấn
+          </p>
+          <p className="mt-2 text-sm font-bold text-slate-900 dark:text-white">{priceText}</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
+          <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <Star className="mr-1.5 h-3.5 w-3.5 text-amber-500 dark:text-amber-300" />
+            Đánh giá
+          </p>
+          <p className="mt-2 text-sm font-bold text-slate-900 dark:text-white">{ratingText}/5.0</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
+          <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <Users className="mr-1.5 h-3.5 w-3.5 text-blue-600 dark:text-cyan-300" />
+            Phiên đã đồng hành
+          </p>
+          <p className="mt-2 text-sm font-bold text-slate-900 dark:text-white">
+            {totalSessions} phiên
+          </p>
+        </div>
       </div>
 
       <ul className="space-y-2.5">
@@ -28,6 +78,40 @@ export function MentorHighlights({ highlights, slaEstimate }: MentorHighlightsPr
           </li>
         ))}
       </ul>
+
+      {expertiseTags.length > 0 && (
+        <div className="space-y-2">
+          <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            <Tag className="mr-1.5 h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
+            Nhóm chuyên môn
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {expertiseTags.map((tag) => (
+              <Badge
+                key={tag}
+                className="rounded-full border border-indigo-300/40 bg-indigo-50 px-2.5 py-0.5 text-[11px] text-indigo-700 dark:border-indigo-300/20 dark:bg-indigo-400/10 dark:text-indigo-200">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+          <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-cyan-600 dark:text-cyan-200" />
+          Trạng thái xác minh
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {verificationTags.map((tag) => (
+            <Badge
+              key={tag}
+              className="rounded-full border border-cyan-300/40 bg-cyan-50 px-2.5 py-0.5 text-[11px] text-cyan-700 dark:border-cyan-300/20 dark:bg-cyan-400/10 dark:text-cyan-100">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      </div>
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
         <p className="flex items-center text-xs font-medium text-slate-600 dark:text-slate-300">

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
 
-import { MentorGridCard } from "./MentorGridCard";
+import { MentorActionPanel } from "./MentorActionPanel";
 
 const toastMocks = vi.hoisted(() => ({
   success: vi.fn(),
@@ -17,16 +17,12 @@ vi.mock("sonner", () => ({
   },
 }));
 
-describe("MentorGridCard", () => {
+describe("MentorActionPanel", () => {
   const mentor: SchemaMentorResponse = {
-    id: 101,
-    name: "Mentor A",
-    email: "mentor.a@example.com",
-    expertise: "Frontend",
-    currentCompany: "Inblue",
-    totalSession: 12,
-    yearsOfExperience: 6,
-    averageRating: 4.7,
+    id: 88,
+    name: "Mentor B",
+    email: "mentor.b@example.com",
+    linkedInUrl: "https://linkedin.com/in/mentor-b",
   };
 
   beforeEach(() => {
@@ -34,14 +30,15 @@ describe("MentorGridCard", () => {
     toastMocks.error.mockClear();
   });
 
-  it("shows mentor email directly on card", () => {
-    render(<MentorGridCard mentor={mentor} onStartChat={vi.fn()} onViewProfile={vi.fn()} />);
+  it("shows copy email action and does not render mailto link", () => {
+    render(<MentorActionPanel mentor={mentor} onBookNow={vi.fn()} onStartChat={vi.fn()} />);
 
-    expect(screen.getByText("mentor.a@example.com")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Gửi email cho mentor" })).not.toBeInTheDocument();
+    expect(screen.getByText("mentor.b@example.com")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sao chép" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Email liên hệ" })).not.toBeInTheDocument();
   });
 
-  it("copies email and shows success toast", async () => {
+  it("copies mentor email and shows success toast", async () => {
     const writeTextMock = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
@@ -50,11 +47,11 @@ describe("MentorGridCard", () => {
       },
     });
 
-    render(<MentorGridCard mentor={mentor} onStartChat={vi.fn()} onViewProfile={vi.fn()} />);
+    render(<MentorActionPanel mentor={mentor} onBookNow={vi.fn()} onStartChat={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Sao chép email mentor" }));
+    fireEvent.click(screen.getByRole("button", { name: "Sao chép" }));
 
-    expect(writeTextMock).toHaveBeenCalledWith("mentor.a@example.com");
+    expect(writeTextMock).toHaveBeenCalledWith("mentor.b@example.com");
     await waitFor(() => {
       expect(toastMocks.success).toHaveBeenCalledWith("Đã sao chép email mentor");
     });

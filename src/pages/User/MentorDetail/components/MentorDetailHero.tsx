@@ -2,15 +2,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
-import { ArrowLeft, Briefcase, Sparkles, Star, Users } from "lucide-react";
+import { ArrowLeft, Briefcase, Sparkles, Star, Users, Wallet } from "lucide-react";
 
 interface MentorDetailHeroProps {
   mentor: SchemaMentorResponse;
   ratingText: string;
+  priceText: string;
   onBack: () => void;
 }
 
-export function MentorDetailHero({ mentor, ratingText, onBack }: MentorDetailHeroProps) {
+export function MentorDetailHero({ mentor, ratingText, priceText, onBack }: MentorDetailHeroProps) {
   return (
     <div className="space-y-4 rounded-3xl border border-slate-200 bg-white/85 p-4 shadow-sm backdrop-blur-sm md:p-5 dark:border-slate-700/70 dark:bg-slate-900/55">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -59,6 +60,10 @@ export function MentorDetailHero({ mentor, ratingText, onBack }: MentorDetailHer
             <Badge className="rounded-full border border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
               <Sparkles className="mr-1 h-3.5 w-3.5" />
               {mentor.yearsOfExperience || 0} năm kinh nghiệm
+            </Badge>
+            <Badge className="rounded-full border border-emerald-300/40 bg-emerald-50 text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-400/15 dark:text-emerald-200">
+              <Wallet className="mr-1 h-3.5 w-3.5" />
+              {priceText}
             </Badge>
             <Badge className="rounded-full border border-amber-300/40 bg-amber-50 text-amber-700 dark:border-amber-300/20 dark:bg-amber-400/15 dark:text-amber-200">
               <Star className="mr-1 h-3.5 w-3.5 fill-current" />

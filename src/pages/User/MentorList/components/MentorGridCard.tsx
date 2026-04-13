@@ -97,20 +97,6 @@ export function MentorGridCard({ mentor, onStartChat, onViewProfile }: MentorGri
               <Button
                 variant="outline"
                 size="icon"
-                className="h-9 w-9 rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                title="Gửi email cho mentor"
-                aria-label="Gửi email cho mentor"
-                onClick={() => {
-                  window.location.href = `mailto:${mentor.email}`;
-                }}>
-                <Mail className="h-4 w-4" />
-              </Button>
-            )}
-
-            {mentor.email && (
-              <Button
-                variant="outline"
-                size="icon"
                 className="h-9 w-9 rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
                 title="Sao chép email mentor"
                 aria-label="Sao chép email mentor"
