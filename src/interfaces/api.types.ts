@@ -8,6 +8,7 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   message?: string;
   error?: string;
+  fieldErrors?: Record<string, string>;
 }
 
 // Pagination parameters

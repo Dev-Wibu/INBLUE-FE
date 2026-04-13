@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MAJOR_OPTIONS } from "@/constants/majors";
+import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 
@@ -182,13 +183,18 @@ export function SignupPage() {
     window.location.assign(authManager.getGoogleLoginUrl());
   };
 
+  const inputClassName =
+    "border-slate-200 bg-white/90 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#0047AB]/25 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus-visible:ring-[#66B2FF]/35";
+
+  const passwordInputClassName = cn("pr-10", inputClassName);
+
   return (
-    <Card className="w-full max-w-md dark:border-slate-800 dark:bg-slate-900">
+    <Card className="w-full max-w-md border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl text-[#0047AB] dark:text-[#66B2FF]">
           {role === "user" ? "Đăng ký tài khoản học viên" : "Đăng ký"}
         </CardTitle>
-        <CardDescription className="dark:text-slate-400">
+        <CardDescription className="text-slate-600 dark:text-slate-300">
           Chào mừng đến với InBlue. Vui lòng điền thông tin
         </CardDescription>
       </CardHeader>
@@ -198,7 +204,7 @@ export function SignupPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full gap-3 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="w-full gap-3 border-slate-300 bg-white/90 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           onClick={handleGoogleSignup}>
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
@@ -246,7 +252,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 placeholder="Nguyễn Văn A"
                 required
-                className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+                className={inputClassName}
               />
             </div>
 
@@ -262,7 +268,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 placeholder="email@example.com"
                 required
-                className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+                className={inputClassName}
               />
             </div>
           </div>
@@ -279,7 +285,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 placeholder="ĐH Bách Khoa Hà Nội"
                 required
-                className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+                className={inputClassName}
               />
             </div>
 
@@ -290,7 +296,7 @@ export function SignupPage() {
               <Select
                 value={formData.major}
                 onValueChange={(value) => setFormData({ ...formData, major: value })}>
-                <SelectTrigger className="dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                <SelectTrigger className={inputClassName}>
                   <SelectValue placeholder="Chọn chuyên ngành" />
                 </SelectTrigger>
                 <SelectContent>
@@ -317,7 +323,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 placeholder="Nhập mật khẩu"
                 required
-                className="pr-10 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+                className={passwordInputClassName}
               />
               <button
                 type="button"
@@ -341,7 +347,7 @@ export function SignupPage() {
                 onChange={handleChange}
                 placeholder="Nhập lại mật khẩu"
                 required
-                className="pr-10 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+                className={passwordInputClassName}
               />
               <button
                 type="button"
@@ -367,7 +373,11 @@ export function SignupPage() {
             </label>
           </div>
 
-          {error && <p className="text-center text-sm text-red-500">{error}</p>}
+          {error && (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-600 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-300">
+              {error}
+            </p>
+          )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Đang đăng ký..." : "Đăng ký"}

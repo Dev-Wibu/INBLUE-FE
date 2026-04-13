@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 
@@ -127,11 +128,15 @@ export function LoginPage() {
     setInfoMessage("");
   };
 
+  const inputClassName =
+    "border-slate-200 bg-white/90 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#0047AB]/25 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus-visible:ring-[#66B2FF]/35";
+  const passwordInputClassName = cn("pr-10", inputClassName);
+
   return (
-    <Card className="w-full max-w-md dark:border-slate-800 dark:bg-slate-900">
+    <Card className="w-full max-w-md border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl text-[#0047AB] dark:text-[#66B2FF]">Đăng nhập</CardTitle>
-        <CardDescription className="dark:text-slate-400">
+        <CardDescription className="text-slate-600 dark:text-slate-300">
           Chào mừng quay trở lại. Vui lòng điền thông tin đăng nhập
         </CardDescription>
       </CardHeader>
@@ -141,7 +146,7 @@ export function LoginPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full gap-3 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="w-full gap-3 border-slate-300 bg-white/90 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           onClick={handleGoogleLogin}>
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
@@ -188,7 +193,7 @@ export function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Nhập email"
               required
-              className="dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+              className={inputClassName}
             />
           </div>
 
@@ -204,7 +209,7 @@ export function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Nhập mật khẩu"
                 required
-                className="pr-10 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+                className={passwordInputClassName}
               />
               <button
                 type="button"
@@ -221,8 +226,16 @@ export function LoginPage() {
             </Link>
           </div>
 
-          {infoMessage && <p className="text-center text-sm text-emerald-600">{infoMessage}</p>}
-          {error && <p className="text-center text-sm text-red-500">{error}</p>}
+          {infoMessage && (
+            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-center text-sm text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-300">
+              {infoMessage}
+            </p>
+          )}
+          {error && (
+            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-600 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-300">
+              {error}
+            </p>
+          )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
