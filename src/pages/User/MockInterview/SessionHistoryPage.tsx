@@ -163,9 +163,9 @@ function SessionCard({
             </Button>
           )}
           {isCompleted && hasFeedback && (
-            <Button variant="secondary" size="sm" disabled className="gap-1">
+            <Button variant="secondary" size="sm" onClick={onWriteFeedback} className="gap-1">
               <Star className="h-4 w-4 text-[#FFD700]" />
-              Đã gửi phản hồi
+              Sửa phản hồi
             </Button>
           )}
           {isRejected && (
@@ -207,7 +207,9 @@ export function SessionHistoryPage() {
 
   // Get session IDs where user already submitted mentor feedback
   const feedbackSessionIds = new Set(
-    feedbacks.map((f: { session?: { id?: number } }) => f.session?.id).filter(Boolean)
+    feedbacks
+      .map((f: { session?: { id?: number } }) => f.session?.id)
+      .filter((id): id is number => typeof id === "number")
   );
 
   // Apply sorting
@@ -322,8 +324,12 @@ export function SessionHistoryPage() {
             <CardDescription>Chờ đánh giá</CardDescription>
             <CardTitle className="text-2xl text-amber-600">
               {
-                sessions.filter((s) => s.status === "COMPLETED" && !feedbackSessionIds.has(s.id))
-                  .length
+                sessions.filter(
+                  (s) =>
+                    s.status === "COMPLETED" &&
+                    typeof s.id === "number" &&
+                    !feedbackSessionIds.has(s.id)
+                ).length
               }
             </CardTitle>
           </CardHeader>
@@ -362,7 +368,7 @@ export function SessionHistoryPage() {
               <SessionCard
                 key={session.id}
                 session={session}
-                hasFeedback={feedbackSessionIds.has(session.id)}
+                hasFeedback={typeof session.id === "number" && feedbackSessionIds.has(session.id)}
                 isPaying={payingSessionId === session.id}
                 onViewDetails={() => handleViewDetails(session)}
                 onWriteFeedback={() => handleWriteFeedback(session)}

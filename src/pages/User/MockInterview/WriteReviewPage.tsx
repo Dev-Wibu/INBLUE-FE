@@ -37,8 +37,8 @@ export function WriteReviewPage() {
   const isEdit = !!existingFeedback;
 
   const handleSubmit = (data: {
-    rating: number;
-    comment: string;
+    rating?: number;
+    comment?: string;
     sessionId: number;
     mentorId: number;
     userId: number;
@@ -58,12 +58,20 @@ export function WriteReviewPage() {
       return;
     }
 
+    const normalizedRating = data.rating && data.rating > 0 ? data.rating : undefined;
+    const normalizedComment = data.comment?.trim() || undefined;
+
+    if (!normalizedRating && !normalizedComment) {
+      toast.error("Vui lòng chọn số sao hoặc nhập nhận xét trước khi gửi phản hồi.");
+      return;
+    }
+
     const payload = {
       sessionId: session.id,
       mentorId: session.userId2,
       userId: currentUserId,
-      rating: data.rating,
-      comment: data.comment,
+      rating: normalizedRating,
+      comment: normalizedComment,
     };
 
     if (isEdit && existingFeedback?.id) {

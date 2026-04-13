@@ -22,10 +22,23 @@ import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 
-const feedbackSchema = z.object({
-  rating: z.number().min(1, "Vui lòng chọn số sao").max(5),
-  comment: z.string().min(10, "Nhận xét phải có ít nhất 10 ký tự"),
-});
+const feedbackSchema = z
+  .object({
+    rating: z.number().min(0).max(5),
+    comment: z.string().optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasRating = (value.rating || 0) > 0;
+    const hasComment = Boolean(value.comment?.trim());
+
+    if (!hasRating && !hasComment) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Vui lòng chọn số sao hoặc nhập nhận xét",
+        path: ["rating"],
+      });
+    }
+  });
 
 type FeedbackFormData = z.infer<typeof feedbackSchema>;
 
@@ -34,9 +47,13 @@ interface MentorFeedbackFormProps {
   mentorId: number;
   userId: number;
   existingFeedback?: MentorFeedback;
-  onSubmit: (
-    data: FeedbackFormData & { sessionId: number; mentorId: number; userId: number }
-  ) => void;
+  onSubmit: (data: {
+    sessionId: number;
+    mentorId: number;
+    userId: number;
+    rating?: number;
+    comment?: string;
+  }) => void;
   onCancel?: () => void;
   isLoading?: boolean;
 }
@@ -59,11 +76,15 @@ export function MentorFeedbackForm({
   });
 
   const handleSubmit = (data: FeedbackFormData) => {
+    const normalizedComment = data.comment?.trim();
+    const normalizedRating = data.rating > 0 ? data.rating : undefined;
+
     onSubmit({
-      ...data,
       sessionId,
       mentorId,
       userId,
+      rating: normalizedRating,
+      comment: normalizedComment ? normalizedComment : undefined,
     });
   };
 
@@ -78,12 +99,12 @@ export function MentorFeedbackForm({
           name="rating"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Đánh giá mentor *</FormLabel>
+              <FormLabel>Đánh giá mentor (tùy chọn)</FormLabel>
               <FormControl>
                 <StarRating value={field.value} onChange={field.onChange} size="lg" />
               </FormControl>
               <FormDescription>
-                Đánh giá trải nghiệm làm việc với mentor trong buổi phỏng vấn (1-5 sao)
+                Bạn có thể chọn số sao hoặc viết nhận xét, cần ít nhất một thông tin
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -96,17 +117,16 @@ export function MentorFeedbackForm({
           name="comment"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nhận xét chi tiết *</FormLabel>
+              <FormLabel>Nhận xét chi tiết (tùy chọn)</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Chia sẻ nhận xét của bạn về buổi phỏng vấn: điểm mạnh, điểm cần cải thiện, đề xuất..."
                   className="min-h-[150px]"
                   {...field}
+                  value={field.value ?? ""}
                 />
               </FormControl>
-              <FormDescription>
-                Nhận xét chi tiết giúp mentor hiểu rõ trải nghiệm phỏng vấn của bạn
-              </FormDescription>
+              <FormDescription>Bạn có thể để trống nếu đã đánh giá sao</FormDescription>
               <FormMessage />
             </FormItem>
           )}

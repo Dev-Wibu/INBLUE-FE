@@ -1,6 +1,6 @@
 /**
  * Mentor Review Detail Page
- * Displays detailed review from a student
+ * Displays detailed review written by mentor for a student
  */
 
 import { useQuery } from "@tanstack/react-query";
@@ -52,6 +52,7 @@ export function ReviewDetailPage() {
   const studentEmail = review?.user?.email || studentInfo?.email;
   const studentUniversity = review?.user?.university || studentInfo?.university;
   const studentAvatarUrl = review?.user?.avatarUrl || studentInfo?.avatarUrl;
+  const reviewSessionId = review?.session?.id;
 
   if (isLoading) {
     return (
@@ -106,11 +107,23 @@ export function ReviewDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <Button variant="ghost" onClick={() => navigate("/mentor?tab=reviews")}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Quay lại danh sách
-      </Button>
+      {/* Actions */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="ghost" onClick={() => navigate("/mentor?tab=reviews")}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Quay lại danh sách
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (typeof reviewSessionId === "number") {
+              navigate(`/mentor/sessions/${reviewSessionId}/review`);
+            }
+          }}
+          disabled={typeof reviewSessionId !== "number"}>
+          Sửa đánh giá
+        </Button>
+      </div>
 
       {/* Header */}
       <div>
@@ -197,7 +210,7 @@ export function ReviewDetailPage() {
       <Card className="border-emerald-100 dark:border-slate-800">
         <CardHeader>
           <CardTitle>Đánh Giá Chi Tiết (STAR Method)</CardTitle>
-          <CardDescription>Phương pháp đánh giá STAR từ học viên</CardDescription>
+          <CardDescription>Nội dung STAR bạn đã gửi cho học viên</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Situation */}

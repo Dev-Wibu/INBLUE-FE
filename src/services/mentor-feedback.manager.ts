@@ -74,6 +74,26 @@ const mockMentorFeedbacks: MentorFeedback[] = [
   },
 ];
 
+const getApiErrorMessage = (error: unknown, fallback: string): string => {
+  const responseData = (error as { response?: { data?: { message?: string; error?: string } } })
+    ?.response?.data;
+  const apiMessage = responseData?.message || responseData?.error;
+
+  if (typeof apiMessage === "string" && apiMessage.trim().length > 0) {
+    return apiMessage;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback;
+};
+
+const isNotFoundLikeMessage = (message: string): boolean => {
+  return /not found|no value present/i.test(message);
+};
+
 export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
   private mode = MANAGER_MODE;
   private api = createApiInstance();
@@ -128,14 +148,24 @@ export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR_FEEDBACKS.DETAIL, { id });
       const response = await this.api.get(endpoint);
+
+      if (!response.data || typeof response.data !== "object") {
+        return {
+          success: false,
+          error: "Không tìm thấy phản hồi",
+        };
+      }
+
       return {
         success: true,
         data: response.data,
       };
     } catch (error) {
+      const errorMessage = getApiErrorMessage(error, "Failed to fetch mentor feedback");
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch mentor feedback",
+        error: isNotFoundLikeMessage(errorMessage) ? "Không tìm thấy phản hồi" : errorMessage,
       };
     }
   }

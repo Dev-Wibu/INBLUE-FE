@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMentorById } from "@/hooks/useMentor";
 import { useMentorFeedbackBySession } from "@/hooks/useMentorFeedback";
 import { useMentorReviewBySession } from "@/hooks/useMentorReview";
 import { useMakeSessionPayment, useSessionById } from "@/hooks/useSession";
@@ -62,6 +63,8 @@ export function SessionDetailPage() {
     isLoading: sessionLoading,
     refetch: refetchSession,
   } = useSessionById(Number(sessionId));
+  const mentorId = session?.userId2 || 0;
+  const { data: mentorInfo } = useMentorById(mentorId);
   const { mutateAsync: makeSessionPayment } = useMakeSessionPayment();
   const { data: myFeedback, isLoading: feedbackLoading } = useMentorFeedbackBySession(
     Number(sessionId)
@@ -236,7 +239,10 @@ export function SessionDetailPage() {
             <div className="flex items-center gap-2 text-sm">
               <User className="h-4 w-4 text-slate-400" />
               <span className="text-slate-600 dark:text-slate-400">Người hướng dẫn:</span>
-              <span className="font-medium">ID #{session.userId2}</span>
+              <span className="font-medium">
+                {mentorInfo?.name ||
+                  (session.userId2 ? `Mentor #${session.userId2}` : "Chưa xác định")}
+              </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4 text-slate-400" />
@@ -337,7 +343,20 @@ export function SessionDetailPage() {
           {feedbackLoading ? (
             <Skeleton className="h-32" />
           ) : myFeedback ? (
-            <FeedbackCard feedback={myFeedback} showMentor showSession={false} />
+            <div className="space-y-3">
+              <FeedbackCard
+                feedback={myFeedback}
+                showMentor
+                showSession={false}
+                onClick={() => navigate(`/user/mock-interview/history/${session.id}/feedback`)}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/user/mock-interview/history/${session.id}/feedback`)}>
+                Sửa phản hồi
+              </Button>
+            </div>
           ) : isCompleted ? (
             <div className="py-8 text-center">
               <MessageSquare className="mx-auto h-10 w-10 text-slate-300" />
@@ -372,7 +391,25 @@ export function SessionDetailPage() {
           {reviewLoading ? (
             <Skeleton className="h-32" />
           ) : mentorReview ? (
-            <ReviewCard review={mentorReview} showMentor />
+            <div className="space-y-3">
+              <ReviewCard
+                review={mentorReview}
+                showMentor
+                onClick={() => {
+                  if (mentorReview.id) {
+                    navigate(`/user/feedback/${mentorReview.id}`);
+                  }
+                }}
+              />
+              {mentorReview.id && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/user/feedback/${mentorReview.id}`)}>
+                  Xem chi tiết đánh giá
+                </Button>
+              )}
+            </div>
           ) : isCompleted ? (
             <div className="py-8 text-center">
               <Star className="mx-auto h-10 w-10 text-slate-300" />

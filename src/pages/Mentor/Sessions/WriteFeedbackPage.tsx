@@ -36,7 +36,7 @@ export function WriteFeedbackPage() {
   const isEdit = !!existingReview;
 
   const handleSubmit = (data: {
-    rating: number;
+    rating?: number;
     situationNote?: string;
     taskNote?: string;
     actionNote?: string;
@@ -63,18 +63,48 @@ export function WriteFeedbackPage() {
       return;
     }
 
+    const normalizeOptionalText = (value?: string) => {
+      const normalized = value?.trim();
+      return normalized ? normalized : undefined;
+    };
+
+    const normalizedRating = data.rating && data.rating > 0 ? data.rating : undefined;
+    const normalizedSituationNote = normalizeOptionalText(data.situationNote);
+    const normalizedTaskNote = normalizeOptionalText(data.taskNote);
+    const normalizedActionNote = normalizeOptionalText(data.actionNote);
+    const normalizedResultNote = normalizeOptionalText(data.resultNote);
+    const normalizedStrength = normalizeOptionalText(data.strength);
+    const normalizedWeakness = normalizeOptionalText(data.weakness);
+    const normalizedImprove = normalizeOptionalText(data.improve);
+
+    const hasAnyReviewContent = Boolean(
+      normalizedRating ||
+      normalizedSituationNote ||
+      normalizedTaskNote ||
+      normalizedActionNote ||
+      normalizedResultNote ||
+      normalizedStrength ||
+      normalizedWeakness ||
+      normalizedImprove
+    );
+
+    if (!hasAnyReviewContent) {
+      toast.error("Vui lòng nhập ít nhất một nội dung đánh giá trước khi gửi.");
+      return;
+    }
+
     const payload = {
       sessionId: session.id,
       mentorId: user.id,
       userId: session.userId,
-      rating: data.rating,
-      situationNote: data.situationNote,
-      taskNote: data.taskNote,
-      actionNote: data.actionNote,
-      resultNote: data.resultNote,
-      strength: data.strength,
-      weakness: data.weakness,
-      improve: data.improve,
+      rating: normalizedRating,
+      situationNote: normalizedSituationNote,
+      taskNote: normalizedTaskNote,
+      actionNote: normalizedActionNote,
+      resultNote: normalizedResultNote,
+      strength: normalizedStrength,
+      weakness: normalizedWeakness,
+      improve: normalizedImprove,
     };
 
     if (isEdit && existingReview?.id) {

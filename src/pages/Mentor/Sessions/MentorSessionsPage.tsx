@@ -45,6 +45,7 @@ interface SessionCardProps {
   onJoinSession: () => void;
   onWriteReview: () => void;
   onViewReview: () => void;
+  onEditReview: () => void;
   onAcceptSession: () => void;
   onRejectSession: () => void;
   isUpdatingStatus: boolean;
@@ -58,6 +59,7 @@ function SessionCard({
   onJoinSession,
   onWriteReview,
   onViewReview,
+  onEditReview,
   onAcceptSession,
   onRejectSession,
   isUpdatingStatus,
@@ -205,15 +207,25 @@ function SessionCard({
             </Button>
           )}
           {isCompleted && hasReview && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onViewReview}
-              disabled={!reviewId}
-              className="gap-1">
-              <MessageSquare className="h-4 w-4 text-emerald-600" />
-              Xem chi tiết
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onViewReview}
+                disabled={!reviewId}
+                className="gap-1">
+                <MessageSquare className="h-4 w-4 text-emerald-600" />
+                Xem chi tiết
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onEditReview}
+                disabled={typeof session.id !== "number"}
+                className="gap-1">
+                Sửa đánh giá
+              </Button>
+            </>
           )}
           {!isCompleted && !canJoin && (
             <span className="text-sm text-slate-500 italic">
@@ -295,6 +307,10 @@ export function MentorSessionsPage() {
 
   const handleViewReview = (reviewId: number) => {
     navigate(`/mentor/reviews/${reviewId}`);
+  };
+
+  const handleEditReview = (sessionId: number) => {
+    navigate(`/mentor/sessions/${sessionId}/review`);
   };
 
   const handleAcceptSession = (session: Session) => {
@@ -421,6 +437,11 @@ export function MentorSessionsPage() {
                   const reviewId = reviewBySessionId.get(session.id);
                   if (reviewId) {
                     handleViewReview(reviewId);
+                  }
+                }}
+                onEditReview={() => {
+                  if (typeof session.id === "number") {
+                    handleEditReview(session.id);
                   }
                 }}
                 onAcceptSession={() => handleAcceptSession(session)}
