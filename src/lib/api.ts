@@ -8,7 +8,7 @@ import type { paths } from "../../schema-from-be";
 import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 
-import { API_BASE_URL } from "@/constants/api.config";
+import { API_BASE_URL, isPublicAuthRequest } from "@/constants/api.config";
 
 // Create the fetch client with base configuration
 const fetchClient = createFetchClient<paths>({
@@ -24,8 +24,9 @@ fetchClient.use({
     // Dynamically import to avoid circular dependency
     const { useAuthStore } = await import("@/stores/authStore");
     const token = useAuthStore.getState().token;
+    const shouldSkipAuthHeader = isPublicAuthRequest(request.url, request.method);
 
-    if (token) {
+    if (token && !shouldSkipAuthHeader) {
       request.headers.set("Authorization", `Bearer ${token}`);
     }
 
@@ -54,7 +55,7 @@ fetchClient.use({
 
     return request;
   },
-  async onResponse({ response }) {
+  async onResponse({ request, response }) {
     // Log API response (development only)
     if (import.meta.env.DEV) {
       const clonedResponse = response.clone();
@@ -94,7 +95,7 @@ fetchClient.use({
     }
 
     // Auto-logout on 401 (token expired or invalid)
-    if (response.status === 401) {
+    if (response.status === 401 && !isPublicAuthRequest(request.url, request.method)) {
       const { useAuthStore } = await import("@/stores/authStore");
       useAuthStore.getState().clearAuth();
       if (window.location.pathname !== "/login") {

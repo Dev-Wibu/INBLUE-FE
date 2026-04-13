@@ -391,6 +391,62 @@ export const ERROR_MESSAGES: Record<number, string> = {
   504: "Máy chủ phản hồi quá chậm. Vui lòng thử lại.",
 };
 
+const PUBLIC_AUTH_POST_ENDPOINTS = new Set<string>([
+  API_ENDPOINTS.AUTH.LOGIN,
+  API_ENDPOINTS.AUTH.LOGIN_WITH_GOOGLE,
+  API_ENDPOINTS.AUTH.SIGNUP,
+  API_ENDPOINTS.AUTH.MENTOR_REGISTER,
+]);
+
+const PUBLIC_REGISTRATION_POST_ENDPOINTS = new Set<string>([
+  API_ENDPOINTS.USERS.CREATE,
+  API_ENDPOINTS.MENTOR.CREATE,
+]);
+
+const PUBLIC_AUTH_PAGE_PATHS = new Set<string>(["/signup", "/mentor-register", "/select-role"]);
+
+const normalizeRequestPath = (url?: string): string => {
+  if (!url) {
+    return "";
+  }
+
+  try {
+    return new URL(url, API_BASE_URL).pathname;
+  } catch {
+    return url.split("?")[0]?.split("#")[0] || "";
+  }
+};
+
+const isPublicAuthPage = (): boolean => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return PUBLIC_AUTH_PAGE_PATHS.has(window.location.pathname);
+};
+
+export const isPublicAuthRequest = (url?: string, method?: string): boolean => {
+  const normalizedMethod = (method || "get").toLowerCase();
+  if (normalizedMethod !== "post") {
+    return false;
+  }
+
+  const requestPath = normalizeRequestPath(url);
+  if (!requestPath) {
+    return false;
+  }
+
+  if (PUBLIC_AUTH_POST_ENDPOINTS.has(requestPath)) {
+    return true;
+  }
+
+  if (PUBLIC_REGISTRATION_POST_ENDPOINTS.has(requestPath)) {
+    return isPublicAuthPage();
+  }
+
+  return false;
+};
+
 /**
  * Create axios instance with response interceptors for global error handling
  *
@@ -408,8 +464,9 @@ export const createApiInstance = (): AxiosInstance => {
     const { useAuthStore } = await import("@/stores/authStore");
     const token = useAuthStore.getState().token;
 
-    // Do not send stale bearer token when logging in.
-    if (token && !(config.url || "").includes(API_ENDPOINTS.AUTH.LOGIN)) {
+    const shouldSkipAuthHeader = isPublicAuthRequest(config.url, config.method);
+
+    if (token && !shouldSkipAuthHeader) {
       const headers =
         config.headers instanceof AxiosHeaders ? config.headers : AxiosHeaders.from(config.headers);
       headers.set("Authorization", `Bearer ${token}`);
@@ -441,12 +498,19 @@ export const createApiInstance = (): AxiosInstance => {
 
         // Redirect to login on 401 (unauthorized)
         if (status === 401) {
-          // Clear full auth state consistently (token, user, current-user-id) before redirect.
-          const { useAuthStore } = await import("@/stores/authStore");
-          useAuthStore.getState().clearAuth();
+          const shouldSkip401Redirect = isPublicAuthRequest(
+            error.config?.url,
+            error.config?.method
+          );
 
-          if (window.location.pathname !== "/login") {
-            window.location.href = "/login";
+          if (!shouldSkip401Redirect) {
+            // Clear full auth state consistently (token, user, current-user-id) before redirect.
+            const { useAuthStore } = await import("@/stores/authStore");
+            useAuthStore.getState().clearAuth();
+
+            if (window.location.pathname !== "/login") {
+              window.location.href = "/login";
+            }
           }
         }
       }

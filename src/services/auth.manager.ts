@@ -10,6 +10,7 @@ import type { components } from "../../schema-from-be";
 import {
   API_BASE_URL,
   API_ENDPOINTS,
+  ERROR_MESSAGES,
   MANAGER_MODE,
   createApiInstance,
 } from "@/constants/api.config";
@@ -36,6 +37,45 @@ const asNonEmptyString = (value: unknown): string | undefined => {
 
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const extractFieldErrors = (payload: unknown): Record<string, string> | undefined => {
+  if (!isRecord(payload) || !isRecord(payload.errors)) {
+    return undefined;
+  }
+
+  const mapped = Object.entries(payload.errors).reduce<Record<string, string>>(
+    (acc, [key, value]) => {
+      if (typeof value === "string" && value.trim().length > 0) {
+        acc[key] = value.trim();
+      } else if (Array.isArray(value)) {
+        const firstMessage = value.find(
+          (item) => typeof item === "string" && item.trim().length > 0
+        );
+        if (typeof firstMessage === "string") {
+          acc[key] = firstMessage.trim();
+        }
+      }
+
+      return acc;
+    },
+    {}
+  );
+
+  return Object.keys(mapped).length > 0 ? mapped : undefined;
+};
+
+const extractApiErrorMessage = (payload: unknown): string | undefined => {
+  if (!isRecord(payload)) {
+    return undefined;
+  }
+
+  return (
+    asNonEmptyString(payload.message) ||
+    asNonEmptyString(payload.error) ||
+    asNonEmptyString(payload.detail) ||
+    asNonEmptyString(payload.title)
+  );
 };
 
 const getEmailPrefix = (email: string): string => {
@@ -800,9 +840,22 @@ export class AuthManager {
       };
     } catch (error) {
       console.error("Mentor registration error:", error);
+
+      const response = isRecord(error) && isRecord(error.response) ? error.response : undefined;
+      const status = typeof response?.status === "number" ? response.status : undefined;
+      const payload = response?.data;
+      const fieldErrors = extractFieldErrors(payload);
+
+      const normalizedErrorMessage =
+        extractApiErrorMessage(payload) ||
+        (typeof status === "number" ? ERROR_MESSAGES[status] : undefined) ||
+        (error instanceof Error ? error.message : undefined) ||
+        "Đăng ký mentor thất bại. Vui lòng thử lại.";
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Mentor registration failed",
+        error: normalizedErrorMessage,
+        fieldErrors,
       };
     }
   }
