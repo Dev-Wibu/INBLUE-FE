@@ -22,6 +22,29 @@ import { StarRating } from "@/components/ui/star-rating";
 import { useMentorFeedbacksByMentor, type MentorFeedback } from "@/hooks/useMentorFeedback";
 import { useAuthStore } from "@/stores/authStore";
 
+const toSessionTimestamp = (value?: string) => {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const getFeedbackNewestSortValue = (feedback: MentorFeedback) => {
+  const endTime = toSessionTimestamp(feedback.session?.endTime1);
+  if (endTime > 0) {
+    return endTime;
+  }
+
+  const startTime = toSessionTimestamp(feedback.session?.startTime1);
+  if (startTime > 0) {
+    return startTime;
+  }
+
+  return typeof feedback.id === "number" ? feedback.id : 0;
+};
+
 export function GivenFeedbackListPage() {
   const user = useAuthStore((state) => state.user);
   const [selectedFeedback, setSelectedFeedback] = useState<MentorFeedback | null>(null);
@@ -44,11 +67,16 @@ export function GivenFeedbackListPage() {
       : "0.0";
 
   // Get unique students
-  const uniqueStudents = new Set(feedbacks.map((f: { user?: { id?: number } }) => f.user?.id));
+  const uniqueStudents = new Set(
+    feedbacks
+      .map((feedback) => feedback.user?.id ?? feedback.session?.userId)
+      .filter((id): id is number => typeof id === "number")
+  );
 
-  // Sort feedbacks by session ID descending (newest first)
+  // Sort feedbacks by session timeline descending (newest first)
   const sortedFeedbacks = [...feedbacks].sort(
-    (a: MentorFeedback, b: MentorFeedback) => (b.session?.id || 0) - (a.session?.id || 0)
+    (a: MentorFeedback, b: MentorFeedback) =>
+      getFeedbackNewestSortValue(b) - getFeedbackNewestSortValue(a)
   );
 
   const handleOpenDetail = (feedback: MentorFeedback) => {

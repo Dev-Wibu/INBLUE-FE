@@ -22,16 +22,37 @@ import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
 import type { MentorReview } from "@/services/mentor-review.manager";
 
-const reviewSchema = z.object({
-  rating: z.number().min(1, "Vui lòng chọn số sao").max(5),
-  situationNote: z.string().optional(),
-  taskNote: z.string().optional(),
-  actionNote: z.string().optional(),
-  resultNote: z.string().optional(),
-  strength: z.string().optional(),
-  weakness: z.string().optional(),
-  improve: z.string().optional(),
-});
+const reviewSchema = z
+  .object({
+    rating: z.number().min(0).max(5),
+    situationNote: z.string().optional(),
+    taskNote: z.string().optional(),
+    actionNote: z.string().optional(),
+    resultNote: z.string().optional(),
+    strength: z.string().optional(),
+    weakness: z.string().optional(),
+    improve: z.string().optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasRating = (value.rating || 0) > 0;
+    const hasAnyNote = [
+      value.situationNote,
+      value.taskNote,
+      value.actionNote,
+      value.resultNote,
+      value.strength,
+      value.weakness,
+      value.improve,
+    ].some((note) => Boolean(note?.trim()));
+
+    if (!hasRating && !hasAnyNote) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Vui lòng nhập ít nhất một nội dung đánh giá",
+        path: ["rating"],
+      });
+    }
+  });
 
 type ReviewFormData = z.infer<typeof reviewSchema>;
 
@@ -40,9 +61,19 @@ interface MentorReviewFormProps {
   mentorId: number;
   userId: number;
   existingReview?: MentorReview;
-  onSubmit: (
-    data: ReviewFormData & { sessionId: number; mentorId: number; userId: number }
-  ) => void;
+  onSubmit: (data: {
+    sessionId: number;
+    mentorId: number;
+    userId: number;
+    rating?: number;
+    situationNote?: string;
+    taskNote?: string;
+    actionNote?: string;
+    resultNote?: string;
+    strength?: string;
+    weakness?: string;
+    improve?: string;
+  }) => void;
   onCancel?: () => void;
   isLoading?: boolean;
 }
@@ -70,12 +101,26 @@ export function MentorReviewForm({
     },
   });
 
+  const normalizeOptionalText = (value?: string) => {
+    const normalized = value?.trim();
+    return normalized ? normalized : undefined;
+  };
+
   const handleSubmit = (data: ReviewFormData) => {
+    const normalizedRating = data.rating > 0 ? data.rating : undefined;
+
     onSubmit({
-      ...data,
       sessionId,
       mentorId,
       userId,
+      rating: normalizedRating,
+      situationNote: normalizeOptionalText(data.situationNote),
+      taskNote: normalizeOptionalText(data.taskNote),
+      actionNote: normalizeOptionalText(data.actionNote),
+      resultNote: normalizeOptionalText(data.resultNote),
+      strength: normalizeOptionalText(data.strength),
+      weakness: normalizeOptionalText(data.weakness),
+      improve: normalizeOptionalText(data.improve),
     });
   };
 
@@ -90,11 +135,13 @@ export function MentorReviewForm({
           name="rating"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Đánh giá tổng thể *</FormLabel>
+              <FormLabel>Đánh giá tổng thể (tùy chọn)</FormLabel>
               <FormControl>
                 <StarRating value={field.value} onChange={field.onChange} size="lg" />
               </FormControl>
-              <FormDescription>Chọn số sao để đánh giá học viên (1-5 sao)</FormDescription>
+              <FormDescription>
+                Có thể chọn số sao hoặc điền ghi chú chi tiết, cần ít nhất một thông tin
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -118,8 +165,9 @@ export function MentorReviewForm({
                 <FormControl>
                   <Textarea
                     placeholder="Mô tả bối cảnh của phiên phỏng vấn..."
-                    className="min-h-[80px]"
+                    className="min-h-20"
                     {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -136,8 +184,9 @@ export function MentorReviewForm({
                 <FormControl>
                   <Textarea
                     placeholder="Nhiệm vụ học viên cần hoàn thành..."
-                    className="min-h-[80px]"
+                    className="min-h-20"
                     {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -154,8 +203,9 @@ export function MentorReviewForm({
                 <FormControl>
                   <Textarea
                     placeholder="Các hành động học viên đã thực hiện trong phiên..."
-                    className="min-h-[80px]"
+                    className="min-h-20"
                     {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -172,8 +222,9 @@ export function MentorReviewForm({
                 <FormControl>
                   <Textarea
                     placeholder="Kết quả học viên đạt được sau phiên phỏng vấn..."
-                    className="min-h-[80px]"
+                    className="min-h-20"
                     {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -199,6 +250,7 @@ export function MentorReviewForm({
                     placeholder="Những điểm mạnh bạn nhận thấy ở học viên..."
                     className="min-h-[60px]"
                     {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -217,6 +269,7 @@ export function MentorReviewForm({
                     placeholder="Những điểm học viên có thể cải thiện..."
                     className="min-h-[60px]"
                     {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -235,6 +288,7 @@ export function MentorReviewForm({
                     placeholder="Đề xuất cụ thể của bạn để học viên cải thiện..."
                     className="min-h-[60px]"
                     {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />

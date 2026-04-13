@@ -12,10 +12,37 @@ import { PaginationControl } from "@/components/shared/PaginationControl";
 import { ReloadButton } from "@/components/shared/ReloadButton";
 import { SortButton } from "@/components/shared/SortButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
+import { useMentorReviewsByMentor, type MentorReview } from "@/hooks/useMentorReview";
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { useAuthStore } from "@/stores/authStore";
+
+type SortableReview = MentorReview & {
+  newestSortValue: number;
+};
+
+const toSessionTimestamp = (value?: string) => {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const getReviewNewestSortValue = (review: MentorReview) => {
+  const endTime = toSessionTimestamp(review.session?.endTime1);
+  if (endTime > 0) {
+    return endTime;
+  }
+
+  const startTime = toSessionTimestamp(review.session?.startTime1);
+  if (startTime > 0) {
+    return startTime;
+  }
+
+  return typeof review.id === "number" ? review.id : 0;
+};
 
 export function MentorReviewsPage() {
   const navigate = useNavigate();
@@ -28,8 +55,17 @@ export function MentorReviewsPage() {
     refetch,
   } = useMentorReviewsByMentor(user?.id || 0);
 
+  const sortableReviews = useMemo<SortableReview[]>(
+    () =>
+      reviews.map((review) => ({
+        ...review,
+        newestSortValue: getReviewNewestSortValue(review),
+      })),
+    [reviews]
+  );
+
   // Apply sorting
-  const { sortedData, getSortProps } = useSortable(reviews);
+  const { sortedData, getSortProps } = useSortable(sortableReviews);
 
   // Apply pagination
   const pagination = usePagination({
@@ -114,7 +150,7 @@ export function MentorReviewsPage() {
                 Sắp xếp theo:
               </span>
               <SortButton {...getSortProps("rating")}>Đánh giá</SortButton>
-              <SortButton {...getSortProps("id")}>Mới nhất</SortButton>
+              <SortButton {...getSortProps("newestSortValue")}>Mới nhất</SortButton>
             </div>
           )}
 
