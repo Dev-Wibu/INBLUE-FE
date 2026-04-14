@@ -16,7 +16,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localho
 // API Configuration
 export const apiConfig: ApiConfig = {
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 90000,
   headers: {
     "Content-Type": "application/json",
   },
