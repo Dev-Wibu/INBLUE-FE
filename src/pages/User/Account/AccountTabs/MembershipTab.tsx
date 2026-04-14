@@ -1,4 +1,3 @@
-import qr from "@/assets/qr.png";
 import {
   BookOpen,
   Bot,
@@ -8,7 +7,6 @@ import {
   Crown,
   Diamond,
   Loader2,
-  QrCode,
   Sparkles,
   Star,
   Zap,
@@ -532,8 +530,8 @@ export function MembershipTab() {
     <div className="flex flex-col gap-8">
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#0047AB] via-[#0066CC] to-[#007BFF] p-8 text-white">
-        <div className="-8op -ririghg-8 absolute h-40 w-40 rounded-full bg-white/5" />
-        <div className="-h-24 absolute right-16 w-24 rounded-full bg-white/5" />
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10" />
+        <div className="absolute -bottom-14 left-10 h-28 w-28 rounded-full bg-white/10" />
         <div className="relative flex flex-col items-center gap-2 text-center">
           <div className="mb-2 flex gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
@@ -641,9 +639,9 @@ export function MembershipTab() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
             {/* Left: Bank transfer info */}
-            <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 dark:border-slate-700 dark:bg-slate-800">
+            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 dark:border-slate-700 dark:bg-slate-800">
               <div className="mb-4 flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0047AB] text-white">
                   <Bot className="h-4 w-4" />
@@ -660,7 +658,7 @@ export function MembershipTab() {
 
               <div className="flex flex-col gap-3">
                 <div>
-                  <p className="ider mb-0.5 font-['Inter'] text-xs font-medium text-gray-400 uppercase dark:text-slate-500">
+                  <p className="mb-0.5 font-['Inter'] text-xs font-medium tracking-wide text-gray-400 uppercase dark:text-slate-500">
                     Chủ tài khoản
                   </p>
                   <p className="font-['Inter'] text-sm font-semibold text-cyan-500 dark:text-cyan-400">
@@ -670,7 +668,7 @@ export function MembershipTab() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-mediumwider mb-0.5 font-['Inter'] text-xs text-gray-400 uppercase dark:text-slate-500">
+                    <p className="mb-0.5 font-['Inter'] text-xs font-medium tracking-wide text-gray-400 uppercase dark:text-slate-500">
                       Số tài khoản
                     </p>
                     <p className="font-['Inter'] text-sm font-semibold text-cyan-500 dark:text-cyan-400">
@@ -686,7 +684,7 @@ export function MembershipTab() {
                 </div>
 
                 <div>
-                  <p className="ider mb-0.5 font-['Inter'] text-xs font-medium text-gray-400 uppercase dark:text-slate-500">
+                  <p className="mb-0.5 font-['Inter'] text-xs font-medium tracking-wide text-gray-400 uppercase dark:text-slate-500">
                     Ngân hàng
                   </p>
                   <p className="font-['Inter'] text-sm font-semibold text-zinc-800 dark:text-white">
@@ -702,7 +700,7 @@ export function MembershipTab() {
                       : "border-gray-200 bg-white dark:border-slate-600 dark:bg-slate-700"
                   }`}>
                   <div className="mb-1 flex items-center justify-between">
-                    <p className="ider font-['Inter'] text-xs font-medium text-gray-400 uppercase dark:text-slate-500">
+                    <p className="font-['Inter'] text-xs font-medium tracking-wide text-gray-400 uppercase dark:text-slate-500">
                       Nội dung chuyển
                     </p>
                     {selectedPlan && (
@@ -730,13 +728,16 @@ export function MembershipTab() {
                     Hệ thống đang hoạt động
                   </span>
                 </div>
-                <div className="flex items-end gap-2">
-                  <span className="flex-end font-['Inter'] text-2xl text-amber-500 dark:text-slate-300">
-                    Tổng tiền:{" "}
+
+                <div className="rounded-xl border border-[#0047AB]/15 bg-white p-3 dark:border-[#66B2FF]/20 dark:bg-slate-900">
+                  <p className="font-['Inter'] text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                    Tổng tiền thanh toán
+                  </p>
+                  <p className="font-['Poppins'] text-2xl font-bold text-[#0047AB] dark:text-[#66B2FF]">
                     {selectedPlanInfo
                       ? formatCurrency(selectedPlanInfo.price)
                       : "— Chọn gói bên trên —"}
-                  </span>
+                  </p>
                 </div>
 
                 <button
@@ -758,74 +759,90 @@ export function MembershipTab() {
               </div>
             </div>
 
-            {/* Right: QR placeholder */}
-            <div className="flex flex-col items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-5 dark:border-slate-700 dark:bg-slate-800">
-              <div className="mb-4 flex items-center gap-2 self-start">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-white">
-                  <QrCode className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="font-['Inter'] text-sm font-semibold text-zinc-800 dark:text-white">
-                    Quét mã QR
-                  </p>
-                  <p className="font-['Inter'] text-xs text-gray-500 dark:text-slate-400">
-                    Nạp tiền tự động
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex h-44 w-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white dark:border-slate-600 dark:bg-slate-700">
-                <QrCode className="mb-2 h-10 w-10 text-gray-300 dark:text-slate-500" />
-                <p className="px-3 text-center font-['Inter'] text-xs text-gray-400 dark:text-slate-500">
-                  <img src={qr} alt="QR Code" />
+            {/* Right: Summary and guidance */}
+            <div className="flex flex-col gap-4">
+              <div className="rounded-2xl border border-[#0047AB]/15 bg-[#F6FAFF] p-5 dark:border-[#66B2FF]/20 dark:bg-slate-800/50">
+                <p className="mb-3 font-['Inter'] text-sm font-semibold text-[#0047AB] dark:text-[#66B2FF]">
+                  Tóm tắt đơn hàng
                 </p>
-              </div>
-
-              <div className="mt-4 flex gap-6">
-                {["Mở app banking", "Quét mã QR", "Xác nhận"].map((step, i) => (
-                  <div key={i} className="flex flex-col items-center gap-1">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0047AB] font-['Inter'] text-xs font-bold text-white">
-                      {i + 1}
-                    </div>
-                    <span className="max-w-16 text-center font-['Inter'] text-xs text-gray-500 dark:text-slate-400">
-                      {step}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+                    <span className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
+                      Gói đã chọn
+                    </span>
+                    <span className="font-['Inter'] text-sm font-semibold text-slate-800 dark:text-white">
+                      {selectedPlanInfo?.displayName ?? "Chưa chọn"}
                     </span>
                   </div>
-                ))}
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+                    <span className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
+                      Thời hạn
+                    </span>
+                    <span className="font-['Inter'] text-sm font-semibold text-slate-800 dark:text-white">
+                      {selectedPlanInfo ? `${selectedPlanInfo.durationDays} ngày` : "-"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
+                      Thành tiền
+                    </span>
+                    <span className="font-['Poppins'] text-lg font-bold text-[#0047AB] dark:text-[#66B2FF]">
+                      {selectedPlanInfo ? formatCurrency(selectedPlanInfo.price) : "-"}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Bottom info rows */}
-          <div className="mt-5 flex flex-col gap-3">
-            <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/30 dark:bg-amber-900/10">
-              <Crown className="h-5 w-5 shrink-0 text-amber-500" />
-              <div>
-                <p className="font-['Inter'] text-sm font-semibold text-amber-700 dark:text-amber-400">
-                  Mua gói thành viên
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 dark:border-blue-800/30 dark:bg-blue-900/10">
+                <p className="mb-3 font-['Inter'] text-sm font-semibold text-blue-700 dark:text-blue-400">
+                  Quy trình thanh toán nhanh
                 </p>
-                <p className="font-['Inter'] text-xs text-amber-600 dark:text-amber-500">
-                  Sau khi thanh toán thành công, quyền lợi gói sẽ được cập nhật tự động.
-                </p>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                    <span className="font-['Inter'] text-sm text-blue-700 dark:text-blue-300">
+                      Chọn gói thành viên phù hợp bên trên.
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                    <span className="font-['Inter'] text-sm text-blue-700 dark:text-blue-300">
+                      Chuyển khoản đúng số tài khoản và nội dung chuyển.
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                    <span className="font-['Inter'] text-sm text-blue-700 dark:text-blue-300">
+                      Nhấn Thanh toán ngay để chuyển đến cổng thanh toán an toàn.
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/30 dark:bg-blue-900/10">
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-blue-500 font-['Inter'] text-xs font-bold text-blue-500">
-                i
-              </span>
-              <div>
-                <p className="mb-1 font-['Inter'] text-sm font-semibold text-blue-700 dark:text-blue-400">
+              <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/30 dark:bg-amber-900/10">
+                <Crown className="h-5 w-5 shrink-0 text-amber-500" />
+                <div>
+                  <p className="font-['Inter'] text-sm font-semibold text-amber-700 dark:text-amber-400">
+                    Mua gói thành viên
+                  </p>
+                  <p className="font-['Inter'] text-xs text-amber-600 dark:text-amber-500">
+                    Sau khi thanh toán thành công, quyền lợi gói sẽ được cập nhật tự động.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                <p className="mb-2 font-['Inter'] text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Lưu ý quan trọng
                 </p>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  <span className="font-['Inter'] text-xs text-blue-600 dark:text-blue-400">
+                  <span className="font-['Inter'] text-xs text-slate-600 dark:text-slate-400">
                     ✓ Nhập đúng nội dung chuyển
                   </span>
-                  <span className="font-['Inter'] text-xs text-blue-600 dark:text-blue-400">
+                  <span className="font-['Inter'] text-xs text-slate-600 dark:text-slate-400">
                     ⏱ Chờ 1–5 phút để xử lý
                   </span>
-                  <span className="font-['Inter'] text-xs text-blue-600 dark:text-blue-400">
+                  <span className="font-['Inter'] text-xs text-slate-600 dark:text-slate-400">
                     ⚠ Tránh chuyển lúc 23h59
                   </span>
                 </div>

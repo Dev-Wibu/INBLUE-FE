@@ -4,7 +4,6 @@
  */
 
 import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } from "@/interfaces";
-import type { QuestionSet, QuestionSetDetail } from "@/mocks/questions.mock";
 
 import {
   API_ENDPOINTS,
@@ -12,7 +11,6 @@ import {
   buildEndpoint,
   createApiInstance,
 } from "@/constants/api.config";
-import * as questionMock from "@/mocks/questions.mock";
 
 export interface PracticeQuestion {
   questionId?: number;
@@ -29,7 +27,7 @@ export interface PracticeQuestion {
   hint?: string;
 }
 
-export class QuestionManager implements BaseManager<QuestionSet> {
+export class QuestionManager implements BaseManager<PracticeQuestion> {
   private mode = MANAGER_MODE;
   private api = createApiInstance();
 
@@ -38,13 +36,11 @@ export class QuestionManager implements BaseManager<QuestionSet> {
    */
   async getAll(
     params?: PaginationParams
-  ): Promise<ApiResponse<PaginatedResponse<QuestionSet> | QuestionSet[]>> {
+  ): Promise<ApiResponse<PaginatedResponse<PracticeQuestion> | PracticeQuestion[]>> {
     if (this.mode === "mock") {
-      const questions = await questionMock.fetchQuestionSets();
-      void params;
       return {
         success: true,
-        data: questions,
+        data: [],
       };
     }
 
@@ -65,18 +61,12 @@ export class QuestionManager implements BaseManager<QuestionSet> {
   /**
    * Get question set by ID (with full details including questions)
    */
-  async getById(id: string | number): Promise<ApiResponse<QuestionSetDetail>> {
+  async getById(id: string | number): Promise<ApiResponse<PracticeQuestion>> {
     if (this.mode === "mock") {
-      const questionSet = await questionMock.fetchQuestionSetDetail(Number(id));
-      if (!questionSet) {
-        return {
-          success: false,
-          error: "Question set not found",
-        };
-      }
+      void id;
       return {
-        success: true,
-        data: questionSet,
+        success: false,
+        error: "Không hỗ trợ tải chi tiết câu hỏi ở chế độ mock",
       };
     }
 
@@ -100,7 +90,7 @@ export class QuestionManager implements BaseManager<QuestionSet> {
    * POST /api/practice-questions (JSON body)
    * Backend requires full PracticeQuestion schema including questionId: 0 for creation
    */
-  async create(data: Partial<QuestionSet>): Promise<ApiResponse<QuestionSet>> {
+  async create(data: Partial<PracticeQuestion>): Promise<ApiResponse<PracticeQuestion>> {
     if (this.mode === "mock") {
       void data;
       return {
@@ -133,7 +123,10 @@ export class QuestionManager implements BaseManager<QuestionSet> {
    * POST /api/practice-questions (JSON body)
    * Backend requires full PracticeQuestion schema including questionId
    */
-  async update(id: string | number, data: Partial<QuestionSet>): Promise<ApiResponse<QuestionSet>> {
+  async update(
+    id: string | number,
+    data: Partial<PracticeQuestion>
+  ): Promise<ApiResponse<PracticeQuestion>> {
     if (this.mode === "mock") {
       void id;
       void data;
@@ -196,19 +189,13 @@ export class QuestionManager implements BaseManager<QuestionSet> {
   async search(
     searchText: string,
     params?: PaginationParams
-  ): Promise<ApiResponse<PaginatedResponse<QuestionSet> | QuestionSet[]>> {
+  ): Promise<ApiResponse<PaginatedResponse<PracticeQuestion> | PracticeQuestion[]>> {
     if (this.mode === "mock") {
-      const questions = await questionMock.fetchQuestionSets();
-      // Simple mock search filter
-      const filtered = questions.filter(
-        (q: QuestionSet) =>
-          q.title.toLowerCase().includes(searchText.toLowerCase()) ||
-          q.description.toLowerCase().includes(searchText.toLowerCase())
-      );
+      void searchText;
       void params;
       return {
         success: true,
-        data: filtered,
+        data: [],
       };
     }
 

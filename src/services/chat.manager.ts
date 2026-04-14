@@ -4,7 +4,6 @@
  */
 
 import type { ApiResponse, PaginatedResponse, PaginationParams } from "@/interfaces";
-import type { ChatMessage, ChatSession } from "@/mocks/chat.mock";
 import type { components } from "../../schema-from-be";
 
 import {
@@ -13,7 +12,20 @@ import {
   buildEndpoint,
   createApiInstance,
 } from "@/constants/api.config";
-import * as chatMock from "@/mocks/chat.mock";
+
+export interface ChatSession {
+  id: number;
+  title: string;
+  lastMessage: string;
+  lastMessageTime: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  sender: "ai" | "user";
+  content: string;
+  time: string;
+}
 
 type BackendChatMessage = components["schemas"]["ChatMessage"];
 type BackendMentor = components["schemas"]["MentorResponse"];
@@ -101,11 +113,10 @@ export class ChatManager {
     params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<ChatSession> | ChatSession[]>> {
     if (this.mode === "mock") {
-      const sessions = await chatMock.fetchChatSessions();
       void params;
       return {
         success: true,
-        data: sessions,
+        data: [],
       };
     }
 
@@ -128,16 +139,10 @@ export class ChatManager {
    */
   async getChatSession(sessionId: number): Promise<ApiResponse<ChatSession>> {
     if (this.mode === "mock") {
-      const session = await chatMock.fetchChatSession(sessionId);
-      if (!session) {
-        return {
-          success: false,
-          error: "Session not found",
-        };
-      }
+      void sessionId;
       return {
-        success: true,
-        data: session,
+        success: false,
+        error: "Không hỗ trợ tải phiên trò chuyện ở chế độ mock",
       };
     }
 
@@ -164,11 +169,11 @@ export class ChatManager {
     params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<ChatMessage> | ChatMessage[]>> {
     if (this.mode === "mock") {
-      const messages = await chatMock.fetchChatMessages(sessionId);
+      void sessionId;
       void params;
       return {
         success: true,
-        data: messages,
+        data: [],
       };
     }
 
@@ -205,15 +210,11 @@ export class ChatManager {
     recipientFullId: string
   ): Promise<ApiResponse<ChatHistoryMessage[]>> {
     if (this.mode === "mock") {
-      const messages = await chatMock.fetchChatMessages(0);
+      void currentFullId;
+      void recipientFullId;
       return {
         success: true,
-        data: messages.map((message) => ({
-          id: message.id,
-          content: message.content,
-          sender: message.sender,
-          time: message.time,
-        })),
+        data: [],
       };
     }
 
@@ -327,10 +328,15 @@ export class ChatManager {
    */
   async sendMessage(sessionId: number, content: string): Promise<ApiResponse<ChatMessage>> {
     if (this.mode === "mock") {
-      const message = await chatMock.sendChatMessage(sessionId, content);
+      void sessionId;
       return {
         success: true,
-        data: message,
+        data: {
+          id: Date.now(),
+          sender: "user",
+          content,
+          time: formatTimeForUi(),
+        },
       };
     }
 
@@ -354,10 +360,10 @@ export class ChatManager {
    */
   async getAIResponse(sessionId: number): Promise<ApiResponse<ChatMessage>> {
     if (this.mode === "mock") {
-      const response = await chatMock.getAIResponse(sessionId);
+      void sessionId;
       return {
-        success: true,
-        data: response,
+        success: false,
+        error: "AI Chat hiện đã tắt ở chế độ mock",
       };
     }
 
@@ -381,10 +387,14 @@ export class ChatManager {
    */
   async createChatSession(title: string): Promise<ApiResponse<ChatSession>> {
     if (this.mode === "mock") {
-      const session = await chatMock.createNewChatSession(title);
       return {
         success: true,
-        data: session,
+        data: {
+          id: Date.now(),
+          title,
+          lastMessage: "",
+          lastMessageTime: formatTimeForUi(),
+        },
       };
     }
 
