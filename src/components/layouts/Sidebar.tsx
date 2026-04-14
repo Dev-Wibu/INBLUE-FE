@@ -3,7 +3,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  CircleHelp,
   FileQuestion,
   GraduationCap,
   History,
@@ -72,16 +71,6 @@ const menuItems: NavItem[] = [
     label: "Phỏng vấn với AI",
     icon: Bot,
     path: "/dashboard/ai-interview",
-  },
-  {
-    label: "AI Chat",
-    icon: MessageSquare,
-    path: "/dashboard/ai-chat",
-  },
-  {
-    label: "Bộ câu hỏi",
-    icon: CircleHelp,
-    path: "/dashboard/questions",
   },
   {
     group: true,
@@ -322,7 +311,7 @@ export function Sidebar() {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          "relative sticky top-0 flex h-screen flex-shrink-0 flex-col border-r border-slate-100 bg-slate-50 transition-all duration-300 dark:border-slate-800 dark:bg-slate-900",
+          "sticky top-0 flex h-screen shrink-0 flex-col border-r border-slate-100 bg-slate-50 transition-all duration-300 dark:border-slate-800 dark:bg-slate-900",
           isCollapsed ? "w-20" : "w-72"
         )}>
         {/* Collapse Toggle Button */}
@@ -342,7 +331,7 @@ export function Sidebar() {
             "flex h-16 items-center gap-2 border-b border-slate-100 dark:border-slate-800",
             isCollapsed ? "justify-center px-2" : "px-6"
           )}>
-          <img src={icon2} alt="INBLUE AI" className="h-9 w-9 flex-shrink-0" />
+          <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
           {!isCollapsed && (
             <span className="text-lg font-bold text-[#002654] dark:text-white">INBLUE AI</span>
           )}

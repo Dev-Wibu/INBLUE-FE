@@ -120,7 +120,7 @@ export function MentorFeedbackForm({
               <FormLabel>Nhận xét chi tiết (tùy chọn)</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Chia sẻ nhận xét của bạn về buổi phỏng vấn: điểm mạnh, điểm cần cải thiện, đề xuất..."
+                  placeholder="Chia sẻ nhận xét của bạn về buổi phỏng vấn: mentor có nhiều năm kinh nghiệm, chuyên nghiệm, cơ bản,..."
                   className="min-h-[150px]"
                   {...field}
                   value={field.value ?? ""}

@@ -24,12 +24,6 @@ export {
   WriteReviewPage,
 } from "./MockInterview";
 
-// AI Chat exports
-export { AIChatConversationPage, AIChatListPage } from "./AIChat";
-
-// Question Bank exports
-export { QuestionDetailPage, QuestionListPage } from "./Question";
-
 // Account exports
 export { AccountPage } from "./Account";
 

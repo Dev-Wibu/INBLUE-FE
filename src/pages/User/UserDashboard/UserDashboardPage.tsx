@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
   Bot,
-  CircleHelp,
   FileQuestion,
   GraduationCap,
   History,
@@ -22,7 +21,6 @@ import { DashboardSidebar } from "@/components/shared";
 import { useTabsState } from "@/hooks/useTabsState";
 
 import { AccountPage } from "../Account";
-import { AIChatListPage } from "../AIChat";
 import { AIInterviewListPage } from "../AIInterview";
 import { UserFeedbackListPage } from "../Feedback";
 import { HomeFeedPage } from "../HomeFeed";
@@ -32,7 +30,6 @@ import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
 import { UserNotificationsPage } from "../Notifications";
 import { OverviewPage } from "../Overview";
 import { PracticeQuestionsPage, PracticeSetsPage } from "../Practice";
-import { QuestionListPage } from "../Question";
 
 type TabType =
   | "homeFeed"
@@ -42,8 +39,6 @@ type TabType =
   | "interviewHistory"
   | "feedback"
   | "aiInterview"
-  | "aiChat"
-  | "questions"
   | "practice"
   | "practiceQuestions"
   | "notifications"
@@ -58,8 +53,6 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "interviewHistory", label: "Lịch sử phỏng vấn" },
   { type: "feedback", label: "Đánh giá từ Mentor" },
   { type: "aiInterview", label: "Phỏng vấn với AI" },
-  { type: "aiChat", label: "AI Chat" },
-  { type: "questions", label: "Bộ câu hỏi" },
   { type: "practice", label: "Bộ luyện tập" },
   { type: "practiceQuestions", label: "Câu hỏi luyện tập" },
   { type: "notifications", label: "Thông báo" },
@@ -105,8 +98,6 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
     label: "AI & Học tập",
     items: [
       { type: "aiInterview", icon: Bot, label: "Phỏng vấn với AI", color: "text-green-600" },
-      { type: "aiChat", icon: MessageSquare, label: "AI Chat", color: "text-teal-600" },
-      { type: "questions", icon: CircleHelp, label: "Bộ câu hỏi", color: "text-yellow-600" },
       {
         type: "practice",
         icon: GraduationCap,
@@ -140,13 +131,13 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
 
 const USER_SIDEBAR_LOGO = (
   <>
-    <img src={icon2} alt="INBLUE AI" className="h-9 w-9 flex-shrink-0" />
+    <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
     <span className="text-lg font-bold text-[#002654] dark:text-white">INBLUE AI</span>
   </>
 );
 
 const USER_SIDEBAR_LOGO_COLLAPSED = (
-  <img src={icon2} alt="INBLUE AI" className="h-9 w-9 flex-shrink-0" />
+  <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
 );
 
 const DEFAULT_TAB: TabType = "homeFeed";
@@ -156,11 +147,9 @@ const ROUTE_TO_TAB: Record<string, TabType> = {
   mentors: "mentors",
   "ai-interview": "aiInterview",
   "mock-interview": "mockInterview",
-  "ai-chat": "aiChat",
   practice: "practice",
   feedback: "feedback",
   community: "homeFeed",
-  questions: "questions",
   messenger: "messenger",
 };
 
@@ -216,10 +205,6 @@ export function UserDashboardPage() {
         return <UserFeedbackListPage />;
       case "aiInterview":
         return <AIInterviewListPage />;
-      case "aiChat":
-        return <AIChatListPage />;
-      case "questions":
-        return <QuestionListPage />;
       case "practice":
         return <PracticeSetsPage />;
       case "practiceQuestions":

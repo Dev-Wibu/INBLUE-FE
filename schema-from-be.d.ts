@@ -2569,10 +2569,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -2582,19 +2582,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
-            /** Format: int32 */
-            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            /** Format: int32 */
+            pageNumber?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -2849,11 +2849,13 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             deferredSyntaxAllowedAsLiteral?: string;
+            isXml?: string;
+            elIgnored?: string;
             errorOnUndeclaredNamespace?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
@@ -2861,8 +2863,6 @@ export interface components {
             includePreludes?: string[];
             includeCodas?: string[];
             trimDirectiveWhitespaces?: string;
-            elIgnored?: string;
-            isXml?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
@@ -2899,8 +2899,11 @@ export interface components {
             };
         };
         ServletContext: {
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            initParameterNames?: unknown;
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -2915,15 +2918,12 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
-            initParameterNames?: unknown;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            contextPath?: string;
+            virtualServerName?: string;
             attributeNames?: unknown;
+            contextPath?: string;
             classLoader?: {
                 name?: string;
                 registeredAsParallelCapable?: boolean;

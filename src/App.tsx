@@ -50,7 +50,6 @@ import {
   UserSupportPage,
 } from "@/pages/Staff";
 import {
-  AIChatConversationPage,
   AIInterviewResultPage,
   AIInterviewSessionPage,
   AIInterviewSetupPage,
@@ -63,7 +62,6 @@ import {
   MockInterviewSelectMentorPage,
   PostDetailPage,
   PracticeSetDetailPage,
-  QuestionDetailPage,
   QuizPage,
   QuizResultPage,
   SessionDetailPage,
@@ -145,8 +143,6 @@ function App() {
                   element={<WriteReviewPage />}
                 />
                 <Route path="mock-interview/history/:sessionId" element={<SessionDetailPage />} />
-                <Route path="ai-chat/:id" element={<AIChatConversationPage />} />
-                <Route path="questions/:id" element={<QuestionDetailPage />} />
                 <Route path="practice/:id/quiz/:quizId/result" element={<QuizResultPage />} />
                 <Route path="practice/:id/quiz/:quizId" element={<QuizPage />} />
                 <Route path="practice/session/:sessionId" element={<PracticeSetDetailPage />} />
@@ -176,11 +172,8 @@ function App() {
               path="/dashboard/ai-interview"
               element={<Navigate to="/user?tab=aiInterview" replace />}
             />
-            <Route path="/dashboard/ai-chat" element={<Navigate to="/user?tab=aiChat" replace />} />
-            <Route
-              path="/dashboard/questions"
-              element={<Navigate to="/user?tab=questions" replace />}
-            />
+            <Route path="/dashboard/ai-chat" element={<Navigate to="/user" replace />} />
+            <Route path="/dashboard/questions" element={<Navigate to="/user" replace />} />
             <Route
               path="/dashboard/practice"
               element={<Navigate to="/user?tab=practice" replace />}
@@ -206,14 +199,8 @@ function App() {
               path="/dashboard/mock-interview/*"
               element={<DashboardSubRedirect prefix="/user/mock-interview" />}
             />
-            <Route
-              path="/dashboard/ai-chat/*"
-              element={<DashboardSubRedirect prefix="/user/ai-chat" />}
-            />
-            <Route
-              path="/dashboard/questions/*"
-              element={<DashboardSubRedirect prefix="/user/questions" />}
-            />
+            <Route path="/dashboard/ai-chat/*" element={<Navigate to="/user" replace />} />
+            <Route path="/dashboard/questions/*" element={<Navigate to="/user" replace />} />
             <Route
               path="/dashboard/practice/*"
               element={<DashboardSubRedirect prefix="/user/practice" />}
