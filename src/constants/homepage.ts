@@ -1,13 +1,11 @@
-// Mock data for Homepage
-
-export const mockStats = {
+export const homepageStats = {
   offers: "3,000+",
   costSaving: "70%",
   accuracy: "90%",
   availability: "24/7",
 };
 
-export const mockJobRoles = [
+export const homepageJobRoles = [
   { id: 1, name: "Kỹ sư phần mềm", icon: "code" },
   { id: 2, name: "Nhà khoa học dữ liệu", icon: "database" },
   { id: 3, name: "Marketing", icon: "megaphone" },
@@ -16,7 +14,7 @@ export const mockJobRoles = [
   { id: 6, name: "Phân tích Tài chính", icon: "chart" },
 ];
 
-export const mockFeatures = [
+export const homepageFeatures = [
   {
     id: 1,
     title: "Phỏng vấn mô phỏng AI",
@@ -43,7 +41,7 @@ export const mockFeatures = [
   },
 ];
 
-export const mockInterviewModes = [
+export const homepageInterviewModes = [
   {
     id: 1,
     title: "Chế độ văn bản",
@@ -82,7 +80,7 @@ export const mockInterviewModes = [
   },
 ];
 
-export const mockTestimonials = [
+export const homepageTestimonials = [
   {
     id: 1,
     name: "Nguyễn Phạm Thu Hà",
@@ -138,28 +136,3 @@ export const mockTestimonials = [
     rating: 5,
   },
 ];
-
-export const mockCompanyLogos = [
-  { id: 1, name: "Google", logo: null },
-  { id: 2, name: "Microsoft", logo: null },
-  { id: 3, name: "Amazon", logo: null },
-  { id: 4, name: "Meta", logo: null },
-  { id: 5, name: "Apple", logo: null },
-  { id: 6, name: "Netflix", logo: null },
-];
-
-export const mockFooterLinks = {
-  product: [
-    { name: "Features", href: "#features" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "Questions", href: "#questions" },
-  ],
-  resources: [
-    { name: "Interview Guides", href: "#guides" },
-    { name: "Blogs", href: "#blogs" },
-  ],
-  company: [
-    { name: "About Us", href: "#about" },
-    { name: "Contact Us", href: "#contact" },
-  ],
-};

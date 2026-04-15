@@ -40,14 +40,12 @@ import {
 } from "@/pages/Mentor";
 import { PaymentCancelPage, PaymentSuccessPage } from "@/pages/Payment";
 import {
-  ContentModerationPage,
   FeedbackModerationPage,
   MentorApplicationsPage,
   PostModerationPage,
   ReviewModerationPage,
   SessionProcessingPage,
   StaffDashboardPage,
-  UserSupportPage,
 } from "@/pages/Staff";
 import {
   AIInterviewResultPage,
@@ -314,10 +312,8 @@ function App() {
               <Route path="/staff/reviews" element={<ReviewModerationPage />} />
               <Route path="/staff/feedback" element={<FeedbackModerationPage />} />
               <Route path="/staff/posts" element={<PostModerationPage />} />
-              <Route path="/staff/content" element={<ContentModerationPage />} />
               <Route path="/staff/mentor-applications" element={<MentorApplicationsPage />} />
               <Route path="/staff/sessions" element={<SessionProcessingPage />} />
-              <Route path="/staff/support" element={<UserSupportPage />} />
             </Route>
 
             {/* Error pages */}

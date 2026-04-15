@@ -46,7 +46,7 @@ export {
 } from "./Practice";
 
 // Community exports
-export { CreatePostPage, EditPostPage, PostDetailPage, PostListPage } from "./Community";
+export { CreatePostPage, EditPostPage, PostDetailPage } from "./Community";
 
 // Mentor detail exports
 export { MentorDetailPage } from "./MentorDetail";

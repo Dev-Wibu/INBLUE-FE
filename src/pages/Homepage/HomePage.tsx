@@ -28,12 +28,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TestimonialCarousel } from "@/components/ui/testimonial-carousel";
 import {
-  mockFeatures,
-  mockInterviewModes,
-  mockJobRoles,
-  mockStats,
-  mockTestimonials,
-} from "@/mocks/homepage.mock";
+  homepageFeatures,
+  homepageInterviewModes,
+  homepageJobRoles,
+  homepageStats,
+  homepageTestimonials,
+} from "@/constants/homepage";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 
 // Icon mapping for job roles - using blue color from color.md
@@ -120,7 +120,7 @@ export function HomePage() {
                   </div>
                   <div>
                     <p className="text-lg font-bold text-slate-900 dark:text-white">
-                      {mockStats.offers}
+                      {homepageStats.offers}
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Lời mời làm việc</p>
                   </div>
@@ -131,7 +131,7 @@ export function HomePage() {
                   </div>
                   <div>
                     <p className="text-lg font-bold text-slate-900 dark:text-white">
-                      {mockStats.accuracy}
+                      {homepageStats.accuracy}
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Độ chính xác AI</p>
                   </div>
@@ -185,7 +185,7 @@ export function HomePage() {
 
           {/* Job Role Cards */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
-            {mockJobRoles.map((role) => (
+            {homepageJobRoles.map((role) => (
               <Card
                 key={role.id}
                 className="group cursor-pointer border-slate-200 transition-all hover:border-[#007BFF]/50 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800">
@@ -230,19 +230,19 @@ export function HomePage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-              <span className="text-4xl font-bold text-white">{mockStats.offers}</span>
+              <span className="text-4xl font-bold text-white">{homepageStats.offers}</span>
               <span className="mt-2 text-center text-[#A5C8F2]">Lời đề nghị</span>
             </div>
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-              <span className="text-4xl font-bold text-white">{mockStats.costSaving}</span>
+              <span className="text-4xl font-bold text-white">{homepageStats.costSaving}</span>
               <span className="mt-2 text-center text-[#A5C8F2]">Tiết kiệm chi phí huấn luyện</span>
             </div>
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-              <span className="text-4xl font-bold text-white">{mockStats.accuracy}</span>
+              <span className="text-4xl font-bold text-white">{homepageStats.accuracy}</span>
               <span className="mt-2 text-center text-[#A5C8F2]">Độ chính xác AI</span>
             </div>
             <div className="flex flex-col items-center justify-center rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
-              <span className="text-4xl font-bold text-white">{mockStats.availability}</span>
+              <span className="text-4xl font-bold text-white">{homepageStats.availability}</span>
               <span className="mt-2 text-center text-[#A5C8F2]">Hỗ trợ khách hàng</span>
             </div>
           </div>
@@ -278,17 +278,19 @@ export function HomePage() {
               </div>
               <div className="flex-1 space-y-4">
                 <Badge className="bg-[#DCEEFF] text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                  {mockFeatures[0].title}
+                  {homepageFeatures[0].title}
                 </Badge>
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {mockFeatures[0].headline}
+                  {homepageFeatures[0].headline}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400">{mockFeatures[0].description}</p>
+                <p className="text-slate-600 dark:text-slate-400">
+                  {homepageFeatures[0].description}
+                </p>
                 <Button
                   className="mt-4 rounded-full bg-gradient-to-r from-[#0047AB] to-[#007BFF]"
                   asChild>
                   <Link to={ctaPath}>
-                    {mockFeatures[0].cta}
+                    {homepageFeatures[0].cta}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -299,17 +301,19 @@ export function HomePage() {
             <div className="flex flex-col-reverse items-center gap-12 lg:flex-row">
               <div className="flex-1 space-y-4">
                 <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                  {mockFeatures[1].title}
+                  {homepageFeatures[1].title}
                 </Badge>
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {mockFeatures[1].headline}
+                  {homepageFeatures[1].headline}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400">{mockFeatures[1].description}</p>
+                <p className="text-slate-600 dark:text-slate-400">
+                  {homepageFeatures[1].description}
+                </p>
                 <Button
                   className="mt-4 rounded-full bg-gradient-to-r from-[#0047AB] to-[#007BFF]"
                   asChild>
                   <Link to={ctaPath}>
-                    {mockFeatures[1].cta}
+                    {homepageFeatures[1].cta}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -344,17 +348,19 @@ export function HomePage() {
               </div>
               <div className="flex-1 space-y-4">
                 <Badge className="bg-[#DCEEFF] text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                  {mockFeatures[2].title}
+                  {homepageFeatures[2].title}
                 </Badge>
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {mockFeatures[2].headline}
+                  {homepageFeatures[2].headline}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400">{mockFeatures[2].description}</p>
+                <p className="text-slate-600 dark:text-slate-400">
+                  {homepageFeatures[2].description}
+                </p>
                 <Button
                   className="mt-4 rounded-full bg-gradient-to-r from-[#0047AB] to-[#007BFF]"
                   asChild>
                   <Link to={ctaPath}>
-                    {mockFeatures[2].cta}
+                    {homepageFeatures[2].cta}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -382,7 +388,7 @@ export function HomePage() {
 
           {/* Mode Cards */}
           <div className="grid gap-6 md:grid-cols-3">
-            {mockInterviewModes.map((mode) => (
+            {homepageInterviewModes.map((mode) => (
               <Card
                 key={mode.id}
                 className="group cursor-pointer transition-all hover:border-[#007BFF]/50 hover:shadow-xl dark:border-slate-700 dark:bg-slate-900">
@@ -434,7 +440,7 @@ export function HomePage() {
           </div>
           <div className="mt-8">
             <TestimonialCarousel
-              testimonials={mockTestimonials}
+              testimonials={homepageTestimonials}
               speed={40}
               pauseOnHover={true}
               className="py-4"
