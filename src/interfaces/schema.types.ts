@@ -320,3 +320,63 @@ export interface FeatureUsageLog {
   featureName: FeatureName;
   useAt: string;
 }
+
+/**
+ * Membership plan names in usage response.
+ */
+export type UserUsageMembershipPlanName =
+  | "NEW"
+  | "FREE"
+  | "BASIC"
+  | "PREMIUM"
+  | "TEST"
+  | (string & {});
+
+/**
+ * Membership plan payload embedded in user usage response.
+ */
+export interface UserUsageMembershipPlan {
+  id?: number;
+  name?: UserUsageMembershipPlanName | null;
+  price?: number | null;
+  max_ai_interview?: number | null;
+  max_practice_sets?: number | null;
+  max_quiz_sets?: number | null;
+  durationDays?: number | null;
+}
+
+/**
+ * User snapshot embedded in legacy user usage response.
+ */
+export interface UserUsageUser {
+  id?: number;
+  name?: string | null;
+  email?: string | null;
+  role?: UserRole;
+  isActive?: boolean | null;
+  membershipPlan?: UserUsageMembershipPlan | null;
+}
+
+/**
+ * User usage entry from GET /api/users/usage.
+ * Supports both current flat payload and legacy nested payload.
+ */
+export interface UserUsageRecord {
+  userId?: number;
+  planName?: UserUsageMembershipPlanName | null;
+  price?: number | null;
+  durationDays?: number | null;
+  maxAiInterview?: number | null;
+  maxPracticeSets?: number | null;
+  maxQuizSets?: number | null;
+  user?: UserUsageUser | null;
+  active?: boolean | null;
+  isActive?: boolean | null;
+  aiInterviewUsed?: number | null;
+  practiceSetUsed?: number | null;
+  quizSetUsed?: number | null;
+  aiInterviewRemaining?: number | null;
+  practiceSetRemaining?: number | null;
+  quizSetRemaining?: number | null;
+  expiredAt?: string | null;
+}

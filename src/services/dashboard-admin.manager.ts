@@ -4,7 +4,13 @@
  */
 
 import { API_ENDPOINTS, createApiInstance } from "@/constants/api.config";
-import type { ApiResponse, FeatureUsageLog, PaymentEntity, TransactionEntity } from "@/interfaces";
+import type {
+  ApiResponse,
+  FeatureUsageLog,
+  PaymentEntity,
+  TransactionEntity,
+  UserUsageRecord,
+} from "@/interfaces";
 
 export class DashboardAdminManager {
   private api = createApiInstance();
@@ -113,6 +119,25 @@ export class DashboardAdminManager {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Không thể lấy nhật ký sử dụng tính năng",
+      };
+    }
+  }
+
+  /**
+   * Get usage snapshot by user and membership plan
+   */
+  async getUserUsage(): Promise<ApiResponse<UserUsageRecord[]>> {
+    try {
+      const response = await this.api.get(API_ENDPOINTS.USERS.USAGE);
+      return {
+        success: true,
+        data: Array.isArray(response.data) ? (response.data as UserUsageRecord[]) : [],
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Không thể lấy dữ liệu sử dụng gói thành viên",
       };
     }
   }
