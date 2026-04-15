@@ -1,31 +1,18 @@
-import {
-  ClipboardCheck,
-  Headphones,
-  LayoutDashboard,
-  MessageSquare,
-  Newspaper,
-  Star,
-  UserCheck,
-  Video,
-} from "lucide-react";
+import { LayoutDashboard, MessageSquare, Newspaper, Star, UserCheck, Video } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import type { ChromeTabMenuGroup, SidebarMenuGroup } from "@/components/shared";
 import { DashboardChromeTabs, DashboardSidebar } from "@/components/shared";
 
-import { ContentModerationPage } from "../ContentModeration";
 import { FeedbackModerationPage } from "../FeedbackModeration";
 import { MentorApplicationsPage } from "../MentorApplications";
 import { PostModerationPage } from "../PostModeration";
 import { ReviewModerationPage } from "../ReviewModeration";
 import { SessionProcessingPage } from "../SessionProcessing";
-import { UserSupportPage } from "../UserSupport";
 
 type TabType =
   | "mentorApplications"
   | "sessions"
-  | "userSupport"
-  | "contentModeration"
   | "reviewModeration"
   | "feedbackModeration"
   | "postModeration";
@@ -44,10 +31,6 @@ const getTabTitle = (type: TabType): string => {
       return "Duyệt Mentor";
     case "sessions":
       return "Phiên Phỏng Vấn";
-    case "userSupport":
-      return "Hỗ Trợ";
-    case "contentModeration":
-      return "Kiểm Duyệt";
     case "reviewModeration":
       return "Kiểm Duyệt Đánh Giá Mentor";
     case "feedbackModeration":
@@ -64,8 +47,6 @@ const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
     items: [
       { type: "mentorApplications", label: "Duyệt Mentor" },
       { type: "sessions", label: "Phiên Phỏng Vấn" },
-      { type: "userSupport", label: "Hỗ Trợ" },
-      { type: "contentModeration", label: "Kiểm Duyệt Nội Dung" },
     ],
   },
   {
@@ -109,20 +90,6 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
         label: "Phiên Phỏng Vấn",
         color: "text-blue-600",
         description: "Quản lý phiên phỏng vấn",
-      },
-      {
-        type: "userSupport",
-        icon: Headphones,
-        label: "Hỗ Trợ",
-        color: "text-orange-600",
-        description: "Hỗ trợ người dùng",
-      },
-      {
-        type: "contentModeration",
-        icon: ClipboardCheck,
-        label: "Kiểm Duyệt",
-        color: "text-purple-600",
-        description: "Kiểm duyệt nội dung",
       },
     ],
   },
@@ -229,10 +196,6 @@ export function StaffDashboardPage() {
         return <MentorApplicationsPage />;
       case "sessions":
         return <SessionProcessingPage />;
-      case "userSupport":
-        return <UserSupportPage />;
-      case "contentModeration":
-        return <ContentModerationPage />;
       case "reviewModeration":
         return <ReviewModerationPage />;
       case "feedbackModeration":
