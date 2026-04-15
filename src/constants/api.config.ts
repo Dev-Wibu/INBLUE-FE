@@ -85,6 +85,7 @@ export const API_ENDPOINTS = {
   // POST /api/users/upload-cv - uploadCv (multipart/form-data: userId, cvFile)
   USERS: {
     LIST: "/api/users",
+    USAGE: "/api/users/usage",
     DETAIL: "/api/users/:id",
     CREATE: "/api/users",
     UPDATE: "/api/users",

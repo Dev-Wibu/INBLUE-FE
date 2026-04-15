@@ -18,6 +18,8 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Pie,
+  PieChart,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   XAxis,
@@ -33,6 +35,8 @@ import type { PaymentEntity, TransactionEntity } from "@/interfaces";
 import { formatCurrency } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { dashboardAdminManager } from "@/services";
+
+import { buildMembershipUsageChartData } from "./membershipUsageChart.utils";
 
 type TrendPoint = {
   key: string;
@@ -126,6 +130,19 @@ const formatTransactionTime = (value?: string) => {
   return format(new Date(timestamp), "HH:mm, dd/MM", { locale: vi });
 };
 
+type MembershipPieLabelProps = {
+  value?: number;
+  percent?: number;
+};
+
+const renderMembershipPieLabel = ({ value = 0, percent = 0 }: MembershipPieLabelProps) => {
+  if (!value) {
+    return "";
+  }
+
+  return `${value.toLocaleString("vi-VN")} (${Math.round(percent * 100)}%)`;
+};
+
 export function DashboardOverviewPage() {
   const { data: userCount, isLoading: loadingUsers } = useQuery({
     queryKey: ["admin", "total-users"],
@@ -150,6 +167,11 @@ export function DashboardOverviewPage() {
   const { data: usageResponse } = useQuery({
     queryKey: ["admin", "feature-usage-logs"],
     queryFn: () => dashboardAdminManager.getFeatureUsageLogs(),
+  });
+
+  const { data: userUsageResponse, isLoading: loadingUserUsage } = useQuery({
+    queryKey: ["admin", "user-usage"],
+    queryFn: () => dashboardAdminManager.getUserUsage(),
   });
 
   const [rangeMode, setRangeMode] = useState<RangeMode>("30");
@@ -202,6 +224,22 @@ export function DashboardOverviewPage() {
   const incomeRecords = useMemo(() => incomeResponse?.data ?? [], [incomeResponse?.data]);
   const walletRecords = useMemo(() => transactionResponse?.data ?? [], [transactionResponse?.data]);
   const usageLogs = useMemo(() => usageResponse?.data ?? [], [usageResponse?.data]);
+  const userUsageRecords = useMemo(() => userUsageResponse?.data ?? [], [userUsageResponse?.data]);
+
+  const membershipUsageChartData = useMemo(
+    () => buildMembershipUsageChartData(userUsageRecords),
+    [userUsageRecords]
+  );
+
+  const membershipUsageTotal = useMemo(
+    () => membershipUsageChartData.reduce((sum, item) => sum + item.value, 0),
+    [membershipUsageChartData]
+  );
+
+  const membershipUsageError =
+    userUsageResponse?.success === false
+      ? userUsageResponse.error || "Không thể tải dữ liệu gói thành viên"
+      : null;
 
   const filteredIncomeRecords = useMemo(
     () =>
@@ -479,7 +517,7 @@ export function DashboardOverviewPage() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-3">
         <Card className="border-0 shadow-sm dark:bg-slate-900">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg text-violet-600">
@@ -599,6 +637,118 @@ export function DashboardOverviewPage() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm dark:bg-slate-900">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg text-blue-600">
+              <Users className="h-5 w-5" />
+              Người dùng theo gói thành viên
+            </CardTitle>
+            <CardDescription>
+              Thống kê người dùng đang hoạt động theo 4 gói FREE, NEW, BASIC, PREMIUM
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loadingUserUsage ? (
+              <div className="flex h-[250px] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
+                Đang tải dữ liệu gói thành viên...
+              </div>
+            ) : membershipUsageError ? (
+              <div className="flex h-[250px] flex-col items-center justify-center gap-2 text-center">
+                <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+                  Không thể tải dữ liệu gói thành viên.
+                </p>
+                <p className="max-w-sm text-xs text-slate-500 dark:text-slate-400">
+                  {membershipUsageError}
+                </p>
+              </div>
+            ) : membershipUsageTotal === 0 ? (
+              <div className="flex h-[250px] items-center justify-center text-center text-sm text-slate-500 dark:text-slate-400">
+                Chưa có người dùng đang hoạt động ở 4 gói FREE, NEW, BASIC, PREMIUM.
+              </div>
+            ) : (
+              <>
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={membershipUsageChartData}
+                        dataKey="value"
+                        nameKey="label"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={42}
+                        outerRadius={86}
+                        labelLine={false}
+                        label={renderMembershipPieLabel}>
+                        {membershipUsageChartData.map((entry) => (
+                          <Cell key={entry.plan} fill={entry.color} />
+                        ))}
+                      </Pie>
+
+                      <RechartsTooltip
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.length) return null;
+
+                          const item = payload[0] as {
+                            payload?: (typeof membershipUsageChartData)[0];
+                          };
+
+                          if (!item.payload) return null;
+
+                          return (
+                            <div className="rounded-lg border bg-white p-2 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                              <p className="text-xs font-bold text-slate-500">
+                                Gói {item.payload.label}
+                              </p>
+                              <p
+                                className="text-base font-black"
+                                style={{ color: item.payload.color }}>
+                                {item.payload.value.toLocaleString("vi-VN")} người
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                {item.payload.percentage.toFixed(1)}%
+                              </p>
+                            </div>
+                          );
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {membershipUsageChartData.map((item) => (
+                    <div
+                      key={item.plan}
+                      className="rounded-lg border border-slate-100 p-2 text-center dark:border-slate-800">
+                      <div
+                        className="mx-auto mb-1 h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                        {item.label}
+                      </p>
+                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {item.value.toLocaleString("vi-VN")}
+                      </p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                        {item.percentage.toFixed(1)}%
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
+                  Tổng số người dùng đang dùng 4 gói:{" "}
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    {membershipUsageTotal.toLocaleString("vi-VN")}
+                  </span>
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
