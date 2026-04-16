@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { queryClient } from "@/lib/queryClient";
+import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { useNewFeed } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-import type { components } from "../../../../schema-from-be";
+import type { components } from "../../schema-from-be";
 
 type PostResponse = components["schemas"]["PostResponse"];
 type PagePostResponse = components["schemas"]["PagePostResponse"];
 
-const PAGE_SIZE = 3;
+const DEFAULT_PAGE_SIZE = 3;
 
-export interface UseHomeFeedReturn {
+export interface UsePostFeedReturn {
   posts: PostResponse[];
   hasMore: boolean;
   isLoading: boolean;
@@ -19,15 +19,20 @@ export interface UseHomeFeedReturn {
   refresh: () => void;
 }
 
-export function useHomeFeed(): UseHomeFeedReturn {
+interface UsePostFeedOptions {
+  pageSize?: number;
+}
+
+export function usePostFeed(options?: UsePostFeedOptions): UsePostFeedReturn {
   const { user } = useAuthStore();
+  const pageSize = options?.pageSize ?? DEFAULT_PAGE_SIZE;
+
   const [page, setPage] = useState(0);
   const [posts, setPosts] = useState<PostResponse[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const appendedPages = useRef<Set<number>>(new Set());
   const prevUserId = useRef(user?.id);
 
-  // Reset feed when user changes (login/logout)
   useEffect(() => {
     if (prevUserId.current !== user?.id) {
       prevUserId.current = user?.id;
@@ -35,14 +40,12 @@ export function useHomeFeed(): UseHomeFeedReturn {
       setPosts([]);
       setPage(0);
       setHasMore(true);
-      queryClient.invalidateQueries({ queryKey: ["get", "/api/posts/feed"] });
+      invalidatePostFeedQueries();
     }
   }, [user?.id]);
 
-  const { data, isLoading, isFetching } = useNewFeed({ page, size: PAGE_SIZE });
+  const { data, isLoading, isFetching } = useNewFeed({ page, size: pageSize });
 
-  // Append new page data when response arrives
-  // Using ref to deduplicate avoids infinite effect loops
   useEffect(() => {
     if (!data) return;
     const content = data as unknown as PagePostResponse;
@@ -51,7 +54,6 @@ export function useHomeFeed(): UseHomeFeedReturn {
     if (!appendedPages.current.has(pageIndex)) {
       appendedPages.current.add(pageIndex);
       const incoming = content.content ?? [];
-      // Batch both state updates to a single re-render via functional form
       setPosts((prev) => [...prev, ...incoming]);
       setHasMore(!(content.last ?? true));
     }
@@ -69,7 +71,7 @@ export function useHomeFeed(): UseHomeFeedReturn {
     setPosts([]);
     setPage(0);
     setHasMore(true);
-    queryClient.invalidateQueries({ queryKey: ["get", "/api/posts/feed"] });
+    invalidatePostFeedQueries();
   }, []);
 
   return {

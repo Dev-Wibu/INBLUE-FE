@@ -9,6 +9,7 @@ export * from "./useMentorReview";
 export * from "./useMutationHandler";
 export * from "./useNotification";
 export * from "./usePagination";
+export * from "./usePostFeed";
 export * from "./useSession";
 export * from "./useSortable";
 export * from "./useSpeechRecognition";

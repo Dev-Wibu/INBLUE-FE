@@ -1,5 +1,13 @@
 import { cn } from "@/lib/utils";
-import { Calendar, LayoutDashboard, MessageSquare, Star, User, Users } from "lucide-react";
+import {
+  Calendar,
+  LayoutDashboard,
+  MessageSquare,
+  Newspaper,
+  Star,
+  User,
+  Users,
+} from "lucide-react";
 import { useCallback } from "react";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 
@@ -12,6 +20,7 @@ import { useTabsState } from "@/hooks/useTabsState";
 
 import { MentorAccountPage } from "../Account";
 import { GivenFeedbackListPage } from "../Feedback";
+import { MentorHomeFeedPage } from "../HomeFeed";
 import { MessengerPage } from "../Messenger";
 import { MentorNotificationsPage } from "../Notifications";
 import { MentorOverviewPage } from "../Overview";
@@ -20,6 +29,7 @@ import { MentorSessionsPage } from "../Sessions";
 import { StudentsListPage } from "../Students";
 
 type TabType =
+  | "homeFeed"
   | "overview"
   | "sessions"
   | "students"
@@ -30,6 +40,7 @@ type TabType =
   | "account";
 
 const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
+  { type: "homeFeed", label: "Trang chủ" },
   { type: "overview", label: "Tổng quan" },
   { type: "sessions", label: "Phiên phỏng vấn" },
   { type: "students", label: "Học viên" },
@@ -45,6 +56,10 @@ const isValidTabType = (value: string): value is TabType => {
 };
 
 const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
+  {
+    label: "Trang chủ",
+    items: [{ type: "homeFeed", icon: Newspaper, label: "Trang chủ", color: "text-orange-600" }],
+  },
   {
     label: "Nghiệp vụ",
     items: [
@@ -130,6 +145,8 @@ export function MentorDashboardPage() {
 
   const renderContent = () => {
     switch (typedActiveTab) {
+      case "homeFeed":
+        return <MentorHomeFeedPage />;
       case "overview":
         return <MentorOverviewPage />;
       case "sessions":

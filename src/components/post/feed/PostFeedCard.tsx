@@ -9,9 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/lib/formatting";
 import { useCheckLiked } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-import type { components } from "../../../../../schema-from-be";
+import type { components } from "../../../../schema-from-be";
 
-import { LikeButton } from "@/components/post";
+import { LikeButton } from "../LikeButton";
 import { PostFeedModal } from "./PostFeedModal";
 
 type PostResponse = components["schemas"]["PostResponse"];
@@ -25,14 +25,11 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
   const post = item.post;
   const postId = post?.postId ?? 0;
 
-  // Feed API already returns commentCount — no extra round-trip needed
   const commentCount = item.commentCount ?? 0;
 
-  // useCheckLiked provides the is-liked state per user; likeCount from feed data + local optimistic
   const { data: likedData } = useCheckLiked(postId, user?.id ?? 0, !!user?.id && postId > 0);
   const [localLikeAdjust, setLocalLikeAdjust] = useState(0);
 
-  // checkLiked returns { [key: string]: boolean } — extract the first value
   const isLiked = Object.values((likedData ?? {}) as Record<string, boolean>)[0] ?? false;
   const likeCount = (item.likeCount ?? 0) + localLikeAdjust;
 
@@ -47,7 +44,6 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
     .slice(0, 2)
     .toUpperCase();
 
-  // Facebook-style like count label
   const likeLabel = (() => {
     if (likeCount === 0) return null;
     if (isLiked && likeCount === 1) return "Bạn";
@@ -57,8 +53,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
 
   return (
     <>
-      <Card className="hover:shadhw-m oover:shadow-m bor0 py-der-slate-200/70 shadow- overflow-hidden rounded-xl py-0 dark:border-slate-800">
-        {/* Author + major + date */}
+      <Card className="overflow-hidden rounded-xl border-slate-200/70 py-0 shadow-sm hover:shadow-md dark:border-slate-800">
         <CardHeader className="pt-4 pb-2">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
@@ -83,9 +78,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
           </div>
         </CardHeader>
 
-        {/* Title + Summary + Content */}
         <CardContent className="space-y-2 pb-2">
-          {/* Title — clickable */}
           <button
             type="button"
             className="block w-full text-left"
@@ -95,7 +88,6 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
             </h3>
           </button>
 
-          {/* Summary — visually distinct as a highlighted intro block */}
           {post?.summary && (
             <div className="rounded-lg border-l-4 border-[#0047AB]/40 bg-slate-50 py-2 pr-3 pl-3 dark:border-[#66B2FF]/40 dark:bg-slate-800/50">
               <p className="line-clamp-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
@@ -104,14 +96,12 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
             </div>
           )}
 
-          {/* Content — regular body text, distinct from summary */}
           {post?.content && post.content !== post?.summary && (
             <p className="text-muted-foreground line-clamp-4 text-sm leading-relaxed">
               {post.content}
             </p>
           )}
 
-          {/* Tags */}
           {(post?.tags?.length ?? 0) > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-1">
               {post!.tags!.map((tag) => (
@@ -126,7 +116,6 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
           )}
         </CardContent>
 
-        {/* Cover image (after text — text-first layout) */}
         {post?.coverImgUrl && (
           <div
             className="aspect-video w-full cursor-pointer overflow-hidden"
@@ -139,7 +128,6 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
           </div>
         )}
 
-        {/* Like/comment count bar (Facebook-style) */}
         {(likeLabel || localCommentCount > 0) && (
           <div className="flex items-center gap-1 px-4 py-0">
             {likeLabel && (
@@ -161,7 +149,6 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
 
         <Separator className="mx-4" />
 
-        {/* Action row */}
         <CardFooter className="flex items-center pt-0 pb-2">
           {user?.id && postId > 0 ? (
             <LikeButton
