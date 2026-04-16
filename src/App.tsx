@@ -211,6 +211,10 @@ function App() {
             {/* Backward-compat redirects for /mentor-dashboard/* URLs */}
             <Route path="/mentor-dashboard" element={<Navigate to="/mentor" replace />} />
             <Route
+              path="/mentor-dashboard/homefeed"
+              element={<Navigate to="/mentor?tab=homeFeed" replace />}
+            />
+            <Route
               path="/mentor-dashboard/overview"
               element={<Navigate to="/mentor?tab=overview" replace />}
             />

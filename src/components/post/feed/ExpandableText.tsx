@@ -4,15 +4,10 @@ import { cn } from "@/lib/utils";
 
 interface ExpandableTextProps {
   text: string;
-  /** CSS class to clamp (e.g. "line-clamp-3"). Applied when collapsed. */
   clampClass?: string;
   className?: string;
 }
 
-/**
- * Renders text with a Facebook-style "Xem thêm" / "Thu gọn" toggle.
- * When collapsed the text is clamped to the given number of lines.
- */
 export function ExpandableText({
   text,
   clampClass = "line-clamp-3",
@@ -22,7 +17,6 @@ export function ExpandableText({
   const [isOverflowing, setIsOverflowing] = useState(false);
   const pRef = useRef<HTMLParagraphElement>(null);
 
-  // Detect whether the clamped text actually overflows (scrollHeight > clientHeight)
   useLayoutEffect(() => {
     const el = pRef.current;
     if (!el) return;

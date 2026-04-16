@@ -16,9 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { queryClient } from "@/lib/queryClient";
+import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { postManager } from "@/services/post.manager";
-
 import { type Major, questionMajorManager } from "@/services/question-major.manager";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -112,7 +111,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
 
       if (response.success) {
         toast.success("Đăng bài thành công!");
-        queryClient.invalidateQueries({ queryKey: ["get", "/api/posts/feed"] });
+        invalidatePostFeedQueries();
         resetForm();
         onOpenChange(false);
         onCreated?.();
@@ -134,7 +133,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
         </DialogHeader>
 
         <div className="max-h-[calc(90vh-73px)] space-y-4 overflow-y-auto px-6 pt-2 pb-4">
-          {/* Author info */}
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
               <AvatarImage src={user?.avatarUrl ?? undefined} alt={authorName} />
@@ -150,7 +148,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             </div>
           </div>
 
-          {/* Title */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-slate-500">Tiêu đề *</Label>
             <Input
@@ -161,7 +158,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             />
           </div>
 
-          {/* Content */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-slate-500">Nội dung *</Label>
             <Textarea
@@ -173,7 +169,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             />
           </div>
 
-          {/* Summary */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-slate-500">Tóm tắt</Label>
             <Textarea
@@ -185,7 +180,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             />
           </div>
 
-          {/* Major */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-slate-500">Chuyên ngành</Label>
             <Select
@@ -204,7 +198,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             </Select>
           </div>
 
-          {/* Cover image */}
           <div>
             <input
               ref={fileInputRef}
@@ -241,7 +234,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             )}
           </div>
 
-          {/* Tags */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-slate-500">
               <Tag className="mr-1 inline h-3 w-3" />

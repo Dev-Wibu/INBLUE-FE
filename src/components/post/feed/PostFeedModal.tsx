@@ -10,12 +10,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/formatting";
-import { queryClient } from "@/lib/queryClient";
+import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-import type { components } from "../../../../../schema-from-be";
+import type { components } from "../../../../schema-from-be";
 
-import { CommentSection, LikeButton } from "@/components/post";
+import { CommentSection } from "../CommentSection";
+import { LikeButton } from "../LikeButton";
 import { ExpandableText } from "./ExpandableText";
 import { ImageViewerModal } from "./ImageViewerModal";
 
@@ -45,8 +46,6 @@ export function PostFeedModal({
   const [newComment, setNewComment] = useState("");
   const createComment = useCreateComment();
 
-  // Fetch live post detail only when the modal is open — covers likeCount, commentCount,
-  // postLikes, and postComments in a single request (replaces 4 separate queries)
   const enabled = open && postId > 0;
   const { data: liveRaw } = usePostById(postId, enabled);
   const live = liveRaw as unknown as PostResponse | undefined;
@@ -54,10 +53,7 @@ export function PostFeedModal({
   const { data: likedData } = useCheckLiked(postId, user?.id ?? 0, enabled && !!user?.id);
 
   const invalidateLivePost = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["get", "/api/posts/{postId}", { params: { path: { postId } } }],
-    });
-    queryClient.invalidateQueries({ queryKey: ["get", "/api/posts/feed"] });
+    invalidatePostFeedQueries(postId);
   };
 
   const handleCommentSubmit = () => {
@@ -73,7 +69,6 @@ export function PostFeedModal({
     });
   };
 
-  // checkLiked returns { [key: string]: boolean } — extract the first value
   const isLiked = Object.values((likedData ?? {}) as Record<string, boolean>)[0] ?? false;
   const likeCount = live?.likeCount ?? item.likeCount ?? 0;
   const likers = (live?.postLikes ?? item.postLikes ?? []) as PostLikeResponse[];
@@ -88,7 +83,6 @@ export function PostFeedModal({
     .slice(0, 2)
     .toUpperCase();
 
-  // Facebook-style like count label
   const likeLabel = (() => {
     if (likeCount === 0) return null;
     if (isLiked && likeCount === 1) return "Bạn";
@@ -104,9 +98,7 @@ export function PostFeedModal({
             <DialogTitle className="text-center">Bài viết của {authorName}</DialogTitle>
           </DialogHeader>
 
-          {/* Scrollable body — overflow-x-hidden prevents horizontal scrollbar */}
           <div className="flex-1 overflow-x-hidden overflow-y-auto">
-            {/* Author row */}
             <div className="flex items-center gap-3 px-6 pt-4">
               <Avatar className="h-10 w-10 shrink-0 ring-2 ring-slate-100 dark:ring-slate-800">
                 <AvatarImage src={post?.author?.avatar} alt={authorName} />
@@ -129,10 +121,8 @@ export function PostFeedModal({
               </div>
             </div>
 
-            {/* Title */}
             <h2 className="px-6 pt-3 text-lg leading-snug font-bold">{post?.title}</h2>
 
-            {/* Summary — highlighted block, distinct from content */}
             {post?.summary && (
               <div className="mx-6 mt-3 rounded-lg border-l-4 border-[#0047AB]/40 bg-slate-50 py-2.5 pr-4 pl-3 dark:border-[#66B2FF]/40 dark:bg-slate-800/50">
                 <ExpandableText
@@ -143,7 +133,6 @@ export function PostFeedModal({
               </div>
             )}
 
-            {/* Full content — with expandable "Xem thêm" */}
             {post?.content && (
               <div className="px-6 pt-3">
                 <ExpandableText
@@ -154,7 +143,6 @@ export function PostFeedModal({
               </div>
             )}
 
-            {/* Cover image — clickable to open full-screen viewer */}
             {post?.coverImgUrl && (
               <div
                 className="mt-3 w-full cursor-pointer overflow-hidden"
@@ -167,7 +155,6 @@ export function PostFeedModal({
               </div>
             )}
 
-            {/* Tags */}
             {(post?.tags?.length ?? 0) > 0 && (
               <div className="flex flex-wrap gap-1.5 px-6 pt-3">
                 {post!.tags!.map((tag) => (
@@ -178,7 +165,6 @@ export function PostFeedModal({
               </div>
             )}
 
-            {/* Like/comment count bar */}
             {(likeLabel || liveCommentCount > 0) && (
               <div className="flex items-center gap-1 px-6 pt-3 pb-1">
                 {likeLabel && (
@@ -222,7 +208,6 @@ export function PostFeedModal({
 
             <Separator className="mx-6" />
 
-            {/* Action row */}
             <div className="flex items-center gap-1 px-4 py-1">
               {user?.id && postId > 0 ? (
                 <LikeButton
@@ -247,7 +232,6 @@ export function PostFeedModal({
 
             <Separator className="mx-6" />
 
-            {/* Comment thread (no input box — input is in sticky bottom bar) */}
             {postId > 0 && (
               <div className="px-6 py-4">
                 <CommentSection
@@ -261,7 +245,6 @@ export function PostFeedModal({
             )}
           </div>
 
-          {/* Sticky comment input — always visible at modal bottom */}
           {postId > 0 && user?.id && (
             <div className="flex shrink-0 items-end gap-2 border-t px-4 py-3">
               <Avatar className="h-8 w-8 shrink-0">
@@ -291,8 +274,6 @@ export function PostFeedModal({
             </div>
           )}
         </DialogContent>
-        {/* Full-screen image viewer — inside DialogContent so Radix treats its DOM as internal,
-              preventing the DismissableLayer from closing the Dialog on backdrop/X click */}
         {post?.coverImgUrl && (
           <ImageViewerModal
             src={post.coverImgUrl}
