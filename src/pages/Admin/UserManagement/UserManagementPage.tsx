@@ -24,7 +24,8 @@ import type { User, UserFormData } from "./types";
 
 export function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active"); // Default to show only active users
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -42,8 +43,13 @@ export function UserManagementPage() {
   const [selectedProfileData, setSelectedProfileData] = useState<CandidateProfile | null>(null);
 
   // Load users using the users admin manager service
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
+  const loadUsers = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await usersAdminManager.getAll();
       if (response.success && response.data) {
@@ -57,12 +63,16 @@ export function UserManagementPage() {
       console.error("Error loading users:", error);
       toast.error("Không thể tải danh sách người dùng");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadUsers();
+    void loadUsers();
   }, [loadUsers]);
 
   // Filter users based on search query and status filter
@@ -168,7 +178,7 @@ export function UserManagementPage() {
       const response = await usersAdminManager.uploadCv(selectedUser.id, file);
       if (response.success) {
         toast.success("Upload CV thành công!");
-        loadUsers(); // Refresh the list to show updated CV status
+        void loadUsers(); // Refresh the list to show updated CV status
       } else {
         toast.error(response.error || "Upload CV thất bại");
       }
@@ -183,7 +193,7 @@ export function UserManagementPage() {
       if (response.success) {
         toast.success("Đã tạo người dùng thành công");
         setIsCreateDialogOpen(false);
-        loadUsers(); // Refresh the list
+        void loadUsers(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể tạo người dùng");
       }
@@ -208,7 +218,7 @@ export function UserManagementPage() {
       if (response.success) {
         toast.success("Đã cập nhật người dùng thành công");
         setIsEditDialogOpen(false);
-        loadUsers(); // Refresh the list
+        void loadUsers(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể cập nhật người dùng");
       }
@@ -228,7 +238,7 @@ export function UserManagementPage() {
         const action = selectedUser.isActive !== false ? "đã vô hiệu hóa" : "đã kích hoạt";
         toast.success(`Người dùng ${action} thành công`);
         setIsDeleteDialogOpen(false);
-        loadUsers(); // Refresh the list
+        void loadUsers(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể thay đổi trạng thái người dùng");
       }
@@ -237,14 +247,6 @@ export function UserManagementPage() {
       toast.error("Không thể thay đổi trạng thái người dùng");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
@@ -288,9 +290,11 @@ export function UserManagementPage() {
 
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadUsers}
-            isLoading={loading}
+            onReload={() => loadUsers(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách người dùng"
+            showLabel
+            hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -301,32 +305,38 @@ export function UserManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <UserTable
-          users={pageData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onUploadCV={handleUploadCV}
-          onViewProfile={handleViewProfile}
-          getSortProps={getSortProps}
-        />
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh sách người dùng..." />
+        ) : (
+          <>
+            <UserTable
+              users={pageData}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onUploadCV={handleUploadCV}
+              onViewProfile={handleViewProfile}
+              getSortProps={getSortProps}
+            />
 
-        {/* Pagination */}
-        {sortedData.length > 0 && (
-          <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
-        )}
+            {/* Pagination */}
+            {sortedData.length > 0 && (
+              <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
+            )}
 
-        {/* Empty State with Clear Filters */}
-        {sortedData.length === 0 && (searchQuery || statusFilter !== "active") && (
-          <div className="flex justify-center pb-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("active");
-              }}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {/* Empty State with Clear Filters */}
+            {sortedData.length === 0 && (searchQuery || statusFilter !== "active") && (
+              <div className="flex justify-center pb-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("active");
+                  }}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

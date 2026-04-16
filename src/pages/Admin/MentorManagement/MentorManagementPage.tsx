@@ -22,7 +22,8 @@ import type { Mentor, MentorFormData } from "./types";
 
 export function MentorManagementPage() {
   const [mentors, setMentors] = useState<Mentor[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active"); // Default to show only active mentors
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -32,8 +33,13 @@ export function MentorManagementPage() {
   const [formData, setFormData] = useState<Partial<MentorFormData>>({});
 
   // Load mentors using the mentor manager service
-  const loadMentors = useCallback(async () => {
-    setLoading(true);
+  const loadMentors = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await mentorManager.getAll();
       if (response.success && response.data) {
@@ -47,12 +53,16 @@ export function MentorManagementPage() {
       console.error("Error loading mentors:", error);
       toast.error("Không thể tải danh sách mentor");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadMentors();
+    void loadMentors();
   }, [loadMentors]);
 
   // Filter mentors based on search query and status filter
@@ -124,7 +134,7 @@ export function MentorManagementPage() {
       if (response.success) {
         toast.success("Đã tạo mentor thành công");
         setIsCreateDialogOpen(false);
-        loadMentors(); // Refresh the list
+        void loadMentors(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể tạo mentor");
       }
@@ -143,7 +153,7 @@ export function MentorManagementPage() {
       if (response.success) {
         toast.success("Đã cập nhật mentor thành công");
         setIsEditDialogOpen(false);
-        loadMentors(); // Refresh the list
+        void loadMentors(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể cập nhật mentor");
       }
@@ -162,7 +172,7 @@ export function MentorManagementPage() {
         const action = selectedMentor.active !== false ? "vô hiệu hóa" : "kích hoạt";
         toast.success(`Đã ${action} mentor thành công`);
         setIsDeleteDialogOpen(false);
-        loadMentors(); // Refresh the list
+        void loadMentors(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể thay đổi trạng thái mentor");
       }
@@ -171,14 +181,6 @@ export function MentorManagementPage() {
       toast.error("Không thể thay đổi trạng thái mentor");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
@@ -222,9 +224,11 @@ export function MentorManagementPage() {
 
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadMentors}
-            isLoading={loading}
+            onReload={() => loadMentors(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách mentor"
+            showLabel
+            hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -235,30 +239,36 @@ export function MentorManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <MentorTable
-          mentors={pageData}
-          onEdit={handleEdit}
-          onDelete={handleToggleActive}
-          getSortProps={getSortProps}
-        />
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh sách mentor..." />
+        ) : (
+          <>
+            <MentorTable
+              mentors={pageData}
+              onEdit={handleEdit}
+              onDelete={handleToggleActive}
+              getSortProps={getSortProps}
+            />
 
-        {/* Pagination */}
-        {sortedData.length > 0 && (
-          <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
-        )}
+            {/* Pagination */}
+            {sortedData.length > 0 && (
+              <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
+            )}
 
-        {/* Empty State with Clear Filters */}
-        {sortedData.length === 0 && (searchQuery || statusFilter !== "active") && (
-          <div className="flex justify-center pb-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("active");
-              }}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {/* Empty State with Clear Filters */}
+            {sortedData.length === 0 && (searchQuery || statusFilter !== "active") && (
+              <div className="flex justify-center pb-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("active");
+                  }}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

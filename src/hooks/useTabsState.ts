@@ -196,7 +196,7 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
     [setSearchParams, availableTabs]
   );
 
-  // Open a new tab or switch to existing
+  // Open a tab from any entry point (sidebar/chrome menu) with a single state transition.
   const openTab = useCallback(
     (tabType: string) => {
       const tabConfig = availableTabs.find((t) => t.type === tabType);
@@ -205,24 +205,9 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
         return;
       }
 
-      // Check if tab already exists
-      const existingTab = openTabs.find((t) => t.type === tabType);
-      if (existingTab) {
-        // Switch to existing tab
-        setActiveTab(tabType);
-        return;
-      }
-
-      // Add new tab
-      const newTab: Tab = {
-        id: generateTabId(tabType),
-        type: tabType,
-        label: tabConfig.label,
-      };
-      setOpenTabs((prev) => [...prev, newTab]);
       setActiveTab(tabType);
     },
-    [availableTabs, openTabs, setActiveTab]
+    [availableTabs, setActiveTab]
   );
 
   // Close a tab by ID

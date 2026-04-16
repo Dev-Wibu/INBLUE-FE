@@ -30,7 +30,8 @@ import { toast } from "sonner";
 
 export function QuizSetManagementPage() {
   const [quizSets, setQuizSets] = useState<QuizSet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isItemsDialogOpen, setIsItemsDialogOpen] = useState(false);
@@ -38,8 +39,13 @@ export function QuizSetManagementPage() {
   const [quizItems, setQuizItems] = useState<QuizItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await quizSetManager.getAll();
       if (response.success && response.data) {
@@ -51,12 +57,16 @@ export function QuizSetManagementPage() {
       console.error("Error loading data:", error);
       toast.error("Không thể tải dữ liệu");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [loadData]);
 
   // Filter quiz sets
@@ -97,7 +107,7 @@ export function QuizSetManagementPage() {
       if (response.success) {
         toast.success("Đã xóa quiz thành công");
         setIsDeleteDialogOpen(false);
-        loadData();
+        void loadData();
       } else {
         toast.error(response.error || "Không thể xóa quiz");
       }
@@ -127,14 +137,6 @@ export function QuizSetManagementPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
@@ -159,92 +161,104 @@ export function QuizSetManagementPage() {
             className="pl-10"
           />
         </div>
-        <ReloadButton onReload={loadData} isLoading={loading} tooltip="Tải lại danh sách quiz" />
+        <ReloadButton
+          onReload={() => loadData(true)}
+          isLoading={isReloading}
+          tooltip="Tải lại danh sách quiz"
+          showLabel
+          hideTooltip
+        />
       </div>
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => toggleSort("quizName" as keyof QuizSet)}>
-                Tên Quiz
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => toggleSort("score" as keyof QuizSet)}>
-                Điểm
-              </TableHead>
-              <TableHead>Bộ Luyện Tập</TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => toggleSort("createdAt" as keyof QuizSet)}>
-                Ngày tạo
-              </TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">Hành động</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pageData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center">
-                  <p className="text-gray-500 dark:text-slate-400">Không có quiz nào</p>
-                </TableCell>
-              </TableRow>
-            ) : (
-              pageData.map((quizSet) => (
-                <TableRow key={quizSet.quizId}>
-                  <TableCell className="font-medium">{quizSet.quizName}</TableCell>
-                  <TableCell>{quizSet.score !== undefined ? quizSet.score : "—"}</TableCell>
-                  <TableCell>{quizSet.practiceSet?.practiceSetName || "—"}</TableCell>
-                  <TableCell>
-                    {quizSet.createdAt
-                      ? new Date(quizSet.createdAt).toLocaleDateString("vi-VN")
-                      : "—"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={quizSet.submitted ? "default" : "secondary"}>
-                      {quizSet.submitted ? "Đã nộp" : "Chưa nộp"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1"
-                        onClick={() => handleViewItems(quizSet)}>
-                        <Eye className="h-4 w-4" />
-                        Xem
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDelete(quizSet)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh sách quiz..." />
+        ) : (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => toggleSort("quizName" as keyof QuizSet)}>
+                    Tên Quiz
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => toggleSort("score" as keyof QuizSet)}>
+                    Điểm
+                  </TableHead>
+                  <TableHead>Bộ Luyện Tập</TableHead>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => toggleSort("createdAt" as keyof QuizSet)}>
+                    Ngày tạo
+                  </TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead className="text-right">Hành động</TableHead>
                 </TableRow>
-              ))
+              </TableHeader>
+              <TableBody>
+                {pageData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center">
+                      <p className="text-gray-500 dark:text-slate-400">Không có quiz nào</p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  pageData.map((quizSet) => (
+                    <TableRow key={quizSet.quizId}>
+                      <TableCell className="font-medium">{quizSet.quizName}</TableCell>
+                      <TableCell>{quizSet.score !== undefined ? quizSet.score : "—"}</TableCell>
+                      <TableCell>{quizSet.practiceSet?.practiceSetName || "—"}</TableCell>
+                      <TableCell>
+                        {quizSet.createdAt
+                          ? new Date(quizSet.createdAt).toLocaleDateString("vi-VN")
+                          : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={quizSet.submitted ? "default" : "secondary"}>
+                          {quizSet.submitted ? "Đã nộp" : "Chưa nộp"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => handleViewItems(quizSet)}>
+                            <Eye className="h-4 w-4" />
+                            Xem
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => handleDelete(quizSet)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+
+            {sortedData.length > 0 && (
+              <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
             )}
-          </TableBody>
-        </Table>
 
-        {sortedData.length > 0 && (
-          <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
-        )}
-
-        {sortedData.length === 0 && searchQuery && (
-          <div className="flex justify-center pb-4">
-            <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {sortedData.length === 0 && searchQuery && (
+              <div className="flex justify-center pb-4">
+                <Button variant="outline" onClick={() => setSearchQuery("")}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

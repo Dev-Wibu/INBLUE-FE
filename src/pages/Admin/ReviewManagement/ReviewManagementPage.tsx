@@ -183,6 +183,8 @@ export function ReviewManagementPage() {
               }}
               isLoading={isRefetching}
               tooltip="Tải lại danh sách đánh giá"
+              showLabel
+              hideTooltip
             />
           </div>
         </CardHeader>

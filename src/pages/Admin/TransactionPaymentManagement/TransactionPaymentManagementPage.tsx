@@ -1,7 +1,7 @@
-import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { Spinner } from "@/components/ui/spinner";
+import { ReloadButton } from "@/components/shared";
+import { SpinnerBlock } from "@/components/ui/spinner";
 import type { PaymentEntity, PaymentPurpose, TransactionEntity } from "@/interfaces";
 import { formatCurrency, formatDateTime } from "@/lib/formatting";
 import { paymentManager } from "@/services/payment.manager";
@@ -41,7 +41,8 @@ const paymentPurposeLabel = (value?: PaymentPurpose) => {
 
 export function TransactionPaymentManagementPage() {
   const [activeView, setActiveView] = useState<ActiveView>("transactions");
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<TransactionEntity[]>([]);
   const [payments, setPayments] = useState<PaymentEntity[]>([]);
@@ -50,8 +51,13 @@ export function TransactionPaymentManagementPage() {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<PaymentStatusFilter>("all");
   const [paymentPurposeFilter, setPaymentPurposeFilter] = useState<PaymentPurposeFilter>("all");
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     setError(null);
 
     const [txResult, paymentResult] = await Promise.all([
@@ -65,13 +71,21 @@ export function TransactionPaymentManagementPage() {
       );
       setTransactions(txResult.data || []);
       setPayments(paymentResult.data || []);
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
       return;
     }
 
     setTransactions(txResult.data || []);
     setPayments(paymentResult.data || []);
-    setLoading(false);
+    if (showReloading) {
+      setIsReloading(false);
+    } else {
+      setIsInitialLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -150,12 +164,13 @@ export function TransactionPaymentManagementPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => void loadData()}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 font-['Inter'] text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-          {loading ? <Spinner size="sm" tone="muted" /> : <RefreshCw className="h-4 w-4" />}
-          Tải lại
-        </button>
+        <ReloadButton
+          onReload={() => loadData(true)}
+          isLoading={isReloading}
+          tooltip="Tải lại dữ liệu giao dịch và thanh toán"
+          showLabel
+          hideTooltip
+        />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -274,120 +289,126 @@ export function TransactionPaymentManagementPage() {
       )}
 
       <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
-        {activeView === "transactions" ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-              <thead className="bg-slate-50 dark:bg-slate-900">
-                <tr>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Mã giao dịch
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Mô tả
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Số tiền
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Loại
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Mục đích
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Ngày tạo
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
-                {filteredTransactions.map((tx) => (
-                  <tr key={`${tx.transactionCode}-${tx.id}`}>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {tx.transactionCode || "-"}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {tx.description || "-"}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {formatCurrency(tx.amount || 0)}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {transactionTypeLabel(tx.transactionType)}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {paymentPurposeLabel(tx.paymentPurpose)}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {formatDateTime(tx.createdAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải dữ liệu giao dịch và thanh toán..." />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-              <thead className="bg-slate-50 dark:bg-slate-900">
-                <tr>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Mã giao dịch
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Mô tả
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Số tiền
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Trạng thái
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Mục đích
-                  </th>
-                  <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                    Ngày tạo
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
-                {filteredPayments.map((payment) => (
-                  <tr key={`${payment.transactionCode}-${payment.id}`}>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {payment.transactionCode || "-"}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {payment.description || "-"}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {formatCurrency(payment.amount || 0)}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {paymentStatusLabel(payment.status)}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {paymentPurposeLabel(payment.paymentPurpose)}
-                    </td>
-                    <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                      {formatDateTime(payment.createdAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          <>
+            {activeView === "transactions" ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                  <thead className="bg-slate-50 dark:bg-slate-900">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Mã giao dịch
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Mô tả
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Số tiền
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Loại
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Mục đích
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Ngày tạo
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
+                    {filteredTransactions.map((tx) => (
+                      <tr key={`${tx.transactionCode}-${tx.id}`}>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {tx.transactionCode || "-"}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {tx.description || "-"}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {formatCurrency(tx.amount || 0)}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {transactionTypeLabel(tx.transactionType)}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {paymentPurposeLabel(tx.paymentPurpose)}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {formatDateTime(tx.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                  <thead className="bg-slate-50 dark:bg-slate-900">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Mã giao dịch
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Mô tả
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Số tiền
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Trạng thái
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Mục đích
+                      </th>
+                      <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        Ngày tạo
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
+                    {filteredPayments.map((payment) => (
+                      <tr key={`${payment.transactionCode}-${payment.id}`}>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {payment.transactionCode || "-"}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {payment.description || "-"}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {formatCurrency(payment.amount || 0)}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {paymentStatusLabel(payment.status)}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {paymentPurposeLabel(payment.paymentPurpose)}
+                        </td>
+                        <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
+                          {formatDateTime(payment.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
-        {!loading && activeView === "transactions" && filteredTransactions.length === 0 && (
-          <div className="px-4 py-8 text-center font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
-            Không có giao dịch nào phù hợp với bộ lọc hiện tại.
-          </div>
-        )}
+            {activeView === "transactions" && filteredTransactions.length === 0 && (
+              <div className="px-4 py-8 text-center font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
+                Không có giao dịch nào phù hợp với bộ lọc hiện tại.
+              </div>
+            )}
 
-        {!loading && activeView === "payments" && filteredPayments.length === 0 && (
-          <div className="px-4 py-8 text-center font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
-            Không có thanh toán nào phù hợp với bộ lọc hiện tại.
-          </div>
+            {activeView === "payments" && filteredPayments.length === 0 && (
+              <div className="px-4 py-8 text-center font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
+                Không có thanh toán nào phù hợp với bộ lọc hiện tại.
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -27,7 +27,9 @@ import { CandidateProfileModal } from "../UserManagement/components/CandidatePro
 
 export function CandidateProfileManagementPage() {
   const { data: profilesData, isLoading, isRefetching, refetch } = useCandidateProfiles();
-  const profiles = (profilesData as unknown as CandidateProfile[]) ?? [];
+  const profiles = useMemo(() => {
+    return (profilesData as unknown as CandidateProfile[]) ?? [];
+  }, [profilesData]);
 
   const [search, setSearch] = useState("");
   const [selectedProfile, setSelectedProfile] = useState<CandidateProfile | null>(null);
@@ -45,15 +47,6 @@ export function CandidateProfileManagementPage() {
     });
     return filtered.reverse();
   }, [profiles, search]);
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-96" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -81,6 +74,8 @@ export function CandidateProfileManagementPage() {
           }}
           isLoading={isRefetching}
           tooltip="Tải lại danh sách hồ sơ"
+          showLabel
+          hideTooltip
         />
       </div>
 
@@ -90,7 +85,14 @@ export function CandidateProfileManagementPage() {
           <CardTitle>Danh sách hồ sơ ({filteredProfiles.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredProfiles.length === 0 ? (
+          {isLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : filteredProfiles.length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-gray-500 dark:text-slate-400">Không tìm thấy hồ sơ nào.</p>
             </div>

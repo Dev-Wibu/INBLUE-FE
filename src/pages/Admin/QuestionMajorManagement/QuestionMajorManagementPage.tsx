@@ -18,7 +18,8 @@ import type { Major, MajorFormData } from "./types";
 
 export function QuestionMajorManagementPage() {
   const [majors, setMajors] = useState<Major[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -27,8 +28,13 @@ export function QuestionMajorManagementPage() {
   const [formData, setFormData] = useState<Partial<MajorFormData>>({});
 
   // Load majors using the question major manager service
-  const loadMajors = useCallback(async () => {
-    setLoading(true);
+  const loadMajors = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await questionMajorManager.getAll();
       if (response.success) {
@@ -40,12 +46,16 @@ export function QuestionMajorManagementPage() {
       console.error("Error loading majors:", error);
       toast.error("Không thể tải danh sách chuyên ngành");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadMajors();
+    void loadMajors();
   }, [loadMajors]);
 
   // Filter majors based on search query
@@ -83,7 +93,7 @@ export function QuestionMajorManagementPage() {
       if (response.success) {
         toast.success("Đã tạo chuyên ngành thành công");
         setIsCreateDialogOpen(false);
-        loadMajors(); // Refresh the list
+        void loadMajors(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể tạo chuyên ngành");
       }
@@ -101,7 +111,7 @@ export function QuestionMajorManagementPage() {
       if (response.success) {
         toast.success("Đã cập nhật chuyên ngành thành công");
         setIsEditDialogOpen(false);
-        loadMajors(); // Refresh the list
+        void loadMajors(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể cập nhật chuyên ngành");
       }
@@ -119,7 +129,7 @@ export function QuestionMajorManagementPage() {
       if (response.success) {
         toast.success("Đã xóa chuyên ngành thành công");
         setIsDeleteDialogOpen(false);
-        loadMajors(); // Refresh the list
+        void loadMajors(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể xóa chuyên ngành");
       }
@@ -128,14 +138,6 @@ export function QuestionMajorManagementPage() {
       toast.error("Không thể xóa chuyên ngành");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
@@ -165,9 +167,11 @@ export function QuestionMajorManagementPage() {
 
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadMajors}
-            isLoading={loading}
+            onReload={() => loadMajors(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách chuyên ngành"
+            showLabel
+            hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -178,19 +182,25 @@ export function QuestionMajorManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <QuestionMajorTable
-          majors={filteredMajors.slice().reverse()}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh sách chuyên ngành..." />
+        ) : (
+          <>
+            <QuestionMajorTable
+              majors={filteredMajors.slice().reverse()}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
 
-        {/* Empty State with Clear Search */}
-        {filteredMajors.length === 0 && searchQuery && (
-          <div className="flex justify-center pb-4">
-            <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {/* Empty State with Clear Search */}
+            {filteredMajors.length === 0 && searchQuery && (
+              <div className="flex justify-center pb-4">
+                <Button variant="outline" onClick={() => setSearchQuery("")}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

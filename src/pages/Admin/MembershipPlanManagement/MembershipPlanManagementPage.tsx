@@ -18,7 +18,8 @@ import type { MemberShipPlan, MemberShipPlanFormData } from "./types";
 
 export function MembershipPlanManagementPage() {
   const [plans, setPlans] = useState<MemberShipPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -26,8 +27,13 @@ export function MembershipPlanManagementPage() {
   const [selectedPlan, setSelectedPlan] = useState<MemberShipPlan | null>(null);
   const [formData, setFormData] = useState<Partial<MemberShipPlanFormData>>({});
 
-  const loadPlans = useCallback(async () => {
-    setLoading(true);
+  const loadPlans = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await memberShipPlanManager.getAll();
       if (response.success) {
@@ -39,12 +45,16 @@ export function MembershipPlanManagementPage() {
       console.error("Error loading membership plans:", error);
       toast.error("Không thể tải danh sách gói thành viên");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadPlans();
+    void loadPlans();
   }, [loadPlans]);
 
   const filteredPlans = plans.filter((plan) => {
@@ -82,7 +92,7 @@ export function MembershipPlanManagementPage() {
       if (response.success) {
         toast.success("Đã tạo gói thành viên thành công");
         setIsCreateDialogOpen(false);
-        loadPlans();
+        void loadPlans();
       } else {
         toast.error(response.error || "Không thể tạo gói thành viên");
       }
@@ -100,7 +110,7 @@ export function MembershipPlanManagementPage() {
       if (response.success) {
         toast.success("Đã cập nhật gói thành viên thành công");
         setIsEditDialogOpen(false);
-        loadPlans();
+        void loadPlans();
       } else {
         toast.error(response.error || "Không thể cập nhật gói thành viên");
       }
@@ -118,7 +128,7 @@ export function MembershipPlanManagementPage() {
       if (response.success) {
         toast.success("Đã xóa gói thành viên thành công");
         setIsDeleteDialogOpen(false);
-        loadPlans();
+        void loadPlans();
       } else {
         toast.error(response.error || "Không thể xóa gói thành viên");
       }
@@ -127,14 +137,6 @@ export function MembershipPlanManagementPage() {
       toast.error("Không thể xóa gói thành viên");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
@@ -163,9 +165,11 @@ export function MembershipPlanManagementPage() {
 
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadPlans}
-            isLoading={loading}
+            onReload={() => loadPlans(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách gói thành viên"
+            showLabel
+            hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -176,18 +180,24 @@ export function MembershipPlanManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <MembershipPlanTable
-          plans={filteredPlans.slice().reverse()}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh sách gói thành viên..." />
+        ) : (
+          <>
+            <MembershipPlanTable
+              plans={filteredPlans.slice().reverse()}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
 
-        {filteredPlans.length === 0 && searchQuery && (
-          <div className="flex justify-center pb-4">
-            <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {filteredPlans.length === 0 && searchQuery && (
+              <div className="flex justify-center pb-4">
+                <Button variant="outline" onClick={() => setSearchQuery("")}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

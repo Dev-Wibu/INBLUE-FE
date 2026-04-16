@@ -29,7 +29,8 @@ import type { Major, PracticeSet, PracticeSetFormData } from "./types";
 export function PracticeSetManagementPage() {
   const [practiceSets, setPracticeSets] = useState<PracticeSet[]>([]);
   const [majors, setMajors] = useState<Major[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -41,8 +42,13 @@ export function PracticeSetManagementPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load practice sets and majors
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const [practiceSetsResponse, majorsResponse] = await Promise.all([
         practiceSetManager.getAll(),
@@ -62,12 +68,16 @@ export function PracticeSetManagementPage() {
       console.error("Error loading data:", error);
       toast.error("Không thể tải dữ liệu");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [loadData]);
 
   // Filter practice sets based on search query and level filter
@@ -147,7 +157,7 @@ export function PracticeSetManagementPage() {
       if (response.success) {
         toast.success("Đã tạo bộ câu hỏi thành công");
         setIsCreateDialogOpen(false);
-        loadData(); // Refresh the list
+        void loadData(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể tạo bộ câu hỏi");
       }
@@ -173,7 +183,7 @@ export function PracticeSetManagementPage() {
       if (response.success) {
         toast.success("Đã cập nhật bộ câu hỏi thành công");
         setIsEditDialogOpen(false);
-        loadData(); // Refresh the list
+        void loadData(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể cập nhật bộ câu hỏi");
       }
@@ -191,7 +201,7 @@ export function PracticeSetManagementPage() {
       if (response.success) {
         toast.success("Đã xóa bộ câu hỏi thành công");
         setIsDeleteDialogOpen(false);
-        loadData(); // Refresh the list
+        void loadData(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể xóa bộ câu hỏi");
       }
@@ -200,14 +210,6 @@ export function PracticeSetManagementPage() {
       toast.error("Không thể xóa bộ câu hỏi");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
@@ -253,9 +255,11 @@ export function PracticeSetManagementPage() {
 
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadData}
-            isLoading={loading}
+            onReload={() => loadData(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách bộ câu hỏi"
+            showLabel
+            hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -266,31 +270,37 @@ export function PracticeSetManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <PracticeSetTable
-          practiceSets={pageData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onViewItems={handleViewItems}
-          getSortProps={getSortProps}
-        />
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh sách bộ câu hỏi..." />
+        ) : (
+          <>
+            <PracticeSetTable
+              practiceSets={pageData}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onViewItems={handleViewItems}
+              getSortProps={getSortProps}
+            />
 
-        {/* Pagination */}
-        {sortedData.length > 0 && (
-          <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
-        )}
+            {/* Pagination */}
+            {sortedData.length > 0 && (
+              <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
+            )}
 
-        {/* Empty State with Clear Filters */}
-        {sortedData.length === 0 && (searchQuery || levelFilter !== "all") && (
-          <div className="flex justify-center pb-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setLevelFilter("all");
-              }}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {/* Empty State with Clear Filters */}
+            {sortedData.length === 0 && (searchQuery || levelFilter !== "all") && (
+              <div className="flex justify-center pb-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setLevelFilter("all");
+                  }}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -334,7 +344,7 @@ export function PracticeSetManagementPage() {
         isOpen={isViewItemsDialogOpen}
         onOpenChange={setIsViewItemsDialogOpen}
         practiceSet={selectedPracticeSet}
-        onItemsChanged={loadData}
+        onItemsChanged={() => loadData(true)}
       />
     </div>
   );
