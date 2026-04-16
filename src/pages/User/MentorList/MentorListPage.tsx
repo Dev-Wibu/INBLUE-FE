@@ -1,8 +1,9 @@
+import { ReloadButton } from "@/components/shared";
 import { Card } from "@/components/ui/card";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
 import { chatManager } from "@/services/chat.manager";
 import { Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -15,30 +16,41 @@ function isActiveMentor(mentor: SchemaMentorResponse): boolean {
 export function MentorListPage() {
   const navigate = useNavigate();
   const [mentors, setMentors] = useState<SchemaMentorResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExpertise, setSelectedExpertise] = useState("all");
+  const hasLoadedRef = useRef(false);
+
+  const fetchMentors = useCallback(async (isReload = false) => {
+    const shouldShowInitialLoading = !hasLoadedRef.current && !isReload;
+
+    if (shouldShowInitialLoading) {
+      setIsInitialLoading(true);
+    } else {
+      setIsReloading(true);
+    }
+
+    try {
+      const res = await chatManager.getAllMentors();
+      if (res.success && res.data) {
+        setMentors(res.data.filter(isActiveMentor));
+      } else {
+        toast.error("Không thể tải danh sách Mentor");
+      }
+    } catch (error) {
+      console.error("Error fetching mentors:", error);
+      toast.error("Đã xảy ra lỗi khi tải danh sách");
+    } finally {
+      hasLoadedRef.current = true;
+      setIsInitialLoading(false);
+      setIsReloading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchMentors = async () => {
-      try {
-        setLoading(true);
-        const res = await chatManager.getAllMentors();
-        if (res.success && res.data) {
-          setMentors(res.data.filter(isActiveMentor));
-        } else {
-          toast.error("Không thể tải danh sách Mentor");
-        }
-      } catch (error) {
-        console.error("Error fetching mentors:", error);
-        toast.error("Đã xảy ra lỗi khi tải danh sách");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMentors();
-  }, []);
+    void fetchMentors();
+  }, [fetchMentors]);
 
   const expertiseOptions = useMemo(
     () =>
@@ -139,6 +151,16 @@ export function MentorListPage() {
         </div>
 
         <div className="px-5 pt-4 md:px-6">
+          <div className="mb-3 flex justify-end">
+            <ReloadButton
+              onReload={async () => {
+                await fetchMentors(true);
+              }}
+              isLoading={isReloading}
+              tooltip="Tải lại danh sách mentor"
+            />
+          </div>
+
           <MentorFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -154,7 +176,7 @@ export function MentorListPage() {
         </div>
 
         <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-5 md:px-6 md:pb-6">
-          {loading ? (
+          {isInitialLoading ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <Card

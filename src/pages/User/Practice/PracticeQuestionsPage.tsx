@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Filter, Search, Shuffle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SpinnerBlock } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { questionManager } from "@/services";
 import type { PracticeQuestion } from "@/services/question.manager";
 import { toast } from "sonner";
@@ -25,13 +26,22 @@ const levelBadgeMap: Record<string, string> = {
 
 export function PracticeQuestionsPage() {
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const hasLoadedRef = useRef(false);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (isReload = false) => {
+    const shouldShowInitialLoading = !hasLoadedRef.current && !isReload;
+
+    if (shouldShowInitialLoading) {
+      setIsInitialLoading(true);
+    } else {
+      setIsReloading(true);
+    }
+
     try {
       const response = await questionManager.getAll();
       if (response.success && response.data) {
@@ -45,7 +55,9 @@ export function PracticeQuestionsPage() {
       console.error("Error loading questions:", error);
       toast.error("Không thể tải dữ liệu");
     } finally {
-      setLoading(false);
+      hasLoadedRef.current = true;
+      setIsInitialLoading(false);
+      setIsReloading(false);
     }
   }, []);
 
@@ -58,7 +70,8 @@ export function PracticeQuestionsPage() {
       toast.error("Vui lòng chọn cấp độ trước khi lấy câu hỏi ngẫu nhiên");
       return;
     }
-    setLoading(true);
+
+    setIsReloading(true);
     try {
       const response = await questionManager.getRandomByLevel(levelFilter, 10);
       if (response.success && response.data) {
@@ -71,7 +84,9 @@ export function PracticeQuestionsPage() {
       console.error("Error fetching random questions:", error);
       toast.error("Không thể tải câu hỏi ngẫu nhiên");
     } finally {
-      setLoading(false);
+      hasLoadedRef.current = true;
+      setIsInitialLoading(false);
+      setIsReloading(false);
     }
   };
 
@@ -94,18 +109,10 @@ export function PracticeQuestionsPage() {
       .reverse();
   }, [questions, searchQuery, levelFilter]);
 
-  if (loading) {
-    return (
-      <div className="bg-background">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
-
   return (
     <div className="bg-background min-h-screen p-8">
       {/* Top Banner */}
-      <Card className="mb-8 overflow-hidden border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] py-0">
+      <Card className="mb-8 overflow-hidden border-0 bg-linear-to-r from-[#0047AB] to-[#007BFF] py-0">
         <CardContent className="flex items-center justify-between p-8">
           <div className="flex flex-col gap-3">
             <h1 className="text-3xl font-bold text-white">Ngân hàng câu hỏi luyện tập</h1>
@@ -154,66 +161,94 @@ export function PracticeQuestionsPage() {
             <Shuffle className="h-4 w-4" />
             Câu hỏi ngẫu nhiên
           </Button>
+
+          <ReloadButton
+            onReload={async () => {
+              await loadData(true);
+            }}
+            isLoading={isReloading}
+            tooltip="Tải lại danh sách câu hỏi"
+          />
         </div>
       </Card>
 
       {/* Questions Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredQuestions.map((question) => (
-          <Card
-            key={question.questionId}
-            className="cursor-pointer transition-all hover:shadow-lg"
-            onClick={() =>
-              setExpandedId(
-                expandedId === question.questionId ? null : (question.questionId ?? null)
-              )
-            }>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-primary text-base">{question.title}</CardTitle>
-                {expandedId === question.questionId ? (
-                  <ChevronUp className="text-muted-foreground h-4 w-4 shrink-0" />
-                ) : (
-                  <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge
-                  className={levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"}>
-                  {question.level}
-                </Badge>
-                {question.lesson?.lessonName && (
-                  <Badge variant="secondary" className="text-xs">
-                    {question.lesson.lessonName}
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="line-clamp-2">{question.content}</CardDescription>
-              {expandedId === question.questionId && (
-                <div className="mt-4 space-y-3 border-t pt-4">
-                  {question.answer && (
-                    <div>
-                      <p className="text-sm font-semibold text-green-700">Đáp án:</p>
-                      <p className="text-muted-foreground text-sm">{question.answer}</p>
-                    </div>
-                  )}
-                  {question.hint && (
-                    <div>
-                      <p className="text-sm font-semibold text-blue-700">Gợi ý:</p>
-                      <p className="text-muted-foreground text-sm">{question.hint}</p>
-                    </div>
+      {isInitialLoading ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Card key={index}>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-5 w-3/4" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-5 w-24 rounded-full" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredQuestions.map((question) => (
+            <Card
+              key={question.questionId}
+              className="cursor-pointer transition-all hover:shadow-lg"
+              onClick={() =>
+                setExpandedId(
+                  expandedId === question.questionId ? null : (question.questionId ?? null)
+                )
+              }>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="text-primary text-base">{question.title}</CardTitle>
+                  {expandedId === question.questionId ? (
+                    <ChevronUp className="text-muted-foreground h-4 w-4 shrink-0" />
+                  ) : (
+                    <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
                   )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"}>
+                    {question.level}
+                  </Badge>
+                  {question.lesson?.lessonName && (
+                    <Badge variant="secondary" className="text-xs">
+                      {question.lesson.lessonName}
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="line-clamp-2">{question.content}</CardDescription>
+                {expandedId === question.questionId && (
+                  <div className="mt-4 space-y-3 border-t pt-4">
+                    {question.answer && (
+                      <div>
+                        <p className="text-sm font-semibold text-green-700">Đáp án:</p>
+                        <p className="text-muted-foreground text-sm">{question.answer}</p>
+                      </div>
+                    )}
+                    {question.hint && (
+                      <div>
+                        <p className="text-sm font-semibold text-blue-700">Gợi ý:</p>
+                        <p className="text-muted-foreground text-sm">{question.hint}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Empty State */}
-      {filteredQuestions.length === 0 && (
+      {!isInitialLoading && filteredQuestions.length === 0 && (
         <Card className="flex h-64 flex-col items-center justify-center gap-4">
           <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
             <Search className="text-muted-foreground h-8 w-8" />

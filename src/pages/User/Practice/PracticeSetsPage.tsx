@@ -1,5 +1,5 @@
 import { BookOpen, Calendar, ExternalLink, Filter, Plus, Search, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -182,26 +182,39 @@ export function PracticeSetsPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [practiceSets, setPracticeSets] = useState<PracticeSetResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
+  const hasLoadedRef = useRef(false);
 
-  const loadData = useCallback(async () => {
-    if (!user?.id) return;
-    setLoading(true);
-    try {
-      const response = await practiceSetManager.getByUser(user.id);
-      if (response.success) {
-        setPracticeSets(response.data ?? []);
+  const loadData = useCallback(
+    async (isReload = false) => {
+      if (!user?.id) return;
+      const shouldShowInitialLoading = !hasLoadedRef.current && !isReload;
+      if (shouldShowInitialLoading) {
+        setIsInitialLoading(true);
       } else {
-        toast.error(response.error ?? "Không thể tải danh sách bộ luyện tập");
+        setIsReloading(true);
       }
-    } catch {
-      toast.error("Không thể tải dữ liệu");
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.id]);
+
+      try {
+        const response = await practiceSetManager.getByUser(user.id);
+        if (response.success) {
+          setPracticeSets(response.data ?? []);
+        } else {
+          toast.error(response.error ?? "Không thể tải danh sách bộ luyện tập");
+        }
+      } catch {
+        toast.error("Không thể tải dữ liệu");
+      } finally {
+        hasLoadedRef.current = true;
+        setIsInitialLoading(false);
+        setIsReloading(false);
+      }
+    },
+    [user?.id]
+  );
 
   useEffect(() => {
     void loadData();
@@ -247,7 +260,7 @@ export function PracticeSetsPage() {
   return (
     <div className="bg-background min-h-screen p-8">
       {/* Top Banner */}
-      <Card className="mb-8 overflow-hidden border-0 bg-gradient-to-r from-[#0047AB] via-[#005B9A] to-[#007BFF] py-0">
+      <Card className="mb-8 overflow-hidden border-0 bg-linear-to-r from-[#0047AB] via-[#005B9A] to-[#007BFF] py-0">
         <CardContent className="flex items-center justify-between p-8">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -300,12 +313,18 @@ export function PracticeSetsPage() {
               <SelectItem value="MIDDLE">Middle</SelectItem>
             </SelectContent>
           </Select>
-          <ReloadButton onReload={loadData} isLoading={loading} tooltip="Tải lại bộ luyện tập" />
+          <ReloadButton
+            onReload={async () => {
+              await loadData(true);
+            }}
+            isLoading={isReloading}
+            tooltip="Tải lại bộ luyện tập"
+          />
         </div>
       </div>
 
       {/* Loading */}
-      {loading && (
+      {isInitialLoading && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
@@ -323,7 +342,7 @@ export function PracticeSetsPage() {
         </div>
       )}
 
-      {!loading && (
+      {!isInitialLoading && (
         <div className="space-y-8">
           {/* Section 1: Lộ trình từ AI */}
           {sessionGroups.length > 0 && (
@@ -396,7 +415,7 @@ export function PracticeSetsPage() {
 
           {/* Empty state khi không có bộ luyện tập nào */}
           {practiceSets.length === 0 && (
-            <Card className="overflow-hidden border-0 bg-gradient-to-br from-[#0047AB] to-[#007BFF]">
+            <Card className="overflow-hidden border-0 bg-linear-to-br from-[#0047AB] to-[#007BFF]">
               <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
                   <ExternalLink className="h-10 w-10 text-white" />

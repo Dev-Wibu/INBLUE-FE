@@ -33,7 +33,8 @@ export function CommunityFeedPage({
   description = "Cập nhật bài viết mới nhất từ cộng đồng",
 }: CommunityFeedPageProps) {
   const { user } = useAuthStore();
-  const { posts, hasMore, isLoading, isFetchingMore, loadMore, refresh } = usePostFeed();
+  const { posts, hasMore, isLoading, isReloading, isFetchingMore, loadMore, refresh } =
+    usePostFeed();
   const [search, setSearch] = useState("");
   const [majorFilter, setMajorFilter] = useState("all");
   const [sortBy, setSortBy] = useState<SortBy>("newest");
@@ -135,7 +136,7 @@ export function CommunityFeedPage({
             <PenSquare className="h-4 w-4" />
             <span className="text-xs font-medium">Viết bài</span>
           </Button>
-          <ReloadButton onReload={refresh} isLoading={isLoading} tooltip="Tải lại bảng tin" />
+          <ReloadButton onReload={refresh} isLoading={isReloading} tooltip="Tải lại bảng tin" />
         </div>
       </Card>
 
