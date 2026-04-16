@@ -25,9 +25,10 @@ export function InterviewHeader({
   onBack: () => void;
 }) {
   const progress = totalQuestions > 0 ? (questionIndex / totalQuestions) * 100 : 0;
+  const safeProgress = Math.max(0, Math.min(progress, 100));
 
   return (
-    <div className="border-b border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90">
+    <div className="border-b border-slate-200/80 bg-linear-to-r from-white via-cyan-50/40 to-blue-50/40 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
       <div className="flex items-center gap-3 px-4 py-3 md:px-6">
         <Button
           variant="ghost"
@@ -43,7 +44,7 @@ export function InterviewHeader({
           <h1 className="text-foreground text-base font-black tracking-tight md:text-lg">
             Phỏng vấn với AI
           </h1>
-          <div className="mt-0.5 flex items-center gap-2">
+          <div className="mt-0.5 flex flex-wrap items-center gap-2">
             {phaseName && (
               <Badge variant="secondary" className="rounded-full text-xs">
                 {phaseName}
@@ -54,6 +55,13 @@ export function InterviewHeader({
                 Câu {questionIndex}/{totalQuestions}
               </span>
             )}
+            {!finished && totalQuestions > 0 && (
+              <Badge
+                variant="outline"
+                className="rounded-full border-cyan-200 bg-cyan-50 text-[11px] text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950/40 dark:text-cyan-300">
+                {Math.round(safeProgress)}% hoàn tất
+              </Badge>
+            )}
             {finished && (
               <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
                 <CheckCircle2 className="mr-1 h-3 w-3" />
@@ -62,6 +70,14 @@ export function InterviewHeader({
             )}
           </div>
         </div>
+
+        {!finished && (
+          <div className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 lg:inline-flex dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+            Đang phỏng vấn trực tiếp
+          </div>
+        )}
+
         {isTTSSupported && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -79,7 +95,15 @@ export function InterviewHeader({
         )}
       </div>
       {!finished && totalQuestions > 0 && (
-        <Progress value={progress} className="h-1.5 rounded-none" />
+        <div className="px-4 pb-3 md:px-6">
+          <div className="text-muted-foreground mb-1 flex items-center justify-between text-[11px]">
+            <span>Tiến độ phiên</span>
+            <span>
+              {questionIndex}/{totalQuestions} câu
+            </span>
+          </div>
+          <Progress value={safeProgress} className="h-1.5" />
+        </div>
       )}
     </div>
   );
