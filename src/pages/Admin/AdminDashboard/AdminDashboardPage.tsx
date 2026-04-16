@@ -5,7 +5,6 @@ import {
   FileQuestion,
   FileText,
   FolderOpen,
-  Globe,
   GraduationCap,
   LayoutDashboard,
   MessageSquare,
@@ -39,7 +38,6 @@ import { ReviewManagementPage } from "../ReviewManagement";
 import { SessionManagementPage } from "../SessionManagement";
 import { TransactionPaymentManagementPage } from "../TransactionPaymentManagement";
 import { UserManagementPage } from "../UserManagement";
-import { CommunityTabView } from "./CommunityTabView";
 
 type TabType =
   | "dashboard"
@@ -56,7 +54,6 @@ type TabType =
   | "quizSets"
   | "posts"
   | "candidateProfiles"
-  | "community"
   | "membershipPlans"
   | "transactionsPayments";
 
@@ -73,9 +70,8 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "practiceSets", label: "Practice Sets" },
   { type: "practiceQuestions", label: "Practice Questions" },
   { type: "quizSets", label: "Quiz Sets" },
-  { type: "posts", label: "Quản lý bài viết" },
+  { type: "posts", label: "Bài viết & Cộng đồng" },
   { type: "candidateProfiles", label: "Hồ sơ ứng viên" },
-  { type: "community", label: "Cộng đồng" },
   { type: "membershipPlans", label: "Gói thành viên" },
   { type: "transactionsPayments", label: "Giao dịch & Thanh toán" },
 ];
@@ -99,7 +95,6 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   quizSets: Trophy,
   posts: Newspaper,
   candidateProfiles: FileText,
-  community: Globe,
   membershipPlans: CreditCard,
   transactionsPayments: Wallet,
 };
@@ -119,7 +114,6 @@ const TAB_COLORS: Record<TabType, string> = {
   quizSets: "text-amber-600",
   posts: "text-purple-500",
   candidateProfiles: "text-teal-600",
-  community: "text-orange-500",
   membershipPlans: "text-rose-600",
   transactionsPayments: "text-indigo-600",
 };
@@ -183,14 +177,18 @@ const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
   },
   {
     items: [
-      { type: "posts", label: "Quản lý bài viết", icon: Newspaper, iconColor: "text-purple-500" },
+      {
+        type: "posts",
+        label: "Bài viết & Cộng đồng",
+        icon: Newspaper,
+        iconColor: "text-purple-500",
+      },
       {
         type: "candidateProfiles",
         label: "Hồ sơ ứng viên",
         icon: FileText,
         iconColor: "text-teal-600",
       },
-      { type: "community", label: "Cộng đồng", icon: Globe, iconColor: "text-orange-500" },
       {
         type: "membershipPlans",
         label: "Gói thành viên",
@@ -253,14 +251,18 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
   {
     label: "Content",
     items: [
-      { type: "posts", icon: Newspaper, label: "Quản lý bài viết", color: "text-purple-500" },
+      {
+        type: "posts",
+        icon: Newspaper,
+        label: "Bài viết & Cộng đồng",
+        color: "text-purple-500",
+      },
       {
         type: "candidateProfiles",
         icon: FileText,
         label: "Hồ sơ ứng viên",
         color: "text-teal-600",
       },
-      { type: "community", icon: Globe, label: "Cộng đồng", color: "text-orange-500" },
       {
         type: "membershipPlans",
         icon: CreditCard,
@@ -364,8 +366,6 @@ export function AdminDashboardPage() {
         return <QuizSetManagementPage />;
       case "posts":
         return <PostManagementPage />;
-      case "community":
-        return <CommunityTabView />;
       case "candidateProfiles":
         return <CandidateProfileManagementPage />;
       case "membershipPlans":

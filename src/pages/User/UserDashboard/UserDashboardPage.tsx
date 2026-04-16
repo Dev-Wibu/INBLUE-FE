@@ -149,7 +149,6 @@ const ROUTE_TO_TAB: Record<string, TabType> = {
   "mock-interview": "mockInterview",
   practice: "practice",
   feedback: "feedback",
-  community: "homeFeed",
   messenger: "messenger",
 };
 

@@ -11,7 +11,7 @@ import { useCheckLiked } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import type { components } from "../../../../../schema-from-be";
 
-import { LikeButton } from "../../Community/components/LikeButton";
+import { LikeButton } from "@/components/post";
 import { PostFeedModal } from "./PostFeedModal";
 
 type PostResponse = components["schemas"]["PostResponse"];

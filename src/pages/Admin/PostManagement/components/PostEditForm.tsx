@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -20,16 +19,13 @@ import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 
-interface EditPostPageProps {
-  postId?: string;
-  onSuccess?: () => void;
-  onCancel?: () => void;
+interface PostEditFormProps {
+  postId: number;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export function EditPostPage({ postId: postIdProp, onSuccess, onCancel }: EditPostPageProps = {}) {
-  const params = useParams<{ postId: string }>();
-  const postId = postIdProp ?? params.postId;
-  const navigate = useNavigate();
+export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps) {
   const { user } = useAuthStore();
 
   const [title, setTitle] = useState("");
@@ -45,7 +41,6 @@ export function EditPostPage({ postId: postIdProp, onSuccess, onCancel }: EditPo
   const tagInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!postId) return;
     const fetchPost = async () => {
       setLoading(true);
       const result = await postManager.getById(postId);
@@ -61,13 +56,12 @@ export function EditPostPage({ postId: postIdProp, onSuccess, onCancel }: EditPo
         }
       } else {
         toast.error("Không thể tải bài viết");
-        handleCancel();
+        onCancel();
       }
       setLoading(false);
     };
-    fetchPost();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [postId]);
+    void fetchPost();
+  }, [postId, onCancel]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,22 +95,13 @@ export function EditPostPage({ postId: postIdProp, onSuccess, onCancel }: EditPo
     setTags((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      navigate("..");
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!postId || !title.trim()) {
+    if (!title.trim()) {
       toast.error("Tiêu đề không được để trống");
       return;
     }
 
-    // Commit any un-submitted tag still in the input
     const finalTags = tagInput.trim() ? [...tags, tagInput.trim()] : tags;
 
     setSubmitting(true);
@@ -132,12 +117,8 @@ export function EditPostPage({ postId: postIdProp, onSuccess, onCancel }: EditPo
       });
 
       if (result.success) {
-        toast.success("Cập nhật bài viết thành công!");
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          navigate("..");
-        }
+        toast.success("Cập nhật bài viết thành công");
+        onSuccess();
       } else {
         toast.error(result.error ?? "Cập nhật bài viết thất bại");
       }
@@ -234,7 +215,7 @@ export function EditPostPage({ postId: postIdProp, onSuccess, onCancel }: EditPo
                   placeholder={
                     tags.length === 0 ? "Nhập thẻ, nhấn Enter hoặc dấu phẩy để thêm" : ""
                   }
-                  className="placeholder:text-muted-foreground min-w-[160px] flex-1 bg-transparent outline-none"
+                  className="placeholder:text-muted-foreground min-w-40 flex-1 bg-transparent outline-none"
                 />
               </div>
             </div>
@@ -248,6 +229,7 @@ export function EditPostPage({ postId: postIdProp, onSuccess, onCancel }: EditPo
                 <SelectContent>
                   <SelectItem value="DRAFT">Bản nháp</SelectItem>
                   <SelectItem value="PUBLISHED">Đã xuất bản</SelectItem>
+                  <SelectItem value="ARCHIVED">Đã lưu trữ</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -256,7 +238,7 @@ export function EditPostPage({ postId: postIdProp, onSuccess, onCancel }: EditPo
               <Button type="submit" disabled={submitting}>
                 {submitting ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>
+              <Button type="button" variant="outline" onClick={onCancel}>
                 Hủy
               </Button>
             </div>

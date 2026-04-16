@@ -5,19 +5,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { queryClient } from "@/lib/queryClient";
 import {
-  useCheckLiked,
-  useLikePost,
-  usePostLikesCount,
-  useUnlikePost,
+    useCheckLiked,
+    useLikePost,
+    usePostLikesCount,
+    useUnlikePost,
 } from "@/services/post.manager";
 
 interface LikeButtonProps {
   postId: number;
   userId: number;
-  /** When true renders "Thích" label (action bar style); when false renders numeric count */
   showLabel?: boolean;
-  onLikeChange?: (liked: boolean) => void;
-  /** When provided, skips the internal usePostLikesCount request and uses this as the base count */
+  onLikeChange?: (_liked: boolean) => void;
   externalLikeCount?: number;
 }
 
@@ -33,8 +31,6 @@ export function LikeButton({
   const likeMutation = useLikePost();
   const unlikeMutation = useUnlikePost();
 
-  // checkLiked returns { [key: string]: boolean } — e.g. { "liked": false }
-  // Casting the object directly as boolean would always be truthy, so extract the first value
   const liked = Object.values((likedData ?? {}) as Record<string, boolean>)[0] ?? false;
   const count = externalLikeCount !== undefined ? externalLikeCount : (countData ?? 0);
 

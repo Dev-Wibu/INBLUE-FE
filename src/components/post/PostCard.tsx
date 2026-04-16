@@ -1,11 +1,11 @@
+import { MessageCircle } from "lucide-react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import type { Post } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
-import { usePostCommentsCount } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { MessageCircle } from "lucide-react";
 
 import { LikeButton } from "./LikeButton";
 
@@ -16,8 +16,7 @@ interface PostCardProps {
 
 export function PostCard({ post, onClick }: PostCardProps) {
   const { user } = useAuthStore();
-  const { data: commentCountData } = usePostCommentsCount(post.postId ?? 0);
-  const commentCount = (commentCountData as unknown as number) ?? 0;
+  const commentCount = post.commentCount ?? 0;
 
   const authorInitials = post.author?.name
     ?.split(" ")
@@ -63,7 +62,16 @@ export function PostCard({ post, onClick }: PostCardProps) {
         </div>
       </CardContent>
       <CardFooter className="flex items-center gap-3 pt-0">
-        {user?.id && post.postId && <LikeButton postId={post.postId} userId={user.id} />}
+        {user?.id && post.postId && (
+          <LikeButton
+            postId={post.postId}
+            userId={user.id}
+            externalLikeCount={post.likeCount ?? 0}
+            onLikeChange={() => {
+              // no-op; parent should invalidate if needed
+            }}
+          />
+        )}
         <div className="text-muted-foreground flex items-center gap-1 text-sm">
           <MessageCircle className="h-4 w-4" />
           <span>{commentCount}</span>

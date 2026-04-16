@@ -52,13 +52,10 @@ import {
   AIInterviewSessionPage,
   AIInterviewSetupPage,
   BookingSuccessPage,
-  CreatePostPage,
-  EditPostPage,
   FeedbackDetailPage,
   MentorDetailPage,
   MockInterviewSchedulePage,
   MockInterviewSelectMentorPage,
-  PostDetailPage,
   PracticeSetDetailPage,
   QuizPage,
   QuizResultPage,
@@ -147,9 +144,6 @@ function App() {
                 <Route path="practice/:id" element={<PracticeSetDetailPage />} />
                 <Route path="feedback/:id" element={<FeedbackDetailPage />} />
                 <Route path="mentors/:mentorId" element={<MentorDetailPage />} />
-                <Route path="community/create" element={<CreatePostPage />} />
-                <Route path="community/:postId/edit" element={<EditPostPage />} />
-                <Route path="community/:postId" element={<PostDetailPage />} />
               </Route>
             </Route>
             {/* Backward-compat redirects for old /dashboard/* URLs */}
@@ -177,10 +171,6 @@ function App() {
               element={<Navigate to="/user?tab=practice" replace />}
             />
             <Route
-              path="/dashboard/community"
-              element={<Navigate to="/user?tab=community" replace />}
-            />
-            <Route
               path="/dashboard/notifications"
               element={<Navigate to="/user?tab=notifications" replace />}
             />
@@ -204,10 +194,6 @@ function App() {
               element={<DashboardSubRedirect prefix="/user/practice" />}
             />
             <Route
-              path="/dashboard/community/*"
-              element={<DashboardSubRedirect prefix="/user/community" />}
-            />
-            <Route
               path="/dashboard/feedback/*"
               element={<DashboardSubRedirect prefix="/user/feedback" />}
             />
@@ -220,9 +206,6 @@ function App() {
                 <Route path="sessions/:sessionId/review" element={<WriteFeedbackPage />} />
                 <Route path="reviews/:id" element={<ReviewDetailPage />} />
                 <Route path="students/:userId" element={<StudentDetailPage />} />
-                <Route path="community/create" element={<CreatePostPage />} />
-                <Route path="community/:postId/edit" element={<EditPostPage />} />
-                <Route path="community/:postId" element={<PostDetailPage />} />
               </Route>
             </Route>
             {/* Backward-compat redirects for /mentor-dashboard/* URLs */}
@@ -254,10 +237,6 @@ function App() {
             <Route
               path="/mentor-dashboard/account"
               element={<Navigate to="/mentor?tab=account" replace />}
-            />
-            <Route
-              path="/mentor-dashboard/community"
-              element={<Navigate to="/mentor?tab=community" replace />}
             />
 
             {/* Admin Management routes */}

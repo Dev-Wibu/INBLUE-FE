@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -21,13 +20,12 @@ import { postManager } from "@/services/post.manager";
 import { type Major, questionMajorManager } from "@/services/question-major.manager";
 import { useAuthStore } from "@/stores/authStore";
 
-interface CreatePostPageProps {
-  onSuccess?: () => void;
-  onCancel?: () => void;
+interface PostCreateFormProps {
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export function CreatePostPage({ onSuccess, onCancel }: CreatePostPageProps = {}) {
-  const navigate = useNavigate();
+export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
   const { user } = useAuthStore();
 
   const [title, setTitle] = useState("");
@@ -51,7 +49,7 @@ export function CreatePostPage({ onSuccess, onCancel }: CreatePostPageProps = {}
         setMajors(list);
       }
     };
-    fetchMajors();
+    void fetchMajors();
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +91,6 @@ export function CreatePostPage({ onSuccess, onCancel }: CreatePostPageProps = {}
       return;
     }
 
-    // Commit any un-submitted tag still in the input
     const finalTags = tagInput.trim() ? [...tags, tagInput.trim()] : tags;
 
     setSubmitting(true);
@@ -110,27 +107,15 @@ export function CreatePostPage({ onSuccess, onCancel }: CreatePostPageProps = {}
       });
 
       if (result.success) {
-        toast.success("Đăng bài viết thành công!");
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          navigate(-1);
-        }
+        toast.success("Tạo bài viết thành công");
+        onSuccess();
       } else {
-        toast.error(result.error ?? "Đăng bài viết thất bại");
+        toast.error(result.error ?? "Tạo bài viết thất bại");
       }
     } catch {
-      toast.error("Đã xảy ra lỗi khi đăng bài viết");
+      toast.error("Đã xảy ra lỗi khi tạo bài viết");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      navigate("..");
     }
   };
 
@@ -235,7 +220,7 @@ export function CreatePostPage({ onSuccess, onCancel }: CreatePostPageProps = {}
                     placeholder={
                       tags.length === 0 ? "Nhập thẻ, nhấn Enter hoặc dấu phẩy để thêm" : ""
                     }
-                    className="placeholder:text-muted-foreground min-w-[160px] flex-1 bg-transparent outline-none"
+                    className="placeholder:text-muted-foreground min-w-40 flex-1 bg-transparent outline-none"
                   />
                 </div>
               </div>
@@ -248,16 +233,18 @@ export function CreatePostPage({ onSuccess, onCancel }: CreatePostPageProps = {}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="DRAFT">Bản nháp</SelectItem>
+                    <SelectItem value="PUBLISHED">Đã xuất bản</SelectItem>
+                    <SelectItem value="ARCHIVED">Đã lưu trữ</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            <div className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky bottom-0 z-10 flex gap-3 border-t px-6 py-4 backdrop-blur">
+            <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-10 flex gap-3 border-t px-6 py-4 backdrop-blur">
               <Button type="submit" disabled={submitting}>
-                {submitting ? "Đang đăng..." : "Đăng bài"}
+                {submitting ? "Đang tạo..." : "Tạo bài viết"}
               </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>
+              <Button type="button" variant="outline" onClick={onCancel}>
                 Hủy
               </Button>
             </div>
