@@ -227,6 +227,8 @@ export function NotificationManagementPage() {
             onReload={handleReload}
             isLoading={isReloading}
             tooltip="Tải lại dữ liệu thông báo"
+            showLabel
+            hideTooltip
           />
           <Button onClick={handleCreateOpen} className="gap-2">
             <Plus className="h-4 w-4" />

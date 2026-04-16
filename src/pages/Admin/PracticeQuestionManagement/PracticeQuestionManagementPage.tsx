@@ -68,7 +68,8 @@ const emptyFormData: QuestionFormData = {
 export function PracticeQuestionManagementPage() {
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -77,8 +78,13 @@ export function PracticeQuestionManagementPage() {
   const [selectedQuestion, setSelectedQuestion] = useState<PracticeQuestion | null>(null);
   const [formData, setFormData] = useState<QuestionFormData>(emptyFormData);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const [questionsRes, categoriesRes] = await Promise.all([
         questionManager.getAll(),
@@ -100,12 +106,16 @@ export function PracticeQuestionManagementPage() {
       console.error("Error loading data:", error);
       toast.error("Không thể tải dữ liệu");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadData();
+    void loadData();
   }, [loadData]);
 
   // Filter questions
@@ -182,7 +192,7 @@ export function PracticeQuestionManagementPage() {
       if (response.success) {
         toast.success("Đã tạo câu hỏi thành công");
         setIsCreateDialogOpen(false);
-        loadData();
+        void loadData();
       } else {
         toast.error(response.error || "Không thể tạo câu hỏi");
       }
@@ -215,7 +225,7 @@ export function PracticeQuestionManagementPage() {
       if (response.success) {
         toast.success("Đã cập nhật câu hỏi thành công");
         setIsEditDialogOpen(false);
-        loadData();
+        void loadData();
       } else {
         toast.error(response.error || "Không thể cập nhật câu hỏi");
       }
@@ -232,7 +242,7 @@ export function PracticeQuestionManagementPage() {
       if (response.success) {
         toast.success("Đã xóa câu hỏi thành công");
         setIsDeleteDialogOpen(false);
-        loadData();
+        void loadData();
       } else {
         toast.error(response.error || "Không thể xóa câu hỏi");
       }
@@ -246,14 +256,6 @@ export function PracticeQuestionManagementPage() {
     // Placeholder for bulk import - would typically open a file picker
     toast.info("Chức năng nhập hàng loạt đang được phát triển");
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
@@ -296,9 +298,11 @@ export function PracticeQuestionManagementPage() {
 
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadData}
-            isLoading={loading}
+            onReload={() => loadData(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách câu hỏi"
+            showLabel
+            hideTooltip
           />
           <Button variant="outline" onClick={handleBulkImport} className="gap-2">
             <Upload className="h-4 w-4" />
@@ -313,78 +317,84 @@ export function PracticeQuestionManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => toggleSort("title" as keyof PracticeQuestion)}>
-                Tiêu đề
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => toggleSort("level" as keyof PracticeQuestion)}>
-                Cấp độ
-              </TableHead>
-              <TableHead>Bài học</TableHead>
-              <TableHead className="text-right">Hành động</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pageData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="py-8 text-center">
-                  <p className="text-gray-500 dark:text-slate-400">Không có câu hỏi nào</p>
-                </TableCell>
-              </TableRow>
-            ) : (
-              pageData.map((question) => (
-                <TableRow key={question.questionId}>
-                  <TableCell className="font-medium">{question.title}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"
-                      }>
-                      {question.level}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{question.lesson?.lessonName || "—"}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(question)}>
-                        Sửa
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDelete(question)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh sách câu hỏi..." />
+        ) : (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => toggleSort("title" as keyof PracticeQuestion)}>
+                    Tiêu đề
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer"
+                    onClick={() => toggleSort("level" as keyof PracticeQuestion)}>
+                    Cấp độ
+                  </TableHead>
+                  <TableHead>Bài học</TableHead>
+                  <TableHead className="text-right">Hành động</TableHead>
                 </TableRow>
-              ))
+              </TableHeader>
+              <TableBody>
+                {pageData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center">
+                      <p className="text-gray-500 dark:text-slate-400">Không có câu hỏi nào</p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  pageData.map((question) => (
+                    <TableRow key={question.questionId}>
+                      <TableCell className="font-medium">{question.title}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={
+                            levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"
+                          }>
+                          {question.level}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{question.lesson?.lessonName || "—"}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(question)}>
+                            Sửa
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => handleDelete(question)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+
+            {sortedData.length > 0 && (
+              <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
             )}
-          </TableBody>
-        </Table>
 
-        {sortedData.length > 0 && (
-          <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
-        )}
-
-        {sortedData.length === 0 && (searchQuery || levelFilter !== "all") && (
-          <div className="flex justify-center pb-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setLevelFilter("all");
-              }}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {sortedData.length === 0 && (searchQuery || levelFilter !== "all") && (
+              <div className="flex justify-center pb-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setLevelFilter("all");
+                  }}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

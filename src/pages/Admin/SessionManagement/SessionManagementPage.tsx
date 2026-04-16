@@ -27,7 +27,8 @@ import type { Session, SessionFormData } from "./types";
 
 export function SessionManagementPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -38,8 +39,13 @@ export function SessionManagementPage() {
   const [formData, setFormData] = useState<Partial<SessionFormData>>({});
 
   // Load sessions using the session manager service
-  const loadSessions = useCallback(async () => {
-    setLoading(true);
+  const loadSessions = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await sessionManager.getAll();
       if (response.success && response.data) {
@@ -53,12 +59,16 @@ export function SessionManagementPage() {
       console.error("Error loading sessions:", error);
       toast.error("Không thể tải danh sách buổi học");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadSessions();
+    void loadSessions();
   }, [loadSessions]);
 
   // Filter sessions based on search query and status filter
@@ -144,7 +154,7 @@ export function SessionManagementPage() {
       const response = await sessionManager.updateStatus(session.id, true);
       if (response.success) {
         toast.success("Đã duyệt phiên phỏng vấn");
-        loadSessions();
+        void loadSessions();
       } else {
         toast.error(response.error || "Không thể duyệt phiên");
       }
@@ -160,7 +170,7 @@ export function SessionManagementPage() {
       const response = await sessionManager.updateStatus(session.id, false);
       if (response.success) {
         toast.success("Đã từ chối phiên phỏng vấn");
-        loadSessions();
+        void loadSessions();
       } else {
         toast.error(response.error || "Không thể từ chối phiên");
       }
@@ -176,7 +186,7 @@ export function SessionManagementPage() {
       if (response.success) {
         toast.success("Đã tạo buổi học thành công");
         setIsCreateDialogOpen(false);
-        loadSessions(); // Refresh the list
+        void loadSessions(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể tạo buổi học");
       }
@@ -205,7 +215,7 @@ export function SessionManagementPage() {
       if (response.success) {
         toast.success("Đã cập nhật buổi học thành công");
         setIsEditDialogOpen(false);
-        loadSessions(); // Refresh the list
+        void loadSessions(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể cập nhật buổi học");
       }
@@ -227,7 +237,7 @@ export function SessionManagementPage() {
       if (response.success) {
         toast.success("Đã hủy buổi học thành công");
         setIsCancelDialogOpen(false);
-        loadSessions(); // Refresh the list
+        void loadSessions(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể hủy buổi học");
       }
@@ -236,14 +246,6 @@ export function SessionManagementPage() {
       toast.error("Không thể hủy buổi học");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
@@ -292,9 +294,11 @@ export function SessionManagementPage() {
 
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadSessions}
-            isLoading={loading}
+            onReload={() => loadSessions(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách phiên"
+            showLabel
+            hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -305,33 +309,39 @@ export function SessionManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <SessionTable
-          sessions={pageData}
-          onView={handleView}
-          onEdit={handleEdit}
-          onCancel={handleCancel}
-          onApprove={handleApprove}
-          onReject={handleReject}
-          getSortProps={getSortProps}
-        />
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh sách buổi học..." />
+        ) : (
+          <>
+            <SessionTable
+              sessions={pageData}
+              onView={handleView}
+              onEdit={handleEdit}
+              onCancel={handleCancel}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              getSortProps={getSortProps}
+            />
 
-        {/* Pagination */}
-        {sortedData.length > 0 && (
-          <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
-        )}
+            {/* Pagination */}
+            {sortedData.length > 0 && (
+              <PaginationControl pagination={pagination} onPageSizeChange={setPageSize} />
+            )}
 
-        {/* Empty State with Clear Filters */}
-        {sortedData.length === 0 && (searchQuery || statusFilter !== "all") && (
-          <div className="flex justify-center pb-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("all");
-              }}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {/* Empty State with Clear Filters */}
+            {sortedData.length === 0 && (searchQuery || statusFilter !== "all") && (
+              <div className="flex justify-center pb-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                  }}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

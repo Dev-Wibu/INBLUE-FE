@@ -78,7 +78,8 @@ export function PostManagementPage() {
 
   const [view, setView] = useState<ViewState>({ mode: "list" });
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [statusUpdatingId, setStatusUpdatingId] = useState<number | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -99,8 +100,13 @@ export function PostManagementPage() {
   );
   const detailData = detailRaw as unknown as PostDetailPayload | undefined;
 
-  const loadPosts = useCallback(async () => {
-    setLoading(true);
+  const loadPosts = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await postManager.getAll();
       if (!response.success) {
@@ -111,7 +117,11 @@ export function PostManagementPage() {
     } catch {
       toast.error("Không thể tải danh sách bài viết");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
@@ -469,9 +479,11 @@ export function PostManagementPage() {
         </div>
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadPosts}
-            isLoading={loading}
+            onReload={() => loadPosts(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách bài viết"
+            showLabel
+            hideTooltip
           />
           <Button onClick={() => setView({ mode: "create" })}>Tạo bài viết</Button>
         </div>
@@ -587,7 +599,7 @@ export function PostManagementPage() {
             </div>
           </div>
 
-          {loading ? (
+          {isInitialLoading ? (
             <SpinnerBlock size="lg" />
           ) : pageItems.length === 0 ? (
             <p className="text-muted-foreground py-8 text-center">Không có bài viết phù hợp</p>

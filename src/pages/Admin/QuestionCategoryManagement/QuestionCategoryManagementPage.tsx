@@ -18,7 +18,8 @@ import type { QuestionCategory, QuestionCategoryFormData } from "./types";
 
 export function QuestionCategoryManagementPage() {
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -27,8 +28,13 @@ export function QuestionCategoryManagementPage() {
   const [formData, setFormData] = useState<Partial<QuestionCategoryFormData>>({});
 
   // Load categories using the question category manager service
-  const loadCategories = useCallback(async () => {
-    setLoading(true);
+  const loadCategories = useCallback(async (showReloading = false) => {
+    if (showReloading) {
+      setIsReloading(true);
+    } else {
+      setIsInitialLoading(true);
+    }
+
     try {
       const response = await questionCategoryManager.getAll();
       if (response.success) {
@@ -40,12 +46,16 @@ export function QuestionCategoryManagementPage() {
       console.error("Error loading categories:", error);
       toast.error("Không thể tải danh sách danh mục câu hỏi");
     } finally {
-      setLoading(false);
+      if (showReloading) {
+        setIsReloading(false);
+      } else {
+        setIsInitialLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadCategories();
+    void loadCategories();
   }, [loadCategories]);
 
   // Filter categories based on search query
@@ -84,7 +94,7 @@ export function QuestionCategoryManagementPage() {
       if (response.success) {
         toast.success("Đã tạo danh mục câu hỏi thành công");
         setIsCreateDialogOpen(false);
-        loadCategories(); // Refresh the list
+        void loadCategories(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể tạo danh mục câu hỏi");
       }
@@ -102,7 +112,7 @@ export function QuestionCategoryManagementPage() {
       if (response.success) {
         toast.success("Đã cập nhật danh mục câu hỏi thành công");
         setIsEditDialogOpen(false);
-        loadCategories(); // Refresh the list
+        void loadCategories(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể cập nhật danh mục câu hỏi");
       }
@@ -120,7 +130,7 @@ export function QuestionCategoryManagementPage() {
       if (response.success) {
         toast.success("Đã xóa danh mục câu hỏi thành công");
         setIsDeleteDialogOpen(false);
-        loadCategories(); // Refresh the list
+        void loadCategories(); // Refresh the list
       } else {
         toast.error(response.error || "Không thể xóa danh mục câu hỏi");
       }
@@ -129,14 +139,6 @@ export function QuestionCategoryManagementPage() {
       toast.error("Không thể xóa danh mục câu hỏi");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-slate-950">
-        <SpinnerBlock fullScreen size="xl" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
@@ -166,9 +168,11 @@ export function QuestionCategoryManagementPage() {
 
         <div className="flex items-center gap-2">
           <ReloadButton
-            onReload={loadCategories}
-            isLoading={loading}
+            onReload={() => loadCategories(true)}
+            isLoading={isReloading}
             tooltip="Tải lại danh sách danh mục"
+            showLabel
+            hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
@@ -179,19 +183,25 @@ export function QuestionCategoryManagementPage() {
 
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <QuestionCategoryTable
-          categories={filteredCategories.slice().reverse()}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        {isInitialLoading ? (
+          <SpinnerBlock size="lg" label="Đang tải danh mục câu hỏi..." />
+        ) : (
+          <>
+            <QuestionCategoryTable
+              categories={filteredCategories.slice().reverse()}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
 
-        {/* Empty State with Clear Search */}
-        {filteredCategories.length === 0 && searchQuery && (
-          <div className="flex justify-center pb-4">
-            <Button variant="outline" onClick={() => setSearchQuery("")}>
-              Xóa bộ lọc
-            </Button>
-          </div>
+            {/* Empty State with Clear Search */}
+            {filteredCategories.length === 0 && searchQuery && (
+              <div className="flex justify-center pb-4">
+                <Button variant="outline" onClick={() => setSearchQuery("")}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

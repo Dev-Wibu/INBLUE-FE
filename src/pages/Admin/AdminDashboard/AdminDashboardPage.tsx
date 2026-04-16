@@ -338,6 +338,13 @@ export function AdminDashboardPage() {
     [openTab]
   );
 
+  const handleSidebarNavigate = useCallback(
+    (type: string) => {
+      setActiveTab(type);
+    },
+    [setActiveTab]
+  );
+
   const renderContent = () => {
     switch (typedActiveTab) {
       case "dashboard":
@@ -382,7 +389,7 @@ export function AdminDashboardPage() {
       <DashboardSidebar
         menuGroups={SIDEBAR_MENU_GROUPS}
         activeTab={typedActiveTab}
-        onNavigate={openTab}
+        onNavigate={handleSidebarNavigate}
         storageKey="admin_sidebar_collapsed"
         legacyStorageKey="manager_sidebar_collapsed"
         logo={ADMIN_SIDEBAR_LOGO}

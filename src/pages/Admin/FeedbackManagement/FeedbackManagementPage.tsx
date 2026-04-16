@@ -188,6 +188,8 @@ export function FeedbackManagementPage() {
               }}
               isLoading={isRefetching}
               tooltip="Tải lại danh sách phản hồi"
+              showLabel
+              hideTooltip
             />
           </div>
         </CardHeader>
