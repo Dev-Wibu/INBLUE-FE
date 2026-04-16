@@ -15,8 +15,7 @@ import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.ma
 import { useAuthStore } from "@/stores/authStore";
 import type { components } from "../../../../../schema-from-be";
 
-import { CommentSection } from "../../Community/components/CommentSection";
-import { LikeButton } from "../../Community/components/LikeButton";
+import { CommentSection, LikeButton } from "@/components/post";
 import { ExpandableText } from "./ExpandableText";
 import { ImageViewerModal } from "./ImageViewerModal";
 

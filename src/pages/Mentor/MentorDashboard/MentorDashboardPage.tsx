@@ -71,7 +71,7 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
 
 const MENTOR_SIDEBAR_LOGO = (
   <>
-    <img src={icon2} alt="INBLUE AI" className="h-9 w-9 flex-shrink-0" />
+    <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
     <div className="flex flex-col">
       <span className="text-lg font-bold text-emerald-700 dark:text-white">INBLUE AI</span>
       <span className="text-xs text-emerald-600 dark:text-emerald-400">Cổng Mentor</span>
@@ -80,7 +80,7 @@ const MENTOR_SIDEBAR_LOGO = (
 );
 
 const MENTOR_SIDEBAR_LOGO_COLLAPSED = (
-  <img src={icon2} alt="INBLUE AI" className="h-9 w-9 flex-shrink-0" />
+  <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
 );
 
 const DEFAULT_TAB: TabType = "overview";
@@ -90,7 +90,6 @@ const MENTOR_ROUTE_TO_TAB: Record<string, TabType> = {
   sessions: "sessions",
   reviews: "reviews",
   students: "students",
-  community: "overview",
   messenger: "messenger",
 };
 

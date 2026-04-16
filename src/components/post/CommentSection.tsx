@@ -1,4 +1,4 @@
-﻿import { ChevronDown, ChevronUp, Send } from "lucide-react";
+import { ChevronDown, ChevronUp, Send, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -10,10 +10,6 @@ import { useCreateComment, usePostComments } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 
 import { CommentItem } from "./CommentItem";
-
-// ---------------------------------------------------------------------------
-// Comment tree helpers
-// ---------------------------------------------------------------------------
 
 type CommentNode = {
   comment: PostCommentResponse;
@@ -38,7 +34,6 @@ function buildCommentTree(comments: PostCommentResponse[]): CommentNode[] {
       if (parent) {
         parent.children.push(node);
       } else {
-        // Parent not in this batch — treat as root
         roots.push(node);
       }
     }
@@ -47,7 +42,6 @@ function buildCommentTree(comments: PostCommentResponse[]): CommentNode[] {
   return roots;
 }
 
-// DFS-flatten all descendants of a node, sorted chronologically (oldest first)
 function flattenDescendants(node: CommentNode): PostCommentResponse[] {
   const result: PostCommentResponse[] = [];
   function dfs(children: CommentNode[]) {
@@ -72,7 +66,6 @@ function countAllDescendants(node: CommentNode): number {
   return count;
 }
 
-// Walk up the comment chain to find the root-level comment ID
 function findRootCommentId(
   commentId: number,
   commentById: Map<number, PostCommentResponse>,
@@ -83,10 +76,6 @@ function findRootCommentId(
   if (!c?.parentCommentId) return commentId;
   return findRootCommentId(c.parentCommentId, commentById, rootIds);
 }
-
-// ---------------------------------------------------------------------------
-// ReplyInput — shared reply textarea block
-// ---------------------------------------------------------------------------
 
 interface ReplyInputProps {
   userName: string;
@@ -131,12 +120,6 @@ function ReplyInput({ userName, value, onChange, onSubmit, onCancel }: ReplyInpu
   );
 }
 
-// ---------------------------------------------------------------------------
-// CommentThread — Tiered reply system: up to 3 levels of nesting.
-// Level 0: root, Level 1: direct replies, Level 2: replies to level-1.
-// Level 3+: rendered at level 2 depth with @mention (no further indentation).
-// ---------------------------------------------------------------------------
-
 interface CommentThreadProps {
   node: CommentNode;
   currentUserId?: number;
@@ -172,7 +155,6 @@ function CommentThread({
   const isExpanded = comment.id != null && expandedIds.has(comment.id);
   const isReplyingToThis = replyingToId === comment.id;
 
-  // At max nesting depth (2), flatten all deeper descendants
   const maxDepth = 2;
   const atMaxDepth = depth >= maxDepth;
   const flatChildren = useMemo(
@@ -184,7 +166,6 @@ function CommentThread({
 
   return (
     <div>
-      {/* Current comment */}
       <CommentItem
         comment={comment}
         currentUserId={currentUserId}
@@ -202,7 +183,6 @@ function CommentThread({
         onMentionClick={onMentionClick}
       />
 
-      {/* Reply input for this comment */}
       {isReplyingToThis && (
         <ReplyInput
           userName={comment.userName ?? ""}
@@ -216,7 +196,6 @@ function CommentThread({
         />
       )}
 
-      {/* Nested replies */}
       {totalReplies > 0 && (
         <div
           className={
@@ -305,18 +284,13 @@ function CommentThread({
   );
 }
 
-// ---------------------------------------------------------------------------
-// CommentSection — public component
-// ---------------------------------------------------------------------------
-
 interface CommentSectionProps {
   postId: number;
-  /** When provided (from PostFeedModal via usePostById), skips the internal usePostComments fetch */
   externalComments?: PostCommentResponse[];
-  /** When provided, called instead of internal invalidation after any mutation */
   onExternalInvalidate?: () => void;
-  /** When true, hides the main comment input box (used by PostFeedModal sticky bottom bar) */
   hideInput?: boolean;
+  allowDelete?: boolean;
+  onDeleteComment?: (_commentId: number) => void;
 }
 
 export function CommentSection({
@@ -324,11 +298,12 @@ export function CommentSection({
   externalComments,
   onExternalInvalidate,
   hideInput = false,
+  allowDelete = false,
+  onDeleteComment,
 }: CommentSectionProps) {
   const { user } = useAuthStore();
   const currentUserId = user?.id;
 
-  // Only fetch from API when no external comments are supplied (community PostDetailPage context)
   const { data: commentsData } = usePostComments(postId, !externalComments);
   const createComment = useCreateComment();
 
@@ -342,7 +317,6 @@ export function CommentSection({
     return buildCommentTree(comments);
   }, [externalComments, commentsData]);
 
-  // Flat lookup map for all comments — used for @mention resolution and reply-submit root-finding
   const commentById = useMemo(() => {
     const map = new Map<number, PostCommentResponse>();
     function addToMap(nodes: CommentNode[]) {
@@ -355,7 +329,6 @@ export function CommentSection({
     return map;
   }, [commentTree]);
 
-  // IDs of root-level comments (no parentCommentId) — used to find which thread to expand
   const rootIds = useMemo(
     () => new Set(commentTree.map((n) => n.comment.id).filter((id): id is number => id != null)),
     [commentTree]
@@ -380,40 +353,52 @@ export function CommentSection({
     createComment.mutate({ body: { postId, userId: currentUserId, content } } as never, {
       onSuccess: () => {
         setNewContent("");
-        if (onExternalInvalidate) onExternalInvalidate();
-        else invalidate();
+        if (onExternalInvalidate) {
+          onExternalInvalidate();
+        } else {
+          invalidate();
+        }
       },
       onError: () => toast.error("Không thể gửi bình luận"),
     });
   };
 
   const handleReplySubmit = (parentCommentId: number) => {
-    const rawContent = replyContent.trim();
-    if (!rawContent || !currentUserId) return;
+    const content = replyContent.trim();
+    if (!content || !currentUserId) return;
 
-    const parentComment = commentById.get(parentCommentId);
-    const content = parentComment?.userName
-      ? `@${parentComment.userName} ${rawContent}`
-      : rawContent;
+    const parentUser = commentById.get(parentCommentId)?.userName;
+    const contentWithMention = parentUser ? `@${parentUser} ${content}` : content;
 
     createComment.mutate(
-      { body: { postId, userId: currentUserId, content, parentCommentId } } as never,
+      {
+        body: {
+          postId,
+          userId: currentUserId,
+          content: contentWithMention,
+          parentCommentId,
+        },
+      } as never,
       {
         onSuccess: () => {
-          setReplyContent("");
           setReplyingToId(null);
-          // Expand the root thread so the new reply is immediately visible
+          setReplyContent("");
+
           const rootId = findRootCommentId(parentCommentId, commentById, rootIds);
           setExpandedIds((prev) => new Set(prev).add(rootId));
-          if (onExternalInvalidate) onExternalInvalidate();
-          else invalidate();
+
+          if (onExternalInvalidate) {
+            onExternalInvalidate();
+          } else {
+            invalidate();
+          }
         },
         onError: () => toast.error("Không thể gửi phản hồi"),
       }
     );
   };
 
-  const handleToggleExpand = (id: number) => {
+  const toggleExpand = (id: number) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -423,56 +408,84 @@ export function CommentSection({
   };
 
   const handleMentionClick = (parentCommentId: number) => {
-    // Expand the root thread that contains the target comment, then scroll to it
-    const rootId = findRootCommentId(parentCommentId, commentById, rootIds);
-    setExpandedIds((prev) => new Set(prev).add(rootId));
-    // Small delay so the DOM updates from the expand before we try to scroll
-    setTimeout(() => {
-      const el = document.querySelector(`[data-comment-id="${parentCommentId}"]`);
-      el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const el = document.querySelector(`[data-comment-id="${parentCommentId}"]`);
+    if (el) {
+      (el as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" });
       setHighlightedCommentId(parentCommentId);
-      setTimeout(() => setHighlightedCommentId(null), 2000);
-    }, 50);
+      window.setTimeout(
+        () => setHighlightedCommentId((prev) => (prev === parentCommentId ? null : prev)),
+        1400
+      );
+    }
   };
 
-  const sortedTree = useMemo(() => {
-    if (sortOrder === "oldest") return commentTree;
-    return [...commentTree].sort((a, b) => {
-      if (!a.comment.createdAt || !b.comment.createdAt) return 0;
-      return new Date(b.comment.createdAt).getTime() - new Date(a.comment.createdAt).getTime();
+  const sortedRoots = useMemo(() => {
+    const arr = [...commentTree];
+    arr.sort((a, b) => {
+      const tA = a.comment.createdAt ? new Date(a.comment.createdAt).getTime() : 0;
+      const tB = b.comment.createdAt ? new Date(b.comment.createdAt).getTime() : 0;
+      return sortOrder === "newest" ? tB - tA : tA - tB;
     });
+    return arr;
   }, [commentTree, sortOrder]);
 
+  const flatComments = useMemo(() => {
+    const values = Array.from(commentById.values());
+    values.sort((a, b) => {
+      const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tB - tA;
+    });
+    return values;
+  }, [commentById]);
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Bình luận</h3>
-        {commentTree.length > 1 && (
+    <div className="space-y-3">
+      {!hideInput && (
+        <div className="flex gap-2">
+          <Textarea
+            placeholder="Viết bình luận... (Ctrl+Enter để gửi)"
+            value={newContent}
+            rows={2}
+            className="max-h-32 flex-1 resize-none overflow-auto"
+            onChange={(e) => setNewContent(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.ctrlKey) handleCommentSubmit();
+            }}
+          />
           <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground gap-1 text-xs"
-            onClick={() => setSortOrder((prev) => (prev === "oldest" ? "newest" : "oldest"))}>
-            {sortOrder === "oldest" ? (
-              <>
-                <ChevronUp className="h-3.5 w-3.5" />
-                Cũ nhất
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-3.5 w-3.5" />
-                Mới nhất
-              </>
-            )}
+            className="self-end"
+            onClick={handleCommentSubmit}
+            disabled={!newContent.trim() || createComment.isPending}>
+            <Send className="mr-1 h-4 w-4" />
+            Gửi
           </Button>
-        )}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium">Bình luận ({flatComments.length})</p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={sortOrder === "oldest" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSortOrder("oldest")}>
+            Cũ nhất
+          </Button>
+          <Button
+            variant={sortOrder === "newest" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSortOrder("newest")}>
+            Mới nhất
+          </Button>
+        </div>
       </div>
 
-      {sortedTree.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Chưa có bình luận nào</p>
+      {sortedRoots.length === 0 ? (
+        <p className="text-muted-foreground py-4 text-center text-sm">Chưa có bình luận</p>
       ) : (
-        <div className="space-y-1 divide-y">
-          {sortedTree.map((node) => (
+        <div className="space-y-1">
+          {sortedRoots.map((node) => (
             <CommentThread
               key={node.comment.id}
               node={node}
@@ -483,7 +496,7 @@ export function CommentSection({
               onReplyContentChange={setReplyContent}
               onReplySubmit={handleReplySubmit}
               expandedIds={expandedIds}
-              onToggleExpand={handleToggleExpand}
+              onToggleExpand={toggleExpand}
               commentById={commentById}
               highlightedCommentId={highlightedCommentId}
               onMentionClick={handleMentionClick}
@@ -492,27 +505,26 @@ export function CommentSection({
         </div>
       )}
 
-      {/* Main comment input — hidden when parent provides its own sticky input */}
-      {!hideInput && (
-        <div className="flex gap-2">
-          <Textarea
-            placeholder="Viết bình luận... (Ctrl+Enter để gửi)"
-            value={newContent}
-            rows={2}
-            className="max-h-32 resize-none overflow-auto"
-            onChange={(e) => setNewContent(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && e.ctrlKey) handleCommentSubmit();
-            }}
-          />
-          <Button
-            size="sm"
-            className="self-end"
-            onClick={handleCommentSubmit}
-            disabled={!newContent.trim()}>
-            <Send className="mr-1 h-4 w-4" />
-            Gửi
-          </Button>
+      {allowDelete && onDeleteComment && flatComments.length > 0 && (
+        <div className="space-y-2 border-t pt-4">
+          <p className="text-sm font-medium">Quản trị bình luận</p>
+          {flatComments.map((comment) => (
+            <div
+              key={comment.id}
+              className="flex items-start justify-between rounded-lg border p-3 dark:border-slate-700">
+              <div>
+                <p className="text-sm font-medium">{comment.userName || "Ẩn danh"}</p>
+                <p className="text-sm text-gray-600 dark:text-slate-400">{comment.content}</p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                onClick={() => comment.id && onDeleteComment(comment.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
         </div>
       )}
     </div>

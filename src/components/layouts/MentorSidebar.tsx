@@ -4,7 +4,6 @@ import {
   ChevronRight,
   LayoutDashboard,
   LogOut,
-  Newspaper,
   Star,
   User,
   Users,
@@ -44,11 +43,6 @@ const menuItems = [
     label: "Đánh giá",
     icon: Star,
     path: "/mentor/reviews",
-  },
-  {
-    label: "Cộng đồng",
-    icon: Newspaper,
-    path: "/mentor/community",
   },
   {
     label: "Tài khoản",
@@ -125,7 +119,7 @@ export function MentorSidebar() {
             "flex h-16 items-center gap-2 border-b border-emerald-100 dark:border-slate-800",
             isCollapsed ? "justify-center px-2" : "px-6"
           )}>
-          <img src={icon2} alt="INBLUE AI" className="h-9 w-9 flex-shrink-0" />
+          <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
           {!isCollapsed && (
             <div className="flex flex-col">
               <span className="text-lg font-bold text-emerald-700 dark:text-white">INBLUE AI</span>

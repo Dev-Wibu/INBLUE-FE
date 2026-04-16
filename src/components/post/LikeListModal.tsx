@@ -1,18 +1,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { PostLikeResponse } from "@/interfaces/schema.types";
-import { usePostLikes } from "@/services/post.manager";
 
 interface LikeListModalProps {
-  postId: number;
+  likes: PostLikeResponse[];
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
 }
 
-export function LikeListModal({ postId, open, onOpenChange }: LikeListModalProps) {
-  const { data } = usePostLikes(postId);
-  const likes = (Array.isArray(data) ? data : (data as unknown as PostLikeResponse[])) ?? [];
-
+export function LikeListModal({ likes, open, onOpenChange }: LikeListModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">

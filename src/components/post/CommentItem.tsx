@@ -7,14 +7,10 @@ import type { PostCommentResponse } from "@/interfaces/schema.types";
 interface CommentItemProps {
   comment: PostCommentResponse;
   currentUserId?: number;
-  onReply?: (comment: PostCommentResponse) => void;
-  /** Full name of the @mentioned user (parent comment author). Enables exact multi-word matching. */
+  onReply?: (_comment: PostCommentResponse) => void;
   mentionedUserName?: string;
-  /** ID of the parent comment — used as jump target when @mention is clicked. */
   parentCommentId?: number;
-  /** Called with the parent comment ID when the @mention span is clicked. */
-  onMentionClick?: (parentCommentId: number) => void;
-  /** When true, applies a brief highlight ring (used after jump-to-parent scroll). */
+  onMentionClick?: (_parentCommentId: number) => void;
   isHighlighted?: boolean;
 }
 
@@ -42,8 +38,6 @@ function renderContent(
 ): (string | React.ReactElement)[] {
   if (!text) return [];
 
-  // If we know the exact mentioned username, match it precisely — handles multi-word names
-  // like "@Hoàng Tử Gió" that the generic \S+ regex would split at the first space.
   if (mentionedUserName) {
     const mention = `@${mentionedUserName}`;
     if (text.startsWith(mention)) {
@@ -68,7 +62,6 @@ function renderContent(
     }
   }
 
-  // Fallback: regex match for single-word @mentions (no spaces)
   const parts = text.split(/(@\S+)/g);
   return parts.map((part, i) =>
     /^@\S+$/.test(part) ? (
