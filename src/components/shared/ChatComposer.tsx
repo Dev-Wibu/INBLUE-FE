@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Send, SmilePlus } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface ChatComposerProps {
   value: string;
@@ -19,7 +19,33 @@ interface ChatComposerProps {
   onApplyQuickCommand?: (_command: string) => void;
 }
 
-const QUICK_EMOJIS = ["😀", "😂", "😍", "👍", "🙏", "🔥", "🎯", "💡", "✅", "🚀"];
+const QUICK_EMOJIS = [
+  "👍",
+  "👎",
+  "👌",
+  "😊",
+  "😋",
+  "😘",
+  "🤩",
+  "😀",
+  "😂",
+  "😍",
+  "🥺",
+  "🤔",
+  "🥰",
+  "🤣",
+  "😭",
+  "🙏",
+  "🔥",
+  "💡",
+  "🐧",
+  "🗿",
+  "🎉",
+  "👏",
+  "🤝",
+  "🤡",
+  "💀",
+];
 
 const QUICK_COMMANDS = [
   {
@@ -44,6 +70,9 @@ const QUICK_COMMANDS = [
   },
 ];
 
+const RECENT_EMOJI_STORAGE_KEY = "messenger_recent_emojis";
+const MAX_RECENT_EMOJIS = 8;
+
 export function ChatComposer({
   value,
   onChange,
@@ -54,6 +83,20 @@ export function ChatComposer({
   onApplyQuickCommand,
 }: ChatComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [recentEmojis, setRecentEmojis] = useState<string[]>(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(RECENT_EMOJI_STORAGE_KEY) || "[]");
+      if (Array.isArray(stored)) {
+        return stored
+          .filter((item): item is string => typeof item === "string" && item.length > 0)
+          .slice(0, MAX_RECENT_EMOJIS);
+      }
+    } catch {
+      return [];
+    }
+
+    return [];
+  });
 
   const commandQuery = value.trimStart();
   const isCommandMode = commandQuery.startsWith("/");
@@ -81,6 +124,18 @@ export function ChatComposer({
 
   const appendEmoji = (emoji: string) => {
     onChange(`${value}${emoji}`);
+    setRecentEmojis((previous) => {
+      const next = [emoji, ...previous.filter((item) => item !== emoji)].slice(
+        0,
+        MAX_RECENT_EMOJIS
+      );
+      try {
+        localStorage.setItem(RECENT_EMOJI_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore localStorage errors to keep compose flow responsive.
+      }
+      return next;
+    });
     textareaRef.current?.focus();
   };
 
@@ -105,6 +160,8 @@ export function ChatComposer({
     }
   };
 
+  const canSend = value.trim().length > 0 && !disabled;
+
   return (
     <div className="mx-auto flex w-full max-w-5xl items-end gap-2">
       <DropdownMenu>
@@ -121,6 +178,22 @@ export function ChatComposer({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="start" className="w-56 p-2">
+          {recentEmojis.length > 0 && (
+            <>
+              <p className="px-2 pb-1 text-xs font-semibold text-slate-500">Dùng gần đây</p>
+              <div className="mb-2 grid grid-cols-4 gap-1">
+                {recentEmojis.map((emoji) => (
+                  <DropdownMenuItem
+                    key={`recent-${emoji}`}
+                    className="justify-center text-lg"
+                    onSelect={() => appendEmoji(emoji)}>
+                    {emoji}
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            </>
+          )}
+
           <p className="px-2 pb-1 text-xs font-semibold text-slate-500">Emoji nhanh</p>
           <div className="grid grid-cols-5 gap-1">
             {QUICK_EMOJIS.map((emoji) => (
@@ -178,7 +251,7 @@ export function ChatComposer({
         onClick={onSend}
         size="icon"
         className="h-11 w-11 shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700"
-        disabled={disabled}
+        disabled={!canSend}
         title="Gửi tin nhắn"
         aria-label="Gửi tin nhắn">
         <Send className="h-4.5 w-4.5" />

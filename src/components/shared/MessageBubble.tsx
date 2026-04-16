@@ -122,7 +122,7 @@ export function MessageBubble({
       <ContextMenuTrigger asChild>
         <article
           className={cn(
-            "flex max-w-[88%] flex-col gap-1 sm:max-w-[80%] lg:max-w-[70%]",
+            "group flex max-w-[88%] flex-col gap-1 sm:max-w-[80%] lg:max-w-[70%]",
             sender === "user" ? "ml-auto items-end" : "items-start"
           )}>
           <div
@@ -134,8 +134,8 @@ export function MessageBubble({
               sender !== "user" && isGroupedWithPrevious && "rounded-tl-md",
               sender !== "user" && isGroupedWithNext && "rounded-bl-md",
               sender === "user"
-                ? "bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/20"
-                : "border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                ? "bg-linear-to-br from-blue-600 via-indigo-600 to-violet-600 text-white shadow-blue-500/20"
+                : "border border-slate-200 bg-linear-to-br from-white via-slate-50 to-slate-100/70 text-slate-700 dark:border-slate-700 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 dark:text-slate-100"
             )}>
             {highlightContent(content, searchQuery)}
           </div>
@@ -174,6 +174,42 @@ export function MessageBubble({
                 {status === "failed" && <TriangleAlert className="h-3 w-3" />}
                 {STATUS_LABELS[status]}
               </span>
+            )}
+          </div>
+
+          <div
+            className={cn(
+              "mt-0.5 flex items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100",
+              sender === "user" ? "justify-end" : "justify-start"
+            )}>
+            {onCopy && (
+              <button
+                type="button"
+                title="Sao chép nội dung"
+                onClick={() => onCopy(content)}
+                className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+            )}
+
+            {onTogglePin && (
+              <button
+                type="button"
+                title={isPinned ? "Bỏ ghim tin nhắn" : "Ghim tin nhắn"}
+                onClick={() => onTogglePin(id)}
+                className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                {isPinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+              </button>
+            )}
+
+            {status === "failed" && onRetry && (
+              <button
+                type="button"
+                title="Gửi lại tin nhắn"
+                onClick={() => onRetry(id)}
+                className="rounded-md p-1 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-300">
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
             )}
           </div>
         </article>

@@ -21,6 +21,8 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
   ChevronsUp,
   MessageSquare,
   Pin,
@@ -311,6 +313,8 @@ export function MessengerPage() {
     {}
   );
   const [visibleMessageLimit, setVisibleMessageLimit] = useState(MESSAGE_RENDER_STEP);
+  const [draftLastSavedAt, setDraftLastSavedAt] = useState<string | null>(null);
+  const [isPinnedMessageCollapsed, setIsPinnedMessageCollapsed] = useState(false);
 
   // Search states
   const [contactSearchQuery, setContactSearchQuery] = useState("");
@@ -606,8 +610,15 @@ export function MessengerPage() {
     try {
       if (messageInput.trim().length === 0) {
         localStorage.removeItem(draftKey);
+        setDraftLastSavedAt(null);
       } else {
         localStorage.setItem(draftKey, messageInput);
+        setDraftLastSavedAt(
+          new Date().toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        );
       }
     } catch {
       // Ignore draft persistence errors to keep chat usable.
@@ -779,14 +790,18 @@ export function MessengerPage() {
       const attempt = retryAttemptRef.current[message.id] ?? message.retries ?? 0;
       attemptSendMessage(message.id, message.content, recipientFullId, attempt);
     });
+    // Avoid forcing retry effect to rerun when send handler identity changes between renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionState, selectedContact]);
 
   const closeConversation = () => {
     setSelectedContact(null);
     setMessageInput("");
+    setDraftLastSavedAt(null);
     setMessageSearchQuery("");
     setVisibleMessageLimit(MESSAGE_RENDER_STEP);
     setIsMessageSearchOpen(false);
+    setIsPinnedMessageCollapsed(false);
   };
 
   const openConversation = (contact: Contact) => {
@@ -795,6 +810,7 @@ export function MessengerPage() {
 
     setSelectedContact(contact);
     setMessageInput(getStoredDraft(contact));
+    setDraftLastSavedAt(null);
     setPinnedMessageIds((prev) => {
       const next = { ...prev };
 
@@ -809,6 +825,7 @@ export function MessengerPage() {
     setVisibleMessageLimit(MESSAGE_RENDER_STEP);
     setMessageSearchQuery("");
     setIsMessageSearchOpen(false);
+    setIsPinnedMessageCollapsed(false);
   };
 
   const attemptSendMessage = (
@@ -1056,6 +1073,8 @@ export function MessengerPage() {
 
     window.addEventListener("keydown", handleGlobalShortcut);
     return () => window.removeEventListener("keydown", handleGlobalShortcut);
+    // Keep shortcut dependencies stable and avoid listener re-registration loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     contacts,
     conversationMetaMap,
@@ -1486,10 +1505,31 @@ export function MessengerPage() {
                         <p className="text-[11px] font-semibold tracking-wide text-amber-700 uppercase dark:text-amber-300">
                           Tin nhắn đã ghim
                         </p>
-                        <p className="line-clamp-2 text-sm text-slate-700 dark:text-slate-200">
-                          {pinnedMessage.content}
-                        </p>
+
+                        {!isPinnedMessageCollapsed && (
+                          <p className="line-clamp-2 text-sm text-slate-700 dark:text-slate-200">
+                            {pinnedMessage.content}
+                          </p>
+                        )}
                       </div>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 rounded-lg text-xs text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                        onClick={() => setIsPinnedMessageCollapsed((current) => !current)}>
+                        {isPinnedMessageCollapsed ? (
+                          <>
+                            <ChevronDown className="mr-1.5 h-3.5 w-3.5" />
+                            Mở rộng
+                          </>
+                        ) : (
+                          <>
+                            <ChevronUp className="mr-1.5 h-3.5 w-3.5" />
+                            Thu gọn
+                          </>
+                        )}
+                      </Button>
 
                       <Button
                         variant="ghost"
@@ -1590,6 +1630,19 @@ export function MessengerPage() {
                 </div>
 
                 <div className="border-t border-slate-200/80 bg-white/90 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-5 md:py-4 dark:border-slate-800 dark:bg-slate-900/90">
+                  <div className="mx-auto mb-2 flex w-full max-w-5xl items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground">
+                      Tin nhắn được lưu tự động khi bạn nhập, không cần lo mất nội dung khi chuyển
+                      cuộc hội thoại hoặc đóng trình duyệt.
+                    </span>
+
+                    {messageInput.trim().length > 0 && draftLastSavedAt && (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                        Đã lưu lúc {draftLastSavedAt}
+                      </span>
+                    )}
+                  </div>
+
                   <ChatComposer
                     value={messageInput}
                     onChange={setMessageInput}

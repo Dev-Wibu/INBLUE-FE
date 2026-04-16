@@ -24,14 +24,14 @@ function ChatInput({
   onStartListening,
   onStopListening,
 }: {
-  onSend: (message: string) => void;
+  onSend: (_message: string) => void;
   disabled: boolean;
   placeholder?: string;
   isListening: boolean;
   interimTranscript: string;
   isSpeechSupported: boolean;
   value: string;
-  onValueChange: (val: string) => void;
+  onValueChange: (_val: string) => void;
   onStartListening: () => void;
   onStopListening: () => void;
 }) {
@@ -73,6 +73,8 @@ function ChatInput({
   // Ghép interim transcript vào cuối để preview realtime khi đang nói
   const displayValue =
     isListening && interimTranscript ? (value ? value + " " : "") + interimTranscript : value;
+  const characterCount = value.length;
+  const canSend = value.trim().length > 0 && !disabled;
 
   return (
     <div className="border-t border-slate-200/80 bg-white/90 p-3 backdrop-blur-sm md:p-4 dark:border-slate-800 dark:bg-slate-900/90">
@@ -118,12 +120,28 @@ function ChatInput({
         </div>
         <Button
           onClick={handleSend}
-          disabled={!value.trim() || disabled}
+          disabled={!canSend}
           size="icon"
           className="h-11 w-11 shrink-0 rounded-xl bg-linear-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800">
           <Send className="h-5 w-5" />
         </Button>
       </div>
+
+      <div className="mx-auto mt-2 flex max-w-5xl items-center justify-between px-1 text-[11px]">
+        <p className="text-muted-foreground truncate pr-3">
+          {isListening
+            ? "Mẹo: nói thành câu ngắn, rõ ý để nhận diện giọng nói chính xác hơn"
+            : "Mẹo: trả lời theo ngữ cảnh thực tế, nêu rõ vai trò và kết quả bạn đạt được"}
+        </p>
+        <span
+          className={cn(
+            "shrink-0",
+            characterCount > 1200 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+          )}>
+          {characterCount} ký tự
+        </span>
+      </div>
+
       {isListening && (
         <p className="text-muted-foreground mt-2 text-center text-xs">
           <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />
@@ -165,7 +183,7 @@ export function ChatPanel({
   messages: ChatMessage[];
   userAvatarUrl?: string;
   isTTSSupported: boolean;
-  onToggleSpeak: (text: string, id: number) => void;
+  onToggleSpeak: (_text: string, _id: number) => void;
   speakingId: string | number | null;
   isEvaluating: boolean;
   isSubmitting: boolean;
@@ -176,12 +194,12 @@ export function ChatPanel({
   onNavigateToList: () => void;
   onNavigateToSetup: () => void;
   onViewResults: () => void;
-  onSendAnswer: (answer: string) => void;
+  onSendAnswer: (_answer: string) => void;
   isListening: boolean;
   interimTranscript: string;
   isSpeechSupported: boolean;
   chatInputValue: string;
-  onChatInputChange: (val: string) => void;
+  onChatInputChange: (_val: string) => void;
   onStartListening: () => void;
   onStopListening: () => void;
 }) {
@@ -197,6 +215,16 @@ export function ChatPanel({
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto bg-linear-to-b from-slate-100/50 via-white to-slate-100/60 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
         <div className="mx-auto max-w-5xl space-y-5 px-4 py-5 md:px-6 md:py-6">
+          {!interviewFinished && (
+            <div className="rounded-2xl border border-cyan-200/80 bg-linear-to-r from-cyan-50/90 via-blue-50/80 to-cyan-50/90 px-3.5 py-2.5 text-xs text-cyan-800 shadow-sm dark:border-cyan-900/70 dark:from-cyan-950/30 dark:via-blue-950/20 dark:to-cyan-950/30 dark:text-cyan-200">
+              <p className="font-semibold">Gợi ý nhanh để trả lời hiệu quả</p>
+              <p className="mt-0.5 opacity-90">
+                Nên nêu bối cảnh thật, cách bạn xử lý vấn đề và kết quả đo lường được để AI đánh giá
+                sát thực tế hơn.
+              </p>
+            </div>
+          )}
+
           {messages.map((msg) => (
             <ChatBubble
               key={msg.id}

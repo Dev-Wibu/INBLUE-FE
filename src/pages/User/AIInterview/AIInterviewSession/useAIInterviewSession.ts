@@ -8,6 +8,193 @@ import { useAuthStore } from "@/stores/authStore";
 
 import type { ChatMessage } from "./types";
 
+const normalizeServerTimestamp = (value?: string): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.endsWith("Z") ? value : `${value}Z`;
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const normalizeMessageContent = (value: string): string => {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+};
+
+const isEquivalentMessage = (first: ChatMessage, second: ChatMessage): boolean => {
+  if (first.role !== second.role) {
+    return false;
+  }
+
+  return normalizeMessageContent(first.content) === normalizeMessageContent(second.content);
+};
+
+const mergeServerAndLocalMessages = (
+  serverMessages: ChatMessage[],
+  localMessages: ChatMessage[]
+): ChatMessage[] => {
+  if (serverMessages.length === 0) {
+    return localMessages;
+  }
+
+  const merged = [...serverMessages];
+  let searchStart = 0;
+
+  for (const localMessage of localMessages) {
+    let matchedIndex = -1;
+    for (let index = searchStart; index < merged.length; index += 1) {
+      if (isEquivalentMessage(localMessage, merged[index])) {
+        matchedIndex = index;
+        break;
+      }
+    }
+
+    if (matchedIndex >= 0) {
+      if (merged[matchedIndex].timestamp === "—" && localMessage.timestamp !== "—") {
+        merged[matchedIndex] = {
+          ...merged[matchedIndex],
+          timestamp: localMessage.timestamp,
+        };
+      }
+      searchStart = matchedIndex + 1;
+      continue;
+    }
+
+    merged.push(localMessage);
+    searchStart = merged.length;
+  }
+
+  return merged;
+};
+
+const removeMergedDuplicates = (messages: ChatMessage[]): ChatMessage[] => {
+  const seen = new Set<string>();
+  const deduped: ChatMessage[] = [];
+
+  for (const message of messages) {
+    const fingerprint = [message.role, normalizeMessageContent(message.content)].join("|");
+
+    if (seen.has(fingerprint)) {
+      continue;
+    }
+
+    seen.add(fingerprint);
+    deduped.push(message);
+  }
+
+  return deduped;
+};
+
+const applyStableMessageIds = (
+  nextMessages: ChatMessage[],
+  previousMessages: ChatMessage[],
+  nextIdRef: { current: number }
+): ChatMessage[] => {
+  const usedPreviousIndexes = new Set<number>();
+
+  return nextMessages.map((message) => {
+    const matchedIndex = previousMessages.findIndex(
+      (previousMessage, index) =>
+        !usedPreviousIndexes.has(index) && isEquivalentMessage(previousMessage, message)
+    );
+
+    if (matchedIndex >= 0) {
+      usedPreviousIndexes.add(matchedIndex);
+      return {
+        ...message,
+        id: previousMessages[matchedIndex].id,
+      };
+    }
+
+    const newId = nextIdRef.current;
+    nextIdRef.current += 1;
+    return {
+      ...message,
+      id: newId,
+    };
+  });
+};
+
+const buildMessagesFromCache = (
+  cacheData: {
+    chatHistory?: Array<{
+      questionText?: string;
+      answerText?: string;
+      submittedAt?: string;
+      phaseName?: string;
+      type?: string;
+    }>;
+    currentQuestionText?: string;
+    currentQuestionType?: string;
+  },
+  fallbackTimestamp: () => string
+): { messages: ChatMessage[]; lastPhaseName?: string } => {
+  const restored: ChatMessage[] = [];
+  let lastPhaseName: string | undefined;
+
+  for (const exchange of cacheData.chatHistory ?? []) {
+    const serverTimestamp = normalizeServerTimestamp(exchange.submittedAt) ?? fallbackTimestamp();
+
+    if (exchange.questionText) {
+      restored.push({
+        id: 0,
+        role: "ai",
+        content: exchange.questionText,
+        timestamp: serverTimestamp,
+        meta: {
+          phaseName: exchange.phaseName,
+          questionType: exchange.type,
+        },
+      });
+    }
+
+    if (exchange.answerText) {
+      restored.push({
+        id: 0,
+        role: "user",
+        content: exchange.answerText,
+        timestamp: serverTimestamp,
+      });
+    }
+
+    if (exchange.phaseName) {
+      lastPhaseName = exchange.phaseName;
+    }
+  }
+
+  if (cacheData.currentQuestionText) {
+    const lastMessage = restored[restored.length - 1];
+    const isDuplicateCurrentQuestion =
+      lastMessage?.role === "ai" && lastMessage.content === cacheData.currentQuestionText;
+
+    if (!isDuplicateCurrentQuestion) {
+      restored.push({
+        id: 0,
+        role: "ai",
+        content: cacheData.currentQuestionText,
+        timestamp: fallbackTimestamp(),
+        meta: {
+          phaseName: lastPhaseName,
+          questionType: cacheData.currentQuestionType,
+        },
+      });
+    }
+  }
+
+  return {
+    messages: restored,
+    lastPhaseName,
+  };
+};
+
 export function useAIInterviewSession() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
@@ -76,8 +263,6 @@ export function useAIInterviewSession() {
   const msgIdCounter = useRef(1);
   // Dùng ref thay vì state để guard khỏi StrictMode double-invocation
   const hasProcessedStartRef = useRef(false);
-  // Guard để tránh khôi phục từ cache nhiều lần
-  const hasRestoredFromCacheRef = useRef(false);
   // Ref đồng bộ với messages state để tránh stale closure trong các useEffect
   const messagesRef = useRef<ChatMessage[]>([]);
 
@@ -101,6 +286,15 @@ export function useAIInterviewSession() {
   // sessionId từ cache Redis (dbId) — dùng để navigate đến trang kết quả
   const sessionId = cacheData?.dbId;
 
+  const getNow = useCallback(
+    () =>
+      new Date().toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    []
+  );
+
   // Lưu sessionId vào localStorage làm fallback (phòng khi cache đã hết hạn lúc navigate)
   useEffect(() => {
     if (sessionId && sessionKey) {
@@ -110,60 +304,35 @@ export function useAIInterviewSession() {
 
   // Khôi phục lịch sử chat từ Redis cache — nguồn dữ liệu duy nhất cho chat history
   useEffect(() => {
-    if (!cacheData || hasRestoredFromCacheRef.current) return;
+    if (!cacheData) return;
 
-    const restored: ChatMessage[] = [];
-    let counter = 1;
-    let lastPhaseName: string | undefined;
-    for (const exchange of cacheData.chatHistory ?? []) {
-      if (exchange.questionText) {
-        restored.push({
-          id: counter++,
-          role: "ai",
-          content: exchange.questionText,
-          // Câu hỏi AI không cần timestamp hiển thị — thời gian quan trọng là lúc user trả lời
-          timestamp: "—",
-        });
-      }
-      if (exchange.answerText) {
-        // Gắn submittedAt của server vào câu trả lời — đây là thời gian thực tế user gửi
-        const userTs = exchange.submittedAt
-          ? new Date(
-              exchange.submittedAt.endsWith("Z") ? exchange.submittedAt : exchange.submittedAt + "Z"
-            ).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
-          : "—";
-        restored.push({
-          id: counter++,
-          role: "user",
-          content: exchange.answerText,
-          timestamp: userTs,
-        });
-      }
-      if (exchange.phaseName) lastPhaseName = exchange.phaseName;
-    }
-    // Câu hỏi đang chờ user trả lời — chỉ thêm nếu start chưa xử lý (tránh trùng lặp race condition)
-    if (cacheData.currentQuestionText && !hasProcessedStartRef.current) {
-      restored.push({
-        id: counter++,
-        role: "ai",
-        content: cacheData.currentQuestionText,
-        timestamp: "—",
-      });
+    const { messages: restored, lastPhaseName } = buildMessagesFromCache(cacheData, getNow);
+    const hasServerConversation =
+      (cacheData.chatHistory?.length ?? 0) > 0 || !!cacheData.currentQuestionText;
+
+    if (hasServerConversation) {
+      hasProcessedStartRef.current = true;
+      setHasStarted(true);
     }
 
     if (restored.length > 0) {
-      hasRestoredFromCacheRef.current = true;
-      hasProcessedStartRef.current = true;
-      setMessages(restored);
-      messagesRef.current = restored;
-      msgIdCounter.current = counter;
-      setHasStarted(true);
-      if (lastPhaseName) setCurrentPhase(lastPhaseName);
+      setMessages((previous) => {
+        const merged = mergeServerAndLocalMessages(restored, previous);
+        const deduped = removeMergedDuplicates(merged);
+        const withStableIds = applyStableMessageIds(deduped, previous, msgIdCounter);
+        messagesRef.current = withStableIds;
+        return withStableIds;
+      });
+
+      if (lastPhaseName) {
+        setCurrentPhase(lastPhaseName);
+      }
     }
-    if (cacheData.currentQuestionIndex != null) {
+
+    if (typeof cacheData.currentQuestionIndex === "number" && cacheData.currentQuestionIndex > 0) {
       setCurrentQuestionIndex(cacheData.currentQuestionIndex);
     }
-  }, [cacheData]);
+  }, [cacheData, getNow]);
 
   const submitMutation = $api.useMutation("post", "/api/v1/interview/submit");
 
@@ -176,12 +345,6 @@ export function useAIInterviewSession() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isSubmitting]);
-
-  const getNow = () =>
-    new Date().toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
   const addAIMessage = useCallback(
     (data: {
@@ -236,6 +399,16 @@ export function useAIInterviewSession() {
       }
 
       if (data.questionContent) {
+        const lastMessage = messagesRef.current[messagesRef.current.length - 1];
+        const isSameAsLatestAiMessage =
+          lastMessage?.role === "ai" &&
+          normalizeMessageContent(lastMessage.content) ===
+            normalizeMessageContent(data.questionContent);
+
+        if (isSameAsLatestAiMessage) {
+          return;
+        }
+
         const newId = msgIdCounter.current++;
         setMessages((prev) => [
           ...prev,
@@ -277,7 +450,8 @@ export function useAIInterviewSession() {
         !!sessionKey &&
         !hasStarted &&
         !isCacheLoading &&
-        (isCacheError || (cacheData?.chatHistory?.length ?? 0) === 0),
+        (isCacheError ||
+          ((cacheData?.chatHistory?.length ?? 0) === 0 && !cacheData?.currentQuestionText)),
     }
   );
 
@@ -330,12 +504,19 @@ export function useAIInterviewSession() {
       }
 
       setTimeout(() => {
-        // Nếu khôi phục từ cache đã chạy trước timeout, bỏ qua để tránh thêm câu hỏi trùng
-        if (hasRestoredFromCacheRef.current) return;
+        const hasServerConversation =
+          (cacheData?.chatHistory?.length ?? 0) > 0 || !!cacheData?.currentQuestionText;
+        if (hasServerConversation) return;
+
+        const hasSameAiQuestion = messagesRef.current.some(
+          (message) => message.role === "ai" && message.content === startData.questionContent
+        );
+        if (hasSameAiQuestion) return;
+
         addAIMessage(startData);
       }, 600);
     }
-  }, [startData, addAIMessage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [startData, addAIMessage, cacheData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle send answer
   const handleSendAnswer = useCallback(
@@ -362,7 +543,7 @@ export function useAIInterviewSession() {
         addAIMessage(response);
         // Invalidate cache để refetch chatHistory với submittedAt mới nhất từ server
         // → effect sync sẽ cập nhật timestamp câu trả lời của user
-        void queryClient.invalidateQueries({
+        await queryClient.invalidateQueries({
           queryKey: ["get", "/api/interview-sessions/cache/{sessionKey}"],
         });
       } catch (err) {
@@ -401,7 +582,7 @@ export function useAIInterviewSession() {
         }
       }
     },
-    [sessionKey, isSubmitting, interviewFinished, submitMutation, addAIMessage]
+    [sessionKey, isSubmitting, interviewFinished, submitMutation, addAIMessage, getNow]
   );
 
   // Dọn localStorage và chuyển đến trang kết quả
