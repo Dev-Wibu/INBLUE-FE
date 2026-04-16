@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { queryClient } from "@/lib/queryClient";
 import {
-    useCheckLiked,
-    useLikePost,
-    usePostLikesCount,
-    useUnlikePost,
+  useCheckLiked,
+  useLikePost,
+  usePostLikesCount,
+  useUnlikePost,
 } from "@/services/post.manager";
 
 interface LikeButtonProps {

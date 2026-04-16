@@ -9,7 +9,7 @@ export {
   AIInterviewListPage,
   AIInterviewResultPage,
   AIInterviewSessionPage,
-  AIInterviewSetupPage
+  AIInterviewSetupPage,
 } from "./AIInterview";
 
 // Mock Interview exports
@@ -21,7 +21,7 @@ export {
   SessionDetailPage,
   SessionHistoryPage,
   SessionRoomPage,
-  WriteReviewPage
+  WriteReviewPage,
 } from "./MockInterview";
 
 // Account exports
@@ -42,9 +42,8 @@ export {
   PracticeSetDetailPage,
   PracticeSetsPage,
   QuizPage,
-  QuizResultPage
+  QuizResultPage,
 } from "./Practice";
 
 // Mentor detail exports
 export { MentorDetailPage } from "./MentorDetail";
-
