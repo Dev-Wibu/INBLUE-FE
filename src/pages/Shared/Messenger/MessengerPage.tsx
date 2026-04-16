@@ -21,15 +21,24 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
+  ChevronsUp,
   MessageSquare,
   Pin,
   PinOff,
   Plus,
   Search,
+  Sparkles,
   User as UserIcon,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type TouchEvent as ReactTouchEvent,
+} from "react";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -54,7 +63,34 @@ interface MessengerMessage {
   content: string;
   timestamp: string;
   status?: MessageDeliveryStatus;
+  retries?: number;
 }
+
+interface ConversationMeta {
+  lastMessage: string;
+  lastTimestamp: string;
+}
+
+interface TimelineDayItem {
+  type: "day";
+  key: string;
+  label: string;
+}
+
+interface TimelineMessageItem {
+  type: "message";
+  key: string;
+  message: MessengerMessage;
+  isGroupedWithPrevious: boolean;
+  isGroupedWithNext: boolean;
+}
+
+type TimelineItem = TimelineDayItem | TimelineMessageItem;
+
+const MESSAGE_RENDER_STEP = 80;
+const MAX_RETRY_ATTEMPTS = 4;
+const RETRY_BASE_DELAY_MS = 1200;
+const GROUPING_WINDOW_MS = 5 * 60 * 1000;
 
 const createContactFromMentor = (mentorData?: SchemaMentorResponse): Contact | null => {
   if (mentorData?.id === undefined || !mentorData.name) {
@@ -99,6 +135,113 @@ const getPinnedStorageKey = (
   contactId: number
 ) => {
   return `messenger-pinned:${userRole}:${userId}:${contactRole}:${contactId}`;
+};
+
+const getTimestampValue = (timestamp: string): number => {
+  const parsed = new Date(timestamp).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const getDayKey = (timestamp: string): string => {
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) {
+    return "unknown";
+  }
+
+  return `${parsed.getFullYear()}-${parsed.getMonth()}-${parsed.getDate()}`;
+};
+
+const formatDayLabel = (timestamp: string): string => {
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Hôm nay";
+  }
+
+  return parsed.toLocaleDateString("vi-VN", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const formatConversationTime = (timestamp: string): string => {
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  const now = new Date();
+  const sameDay =
+    parsed.getDate() === now.getDate() &&
+    parsed.getMonth() === now.getMonth() &&
+    parsed.getFullYear() === now.getFullYear();
+
+  if (sameDay) {
+    return parsed.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return parsed.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+};
+
+const buildTimelineItems = (messages: MessengerMessage[]): TimelineItem[] => {
+  if (messages.length === 0) {
+    return [];
+  }
+
+  const sortedMessages = [...messages].sort(
+    (a, b) => getTimestampValue(a.timestamp) - getTimestampValue(b.timestamp)
+  );
+
+  const timeline: TimelineItem[] = [];
+
+  for (let index = 0; index < sortedMessages.length; index += 1) {
+    const message = sortedMessages[index];
+    const previous = sortedMessages[index - 1];
+    const next = sortedMessages[index + 1];
+
+    const previousDayKey = previous ? getDayKey(previous.timestamp) : "";
+    const currentDayKey = getDayKey(message.timestamp);
+
+    if (!previous || previousDayKey !== currentDayKey) {
+      timeline.push({
+        type: "day",
+        key: `day-${currentDayKey}-${index}`,
+        label: formatDayLabel(message.timestamp),
+      });
+    }
+
+    const isGroupedWithPrevious =
+      !!previous &&
+      previous.sender === message.sender &&
+      previousDayKey === currentDayKey &&
+      Math.abs(getTimestampValue(message.timestamp) - getTimestampValue(previous.timestamp)) <=
+        GROUPING_WINDOW_MS;
+
+    const nextDayKey = next ? getDayKey(next.timestamp) : "";
+    const isGroupedWithNext =
+      !!next &&
+      next.sender === message.sender &&
+      nextDayKey === currentDayKey &&
+      Math.abs(getTimestampValue(next.timestamp) - getTimestampValue(message.timestamp)) <=
+        GROUPING_WINDOW_MS;
+
+    timeline.push({
+      type: "message",
+      key: message.id,
+      message,
+      isGroupedWithPrevious,
+      isGroupedWithNext,
+    });
+  }
+
+  return timeline;
 };
 
 export function MessengerPage() {
@@ -164,11 +307,18 @@ export function MessengerPage() {
   const [connectionState, setConnectionState] = useState<SocketConnectionState>(() =>
     socketService.getConnectionState()
   );
+  const [conversationMetaMap, setConversationMetaMap] = useState<Record<string, ConversationMeta>>(
+    {}
+  );
+  const [visibleMessageLimit, setVisibleMessageLimit] = useState(MESSAGE_RENDER_STEP);
 
   // Search states
   const [contactSearchQuery, setContactSearchQuery] = useState("");
   const [messageSearchQuery, setMessageSearchQuery] = useState("");
   const [isMessageSearchOpen, setIsMessageSearchOpen] = useState(false);
+
+  const deferredContactSearchQuery = useDeferredValue(contactSearchQuery);
+  const deferredMessageSearchQuery = useDeferredValue(messageSearchQuery);
 
   // Mentor discovery states
   const [showMentorList, setShowMentorList] = useState(false);
@@ -176,18 +326,146 @@ export function MessengerPage() {
   const [loadingMentors, setLoadingMentors] = useState(false);
 
   const selectedContactRef = useRef<Contact | null>(null);
+  const messagesRef = useRef<MessengerMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const retryTimeoutRef = useRef<Record<string, number>>({});
+  const retryAttemptRef = useRef<Record<string, number>>({});
+  const destroyedRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      destroyedRef.current = true;
+      Object.values(retryTimeoutRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
+      retryTimeoutRef.current = {};
+      retryAttemptRef.current = {};
+    };
+  }, []);
 
   // Sync ref with state
   useEffect(() => {
     selectedContactRef.current = selectedContact;
   }, [selectedContact]);
 
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   // Auto scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const clearRetryTimer = (messageId: string) => {
+    const timeoutId = retryTimeoutRef.current[messageId];
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+      delete retryTimeoutRef.current[messageId];
+    }
+  };
+
+  const updateConversationMeta = (contact: Contact, content: string, timestamp: string) => {
+    const conversationKey = getConversationKey(contact);
+
+    setConversationMetaMap((previous) => {
+      const existing = previous[conversationKey];
+      if (existing && getTimestampValue(existing.lastTimestamp) > getTimestampValue(timestamp)) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        [conversationKey]: {
+          lastMessage: content,
+          lastTimestamp: timestamp,
+        },
+      };
+    });
+  };
+
+  const mapHistoryMessageToUi = (
+    msg: ChatHistoryMessage,
+    currentFullId: string
+  ): MessengerMessage => {
+    const senderId = msg.senderId ?? msg.sender_id;
+    const senderType = msg.senderType ?? msg.sender_type;
+
+    let isMe = false;
+    if (senderId !== undefined && senderType !== undefined) {
+      const combinedSenderId = `${senderType}_${senderId}`;
+      isMe = combinedSenderId.toUpperCase() === currentFullId.toUpperCase();
+    } else if (msg.sender) {
+      isMe = msg.sender === "user" || msg.sender === "me";
+    }
+
+    return {
+      id: typeof msg.id === "number" ? createMessageId("server", msg.id) : createMessageId("temp"),
+      content: msg.content ?? "",
+      sender: isMe ? "user" : "ai",
+      timestamp: msg.timestamp || new Date().toISOString(),
+      status: isMe ? "sent" : undefined,
+      retries: 0,
+    };
+  };
+
+  const scheduleRetry = (
+    messageId: string,
+    content: string,
+    recipientFullId: string,
+    attempt: number
+  ) => {
+    if (destroyedRef.current) {
+      return;
+    }
+
+    if (attempt >= MAX_RETRY_ATTEMPTS) {
+      clearRetryTimer(messageId);
+      delete retryAttemptRef.current[messageId];
+      setMessages((previous) =>
+        previous.map((message) =>
+          message.id === messageId ? { ...message, status: "failed", retries: attempt } : message
+        )
+      );
+      toast.error("Tin nhắn chưa gửi được sau nhiều lần thử. Vui lòng gửi lại thủ công");
+      return;
+    }
+
+    const nextAttempt = attempt + 1;
+    retryAttemptRef.current[messageId] = nextAttempt;
+
+    setMessages((previous) =>
+      previous.map((message) =>
+        message.id === messageId
+          ? { ...message, status: attempt === 0 ? "queued" : "retrying", retries: nextAttempt }
+          : message
+      )
+    );
+
+    clearRetryTimer(messageId);
+
+    const retryDelay = Math.min(RETRY_BASE_DELAY_MS * 2 ** attempt, 12000);
+    retryTimeoutRef.current[messageId] = window.setTimeout(() => {
+      if (destroyedRef.current) {
+        return;
+      }
+
+      const isSent = socketService.sendMessage(recipientFullId, content);
+      if (isSent) {
+        clearRetryTimer(messageId);
+        delete retryAttemptRef.current[messageId];
+        setMessages((previous) =>
+          previous.map((message) =>
+            message.id === messageId
+              ? { ...message, status: "sent", retries: nextAttempt }
+              : message
+          )
+        );
+        return;
+      }
+
+      scheduleRetry(messageId, content, recipientFullId, nextAttempt);
+    }, retryDelay);
+  };
 
   // Load contacts
   useEffect(() => {
@@ -197,39 +475,99 @@ export function MessengerPage() {
       }
 
       setLoadingContacts(true);
-      const res = await chatManager.getContacts(currentUserId, currentRole);
 
-      if (res.success && res.data) {
+      try {
+        const res = await chatManager.getContacts(currentUserId, currentRole);
+        if (!res.success || !res.data) {
+          toast.error("Không thể tải danh sách liên hệ");
+          return;
+        }
+
         const contactIds = res.data;
-        const contactDetails: Contact[] = [];
+        if (contactIds.length === 0) {
+          setContacts([]);
+          return;
+        }
 
-        for (const id of contactIds) {
-          const detailRes =
-            currentRole === "USER"
-              ? await chatManager.getMentorDetail(id)
-              : await chatManager.getUserDetail(id);
+        const detailResults = await Promise.all(
+          contactIds.map(async (id) => {
+            const detailRes =
+              currentRole === "USER"
+                ? await chatManager.getMentorDetail(id)
+                : await chatManager.getUserDetail(id);
 
-          if (
-            detailRes.success &&
-            detailRes.data &&
-            detailRes.data.id !== undefined &&
-            detailRes.data.name
-          ) {
-            contactDetails.push({
+            if (
+              !detailRes.success ||
+              !detailRes.data ||
+              detailRes.data.id === undefined ||
+              !detailRes.data.name
+            ) {
+              return null;
+            }
+
+            return {
               id: detailRes.data.id,
               name: detailRes.data.name,
               avatarUrl: detailRes.data.avatarUrl ?? null,
               role: currentRole === "USER" ? "MENTOR" : "USER",
-            });
-          }
+            } satisfies Contact;
+          })
+        );
+
+        const contactDetails = detailResults.filter((contact): contact is Contact => !!contact);
+        setContacts(contactDetails);
+
+        const previewTargets = contactDetails.slice(0, 6);
+        if (previewTargets.length === 0) {
+          return;
         }
 
-        setContacts(contactDetails);
-      } else {
-        toast.error("Không thể tải danh sách liên hệ");
-      }
+        const currentFullId = `${currentRole}_${currentUserId}`;
+        const previewResults = await Promise.allSettled(
+          previewTargets.map(async (contact) => {
+            const recipientFullId = `${contact.role}_${contact.id}`;
+            const historyRes = await chatManager.getChatHistoryByParticipants(
+              currentFullId,
+              recipientFullId
+            );
 
-      setLoadingContacts(false);
+            if (!historyRes.success || !historyRes.data || historyRes.data.length === 0) {
+              return null;
+            }
+
+            const lastMessage = historyRes.data[historyRes.data.length - 1];
+            return {
+              key: getConversationKey(contact),
+              value: {
+                lastMessage: lastMessage.content ?? "",
+                lastTimestamp: lastMessage.timestamp || new Date().toISOString(),
+              } satisfies ConversationMeta,
+            };
+          })
+        );
+
+        if (destroyedRef.current) {
+          return;
+        }
+
+        const previewMeta = previewResults.reduce<Record<string, ConversationMeta>>(
+          (acc, result) => {
+            if (result.status !== "fulfilled" || !result.value) {
+              return acc;
+            }
+
+            acc[result.value.key] = result.value.value;
+            return acc;
+          },
+          {}
+        );
+
+        if (Object.keys(previewMeta).length > 0) {
+          setConversationMetaMap((previous) => ({ ...previous, ...previewMeta }));
+        }
+      } finally {
+        setLoadingContacts(false);
+      }
     };
 
     fetchContacts();
@@ -308,43 +646,35 @@ export function MessengerPage() {
         return;
       }
 
+      Object.values(retryTimeoutRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
+      retryTimeoutRef.current = {};
+      retryAttemptRef.current = {};
+      setVisibleMessageLimit(MESSAGE_RENDER_STEP);
       setLoadingMessages(true);
       const currentFullId = `${currentRole}_${currentUserId}`;
       const recipientFullId = `${selectedContact.role}_${selectedContact.id}`;
 
-      const res = await chatManager.getChatHistoryByParticipants(currentFullId, recipientFullId);
+      try {
+        const res = await chatManager.getChatHistoryByParticipants(currentFullId, recipientFullId);
 
-      if (res.success && res.data) {
-        const mappedMessages: MessengerMessage[] = res.data.map((msg: ChatHistoryMessage) => {
-          const senderId = msg.senderId ?? msg.sender_id;
-          const senderType = msg.senderType ?? msg.sender_type;
+        if (!res.success || !res.data) {
+          toast.error("Không thể tải lịch sử tin nhắn");
+          return;
+        }
 
-          let isMe = false;
-          if (senderId !== undefined && senderType !== undefined) {
-            const combinedSenderId = `${senderType}_${senderId}`;
-            isMe = combinedSenderId.toUpperCase() === currentFullId.toUpperCase();
-          } else if (msg.sender) {
-            isMe = msg.sender === "user" || msg.sender === "me";
-          }
-
-          return {
-            id:
-              typeof msg.id === "number"
-                ? createMessageId("server", msg.id)
-                : createMessageId("temp"),
-            content: msg.content ?? "",
-            sender: isMe ? "user" : "ai",
-            timestamp: msg.timestamp || new Date().toISOString(),
-            status: isMe ? "sent" : undefined,
-          };
-        });
+        const mappedMessages: MessengerMessage[] = res.data.map((msg: ChatHistoryMessage) =>
+          mapHistoryMessageToUi(msg, currentFullId)
+        );
 
         setMessages(mappedMessages);
-      } else {
-        toast.error("Không thể tải lịch sử tin nhắn");
-      }
 
-      setLoadingMessages(false);
+        const latestMessage = mappedMessages[mappedMessages.length - 1];
+        if (latestMessage) {
+          updateConversationMeta(selectedContact, latestMessage.content, latestMessage.timestamp);
+        }
+      } finally {
+        setLoadingMessages(false);
+      }
     };
 
     fetchMessages();
@@ -364,6 +694,10 @@ export function MessengerPage() {
         const senderFullId = receivedMsg.senderType
           ? `${receivedMsg.senderType}_${receivedMsg.senderId}`
           : String(receivedMsg.senderId);
+        const senderNumericId = Number.parseInt(
+          String(receivedMsg.senderId).split("_").pop() || "",
+          10
+        );
 
         const recipientFullId = receivedMsg.recipientType
           ? `${receivedMsg.recipientType}_${receivedMsg.recipientId}`
@@ -401,7 +735,23 @@ export function MessengerPage() {
               }
               return [...prev, newMessage];
             });
+
+            updateConversationMeta(
+              activeContact,
+              receivedMsg.content,
+              receivedMsg.timestamp || new Date().toISOString()
+            );
           } else {
+            if (!Number.isNaN(senderNumericId)) {
+              const senderContact = contacts.find((contact) => contact.id === senderNumericId);
+              if (senderContact) {
+                updateConversationMeta(
+                  senderContact,
+                  receivedMsg.content,
+                  receivedMsg.timestamp || new Date().toISOString()
+                );
+              }
+            }
             toast.info("Bạn có tin nhắn mới");
           }
         }
@@ -412,12 +762,30 @@ export function MessengerPage() {
     return () => {
       socketService.disconnect();
     };
-  }, [currentRole, currentUserId]);
+  }, [contacts, currentRole, currentUserId]);
+
+  useEffect(() => {
+    if (connectionState !== "connected" || !selectedContact) {
+      return;
+    }
+
+    const recipientFullId = `${selectedContact.role.toUpperCase()}_${selectedContact.id}`;
+    const queuedMessages = messagesRef.current.filter(
+      (message) =>
+        message.sender === "user" && (message.status === "queued" || message.status === "retrying")
+    );
+
+    queuedMessages.forEach((message) => {
+      const attempt = retryAttemptRef.current[message.id] ?? message.retries ?? 0;
+      attemptSendMessage(message.id, message.content, recipientFullId, attempt);
+    });
+  }, [connectionState, selectedContact]);
 
   const closeConversation = () => {
     setSelectedContact(null);
     setMessageInput("");
     setMessageSearchQuery("");
+    setVisibleMessageLimit(MESSAGE_RENDER_STEP);
     setIsMessageSearchOpen(false);
   };
 
@@ -438,8 +806,31 @@ export function MessengerPage() {
 
       return next;
     });
+    setVisibleMessageLimit(MESSAGE_RENDER_STEP);
     setMessageSearchQuery("");
     setIsMessageSearchOpen(false);
+  };
+
+  const attemptSendMessage = (
+    messageId: string,
+    content: string,
+    recipientFullId: string,
+    attempt: number
+  ) => {
+    const isSent = socketService.sendMessage(recipientFullId, content);
+    if (isSent) {
+      clearRetryTimer(messageId);
+      delete retryAttemptRef.current[messageId];
+      setMessages((previous) =>
+        previous.map((message) =>
+          message.id === messageId ? { ...message, status: "sent", retries: attempt } : message
+        )
+      );
+      return true;
+    }
+
+    scheduleRetry(messageId, content, recipientFullId, attempt);
+    return false;
   };
 
   const handleSendMessage = () => {
@@ -451,6 +842,7 @@ export function MessengerPage() {
 
     const recipientFullId = `${selectedContact.role.toUpperCase()}_${selectedContact.id}`;
     const newMessageId = createMessageId("temp");
+    const messageTimestamp = new Date().toISOString();
 
     setMessages((prev) => [
       ...prev,
@@ -458,30 +850,19 @@ export function MessengerPage() {
         id: newMessageId,
         sender: "user",
         content: trimmed,
-        timestamp: new Date().toISOString(),
+        timestamp: messageTimestamp,
         status: "sending",
+        retries: 0,
       },
     ]);
 
-    const isSent = socketService.sendMessage(recipientFullId, trimmed);
-    if (isSent) {
-      window.setTimeout(() => {
-        setMessages((prev) =>
-          prev.map((message) =>
-            message.id === newMessageId ? { ...message, status: "sent" } : message
-          )
-        );
-      }, 250);
-    } else {
-      setMessages((prev) =>
-        prev.map((message) =>
-          message.id === newMessageId ? { ...message, status: "failed" } : message
-        )
-      );
-      toast.error("Kết nối chưa sẵn sàng. Vui lòng gửi lại sau vài giây");
-    }
-
+    updateConversationMeta(selectedContact, trimmed, messageTimestamp);
     setMessageInput("");
+
+    const immediateSuccess = attemptSendMessage(newMessageId, trimmed, recipientFullId, 0);
+    if (!immediateSuccess) {
+      toast.info("Tin nhắn sẽ tự động gửi lại khi kết nối ổn định");
+    }
   };
 
   const handleRetryMessage = (messageId: string) => {
@@ -495,30 +876,26 @@ export function MessengerPage() {
     }
 
     const recipientFullId = `${selectedContact.role.toUpperCase()}_${selectedContact.id}`;
+    const currentRetry = retryAttemptRef.current[messageId] ?? messageToRetry.retries ?? 0;
 
     setMessages((prev) =>
       prev.map((message) =>
-        message.id === messageId ? { ...message, status: "sending" } : message
+        message.id === messageId
+          ? { ...message, status: "retrying", retries: currentRetry }
+          : message
       )
     );
 
-    const isSent = socketService.sendMessage(recipientFullId, messageToRetry.content);
+    const isSent = attemptSendMessage(
+      messageId,
+      messageToRetry.content,
+      recipientFullId,
+      currentRetry
+    );
     if (isSent) {
-      window.setTimeout(() => {
-        setMessages((prev) =>
-          prev.map((message) =>
-            message.id === messageId ? { ...message, status: "sent" } : message
-          )
-        );
-      }, 250);
       toast.success("Đã gửi lại tin nhắn");
     } else {
-      setMessages((prev) =>
-        prev.map((message) =>
-          message.id === messageId ? { ...message, status: "failed" } : message
-        )
-      );
-      toast.error("Gửi lại chưa thành công. Hãy thử lại sau");
+      toast.info("Tin nhắn sẽ tiếp tục tự động gửi lại trong nền");
     }
   };
 
@@ -550,6 +927,10 @@ export function MessengerPage() {
     );
     composer?.focus();
     toast.success("Đã chuyển nội dung vào ô soạn");
+  };
+
+  const handleApplyQuickCommand = (command: string) => {
+    toast.success(`Đã áp dụng lệnh nhanh ${command}`);
   };
 
   const handleTogglePinMessage = (messageId: string) => {
@@ -609,6 +990,32 @@ export function MessengerPage() {
 
   useEffect(() => {
     const handleGlobalShortcut = (event: KeyboardEvent) => {
+      const canSwitchConversation = (event.ctrlKey || event.metaKey) && event.shiftKey;
+      if (canSwitchConversation && event.key === "ArrowDown" && filteredContacts.length > 0) {
+        event.preventDefault();
+
+        const currentIndex = selectedContact
+          ? filteredContacts.findIndex((contact) => contact.id === selectedContact.id)
+          : -1;
+
+        const nextIndex =
+          currentIndex === -1 ? 0 : Math.min(filteredContacts.length - 1, currentIndex + 1);
+        openConversation(filteredContacts[nextIndex]);
+        return;
+      }
+
+      if (canSwitchConversation && event.key === "ArrowUp" && filteredContacts.length > 0) {
+        event.preventDefault();
+
+        const currentIndex = selectedContact
+          ? filteredContacts.findIndex((contact) => contact.id === selectedContact.id)
+          : filteredContacts.length;
+
+        const nextIndex = currentIndex <= 0 ? 0 : currentIndex - 1;
+        openConversation(filteredContacts[nextIndex]);
+        return;
+      }
+
       if (!selectedContact) {
         return;
       }
@@ -649,7 +1056,14 @@ export function MessengerPage() {
 
     window.addEventListener("keydown", handleGlobalShortcut);
     return () => window.removeEventListener("keydown", handleGlobalShortcut);
-  }, [selectedContact, isMessageSearchOpen, pinnedMessageIds]);
+  }, [
+    contacts,
+    conversationMetaMap,
+    deferredContactSearchQuery,
+    selectedContact,
+    isMessageSearchOpen,
+    pinnedMessageIds,
+  ]);
 
   const getStoredDraft = (contact: Contact): string => {
     if (!currentRole || !currentUserId) {
@@ -681,19 +1095,55 @@ export function MessengerPage() {
     }
   };
 
-  const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(contactSearchQuery.toLowerCase())
-  );
+  const filteredContacts = useMemo(() => {
+    const normalizedQuery = deferredContactSearchQuery.trim().toLowerCase();
 
-  const filteredMentors = mentors.filter((mentor) =>
-    (mentor.name || "").toLowerCase().includes(contactSearchQuery.toLowerCase())
-  );
+    const candidates = contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(normalizedQuery)
+    );
 
-  const visibleMessages = messageSearchQuery.trim().length
-    ? messages.filter((message) =>
-        message.content.toLowerCase().includes(messageSearchQuery.toLowerCase())
-      )
-    : messages;
+    return [...candidates].sort((first, second) => {
+      const firstMeta = conversationMetaMap[getConversationKey(first)];
+      const secondMeta = conversationMetaMap[getConversationKey(second)];
+
+      const firstTimestamp = getTimestampValue(firstMeta?.lastTimestamp || "");
+      const secondTimestamp = getTimestampValue(secondMeta?.lastTimestamp || "");
+
+      if (firstTimestamp !== secondTimestamp) {
+        return secondTimestamp - firstTimestamp;
+      }
+
+      return first.name.localeCompare(second.name, "vi-VN");
+    });
+  }, [contacts, conversationMetaMap, deferredContactSearchQuery]);
+
+  const filteredMentors = useMemo(() => {
+    const normalizedQuery = deferredContactSearchQuery.trim().toLowerCase();
+    return mentors.filter((mentor) => (mentor.name || "").toLowerCase().includes(normalizedQuery));
+  }, [deferredContactSearchQuery, mentors]);
+
+  const filteredMessages = useMemo(() => {
+    const normalizedQuery = deferredMessageSearchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return messages;
+    }
+
+    return messages.filter((message) => message.content.toLowerCase().includes(normalizedQuery));
+  }, [deferredMessageSearchQuery, messages]);
+
+  const visibleMessages = useMemo(() => {
+    const startIndex = Math.max(0, filteredMessages.length - visibleMessageLimit);
+    return filteredMessages.slice(startIndex);
+  }, [filteredMessages, visibleMessageLimit]);
+
+  const timelineItems = useMemo(() => buildTimelineItems(visibleMessages), [visibleMessages]);
+  const hasMoreMessageHistory = filteredMessages.length > visibleMessages.length;
+  const pendingOutboxCount = useMemo(
+    () =>
+      messages.filter((message) => message.status === "queued" || message.status === "retrying")
+        .length,
+    [messages]
+  );
 
   const activeConversationKey = selectedContact ? getConversationKey(selectedContact) : null;
   const pinnedMessageId = activeConversationKey
@@ -798,12 +1248,22 @@ export function MessengerPage() {
                             return;
                           }
 
-                          openConversation({
+                          const nextContact: Contact = {
                             id: mentor.id,
                             name: mentor.name,
                             avatarUrl: mentor.avatarUrl ?? null,
                             role: "MENTOR",
+                          };
+
+                          setContacts((previous) => {
+                            if (previous.some((contact) => contact.id === nextContact.id)) {
+                              return previous;
+                            }
+
+                            return [nextContact, ...previous];
                           });
+
+                          openConversation(nextContact);
                           setShowMentorList(false);
                           setContactSearchQuery("");
                         }}
@@ -859,6 +1319,14 @@ export function MessengerPage() {
                 ) : (
                   filteredContacts.map((contact) => {
                     const isActive = selectedContact?.id === contact.id;
+                    const conversationMeta = conversationMetaMap[getConversationKey(contact)];
+                    const previewMessage =
+                      conversationMeta?.lastMessage ||
+                      contact.lastMessage ||
+                      `Nhấn để mở hội thoại với ${getRoleLabel(contact.role)}`;
+                    const previewTime = conversationMeta?.lastTimestamp
+                      ? formatConversationTime(conversationMeta.lastTimestamp)
+                      : contact.time;
 
                     return (
                       <button
@@ -889,23 +1357,22 @@ export function MessengerPage() {
                               <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
                                 {contact.name}
                               </p>
-                              {contact.time && (
+                              {previewTime && (
                                 <span className="text-[10px] font-medium text-slate-400">
-                                  {contact.time}
+                                  {previewTime}
                                 </span>
                               )}
                             </div>
 
                             <div className="mt-1 flex items-center justify-between gap-2">
                               <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                                {contact.lastMessage ||
-                                  `Nhấn để mở hội thoại với ${getRoleLabel(contact.role)}`}
+                                {previewMessage}
                               </p>
-                              {contact.unreadCount ? (
-                                <Badge className="h-5 min-w-5 rounded-full bg-blue-600 px-1 text-[10px] text-white">
-                                  {contact.unreadCount > 99 ? "99+" : contact.unreadCount}
-                                </Badge>
-                              ) : null}
+                              <Badge
+                                variant="secondary"
+                                className="rounded-full bg-slate-100 px-2 py-0 text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                {getRoleLabel(contact.role)}
+                              </Badge>
                             </div>
                           </div>
                         </div>
@@ -958,8 +1425,15 @@ export function MessengerPage() {
 
                     <div className="flex items-center gap-1.5 md:gap-2">
                       <p className="hidden text-[11px] text-slate-400 xl:block">
-                        Ctrl+K tìm kiếm · Ctrl+Shift+M soạn nhanh · Ctrl+Shift+P bỏ ghim
+                        Ctrl+K tìm kiếm · Ctrl+Shift+M soạn nhanh · /camon lệnh nhanh
                       </p>
+
+                      {pendingOutboxCount > 0 && (
+                        <Badge className="hidden h-7 items-center gap-1 rounded-full bg-amber-100 px-2.5 text-[11px] text-amber-800 md:inline-flex dark:bg-amber-900/40 dark:text-amber-200">
+                          <Sparkles className="h-3.5 w-3.5" />
+                          {pendingOutboxCount} tin đang chờ gửi
+                        </Badge>
+                      )}
 
                       {isMessageSearchOpen && (
                         <div className={cn("relative", isMobile ? "w-36" : "w-56 lg:w-72")}>
@@ -1061,22 +1535,54 @@ export function MessengerPage() {
                         </p>
                       </div>
                     ) : (
-                      visibleMessages.map((message) => (
-                        <MessageBubble
-                          key={message.id}
-                          id={message.id}
-                          sender={message.sender}
-                          content={message.content}
-                          timestamp={message.timestamp}
-                          status={message.status}
-                          searchQuery={messageSearchQuery}
-                          isPinned={pinnedMessageId === message.id}
-                          onCopy={handleCopyMessage}
-                          onRetry={handleRetryMessage}
-                          onForward={handleForwardMessage}
-                          onTogglePin={handleTogglePinMessage}
-                        />
-                      ))
+                      <>
+                        {hasMoreMessageHistory && (
+                          <div className="mx-auto mb-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 rounded-full border-slate-200 bg-white text-xs text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                              onClick={() =>
+                                setVisibleMessageLimit((current) => current + MESSAGE_RENDER_STEP)
+                              }>
+                              <ChevronsUp className="mr-1.5 h-3.5 w-3.5" />
+                              Tải thêm tin cũ ({visibleMessages.length}/{filteredMessages.length})
+                            </Button>
+                          </div>
+                        )}
+
+                        {timelineItems.map((timelineItem) => {
+                          if (timelineItem.type === "day") {
+                            return (
+                              <div key={timelineItem.key} className="my-1 flex justify-center">
+                                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                                  {timelineItem.label}
+                                </span>
+                              </div>
+                            );
+                          }
+
+                          const message = timelineItem.message;
+                          return (
+                            <MessageBubble
+                              key={timelineItem.key}
+                              id={message.id}
+                              sender={message.sender}
+                              content={message.content}
+                              timestamp={message.timestamp}
+                              status={message.status}
+                              searchQuery={deferredMessageSearchQuery}
+                              isPinned={pinnedMessageId === message.id}
+                              isGroupedWithPrevious={timelineItem.isGroupedWithPrevious}
+                              isGroupedWithNext={timelineItem.isGroupedWithNext}
+                              onCopy={handleCopyMessage}
+                              onRetry={handleRetryMessage}
+                              onForward={handleForwardMessage}
+                              onTogglePin={handleTogglePinMessage}
+                            />
+                          );
+                        })}
+                      </>
                     )}
 
                     <div ref={messagesEndRef} />
@@ -1088,6 +1594,7 @@ export function MessengerPage() {
                     value={messageInput}
                     onChange={setMessageInput}
                     onSend={handleSendMessage}
+                    onApplyQuickCommand={handleApplyQuickCommand}
                     isMobile={isMobile}
                     placeholder={
                       isMobile
