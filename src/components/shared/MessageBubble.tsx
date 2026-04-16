@@ -13,6 +13,7 @@ import {
   Clock3,
   Copy,
   CornerUpRight,
+  LoaderCircle,
   Pin,
   PinOff,
   RotateCcw,
@@ -20,7 +21,7 @@ import {
 } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 
-export type MessageDeliveryStatus = "sending" | "sent" | "failed";
+export type MessageDeliveryStatus = "queued" | "sending" | "retrying" | "sent" | "failed";
 
 interface MessageBubbleProps {
   id: string;
@@ -30,6 +31,8 @@ interface MessageBubbleProps {
   searchQuery?: string;
   status?: MessageDeliveryStatus;
   isPinned?: boolean;
+  isGroupedWithPrevious?: boolean;
+  isGroupedWithNext?: boolean;
   onCopy?: (_content: string) => void;
   onRetry?: (_messageId: string) => void;
   onForward?: (_content: string) => void;
@@ -88,7 +91,9 @@ const getReadableTimestamp = (timestamp: string): string => {
 };
 
 const STATUS_LABELS: Record<MessageDeliveryStatus, string> = {
+  queued: "Đang chờ kết nối",
   sending: "Đang gửi",
+  retrying: "Đang thử gửi lại",
   sent: "Đã gửi",
   failed: "Gửi lỗi",
 };
@@ -101,6 +106,8 @@ export function MessageBubble({
   searchQuery = "",
   status,
   isPinned = false,
+  isGroupedWithPrevious = false,
+  isGroupedWithNext = false,
   onCopy,
   onRetry,
   onForward,
@@ -120,7 +127,12 @@ export function MessageBubble({
           )}>
           <div
             className={cn(
-              "rounded-2xl px-3.5 py-2.5 text-sm leading-6 wrap-break-word whitespace-pre-wrap shadow-sm",
+              "px-3.5 py-2.5 text-sm leading-6 wrap-break-word whitespace-pre-wrap shadow-sm",
+              sender === "user" ? "rounded-2xl" : "rounded-2xl",
+              sender === "user" && isGroupedWithPrevious && "rounded-tr-md",
+              sender === "user" && isGroupedWithNext && "rounded-br-md",
+              sender !== "user" && isGroupedWithPrevious && "rounded-tl-md",
+              sender !== "user" && isGroupedWithNext && "rounded-bl-md",
               sender === "user"
                 ? "bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/20"
                 : "border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
@@ -149,9 +161,15 @@ export function MessageBubble({
                   "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5",
                   status === "failed"
                     ? "bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300"
-                    : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"
+                    : status === "queued"
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                      : status === "retrying"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"
                 )}>
+                {status === "queued" && <Clock3 className="h-3 w-3" />}
                 {status === "sending" && <Clock3 className="h-3 w-3" />}
+                {status === "retrying" && <LoaderCircle className="h-3 w-3 animate-spin" />}
                 {status === "sent" && <CheckCheck className="h-3 w-3" />}
                 {status === "failed" && <TriangleAlert className="h-3 w-3" />}
                 {STATUS_LABELS[status]}

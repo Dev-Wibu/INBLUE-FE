@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Send, SmilePlus } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 interface ChatComposerProps {
   value: string;
@@ -16,9 +16,33 @@ interface ChatComposerProps {
   placeholder: string;
   isMobile?: boolean;
   disabled?: boolean;
+  onApplyQuickCommand?: (_command: string) => void;
 }
 
 const QUICK_EMOJIS = ["😀", "😂", "😍", "👍", "🙏", "🔥", "🎯", "💡", "✅", "🚀"];
+
+const QUICK_COMMANDS = [
+  {
+    command: "/camon",
+    label: "Gửi lời cảm ơn nhanh",
+    template: "Cảm ơn bạn, mình đã nhận được thông tin rồi nhé.",
+  },
+  {
+    command: "/xacnhan",
+    label: "Xác nhận đã đọc",
+    template: "Mình đã đọc và xác nhận thông tin này.",
+  },
+  {
+    command: "/hen",
+    label: "Đặt lịch trao đổi tiếp",
+    template: "Mình đề xuất chúng ta trao đổi thêm vào khung giờ phù hợp tiếp theo.",
+  },
+  {
+    command: "/tongket",
+    label: "Tóm tắt ngắn hội thoại",
+    template: "Tóm tắt nhanh: mình đã ghi nhận các ý chính và sẽ cập nhật bước tiếp theo sớm.",
+  },
+];
 
 export function ChatComposer({
   value,
@@ -27,8 +51,23 @@ export function ChatComposer({
   placeholder,
   isMobile = false,
   disabled = false,
+  onApplyQuickCommand,
 }: ChatComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const commandQuery = value.trimStart();
+  const isCommandMode = commandQuery.startsWith("/");
+
+  const visibleCommands = useMemo(() => {
+    if (!isCommandMode) {
+      return [];
+    }
+
+    return QUICK_COMMANDS.filter((item) => item.command.includes(commandQuery.toLowerCase())).slice(
+      0,
+      4
+    );
+  }, [commandQuery, isCommandMode]);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -42,6 +81,16 @@ export function ChatComposer({
 
   const appendEmoji = (emoji: string) => {
     onChange(`${value}${emoji}`);
+    textareaRef.current?.focus();
+  };
+
+  const applyQuickCommand = (command: (typeof QUICK_COMMANDS)[number]) => {
+    const nextValue = value.trimStart().startsWith("/")
+      ? `${command.template}\n`
+      : `${value}${value.length > 0 ? "\n" : ""}${command.template}\n`;
+
+    onChange(nextValue);
+    onApplyQuickCommand?.(command.command);
     textareaRef.current?.focus();
   };
 
@@ -87,6 +136,26 @@ export function ChatComposer({
       </DropdownMenu>
 
       <div className="flex-1">
+        {visibleCommands.length > 0 && (
+          <div className="mb-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <p className="px-1 pb-1 text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+              Lệnh nhanh
+            </p>
+            <div className="space-y-1">
+              {visibleCommands.map((command) => (
+                <button
+                  key={command.command}
+                  type="button"
+                  className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs text-slate-600 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-blue-900/20 dark:hover:text-blue-300"
+                  onClick={() => applyQuickCommand(command)}>
+                  <span className="font-semibold">{command.command}</span>
+                  <span className="truncate pl-2 text-[11px] text-slate-400">{command.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <textarea
           data-messenger-composer="true"
           ref={textareaRef}

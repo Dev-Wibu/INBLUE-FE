@@ -96,4 +96,30 @@ describe("MessageBubble", () => {
 
     expect(screen.getByText("Đã ghim")).toBeInTheDocument();
   });
+
+  it("renders queued and retrying statuses", () => {
+    const { rerender } = render(
+      <MessageBubble
+        id="temp-6"
+        sender="user"
+        content="Dang doi ket noi"
+        timestamp="2026-04-13T10:20:30.000Z"
+        status="queued"
+      />
+    );
+
+    expect(screen.getByText("Đang chờ kết nối")).toBeInTheDocument();
+
+    rerender(
+      <MessageBubble
+        id="temp-6"
+        sender="user"
+        content="Dang retry"
+        timestamp="2026-04-13T10:20:30.000Z"
+        status="retrying"
+      />
+    );
+
+    expect(screen.getByText("Đang thử gửi lại")).toBeInTheDocument();
+  });
 });
