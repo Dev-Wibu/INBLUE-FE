@@ -14,6 +14,16 @@ export interface ChromeTabMenuGroup {
   items: ChromeTabMenuItem[];
 }
 
+export interface ChromeTabMenuAction {
+  id: string;
+  label: string;
+  onSelect: () => void;
+  icon?: React.ElementType;
+  iconColor?: string;
+  destructive?: boolean;
+  disabled?: boolean;
+}
+
 export interface ChromeTabsTheme {
   bg: string;
   tabActiveBorder: string;
@@ -39,6 +49,7 @@ export interface DashboardChromeTabsProps {
   tabIcons?: Record<string, React.ElementType>;
   tabColors?: Record<string, string>;
   menuGroups: ChromeTabMenuGroup[];
+  menuActions?: ChromeTabMenuAction[];
   compact?: boolean;
   theme: ChromeTabsTheme;
 }
@@ -53,20 +64,17 @@ export function DashboardChromeTabs({
   tabIcons,
   tabColors,
   menuGroups,
+  menuActions,
   compact = false,
   theme,
 }: DashboardChromeTabsProps) {
   const [showNewTabMenu, setShowNewTabMenu] = useState(false);
 
   const newTabButton = (
-    <div
-      className={cn(
-        "relative",
-        showNewTabMenu && "z-20",
-        compact ? "" : "mb-1 ml-1 flex-shrink-0"
-      )}>
+    <div className={cn("relative", showNewTabMenu && "z-20", compact ? "" : "mb-1 ml-1 shrink-0")}>
       <button
         onClick={() => setShowNewTabMenu(!showNewTabMenu)}
+        aria-label="Mở menu tab"
         className={cn(
           "flex h-8 w-8 items-center justify-center rounded-lg transition-colors dark:bg-slate-700 dark:hover:bg-slate-600",
           theme.addBtnBg,
@@ -103,6 +111,38 @@ export function DashboardChromeTabs({
                 ))}
               </div>
             ))}
+
+            {menuActions && menuActions.length > 0 && (
+              <>
+                <div className="my-1 border-t dark:border-slate-600" />
+                {menuActions.map((action) => {
+                  const ActionIcon = action.icon;
+                  return (
+                    <button
+                      key={action.id}
+                      onClick={() => {
+                        if (action.disabled) {
+                          return;
+                        }
+                        action.onSelect();
+                        setShowNewTabMenu(false);
+                      }}
+                      disabled={action.disabled}
+                      className={cn(
+                        "flex w-full items-center gap-2 px-3 py-2 text-sm dark:hover:bg-slate-700",
+                        theme.menuHover,
+                        action.destructive
+                          ? "text-red-600 dark:text-red-400"
+                          : "dark:text-slate-200",
+                        action.disabled && "cursor-not-allowed opacity-50"
+                      )}>
+                      {ActionIcon && <ActionIcon className={cn("h-4 w-4", action.iconColor)} />}
+                      {action.label}
+                    </button>
+                  );
+                })}
+              </>
+            )}
           </div>
         </>
       )}
@@ -185,7 +225,7 @@ export function DashboardChromeTabs({
                       "dark:bg-slate-800/50 dark:hover:bg-slate-800"
                     )
               )}>
-              {Icon && <Icon className={cn("h-4 w-4 flex-shrink-0", tabColors?.[tab.type])} />}
+              {Icon && <Icon className={cn("h-4 w-4 shrink-0", tabColors?.[tab.type])} />}
               <span className="flex-1 truncate text-sm font-medium dark:text-slate-200">
                 {tab.title}
               </span>
@@ -196,7 +236,7 @@ export function DashboardChromeTabs({
                     onTabClose(tab.id);
                   }}
                   className={cn(
-                    "flex-shrink-0 rounded-full p-0.5 opacity-0 transition-opacity group-hover:opacity-100 dark:hover:bg-slate-600",
+                    "shrink-0 rounded-full p-0.5 opacity-0 transition-opacity group-hover:opacity-100 dark:hover:bg-slate-600",
                     theme.closeHover
                   )}>
                   <X className="h-3 w-3 dark:text-slate-300" />
@@ -211,9 +251,7 @@ export function DashboardChromeTabs({
       {newTabButton}
 
       {/* Right slot (e.g. NotificationBell) */}
-      {rightSlot && (
-        <div className="mb-1 flex flex-shrink-0 items-center gap-2 px-3">{rightSlot}</div>
-      )}
+      {rightSlot && <div className="mb-1 flex shrink-0 items-center gap-2 px-3">{rightSlot}</div>}
     </div>
   );
 }
