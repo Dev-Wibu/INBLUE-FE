@@ -8,7 +8,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 
 import icon2 from "@/assets/icon2.svg";
@@ -16,6 +16,7 @@ import icon2 from "@/assets/icon2.svg";
 import { NotificationBell } from "@/components/notification";
 import type { SidebarMenuGroup } from "@/components/shared";
 import { DashboardSidebar } from "@/components/shared";
+import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 
 import { MentorAccountPage } from "../Account";
@@ -116,6 +117,7 @@ function getTabFromRoute(pathname: string): TabType {
 export function MentorDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const contentRef = useRef<HTMLDivElement>(null);
   const { activeTab, openTab } = useTabsState({
     storageKey: "mentor",
     defaultTab: DEFAULT_TAB,
@@ -130,6 +132,10 @@ export function MentorDashboardPage() {
     : isValidTabType(activeTab)
       ? activeTab
       : DEFAULT_TAB;
+
+  useDashboardScrollRestoration(contentRef, {
+    enabled: typedActiveTab !== "messenger",
+  });
 
   // When on a nested route (outlet), navigate back to the dashboard base with the tab param
   const handleNavigate = useCallback(
@@ -216,6 +222,7 @@ export function MentorDashboardPage() {
           <NotificationBell notificationsPath="/mentor?tab=notifications" />
         </div>
         <div
+          ref={contentRef}
           className={cn(
             "flex-1 overflow-hidden",
             typedActiveTab === "messenger" ? "p-0" : "overflow-auto p-6"

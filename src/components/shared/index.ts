@@ -3,6 +3,7 @@
 export { ChatComposer } from "./ChatComposer";
 export { DashboardChromeTabs } from "./DashboardChromeTabs";
 export type {
+  ChromeTabMenuAction,
   ChromeTabMenuGroup,
   ChromeTabMenuItem,
   ChromeTabsTheme,

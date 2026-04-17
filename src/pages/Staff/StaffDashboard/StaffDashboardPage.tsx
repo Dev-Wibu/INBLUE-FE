@@ -1,8 +1,9 @@
 import { LayoutDashboard, MessageSquare, Newspaper, Star, UserCheck, Video } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import type { ChromeTabMenuGroup, SidebarMenuGroup } from "@/components/shared";
 import { DashboardChromeTabs, DashboardSidebar } from "@/components/shared";
+import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 
 import { FeedbackModerationPage } from "../FeedbackModeration";
 import { MentorApplicationsPage } from "../MentorApplications";
@@ -140,10 +141,13 @@ const STAFF_SIDEBAR_LOGO_COLLAPSED = (
 );
 
 export function StaffDashboardPage() {
+  const contentRef = useRef<HTMLDivElement>(null);
   const [tabs, setTabs] = useState<Tab[]>([
     { id: generateTabId(), type: "mentorApplications", title: "Duyệt Mentor" },
   ]);
   const [activeTabId, setActiveTabId] = useState<string>(tabs[0].id);
+
+  useDashboardScrollRestoration(contentRef);
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
 
@@ -274,7 +278,9 @@ export function StaffDashboardPage() {
           }}
         />
 
-        <div className="flex-1 overflow-auto">{renderContent()}</div>
+        <div ref={contentRef} className="flex-1 overflow-auto">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );

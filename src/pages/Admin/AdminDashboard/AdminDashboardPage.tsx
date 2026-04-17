@@ -10,16 +10,22 @@ import {
   MessageSquare,
   Newspaper,
   Star,
+  Trash2,
   Trophy,
   UserCog,
   Users,
   Video,
   Wallet,
 } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 
-import type { ChromeTabMenuGroup, SidebarMenuGroup } from "@/components/shared";
+import type {
+  ChromeTabMenuAction,
+  ChromeTabMenuGroup,
+  SidebarMenuGroup,
+} from "@/components/shared";
 import { DashboardChromeTabs, DashboardSidebar } from "@/components/shared";
+import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 
 import { CandidateProfileManagementPage } from "../CandidateProfileManagement";
@@ -313,11 +319,14 @@ const ADMIN_SIDEBAR_LOGO_COLLAPSED = (
 );
 
 export function AdminDashboardPage() {
-  const { activeTab, openTabs, setActiveTab, openTab, closeTab } = useTabsState({
+  const { activeTab, openTabs, setActiveTab, openTab, closeTab, resetTabsTo } = useTabsState({
     storageKey: "admin",
     defaultTab: "dashboard",
     availableTabs: AVAILABLE_TABS,
   });
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useDashboardScrollRestoration(contentRef);
 
   const typedActiveTab: TabType = isValidTabType(activeTab) ? activeTab : "dashboard";
 
@@ -358,6 +367,26 @@ export function AdminDashboardPage() {
       setActiveTab(type);
     },
     [setActiveTab]
+  );
+
+  const handleCloseAllTabs = useCallback(() => {
+    resetTabsTo("dashboard");
+  }, [resetTabsTo]);
+
+  const closeAllDisabled = openTabs.length === 1 && openTabs[0]?.type === "dashboard";
+
+  const chromeMenuActions = useMemo<ChromeTabMenuAction[]>(
+    () => [
+      {
+        id: "close-all-tabs",
+        label: "Đóng tất cả tab",
+        icon: Trash2,
+        destructive: true,
+        disabled: closeAllDisabled,
+        onSelect: handleCloseAllTabs,
+      },
+    ],
+    [closeAllDisabled, handleCloseAllTabs]
   );
 
   const renderContent = () => {
@@ -453,6 +482,7 @@ export function AdminDashboardPage() {
           tabIcons={TAB_ICONS}
           tabColors={TAB_COLORS}
           menuGroups={CHROME_TABS_MENU_GROUPS}
+          menuActions={chromeMenuActions}
           theme={{
             bg: "bg-gray-100",
             tabActiveBorder: "border-gray-300",
@@ -466,7 +496,9 @@ export function AdminDashboardPage() {
           }}
         />
 
-        <div className="flex-1 overflow-auto">{renderContent()}</div>
+        <div ref={contentRef} className="flex-1 overflow-auto">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );

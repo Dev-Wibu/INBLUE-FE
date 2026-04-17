@@ -45,6 +45,8 @@ interface UseTabsStateReturn {
   openTab: (_tabType: string) => void;
   /** Close a tab by ID */
   closeTab: (_tabId: string) => void;
+  /** Reset open tabs to only one tab */
+  resetTabsTo: (_tabType: string) => void;
 }
 
 /**
@@ -235,11 +237,37 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
     [activeTab]
   );
 
+  const resetTabsTo = useCallback(
+    (tabType: string) => {
+      if (!isValidTabType(tabType, availableTabs)) {
+        console.warn(`Invalid tab type: ${tabType}`);
+        return;
+      }
+
+      const tabConfig = availableTabs.find((tab) => tab.type === tabType);
+      if (!tabConfig) {
+        return;
+      }
+
+      pendingActiveTabRef.current = null;
+      setOpenTabs([
+        {
+          id: generateTabId(tabType),
+          type: tabType,
+          label: tabConfig.label,
+        },
+      ]);
+      setSearchParams({ tab: tabType }, { replace: true });
+    },
+    [availableTabs, setSearchParams]
+  );
+
   return {
     activeTab,
     openTabs,
     setActiveTab,
     openTab,
     closeTab,
+    resetTabsTo,
   };
 }
