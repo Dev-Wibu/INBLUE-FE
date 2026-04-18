@@ -35,7 +35,12 @@ import {
   upsertPaymentRecoveryContext,
   upsertPendingSessionPaidStatusSync,
 } from "@/lib";
-import { formatCurrency } from "@/lib/formatting";
+import {
+  formatCurrency,
+  formatDateTime,
+  formatTime,
+  treatZuluAsVietnamLocal,
+} from "@/lib/formatting";
 import { sessionManager, transactionManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
@@ -119,25 +124,14 @@ function SessionCard({
           {session.joinTime && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Giờ hẹn:{" "}
-              {new Date(session.joinTime).toLocaleString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              Giờ hẹn: {formatDateTime(session.joinTime)}
             </span>
           )}
           {session.startTime1 && (
             <>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                Bắt đầu:{" "}
-                {new Date(session.startTime1).toLocaleTimeString("vi-VN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                Bắt đầu: {formatTime(treatZuluAsVietnamLocal(session.startTime1))}
               </span>
             </>
           )}

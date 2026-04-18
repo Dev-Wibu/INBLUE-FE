@@ -20,6 +20,7 @@ import {
   getPendingSessionPaidStatusSync,
   markPendingSessionPaidStatusSyncRetried,
 } from "@/lib";
+import { formatDateTime, formatTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { sessionManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -291,29 +292,13 @@ export function SessionRoomPage() {
             {session.joinTime && (
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="text-muted-foreground h-4 w-4 shrink-0" />
-                <span>
-                  Giờ họp:{" "}
-                  {new Date(session.joinTime).toLocaleString("vi-VN", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
+                <span>Giờ họp: {formatDateTime(session.joinTime)}</span>
               </div>
             )}
             {session.startTime1 && (
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="text-muted-foreground h-4 w-4 shrink-0" />
-                <span>
-                  Bắt đầu:{" "}
-                  {new Date(session.startTime1).toLocaleTimeString("vi-VN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
+                <span>Bắt đầu: {formatTime(treatZuluAsVietnamLocal(session.startTime1))}</span>
               </div>
             )}
             {session.durationSeconds1 && session.durationSeconds1 > 0 && (

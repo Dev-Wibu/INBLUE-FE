@@ -34,7 +34,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { usePagination } from "@/hooks/usePagination";
 import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import type { Session, SessionStatus } from "@/interfaces";
-import { formatDateTime } from "@/lib/formatting";
+import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { openUrlInNewTab } from "@/lib/media-file-utils";
 import { getSessionStatusBadge } from "@/lib/status-utils";
 
@@ -236,7 +236,7 @@ export function SessionProcessingPage() {
                 </TableCell>
                 <TableCell>{session.userId ?? "-"}</TableCell>
                 <TableCell>{session.userId2 ?? "-"}</TableCell>
-                <TableCell>{formatDateTime(session.joinTime)}</TableCell>
+                <TableCell>{formatDateTime(treatZuluAsVietnamLocal(session.joinTime))}</TableCell>
                 <TableCell>
                   <StatusBadge {...getSessionStatusBadge(session.status)} />
                 </TableCell>
@@ -350,7 +350,7 @@ export function SessionProcessingPage() {
               </div>
               <div className="grid grid-cols-[140px_1fr] gap-2">
                 <span className="font-medium text-gray-600">Thời gian tham gia:</span>
-                <span>{formatDateTime(viewSession.joinTime)}</span>
+                <span>{formatDateTime(treatZuluAsVietnamLocal(viewSession.joinTime))}</span>
               </div>
               <div className="grid grid-cols-[140px_1fr] gap-2">
                 <span className="font-medium text-gray-600">URL phòng:</span>

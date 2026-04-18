@@ -1,11 +1,9 @@
 import type { Session } from "@/interfaces";
+import { formatTime, parseBackendDate, toVietnamDateKey } from "@/lib/formatting";
 
 export const MENTOR_CALENDAR_STATUSES = ["SCHEDULED", "PAID", "ONGOING", "COMPLETED"] as const;
 
 const MENTOR_CALENDAR_STATUS_SET = new Set<string>(MENTOR_CALENDAR_STATUSES);
-
-const toUtc = (value: string) =>
-  value.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(value) ? value : `${value}Z`;
 
 export interface MentorCalendarSession {
   session: Session;
@@ -19,32 +17,15 @@ export const isMentorCalendarStatus = (status?: string): boolean => {
 };
 
 export const parseJoinDate = (joinTime?: string): Date | undefined => {
-  if (!joinTime) {
-    return undefined;
-  }
-
-  const parsedDate = new Date(toUtc(joinTime));
-  return Number.isNaN(parsedDate.getTime()) ? undefined : parsedDate;
+  return parseBackendDate(joinTime) || undefined;
 };
 
 export const toDateKey = (date: Date): string => {
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(
-    date.getUTCDate()
-  ).padStart(2, "0")}`;
+  return toVietnamDateKey(date) || "";
 };
 
 export const formatCalendarTime = (joinTime?: string): string => {
-  const date = parseJoinDate(joinTime);
-  if (!date) {
-    return "--:--";
-  }
-
-  return date.toLocaleTimeString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-  });
+  return formatTime(joinTime, "--:--");
 };
 
 export const buildMentorCalendarSessions = (

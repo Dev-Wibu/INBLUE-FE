@@ -21,6 +21,13 @@ import { usePagination } from "@/hooks/usePagination";
 import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
+import {
+  formatDate,
+  formatDateTime,
+  formatTime,
+  toTimestamp,
+  treatZuluAsVietnamLocal,
+} from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 
 // Status badge mapping
@@ -68,7 +75,8 @@ function SessionCard({
 }: SessionCardProps) {
   const status = statusMap[session.status || "SCHEDULED"] || statusMap.SCHEDULED;
   const isCompleted = session.status === "COMPLETED";
-  const isTimeReached = session.joinTime ? new Date(session.joinTime).getTime() <= now : true;
+  const joinTimestamp = toTimestamp(session.joinTime);
+  const isTimeReached = joinTimestamp ? joinTimestamp <= now : true;
   const isDraft = session.status === "DRAFT";
   const canJoin =
     (session.status === "PAID" || session.status === "ONGOING") &&
@@ -165,28 +173,18 @@ function SessionCard({
           {session.joinTime && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Giờ họp:{" "}
-              {new Date(session.joinTime).toLocaleString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              Giờ họp: {formatDateTime(session.joinTime)}
             </span>
           )}
           {session.startTime1 && (
             <>
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                {new Date(session.startTime1).toLocaleDateString("vi-VN")}
+                {formatDate(treatZuluAsVietnamLocal(session.startTime1))}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {new Date(session.startTime1).toLocaleTimeString("vi-VN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {formatTime(treatZuluAsVietnamLocal(session.startTime1))}
               </span>
             </>
           )}
