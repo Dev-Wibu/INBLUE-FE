@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, formatDateTime } from "@/lib/formatting";
+import { formatCurrency, formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { getSessionStatusBadge } from "@/lib/status-utils";
 
 import type { Session } from "../types";
@@ -28,7 +28,7 @@ interface SessionTableProps {
   onCancel: (session: Session) => void;
   onApprove?: (session: Session) => void;
   onReject?: (session: Session) => void;
-  getSortProps?: (key: keyof Session) => SortProps;
+  getSortProps?: (key: keyof Session | "startTimeSortValue") => SortProps;
 }
 
 const formatDuration = (seconds?: number, minutes?: number) => {
@@ -73,7 +73,7 @@ export function SessionTable({
           <TableHead className="w-24">ID Mentor</TableHead>
           <TableHead>
             {getSortProps ? (
-              <SortButton {...getSortProps("startTime1")}>Thời gian bắt đầu</SortButton>
+              <SortButton {...getSortProps("startTimeSortValue")}>Thời gian bắt đầu</SortButton>
             ) : (
               "Thời gian bắt đầu"
             )}
@@ -106,7 +106,7 @@ export function SessionTable({
               <Badge variant="secondary">{session.userId2 || "-"}</Badge>
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {formatDateTime(session.startTime1)}
+              {formatDateTime(treatZuluAsVietnamLocal(session.startTime1))}
             </TableCell>
             <TableCell className="text-muted-foreground">
               {formatDateTime(session.joinTime)}

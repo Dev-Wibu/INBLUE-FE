@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { LoadingCardList } from "@/components/ui/loading-card";
 import { useUserSessions } from "@/hooks/useSession";
+import { formatDate, formatTime, toTimestamp } from "@/lib/formatting";
 import { getMockInterviewStatusBadge } from "@/lib/status-utils";
 
 export function MockInterviewListPage() {
@@ -36,24 +37,18 @@ export function MockInterviewListPage() {
       )
       .reverse()
       .map((session) => {
-        const isTimeReached = session.joinTime ? new Date(session.joinTime).getTime() <= now : true;
+        const joinTimestamp = toTimestamp(session.joinTime);
+        const isTimeReached = joinTimestamp ? joinTimestamp <= now : true;
         return {
           id: session.id,
           title: session.roomName || `Phiên #${session.id}`,
           mentorName: `Mentor #${session.userId2 || "Không có dữ liệu"}`,
           date: session.joinTime
-            ? new Date(session.joinTime).toLocaleDateString("vi-VN")
-            : session.startTime1
-              ? new Date(session.startTime1).toLocaleDateString("vi-VN")
-              : "Không có dữ liệu",
+            ? formatDate(session.joinTime, "Không có dữ liệu")
+            : formatDate(session.startTime1, "Không có dữ liệu"),
           time: session.joinTime
-            ? new Date(session.joinTime).toLocaleTimeString("vi-VN", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : session.startTime1
-              ? new Date(session.startTime1).toLocaleTimeString("vi-VN")
-              : "Không có dữ liệu",
+            ? formatTime(session.joinTime, "Không có dữ liệu")
+            : formatTime(session.startTime1, "Không có dữ liệu"),
           joinTime: session.joinTime,
           status:
             session.status === "ONGOING"
@@ -84,7 +79,7 @@ export function MockInterviewListPage() {
   return (
     <div className="bg-background min-h-screen p-8">
       {/* Top Banner */}
-      <Card className="mb-8 overflow-hidden border-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 py-0">
+      <Card className="mb-8 overflow-hidden border-0 bg-linear-to-r from-emerald-500 via-teal-500 to-cyan-600 py-0">
         <CardContent className="flex items-center justify-between p-8">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">

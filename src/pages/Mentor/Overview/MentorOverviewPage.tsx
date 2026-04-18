@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
-import { formatCurrency, formatDateTime } from "@/lib/formatting";
+import { formatCurrency, formatDateTime, toTimestamp, toVietnamDateKey } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -96,9 +96,7 @@ const toFilterDateKey = (value?: Date): string | undefined => {
     return undefined;
   }
 
-  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(
-    value.getDate()
-  ).padStart(2, "0")}`;
+  return toVietnamDateKey(value) || undefined;
 };
 
 const isDateKeyInRange = (dateKey: string, fromKey?: string, toKey?: string) => {
@@ -176,8 +174,7 @@ const getReviewSortTimestamp = (review: { id?: number; session?: Session }) => {
     return typeof review.id === "number" ? review.id : 0;
   }
 
-  const parsed = new Date(value).getTime();
-  return Number.isFinite(parsed) ? parsed : 0;
+  return toTimestamp(value) ?? 0;
 };
 
 function CalendarSessionEntry({
@@ -212,10 +209,18 @@ export function MentorOverviewPage() {
 
   const now = new Date();
   const nowTimestamp = now.getTime();
-  const todayKey = toDateKeyFromParts(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const fallbackTodayKey = toDateKeyFromParts(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayKey = toVietnamDateKey(now) || fallbackTodayKey;
+  const [todayYearRaw = "", todayMonthRaw = ""] = todayKey.split("-");
+  const initialYear = Number.parseInt(todayYearRaw, 10);
+  const initialMonth = Number.parseInt(todayMonthRaw, 10) - 1;
 
-  const [currentYear, setCurrentYear] = useState(now.getUTCFullYear());
-  const [currentMonth, setCurrentMonth] = useState(now.getUTCMonth());
+  const [currentYear, setCurrentYear] = useState(
+    Number.isFinite(initialYear) ? initialYear : now.getFullYear()
+  );
+  const [currentMonth, setCurrentMonth] = useState(
+    Number.isFinite(initialMonth) ? initialMonth : now.getMonth()
+  );
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([...MENTOR_CALENDAR_STATUSES]);
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
@@ -367,8 +372,8 @@ export function MentorOverviewPage() {
   };
 
   const jumpToToday = () => {
-    setCurrentYear(now.getUTCFullYear());
-    setCurrentMonth(now.getUTCMonth());
+    setCurrentYear(Number.isFinite(initialYear) ? initialYear : now.getFullYear());
+    setCurrentMonth(Number.isFinite(initialMonth) ? initialMonth : now.getMonth());
     setSelectedDateKey(todayKey);
   };
 

@@ -14,6 +14,7 @@ import {
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import { toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { sessionManager } from "@/services";
 import { toast } from "sonner";
 
@@ -24,6 +25,10 @@ import {
   ViewSessionDialog,
 } from "./components";
 import type { Session, SessionFormData } from "./types";
+
+type SortableSession = Session & {
+  startTimeSortValue: number;
+};
 
 export function SessionManagementPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -95,8 +100,15 @@ export function SessionManagementPage() {
     });
   }, [sessions, searchQuery, statusFilter]);
 
+  const sortableSessions = useMemo<SortableSession[]>(() => {
+    return filteredSessions.map((session) => ({
+      ...session,
+      startTimeSortValue: toTimestamp(treatZuluAsVietnamLocal(session.startTime1)) ?? 0,
+    }));
+  }, [filteredSessions]);
+
   // Sorting
-  const { sortedData, getSortProps } = useSortable(filteredSessions);
+  const { sortedData, getSortProps } = useSortable(sortableSessions);
 
   // Pagination
   const [pageSize, setPageSize] = useState(10);

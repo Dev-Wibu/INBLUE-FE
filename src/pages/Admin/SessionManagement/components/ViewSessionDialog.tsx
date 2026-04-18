@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatDateTime } from "@/lib/formatting";
+import { formatCurrency, formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { openUrlInNewTab } from "@/lib/media-file-utils";
 import { getSessionStatusBadge } from "@/lib/status-utils";
 
@@ -86,11 +86,15 @@ export function ViewSessionDialog({ isOpen, onOpenChange, session }: ViewSession
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Thời gian bắt đầu</p>
-                <p className="text-sm">{formatDateTime(session.startTime1)}</p>
+                <p className="text-sm">
+                  {formatDateTime(treatZuluAsVietnamLocal(session.startTime1))}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Thời gian kết thúc</p>
-                <p className="text-sm">{formatDateTime(session.endTime1)}</p>
+                <p className="text-sm">
+                  {formatDateTime(treatZuluAsVietnamLocal(session.endTime1))}
+                </p>
               </div>
               <div className="col-span-2">
                 <p className="text-sm font-medium text-gray-500">Thời lượng</p>
@@ -117,11 +121,15 @@ export function ViewSessionDialog({ isOpen, onOpenChange, session }: ViewSession
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Thời gian bắt đầu</p>
-                <p className="text-sm">{formatDateTime(session.startTime2)}</p>
+                <p className="text-sm">
+                  {formatDateTime(treatZuluAsVietnamLocal(session.startTime2))}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Thời gian kết thúc</p>
-                <p className="text-sm">{formatDateTime(session.endTime2)}</p>
+                <p className="text-sm">
+                  {formatDateTime(treatZuluAsVietnamLocal(session.endTime2))}
+                </p>
               </div>
               <div className="col-span-2">
                 <p className="text-sm font-medium text-gray-500">Thời lượng</p>

@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/lib/formatting";
+import { formatCurrency, formatDateTime, formatTime, toVietnamDateKey } from "@/lib/formatting";
 import { cn, formatToVietnamISOString } from "@/lib/utils";
 
 import { useMentors } from "@/hooks/useMentor";
@@ -67,6 +67,55 @@ const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => ({
 
 // Minimum time offset in milliseconds (1 minute)
 const MIN_FUTURE_OFFSET_MS = 60 * 1000;
+const VIETNAM_UTC_OFFSET_HOURS = 7;
+
+const parseVietnamDateKey = (dateKey: string): Date => {
+  const [yearRaw, monthRaw, dayRaw] = dateKey.split("-");
+  const year = Number.parseInt(yearRaw, 10);
+  const month = Number.parseInt(monthRaw, 10);
+  const day = Number.parseInt(dayRaw, 10);
+
+  return new Date(year, month - 1, day);
+};
+
+const getVietnamTimeParts = (value: Date) => {
+  const [hour = "00", minute = "00"] = formatTime(value, "00:00").split(":");
+  return { hour, minute };
+};
+
+const buildJoinDateFromVietnamSelection = (
+  selectedDate: Date,
+  selectedHour: string,
+  selectedMinute: string
+) => {
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth() + 1;
+  const day = selectedDate.getDate();
+
+  // Convert a Vietnam local date/time selection into a stable UTC instant.
+  return new Date(
+    Date.UTC(
+      year,
+      month - 1,
+      day,
+      Number(selectedHour) - VIETNAM_UTC_OFFSET_HOURS,
+      Number(selectedMinute),
+      0,
+      0
+    )
+  );
+};
+
+const formatVietnamDateLabel = (selectedDate: Date) => {
+  const dateInVietnam = buildJoinDateFromVietnamSelection(selectedDate, "00", "00");
+  return dateInVietnam.toLocaleDateString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 type MockInterviewScheduleLocationState = {
   preselectedMentorId?: number;
@@ -111,11 +160,9 @@ export function MockInterviewSchedulePage() {
 
   // Step 2: Date/Time selection - preset current time
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedHour, setSelectedHour] = useState(() =>
-    String(new Date().getHours()).padStart(2, "0")
-  );
-  const [selectedMinute, setSelectedMinute] = useState(() =>
-    String(new Date().getMinutes()).padStart(2, "0")
+  const [selectedHour, setSelectedHour] = useState(() => getVietnamTimeParts(new Date()).hour);
+  const [selectedMinute, setSelectedMinute] = useState(
+    () => getVietnamTimeParts(new Date()).minute
   );
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [recordingMode, setRecordingMode] = useState<string>("cloud");
@@ -123,9 +170,15 @@ export function MockInterviewSchedulePage() {
   // helper to quickly fill current time (+small offset to satisfy validation)
   const handleSetNow = () => {
     const now = new Date(Date.now() + MIN_FUTURE_OFFSET_MS * 2);
-    setSelectedDate(now);
-    setSelectedHour(String(now.getHours()).padStart(2, "0"));
-    setSelectedMinute(String(now.getMinutes()).padStart(2, "0"));
+    const vietnamDateKey = toVietnamDateKey(now);
+    const { hour, minute } = getVietnamTimeParts(now);
+
+    if (vietnamDateKey) {
+      setSelectedDate(parseVietnamDateKey(vietnamDateKey));
+    }
+
+    setSelectedHour(hour);
+    setSelectedMinute(minute);
   };
 
   // Step 3: Creating
@@ -160,31 +213,21 @@ export function MockInterviewSchedulePage() {
   // Calculate joinTime in Vietnam timezone (+07:00)
   const calculateJoinTime = (): string | undefined => {
     if (!selectedDate) return undefined;
-    const joinDate = new Date(selectedDate);
-    joinDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
+    const joinDate = buildJoinDateFromVietnamSelection(selectedDate, selectedHour, selectedMinute);
     return formatToVietnamISOString(joinDate);
   };
 
   // Format selected date/time for display
   const formatSelectedDateTime = (): string => {
     if (!selectedDate) return "Chưa chọn";
-    const d = new Date(selectedDate);
-    d.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
-    return d.toLocaleString("vi-VN", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const joinDate = buildJoinDateFromVietnamSelection(selectedDate, selectedHour, selectedMinute);
+    return formatDateTime(joinDate, "Chưa chọn");
   };
 
   // Validation
   const isDateTimeValid = (): boolean => {
     if (!selectedDate) return false;
-    const joinDate = new Date(selectedDate);
-    joinDate.setHours(Number(selectedHour), Number(selectedMinute), 0, 0);
+    const joinDate = buildJoinDateFromVietnamSelection(selectedDate, selectedHour, selectedMinute);
     return joinDate.getTime() > Date.now() + MIN_FUTURE_OFFSET_MS;
   };
 
@@ -472,14 +515,7 @@ export function MockInterviewSchedulePage() {
                         !selectedDate && "text-muted-foreground"
                       )}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate
-                        ? selectedDate.toLocaleDateString("vi-VN", {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "Chọn ngày"}
+                      {selectedDate ? formatVietnamDateLabel(selectedDate) : "Chọn ngày"}
                     </Button>
                   </PopoverTrigger>
                   <Button variant="outline" size="sm" onClick={handleSetNow}>
@@ -491,9 +527,20 @@ export function MockInterviewSchedulePage() {
                       selected={selectedDate}
                       onSelect={setSelectedDate}
                       disabled={(date) => {
-                        const today = new Date();
+                        const todayKey = toVietnamDateKey(new Date());
+                        if (!todayKey) {
+                          return false;
+                        }
+
+                        const today = parseVietnamDateKey(todayKey);
                         today.setHours(0, 0, 0, 0);
-                        return date < today;
+
+                        const selected = new Date(
+                          date.getFullYear(),
+                          date.getMonth(),
+                          date.getDate()
+                        );
+                        return selected < today;
                       }}
                     />
                   </PopoverContent>
