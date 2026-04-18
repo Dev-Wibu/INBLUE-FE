@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useSpeechRecognition, useSpeechSynthesis } from "@/hooks";
 import { $api } from "@/lib/api";
-import { formatTime } from "@/lib/formatting";
+import { formatTime, formatUtcNaiveTime } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -15,7 +15,7 @@ const normalizeServerTimestamp = (value?: string): string | null => {
     return null;
   }
 
-  const normalized = formatTime(value, "");
+  const normalized = formatUtcNaiveTime(value, "");
   return normalized || null;
 };
 

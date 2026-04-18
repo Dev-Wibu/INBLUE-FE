@@ -6,8 +6,12 @@ import {
   formatDayMonth,
   formatTime,
   formatTimeDayMonth,
+  formatUtcNaiveDateTime,
+  formatUtcNaiveTime,
   parseBackendDate,
+  parseUtcNaiveDate,
   toTimestamp,
+  toUtcNaiveTimestamp,
   toVietnamDateKey,
   treatZuluAsVietnamLocal,
 } from "./formatting";
@@ -64,5 +68,21 @@ describe("formatting datetime helpers", () => {
 
     expect(formatDate(value)).toBe("14/04/2026");
     expect(formatDateTime(value.getTime())).toBe("14/04/2026 21:26");
+  });
+
+  it("parses UTC-naive ISO timestamps correctly for AI interview fields", () => {
+    const value = "2026-04-18T13:21:05.473428";
+
+    expect(formatUtcNaiveDateTime(value)).toBe("18/04/2026 20:21");
+    expect(formatUtcNaiveTime(value)).toBe("20:21");
+    expect(toUtcNaiveTimestamp(value)).toBe(Date.UTC(2026, 3, 18, 13, 21, 5, 473));
+  });
+
+  it("keeps explicit timezone values when using UTC-naive helpers", () => {
+    const value = "2026-04-18T13:21:05Z";
+
+    expect(formatUtcNaiveDateTime(value)).toBe("18/04/2026 20:21");
+    expect(formatUtcNaiveTime(value)).toBe("20:21");
+    expect(parseUtcNaiveDate("invalid")).toBeNull();
   });
 });
