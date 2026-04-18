@@ -5,9 +5,9 @@ const VIETNAM_TIME_ZONE = "Asia/Ho_Chi_Minh";
 const VIETNAM_OFFSET_HOURS = 7;
 
 const ISO_WITH_OFFSET_PATTERN = /(?:[zZ]|[+-]\d{2}:\d{2})$/;
-const ISO_ZULU_LOCAL_PATTERN = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)Z$/;
+const ISO_ZULU_LOCAL_PATTERN = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)?)Z$/;
 const ISO_LOCAL_PATTERN =
-  /^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)?$/;
+  /^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?)?$/;
 const US_12H_PATTERN =
   /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM))$/i;
 const US_24H_PATTERN = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
@@ -81,6 +81,18 @@ const buildDateFromVietnamLocal = (
   );
 };
 
+const buildDateFromUtc = (
+  year: number,
+  month: number,
+  day: number,
+  hour = 0,
+  minute = 0,
+  second = 0,
+  millisecond = 0
+): Date => {
+  return new Date(Date.UTC(year, month - 1, day, hour, minute, second, millisecond));
+};
+
 const tryParseIsoLocalAsVietnam = (value: string): Date | null => {
   const match = value.match(ISO_LOCAL_PATTERN);
   if (!match) {
@@ -89,6 +101,26 @@ const tryParseIsoLocalAsVietnam = (value: string): Date | null => {
 
   const [, yearRaw, monthRaw, dayRaw, hourRaw, minuteRaw, secondRaw, millisecondRaw] = match;
   const parsed = buildDateFromVietnamLocal(
+    toInt(yearRaw),
+    toInt(monthRaw),
+    toInt(dayRaw),
+    toInt(hourRaw),
+    toInt(minuteRaw),
+    toInt(secondRaw),
+    toMilliseconds(millisecondRaw)
+  );
+
+  return isValidDate(parsed) ? parsed : null;
+};
+
+const tryParseIsoLocalAsUtc = (value: string): Date | null => {
+  const match = value.match(ISO_LOCAL_PATTERN);
+  if (!match) {
+    return null;
+  }
+
+  const [, yearRaw, monthRaw, dayRaw, hourRaw, minuteRaw, secondRaw, millisecondRaw] = match;
+  const parsed = buildDateFromUtc(
     toInt(yearRaw),
     toInt(monthRaw),
     toInt(dayRaw),
@@ -210,6 +242,48 @@ export function toTimestamp(value: DateInput): number | null {
   return parsed ? parsed.getTime() : null;
 }
 
+export function parseUtcNaiveDate(value: DateInput): Date | null {
+  if (value == null) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return isValidDate(value) ? value : null;
+  }
+
+  if (typeof value === "number") {
+    const parsed = new Date(value);
+    return isValidDate(parsed) ? parsed : null;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalizedValue = value.trim();
+  if (!normalizedValue) {
+    return null;
+  }
+
+  if (ISO_WITH_OFFSET_PATTERN.test(normalizedValue)) {
+    const parsedWithOffset = new Date(normalizedValue);
+    return isValidDate(parsedWithOffset) ? parsedWithOffset : null;
+  }
+
+  const parsedUtcNaive = tryParseIsoLocalAsUtc(normalizedValue);
+  if (parsedUtcNaive) {
+    return parsedUtcNaive;
+  }
+
+  const fallback = new Date(normalizedValue);
+  return isValidDate(fallback) ? fallback : null;
+}
+
+export function toUtcNaiveTimestamp(value: DateInput): number | null {
+  const parsed = parseUtcNaiveDate(value);
+  return parsed ? parsed.getTime() : null;
+}
+
 export function treatZuluAsVietnamLocal(value: DateInput): DateInput {
   if (typeof value !== "string") {
     return value;
@@ -276,6 +350,15 @@ export function formatDateTime(value: DateInput, fallback = EMPTY_PLACEHOLDER): 
   return `${day}/${month}/${year} ${hour}:${minute}`;
 }
 
+export function formatUtcNaiveDateTime(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {
+  const parsed = parseUtcNaiveDate(value);
+  if (!parsed) {
+    return fallback;
+  }
+
+  return formatDateTime(parsed, fallback);
+}
+
 export function formatDateTimeWithSeconds(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {
   const parsed = parseBackendDate(value);
   if (!parsed) {
@@ -310,6 +393,15 @@ export function formatTime(value: DateInput, fallback = EMPTY_PLACEHOLDER): stri
   }
 
   return `${hour}:${minute}`;
+}
+
+export function formatUtcNaiveTime(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {
+  const parsed = parseUtcNaiveDate(value);
+  if (!parsed) {
+    return fallback;
+  }
+
+  return formatTime(parsed, fallback);
 }
 
 export function formatDayMonth(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {

@@ -32,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { $api } from "@/lib/api";
-import { formatDateTime } from "@/lib/formatting";
+import { formatUtcNaiveDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { practiceSetManager } from "@/services";
 import { SelectRoadmapModal } from "./components/SelectRoadmapModal";
@@ -404,7 +404,7 @@ export function AIInterviewResultPage() {
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tạo lúc</span>
-                  <span>{formatDateTime(session.createdAt)}</span>
+                  <span>{formatUtcNaiveDateTime(session.createdAt)}</span>
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
@@ -461,7 +461,7 @@ export function AIInterviewResultPage() {
         </div>
 
         {/* Score Card */}
-        <Card className="mb-6 overflow-hidden border-0 bg-gradient-to-r from-[#0047AB] via-[#005B9A] to-[#007BFF]">
+        <Card className="mb-6 overflow-hidden border-0 bg-linear-to-r from-[#0047AB] via-[#005B9A] to-[#007BFF]">
           <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
             <p className="text-lg text-white/80">Điểm Tổng thể</p>
             <div className="flex items-center gap-2">
@@ -542,7 +542,7 @@ export function AIInterviewResultPage() {
                 <span className="text-muted-foreground">Tạo lúc</span>
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3.5 w-3.5" />
-                  {formatDateTime(session.createdAt)}
+                  {formatUtcNaiveDateTime(session.createdAt)}
                 </span>
                 {/* updatedAt */}
                 {session.updatedAt && (
@@ -550,7 +550,7 @@ export function AIInterviewResultPage() {
                     <span className="text-muted-foreground">Cập nhật</span>
                     <span className="flex items-center gap-1">
                       <RefreshCw className="h-3.5 w-3.5" />
-                      {formatDateTime(session.updatedAt)}
+                      {formatUtcNaiveDateTime(session.updatedAt)}
                     </span>
                   </>
                 )}
@@ -560,7 +560,7 @@ export function AIInterviewResultPage() {
                     <span className="text-muted-foreground">Hoàn thành</span>
                     <span className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
                       <CheckCircle2 className="h-3.5 w-3.5" />
-                      {formatDateTime(session.completedAt)}
+                      {formatUtcNaiveDateTime(session.completedAt)}
                     </span>
                   </>
                 )}

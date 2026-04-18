@@ -24,7 +24,7 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { $api } from "@/lib/api";
-import { formatDateTime, toTimestamp } from "@/lib/formatting";
+import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 
 // Map interview mode enum → label tiếng Việt
@@ -72,7 +72,7 @@ const RESULT_LABELS: Record<string, string> = {
 const SESSION_EXPIRY_MS = 60 * 60 * 1000;
 
 const isSessionExpired = (createdAt?: string) => {
-  const createdTimestamp = toTimestamp(createdAt);
+  const createdTimestamp = toUtcNaiveTimestamp(createdAt);
   if (!createdTimestamp) return true;
   return Date.now() - createdTimestamp >= SESSION_EXPIRY_MS;
 };
@@ -98,7 +98,7 @@ export function AIInterviewListPage() {
   const allSessions = useMemo(
     () =>
       [...(Array.isArray(sessions) ? sessions : [])].sort(
-        (a, b) => (toTimestamp(b.createdAt) ?? 0) - (toTimestamp(a.createdAt) ?? 0)
+        (a, b) => (toUtcNaiveTimestamp(b.createdAt) ?? 0) - (toUtcNaiveTimestamp(a.createdAt) ?? 0)
       ),
     [sessions]
   );
@@ -245,12 +245,12 @@ export function AIInterviewListPage() {
                           <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
-                              <span>Tạo: {formatDateTime(session.createdAt)}</span>
+                              <span>Tạo: {formatUtcNaiveDateTime(session.createdAt)}</span>
                             </div>
                             {session.updatedAt && (
                               <div className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
-                                <span>Cập nhật: {formatDateTime(session.updatedAt)}</span>
+                                <span>Cập nhật: {formatUtcNaiveDateTime(session.updatedAt)}</span>
                               </div>
                             )}
                             {session.sessionConfig?.duration_minutes && (
@@ -387,18 +387,18 @@ export function AIInterviewListPage() {
                         <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
-                            <span>Tạo: {formatDateTime(session.createdAt)}</span>
+                            <span>Tạo: {formatUtcNaiveDateTime(session.createdAt)}</span>
                           </div>
                           {session.updatedAt && (
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
-                              <span>Cập nhật: {formatDateTime(session.updatedAt)}</span>
+                              <span>Cập nhật: {formatUtcNaiveDateTime(session.updatedAt)}</span>
                             </div>
                           )}
                           {session.completedAt && (
                             <div className="flex items-center gap-1">
                               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                              <span>Hoàn thành: {formatDateTime(session.completedAt)}</span>
+                              <span>Hoàn thành: {formatUtcNaiveDateTime(session.completedAt)}</span>
                             </div>
                           )}
                           {session.sessionConfig?.duration_minutes && (
