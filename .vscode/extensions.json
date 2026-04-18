@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "nrwl.angular-console",
+    "ms-vscode.vscode-typescript-next",
+    "cypress-io.cypress-explorer",
+    "vitest.explorer"
+  ]
+}
