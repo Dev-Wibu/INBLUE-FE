@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { formatDate } from "@/lib/formatting";
+import { formatDateTime } from "@/lib/formatting";
 import { useCheckLiked } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import type { components } from "../../../../schema-from-be";
@@ -73,7 +73,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
                   </Badge>
                 )}
               </div>
-              <p className="text-muted-foreground text-xs">{formatDate(post?.creationDate)}</p>
+              <p className="text-muted-foreground text-xs">{formatDateTime(post?.creationDate)}</p>
             </div>
           </div>
         </CardHeader>

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import type { Post } from "@/interfaces/schema.types";
-import { formatDate } from "@/lib/formatting";
+import { formatDateTime } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 
 import { LikeButton } from "./LikeButton";
@@ -42,7 +42,9 @@ export function PostCard({ post, onClick }: PostCardProps) {
             <AvatarFallback className="text-xs">{authorInitials || "?"}</AvatarFallback>
           </Avatar>
           <span className="text-muted-foreground text-sm">{post.author?.name ?? "Ẩn danh"}</span>
-          <span className="text-muted-foreground text-xs">· {formatDate(post.creationDate)}</span>
+          <span className="text-muted-foreground text-xs">
+            · {formatDateTime(post.creationDate)}
+          </span>
         </div>
         <h3 className="text-lg leading-tight font-semibold">{post.title}</h3>
       </CardHeader>

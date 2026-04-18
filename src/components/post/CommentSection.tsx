@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
+import { toTimestamp } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
 import { useCreateComment, usePostComments } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -53,7 +54,7 @@ function flattenDescendants(node: CommentNode): PostCommentResponse[] {
   dfs(node.children);
   result.sort((a, b) => {
     if (!a.createdAt || !b.createdAt) return 0;
-    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    return (toTimestamp(a.createdAt) ?? 0) - (toTimestamp(b.createdAt) ?? 0);
   });
   return result;
 }
@@ -422,8 +423,8 @@ export function CommentSection({
   const sortedRoots = useMemo(() => {
     const arr = [...commentTree];
     arr.sort((a, b) => {
-      const tA = a.comment.createdAt ? new Date(a.comment.createdAt).getTime() : 0;
-      const tB = b.comment.createdAt ? new Date(b.comment.createdAt).getTime() : 0;
+      const tA = toTimestamp(a.comment.createdAt) ?? 0;
+      const tB = toTimestamp(b.comment.createdAt) ?? 0;
       return sortOrder === "newest" ? tB - tA : tA - tB;
     });
     return arr;
@@ -432,8 +433,8 @@ export function CommentSection({
   const flatComments = useMemo(() => {
     const values = Array.from(commentById.values());
     values.sort((a, b) => {
-      const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      const tA = toTimestamp(a.createdAt) ?? 0;
+      const tB = toTimestamp(b.createdAt) ?? 0;
       return tB - tA;
     });
     return values;
