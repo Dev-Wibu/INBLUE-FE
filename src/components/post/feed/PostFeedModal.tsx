@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDate } from "@/lib/formatting";
+import { formatDateTime } from "@/lib/formatting";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -148,7 +148,9 @@ export function PostFeedModal({
                     </Badge>
                   )}
                 </div>
-                <p className="text-muted-foreground text-xs">{formatDate(post?.creationDate)}</p>
+                <p className="text-muted-foreground text-xs">
+                  {formatDateTime(post?.creationDate)}
+                </p>
               </div>
             </div>
 

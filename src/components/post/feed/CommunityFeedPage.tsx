@@ -16,6 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { usePostFeed } from "@/hooks/usePostFeed";
+import { toTimestamp } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 
 import { CreatePostModal } from "./CreatePostModal";
@@ -76,14 +77,14 @@ export function CommunityFeedPage({
           const latestComment = (items: typeof a.postComments) => {
             if (!items?.length) return 0;
             return items.reduce((latest, c) => {
-              const t = c.createdAt ? new Date(c.createdAt).getTime() : 0;
+              const t = toTimestamp(c.createdAt) ?? 0;
               return t > latest ? t : latest;
             }, 0);
           };
           const latestA = latestComment(a.postComments);
           const latestB = latestComment(b.postComments);
-          const fallbackA = a.post?.creationDate ? new Date(a.post.creationDate).getTime() : 0;
-          const fallbackB = b.post?.creationDate ? new Date(b.post.creationDate).getTime() : 0;
+          const fallbackA = toTimestamp(a.post?.creationDate) ?? 0;
+          const fallbackB = toTimestamp(b.post?.creationDate) ?? 0;
           return Math.max(latestB, fallbackB) - Math.max(latestA, fallbackA);
         }
         return 0;

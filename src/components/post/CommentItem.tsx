@@ -3,6 +3,7 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
+import { formatDateTime, toTimestamp } from "@/lib/formatting";
 
 interface CommentItemProps {
   comment: PostCommentResponse;
@@ -16,9 +17,10 @@ interface CommentItemProps {
 
 function getRelativeTime(dateStr?: string): string {
   if (!dateStr) return "";
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
+  const timestamp = toTimestamp(dateStr);
+  if (!timestamp) return "";
+
+  const diffMs = Date.now() - timestamp;
   const diffMins = Math.floor(diffMs / 60000);
   if (diffMins < 1) return "Vừa xong";
   if (diffMins < 60) return `${diffMins} phút trước`;
@@ -84,6 +86,9 @@ export function CommentItem({
   onMentionClick,
   isHighlighted,
 }: CommentItemProps) {
+  const relativeTime = getRelativeTime(comment.createdAt);
+  const absoluteTime = formatDateTime(comment.createdAt, "");
+
   const initials = comment.userName
     ?.split(" ")
     .map((w) => w[0])
@@ -102,9 +107,11 @@ export function CommentItem({
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{comment.userName ?? "Ẩn danh"}</span>
-          <span className="text-muted-foreground text-xs">
-            {getRelativeTime(comment.createdAt)}
-          </span>
+          {relativeTime && (
+            <span title={absoluteTime || undefined} className="text-muted-foreground text-xs">
+              {relativeTime}
+            </span>
+          )}
         </div>
         <p className="mt-1 text-sm wrap-break-word whitespace-pre-wrap">
           {renderContent(comment.content, mentionedUserName, parentCommentId, onMentionClick)}

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import type { Post } from "@/interfaces/schema.types";
-import { formatDate } from "@/lib/formatting";
+import { formatDateTime } from "@/lib/formatting";
 import { postManager } from "@/services/post.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 
@@ -66,7 +66,7 @@ export function BlogPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-[#DCEEFF]/30 py-16 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+      <section className="relative overflow-hidden bg-linear-to-b from-slate-50 via-white to-[#DCEEFF]/30 py-16 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-20 left-1/4 h-72 w-72 rounded-full bg-[#66B2FF]/20 blur-3xl" />
           <div className="absolute right-1/4 bottom-20 h-72 w-72 rounded-full bg-[#A5C8F2]/20 blur-3xl" />
@@ -143,7 +143,7 @@ export function BlogPage() {
                           />
                         </div>
                       ) : (
-                        <div className="h-48 w-full bg-gradient-to-br from-[#DCEEFF] to-[#A5C8F2] dark:from-slate-700 dark:to-slate-600" />
+                        <div className="h-48 w-full bg-linear-to-br from-[#DCEEFF] to-[#A5C8F2] dark:from-slate-700 dark:to-slate-600" />
                       )}
                       <CardHeader>
                         <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -181,7 +181,7 @@ export function BlogPage() {
                           </div>
                           <span className="flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
-                            {formatDate(post.creationDate)}
+                            {formatDateTime(post.creationDate)}
                           </span>
                         </div>
                       </CardContent>
@@ -230,7 +230,7 @@ export function BlogPage() {
               </Card>
 
               {/* Newsletter */}
-              <Card className="bg-gradient-to-br from-[#0047AB] to-[#007BFF] text-white dark:from-[#0047AB]/80 dark:to-[#007BFF]/80">
+              <Card className="bg-linear-to-br from-[#0047AB] to-[#007BFF] text-white dark:from-[#0047AB]/80 dark:to-[#007BFF]/80">
                 <CardHeader>
                   <CardTitle className="text-lg text-white">Đăng ký nhận tin</CardTitle>
                   <CardDescription className="text-[#A5C8F2]">
