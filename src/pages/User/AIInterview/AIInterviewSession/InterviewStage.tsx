@@ -1,5 +1,6 @@
-import { Bot, Camera, CameraOff, LoaderCircle, Mic, MicOff } from "lucide-react";
-import type { RefObject } from "react";
+import { Bot, Camera, CameraOff, GripVertical, LoaderCircle, Mic, MicOff } from "lucide-react";
+import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import logo from "@/assets/icon.svg";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,11 @@ const CAMERA_STATE_LABELS: Record<CameraPreviewState, string> = {
   unsupported: "Không hỗ trợ camera",
   error: "Lỗi camera",
 };
+
+const CAMERA_PANEL_MIN_WIDTH = 240;
+const CAMERA_PANEL_MAX_WIDTH = 520;
+const CAMERA_PANEL_DEFAULT_WIDTH = 360;
+const CAMERA_PANEL_COLLAPSED_HEIGHT = 100;
 
 interface InterviewStageProps {
   phaseName: string;
@@ -84,6 +90,87 @@ export function InterviewStage({
   onToggleListening,
   onToggleCamera,
 }: InterviewStageProps) {
+  const [cameraPanelWidth, setCameraPanelWidth] = useState(CAMERA_PANEL_DEFAULT_WIDTH);
+  const resizeStartRef = useRef({
+    pointerId: -1,
+    startX: 0,
+    startWidth: CAMERA_PANEL_DEFAULT_WIDTH,
+  });
+
+  const clampPanelWidth = useCallback((nextWidth: number) => {
+    if (typeof window === "undefined") {
+      return Math.min(CAMERA_PANEL_MAX_WIDTH, Math.max(CAMERA_PANEL_MIN_WIDTH, nextWidth));
+    }
+
+    const viewportMax = Math.min(
+      CAMERA_PANEL_MAX_WIDTH,
+      Math.max(CAMERA_PANEL_MIN_WIDTH, window.innerWidth - 24)
+    );
+    return Math.min(viewportMax, Math.max(CAMERA_PANEL_MIN_WIDTH, nextWidth));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handleWindowResize = () => {
+      setCameraPanelWidth((prevWidth) => clampPanelWidth(prevWidth));
+    };
+
+    handleWindowResize();
+    window.addEventListener("resize", handleWindowResize);
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+    };
+  }, [clampPanelWidth]);
+
+  useEffect(() => {
+    return () => {
+      document.body.style.userSelect = "";
+    };
+  }, []);
+
+  const handleResizePointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      resizeStartRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startWidth: cameraPanelWidth,
+      };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      document.body.style.userSelect = "none";
+    },
+    [cameraPanelWidth]
+  );
+
+  const handleResizePointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (resizeStartRef.current.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const deltaX = resizeStartRef.current.startX - event.clientX;
+      const nextWidth = resizeStartRef.current.startWidth + deltaX;
+      setCameraPanelWidth(clampPanelWidth(nextWidth));
+    },
+    [clampPanelWidth]
+  );
+
+  const handleResizePointerUp = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (resizeStartRef.current.pointerId !== event.pointerId) {
+      return;
+    }
+
+    resizeStartRef.current.pointerId = -1;
+    document.body.style.userSelect = "";
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }, []);
+
   const stageStatus = resolveStageStatus({
     interviewFinished,
     sessionExpiredMidway,
@@ -94,6 +181,7 @@ export function InterviewStage({
 
   const canShowPulse = !interviewFinished && (isListening || isSubmitting || isEvaluating);
   const canToggleMic = isSpeechSupported && (isListening || canUseSpeechInput);
+  const isCameraCollapsed = cameraState === "idle";
 
   return (
     <section className="relative flex min-h-80 flex-1 items-center justify-center overflow-hidden border-b border-slate-800 bg-slate-950 px-4 py-6 md:border-r md:border-b-0 md:px-6">
@@ -144,35 +232,52 @@ export function InterviewStage({
         )}
       </div>
 
-      <div className="absolute top-4 right-4 z-20 w-56 overflow-hidden rounded-2xl border border-slate-700 bg-slate-900/95 shadow-lg shadow-black/40 sm:w-64 md:w-[360px] lg:w-[420px]">
-        <div className="relative aspect-video bg-slate-950">
-          <video
-            ref={cameraVideoRef}
-            autoPlay
-            playsInline
-            muted
-            className={cn(
-              "h-full w-full object-cover transition-opacity duration-200",
-              cameraState === "granted" ? "opacity-100" : "opacity-0"
-            )}
-          />
-          {cameraState !== "granted" && (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-slate-300">
-              {cameraState === "requesting" ? (
-                <LoaderCircle className="h-5 w-5 animate-spin" />
-              ) : cameraState === "denied" ? (
-                <CameraOff className="h-5 w-5 text-amber-300" />
-              ) : (
-                <Camera className="h-5 w-5" />
+      <div
+        data-testid="camera-panel"
+        className={cn(
+          "absolute top-4 right-4 z-20 overflow-hidden rounded-2xl border border-slate-700 bg-slate-900/95 shadow-lg shadow-black/40",
+          isCameraCollapsed && "h-[100px]"
+        )}
+        style={{
+          width: `${cameraPanelWidth}px`,
+          maxWidth: "calc(100% - 0.5rem)",
+          minWidth: `${CAMERA_PANEL_MIN_WIDTH}px`,
+          height: isCameraCollapsed ? `${CAMERA_PANEL_COLLAPSED_HEIGHT}px` : undefined,
+        }}>
+        {!isCameraCollapsed && (
+          <div className="relative aspect-video bg-slate-950">
+            <video
+              ref={cameraVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className={cn(
+                "h-full w-full object-cover transition-opacity duration-200",
+                cameraState === "granted" ? "opacity-100" : "opacity-0"
               )}
-              <p className="px-2 text-center text-[11px] leading-tight">
-                {CAMERA_STATE_LABELS[cameraState]}
-              </p>
-            </div>
-          )}
-        </div>
+            />
+            {cameraState !== "granted" && (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-slate-300">
+                {cameraState === "requesting" ? (
+                  <LoaderCircle className="h-5 w-5 animate-spin" />
+                ) : cameraState === "denied" ? (
+                  <CameraOff className="h-5 w-5 text-amber-300" />
+                ) : (
+                  <Camera className="h-5 w-5" />
+                )}
+                <p className="px-2 text-center text-[11px] leading-tight">
+                  {CAMERA_STATE_LABELS[cameraState]}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
-        <div className="space-y-2 p-2.5">
+        <div
+          className={cn(
+            "p-2.5",
+            isCameraCollapsed ? "flex h-full flex-col justify-between" : "space-y-2"
+          )}>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 text-[11px] text-slate-200">
               <Bot className="h-3.5 w-3.5 text-cyan-300" />
@@ -186,10 +291,30 @@ export function InterviewStage({
               {cameraState === "granted" ? "Tắt" : "Bật"}
             </Button>
           </div>
-          {cameraMessage && (
-            <p className="text-[10px] leading-snug text-slate-400">{cameraMessage}</p>
+
+          {isCameraCollapsed ? (
+            <p className="line-clamp-1 text-[10px] leading-snug text-slate-400">
+              {CAMERA_STATE_LABELS[cameraState]}
+            </p>
+          ) : (
+            cameraMessage && (
+              <p className="line-clamp-2 text-[10px] leading-snug text-slate-400 md:line-clamp-3">
+                {cameraMessage}
+              </p>
+            )
           )}
         </div>
+
+        <button
+          type="button"
+          aria-label="Kéo để thay đổi kích thước khung camera"
+          onPointerDown={handleResizePointerDown}
+          onPointerMove={handleResizePointerMove}
+          onPointerUp={handleResizePointerUp}
+          onPointerCancel={handleResizePointerUp}
+          className="absolute bottom-1 left-1 z-30 inline-flex h-5 w-5 cursor-ew-resize items-center justify-center rounded-md bg-slate-800/80 text-slate-300 hover:bg-slate-700">
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
       </div>
 
       <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2">

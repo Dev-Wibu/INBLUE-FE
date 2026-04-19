@@ -232,7 +232,9 @@ export function useAIInterviewSession() {
     speak,
     cancel: cancelSpeech,
     toggleMute,
-  } = useSpeechSynthesis(speechLanguage);
+  } = useSpeechSynthesis(speechLanguage, {
+    strategy: "responsive-voice-first",
+  });
 
   // Toggle TTS cho một tin nhắn — nếu đang phát tin này thì dừng, ngược lại phát mới
   const handleToggleSpeak = useCallback(
