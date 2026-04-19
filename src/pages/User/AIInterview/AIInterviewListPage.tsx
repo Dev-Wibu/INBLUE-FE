@@ -17,12 +17,14 @@ import {
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { ReloadButton } from "@/components/shared";
+import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
+import { useSortable } from "@/hooks/useSortable";
 import { $api } from "@/lib/api";
 import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
@@ -80,6 +82,10 @@ const isSessionExpired = (createdAt?: string) => {
 export function AIInterviewListPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [historyPageSize, setHistoryPageSize] = useHybridPageSize({
+    key: "src_pages_user_aiinterview_aiinterviewlistpage_tsx_historypagesize",
+    defaultPageSize: 10,
+  });
   const userId = useAuthStore((s) => s.user?.id);
 
   const {
@@ -124,6 +130,43 @@ export function AIInterviewListPage() {
       return modeLabel.toLowerCase().includes(q) || domain.toLowerCase().includes(q);
     });
   }, [allSessions, searchQuery]);
+
+  const sortableHistorySessions = useMemo(() => {
+    return historySessions.map((session) => ({
+      ...session,
+      idSortValue: typeof session.id === "number" ? session.id : 0,
+      createdAtSortValue: toUtcNaiveTimestamp(session.createdAt) ?? 0,
+      updatedAtSortValue: toUtcNaiveTimestamp(session.updatedAt) ?? 0,
+      scoreSortValue: session.overallScore ?? -1,
+      modeSortValue: (MODE_LABELS[session.mode ?? ""] ?? session.mode ?? "").toLowerCase(),
+      statusSortValue: (session.status ?? "").toUpperCase(),
+    }));
+  }, [historySessions]);
+
+  const { sortedData: sortedHistorySessions, getSortProps: getHistorySortProps } = useSortable(
+    sortableHistorySessions,
+    {
+      defaultSort: {
+        key: "createdAtSortValue",
+        direction: "desc",
+      },
+      noSortBehavior: "preserve",
+      tieBreaker: {
+        key: "idSortValue",
+        direction: "desc",
+      },
+    }
+  );
+
+  const historyPagination = usePagination({
+    totalCount: sortedHistorySessions.length,
+    pageSize: historyPageSize,
+  });
+
+  const historyPageData = useMemo(
+    () => sortedHistorySessions.slice(historyPagination.startIndex, historyPagination.endIndex + 1),
+    [historyPagination.endIndex, historyPagination.startIndex, sortedHistorySessions]
+  );
 
   const handleResume = (key: string) => {
     navigate(`/user/ai-interview/session?sessionKey=${key}`);
@@ -314,7 +357,10 @@ export function AIInterviewListPage() {
                     type="text"
                     placeholder="Tìm kiếm theo chế độ, lĩnh vực..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      historyPagination.goToFirstPage();
+                    }}
                     className="pl-10"
                   />
                 </div>
@@ -326,9 +372,18 @@ export function AIInterviewListPage() {
                   tooltip="Tải lại lịch sử phỏng vấn AI"
                 />
               </div>
+
+              {sortedHistorySessions.length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <SortButton {...getHistorySortProps("createdAtSortValue")}>Mới nhất</SortButton>
+                  <SortButton {...getHistorySortProps("scoreSortValue")}>Điểm số</SortButton>
+                  <SortButton {...getHistorySortProps("modeSortValue")}>Chế độ</SortButton>
+                  <SortButton {...getHistorySortProps("statusSortValue")}>Trạng thái</SortButton>
+                </div>
+              )}
             </div>
             <div className="space-y-4">
-              {historySessions.map((session, index) => {
+              {historyPageData.map((session, index) => {
                 // "Đã hết hạn" nếu: sessionKey null, HOẶC session IN_PROGRESS nhưng đã qua 1 giờ
                 const isExpired =
                   (session.status === "CREATED" || session.status === "IN_PROGRESS") &&
@@ -358,6 +413,7 @@ export function AIInterviewListPage() {
                       {/* Number Badge */}
                       <div className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
                         <span className="text-primary text-xl font-bold">{index + 1}</span>
+                        <span className="sr-only">#{historyPagination.startIndex + index + 1}</span>
                       </div>
 
                       {/* Info */}
@@ -470,7 +526,18 @@ export function AIInterviewListPage() {
                 );
               })}
 
-              {historySessions.length === 0 && (
+              {sortedHistorySessions.length > 0 && (
+                <PaginationControl
+                  pagination={historyPagination}
+                  onPageSizeChange={(nextPageSize) => {
+                    setHistoryPageSize(nextPageSize);
+                    historyPagination.goToFirstPage();
+                  }}
+                  pageSizeOptions={[5, 10, 20, 30]}
+                />
+              )}
+
+              {sortedHistorySessions.length === 0 && (
                 <Card className="flex h-64 flex-col items-center justify-center gap-4">
                   <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
                     {searchQuery ? (

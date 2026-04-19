@@ -1,21 +1,57 @@
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { Calendar, Clock, LogIn, Search, User as UserIcon, Users, Video } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ReloadButton } from "@/components/shared";
+import { PaginationControl } from "@/components/shared/PaginationControl";
+import { SortButton } from "@/components/shared/SortButton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { LoadingCardList } from "@/components/ui/loading-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { useUserSessions } from "@/hooks/useSession";
+import { useSortable } from "@/hooks/useSortable";
 import { formatDate, formatTime, toTimestamp } from "@/lib/formatting";
 import { getMockInterviewStatusBadge } from "@/lib/status-utils";
+
+type InterviewStatusFilter = "all" | "SCHEDULED" | "PAID" | "ONGOING";
+
+type InterviewItem = {
+  id?: number;
+  title: string;
+  mentorName: string;
+  date: string;
+  time: string;
+  joinTime?: string;
+  status: "upcoming" | "paid" | "ongoing";
+  canJoin: boolean;
+  isTimeReached: boolean;
+  statusSortValue: number;
+  sessionSortValue: number;
+};
+
+const mockInterviewStatusSortMap: Record<InterviewItem["status"], number> = {
+  upcoming: 1,
+  paid: 2,
+  ongoing: 3,
+};
 
 export function MockInterviewListPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<InterviewStatusFilter>("all");
+
   const { data: sessions = [], isLoading, isRefetching, refetch } = useUserSessions();
 
   // Current time state for joinTime-based blocking (updates every 30s)
@@ -25,56 +61,86 @@ export function MockInterviewListPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Transform sessions to interview format for display (newest first)
-  // Show upcoming sessions including SCHEDULED, PAID and ONGOING
-  const interviews = useMemo(() => {
-    return [...sessions]
-      .filter(
-        (session) =>
-          session.status === "SCHEDULED" ||
-          session.status === "PAID" ||
-          session.status === "ONGOING"
-      )
-      .reverse()
-      .map((session) => {
-        const joinTimestamp = toTimestamp(session.joinTime);
-        const isTimeReached = joinTimestamp ? joinTimestamp <= now : true;
-        return {
-          id: session.id,
-          title: session.roomName || `Phiên #${session.id}`,
-          mentorName: `Mentor #${session.userId2 || "Không có dữ liệu"}`,
-          date: session.joinTime
-            ? formatDate(session.joinTime, "Không có dữ liệu")
-            : formatDate(session.startTime1, "Không có dữ liệu"),
-          time: session.joinTime
-            ? formatTime(session.joinTime, "Không có dữ liệu")
-            : formatTime(session.startTime1, "Không có dữ liệu"),
-          joinTime: session.joinTime,
-          status:
+  const interviewSessions = useMemo(
+    () =>
+      [...sessions]
+        .filter(
+          (session) =>
+            session.status === "SCHEDULED" ||
+            session.status === "PAID" ||
             session.status === "ONGOING"
-              ? "ongoing"
-              : session.status === "PAID"
-                ? "paid"
-                : "upcoming",
-          canJoin:
-            (session.status === "PAID" || session.status === "ONGOING") &&
-            !!session.roomUrl &&
-            isTimeReached,
-          isTimeReached,
-        };
-      });
-  }, [sessions, now]);
+        )
+        .sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
+    [sessions]
+  );
 
-  // Filter interviews based on search query
+  // Transform sessions to interview format for display.
+  const interviews = useMemo<InterviewItem[]>(() => {
+    return interviewSessions.map((session) => {
+      const joinTimestamp = toTimestamp(session.joinTime);
+      const isTimeReached = joinTimestamp ? joinTimestamp <= now : true;
+      const normalizedStatus: InterviewItem["status"] =
+        session.status === "ONGOING" ? "ongoing" : session.status === "PAID" ? "paid" : "upcoming";
+
+      const sessionSortValue =
+        joinTimestamp ??
+        toTimestamp(session.startTime1) ??
+        (typeof session.id === "number" ? session.id : 0);
+
+      return {
+        id: session.id,
+        title: session.roomName || `Phiên #${session.id}`,
+        mentorName: `Mentor #${session.userId2 || "Không có dữ liệu"}`,
+        date: session.joinTime
+          ? formatDate(session.joinTime, "Không có dữ liệu")
+          : formatDate(session.startTime1, "Không có dữ liệu"),
+        time: session.joinTime
+          ? formatTime(session.joinTime, "Không có dữ liệu")
+          : formatTime(session.startTime1, "Không có dữ liệu"),
+        joinTime: session.joinTime,
+        status: normalizedStatus,
+        canJoin:
+          (session.status === "PAID" || session.status === "ONGOING") &&
+          !!session.roomUrl &&
+          isTimeReached,
+        isTimeReached,
+        statusSortValue: mockInterviewStatusSortMap[normalizedStatus],
+        sessionSortValue,
+      };
+    });
+  }, [interviewSessions, now]);
+
+  // Filter interviews based on search query and status
   const filteredInterviews = useMemo(() => {
-    if (!searchQuery) return interviews;
+    if (!searchQuery && statusFilter === "all") return interviews;
+
     const lowerQuery = searchQuery.toLowerCase();
     return interviews.filter(
       (interview) =>
-        interview.title.toLowerCase().includes(lowerQuery) ||
-        interview.mentorName.toLowerCase().includes(lowerQuery)
+        (statusFilter === "all" ||
+          (statusFilter === "SCHEDULED" && interview.status === "upcoming") ||
+          (statusFilter === "PAID" && interview.status === "paid") ||
+          (statusFilter === "ONGOING" && interview.status === "ongoing")) &&
+        (lowerQuery.length === 0 ||
+          interview.title.toLowerCase().includes(lowerQuery) ||
+          interview.mentorName.toLowerCase().includes(lowerQuery))
     );
-  }, [interviews, searchQuery]);
+  }, [interviews, searchQuery, statusFilter]);
+
+  const { sortedData, getSortProps } = useSortable(filteredInterviews);
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_user_mockinterview_mockinterviewlistpage_tsx_pagesize",
+    defaultPageSize: 10,
+  });
+  const pagination = usePagination({
+    totalCount: sortedData.length,
+    pageSize,
+  });
+
+  const pageData = useMemo(
+    () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
+    [pagination.endIndex, pagination.startIndex, sortedData]
+  );
 
   return (
     <div className="bg-background min-h-screen p-8">
@@ -115,16 +181,52 @@ export function MockInterviewListPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="relative w-80">
+          <div className="relative w-72">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               type="text"
               placeholder="Tìm kiếm theo tên, mentor..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                pagination.goToFirstPage();
+              }}
               className="pl-10"
             />
           </div>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value as InterviewStatusFilter);
+              pagination.goToFirstPage();
+            }}>
+            <SelectTrigger className="w-52">
+              <SelectValue placeholder="Lọc theo trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả trạng thái</SelectItem>
+              <SelectItem value="SCHEDULED">Sắp diễn ra</SelectItem>
+              <SelectItem value="PAID">Đã thanh toán</SelectItem>
+              <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-2 rounded-md border px-3 py-2">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Sắp xếp:</span>
+            <SortButton {...getSortProps("id")}>ID</SortButton>
+            <SortButton {...getSortProps("sessionSortValue")}>Thời gian</SortButton>
+            <SortButton {...getSortProps("statusSortValue")}>Trạng thái</SortButton>
+          </div>
+          {(searchQuery || statusFilter !== "all") && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+                pagination.goToFirstPage();
+              }}>
+              Xóa bộ lọc
+            </Button>
+          )}
           <ReloadButton
             onReload={async () => {
               await refetch();
@@ -140,7 +242,7 @@ export function MockInterviewListPage() {
         <LoadingCardList count={4} />
       ) : (
         <div className="space-y-4">
-          {filteredInterviews.map((interview, index) => (
+          {pageData.map((interview, index) => (
             <Card
               key={interview.id}
               className="hover:border-primary/50 cursor-pointer transition-all hover:shadow-md"
@@ -148,7 +250,7 @@ export function MockInterviewListPage() {
               <CardContent className="flex items-center gap-6 p-6">
                 {/* Sequential Number */}
                 <div className="bg-primary/10 text-primary flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-bold">
-                  {index + 1}
+                  {pagination.startIndex + index + 1}
                 </div>
 
                 {/* Content */}
@@ -191,21 +293,19 @@ export function MockInterviewListPage() {
                       Tham gia
                     </Button>
                   )}
-                  {!interview.isTimeReached &&
-                    interview.status !== "cancelled" &&
-                    interview.joinTime && (
-                      <Badge className="inline-flex items-center gap-1 border border-amber-200 bg-amber-50 px-2.5 py-1 text-amber-700 hover:bg-amber-100">
-                        <Clock className="h-3.5 w-3.5" />
-                        Chưa đến giờ
-                      </Badge>
-                    )}
+                  {!interview.isTimeReached && interview.joinTime && (
+                    <Badge className="inline-flex items-center gap-1 border border-amber-200 bg-amber-50 px-2.5 py-1 text-amber-700 hover:bg-amber-100">
+                      <Clock className="h-3.5 w-3.5" />
+                      Chưa đến giờ
+                    </Badge>
+                  )}
                   <StatusBadge {...getMockInterviewStatusBadge(interview.status)} />
                 </div>
               </CardContent>
             </Card>
           ))}
 
-          {filteredInterviews.length === 0 && !isLoading && (
+          {sortedData.length === 0 && !isLoading && (
             <Card className="flex h-64 flex-col items-center justify-center gap-4">
               <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
                 <Search className="text-muted-foreground h-8 w-8" />
@@ -224,7 +324,7 @@ export function MockInterviewListPage() {
           )}
 
           {/* CTA to book new interview */}
-          {filteredInterviews.length > 0 && (
+          {sortedData.length > 0 && (
             <Card className="overflow-hidden border-dashed">
               <CardHeader className="text-center">
                 <CardTitle>Đặt lịch phỏng vấn mới?</CardTitle>
@@ -239,6 +339,17 @@ export function MockInterviewListPage() {
                 </Button>
               </CardContent>
             </Card>
+          )}
+
+          {sortedData.length > 0 && (
+            <PaginationControl
+              pagination={pagination}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                pagination.goToFirstPage();
+              }}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
           )}
         </div>
       )}

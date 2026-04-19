@@ -3,7 +3,8 @@
  * Displays user's interview sessions with option to join or write reviews
  */
 
-import { ArrowRight, Calendar, Clock, Star, User, Video } from "lucide-react";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
+import { ArrowRight, Calendar, Clock, Search, Star, User, Video } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,9 +16,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { LoadingCardList } from "@/components/ui/loading-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMentorFeedbacksByUser } from "@/hooks/useMentorFeedback";
-import { usePagination } from "@/hooks/usePagination";
+
 import { useMakeSessionPayment, useUserSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import { useWalletBalanceReconciliation } from "@/hooks/useWalletBalanceReconciliation";
@@ -58,6 +67,16 @@ const statusMap: Record<
   REJECTED: { label: "Bị từ chối", variant: "destructive", color: "bg-red-100 text-red-600" },
   CANCELED: { label: "Đã hủy", variant: "destructive", color: "bg-red-100 text-red-600" },
 };
+
+type SessionStatusFilter =
+  | "all"
+  | "DRAFT"
+  | "SCHEDULED"
+  | "PAID"
+  | "ONGOING"
+  | "COMPLETED"
+  | "REJECTED"
+  | "CANCELED";
 
 interface SessionCardProps {
   session: Session;
@@ -198,7 +217,9 @@ export function SessionHistoryPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
-  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<SessionStatusFilter>("all");
+
   const [payingSessionId, setPayingSessionId] = useState<number | null>(null);
   const [isPreparingPaymentDialog, setIsPreparingPaymentDialog] = useState(false);
   const [targetSessionForPayment, setTargetSessionForPayment] = useState<Session | null>(null);
@@ -263,16 +284,52 @@ export function SessionHistoryPage() {
   );
 
   // Get session IDs where user already submitted mentor feedback
-  const feedbackSessionIds = new Set(
-    feedbacks
-      .map((f: { session?: { id?: number } }) => f.session?.id)
-      .filter((id): id is number => typeof id === "number")
+  const feedbackSessionIds = useMemo(
+    () =>
+      new Set(
+        feedbacks
+          .map((f: { session?: { id?: number } }) => f.session?.id)
+          .filter((id): id is number => typeof id === "number")
+      ),
+    [feedbacks]
+  );
+
+  const filteredSessions = useMemo(
+    () =>
+      [...sessions]
+        .filter((session) => {
+          const normalizedSearch = searchQuery.trim().toLowerCase();
+          const matchesSearch =
+            normalizedSearch.length === 0 ||
+            session.id?.toString().includes(normalizedSearch) ||
+            session.userId2?.toString().includes(normalizedSearch) ||
+            session.roomName?.toLowerCase().includes(normalizedSearch) ||
+            statusMap[session.status || "SCHEDULED"]?.label
+              ?.toLowerCase()
+              .includes(normalizedSearch);
+
+          if (!matchesSearch) {
+            return false;
+          }
+
+          if (statusFilter !== "all" && session.status !== statusFilter) {
+            return false;
+          }
+
+          return true;
+        })
+        .sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
+    [searchQuery, sessions, statusFilter]
   );
 
   // Apply sorting
-  const { sortedData, getSortProps } = useSortable(sessions);
+  const { sortedData, getSortProps } = useSortable(filteredSessions);
 
   // Apply pagination
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_user_mockinterview_sessionhistorypage_tsx_pagesize",
+    defaultPageSize: 10,
+  });
   const pagination = usePagination({
     totalCount: sortedData.length,
     pageSize,
@@ -679,6 +736,7 @@ export function SessionHistoryPage() {
     (s) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
   ).length;
   const completedCount = sessions.filter((s) => s.status === "COMPLETED").length;
+  const hasActiveFilters = searchQuery.trim().length > 0 || statusFilter !== "all";
 
   return (
     <div className="space-y-6">
@@ -770,9 +828,57 @@ export function SessionHistoryPage() {
         />
       ) : (
         <>
-          {/* Sort Controls */}
-          <Card className="p-4">
-            <div className="flex items-center gap-4">
+          {/* Controls */}
+          <Card className="space-y-4 p-4">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_auto_auto]">
+              <div className="relative">
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                <Input
+                  value={searchQuery}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    pagination.goToFirstPage();
+                  }}
+                  className="pl-9"
+                  placeholder="Tìm theo ID phiên, mentor, tên phòng, trạng thái..."
+                />
+              </div>
+
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value as SessionStatusFilter);
+                  pagination.goToFirstPage();
+                }}>
+                <SelectTrigger className="w-full min-w-[200px]">
+                  <SelectValue placeholder="Lọc theo trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                  <SelectItem value="DRAFT">Chờ duyệt</SelectItem>
+                  <SelectItem value="SCHEDULED">Sắp diễn ra</SelectItem>
+                  <SelectItem value="PAID">Đã thanh toán</SelectItem>
+                  <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
+                  <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
+                  <SelectItem value="REJECTED">Bị từ chối</SelectItem>
+                  <SelectItem value="CANCELED">Đã hủy</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                    pagination.goToFirstPage();
+                  }}>
+                  Xóa bộ lọc
+                </Button>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Sắp xếp theo:
               </span>
@@ -781,26 +887,41 @@ export function SessionHistoryPage() {
             </div>
           </Card>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {pageData.map((session) => (
-              <SessionCard
-                key={session.id}
-                session={session}
-                hasFeedback={typeof session.id === "number" && feedbackSessionIds.has(session.id)}
-                isPaying={payingSessionId === session.id}
-                onViewDetails={() => handleViewDetails(session)}
-                onWriteFeedback={() => handleWriteFeedback(session)}
-                onPaySession={() => void handleOpenPaymentMethodDialog(session)}
-              />
-            ))}
-          </div>
+          {sortedData.length === 0 ? (
+            <EmptyState
+              icon={Search}
+              title="Không tìm thấy phiên phù hợp"
+              description="Hãy thử từ khóa khác hoặc thay đổi bộ lọc trạng thái."
+            />
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {pageData.map((session) => (
+                  <SessionCard
+                    key={session.id}
+                    session={session}
+                    hasFeedback={
+                      typeof session.id === "number" && feedbackSessionIds.has(session.id)
+                    }
+                    isPaying={payingSessionId === session.id}
+                    onViewDetails={() => handleViewDetails(session)}
+                    onWriteFeedback={() => handleWriteFeedback(session)}
+                    onPaySession={() => void handleOpenPaymentMethodDialog(session)}
+                  />
+                ))}
+              </div>
 
-          {/* Pagination */}
-          <PaginationControl
-            pagination={pagination}
-            onPageSizeChange={setPageSize}
-            pageSizeOptions={[5, 10, 20, 50]}
-          />
+              {/* Pagination */}
+              <PaginationControl
+                pagination={pagination}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  pagination.goToFirstPage();
+                }}
+                pageSizeOptions={[5, 10, 20, 50]}
+              />
+            </>
+          )}
 
           <PaymentMethodDialog
             open={targetSessionForPayment !== null}
