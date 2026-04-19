@@ -6,6 +6,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type { Notification, NotificationFormData } from "@/services/notification.manager";
 import { notificationManager } from "@/services/notification.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -122,7 +123,7 @@ export const useCreateNotification = () => {
       toast.success("Đã gửi thông báo thành công");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(getNormalizedErrorMessage(error, "Không thể tạo thông báo"));
     },
   });
 };

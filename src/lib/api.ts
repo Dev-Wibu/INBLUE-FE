@@ -9,6 +9,7 @@ import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 
 import { API_BASE_URL, isPublicAuthRequest } from "@/constants/api.config";
+import { normalizeApiError } from "@/lib/error-normalizer";
 
 // Create the fetch client with base configuration
 const fetchClient = createFetchClient<paths>({
@@ -91,6 +92,39 @@ fetchClient.use({
             timestamp: new Date().toISOString(),
           });
         }
+      }
+    }
+
+    if (!response.ok) {
+      const clonedResponse = response.clone();
+      let payload: unknown;
+
+      try {
+        payload = await clonedResponse.json();
+      } catch {
+        try {
+          payload = await response.clone().text();
+        } catch {
+          payload = undefined;
+        }
+      }
+
+      const normalizedError = normalizeApiError(
+        {
+          status: response.status,
+          data: payload,
+        },
+        "Đã xảy ra lỗi khi gọi API."
+      );
+
+      if (import.meta.env.DEV) {
+        console.error("❌ API Error:", {
+          status: response.status,
+          url: response.url,
+          message: normalizedError.message,
+          traceId: normalizedError.traceId,
+          payload,
+        });
       }
     }
 

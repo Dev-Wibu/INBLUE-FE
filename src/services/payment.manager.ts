@@ -1,6 +1,7 @@
 import type { ApiResponse, PaymentEntity, PaymentPurpose } from "@/interfaces";
 
 import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 
 const normalizeAmount = (value: number): number => {
   if (!Number.isFinite(value) || value <= 0) {
@@ -22,37 +23,8 @@ const asNonEmptyString = (value: unknown): string | undefined => {
   return trimmed.length > 0 ? trimmed : undefined;
 };
 
-const extractErrorMessageFromPayload = (payload: unknown): string | undefined => {
-  if (typeof payload === "string") {
-    return asNonEmptyString(payload);
-  }
-
-  if (!isRecord(payload)) {
-    return undefined;
-  }
-
-  return (
-    asNonEmptyString(payload.message) ||
-    asNonEmptyString(payload.error) ||
-    asNonEmptyString(payload.detail) ||
-    asNonEmptyString(payload.title)
-  );
-};
-
 const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (isRecord(error) && isRecord(error.response)) {
-    const responseData = (error.response as Record<string, unknown>).data;
-    const responseMessage = extractErrorMessageFromPayload(responseData);
-    if (responseMessage) {
-      return responseMessage;
-    }
-  }
-
-  if (error instanceof Error) {
-    return asNonEmptyString(error.message) || fallback;
-  }
-
-  return fallback;
+  return getNormalizedErrorMessage(error, fallback);
 };
 
 export interface PaymentCreateOptions {

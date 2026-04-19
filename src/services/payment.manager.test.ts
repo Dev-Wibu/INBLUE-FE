@@ -100,7 +100,7 @@ describe("PaymentManager API mode", () => {
     const result = await manager.create(0, 1);
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain("So tien");
+    expect(result.error).toContain("Số tiền");
     expect(mockApi.post).not.toHaveBeenCalled();
   });
 
@@ -115,7 +115,7 @@ describe("PaymentManager API mode", () => {
     const result = await manager.create(50000, 10);
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain("link thanh toan");
+    expect(result.error).toContain("link thanh toán");
   });
 
   it("cancels payment by transaction code", async () => {
