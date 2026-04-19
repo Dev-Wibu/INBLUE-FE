@@ -190,7 +190,7 @@ const buildMessagesFromCache = (
   };
 };
 
-export function useAIInterviewSession() {
+export function useAIInterviewSession(isSessionActivated = false) {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const [speechLanguage, setSpeechLanguage] = useState<SpeechLanguageCode>("vi-VN");
@@ -448,12 +448,12 @@ export function useAIInterviewSession() {
           },
         ]);
         // Tự động đọc to câu hỏi mới của AI — bỏ qua nếu người dùng đã tắt tiếng
-        if (isTTSSupported && !isMuted) {
+        if (isSessionActivated && isTTSSupported && !isMuted) {
           speak(data.questionContent, newId);
         }
       }
     },
-    [cancelSpeech, getNow, isMuted, isTTSSupported, sessionKey, speak]
+    [cancelSpeech, getNow, isMuted, isSessionActivated, isTTSSupported, sessionKey, speak]
   );
 
   // Start interview — GET /api/v1/interview/start/{sessionKey}
@@ -470,6 +470,7 @@ export function useAIInterviewSession() {
     {
       enabled:
         !!sessionKey &&
+        isSessionActivated &&
         !hasStarted &&
         !isCacheLoading &&
         (isCacheError ||
@@ -479,6 +480,10 @@ export function useAIInterviewSession() {
 
   // Process the start response once — dùng ref guard để tránh StrictMode chạy effect 2 lần
   useEffect(() => {
+    if (!isSessionActivated) {
+      return;
+    }
+
     if (startData && !hasProcessedStartRef.current) {
       hasProcessedStartRef.current = true;
       setHasStarted(true);
@@ -538,7 +543,7 @@ export function useAIInterviewSession() {
         addAIMessage(startData);
       }, 600);
     }
-  }, [addAIMessage, cacheData, getNow, sessionKey, startData]);
+  }, [addAIMessage, cacheData, getNow, isSessionActivated, sessionKey, startData]);
 
   // Handle send answer
   const handleSendAnswer = useCallback(

@@ -14,10 +14,10 @@ import { useAIInterviewSession } from "./useAIInterviewSession";
 import { useUserCameraPreview } from "./useUserCameraPreview";
 
 export function AIInterviewSessionPage() {
-  const session = useAIInterviewSession();
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [selectedVideoDeviceId, setSelectedVideoDeviceId] = useState<string | null>(null);
+  const session = useAIInterviewSession(hasConfirmedDevices);
   const cameraPreview = useUserCameraPreview(hasConfirmedDevices, selectedVideoDeviceId);
 
   // ---- Error state: missing session key ----
