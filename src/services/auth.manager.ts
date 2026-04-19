@@ -14,6 +14,7 @@ import {
 } from "@/constants/api.config";
 import { isValidMajor } from "@/constants/majors";
 import { fetchClient } from "@/lib/api";
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 
 // Type from backend schema
 type BackendUser = components["schemas"]["User"];
@@ -594,7 +595,7 @@ export class AuthManager {
       console.error("Login error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Đăng nhập thất bại",
+        error: getNormalizedErrorMessage(error, "Đăng nhập thất bại"),
       };
     }
   }
@@ -760,7 +761,7 @@ export class AuthManager {
       console.error("Signup error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Đăng ký thất bại",
+        error: getNormalizedErrorMessage(error, "Đăng ký thất bại"),
       };
     }
   }
@@ -838,7 +839,7 @@ export class AuthManager {
       const normalizedErrorMessage =
         extractApiErrorMessage(payload) ||
         (typeof status === "number" ? ERROR_MESSAGES[status] : undefined) ||
-        (error instanceof Error ? error.message : undefined) ||
+        getNormalizedErrorMessage(error, "") ||
         "Đăng ký mentor thất bại. Vui lòng thử lại.";
 
       return {
@@ -869,7 +870,7 @@ export class AuthManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Không thể kiểm tra trạng thái",
+        error: getNormalizedErrorMessage(error, "Không thể kiểm tra trạng thái"),
       };
     }
   }
@@ -887,7 +888,7 @@ export class AuthManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Làm mới token thất bại",
+        error: getNormalizedErrorMessage(error, "Làm mới token thất bại"),
       };
     }
   }

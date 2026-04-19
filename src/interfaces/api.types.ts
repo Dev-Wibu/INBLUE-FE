@@ -33,6 +33,10 @@ export interface ApiError {
   message: string;
   code?: string;
   status?: number;
+  traceId?: string;
+  rawMessage?: string;
+  fieldErrors?: Record<string, string>;
+  source?: "axios" | "fetch" | "native" | "unknown";
   details?: unknown;
 }
 

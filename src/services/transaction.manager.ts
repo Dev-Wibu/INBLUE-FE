@@ -1,6 +1,7 @@
 import type { ApiResponse, PaymentPurpose, TransactionEntity } from "@/interfaces";
 
 import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 
 const normalizeAmount = (value: number): number => {
   if (!Number.isFinite(value) || value <= 0) {
@@ -51,56 +52,8 @@ const extractCurrentBalanceFromMessage = (value: string): number | undefined => 
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
-const isInsufficientBalanceError = (statusCode: unknown, message?: string): boolean => {
-  const status = asFiniteNumber(statusCode);
-  if (status === 400 || status === 402) {
-    return true;
-  }
-
-  const normalized = (message || "").toLowerCase();
-  return (
-    normalized.includes("insufficient balance") ||
-    normalized.includes("số dư") ||
-    normalized.includes("so du")
-  );
-};
-
-const extractErrorMessageFromPayload = (payload: unknown): string | undefined => {
-  if (typeof payload === "string") {
-    return asNonEmptyString(payload);
-  }
-
-  if (!isRecord(payload)) {
-    return undefined;
-  }
-
-  return (
-    asNonEmptyString(payload.message) ||
-    asNonEmptyString(payload.error) ||
-    asNonEmptyString(payload.detail) ||
-    asNonEmptyString(payload.title)
-  );
-};
-
 const getErrorMessage = (error: unknown, fallback: string): string => {
-  if (isRecord(error) && isRecord(error.response)) {
-    const response = error.response as Record<string, unknown>;
-    const responseData = response.data;
-    const responseMessage = extractErrorMessageFromPayload(responseData);
-    if (isInsufficientBalanceError(response.status, responseMessage)) {
-      return "Số dư ví không đủ. Vui lòng nạp thêm tiền hoặc chọn phương thức khác.";
-    }
-
-    if (responseMessage) {
-      return responseMessage;
-    }
-  }
-
-  if (error instanceof Error) {
-    return asNonEmptyString(error.message) || fallback;
-  }
-
-  return fallback;
+  return getNormalizedErrorMessage(error, fallback);
 };
 
 const DEFAULT_TRANSFER_OUT_PURPOSE: PaymentPurpose = "WITHDRAW_FROM_WALLET";

@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { Session } from "@/interfaces";
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type { JoinSessionRequest, SessionCreationRequest } from "@/services/session.manager";
 import { sessionManager } from "@/services/session.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -129,7 +130,7 @@ export const useCreateSession = () => {
       toast.success("Đã gửi yêu cầu đặt lịch. Chờ mentor hoặc Staff/Admin xét duyệt.");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(getNormalizedErrorMessage(error, "Không thể tạo phiên phỏng vấn"));
     },
   });
 };
@@ -156,7 +157,7 @@ export const useUpdateSession = () => {
       toast.success("Đã cập nhật phiên phỏng vấn");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(getNormalizedErrorMessage(error, "Không thể cập nhật phiên phỏng vấn"));
     },
   });
 };
@@ -180,7 +181,7 @@ export const useCancelSession = () => {
       toast.success("Đã hủy phiên phỏng vấn");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(getNormalizedErrorMessage(error, "Không thể hủy phiên phỏng vấn"));
     },
   });
 };
@@ -204,7 +205,7 @@ export const useJoinSession = () => {
       toast.success("Đã tham gia phiên phỏng vấn");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(getNormalizedErrorMessage(error, "Không thể tham gia phiên phỏng vấn"));
     },
   });
 };
@@ -234,7 +235,9 @@ export const useUpdateSessionStatus = () => {
       );
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(
+        getNormalizedErrorMessage(error, "Không thể cập nhật trạng thái phiên phỏng vấn")
+      );
     },
   });
 };
@@ -260,7 +263,9 @@ export const useMakeSessionPayment = () => {
       toast.success("Đã tạo link thanh toán cho phiên phỏng vấn");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(
+        getNormalizedErrorMessage(error, "Không thể tạo link thanh toán cho phiên phỏng vấn")
+      );
     },
   });
 };

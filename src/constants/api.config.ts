@@ -6,6 +6,8 @@
 import type { ApiConfig, ManagerMode } from "@/interfaces";
 import axios, { AxiosHeaders, type AxiosInstance } from "axios";
 
+import { normalizeApiError, toAppApiError } from "@/lib/error-normalizer";
+
 // API-only mode: mock branches are removed from service managers.
 export const MANAGER_MODE: ManagerMode = "api";
 
@@ -482,18 +484,29 @@ export const createApiInstance = (): AxiosInstance => {
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
-      const status = error.response?.status;
+      const normalizedError = normalizeApiError(error, "Đã xảy ra lỗi khi gọi API.");
+      const status = normalizedError.status;
 
       // Handle network errors (no response) - log but don't toast
       if (!error.response) {
-        console.error("Network error: Không thể kết nối đến máy chủ");
-        return Promise.reject(error);
+        console.error("Network error:", {
+          message: normalizedError.message,
+          traceId: normalizedError.traceId,
+          source: normalizedError.source,
+        });
+        return Promise.reject(
+          toAppApiError(error, "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.")
+        );
       }
 
       // Handle HTTP errors
-      if (status >= 400) {
+      if ((status || 0) >= 400) {
         // Log error for debugging
-        console.error(`HTTP ${status} error:`, error.response?.data);
+        console.error(`HTTP ${status} error:`, {
+          message: normalizedError.message,
+          traceId: normalizedError.traceId,
+          payload: normalizedError.payload,
+        });
 
         // Redirect to login on 401 (unauthorized)
         if (status === 401) {
@@ -514,7 +527,7 @@ export const createApiInstance = (): AxiosInstance => {
         }
       }
 
-      return Promise.reject(error);
+      return Promise.reject(toAppApiError(error, normalizedError.message));
     }
   );
 

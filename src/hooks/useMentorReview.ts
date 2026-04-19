@@ -6,6 +6,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type {
   CreateMentorReviewRequest,
   MentorReview,
@@ -167,7 +168,7 @@ export const useCreateMentorReview = () => {
       toast.success("Đã gửi đánh giá thành công");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(getNormalizedErrorMessage(error, "Không thể tạo đánh giá"));
     },
   });
 };
@@ -194,7 +195,7 @@ export const useUpdateMentorReview = () => {
       toast.success("Đã cập nhật đánh giá thành công");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(getNormalizedErrorMessage(error, "Không thể cập nhật đánh giá"));
     },
   });
 };
@@ -218,7 +219,7 @@ export const useDeleteMentorReview = () => {
       toast.success("Đã xóa đánh giá");
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      toast.error(getNormalizedErrorMessage(error, "Không thể xóa đánh giá"));
     },
   });
 };

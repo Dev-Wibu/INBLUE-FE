@@ -1,6 +1,8 @@
 import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
+
 /**
  * Hook to handle mutations with automatic toast notifications
  * Catches API response messages and displays them to the user
@@ -56,16 +58,10 @@ export function useMutationHandler<TData = unknown, TVariables = unknown, TError
       }
     },
     onError: (error: TError, variables) => {
-      // Try to extract error message
-      let message = errorMessage || (error as Error).message || "Đã xảy ra lỗi";
-
-      // Try to parse error response
-      try {
-        const errorData = JSON.parse((error as Error).message);
-        message = errorData.message || errorData.error || message;
-      } catch {
-        // If parsing fails, use the original error message
-      }
+      const message = getNormalizedErrorMessage(
+        error,
+        errorMessage || "Đã xảy ra lỗi. Vui lòng thử lại."
+      );
 
       // Show error toast
       if (showErrorToast) {

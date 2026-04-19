@@ -13,6 +13,7 @@ import type {
 } from "@/interfaces";
 
 import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import { formatToVietnamISOString } from "@/lib/utils";
 
 // Re-export Session type for convenience
@@ -55,6 +56,38 @@ const asNonEmptyString = (value: unknown): string | undefined => {
 
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const isLikelyHttpUrl = (value: string): boolean => {
+  return /^https?:\/\//i.test(value.trim());
+};
+
+const extractCheckoutUrl = (payload: unknown): string | undefined => {
+  if (typeof payload === "string") {
+    return asNonEmptyString(payload);
+  }
+
+  if (typeof payload !== "object" || payload === null) {
+    return undefined;
+  }
+
+  const record = payload as Record<string, unknown>;
+  const direct =
+    asNonEmptyString(record.checkoutUrl) ||
+    asNonEmptyString(record.paymentUrl) ||
+    asNonEmptyString(record.redirectUrl) ||
+    asNonEmptyString(record.link) ||
+    asNonEmptyString(record.url);
+
+  if (direct) {
+    return direct;
+  }
+
+  if (record.data !== undefined) {
+    return extractCheckoutUrl(record.data);
+  }
+
+  return undefined;
 };
 
 const sleep = (ms: number): Promise<void> => {
@@ -399,14 +432,26 @@ export class SessionManager implements BaseManager<Session> {
       const response = await this.api.get(API_ENDPOINTS.SESSIONS.MAKE_PAYMENT, {
         params: { sessionId },
       });
+
+      const checkoutUrl = extractCheckoutUrl(response.data);
+      if (!checkoutUrl || !isLikelyHttpUrl(checkoutUrl)) {
+        return {
+          success: false,
+          error: getNormalizedErrorMessage(
+            { data: response.data },
+            "Backend không trả về link thanh toán hợp lệ."
+          ),
+        };
+      }
+
       return {
         success: true,
-        data: response.data,
+        data: checkoutUrl,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Không thể tạo thanh toán phiên",
+        error: getNormalizedErrorMessage(error, "Không thể tạo thanh toán phiên"),
       };
     }
   }
