@@ -9,20 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { selectBestSpeechVoice } from "@/hooks/speech-synthesis.utils";
 import {
-  buildGoogleTranslateTtsUrl,
   loadResponsiveVoice,
   resolveResponsiveVoiceName,
-  stopGoogleAudioPlayback,
   stopResponsiveVoicePlayback,
 } from "@/lib/tts-playground";
 
 type PlaygroundLanguage = "vi-VN" | "en-US";
-type SpeechEngine = "web-speech" | "responsive-voice" | "google-translate";
+type SpeechEngine = "web-speech" | "responsive-voice";
 
 const ENGINE_LABELS: Record<SpeechEngine, string> = {
   "web-speech": "Web Speech API",
   "responsive-voice": "ResponsiveVoice.js",
-  "google-translate": "Google Translate trick",
 };
 
 const TEST_PHRASE_BY_LANG: Record<PlaygroundLanguage, string> = {
@@ -69,9 +66,7 @@ export function SpeechPlaygroundPage() {
   const [lastSpeakAt, setLastSpeakAt] = useState<Date | null>(null);
   const [lastEngineUsed, setLastEngineUsed] = useState<string>("Chưa phát");
   const [lastSpeakLatencyMs, setLastSpeakLatencyMs] = useState<number | null>(null);
-  const [lastGoogleTtsUrl, setLastGoogleTtsUrl] = useState("");
 
-  const googleAudioRef = useRef<HTMLAudioElement | null>(null);
   const speakRequestIdRef = useRef(0);
 
   const isWebSpeechSupported =
@@ -122,8 +117,6 @@ export function SpeechPlaygroundPage() {
       window.speechSynthesis.cancel();
     }
     stopResponsiveVoicePlayback();
-    stopGoogleAudioPlayback(googleAudioRef.current);
-    googleAudioRef.current = null;
   }, [isWebSpeechSupported]);
 
   useEffect(() => {
@@ -177,9 +170,6 @@ export function SpeechPlaygroundPage() {
     setError(null);
     setIsSpeaking(false);
     setIsEngineLoading(engine === "responsive-voice");
-    if (engine !== "google-translate") {
-      setLastGoogleTtsUrl("");
-    }
     stopAllPlayback();
 
     const markStarted = (engineLabel: string, voiceLabel: string) => {
@@ -223,7 +213,7 @@ export function SpeechPlaygroundPage() {
 
       const selectedVoiceLabel = selectedVoice
         ? `${selectedVoice.name} (${selectedVoice.lang})`
-        : "Mac dinh he thong";
+        : "Mặc định hệ thống";
 
       if (selectedVoice) {
         utterance.voice = selectedVoice;
@@ -287,40 +277,6 @@ export function SpeechPlaygroundPage() {
         setIsSpeaking(false);
         setError("Không thể tải ResponsiveVoice.js. Vui lòng thử lại sau.");
       }
-      return;
-    }
-
-    const googleUrl = buildGoogleTranslateTtsUrl(trimmedText, language);
-    setLastGoogleTtsUrl(googleUrl);
-
-    const audio = new Audio(googleUrl);
-    audio.preload = "auto";
-    googleAudioRef.current = audio;
-
-    audio.onplay = () => {
-      markStarted(ENGINE_LABELS["google-translate"], `Google Translate (${language})`);
-    };
-
-    audio.onended = () => {
-      markEnded();
-    };
-
-    audio.onerror = () => {
-      if (requestId !== speakRequestIdRef.current) {
-        return;
-      }
-      markEnded();
-      setError("Không thể phát audio từ Google Translate trick. Thử lại sau.");
-    };
-
-    try {
-      await audio.play();
-    } catch {
-      if (requestId !== speakRequestIdRef.current) {
-        return;
-      }
-      markEnded();
-      setError("Trình duyệt chặn autoplay. Hãy bấm phát thử lại một lần nữa.");
     }
   }, [
     engine,
@@ -348,8 +304,8 @@ export function SpeechPlaygroundPage() {
             <CardHeader>
               <CardTitle className="text-2xl">Speech Playground (DEV)</CardTitle>
               <CardDescription>
-                Khu thử nghiệm giọng nói cho AI Interview để benchmark Web Speech, ResponsiveVoice
-                và Google Translate trick.
+                Khu thử nghiệm giọng nói cho AI Interview để benchmark Web Speech và
+                ResponsiveVoice.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
@@ -367,7 +323,7 @@ export function SpeechPlaygroundPage() {
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                     <p>
                       Thiết bị hiện tại chưa tìm thấy voice tiếng Việt trong Web Speech. Bạn có thể
-                      đổi sang ResponsiveVoice hoặc Google Translate trick để so sánh.
+                      đổi sang ResponsiveVoice để so sánh.
                     </p>
                   </div>
                 </div>
@@ -393,7 +349,6 @@ export function SpeechPlaygroundPage() {
                     className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900">
                     <option value="web-speech">Web Speech API</option>
                     <option value="responsive-voice">ResponsiveVoice.js fallback</option>
-                    <option value="google-translate">Google Translate trick (dev only)</option>
                   </select>
                 </div>
 
@@ -421,41 +376,21 @@ export function SpeechPlaygroundPage() {
                 </div>
               )}
 
-              {engine === "google-translate" && (
-                <div className="rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 text-sm text-orange-700 dark:border-orange-900 dark:bg-orange-950/30 dark:text-orange-300">
-                  Mẹo gọi thẳng Google Translate TTS chỉ dùng để test local. Endpoint này không
-                  chính thức và có thể bị giới hạn bất kỳ lúc nào.
-                </div>
-              )}
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="speech-voice">Voice (chỉ áp dụng cho Web Speech)</Label>
-                  <select
-                    id="speech-voice"
-                    disabled={engine !== "web-speech"}
-                    value={selectedVoiceUri}
-                    onChange={(event) => setSelectedVoiceUri(event.target.value)}
-                    className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-700 dark:bg-slate-900">
-                    <option value="">Tự động chọn voice tốt nhất</option>
-                    {filteredVoices.map((voice) => (
-                      <option key={voice.voiceURI} value={voice.voiceURI}>
-                        {voice.name} ({voice.lang}) {voice.localService ? "- local" : "- cloud"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {engine === "google-translate" && (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="google-tts-url">Google Translate URL (lan gan nhat)</Label>
-                    <Input
-                      id="google-tts-url"
-                      readOnly
-                      value={lastGoogleTtsUrl || "Chưa tạo URL. Bấm 'Phát thử' để sinh URL."}
-                    />
-                  </div>
-                )}
+              <div className="space-y-1.5">
+                <Label htmlFor="speech-voice">Voice (chỉ áp dụng cho Web Speech)</Label>
+                <select
+                  id="speech-voice"
+                  disabled={engine !== "web-speech"}
+                  value={selectedVoiceUri}
+                  onChange={(event) => setSelectedVoiceUri(event.target.value)}
+                  className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-700 dark:bg-slate-900">
+                  <option value="">Tự động chọn voice tốt nhất</option>
+                  {filteredVoices.map((voice) => (
+                    <option key={voice.voiceURI} value={voice.voiceURI}>
+                      {voice.name} ({voice.lang}) {voice.localService ? "- local" : "- cloud"}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -584,10 +519,10 @@ export function SpeechPlaygroundPage() {
                 <table className="w-full min-w-[740px] text-left text-sm">
                   <thead className="bg-slate-100 dark:bg-slate-900">
                     <tr>
-                      <th className="px-3 py-2">Ten voice</th>
-                      <th className="px-3 py-2">Lang</th>
-                      <th className="px-3 py-2">Loai</th>
-                      <th className="px-3 py-2">Mac dinh</th>
+                      <th className="px-3 py-2">Tên voice</th>
+                      <th className="px-3 py-2">Ngôn ngữ</th>
+                      <th className="px-3 py-2">Loại</th>
+                      <th className="px-3 py-2">Mặc định</th>
                       <th className="px-3 py-2">Voice URI</th>
                     </tr>
                   </thead>
@@ -621,7 +556,9 @@ export function SpeechPlaygroundPage() {
               <CardTitle>Checklist test khuyến nghị</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p>1. Chọn Tiếng Việt, test lại cùng 1 câu với 3 engine Web/Responsive/Google.</p>
+              <p>
+                1. Chọn Tiếng Việt, test lại cùng 1 câu với 2 engine Web Speech/ResponsiveVoice.
+              </p>
               <p>2. Kiểm tra độ trễ bắt đầu phát và ghi lại engine đọc rõ tiếng Việt hơn.</p>
               <p>3. Thử rate 0.9, pitch 1.05 và so sánh với rate 1.0, pitch 1.0.</p>
               <p>4. Đổi qua EN rồi quay lại VI để kiểm tra fallback và quality.</p>
