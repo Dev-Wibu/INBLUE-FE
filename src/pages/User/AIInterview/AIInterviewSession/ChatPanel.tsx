@@ -185,7 +185,7 @@ export function ChatPanel({
     ? "AI đang đánh giá buổi phỏng vấn..."
     : isSubmitting
       ? "AI đang xử lý..."
-      : "Nhập câu trả lời của bạn... (Enter để gửi, Shift+Enter để xuống dòng)";
+      : "Câu trả lời... (Enter để gửi, Shift+Enter để xuống dòng)";
 
   return (
     <section className="flex h-full min-h-0 flex-col border-t border-slate-200/80 bg-white md:border-t-0 md:border-l dark:border-slate-800 dark:bg-slate-900">

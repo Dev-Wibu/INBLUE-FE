@@ -59,7 +59,8 @@ const waitForVoices = async (
   });
 };
 
-const RESPONSIVE_START_TIMEOUT_MS = 1400;
+const RESPONSIVE_START_TIMEOUT_FIRST_MS = 4200;
+const RESPONSIVE_START_TIMEOUT_NEXT_MS = 2200;
 
 export function useSpeechSynthesis(
   lang = "vi-VN",
@@ -82,6 +83,7 @@ export function useSpeechSynthesis(
   const [activeVoiceName, setActiveVoiceName] = useState<string | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speakRequestIdRef = useRef(0);
+  const hasResponsiveVoiceStartedRef = useRef(false);
   const isResponsiveVoiceAvailable = preferResponsiveVoice ? responsiveVoiceAvailability : false;
 
   useEffect(() => {
@@ -270,10 +272,21 @@ export function useSpeechSynthesis(
             return true;
           }
 
+          if (
+            typeof responsiveVoice.voiceSupport === "function" &&
+            !responsiveVoice.voiceSupport()
+          ) {
+            setResponsiveVoiceAvailability(false);
+            return false;
+          }
+
           setResponsiveVoiceAvailability(true);
           const responsiveVoiceName = resolveResponsiveVoiceName(
             lang === "en-US" ? "en-US" : "vi-VN"
           );
+          const responsiveStartTimeoutMs = hasResponsiveVoiceStartedRef.current
+            ? RESPONSIVE_START_TIMEOUT_NEXT_MS
+            : RESPONSIVE_START_TIMEOUT_FIRST_MS;
 
           return await new Promise<boolean>((resolve) => {
             let settled = false;
@@ -297,7 +310,7 @@ export function useSpeechSynthesis(
 
               stopResponsiveVoicePlayback();
               finish(false);
-            }, RESPONSIVE_START_TIMEOUT_MS);
+            }, responsiveStartTimeoutMs);
 
             try {
               responsiveVoice.speak(text, responsiveVoiceName, {
@@ -311,6 +324,7 @@ export function useSpeechSynthesis(
                   }
 
                   started = true;
+                  hasResponsiveVoiceStartedRef.current = true;
                   setActiveVoiceName(`${responsiveVoiceName} (ResponsiveVoice)`);
                   setIsSpeaking(true);
                   setSpeakingId(id);

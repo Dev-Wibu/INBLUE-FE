@@ -81,7 +81,7 @@ export function AIInterviewSetupPage() {
                     <span className="text-muted-foreground text-xs">Chế độ</span>
                     <Badge
                       variant={selectedMode ? "default" : "secondary"}
-                      className="max-w-40 truncate text-xs">
+                      className="max-w-50 truncate text-xs">
                       {getSelectedLabel("interview_modes", selectedMode)}
                     </Badge>
                   </div>
