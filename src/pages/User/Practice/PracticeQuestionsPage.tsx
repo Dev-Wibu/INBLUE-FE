@@ -1,7 +1,8 @@
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { ChevronDown, ChevronUp, Filter, Search, Shuffle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { ReloadButton } from "@/components/shared";
+import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+
+import { useSortable } from "@/hooks/useSortable";
 import { questionManager } from "@/services";
 import type { PracticeQuestion } from "@/services/question.manager";
 import { toast } from "sonner";
@@ -24,12 +27,25 @@ const levelBadgeMap: Record<string, string> = {
   HARD: "bg-red-100 text-red-700 hover:bg-red-100",
 };
 
+const levelSortMap: Record<string, number> = {
+  EASY: 1,
+  MEDIUM: 2,
+  HARD: 3,
+};
+
+type SortablePracticeQuestion = PracticeQuestion & {
+  idSortValue: number;
+  titleSortValue: string;
+  levelSortValue: number;
+};
+
 export function PracticeQuestionsPage() {
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
+
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const hasLoadedRef = useRef(false);
 
@@ -76,6 +92,7 @@ export function PracticeQuestionsPage() {
       const response = await questionManager.getRandomByLevel(levelFilter, 10);
       if (response.success && response.data) {
         setQuestions(response.data);
+        pagination.goToFirstPage();
         toast.success("Đã tải câu hỏi ngẫu nhiên");
       } else {
         toast.error(response.error || "Không thể tải câu hỏi ngẫu nhiên");
@@ -91,23 +108,55 @@ export function PracticeQuestionsPage() {
   };
 
   const filteredQuestions = useMemo(() => {
-    return questions
-      .filter((q) => {
-        if (searchQuery) {
-          const lowerQuery = searchQuery.toLowerCase();
-          const matchesSearch =
-            q.title?.toLowerCase().includes(lowerQuery) ||
-            q.content?.toLowerCase().includes(lowerQuery) ||
-            q.lesson?.lessonName?.toLowerCase().includes(lowerQuery);
-          if (!matchesSearch) return false;
-        }
-        if (levelFilter !== "all" && q.level !== levelFilter) {
-          return false;
-        }
-        return true;
-      })
-      .reverse();
+    return questions.filter((q) => {
+      if (searchQuery) {
+        const lowerQuery = searchQuery.toLowerCase();
+        const matchesSearch =
+          q.title?.toLowerCase().includes(lowerQuery) ||
+          q.content?.toLowerCase().includes(lowerQuery) ||
+          q.lesson?.lessonName?.toLowerCase().includes(lowerQuery);
+        if (!matchesSearch) return false;
+      }
+      if (levelFilter !== "all" && q.level !== levelFilter) {
+        return false;
+      }
+      return true;
+    });
   }, [questions, searchQuery, levelFilter]);
+
+  const sortableQuestions = useMemo<SortablePracticeQuestion[]>(() => {
+    return filteredQuestions.map((question) => ({
+      ...question,
+      idSortValue: typeof question.questionId === "number" ? question.questionId : 0,
+      titleSortValue: question.title?.toLowerCase() || "",
+      levelSortValue: levelSortMap[question.level || ""] || 0,
+    }));
+  }, [filteredQuestions]);
+
+  const { sortedData, getSortProps } = useSortable(sortableQuestions, {
+    defaultSort: {
+      key: "idSortValue",
+      direction: "desc",
+    },
+    noSortBehavior: "preserve",
+    tieBreaker: {
+      key: "idSortValue",
+      direction: "desc",
+    },
+  });
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_user_practice_practicequestionspage_tsx_pagesize",
+    defaultPageSize: 12,
+  });
+  const pagination = usePagination({
+    totalCount: sortedData.length,
+    pageSize,
+  });
+
+  const pageData = useMemo(
+    () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
+    [pagination.endIndex, pagination.startIndex, sortedData]
+  );
 
   return (
     <div className="bg-background min-h-screen p-8">
@@ -135,7 +184,10 @@ export function PracticeQuestionsPage() {
               type="text"
               placeholder="Tìm kiếm câu hỏi..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                pagination.goToFirstPage();
+              }}
               className="pl-10"
             />
           </div>
@@ -144,7 +196,12 @@ export function PracticeQuestionsPage() {
             <span className="text-muted-foreground text-sm font-medium whitespace-nowrap">
               Cấp độ:
             </span>
-            <Select value={levelFilter} onValueChange={setLevelFilter}>
+            <Select
+              value={levelFilter}
+              onValueChange={(value) => {
+                setLevelFilter(value);
+                pagination.goToFirstPage();
+              }}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue />
               </SelectTrigger>
@@ -165,11 +222,21 @@ export function PracticeQuestionsPage() {
           <ReloadButton
             onReload={async () => {
               await loadData(true);
+              pagination.goToFirstPage();
             }}
             isLoading={isReloading}
             tooltip="Tải lại danh sách câu hỏi"
           />
         </div>
+
+        {sortedData.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-3 border-t pt-3">
+            <span className="text-muted-foreground text-sm font-medium">Sắp xếp theo:</span>
+            <SortButton {...getSortProps("idSortValue")}>Mới nhất</SortButton>
+            <SortButton {...getSortProps("titleSortValue")}>Tiêu đề</SortButton>
+            <SortButton {...getSortProps("levelSortValue")}>Cấp độ</SortButton>
+          </div>
+        )}
       </Card>
 
       {/* Questions Grid */}
@@ -193,7 +260,7 @@ export function PracticeQuestionsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredQuestions.map((question) => (
+          {pageData.map((question) => (
             <Card
               key={question.questionId}
               className="cursor-pointer transition-all hover:shadow-lg"
@@ -247,8 +314,21 @@ export function PracticeQuestionsPage() {
         </div>
       )}
 
+      {!isInitialLoading && sortedData.length > 0 && (
+        <div className="mt-6">
+          <PaginationControl
+            pagination={pagination}
+            onPageSizeChange={(nextPageSize) => {
+              setPageSize(nextPageSize);
+              pagination.goToFirstPage();
+            }}
+            pageSizeOptions={[6, 12, 24, 48]}
+          />
+        </div>
+      )}
+
       {/* Empty State */}
-      {!isInitialLoading && filteredQuestions.length === 0 && (
+      {!isInitialLoading && sortedData.length === 0 && (
         <Card className="flex h-64 flex-col items-center justify-center gap-4">
           <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
             <Search className="text-muted-foreground h-8 w-8" />
@@ -264,6 +344,7 @@ export function PracticeQuestionsPage() {
             onClick={() => {
               setSearchQuery("");
               setLevelFilter("all");
+              pagination.goToFirstPage();
             }}>
             <Filter className="mr-2 h-4 w-4" />
             Xóa bộ lọc

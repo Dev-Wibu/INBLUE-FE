@@ -3,7 +3,8 @@
  * Displays mentor reviews received by users
  */
 
-import { MessageSquare } from "lucide-react";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
+import { MessageSquare, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,8 +13,16 @@ import { PaginationControl } from "@/components/shared/PaginationControl";
 import { ReloadButton } from "@/components/shared/ReloadButton";
 import { SortButton } from "@/components/shared/SortButton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMentorReviewsByUser, type MentorReview } from "@/hooks/useMentorReview";
-import { usePagination } from "@/hooks/usePagination";
+
 import { useSortable } from "@/hooks/useSortable";
 import { toTimestamp } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
@@ -43,7 +52,9 @@ const getReviewNewestSortValue = (review: MentorReview) => {
 export function UserFeedbackListPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [ratingFilter, setRatingFilter] = useState<"all" | "high" | "medium" | "low">("all");
+
   const {
     data: reviews = [],
     isLoading,
@@ -51,19 +62,63 @@ export function UserFeedbackListPage() {
     refetch,
   } = useMentorReviewsByUser(user?.id || 0);
 
+  const filteredReviews = useMemo(() => {
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+
+    return reviews.filter((review) => {
+      if (normalizedSearch) {
+        const matchesSearch =
+          review.mentor?.name?.toLowerCase().includes(normalizedSearch) ||
+          review.mentor?.email?.toLowerCase().includes(normalizedSearch) ||
+          review.session?.roomName?.toLowerCase().includes(normalizedSearch);
+
+        if (!matchesSearch) {
+          return false;
+        }
+      }
+
+      const rating = review.rating || 0;
+      if (ratingFilter === "high" && rating < 5) {
+        return false;
+      }
+      if (ratingFilter === "medium" && (rating < 3 || rating > 4)) {
+        return false;
+      }
+      if (ratingFilter === "low" && rating > 2) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [ratingFilter, reviews, searchQuery]);
+
   const sortableReviews = useMemo<SortableReview[]>(
     () =>
-      reviews.map((review) => ({
+      filteredReviews.map((review) => ({
         ...review,
         newestSortValue: getReviewNewestSortValue(review),
       })),
-    [reviews]
+    [filteredReviews]
   );
 
   // Apply sorting
-  const { sortedData, getSortProps } = useSortable(sortableReviews);
+  const { sortedData, getSortProps } = useSortable(sortableReviews, {
+    defaultSort: {
+      key: "newestSortValue",
+      direction: "desc",
+    },
+    noSortBehavior: "preserve",
+    tieBreaker: {
+      key: "newestSortValue",
+      direction: "desc",
+    },
+  });
 
   // Apply pagination
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_user_feedback_userfeedbacklistpage_tsx_pagesize",
+    defaultPageSize: 10,
+  });
   const pagination = usePagination({
     totalCount: sortedData.length,
     pageSize,
@@ -144,8 +199,39 @@ export function UserFeedbackListPage() {
           <CardDescription>Các đánh giá mentor gửi cho bạn sau mỗi buổi phỏng vấn</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 flex flex-wrap items-center gap-3 border-b pb-3">
+            <div className="relative min-w-60 flex-1">
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Tìm theo mentor, email, phiên phỏng vấn..."
+                value={searchQuery}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  pagination.goToFirstPage();
+                }}
+                className="pl-9"
+              />
+            </div>
+            <Select
+              value={ratingFilter}
+              onValueChange={(value) => {
+                setRatingFilter(value as "all" | "high" | "medium" | "low");
+                pagination.goToFirstPage();
+              }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Lọc theo điểm" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả điểm</SelectItem>
+                <SelectItem value="high">5 sao</SelectItem>
+                <SelectItem value="medium">3-4 sao</SelectItem>
+                <SelectItem value="low">1-2 sao</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Sort Controls */}
-          {reviews.length > 0 && (
+          {sortedData.length > 0 && (
             <div className="mb-4 flex items-center gap-4 border-b pb-3">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Sắp xếp theo:
@@ -169,11 +255,14 @@ export function UserFeedbackListPage() {
           />
 
           {/* Pagination */}
-          {reviews.length > 0 && (
+          {sortedData.length > 0 && (
             <div className="mt-4">
               <PaginationControl
                 pagination={pagination}
-                onPageSizeChange={setPageSize}
+                onPageSizeChange={(nextPageSize) => {
+                  setPageSize(nextPageSize);
+                  pagination.goToFirstPage();
+                }}
                 pageSizeOptions={[5, 10, 20, 50]}
               />
             </div>
