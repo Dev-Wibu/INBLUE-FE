@@ -10,7 +10,7 @@ import {
   User as UserIcon,
   Users,
 } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 
 import icon2 from "@/assets/icon2.svg";
@@ -23,9 +23,10 @@ import {
   DashboardSidebarToggle,
   getInitialSidebarCollapsed,
 } from "@/components/shared";
+import { useDashboardBreadcrumb } from "@/hooks/useDashboardBreadcrumb";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
-import { buildDashboardBreadcrumbItems } from "@/lib/dashboard-breadcrumb";
+import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
 
 import { AccountPage } from "../Account";
 import { AIInterviewListPage } from "../AIInterview";
@@ -149,22 +150,6 @@ const USER_SIDEBAR_LOGO_COLLAPSED = (
 
 const DEFAULT_TAB: TabType = "homeFeed";
 
-/** Map sub-route path segments to their parent tab so the sidebar highlights correctly */
-const ROUTE_TO_TAB: Record<string, TabType> = {
-  mentors: "mentors",
-  "ai-interview": "aiInterview",
-  "mock-interview": "mockInterview",
-  practice: "practice",
-  feedback: "feedback",
-  messenger: "messenger",
-};
-
-function getTabFromRoute(pathname: string): TabType {
-  // pathname looks like /user/ai-interview/setup — grab the first segment after /user/
-  const segment = pathname.replace(/^\/user\//, "").split("/")[0];
-  return ROUTE_TO_TAB[segment] ?? DEFAULT_TAB;
-}
-
 export function UserDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -180,23 +165,27 @@ export function UserDashboardPage() {
 
   const outlet = useOutlet();
 
+  const routedTab = getDashboardTabFromPath({
+    role: "user",
+    pathname: location.pathname,
+    defaultTab: DEFAULT_TAB,
+  });
+
   // When on a nested outlet route, derive active tab from the pathname
   const typedActiveTab: TabType = outlet
-    ? getTabFromRoute(location.pathname)
+    ? isValidTabType(routedTab)
+      ? routedTab
+      : DEFAULT_TAB
     : isValidTabType(activeTab)
       ? activeTab
       : DEFAULT_TAB;
 
-  const breadcrumbItems = useMemo(
-    () =>
-      buildDashboardBreadcrumbItems({
-        role: "user",
-        pathname: location.pathname,
-        activeTab: typedActiveTab,
-        availableTabs: AVAILABLE_TABS,
-      }),
-    [location.pathname, typedActiveTab]
-  );
+  const { items: breadcrumbItems } = useDashboardBreadcrumb({
+    role: "user",
+    pathname: location.pathname,
+    activeTab: typedActiveTab,
+    availableTabs: AVAILABLE_TABS,
+  });
 
   useDashboardScrollRestoration(contentRef, {
     enabled: typedActiveTab !== "messenger",
