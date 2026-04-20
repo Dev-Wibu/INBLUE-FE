@@ -19,6 +19,8 @@ interface RoleConfig {
   defaultTab: string;
 }
 
+type DashboardRouteVariant = "practiceQuiz" | "practiceQuizResult";
+
 type DynamicResourceType =
   | "session"
   | "mentor"
@@ -38,11 +40,14 @@ interface RouteLabelRule {
   label: string;
   tabType?: string;
   dynamic?: RouteDynamicResolver;
+  variant?: DashboardRouteVariant;
 }
 
 export interface DashboardRouteMatch {
   label: string;
   tabType?: string;
+  variant?: DashboardRouteVariant;
+  routeParams?: Record<string, string>;
   dynamic?: {
     resource: DynamicResourceType;
     id?: number;
@@ -134,6 +139,7 @@ const USER_ROUTE_RULES: RouteLabelRule[] = [
     pattern: /^\/user\/practice\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)\/result$/,
     label: "Kết quả bài kiểm tra",
     tabType: "practice",
+    variant: "practiceQuizResult",
     dynamic: {
       resource: "quizSet",
       idParam: "quizId",
@@ -144,6 +150,7 @@ const USER_ROUTE_RULES: RouteLabelRule[] = [
     pattern: /^\/user\/practice\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)$/,
     label: "Bài kiểm tra",
     tabType: "practice",
+    variant: "practiceQuiz",
     dynamic: {
       resource: "quizSet",
       idParam: "quizId",
@@ -274,6 +281,36 @@ function toPositiveInteger(value: string | undefined): number | undefined {
   return parsed;
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function formatBreadcrumbLabelWithPrefix(prefix: string | undefined, value: string): string {
+  const normalizedValue = value.trim();
+  if (!prefix) {
+    return normalizedValue;
+  }
+
+  const normalizedPrefix = prefix.trim();
+  if (!normalizedPrefix) {
+    return normalizedValue;
+  }
+
+  if (!normalizedValue) {
+    return normalizedPrefix;
+  }
+
+  const dedupedValue = normalizedValue
+    .replace(new RegExp(`^${escapeRegExp(normalizedPrefix)}\\s*:\\s*`, "i"), "")
+    .trim();
+
+  if (!dedupedValue) {
+    return normalizedPrefix;
+  }
+
+  return `${normalizedPrefix}: ${dedupedValue}`;
+}
+
 export function normalizeDashboardPath(pathname: string): string {
   if (!pathname) {
     return "/";
@@ -307,13 +344,16 @@ export function getDashboardRouteMatch(
   }
 
   const match = normalizedPath.match(matchedRule.pattern);
+  const routeParams = match?.groups ?? undefined;
   const rawId = matchedRule.dynamic?.idParam
-    ? match?.groups?.[matchedRule.dynamic.idParam]
+    ? routeParams?.[matchedRule.dynamic.idParam]
     : undefined;
 
   return {
     label: matchedRule.label,
     tabType: matchedRule.tabType,
+    variant: matchedRule.variant,
+    routeParams,
     dynamic: matchedRule.dynamic
       ? {
           resource: matchedRule.dynamic.resource,
@@ -397,12 +437,14 @@ export function buildDashboardBreadcrumbItems({
   activeTab,
   availableTabs,
   nestedLabelOverride,
+  detailLabelsOverride,
 }: {
   role: DashboardRole;
   pathname: string;
   activeTab: string;
   availableTabs: DashboardTabDefinition[];
   nestedLabelOverride?: string;
+  detailLabelsOverride?: string[];
 }): DashboardBreadcrumbItem[] {
   const roleConfig = ROLE_CONFIG[role];
   const normalizedPath = normalizeDashboardPath(pathname);
@@ -427,6 +469,26 @@ export function buildDashboardBreadcrumbItems({
     href: `${roleConfig.rootPath}?tab=${activeTab}`,
     kind: "tab",
   });
+
+  if (detailLabelsOverride?.length) {
+    const appendedLabels = new Set<string>();
+
+    for (const label of detailLabelsOverride) {
+      const normalizedLabel = label.trim();
+      if (
+        !normalizedLabel ||
+        normalizedLabel === activeTabLabel ||
+        appendedLabels.has(normalizedLabel)
+      ) {
+        continue;
+      }
+
+      appendedLabels.add(normalizedLabel);
+      breadcrumbs.push({ label: normalizedLabel, kind: "detail" });
+    }
+
+    return breadcrumbs;
+  }
 
   const nestedLabel = nestedLabelOverride ?? getDashboardNestedRouteLabel(role, normalizedPath);
   if (nestedLabel && nestedLabel !== activeTabLabel) {

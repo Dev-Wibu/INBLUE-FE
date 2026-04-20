@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildDashboardBreadcrumbItems,
+  formatBreadcrumbLabelWithPrefix,
   getDashboardNestedRouteLabel,
   getDashboardRouteMatch,
   getDashboardTabFromPath,
@@ -53,6 +54,10 @@ describe("dashboard-breadcrumb", () => {
     expect(routeMatch).toEqual({
       label: "Hồ sơ mentor",
       tabType: "mentors",
+      variant: undefined,
+      routeParams: {
+        mentorId: "42",
+      },
       dynamic: {
         resource: "mentor",
         id: 42,
@@ -60,6 +65,53 @@ describe("dashboard-breadcrumb", () => {
         prefix: "Mentor",
       },
     });
+  });
+
+  it("trả route variant và params cho đường dẫn quiz result", () => {
+    const routeMatch = getDashboardRouteMatch("user", "/user/practice/1/quiz/11/result");
+
+    expect(routeMatch).toEqual({
+      label: "Kết quả bài kiểm tra",
+      tabType: "practice",
+      variant: "practiceQuizResult",
+      routeParams: {
+        practiceSetId: "1",
+        quizId: "11",
+      },
+      dynamic: {
+        resource: "quizSet",
+        id: 11,
+        rawId: "11",
+        prefix: "Kết quả",
+      },
+    });
+  });
+
+  it("ưu tiên chuỗi detail labels khi được cung cấp", () => {
+    const items = buildDashboardBreadcrumbItems({
+      role: "user",
+      pathname: "/user/practice/1/quiz/11/result",
+      activeTab: "practice",
+      availableTabs: [{ type: "practice", label: "Bộ luyện tập" }],
+      detailLabelsOverride: ["Lộ trình: session-1776220472420", "Bài kiểm tra: Ngày 3", "Kết quả"],
+    });
+
+    expect(items).toEqual([
+      { label: "Người dùng", href: "/user?tab=homeFeed", kind: "root" },
+      { label: "Bộ luyện tập", href: "/user?tab=practice", kind: "tab" },
+      { label: "Lộ trình: session-1776220472420", kind: "detail" },
+      { label: "Bài kiểm tra: Ngày 3", kind: "detail" },
+      { label: "Kết quả", kind: "detail" },
+    ]);
+  });
+
+  it("khử trùng tiền tố khi value đã có sẵn prefix", () => {
+    expect(formatBreadcrumbLabelWithPrefix("Bài kiểm tra", "Bài kiểm tra: Ngày 3")).toBe(
+      "Bài kiểm tra: Ngày 3"
+    );
+    expect(formatBreadcrumbLabelWithPrefix("Lộ trình", "session-1776220472420")).toBe(
+      "Lộ trình: session-1776220472420"
+    );
   });
 
   it("fallback label thân thiện khi route chưa khai báo", () => {
