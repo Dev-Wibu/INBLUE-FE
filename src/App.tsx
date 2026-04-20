@@ -148,8 +148,14 @@ function App() {
                   element={<WriteReviewPage />}
                 />
                 <Route path="mock-interview/history/:sessionId" element={<SessionDetailPage />} />
-                <Route path="practice/:id/quiz/:quizId/result" element={<QuizResultPage />} />
-                <Route path="practice/:id/quiz/:quizId" element={<QuizPage />} />
+                <Route
+                  path="practice/session/:sessionId/:practiceSetId/quiz/:quizId/result"
+                  element={<QuizResultPage />}
+                />
+                <Route
+                  path="practice/session/:sessionId/:practiceSetId/quiz/:quizId"
+                  element={<QuizPage />}
+                />
                 <Route path="practice/session/:sessionId" element={<PracticeSetDetailPage />} />
                 <Route path="practice/:id" element={<PracticeSetDetailPage />} />
                 <Route path="feedback/:id" element={<FeedbackDetailPage />} />

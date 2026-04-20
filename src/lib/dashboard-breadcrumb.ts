@@ -13,6 +13,11 @@ export interface DashboardBreadcrumbItem {
   kind?: DashboardBreadcrumbItemKind;
 }
 
+export interface DashboardBreadcrumbDetailItem {
+  label: string;
+  href?: string;
+}
+
 interface RoleConfig {
   rootPath: string;
   rootLabel: string;
@@ -136,7 +141,8 @@ const USER_ROUTE_RULES: RouteLabelRule[] = [
     },
   },
   {
-    pattern: /^\/user\/practice\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)\/result$/,
+    pattern:
+      /^\/user\/practice\/session\/(?<sessionId>[^/]+)\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)\/result$/,
     label: "Kết quả bài kiểm tra",
     tabType: "practice",
     variant: "practiceQuizResult",
@@ -147,7 +153,8 @@ const USER_ROUTE_RULES: RouteLabelRule[] = [
     },
   },
   {
-    pattern: /^\/user\/practice\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)$/,
+    pattern:
+      /^\/user\/practice\/session\/(?<sessionId>[^/]+)\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)$/,
     label: "Bài kiểm tra",
     tabType: "practice",
     variant: "practiceQuiz",
@@ -444,7 +451,7 @@ export function buildDashboardBreadcrumbItems({
   activeTab: string;
   availableTabs: DashboardTabDefinition[];
   nestedLabelOverride?: string;
-  detailLabelsOverride?: string[];
+  detailLabelsOverride?: Array<string | DashboardBreadcrumbDetailItem>;
 }): DashboardBreadcrumbItem[] {
   const roleConfig = ROLE_CONFIG[role];
   const normalizedPath = normalizeDashboardPath(pathname);
@@ -471,20 +478,22 @@ export function buildDashboardBreadcrumbItems({
   });
 
   if (detailLabelsOverride?.length) {
-    const appendedLabels = new Set<string>();
+    const appendedEntries = new Set<string>();
 
-    for (const label of detailLabelsOverride) {
-      const normalizedLabel = label.trim();
+    for (const detailItem of detailLabelsOverride) {
+      const normalizedLabel =
+        typeof detailItem === "string" ? detailItem.trim() : detailItem.label.trim();
+      const detailHref = typeof detailItem === "string" ? undefined : detailItem.href;
       if (
         !normalizedLabel ||
         normalizedLabel === activeTabLabel ||
-        appendedLabels.has(normalizedLabel)
+        appendedEntries.has(`${normalizedLabel}::${detailHref ?? ""}`)
       ) {
         continue;
       }
 
-      appendedLabels.add(normalizedLabel);
-      breadcrumbs.push({ label: normalizedLabel, kind: "detail" });
+      appendedEntries.add(`${normalizedLabel}::${detailHref ?? ""}`);
+      breadcrumbs.push({ label: normalizedLabel, href: detailHref, kind: "detail" });
     }
 
     return breadcrumbs;

@@ -1,4 +1,4 @@
-import { ChevronDown, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
+import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -527,14 +527,14 @@ export function DashboardSidebar({
     <TooltipProvider delayDuration={0}>
       <>
         {isMobile && (
-          <div className="fixed top-[calc(0.75rem+env(safe-area-inset-top))] left-[calc(0.75rem+env(safe-area-inset-left))] z-70 md:hidden">
+          <div className="fixed top-[calc(0.5rem+env(safe-area-inset-top))] left-[calc(0.5rem+env(safe-area-inset-left))] z-70 md:hidden">
             <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
               <SheetTrigger asChild>
                 <button
                   type="button"
                   aria-label="Mở menu điều hướng"
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-300/90 bg-white/95 shadow-md shadow-slate-300/50 transition-all hover:-translate-y-0.5 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 dark:hover:bg-slate-800">
-                  <Menu className="h-5 w-5 text-slate-700 dark:text-slate-200" />
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-300/90 bg-white/95 shadow-md shadow-slate-300/50 transition-all hover:-translate-y-0.5 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 dark:hover:bg-slate-800">
+                  <PanelLeftOpen className="h-5 w-5 text-slate-700 dark:text-slate-200" />
                 </button>
               </SheetTrigger>
               <SheetContent

@@ -8,13 +8,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  buildPracticeQuizResultPath,
+  buildPracticeSessionPath,
+  toPositiveIntegerParam,
+} from "@/lib/practice-quiz-route";
 import { quizSetManager } from "@/services";
 import type { QuizItem, QuizItemResponse, QuizSet } from "@/services/quiz-set.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
 
 export function QuizPage() {
-  const { id, quizId } = useParams<{ id: string; quizId: string }>();
+  const { sessionId, practiceSetId, quizId } = useParams<{
+    sessionId: string;
+    practiceSetId: string;
+    quizId: string;
+  }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [quizSet, setQuizSet] = useState<QuizSet | null>(null);
@@ -24,6 +33,12 @@ export function QuizPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const numericSessionId = toPositiveIntegerParam(sessionId);
+  const numericPracticeSetId = toPositiveIntegerParam(practiceSetId);
+  const numericQuizId = toPositiveIntegerParam(quizId);
+  const defaultBackUrl = numericSessionId
+    ? buildPracticeSessionPath(numericSessionId)
+    : "/user?tab=practice";
 
   const location = useLocation();
   const locationState = location.state as {
@@ -34,7 +49,7 @@ export function QuizPage() {
   const initialItemsRef = useRef(locationState?.initialItems);
 
   // Persist backUrl in sessionStorage so it survives F5 refresh
-  const storageKey = `quiz_backUrl_${id}_${quizId}`;
+  const storageKey = `quiz_backUrl_${sessionId ?? "unknown"}_${practiceSetId ?? "unknown"}_${quizId ?? "unknown"}`;
   const [backUrl, setBackUrl] = useState<string>(() => {
     if (locationState?.backUrl) {
       try {
@@ -45,51 +60,46 @@ export function QuizPage() {
       return locationState.backUrl;
     }
     try {
-      return sessionStorage.getItem(storageKey) ?? `/user?tab=practice`;
+      return sessionStorage.getItem(storageKey) ?? defaultBackUrl;
     } catch {
-      return `/user?tab=practice`;
+      return defaultBackUrl;
     }
   });
 
   const loadData = useCallback(async () => {
-    if (!quizId) return;
+    if (!numericQuizId || !numericSessionId || !numericPracticeSetId) {
+      toast.error("Đường dẫn bài kiểm tra không hợp lệ.");
+      navigate("/user?tab=practice", { replace: true });
+      return;
+    }
+
     setLoading(true);
     try {
       const preloaded = initialItemsRef.current;
       if (preloaded?.length) {
         // Items came from createFullAi response — only fetch quiz metadata
         setQuizItems(preloaded as unknown as QuizItem[]);
-        const setRes = await quizSetManager.getById(Number(quizId));
+        const setRes = await quizSetManager.getById(numericQuizId);
         if (setRes.success && setRes.data) {
           setQuizSet(setRes.data);
-          // Update backUrl using interviewSessionId from quiz data
-          const sessionId = setRes.data.practiceSet?.interviewSessionId;
-          if (sessionId) {
-            const url = `/user/practice/session/${sessionId}`;
-            setBackUrl(url);
-            try {
-              sessionStorage.setItem(storageKey, url);
-            } catch {
-              /* ignore */
-            }
+          setBackUrl(defaultBackUrl);
+          try {
+            sessionStorage.setItem(storageKey, defaultBackUrl);
+          } catch {
+            /* ignore */
           }
         }
       } else {
         // Load full quiz; GET /api/quiz-sets/{quizId} returns QuizSet with embedded questions[]
-        const setRes = await quizSetManager.getById(Number(quizId));
+        const setRes = await quizSetManager.getById(numericQuizId);
         if (setRes.success && setRes.data) {
           setQuizSet(setRes.data);
           setQuizItems(setRes.data.questions ?? []);
-          // Update backUrl using interviewSessionId from quiz data
-          const sessionId = setRes.data.practiceSet?.interviewSessionId;
-          if (sessionId) {
-            const url = `/user/practice/session/${sessionId}`;
-            setBackUrl(url);
-            try {
-              sessionStorage.setItem(storageKey, url);
-            } catch {
-              /* ignore */
-            }
+          setBackUrl(defaultBackUrl);
+          try {
+            sessionStorage.setItem(storageKey, defaultBackUrl);
+          } catch {
+            /* ignore */
           }
         } else {
           toast.error("Không tìm thấy bài kiểm tra");
@@ -100,7 +110,7 @@ export function QuizPage() {
     } finally {
       setLoading(false);
     }
-  }, [quizId, storageKey]);
+  }, [defaultBackUrl, navigate, numericPracticeSetId, numericQuizId, numericSessionId, storageKey]);
 
   useEffect(() => {
     loadData();
@@ -157,7 +167,19 @@ export function QuizPage() {
       const response = await quizSetManager.submit(qId, payload);
       if (response.success) {
         toast.success("Đã nộp bài thành công!");
-        navigate(`/user/practice/${id}/quiz/${qId}/result`, { state: { backUrl } });
+        if (!numericSessionId || !numericPracticeSetId) {
+          toast.error("Không thể mở kết quả vì thiếu thông tin phiên luyện tập.");
+          return;
+        }
+
+        navigate(
+          buildPracticeQuizResultPath({
+            sessionId: numericSessionId,
+            practiceSetId: numericPracticeSetId,
+            quizId: qId,
+          }),
+          { state: { backUrl } }
+        );
       } else {
         toast.error(response.error ?? "Không thể nộp bài");
       }
@@ -199,7 +221,7 @@ export function QuizPage() {
     <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-3xl space-y-4 p-6">
         {/* Header */}
-        <Card className="overflow-hidden border-[#0047AB]/20 bg-gradient-to-r from-[#0047AB] to-[#007BFF]">
+        <Card className="overflow-hidden border-[#0047AB]/20 bg-linear-to-r from-[#0047AB] to-[#007BFF]">
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/20">

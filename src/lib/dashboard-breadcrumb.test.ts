@@ -68,13 +68,14 @@ describe("dashboard-breadcrumb", () => {
   });
 
   it("trả route variant và params cho đường dẫn quiz result", () => {
-    const routeMatch = getDashboardRouteMatch("user", "/user/practice/1/quiz/11/result");
+    const routeMatch = getDashboardRouteMatch("user", "/user/practice/session/9/1/quiz/11/result");
 
     expect(routeMatch).toEqual({
       label: "Kết quả bài kiểm tra",
       tabType: "practice",
       variant: "practiceQuizResult",
       routeParams: {
+        sessionId: "9",
         practiceSetId: "1",
         quizId: "11",
       },
@@ -90,16 +91,23 @@ describe("dashboard-breadcrumb", () => {
   it("ưu tiên chuỗi detail labels khi được cung cấp", () => {
     const items = buildDashboardBreadcrumbItems({
       role: "user",
-      pathname: "/user/practice/1/quiz/11/result",
+      pathname: "/user/practice/session/9/1/quiz/11/result",
       activeTab: "practice",
       availableTabs: [{ type: "practice", label: "Bộ luyện tập" }],
-      detailLabelsOverride: ["Lộ trình: session-1776220472420", "Bài kiểm tra: Ngày 3", "Kết quả"],
+      detailLabelsOverride: [
+        {
+          label: "Lộ trình: Phiên #9",
+          href: "/user/practice/session/9",
+        },
+        { label: "Bài kiểm tra: Ngày 3" },
+        { label: "Kết quả" },
+      ],
     });
 
     expect(items).toEqual([
       { label: "Người dùng", href: "/user?tab=homeFeed", kind: "root" },
       { label: "Bộ luyện tập", href: "/user?tab=practice", kind: "tab" },
-      { label: "Lộ trình: session-1776220472420", kind: "detail" },
+      { label: "Lộ trình: Phiên #9", href: "/user/practice/session/9", kind: "detail" },
       { label: "Bài kiểm tra: Ngày 3", kind: "detail" },
       { label: "Kết quả", kind: "detail" },
     ]);

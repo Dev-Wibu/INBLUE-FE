@@ -25,6 +25,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  buildPracticeQuizPath,
+  buildPracticeQuizResultPath,
+  buildPracticeSessionPath,
+} from "@/lib/practice-quiz-route";
 import { practiceSetItemManager, practiceSetManager, quizSetManager } from "@/services";
 import type { PracticeSetItem } from "@/services/practice-set-item.manager";
 import type { PracticeSet, PracticeSetResponse } from "@/services/practice-set.manager";
@@ -58,10 +63,18 @@ interface ItemCardProps {
   index: number;
   status: ItemStatus;
   practiceSetId: string;
+  sessionId?: number;
   lastQuizId?: number;
 }
 
-function PracticeItemCard({ item, index, status, practiceSetId, lastQuizId }: ItemCardProps) {
+function PracticeItemCard({
+  item,
+  index,
+  status,
+  practiceSetId,
+  sessionId,
+  lastQuizId,
+}: ItemCardProps) {
   const navigate = useNavigate();
   const [showHint, setShowHint] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -147,13 +160,19 @@ function PracticeItemCard({ item, index, status, practiceSetId, lastQuizId }: It
                     Đáp án
                   </Button>
                 )}
-                {isDone && lastQuizId && (
+                {isDone && lastQuizId && sessionId && (
                   <Button
                     size="sm"
                     variant="outline"
                     className="ml-auto h-6 gap-1 px-2 text-xs"
                     onClick={() =>
-                      navigate(`/user/practice/${practiceSetId}/quiz/${lastQuizId}/result`)
+                      navigate(
+                        buildPracticeQuizResultPath({
+                          sessionId,
+                          practiceSetId,
+                          quizId: lastQuizId,
+                        })
+                      )
                     }>
                     Xem lại
                     <Eye className="h-3 w-3" />
@@ -327,11 +346,37 @@ function SessionQuestionCard({ question, index, status }: SessionItemCardProps) 
 interface QuizHistoryPopoverProps {
   quizHistory: QuizSet[];
   routePracticeSetId: string;
+  sessionId?: number;
 }
 
-function QuizHistoryPopover({ quizHistory, routePracticeSetId }: QuizHistoryPopoverProps) {
+function QuizHistoryPopover({
+  quizHistory,
+  routePracticeSetId,
+  sessionId,
+}: QuizHistoryPopoverProps) {
   const navigate = useNavigate();
   const sorted = [...quizHistory].sort((a, b) => (b.quizId ?? 0) - (a.quizId ?? 0));
+
+  const handleNavigateToQuiz = (quiz: QuizSet) => {
+    if (!sessionId || !quiz.quizId) {
+      toast.error("Không thể mở bài kiểm tra vì thiếu thông tin phiên luyện tập.");
+      return;
+    }
+
+    const targetPath = quiz.submitted
+      ? buildPracticeQuizResultPath({
+          sessionId,
+          practiceSetId: routePracticeSetId,
+          quizId: quiz.quizId,
+        })
+      : buildPracticeQuizPath({
+          sessionId,
+          practiceSetId: routePracticeSetId,
+          quizId: quiz.quizId,
+        });
+
+    navigate(targetPath);
+  };
 
   return (
     <PopoverContent className="w-72 p-0" align="start">
@@ -343,11 +388,7 @@ function QuizHistoryPopover({ quizHistory, routePracticeSetId }: QuizHistoryPopo
           <button
             key={quiz.quizId}
             className="hover:bg-muted flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition-colors"
-            onClick={() =>
-              quiz.submitted
-                ? navigate(`/user/practice/${routePracticeSetId}/quiz/${quiz.quizId}/result`)
-                : navigate(`/user/practice/${routePracticeSetId}/quiz/${quiz.quizId}`)
-            }>
+            onClick={() => handleNavigateToQuiz(quiz)}>
             <span className="text-foreground truncate text-xs">
               {quiz.quizName ?? `Quiz #${quiz.quizId}`}
             </span>
@@ -404,8 +445,8 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
         if (newQuizId) {
           toast.success("Đã tạo bài kiểm tra AI!");
           const backUrl = ps.interviewSessionId
-            ? `/user/practice/session/${ps.interviewSessionId}`
-            : `/user/practice/${ps.id}`;
+            ? buildPracticeSessionPath(ps.interviewSessionId)
+            : "/user?tab=practice";
           // Fetch full quiz data so history shows accurate info
           const quizDetail = await quizSetManager.getById(newQuizId);
           if (quizDetail.success && quizDetail.data) {
@@ -498,6 +539,7 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
                       <QuizHistoryPopover
                         quizHistory={quizHistory}
                         routePracticeSetId={String(ps.id)}
+                        sessionId={ps.interviewSessionId}
                       />
                     </Popover>
                   )}
@@ -548,12 +590,24 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
                 <Button
                   className="flex-1 bg-[#0047AB] hover:bg-[#003580]"
                   onClick={() => {
-                    navigate(`/user/practice/${ps.id}/quiz/${pendingQuiz.quizId}`, {
-                      state: {
-                        initialItems: pendingQuiz.items,
-                        backUrl: pendingQuiz.backUrl,
-                      },
-                    });
+                    if (!ps.interviewSessionId || !ps.id) {
+                      toast.error("Không thể mở bài kiểm tra vì thiếu thông tin phiên luyện tập.");
+                      return;
+                    }
+
+                    navigate(
+                      buildPracticeQuizPath({
+                        sessionId: ps.interviewSessionId,
+                        practiceSetId: ps.id,
+                        quizId: pendingQuiz.quizId,
+                      }),
+                      {
+                        state: {
+                          initialItems: pendingQuiz.items,
+                          backUrl: pendingQuiz.backUrl,
+                        },
+                      }
+                    );
                   }}>
                   Làm bài ngay
                 </Button>
@@ -606,15 +660,25 @@ function DayGroup({
         const newQuizId = (res.data as QuizResponse).quizId;
         if (newQuizId) {
           toast.success("Đã tạo bài kiểm tra AI!");
-          const quizBackUrl = interviewSessionId
-            ? `/user/practice/session/${interviewSessionId}`
-            : undefined;
-          navigate(`/user/practice/${practiceSetId}/quiz/${newQuizId}`, {
-            state: {
-              initialItems: (res.data as QuizResponse).items,
-              ...(quizBackUrl ? { backUrl: quizBackUrl } : {}),
-            },
-          });
+          if (!interviewSessionId) {
+            toast.error("Không thể mở bài kiểm tra vì thiếu thông tin phiên luyện tập.");
+            return;
+          }
+
+          const quizBackUrl = buildPracticeSessionPath(interviewSessionId);
+          navigate(
+            buildPracticeQuizPath({
+              sessionId: interviewSessionId,
+              practiceSetId,
+              quizId: newQuizId,
+            }),
+            {
+              state: {
+                initialItems: (res.data as QuizResponse).items,
+                backUrl: quizBackUrl,
+              },
+            }
+          );
         } else {
           toast.error("Không lấy được ID bài kiểm tra");
         }
@@ -692,6 +756,7 @@ function DayGroup({
                     <QuizHistoryPopover
                       quizHistory={quizHistory}
                       routePracticeSetId={practiceSetId}
+                      sessionId={interviewSessionId}
                     />
                   </Popover>
                 )}
@@ -715,6 +780,7 @@ function DayGroup({
                 index={localIdx}
                 status={getItemStatus(localIdx)}
                 practiceSetId={practiceSetId}
+                sessionId={interviewSessionId}
                 lastQuizId={lastQuizId}
               />
             ))}
@@ -935,19 +1001,6 @@ export function PracticeSetDetailPage() {
     return (
       <div className="bg-background min-h-screen">
         <div className="mx-auto max-w-3xl space-y-6 p-6">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-sm">
-            <button
-              onClick={() => navigate("/user?tab=practice")}
-              className="text-[#0047AB] hover:underline">
-              ← Bộ luyện tập
-            </button>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-muted-foreground">
-              Lộ trình phiên #{practiceSet.interviewSessionId}
-            </span>
-          </nav>
-
           {/* Title block */}
           <div>
             <h1 className="text-foreground text-2xl font-bold">
@@ -1034,7 +1087,7 @@ export function PracticeSetDetailPage() {
           </div>
 
           {/* Bottom CTA */}
-          <Card className="border-[#0047AB]/20 bg-gradient-to-r from-[#DCEEFF] to-[#F0F8FF] dark:from-[#0047AB]/10 dark:to-[#007BFF]/5">
+          <Card className="border-[#0047AB]/20 bg-linear-to-r from-[#DCEEFF] to-[#F0F8FF] dark:from-[#0047AB]/10 dark:to-[#007BFF]/5">
             <CardContent className="flex flex-col items-center gap-3 py-6 text-center">
               <MessageCircle className="h-8 w-8 text-[#0047AB]" />
               <div>
@@ -1060,17 +1113,6 @@ export function PracticeSetDetailPage() {
   return (
     <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-3xl space-y-6 p-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-sm">
-          <button
-            onClick={() => navigate("/user?tab=practice")}
-            className="text-[#0047AB] hover:underline">
-            ← Bộ luyện tập
-          </button>
-          <span className="text-muted-foreground">/</span>
-          <span className="text-muted-foreground line-clamp-1">{practiceSet.practiceSetName}</span>
-        </nav>
-
         {/* Title block */}
         <div>
           <h1 className="text-foreground text-2xl font-bold">
@@ -1178,7 +1220,7 @@ export function PracticeSetDetailPage() {
         )}
 
         {/* Bottom CTA */}
-        <Card className="border-[#0047AB]/20 bg-gradient-to-r from-[#DCEEFF] to-[#F0F8FF] dark:from-[#0047AB]/10 dark:to-[#007BFF]/5">
+        <Card className="border-[#0047AB]/20 bg-linear-to-r from-[#DCEEFF] to-[#F0F8FF] dark:from-[#0047AB]/10 dark:to-[#007BFF]/5">
           <CardContent className="flex flex-col items-center gap-3 py-6 text-center">
             <MessageCircle className="h-8 w-8 text-[#0047AB]" />
             <div>
