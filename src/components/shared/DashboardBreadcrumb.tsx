@@ -58,7 +58,7 @@ export function DashboardBreadcrumb({ items, className }: DashboardBreadcrumbPro
                     <Link
                       to={item.href}
                       className={cn(
-                        "inline-flex max-w-68 items-center gap-1.5 truncate rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors",
+                        "inline-flex max-w-[17rem] items-center gap-1.5 truncate rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors",
                         "hover:border-slate-300 hover:bg-white hover:text-slate-900",
                         "dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
                       )}>
@@ -69,7 +69,7 @@ export function DashboardBreadcrumb({ items, className }: DashboardBreadcrumbPro
                 ) : (
                   <BreadcrumbPage
                     className={cn(
-                      "inline-flex max-w-68 items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-xs font-semibold",
+                      "inline-flex max-w-[17rem] items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-xs font-semibold",
                       "border-[#0047AB]/25 bg-[#0047AB]/10 text-[#003A8C]",
                       "dark:border-[#66B2FF]/30 dark:bg-[#132544] dark:text-[#A9D1FF]"
                     )}>
