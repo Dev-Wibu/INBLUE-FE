@@ -6,16 +6,27 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import { buildPracticeSessionPath, toPositiveIntegerParam } from "@/lib/practice-quiz-route";
 import { quizSetManager } from "@/services";
 import type { QuizItem, QuizSet } from "@/services/quiz-set.manager";
 import { toast } from "sonner";
 
 export function QuizResultPage() {
-  const { id, quizId } = useParams<{ id: string; quizId: string }>();
+  const { sessionId, practiceSetId, quizId } = useParams<{
+    sessionId: string;
+    practiceSetId: string;
+    quizId: string;
+  }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const numericSessionId = toPositiveIntegerParam(sessionId);
+  const numericPracticeSetId = toPositiveIntegerParam(practiceSetId);
+  const numericQuizId = toPositiveIntegerParam(quizId);
+  const defaultBackUrl = numericSessionId
+    ? buildPracticeSessionPath(numericSessionId)
+    : "/user?tab=practice";
   // Persist backUrl in sessionStorage so it survives F5 refresh
-  const storageKey = `quiz_backUrl_${id}_${quizId}`;
+  const storageKey = `quiz_backUrl_${sessionId ?? "unknown"}_${practiceSetId ?? "unknown"}_${quizId ?? "unknown"}`;
   const [backUrl, setBackUrl] = useState<string>(() => {
     const stateUrl = (location.state as { backUrl?: string } | null)?.backUrl;
     if (stateUrl) {
@@ -27,9 +38,9 @@ export function QuizResultPage() {
       return stateUrl;
     }
     try {
-      return sessionStorage.getItem(storageKey) ?? `/user?tab=practice`;
+      return sessionStorage.getItem(storageKey) ?? defaultBackUrl;
     } catch {
-      return `/user?tab=practice`;
+      return defaultBackUrl;
     }
   });
   const [quizSet, setQuizSet] = useState<QuizSet | null>(null);
@@ -37,24 +48,24 @@ export function QuizResultPage() {
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
-    if (!quizId) return;
+    if (!numericQuizId || !numericSessionId || !numericPracticeSetId) {
+      toast.error("Đường dẫn kết quả bài kiểm tra không hợp lệ.");
+      navigate("/user?tab=practice", { replace: true });
+      return;
+    }
+
     setLoading(true);
     try {
       // GET /api/quiz-sets/{quizId} returns QuizSet with embedded questions[]
-      const quizResponse = await quizSetManager.getById(Number(quizId));
+      const quizResponse = await quizSetManager.getById(numericQuizId);
       if (quizResponse.success && quizResponse.data) {
         setQuizSet(quizResponse.data);
         setQuizItems(quizResponse.data.questions ?? []);
-        // Update backUrl using interviewSessionId from quiz data
-        const sessionId = quizResponse.data.practiceSet?.interviewSessionId;
-        if (sessionId) {
-          const url = `/user/practice/session/${sessionId}`;
-          setBackUrl(url);
-          try {
-            sessionStorage.setItem(storageKey, url);
-          } catch {
-            /* ignore */
-          }
+        setBackUrl(defaultBackUrl);
+        try {
+          sessionStorage.setItem(storageKey, defaultBackUrl);
+        } catch {
+          /* ignore */
         }
       } else {
         toast.error("Không thể tải kết quả bài trắc nghiệm");
@@ -64,7 +75,7 @@ export function QuizResultPage() {
     } finally {
       setLoading(false);
     }
-  }, [quizId, storageKey]);
+  }, [defaultBackUrl, navigate, numericPracticeSetId, numericQuizId, numericSessionId, storageKey]);
 
   useEffect(() => {
     loadData();
@@ -74,9 +85,9 @@ export function QuizResultPage() {
   const correctCount = quizItems.filter(
     (item) => item.userResponse && item.userResponse === item.correctAnswer
   ).length;
-  const scorePercentage =
-    totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
-  const displayScore = quizSet?.score !== undefined ? quizSet.score : scorePercentage;
+  const fallbackScore = totalQuestions > 0 ? (correctCount / totalQuestions) * 10 : 0;
+  const displayScore = quizSet?.score !== undefined ? quizSet.score : fallbackScore;
+  const displayScoreText = `${displayScore.toFixed(2)} điểm`;
 
   if (loading) {
     return (
@@ -90,11 +101,11 @@ export function QuizResultPage() {
     <div className="bg-background min-h-screen p-8">
       <div className="mx-auto max-w-3xl">
         {/* Score Card */}
-        <Card className="mb-8 overflow-hidden border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] py-0">
+        <Card className="mb-8 overflow-hidden border-0 bg-linear-to-r from-[#0047AB] to-[#007BFF] py-0">
           <CardContent className="flex flex-col items-center p-8 text-center">
             <h1 className="mb-4 text-2xl font-bold text-white">Kết Quả Quiz</h1>
             <div className="mb-4 flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-              <span className="text-4xl font-bold text-white">{displayScore}%</span>
+              <span className="text-3xl font-bold text-white">{displayScoreText}</span>
             </div>
             <p className="text-lg text-white/90">
               Bạn trả lời đúng {correctCount} / {totalQuestions} câu hỏi

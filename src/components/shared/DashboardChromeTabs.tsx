@@ -263,7 +263,7 @@ export function DashboardChromeTabs({
     return (
       <div
         className={cn(
-          "relative z-60 flex h-12 items-end gap-1.5 border-b pr-2 pb-0 pl-16 md:z-auto md:px-2 dark:border-slate-800 dark:bg-slate-900",
+          "relative z-60 flex h-14 items-end gap-1.5 border-b pr-2 pb-0 pl-16 md:z-auto md:px-2 dark:border-slate-800 dark:bg-slate-900",
           theme.bg
         )}>
         {leftSlot && <div className="hidden h-9 shrink-0 items-center md:flex">{leftSlot}</div>}
@@ -313,7 +313,7 @@ export function DashboardChromeTabs({
   return (
     <div
       className={cn(
-        "relative z-60 flex h-12 items-end border-b md:z-auto dark:border-slate-800 dark:bg-slate-900",
+        "relative z-60 flex h-14 items-end border-b md:z-auto dark:border-slate-800 dark:bg-slate-900",
         theme.bg
       )}>
       {leftSlot && (

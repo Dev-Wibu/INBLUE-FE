@@ -48,17 +48,19 @@ export function DashboardBreadcrumb({ items, className }: DashboardBreadcrumbPro
       <BreadcrumbList className="min-w-0 flex-nowrap gap-1 text-sm sm:gap-1.5">
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1;
+          const href = item.href;
+          const isClickable = Boolean(href) && !isCurrent;
           const icon = getItemIcon(item.label, index, isCurrent);
 
           return (
             <Fragment key={`${item.label}-${index}`}>
               <BreadcrumbItem className="min-w-0">
-                {item.href && !isCurrent ? (
+                {isClickable ? (
                   <BreadcrumbLink asChild>
                     <Link
-                      to={item.href}
+                      to={href!}
                       className={cn(
-                        "inline-flex max-w-[17rem] items-center gap-1.5 truncate rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors",
+                        "inline-flex max-w-68 items-center gap-1.5 truncate rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors",
                         "hover:border-slate-300 hover:bg-white hover:text-slate-900",
                         "dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
                       )}>
@@ -66,16 +68,28 @@ export function DashboardBreadcrumb({ items, className }: DashboardBreadcrumbPro
                       <span className="truncate">{item.label}</span>
                     </Link>
                   </BreadcrumbLink>
-                ) : (
+                ) : isCurrent ? (
                   <BreadcrumbPage
                     className={cn(
-                      "inline-flex max-w-[17rem] items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-xs font-semibold",
+                      "inline-flex max-w-68 items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-xs font-semibold",
                       "border-[#0047AB]/25 bg-[#0047AB]/10 text-[#003A8C]",
                       "dark:border-[#66B2FF]/30 dark:bg-[#132544] dark:text-[#A9D1FF]"
                     )}>
                     <span className="shrink-0">{icon}</span>
                     <span className="truncate">{item.label}</span>
                   </BreadcrumbPage>
+                ) : (
+                  <span
+                    role="link"
+                    aria-disabled="true"
+                    className={cn(
+                      "inline-flex max-w-68 items-center gap-1.5 truncate rounded-full border px-2.5 py-1 text-xs font-semibold",
+                      "border-slate-200 bg-slate-100 text-slate-600",
+                      "dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                    )}>
+                    <span className="shrink-0">{icon}</span>
+                    <span className="truncate">{item.label}</span>
+                  </span>
                 )}
               </BreadcrumbItem>
               {!isCurrent && (
