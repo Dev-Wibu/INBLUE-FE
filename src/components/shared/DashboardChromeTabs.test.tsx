@@ -75,7 +75,7 @@ describe("DashboardChromeTabs", () => {
     expect(onCloseAllTabs).not.toHaveBeenCalled();
   });
 
-  it("đặt nút dấu cộng trong cùng luồng tab ở full mode và menu vẫn neo theo viewport", () => {
+  it("giữ nút dấu cộng sticky ở mép phải trong full mode", () => {
     render(
       <DashboardChromeTabs
         {...baseProps}
@@ -90,6 +90,10 @@ describe("DashboardChromeTabs", () => {
     const strip = screen.getByTestId("chrome-tabs-full-strip");
     const plusButton = within(strip).getByRole("button", { name: "Mở menu tab" });
     expect(plusButton).toBeTruthy();
+
+    const plusWrapper = screen.getByTestId("chrome-tabs-new-tab");
+    expect(plusWrapper.className).toContain("sticky");
+    expect(plusWrapper.className).toContain("right-0");
 
     fireEvent.click(plusButton);
     const menuContainer = screen

@@ -274,7 +274,7 @@ export function StaffDashboardPage() {
             <DashboardSidebarToggle
               isCollapsed={isSidebarCollapsed}
               onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
-              className="hidden md:inline-flex"
+              className="hidden h-7 w-7 rounded-full border border-slate-300/85 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-900 md:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             />
           }
           menuGroups={CHROME_TABS_MENU_GROUPS}

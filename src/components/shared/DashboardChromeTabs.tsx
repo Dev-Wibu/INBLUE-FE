@@ -158,7 +158,14 @@ export function DashboardChromeTabs({
   }, [closeNewTabMenu, showNewTabMenu]);
 
   const newTabButton = (
-    <div data-testid="chrome-tabs-new-tab" className={cn("shrink-0", showNewTabMenu && "z-80")}>
+    <div
+      data-testid="chrome-tabs-new-tab"
+      className={cn(
+        "shrink-0",
+        !compact &&
+          "sticky right-0 z-20 ml-1 flex items-center bg-linear-to-l from-white/95 via-white/95 to-transparent pl-2 dark:from-slate-900/95 dark:via-slate-900/95",
+        showNewTabMenu && "z-80"
+      )}>
       <button
         ref={newTabButtonRef}
         type="button"
@@ -256,7 +263,7 @@ export function DashboardChromeTabs({
     return (
       <div
         className={cn(
-          "relative z-60 flex h-14 items-end gap-1.5 border-b pr-2 pb-0 pl-16 md:z-auto md:px-2 dark:border-slate-800 dark:bg-slate-900",
+          "relative z-60 flex h-12 items-end gap-1.5 border-b pr-2 pb-0 pl-16 md:z-auto md:px-2 dark:border-slate-800 dark:bg-slate-900",
           theme.bg
         )}>
         {leftSlot && <div className="hidden h-9 shrink-0 items-center md:flex">{leftSlot}</div>}
@@ -306,7 +313,7 @@ export function DashboardChromeTabs({
   return (
     <div
       className={cn(
-        "relative z-60 flex h-14 items-end border-b md:z-auto dark:border-slate-800 dark:bg-slate-900",
+        "relative z-60 flex h-12 items-end border-b md:z-auto dark:border-slate-800 dark:bg-slate-900",
         theme.bg
       )}>
       {leftSlot && (
@@ -316,7 +323,7 @@ export function DashboardChromeTabs({
       {/* Tab List */}
       <div
         data-testid="chrome-tabs-full-strip"
-        className="flex h-full min-w-0 flex-1 items-end gap-1 overflow-x-auto overflow-y-visible pr-2 pb-0 pl-16 md:px-2">
+        className="relative flex h-full min-w-0 flex-1 items-end gap-1 overflow-x-auto overflow-y-visible scroll-smooth pr-1 pb-0 pl-16 md:px-2">
         {tabs.map((tab) => {
           const Icon = tabIcons?.[tab.type];
           const isActive = tab.id === activeTabId;

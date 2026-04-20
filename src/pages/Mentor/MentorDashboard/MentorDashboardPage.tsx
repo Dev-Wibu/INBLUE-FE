@@ -8,7 +8,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 
 import icon2 from "@/assets/icon2.svg";
@@ -21,9 +21,10 @@ import {
   DashboardSidebarToggle,
   getInitialSidebarCollapsed,
 } from "@/components/shared";
+import { useDashboardBreadcrumb } from "@/hooks/useDashboardBreadcrumb";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
-import { buildDashboardBreadcrumbItems } from "@/lib/dashboard-breadcrumb";
+import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
 
 import { MentorAccountPage } from "../Account";
 import { GivenFeedbackListPage } from "../Feedback";
@@ -107,19 +108,6 @@ const MENTOR_SIDEBAR_LOGO_COLLAPSED = (
 
 const DEFAULT_TAB: TabType = "overview";
 
-/** Map sub-route path segments to their parent tab so the sidebar highlights correctly */
-const MENTOR_ROUTE_TO_TAB: Record<string, TabType> = {
-  sessions: "sessions",
-  reviews: "reviews",
-  students: "students",
-  messenger: "messenger",
-};
-
-function getTabFromRoute(pathname: string): TabType {
-  const segment = pathname.replace(/^\/mentor\//, "").split("/")[0];
-  return MENTOR_ROUTE_TO_TAB[segment] ?? DEFAULT_TAB;
-}
-
 export function MentorDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -135,23 +123,27 @@ export function MentorDashboardPage() {
 
   const outlet = useOutlet();
 
+  const routedTab = getDashboardTabFromPath({
+    role: "mentor",
+    pathname: location.pathname,
+    defaultTab: DEFAULT_TAB,
+  });
+
   // When on a nested outlet route, derive active tab from the pathname
   const typedActiveTab: TabType = outlet
-    ? getTabFromRoute(location.pathname)
+    ? isValidTabType(routedTab)
+      ? routedTab
+      : DEFAULT_TAB
     : isValidTabType(activeTab)
       ? activeTab
       : DEFAULT_TAB;
 
-  const breadcrumbItems = useMemo(
-    () =>
-      buildDashboardBreadcrumbItems({
-        role: "mentor",
-        pathname: location.pathname,
-        activeTab: typedActiveTab,
-        availableTabs: AVAILABLE_TABS,
-      }),
-    [location.pathname, typedActiveTab]
-  );
+  const { items: breadcrumbItems } = useDashboardBreadcrumb({
+    role: "mentor",
+    pathname: location.pathname,
+    activeTab: typedActiveTab,
+    availableTabs: AVAILABLE_TABS,
+  });
 
   useDashboardScrollRestoration(contentRef, {
     enabled: typedActiveTab !== "messenger",
