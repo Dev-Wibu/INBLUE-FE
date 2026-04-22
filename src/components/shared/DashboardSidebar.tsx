@@ -209,6 +209,19 @@ export function DashboardSidebar({
     setCollapsed((prev) => !prev);
   };
 
+  const handleSettingsClick = () => {
+    setIsMobileOpen(false);
+
+    if (isMobile) {
+      window.setTimeout(() => {
+        onSettingsClick?.();
+      }, 0);
+      return;
+    }
+
+    onSettingsClick?.();
+  };
+
   const handleNavigate = (type: string) => {
     onNavigate(type);
     setCollapsedDropdownParent(null);
@@ -540,7 +553,13 @@ export function DashboardSidebar({
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="inset-y-auto top-14 bottom-0 h-[calc(100dvh-3.5rem)] w-[83vw] max-w-[336px] p-0 sm:max-w-[352px]">
+                className="w-[83vw] max-w-[336px] p-0 sm:max-w-[352px]"
+                style={{
+                  top: 0,
+                  bottom: 0,
+                  height: "100dvh",
+                  maxWidth: "336px",
+                }}>
                 <div className="flex h-full min-h-0 flex-col overflow-hidden bg-linear-to-b from-slate-100/95 via-slate-50 to-slate-100 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
                   <div className="shrink-0 border-b border-slate-200/90 px-3.5 pt-[calc(0.9rem+env(safe-area-inset-top))] pb-3 dark:border-slate-800/90">
                     <div className="flex items-center gap-3 rounded-2xl border border-slate-200/85 bg-white/85 px-3 py-2 shadow-sm shadow-slate-300/30 backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/30">
@@ -597,7 +616,7 @@ export function DashboardSidebar({
                     )}>
                     {showSettings && (
                       <button
-                        onClick={onSettingsClick}
+                        onClick={handleSettingsClick}
                         className={cn(
                           settingsExpandedClass,
                           "rounded-2xl border border-transparent"
@@ -708,7 +727,7 @@ export function DashboardSidebar({
             {!isCollapsed ? (
               <>
                 {showSettings && (
-                  <button onClick={onSettingsClick} className={settingsExpandedClass}>
+                  <button onClick={handleSettingsClick} className={settingsExpandedClass}>
                     <Settings className="h-5 w-5" />
                     {settingsLabel}
                   </button>
@@ -723,7 +742,7 @@ export function DashboardSidebar({
                 {showSettings && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button onClick={onSettingsClick} className={settingsCollapsedClass}>
+                      <button onClick={handleSettingsClick} className={settingsCollapsedClass}>
                         <Settings className="h-5 w-5" />
                       </button>
                     </TooltipTrigger>
