@@ -57,9 +57,11 @@ export function NotificationDropdown({
 
   return (
     <>
-      <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-1rem)] p-0 sm:w-96">
+      <DropdownMenuContent
+        align="end"
+        className="flex max-h-[calc(100vh-2rem)] w-80 max-w-[calc(100vw-1rem)] flex-col overflow-hidden p-0 sm:w-96">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">Thông báo</h3>
           {unreadCount > 0 && (
             <Button
@@ -79,7 +81,7 @@ export function NotificationDropdown({
         </div>
 
         {/* Notification list */}
-        <ScrollArea className="max-h-80">
+        <ScrollArea className="min-h-0 flex-1">
           <NotificationList
             notifications={recentNotifications}
             isLoading={isLoading}
@@ -91,8 +93,8 @@ export function NotificationDropdown({
         </ScrollArea>
 
         {/* Footer */}
-        <DropdownMenuSeparator />
-        <div className="p-2">
+        <DropdownMenuSeparator className="shrink-0" />
+        <div className="hrink-0 p-2">
           <Link
             to={notificationsPath}
             onClick={closeDropdown}

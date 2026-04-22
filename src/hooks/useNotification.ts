@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
+import { broadcastNotificationCreated } from "@/lib/notification-alert-bus";
 import type { Notification, NotificationFormData } from "@/services/notification.manager";
 import { notificationManager } from "@/services/notification.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -187,7 +188,11 @@ export const useCreateNotification = () => {
       }
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (createdNotification) => {
+      if (createdNotification) {
+        broadcastNotificationCreated(createdNotification);
+      }
+
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_QUERY_KEYS.all });
       toast.success("Đã gửi thông báo thành công");
     },

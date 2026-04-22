@@ -1,4 +1,8 @@
-export function getInitialSidebarCollapsed(storageKey: string, legacyStorageKey?: string): boolean {
+export function getInitialSidebarCollapsed(
+  storageKey: string,
+  legacyStorageKey?: string,
+  defaultCollapsed = false
+): boolean {
   if (typeof window === "undefined") {
     return false;
   }
@@ -17,5 +21,5 @@ export function getInitialSidebarCollapsed(storageKey: string, legacyStorageKey?
     }
   }
 
-  return false;
+  return defaultCollapsed;
 }

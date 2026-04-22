@@ -124,6 +124,18 @@
 }
 
 @layer base {
+  html[data-font-size="small"] {
+    font-size: 14px;
+  }
+
+  html[data-font-size="default"] {
+    font-size: 16px;
+  }
+
+  html[data-font-size="large"] {
+    font-size: 18px;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -242,11 +254,11 @@
 /* Toast styling enhancements (Toaster component) */
 .toaster {
   --toast-max-width: 420px;
-  z-index: 9999; /* ensure it's above most UI layers */
+  z-index: 2147483647; /* keep toast above every app layer */
   pointer-events: none; /* container doesn't block clicks */
 }
 
-/* Target toast items via common ARIA roles used by toast libraries */
+.toaster [data-sonner-toast],
 .toaster [role="status"],
 .toaster [role="alert"] {
   pointer-events: auto; /* allow interactions inside the toast */
@@ -266,6 +278,11 @@
   transform: translateY(-6px) scale(0.995);
   opacity: 0;
   animation: toast-in 240ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+.toaster [data-sonner-toast] [data-button],
+.toaster [data-sonner-toast] [data-close-button] {
+  pointer-events: auto;
 }
 
 @keyframes toast-in {
@@ -334,24 +351,29 @@
   --toast-warning-accent: #ffec99;
 }
 
-/* Type-specific styling (sonner adds data attributes like data-sn-type) */
+/* Type-specific styling (Sonner uses data-type on the toast item) */
+.toaster [data-sonner-toast][data-type="success"],
+.toaster [data-sonner-toast][data-type="info"],
 .toaster [data-sn-type="success"],
 .toaster [data-sn-type="info"] {
   background: var(--toast-success-bg, var(--popover)) !important;
   border: 1px solid var(--toast-success-border, var(--border)) !important;
 }
 
+.toaster [data-sonner-toast][data-type="error"],
 .toaster [data-sn-type="error"] {
   background: var(--toast-error-bg, var(--popover)) !important;
   border: 1px solid var(--toast-error-border, var(--border)) !important;
 }
 
+.toaster [data-sonner-toast][data-type="warning"],
 .toaster [data-sn-type="warning"] {
   background: var(--toast-warning-bg, var(--popover)) !important;
   border: 1px solid var(--toast-warning-border, var(--border)) !important;
 }
 
 /* Add a left accent strip to emphasize toast type */
+.toaster [data-sonner-toast]::before,
 .toaster [role="status"]::before,
 .toaster [role="alert"]::before,
 .toaster [data-sn-type]::before {
@@ -377,6 +399,7 @@
 }
 
 /* Smooth hover and focus */
+.toaster [data-sonner-toast]:hover,
 .toaster [role="status"]:hover,
 .toaster [role="alert"]:hover {
   transform: translateY(-3px) scale(1.01);
@@ -384,6 +407,7 @@
 }
 
 /* Ensure long content wraps nicely */
+.toaster [data-sonner-toast] [data-content],
 .toaster [role="status"] .sn-toaster-content,
 .toaster [role="alert"] .sn-toaster-content {
   word-break: break-word;
@@ -407,6 +431,7 @@
 }
 
 /* Focus visibility for keyboard users */
+.toaster [data-sonner-toast]:focus,
 .toaster [role="status"]:focus,
 .toaster [role="alert"]:focus {
   outline: 3px solid rgba(0, 123, 255, 0.18);
