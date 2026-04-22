@@ -58,7 +58,7 @@ function OptionCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center gap-2 rounded-xl border-2 px-5 py-4 text-sm font-medium transition-all",
+        "flex w-full flex-col items-center gap-2 rounded-xl border-2 px-4 py-4 text-sm font-medium transition-all",
         selected
           ? "border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900/20 dark:text-blue-300"
           : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-700"
@@ -77,7 +77,7 @@ function ToggleRow({
   label: string;
   description?: string;
   checked: boolean;
-  onCheckedChange: (v: boolean) => void;
+  onCheckedChange: (_v: boolean) => void;
 }) {
   return (
     <div className="flex items-center justify-between gap-4 py-3">
@@ -111,11 +111,11 @@ function AppearancePanel() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Theme */}
       <div>
         <SectionTitle>Chủ đề màu sắc</SectionTitle>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {themes.map(({ value, label, icon: Icon }) => (
             <OptionCard key={value} selected={theme === value} onClick={() => setTheme(value)}>
               <Icon className="h-6 w-6" />
@@ -130,7 +130,7 @@ function AppearancePanel() {
       {/* Font size */}
       <div>
         <SectionTitle>Cỡ chữ</SectionTitle>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {fontSizes.map(({ value, label, preview }) => (
             <OptionCard
               key={value}
@@ -243,7 +243,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-stretch justify-stretch md:items-center md:justify-center md:p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Cài đặt hệ thống">
@@ -251,9 +251,48 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
 
       {/* Modal shell */}
-      <div className="relative z-10 flex h-[580px] w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-        {/* Left sidebar — tab list */}
-        <div className="flex w-52 shrink-0 flex-col border-r border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950">
+      <div className="relative z-10 flex h-full w-full flex-col overflow-hidden bg-slate-50 shadow-none md:h-[580px] md:max-w-3xl md:flex-row md:rounded-2xl md:border md:border-slate-200 md:bg-slate-100 md:shadow-2xl dark:bg-slate-900 dark:md:border-slate-700 dark:md:bg-slate-900">
+        {/* Mobile header */}
+        <div className="flex shrink-0 items-start justify-between border-b border-slate-200 bg-white/95 px-4 pt-[calc(0.9rem+env(safe-area-inset-top))] pb-3 backdrop-blur md:hidden dark:border-slate-700 dark:bg-slate-900/90">
+          <div className="mt-9">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+              Cài đặt hệ thống
+            </h2>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Tùy chỉnh giao diện và các tuỳ chọn cá nhân.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng cài đặt"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-slate-500 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Mobile tab rail */}
+        <div className="border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden dark:border-slate-700 dark:bg-slate-900/90">
+          <div className="grid grid-cols-3 gap-2">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "min-h-11 rounded-2xl border px-2 py-2 text-center text-[11px] leading-tight font-semibold transition-all",
+                  activeTab === tab.id
+                    ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-400 dark:bg-blue-900/20 dark:text-blue-300"
+                    : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-white dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+                )}>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop sidebar — tab list */}
+        <div className="hidden w-52 shrink-0 flex-col border-r border-slate-200 bg-slate-50 md:flex dark:border-slate-700 dark:bg-slate-950">
           <div className="border-b border-slate-200 px-4 py-4 dark:border-slate-700">
             <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
               Cài đặt hệ thống
@@ -289,9 +328,8 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
           </div>
         </div>
 
-        {/* Right content area */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Header */}
+        {/* Desktop right content area */}
+        <div className="hidden flex-1 flex-col overflow-hidden md:flex">
           <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-700 dark:bg-slate-900">
             <h3 className="font-semibold text-slate-900 dark:text-white">
               {TABS.find((t) => t.id === activeTab)?.label}
@@ -305,11 +343,32 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
             </button>
           </div>
 
-          {/* Content */}
           <div className="flex-1 overflow-y-auto bg-white p-6 dark:bg-slate-900">
             {activeTab === "appearance" && <AppearancePanel />}
             {activeTab === "productivity" && <ProductivityPanel />}
             {activeTab === "notifications" && <NotificationsPanel />}
+          </div>
+        </div>
+
+        {/* Mobile content area */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:hidden">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <div className="space-y-5">
+              {activeTab === "appearance" && <AppearancePanel />}
+              {activeTab === "productivity" && <ProductivityPanel />}
+              {activeTab === "notifications" && <NotificationsPanel />}
+            </div>
+          </div>
+
+          <div className="shrink-0 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 rounded-2xl border border-slate-200/80 bg-white/90 text-slate-500 shadow-sm hover:bg-slate-100 hover:text-red-600 dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-red-400"
+              onClick={handleResetToDefaults}>
+              <RotateCcw className="h-3.5 w-3.5" />
+              Khôi phục mặc định
+            </Button>
           </div>
         </div>
       </div>
