@@ -7,7 +7,8 @@ import { Bell } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useUnreadCount } from "@/hooks/useNotification";
+import { useNotifications } from "@/hooks/useNotification";
+import { useNotificationAlerts } from "@/hooks/useNotificationAlerts";
 import { cn } from "@/lib/utils";
 import { useNotificationStore } from "@/stores/notificationStore";
 
@@ -20,11 +21,14 @@ interface NotificationBellProps {
 
 export function NotificationBell({ notificationsPath, className }: NotificationBellProps) {
   const { isDropdownOpen, toggleDropdown, closeDropdown } = useNotificationStore();
-  const { data: serverUnreadCount } = useUnreadCount();
+  const { data: notifications = [], isLoading } = useNotifications();
   const localUnreadCount = useNotificationStore((state) => state.unreadCount);
 
-  // Use server count when available, fall back to local
-  const unreadCount = serverUnreadCount ?? localUnreadCount;
+  useNotificationAlerts({ notifications, notificationsPath });
+
+  const unreadCount = isLoading
+    ? localUnreadCount
+    : notifications.filter((notification) => !notification.isRead).length;
 
   // Format badge count (99+ for counts over 99)
   const badgeText = unreadCount > 99 ? "99+" : unreadCount.toString();
