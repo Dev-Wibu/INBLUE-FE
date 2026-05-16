@@ -1,4 +1,4 @@
-import { Crown, FileText, History, User } from "lucide-react";
+import { Crown, FileText, History, User, Wallet } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -14,6 +14,7 @@ import {
   reconcileWalletBalance,
   upsertPaymentRecoveryContext,
 } from "@/lib";
+import { formatCurrency, formatDate } from "@/lib/formatting";
 import { transactionManager, usersAdminManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import { toast } from "sonner";
@@ -68,6 +69,7 @@ export function AccountPage() {
   const [topUpAmount, setTopUpAmount] = useState<string>(String(TOP_UP_PRESET_AMOUNTS[1]));
   const topUpInFlightRef = useRef(false);
   const hasLoadedUserDataRef = useRef(false);
+  const [currentPlanName, setCurrentPlanName] = useState<string | null>(null);
 
   // Form state for editing
   const [formData, setFormData] = useState<Partial<UserProfileData>>({});
@@ -109,6 +111,7 @@ export function AccountPage() {
           cv_public_id: userData.cv_public_id || null,
           createdAt: new Date().toISOString(), // Backend doesn't provide createdAt
         });
+        setCurrentPlanName(userData.membershipPlan?.name ?? null);
 
         const transactionResponse = await transactionManager.getByUserId(Number(authUserId));
         const walletResolution = reconcileWalletBalance({
@@ -155,6 +158,7 @@ export function AccountPage() {
           cv_public_id: null,
           createdAt: new Date().toISOString(),
         });
+        setCurrentPlanName(currentAuthUser.membershipPlan?.name ?? null);
         console.warn("Failed to fetch user data, using auth store data");
       }
     } catch (error) {
@@ -173,6 +177,7 @@ export function AccountPage() {
           cv_public_id: null,
           createdAt: new Date().toISOString(),
         });
+        setCurrentPlanName(currentAuthUser.membershipPlan?.name ?? null);
       }
     } finally {
       setIsLoading(false);
@@ -562,83 +567,159 @@ export function AccountPage() {
     }
   };
 
+  const tabItems: Array<{
+    id: AccountSubTab;
+    label: string;
+    description: string;
+    icon: React.ElementType;
+  }> = [
+    {
+      id: "profile",
+      label: "Thông tin cá nhân",
+      description: "Cập nhật hồ sơ, học vấn và CV",
+      icon: User,
+    },
+    {
+      id: "wallet",
+      label: "Ví tiền",
+      description: "Theo dõi số dư và nạp tiền",
+      icon: Wallet,
+    },
+    {
+      id: "transactionHistory",
+      label: "Lịch sử giao dịch",
+      description: "Xem các khoản thanh toán gần đây",
+      icon: History,
+    },
+    {
+      id: "candidateProfile",
+      label: "Hồ sơ ứng viên",
+      description: "Quản lý hồ sơ tuyển dụng cá nhân",
+      icon: FileText,
+    },
+    {
+      id: "membership",
+      label: "Gói thành viên",
+      description: "Nâng cấp và quản lý quyền lợi",
+      icon: Crown,
+    },
+  ];
+
+  const summaryAvatar = avatarPreview || userProfile?.avatar || authUser?.avatarUrl || null;
+  const summaryName = userProfile?.name || authUser?.name || "Tài khoản";
+  const summaryEmail = userProfile?.email || authUser?.email || "—";
+  const summaryJoinedAt = userProfile?.createdAt ? formatDate(userProfile.createdAt) : "—";
+  const normalizedPlan = currentPlanName?.toUpperCase() ?? authUser?.membershipPlan?.name;
+  const planLabels: Record<string, string> = {
+    FREE: "INBLUE FREE",
+    NEW: "INBLUE NEW",
+    BASIC: "INBLUE BASIC",
+    PREMIUM: "INBLUE PREMIUM",
+  };
+  const summaryPlanLabel = normalizedPlan ? planLabels[normalizedPlan] || normalizedPlan : "—";
+
   return (
-    <div className="flex flex-col gap-6 p-6">
-      {/* Top Banner */}
-      <div className="flex h-56 items-center justify-between rounded-[30px] bg-[#DCEEFF] px-10 dark:bg-[#0047AB]/20">
-        <div className="flex flex-col gap-4">
-          <h1 className="font-['Open_Sans'] text-3xl leading-tight font-bold text-blue-800 dark:text-[#66B2FF]">
-            Tài khoản của bạn
-          </h1>
-          <p className="font-['Open_Sans'] text-base font-normal text-gray-700 dark:text-slate-300">
-            Quản lý thông tin cá nhân, ví tiền, lịch sử giao dịch, hồ sơ ứng viên và gói thành viên
-          </p>
-        </div>
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/50 dark:bg-slate-800/50">
-          <User className="h-12 w-12 text-[#0047AB] dark:text-[#66B2FF]" />
+    <div className="px-2 pt-6 pb-10">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6">
+        <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+          <div className="flex flex-col gap-6 lg:sticky lg:top-6 lg:self-start">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex flex-col items-center gap-3 text-center">
+                <div className="relative">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#DCEEFF] dark:bg-[#0047AB]/30">
+                    {summaryAvatar ? (
+                      <img
+                        src={summaryAvatar}
+                        alt={summaryName}
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-10 w-10 text-[#0047AB] dark:text-[#66B2FF]" />
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <h2 className="font-['Inter'] text-xl font-semibold text-slate-900 dark:text-white">
+                    {summaryName}
+                  </h2>
+                  <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
+                    {summaryEmail}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                    Ngày tham gia: {summaryJoinedAt}
+                  </p>
+                </div>
+              </div>
+
+              <div className="my-4 h-px bg-slate-200 dark:bg-slate-800" />
+
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 dark:text-slate-400">
+                    Gói thành viên hiện tại
+                  </span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    {summaryPlanLabel}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 dark:text-slate-400">Số dư ví</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    {formatCurrency(walletBalance)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
+              <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                Danh mục
+              </p>
+              <div className="mt-3 flex flex-col gap-1">
+                {tabItems.map((tab) => {
+                  const TabIcon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleSwitchTab(tab.id)}
+                      className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors ${
+                        isActive
+                          ? "border-[#0047AB]/40 bg-[#DCEEFF]/60 text-[#0047AB] shadow-sm dark:border-[#66B2FF]/40 dark:bg-[#0047AB]/20 dark:text-[#66B2FF]"
+                          : "border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                      }`}>
+                      <div
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                          isActive
+                            ? "bg-white text-[#0047AB] dark:bg-slate-900 dark:text-[#66B2FF]"
+                            : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"
+                        }`}>
+                        <TabIcon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm leading-tight font-semibold">{tab.label}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {tab.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6">
+            {isLoading ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+                <SpinnerBlock size="lg" />
+              </div>
+            ) : (
+              renderTabContent()
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Tab Navigation */}
-      <div className="flex gap-4 border-b border-gray-200 dark:border-slate-700">
-        <button
-          onClick={() => handleSwitchTab("profile")}
-          className={`px-6 py-3 font-['Inter'] text-base font-medium transition-colors ${
-            activeTab === "profile"
-              ? "border-b-2 border-[#0047AB] text-[#0047AB] dark:border-[#66B2FF] dark:text-[#66B2FF]"
-              : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300"
-          }`}>
-          Thông tin cá nhân
-        </button>
-        <button
-          onClick={() => handleSwitchTab("wallet")}
-          className={`px-6 py-3 font-['Inter'] text-base font-medium transition-colors ${
-            activeTab === "wallet"
-              ? "border-b-2 border-[#0047AB] text-[#0047AB] dark:border-[#66B2FF] dark:text-[#66B2FF]"
-              : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300"
-          }`}>
-          Ví tiền
-        </button>
-        <button
-          onClick={() => handleSwitchTab("transactionHistory")}
-          className={`flex items-center gap-2 px-6 py-3 font-['Inter'] text-base font-medium transition-colors ${
-            activeTab === "transactionHistory"
-              ? "border-b-2 border-[#0047AB] text-[#0047AB] dark:border-[#66B2FF] dark:text-[#66B2FF]"
-              : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300"
-          }`}>
-          <History className="h-4 w-4" />
-          Lịch sử giao dịch
-        </button>
-        <button
-          onClick={() => handleSwitchTab("candidateProfile")}
-          className={`flex items-center gap-2 px-6 py-3 font-['Inter'] text-base font-medium transition-colors ${
-            activeTab === "candidateProfile"
-              ? "border-b-2 border-[#0047AB] text-[#0047AB] dark:border-[#66B2FF] dark:text-[#66B2FF]"
-              : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300"
-          }`}>
-          <FileText className="h-4 w-4" />
-          Hồ sơ ứng viên
-        </button>
-        <button
-          onClick={() => handleSwitchTab("membership")}
-          className={`flex items-center gap-2 px-6 py-3 font-['Inter'] text-base font-medium transition-colors ${
-            activeTab === "membership"
-              ? "border-b-2 border-[#0047AB] text-[#0047AB] dark:border-[#66B2FF] dark:text-[#66B2FF]"
-              : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300"
-          }`}>
-          <Crown className="h-4 w-4" />
-          Gói thành viên
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      {isLoading ? (
-        <div className="py-6">
-          <SpinnerBlock size="lg" />
-        </div>
-      ) : (
-        renderTabContent()
-      )}
 
       {/* CV Upload Modal */}
       <CVUploadModal
