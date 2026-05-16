@@ -196,6 +196,14 @@ function buildTransferContent(planId: string, userId: string | number): string {
   return `INBLUE${planId}${userId}`;
 }
 
+function getPlanRank(planId: PlanName | null | undefined): number {
+  if (!planId) {
+    return -1;
+  }
+
+  return PLAN_DISPLAY_ORDER.indexOf(planId);
+}
+
 function getRingClass(planId: PlanName): string {
   if (planId === "NEW") return "ring-cyan-400";
   if (planId === "BASIC") return "ring-violet-500";
@@ -203,24 +211,89 @@ function getRingClass(planId: PlanName): string {
   return "ring-[#0047AB]";
 }
 
+function getCurrentHaloClass(planId: PlanName): string {
+  if (planId === "NEW") return "bg-cyan-400/24";
+  if (planId === "BASIC") return "bg-violet-500/24";
+  if (planId === "PREMIUM") return "bg-pink-500/24";
+  return "bg-[#66B2FF]/22";
+}
+
+function getCurrentHaloSoftClass(planId: PlanName): string {
+  if (planId === "NEW") return "bg-cyan-400/16";
+  if (planId === "BASIC") return "bg-violet-500/16";
+  if (planId === "PREMIUM") return "bg-pink-500/16";
+  return "bg-[#66B2FF]/14";
+}
+
+function getCurrentCardGlowClass(planId: PlanName): string {
+  if (planId === "NEW") {
+    return "shadow-[0_0_64px_rgba(34,211,238,0.26)]";
+  }
+
+  if (planId === "BASIC") {
+    return "shadow-[0_0_64px_rgba(139,92,246,0.26)]";
+  }
+
+  if (planId === "PREMIUM") {
+    return "shadow-[0_0_64px_rgba(236,72,153,0.26)]";
+  }
+
+  return "shadow-[0_0_64px_rgba(59,130,246,0.24)]";
+}
+
+function getCurrentActionClass(planId: PlanName): string {
+  if (planId === "NEW") {
+    return "border-cyan-300/70 bg-cyan-500/10 text-cyan-700 shadow-[0_10px_22px_-14px_rgba(34,211,238,0.55)] dark:border-cyan-300/40 dark:bg-cyan-500/20 dark:text-cyan-100";
+  }
+
+  if (planId === "BASIC") {
+    return "border-violet-300/70 bg-violet-500/10 text-violet-700 shadow-[0_10px_22px_-14px_rgba(139,92,246,0.55)] dark:border-violet-300/40 dark:bg-violet-500/20 dark:text-violet-100";
+  }
+
+  if (planId === "PREMIUM") {
+    return "border-pink-300/70 bg-pink-500/10 text-pink-700 shadow-[0_10px_22px_-14px_rgba(236,72,153,0.55)] dark:border-pink-300/40 dark:bg-pink-500/20 dark:text-pink-100";
+  }
+
+  return "border-[#66B2FF]/60 bg-[#DCEEFF]/70 text-[#0b2b66] shadow-[0_10px_22px_-14px_rgba(59,130,246,0.45)] dark:border-[#66B2FF]/40 dark:bg-[#0047AB]/25 dark:text-[#DCEEFF]";
+}
+
 function PlanCard({
   plan,
   isSelected,
   isCurrent,
+  isDowngrade,
   onSelect,
 }: {
   plan: MembershipPlan;
   isSelected: boolean;
   isCurrent: boolean;
+  isDowngrade: boolean;
   onSelect: (_id: PlanName) => void;
 }) {
+  const selectedHighlightClass = isSelected
+    ? `ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950 ${getRingClass(plan.id)}`
+    : "";
+  const currentHighlightClass = isCurrent ? `${getCurrentCardGlowClass(plan.id)}` : "";
+
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border-2 p-6 shadow-sm transition-all duration-200 ${plan.bgClass} ${plan.borderClass} ${
-        isSelected
-          ? `ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950 ${getRingClass(plan.id)}`
-          : ""
-      }`}>
+      className={`relative flex h-full flex-col rounded-2xl border-2 p-6 transition-all duration-200 ${plan.bgClass} ${plan.borderClass} ${selectedHighlightClass} ${currentHighlightClass}`}>
+      {isCurrent && (
+        <>
+          {/* Lớp bóng thứ 1: Nhỏ, ôm sát viền thẻ để tạo viền sáng rực rỡ */}
+          <div
+            className={`pointer-events-none absolute -inset-1 -z-10 rounded-[20px] ${getCurrentHaloClass(
+              plan.id
+            )} opacity-40 blur-[15px]`}
+          />
+          {/* Lớp bóng thứ 2: Lớn hơn một chút, mờ và nhòe hơn để tạo cảm giác lan tỏa */}
+          <div
+            className={`pointer-events-none absolute -inset-3 -z-10 rounded-[24px] ${getCurrentHaloSoftClass(
+              plan.id
+            )} opacity-20 blur-[30px]`}
+          />
+        </>
+      )}
       {plan.badge && (
         <span
           className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-0.5 font-['Inter'] text-xs font-bold tracking-wide ${plan.badgeClass}`}>
@@ -247,11 +320,6 @@ function PlanCard({
           </span>
         )}
       </div>
-      {plan.price === 0 && (
-        <p className={`mb-3 text-center font-['Inter'] text-xs opacity-70 ${plan.colorClass}`}>
-          {plan.durationDays} ngày
-        </p>
-      )}
 
       <div className="mt-3 mb-4 border-t border-gray-100 dark:border-slate-700/50" />
 
@@ -277,10 +345,15 @@ function PlanCard({
 
       <div className="mt-auto">
         {isCurrent ? (
-          <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#DCEEFF] py-3 font-['Inter'] text-sm font-semibold text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
+          <div
+            className={`flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2.5 font-['Inter'] text-sm font-semibold ${getCurrentActionClass(
+              plan.id
+            )}`}>
             <Check className="h-4 w-4" />
             Đang sử dụng
           </div>
+        ) : isDowngrade ? (
+          <div></div>
         ) : (
           <button
             onClick={() => onSelect(plan.id)}
@@ -847,45 +920,45 @@ export function MembershipTab() {
   };
 
   const userId = user?.id ?? "00000";
+  const normalizedCurrentPlan = currentPlanName?.toUpperCase();
+  const currentPlanId = isPlanName(normalizedCurrentPlan) ? normalizedCurrentPlan : null;
+  const currentPlanRank = getPlanRank(currentPlanId);
   const transferContent = selectedPlan
     ? buildTransferContent(selectedPlan, userId)
     : "— Chọn gói bên trên —";
   const selectedPlanInfo = membershipPlans.find((p) => p.id === selectedPlan);
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#0047AB] via-[#0066CC] to-[#007BFF] p-8 text-white">
-        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10" />
-        <div className="absolute -bottom-14 left-10 h-28 w-28 rounded-full bg-white/10" />
-        <div className="relative flex flex-col items-center gap-2 text-center">
-          <div className="mb-2 flex gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
-              <Star className="h-5 w-5 text-cyan-300" />
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
-              <Crown className="h-5 w-5 text-violet-300" />
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
-              <Diamond className="h-5 w-5 text-pink-300" />
-            </div>
+    <div className="flex flex-col gap-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+              Gói thành viên
+            </p>
+            <h2 className="mt-2 font-['Inter'] text-2xl font-semibold text-slate-900 dark:text-white">
+              Nâng cấp tài khoản
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Chọn gói phù hợp để nâng tầm trải nghiệm phỏng vấn.
+            </p>
           </div>
-          <h2 className="font-['Poppins'] text-3xl font-bold">Nâng cấp tài khoản</h2>
-          <p className="font-['Inter'] text-base opacity-80">
-            Chọn gói phù hợp • Nâng tầm trải nghiệm phỏng vấn
-          </p>
+          <div className="flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+            <Crown className="h-4 w-4 text-[#0047AB] dark:text-[#66B2FF]" />
+            Quyền lợi được cập nhật ngay sau khi thanh toán.
+          </div>
         </div>
       </div>
 
       {isLoadingSubscription ? (
-        <div className="rounded-xl border border-slate-200 bg-white px-5 py-4 dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex justify-center py-1">
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <Spinner size="md" />
-            Đang tải thông tin gói thành viên...
+            <span>Đang tải thông tin gói thành viên...</span>
           </div>
         </div>
       ) : subscription ? (
-        <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-4 dark:border-slate-700 dark:bg-slate-900">
+        <div className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-white p-5 md:grid-cols-4 dark:border-slate-700 dark:bg-slate-900">
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400">Gói hiện tại</p>
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
@@ -915,20 +988,25 @@ export function MembershipTab() {
 
       {/* Plan Cards Grid */}
       {membershipPlans.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
           Hiện chưa có gói thành viên khả dụng.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {membershipPlans.map((plan) => (
-            <PlanCard
-              key={`${plan.id}-${plan.backendId}`}
-              plan={plan}
-              isSelected={selectedPlan === plan.id}
-              isCurrent={currentPlanName === plan.id}
-              onSelect={handleSelectPlan}
-            />
-          ))}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {membershipPlans.map((plan) => {
+            const planRank = getPlanRank(plan.id);
+            const isDowngrade = currentPlanRank >= 0 && planRank < currentPlanRank;
+            return (
+              <PlanCard
+                key={`${plan.id}-${plan.backendId}`}
+                plan={plan}
+                isSelected={selectedPlan === plan.id}
+                isCurrent={currentPlanId === plan.id}
+                isDowngrade={isDowngrade}
+                onSelect={handleSelectPlan}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -968,7 +1046,7 @@ export function MembershipTab() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+          <div className="flex flex-col gap-4">
             {/* Left: Bank transfer info */}
             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5 dark:border-slate-700 dark:bg-slate-800">
               <div className="mb-4 flex items-center gap-2">

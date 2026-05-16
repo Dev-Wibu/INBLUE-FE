@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  Camera,
   ChevronRight,
   ExternalLink,
   FileText,
@@ -27,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MAJOR_OPTIONS, getMajorLabel } from "@/constants/majors";
-import { formatDate } from "@/lib/formatting";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
 
 import type { UserProfileData } from "./types";
@@ -91,226 +89,214 @@ export function ProfileTab({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Avatar Section */}
-      <div className="flex flex-col items-center gap-4 rounded-2xl bg-white p-8 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:bg-slate-900 dark:shadow-slate-900/50">
-        <div className="relative">
-          <div className="flex h-32 w-32 items-center justify-center rounded-full bg-[#DCEEFF] dark:bg-[#0047AB]/30">
-            {avatarPreview || userProfile.avatar ? (
-              <img
-                src={avatarPreview || userProfile.avatar || ""}
-                alt={userProfile.name}
-                className="h-full w-full rounded-full object-cover"
-              />
+      {/* User Info Section */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col gap-4 border-b border-slate-200 bg-linear-to-r from-[#EAF2FF] via-white to-white p-6 dark:border-slate-800 dark:from-slate-800 dark:via-slate-900 dark:to-slate-900">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
+                  Thông tin cá nhân
+                </h3>
+                <Button variant="ghost" size="icon" onClick={onRefreshData} title="Làm mới dữ liệu">
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Cập nhật hồ sơ cơ bản để hồ sơ hiển thị rõ ràng hơn.
+              </p>
+            </div>
+            {!isEditing ? (
+              <Button variant="outline" size="sm" onClick={onStartEdit}>
+                Chỉnh sửa
+              </Button>
             ) : (
-              <User className="h-16 w-16 text-[#0047AB] dark:text-[#66B2FF]" />
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={onCancelEdit} disabled={isSaving}>
+                  <X className="mr-1 h-4 w-4" />
+                  Hủy
+                </Button>
+                <Button size="sm" onClick={onSaveProfile} disabled={isSaving}>
+                  <Save className="mr-1 h-4 w-4" />
+                  {isSaving ? "Đang lưu..." : "Lưu"}
+                </Button>
+              </div>
             )}
           </div>
-          {isEditing && (
-            <>
-              <input
-                type="file"
-                id="avatar-upload"
-                accept="image/*"
-                onChange={onAvatarChange}
-                className="hidden"
-              />
-              <label
-                htmlFor="avatar-upload"
-                className="absolute right-0 bottom-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[#0047AB] text-white hover:bg-[#005B9A]">
-                <Camera className="h-5 w-5" />
-              </label>
-              {avatarPreview && (
-                <button
-                  onClick={onClearAvatar}
-                  className="absolute bottom-0 left-0 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600">
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </>
-          )}
-        </div>
-        <div className="text-center">
-          <h2 className="font-['Inter'] text-2xl font-bold text-zinc-800 dark:text-white">
-            {userProfile.name}
-          </h2>
-          <p className="font-['Inter'] text-sm font-medium text-[#0047AB] dark:text-[#66B2FF]">
-            {userProfile.email}
-          </p>
-          {userProfile.createdAt && (
-            <p className="font-['Inter'] text-base font-normal text-gray-500 dark:text-slate-400">
-              Thành viên từ {formatDate(userProfile.createdAt)}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* User Info Section */}
-      <div className="rounded-2xl bg-white p-6 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:bg-slate-900 dark:shadow-slate-900/50">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
-              Thông tin cá nhân
-            </h3>
-            <Button variant="ghost" size="icon" onClick={onRefreshData} title="Làm mới dữ liệu">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
-          {!isEditing ? (
-            <Button variant="outline" size="sm" onClick={onStartEdit}>
-              Chỉnh sửa
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={onCancelEdit} disabled={isSaving}>
-                <X className="mr-1 h-4 w-4" />
-                Hủy
-              </Button>
-              <Button size="sm" onClick={onSaveProfile} disabled={isSaving}>
-                <Save className="mr-1 h-4 w-4" />
-                {isSaving ? "Đang lưu..." : "Lưu"}
-              </Button>
-            </div>
-          )}
         </div>
 
-        <div className="flex flex-col gap-4">
-          {/* Full Name - Editable */}
-          <div className="flex items-center gap-4 rounded-lg bg-gray-50 p-4 dark:bg-slate-800">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#DCEEFF] dark:bg-[#0047AB]/30">
-              <User className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
-            </div>
-            <div className="flex-1">
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Họ và tên</Label>
-              {isEditing ? (
-                <Input
-                  value={formData.name || ""}
-                  onChange={(e) => onInputChange("name", e.target.value)}
-                  className="mt-1"
-                />
-              ) : (
-                <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                  {userProfile.name}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Email - LOCKED (read-only) */}
-          <div className="flex items-center gap-4 rounded-lg bg-gray-50 p-4 opacity-75 dark:bg-slate-800">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-              <Mail className="h-5 w-5 text-blue-500" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm text-gray-500 dark:text-slate-400">Email</Label>
-                <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-slate-400">
-                  Không thể thay đổi
-                </span>
+        <div className="p-6">
+          <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+            <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center shadow-sm dark:border-slate-800 dark:bg-slate-800/60">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white/70 dark:bg-slate-900 dark:ring-slate-900/80">
+                {avatarPreview || userProfile.avatar ? (
+                  <img
+                    src={avatarPreview || userProfile.avatar || ""}
+                    alt={userProfile.name}
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                ) : (
+                  <User className="h-9 w-9 text-[#0047AB] dark:text-[#66B2FF]" />
+                )}
               </div>
-              <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                {userProfile.email}
+              <p className="mt-4 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Ảnh đại diện
               </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">PNG hoặc JPG, tối đa 5MB</p>
+              {isEditing && (
+                <>
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    accept="image/*"
+                    onChange={onAvatarChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className="mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                    Đổi ảnh
+                  </label>
+                  {avatarPreview && (
+                    <button
+                      type="button"
+                      onClick={onClearAvatar}
+                      className="mt-2 text-xs font-medium text-rose-500 hover:text-rose-600">
+                      Gỡ ảnh đã chọn
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <User className="h-4 w-4" />
+                  <Label className="text-sm">Họ và tên</Label>
+                </div>
+                {isEditing ? (
+                  <Input
+                    value={formData.name || ""}
+                    onChange={(e) => onInputChange("name", e.target.value)}
+                    className="mt-2"
+                  />
+                ) : (
+                  <p className="mt-2 text-base font-semibold text-slate-900 dark:text-white">
+                    {userProfile.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <Mail className="h-4 w-4" />
+                  <Label className="text-sm">Email</Label>
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    Không thể thay đổi
+                  </span>
+                </div>
+                <p className="mt-2 text-base font-semibold text-slate-900 dark:text-white">
+                  {userProfile.email}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Education & Career Section */}
-      <div className="rounded-2xl bg-white p-6 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:bg-slate-900 dark:shadow-slate-900/50">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
         <h3 className="mb-4 font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
           Học vấn & Mục tiêu nghề nghiệp
         </h3>
 
-        <div className="flex flex-col gap-4">
+        <div className="grid gap-4 lg:grid-cols-2">
           {/* University - Editable */}
-          <div className="flex items-center gap-4 rounded-lg bg-gray-50 p-4 dark:bg-slate-800">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
-              <GraduationCap className="h-5 w-5 text-indigo-500" />
+          <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+              <GraduationCap className="h-4 w-4" />
+              <Label className="text-sm">Trường đại học</Label>
             </div>
-            <div className="flex-1">
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Trường đại học</Label>
-              {isEditing ? (
-                <Input
-                  value={formData.university || ""}
-                  onChange={(e) => onInputChange("university", e.target.value)}
-                  className="mt-1"
-                  placeholder="VD: Đại học Bách Khoa Hà Nội"
-                />
-              ) : (
-                <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                  {userProfile.university || "Chưa cập nhật"}
-                </p>
-              )}
-            </div>
+            {isEditing ? (
+              <Input
+                value={formData.university || ""}
+                onChange={(e) => onInputChange("university", e.target.value)}
+                className="mt-2"
+                placeholder="VD: Đại học Bách Khoa Hà Nội"
+              />
+            ) : (
+              <p className="mt-2 text-base font-semibold text-slate-900 dark:text-white">
+                {userProfile.university || "Chưa cập nhật"}
+              </p>
+            )}
           </div>
 
           {/* Major - Editable */}
-          <div className="flex items-center gap-4 rounded-lg bg-gray-50 p-4 dark:bg-slate-800">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-100 dark:bg-cyan-900/30">
-              <BookOpen className="h-5 w-5 text-cyan-500" />
+          <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+              <BookOpen className="h-4 w-4" />
+              <Label className="text-sm">Chuyên ngành</Label>
             </div>
-            <div className="flex-1">
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Chuyên ngành</Label>
-              {isEditing ? (
-                <Select
-                  value={formData.major || ""}
-                  onValueChange={(value) => onInputChange("major", value)}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Chọn chuyên ngành" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MAJOR_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                  {getMajorLabel(userProfile.major || "") || "Chưa cập nhật"}
-                </p>
-              )}
-            </div>
+            {isEditing ? (
+              <Select
+                value={formData.major || ""}
+                onValueChange={(value) => onInputChange("major", value)}>
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Chọn chuyên ngành" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MAJOR_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="mt-2 text-base font-semibold text-slate-900 dark:text-white">
+                {getMajorLabel(userProfile.major || "") || "Chưa cập nhật"}
+              </p>
+            )}
           </div>
 
           {/* CV Upload - Dedicated Modal (PDF only) */}
-          <div className="flex items-center gap-4 rounded-lg bg-gray-50 p-4 dark:bg-slate-800">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-              <FileText className="h-5 w-5 text-green-500" />
-            </div>
-            <div className="flex-1">
-              <Label className="text-sm text-gray-500 dark:text-slate-400">CV / Resume</Label>
-              <div className="mt-1 flex items-center gap-3">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 lg:col-span-2 dark:border-slate-800 dark:bg-slate-800/60">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <FileText className="h-4 w-4" />
+                  <Label className="text-sm">CV / Resume</Label>
+                </div>
                 {userProfile.cvUrl ? (
                   <button
                     type="button"
                     onClick={handlePreviewCurrentCv}
-                    className="flex items-center gap-2 bg-transparent p-0 font-['Inter'] text-base font-medium text-green-600 hover:underline dark:text-green-400">
+                    className="mt-2 flex items-center gap-2 bg-transparent p-0 text-sm font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
                     <ExternalLink className="h-4 w-4" />
                     Xem CV hiện tại
                   </button>
                 ) : (
-                  <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
+                  <p className="mt-2 text-sm font-semibold text-slate-800 dark:text-white">
                     Chưa có CV
                   </p>
                 )}
-                <Button variant="outline" size="sm" onClick={onOpenCvModal} className="ml-auto">
-                  <Upload className="mr-2 h-4 w-4" />
-                  {userProfile.cvUrl ? "Cập nhật CV" : "Upload CV"}
-                </Button>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Chỉ chấp nhận file PDF, tối đa 10MB
+                </p>
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                Chỉ chấp nhận file PDF, tối đa 10MB
-              </p>
+              <Button variant="outline" size="sm" onClick={onOpenCvModal}>
+                <Upload className="mr-2 h-4 w-4" />
+                {userProfile.cvUrl ? "Cập nhật CV" : "Upload CV"}
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Change Password Section */}
-      <div className="rounded-2xl bg-white p-6 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:bg-slate-900 dark:shadow-slate-900/50">
-        <div className="flex items-center justify-between">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
               <Lock className="h-5 w-5 text-amber-500" />

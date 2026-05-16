@@ -44,7 +44,7 @@ const TransactionTypeIcon = ({ type }: { type: "deposit" | "payment" | "refund" 
 
 export function TransactionHistoryTab({ transactions, isLoading }: TransactionHistoryTabProps) {
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:bg-slate-900 dark:shadow-slate-900/50">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-5">
         <h3 className="font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
           Lịch sử giao dịch
@@ -55,9 +55,9 @@ export function TransactionHistoryTab({ transactions, isLoading }: TransactionHi
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-6">
+        <div className="flex items-center justify-center gap-2 py-6 text-sm text-slate-500 dark:text-slate-400">
           <Spinner size="md" />
-          Đang tải lịch sử giao dịch...
+          <span>Đang tải lịch sử giao dịch...</span>
         </div>
       ) : transactions.length === 0 ? (
         <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
