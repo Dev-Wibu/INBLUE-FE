@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthLayout } from "@/components/layouts";
 import { ProtectedRoute, PublicOnlyRoute, SessionExpiryGuard } from "@/components/shared";
+import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AdminDashboardPage } from "@/pages/Admin";
@@ -80,6 +81,19 @@ function QueryHashRedirect({ to }: { to: string }) {
   return <Navigate to={`${to}${search}${hash}`} replace />;
 }
 
+function PublicScrollToTopButton() {
+  const { pathname } = useLocation();
+  const isDashboardRoute = ["/user", "/mentor", "/admin", "/staff"].some((prefix) =>
+    pathname.startsWith(prefix)
+  );
+
+  if (isDashboardRoute) {
+    return null;
+  }
+
+  return <ScrollToTopButton threshold={600} />;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -87,6 +101,7 @@ function App() {
         <Toaster />
         <BrowserRouter>
           <SessionExpiryGuard />
+          <PublicScrollToTopButton />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<HomePage />} />
