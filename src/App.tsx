@@ -277,6 +277,7 @@ function App() {
             {/* Admin Management routes */}
             <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/companies/:companyId" element={<AdminDashboardPage />} />
             </Route>
             {/* Redirect routes for backward compatibility - redirect /admin/* to /admin?tab=* */}
             <Route
@@ -315,6 +316,10 @@ function App() {
             />
             <Route path="/admin/quizSets" element={<Navigate to="/admin?tab=quizSets" replace />} />
             <Route path="/admin/posts" element={<Navigate to="/admin?tab=posts" replace />} />
+            <Route
+              path="/admin/companies"
+              element={<Navigate to="/admin?tab=companies" replace />}
+            />
             <Route
               path="/admin/candidateProfiles"
               element={<Navigate to="/admin?tab=candidateProfiles" replace />}
