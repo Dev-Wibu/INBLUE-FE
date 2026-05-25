@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import {
   Bot,
+  Briefcase,
   FileQuestion,
   GraduationCap,
   History,
@@ -32,6 +33,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 
 import { AccountPage } from "../Account";
 import { AIInterviewListPage } from "../AIInterview";
+import { ApplicationHistoryPage } from "../ApplicationHistory";
 import { UserFeedbackListPage } from "../Feedback";
 import { HomeFeedPage } from "../HomeFeed";
 import { MentorListPage } from "../MentorList/MentorListPage";
@@ -47,6 +49,7 @@ type TabType =
   | "mentors"
   | "mockInterview"
   | "interviewHistory"
+  | "applicationHistory"
   | "feedback"
   | "aiInterview"
   | "practice"
@@ -61,6 +64,7 @@ const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
   { type: "mentors", label: "Danh sách Mentor" },
   { type: "mockInterview", label: "Phỏng vấn với Mentor" },
   { type: "interviewHistory", label: "Lịch sử phỏng vấn" },
+  { type: "applicationHistory", label: "Lịch sử ứng tuyển" },
   { type: "feedback", label: "Đánh giá từ Mentor" },
   { type: "aiInterview", label: "Phỏng vấn với AI" },
   { type: "practice", label: "Bộ luyện tập" },
@@ -95,6 +99,12 @@ const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
         icon: History,
         label: "Lịch sử phỏng vấn",
         color: "text-orange-600",
+      },
+      {
+        type: "applicationHistory",
+        icon: Briefcase,
+        label: "Lịch sử ứng tuyển",
+        color: "text-teal-600",
       },
       {
         type: "feedback",
@@ -227,6 +237,8 @@ export function UserDashboardPage() {
         return <MockInterviewListPage />;
       case "interviewHistory":
         return <SessionHistoryPage />;
+      case "applicationHistory":
+        return <ApplicationHistoryPage />;
       case "feedback":
         return <UserFeedbackListPage />;
       case "aiInterview":
