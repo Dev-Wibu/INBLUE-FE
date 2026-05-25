@@ -605,6 +605,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/question-banks/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generateQuestion_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/practice-sets/create-full": {
         parameters: {
             query?: never;
@@ -2802,6 +2818,17 @@ export interface components {
             quizId?: number;
             items?: components["schemas"]["QuizItemResponse"][];
         };
+        QuestionGenerateRequest: {
+            categoryName?: string;
+            difficulty?: string;
+            topics?: string[];
+            additionalPrompt?: string;
+        };
+        QuestionGenerateResponse: {
+            questionText?: string;
+            options?: string[];
+            correctAnswer?: string;
+        };
         PracticeQuestionRequest: {
             title?: string;
             content?: string;
@@ -3390,19 +3417,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
+            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3557,9 +3584,9 @@ export interface components {
             useAt?: string;
         };
         ApplicationContext: {
+            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
@@ -3661,18 +3688,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            errorOnUndeclaredNamespace?: string;
-            trimDirectiveWhitespaces?: string;
-            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
+            errorOnELNotFound?: string;
             deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
             elIgnored?: string;
             isXml?: string;
-            urlPatterns?: string[];
             defaultContentType?: string;
+            urlPatterns?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -3707,18 +3734,18 @@ export interface components {
             };
         };
         ServletContext: {
-            serverInfo?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
+            serverInfo?: string;
             /** Format: int32 */
             effectiveMinorVersion?: number;
             servletContextName?: string;
@@ -5372,6 +5399,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["QuestionBank"];
+                };
+            };
+        };
+    };
+    generateQuestion_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionGenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionGenerateResponse"];
                 };
             };
         };

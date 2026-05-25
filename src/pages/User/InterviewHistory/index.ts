@@ -1,1 +1,0 @@
-export { InterviewHistoryPage } from "./InterviewHistoryPage";
