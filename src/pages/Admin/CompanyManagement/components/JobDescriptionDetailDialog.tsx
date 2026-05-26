@@ -12,19 +12,11 @@ import {
 
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate } from "@/lib/formatting";
-import {
-  getJobDescriptionLevelBadge,
-  getJobDescriptionStatusBadge,
-} from "@/lib/status-utils";
+import { getJobDescriptionLevelBadge, getJobDescriptionStatusBadge } from "@/lib/status-utils";
 import { cn } from "@/lib/utils";
 
 import type { JobDescription } from "../types";
@@ -59,12 +51,14 @@ interface InfoRowProps {
 function InfoRow({ icon, label, value }: InfoRowProps) {
   return (
     <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <div className="bg-primary/10 text-primary mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
         {icon}
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-        <div className="mt-0.5 text-sm font-medium text-foreground">{value}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+          {label}
+        </p>
+        <div className="text-foreground mt-0.5 text-sm font-medium">{value}</div>
       </div>
     </div>
   );
@@ -79,12 +73,12 @@ interface ContentSectionProps {
 function ContentSection({ icon, title, content }: ContentSectionProps) {
   if (!content) return null;
   return (
-    <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+    <div className="border-border/50 bg-card/30 rounded-xl border p-4">
       <div className="mb-2 flex items-center gap-2">
         <span className="text-primary">{icon}</span>
-        <h4 className="text-sm font-bold text-foreground">{title}</h4>
+        <h4 className="text-foreground text-sm font-bold">{title}</h4>
       </div>
-      <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{content}</p>
+      <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
     </div>
   );
 }
@@ -109,11 +103,11 @@ export function JobDescriptionDetailDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl overflow-hidden p-0">
         {/* Header with gradient */}
-        <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background px-6 pt-6 pb-4">
+        <div className="from-primary/10 via-primary/5 to-background relative bg-gradient-to-br px-6 pt-6 pb-4">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-foreground pr-8">
+            <DialogTitle className="text-foreground pr-8 text-xl font-bold">
               {job.title || "Chi tiết JD"}
             </DialogTitle>
           </DialogHeader>
@@ -178,10 +172,10 @@ export function JobDescriptionDetailDialog({
 
             {/* Rounds section */}
             {rounds.length > 0 && (
-              <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+              <div className="border-border/50 bg-card/30 rounded-xl border p-4">
                 <div className="mb-3 flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-primary" />
-                  <h4 className="text-sm font-bold text-foreground">
+                  <Briefcase className="text-primary h-4 w-4" />
+                  <h4 className="text-foreground text-sm font-bold">
                     Vòng phỏng vấn ({rounds.length} vòng)
                   </h4>
                 </div>
@@ -189,25 +183,25 @@ export function JobDescriptionDetailDialog({
                   {rounds.map((round, idx) => (
                     <div
                       key={round.id ?? idx}
-                      className="flex items-start gap-3 rounded-lg bg-background/50 p-3"
-                    >
+                      className="bg-background/50 flex items-start gap-3 rounded-lg p-3">
                       <div
                         className={cn(
                           "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
                           "bg-primary"
-                        )}
-                      >
+                        )}>
                         {round.roundNumber ?? idx + 1}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-foreground text-sm font-semibold">
                           {round.name || `Vòng ${round.roundNumber ?? idx + 1}`}
                         </p>
                         {round.description && (
-                          <p className="mt-0.5 text-xs text-muted-foreground">{round.description}</p>
+                          <p className="text-muted-foreground mt-0.5 text-xs">
+                            {round.description}
+                          </p>
                         )}
                       </div>
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-muted-foreground/40" />
+                      <CheckCircle2 className="text-muted-foreground/40 h-4 w-4 shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -218,7 +212,7 @@ export function JobDescriptionDetailDialog({
 
         {/* Footer actions */}
         {onEdit && (
-          <div className="flex justify-end gap-3 border-t border-border/50 bg-card/30 px-6 py-4">
+          <div className="border-border/50 bg-card/30 flex justify-end gap-3 border-t px-6 py-4">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Đóng
             </Button>
@@ -227,8 +221,7 @@ export function JobDescriptionDetailDialog({
                 onEdit(job);
                 onOpenChange(false);
               }}
-              className="gap-2"
-            >
+              className="gap-2">
               Chỉnh sửa JD
             </Button>
           </div>

@@ -164,7 +164,12 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
     try {
       const nextStatus = isCompanyActive(company) ? "INACTIVE" : "ACTIVE";
       const response = await companyManager.update({
-        data: { id: company.id, name: company.name, description: company.description, status: nextStatus },
+        data: {
+          id: company.id,
+          name: company.name,
+          description: company.description,
+          status: nextStatus,
+        },
       });
       if (response.success) {
         const action = nextStatus === "INACTIVE" ? "vô hiệu hóa" : "kích hoạt";
@@ -346,7 +351,9 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
   if (!Number.isFinite(companyId) || companyId <= 0) {
     return (
       <div className="flex h-full items-center justify-center p-8">
-        <div className="text-center text-muted-foreground">ID công ty không hợp lệ. Vui lòng chọn lại.</div>
+        <div className="text-muted-foreground text-center">
+          ID công ty không hợp lệ. Vui lòng chọn lại.
+        </div>
       </div>
     );
   }
@@ -364,11 +371,11 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
     jobDescriptions.length > 0 ? Math.round((activeJobCount / jobDescriptions.length) * 100) : 0;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       {/* Banner + Header */}
       <div className="relative shrink-0">
         {/* Banner image or gradient placeholder */}
-        <div className="h-40 w-full overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-background">
+        <div className="from-primary/20 via-primary/10 to-background h-40 w-full overflow-hidden bg-gradient-to-br">
           {company?.bannerUrl && (
             <img
               src={company.bannerUrl}
@@ -385,16 +392,15 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         <Button
           variant="ghost"
           size="sm"
-          className="absolute left-3 top-3 flex items-center gap-1 rounded-lg bg-background/80 backdrop-blur-sm text-sm md:hidden"
-          onClick={() => navigate("/admin/companies?tab=companies")}
-        >
+          className="bg-background/80 absolute top-3 left-3 flex items-center gap-1 rounded-lg text-sm backdrop-blur-sm md:hidden"
+          onClick={() => navigate("/admin/companies?tab=companies")}>
           <ChevronLeft className="h-4 w-4" />
           Quay lại
         </Button>
 
         {/* Logo overlapping banner */}
         <div className="absolute bottom-0 left-6 translate-y-1/2">
-          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border-2 border-background bg-white shadow-md">
+          <div className="border-background flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border-2 bg-white shadow-md">
             {company?.logoUrl ? (
               <img
                 src={company.logoUrl}
@@ -405,7 +411,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
                 }}
               />
             ) : (
-              <span className="text-2xl font-bold text-muted-foreground">
+              <span className="text-muted-foreground text-2xl font-bold">
                 {company?.name?.charAt(0).toUpperCase() || "?"}
               </span>
             )}
@@ -414,26 +420,26 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       </div>
 
       {/* Info + Actions row */}
-      <div className="flex flex-col gap-4 px-6 pb-6 pt-12 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 px-6 pt-12 pb-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">{company?.name || "Chi tiết công ty"}</h2>
+          <h2 className="text-foreground text-2xl font-bold">
+            {company?.name || "Chi tiết công ty"}
+          </h2>
           {company?.description && (
-            <p className="mt-1 max-w-xl text-sm text-muted-foreground">{company.description}</p>
+            <p className="text-muted-foreground mt-1 max-w-xl text-sm">{company.description}</p>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <Button
             variant="outline"
-            className="flex items-center gap-2 rounded-xl bg-card hover:bg-card/80"
-            onClick={handleEditCompany}
-          >
+            className="bg-card hover:bg-card/80 flex items-center gap-2 rounded-xl"
+            onClick={handleEditCompany}>
             <Edit className="h-4 w-4" />
             Chỉnh sửa
           </Button>
           <Button
             className="flex items-center gap-2 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-95"
-            onClick={handleCreateJob}
-          >
+            onClick={handleCreateJob}>
             <Plus className="h-4 w-4" />
             Tạo JD mới
           </Button>
@@ -442,18 +448,18 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 px-6 pb-6">
-        <div className="flex flex-col gap-1 rounded-xl border border-border/50 bg-card/40 p-4 shadow-sm">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-4 shadow-sm">
+          <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             Tổng số JD
           </span>
-          <span className="text-3xl font-bold text-foreground">{jobDescriptions.length}</span>
+          <span className="text-foreground text-3xl font-bold">{jobDescriptions.length}</span>
         </div>
-        <div className="flex flex-col gap-1 rounded-xl border border-border/50 bg-card/40 p-4 shadow-sm">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-4 shadow-sm">
+          <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             JD Đang hoạt động
           </span>
           <div className="flex items-end justify-between">
-            <span className="text-3xl font-bold text-foreground">{activeJobCount}</span>
+            <span className="text-foreground text-3xl font-bold">{activeJobCount}</span>
             {jobDescriptions.length > 0 && (
               <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-bold text-green-600 dark:text-green-400">
                 {activeJobPercentage}%
@@ -464,18 +470,17 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       </div>
 
       {/* JD Table */}
-      <div className="mx-6 mb-6 flex flex-1 flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/40 shadow-sm">
-        <div className="flex flex-col items-start justify-between gap-4 border-b border-border/50 bg-card/50 p-4 md:flex-row md:items-center">
-          <h3 className="text-lg font-bold text-foreground">Danh sách JD</h3>
+      <div className="border-border/50 bg-card/40 mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm">
+        <div className="border-border/50 bg-card/50 flex shrink-0 flex-col items-start justify-between gap-4 border-b p-4 md:flex-row md:items-center">
+          <h3 className="text-foreground text-lg font-bold">Danh sách JD</h3>
           <div className="flex items-center gap-3">
             <Select
               value={statusFilter}
               onValueChange={(value) => {
                 setStatusFilter(value as JobStatusFilter);
                 pagination.goToFirstPage();
-              }}
-            >
-              <SelectTrigger className="w-[160px] rounded-lg border-none bg-background/50">
+              }}>
+              <SelectTrigger className="bg-background/50 w-[160px] rounded-lg border-none">
                 <SelectValue placeholder="Tất cả trạng thái" />
               </SelectTrigger>
               <SelectContent>
@@ -492,9 +497,8 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
               onValueChange={(value) => {
                 setLevelFilter(value as JobLevelFilter);
                 pagination.goToFirstPage();
-              }}
-            >
-              <SelectTrigger className="w-[150px] rounded-lg border-none bg-background/50">
+              }}>
+              <SelectTrigger className="bg-background/50 w-[150px] rounded-lg border-none">
                 <SelectValue placeholder="Tất cả cấp độ" />
               </SelectTrigger>
               <SelectContent>
@@ -509,7 +513,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex min-h-0 flex-1 overflow-auto">
           {isJobLoading ? (
             <div className="p-8">
               <SpinnerBlock size="lg" label="Đang tải danh sách JD..." />
@@ -526,7 +530,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         </div>
 
         {sortedData.length > 0 && !isJobLoading && (
-          <div className="border-t border-border/50 bg-card/30 p-4">
+          <div className="border-border/50 bg-card/30 shrink-0 border-t p-4">
             <PaginationControl
               pagination={pagination}
               onPageSizeChange={(nextPageSize) => {
