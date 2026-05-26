@@ -1,5 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,31 +17,20 @@ export function CompanyManagementPage() {
   const { companyId } = useParams();
   const detailCompanyId = companyId ? Number(companyId) : null;
 
-  const [companies, setCompanies] = useState<Company[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [formData, setFormData] = useState<CompanyFormData>({});
 
-  const loadCompanies = useCallback(async () => {
-    try {
+  const { data: companies = [], refetch: refetchCompanies } = useQuery({
+    queryKey: ["admin", "companies"],
+    queryFn: async () => {
       const response = await companyManager.getAll();
       if (response.success) {
-        setCompanies(extractDataArray<Company>(response));
-      } else {
-        toast.error(response.error || "Không thể tải danh sách công ty");
+        return extractDataArray<Company>(response);
       }
-    } catch (error) {
-      console.error("Error loading companies:", error);
-      toast.error("Không thể tải danh sách công ty");
-    }
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-    if (mounted) void loadCompanies();
-    return () => {
-      mounted = false;
-    };
-  }, [loadCompanies]);
+      toast.error(response.error || "Không thể tải danh sách công ty");
+      return [];
+    },
+  });
 
   const handleCreate = () => {
     setFormData({ status: "ACTIVE" });
@@ -61,7 +51,7 @@ export function CompanyManagementPage() {
       if (response.success) {
         toast.success("Đã tạo công ty thành công");
         setIsCreateDialogOpen(false);
-        void loadCompanies();
+        void refetchCompanies();
         if (response.data?.id) {
           navigate(`/admin/companies/${response.data.id}?tab=companies`);
         }
@@ -77,7 +67,7 @@ export function CompanyManagementPage() {
   const hasDetail = !!detailCompanyId;
 
   return (
-    <div className="border-border/50 bg-background/50 flex h-[calc(100vh-6rem)] w-full overflow-hidden rounded-2xl border shadow-sm">
+    <div className="border-border/50 bg-background/50 flex h-[calc(100vh-6rem)] min-h-0 w-full overflow-hidden rounded-2xl border shadow-sm">
       {/*
        * Responsive layout:
        * - Mobile: Sidebar visible only when no company is selected. Detail visible only when company is selected.
@@ -92,10 +82,14 @@ export function CompanyManagementPage() {
       />
 
       <main
-        className={`flex-1 overflow-y-auto ${hasDetail ? "flex" : "hidden md:flex"} flex-col`}
-      >
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${
+          hasDetail ? "flex" : "hidden md:flex"
+        }`}>
         {detailCompanyId ? (
-          <CompanyDetailView companyId={detailCompanyId} onCompanyUpdate={loadCompanies} />
+          <CompanyDetailView
+            companyId={detailCompanyId}
+            onCompanyUpdate={() => void refetchCompanies()}
+          />
         ) : (
           <div className="flex h-full flex-col items-center justify-center p-8 text-center">
             <div className="bg-primary/10 mb-4 flex h-20 w-20 items-center justify-center rounded-full">

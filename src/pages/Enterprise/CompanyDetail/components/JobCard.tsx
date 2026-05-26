@@ -3,12 +3,13 @@
  * Individual job listing card with 3D hover effect
  */
 
-import type { JobDescription } from "@/services/company.manager";
 import { Clock, DollarSign, Eye, MapPin, Users } from "lucide-react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { JobDescription } from "@/services/company.manager";
 
 interface JobCardProps {
   job: JobDescription;
@@ -78,7 +79,12 @@ export function JobCard({ job }: JobCardProps) {
   const isHot = job.level === "MIDDLE";
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-slate-200/50 bg-white p-5 shadow-sm transition-all hover:shadow-xl sm:p-6 dark:border-slate-700/50 dark:bg-slate-900">
+    <div
+      ref={cardRef}
+      style={{ transformStyle: "preserve-3d" }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="group relative overflow-hidden rounded-2xl border border-slate-200/50 bg-white p-5 shadow-sm transition-all hover:shadow-xl sm:p-6 dark:border-slate-700/50 dark:bg-slate-900">
       <div className="flex flex-col gap-4">
         {/* Top Row: Title + Badges */}
         <div className="flex flex-col gap-2">

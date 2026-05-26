@@ -12,10 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/formatting";
-import {
-  getJobDescriptionLevelBadge,
-  getJobDescriptionStatusBadge,
-} from "@/lib/status-utils";
+import { getJobDescriptionLevelBadge, getJobDescriptionStatusBadge } from "@/lib/status-utils";
 import { cn } from "@/lib/utils";
 
 import type { JobDescription } from "../types";
@@ -66,14 +63,14 @@ export function JobDescriptionTable({
   if (jobDescriptions.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
-        <Search className="h-12 w-12 text-muted-foreground/40" />
-        <p className="text-lg text-muted-foreground">Chưa có JD nào</p>
+        <Search className="text-muted-foreground/40 h-12 w-12" />
+        <p className="text-muted-foreground text-lg">Chưa có JD nào</p>
       </div>
     );
   }
 
   return (
-    <Table>
+    <Table className="min-w-[980px] table-fixed">
       <TableHeader>
         <TableRow>
           <TableHead className="w-16">
@@ -128,30 +125,25 @@ export function JobDescriptionTable({
         {jobDescriptions.map((job) => (
           <TableRow
             key={job.id}
-            className={cn(
-              onView && "cursor-pointer transition-colors hover:bg-muted/50"
-            )}
-            onClick={() => onView?.(job)}
-          >
-            <TableCell className="font-medium text-muted-foreground">{job.id}</TableCell>
-            <TableCell className="font-semibold text-foreground">{job.title || "—"}</TableCell>
+            className={cn(onView && "hover:bg-muted/50 cursor-pointer transition-colors")}
+            onClick={() => onView?.(job)}>
+            <TableCell className="text-muted-foreground font-medium">{job.id}</TableCell>
+            <TableCell className="text-foreground truncate font-semibold">
+              {job.title || "—"}
+            </TableCell>
             <TableCell onClick={(e) => e.stopPropagation()}>
-              {job.level ? (
-                <StatusBadge {...getJobDescriptionLevelBadge(job.level)} />
-              ) : (
-                "—"
-              )}
+              {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
             </TableCell>
             <TableCell onClick={(e) => e.stopPropagation()}>
               <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
             </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
+            <TableCell className="text-muted-foreground text-sm">
               {formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
             </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
+            <TableCell className="text-muted-foreground text-sm">
               {formatDate(job.deadlineAt)}
             </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
+            <TableCell className="text-muted-foreground text-sm">
               {formatDate(job.updatedAt)}
             </TableCell>
             <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -162,8 +154,7 @@ export function JobDescriptionTable({
                     size="sm"
                     onClick={() => onView(job)}
                     className="h-8 w-8 p-0 hover:bg-sky-50 dark:hover:bg-sky-950"
-                    title="Xem chi tiết"
-                  >
+                    title="Xem chi tiết">
                     <Eye className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                   </Button>
                 )}
@@ -172,8 +163,7 @@ export function JobDescriptionTable({
                   size="sm"
                   onClick={() => onEdit(job)}
                   className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-950"
-                  title="Chỉnh sửa"
-                >
+                  title="Chỉnh sửa">
                   <Edit className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </Button>
                 <Button
@@ -181,8 +171,7 @@ export function JobDescriptionTable({
                   size="sm"
                   onClick={() => onDelete(job)}
                   className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-950"
-                  title="Đóng JD"
-                >
+                  title="Đóng JD">
                   <Power className="h-4 w-4 text-red-600 dark:text-red-400" />
                 </Button>
               </div>

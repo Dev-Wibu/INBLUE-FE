@@ -37,7 +37,11 @@ export function CompanyListSidebar({
   }, [companies, searchQuery]);
 
   return (
-    <aside className={cn("border-border bg-background/50 w-80 flex-col border-r p-4", className)}>
+    <aside
+      className={cn(
+        "border-border bg-background/50 flex min-h-0 w-80 flex-col border-r p-4",
+        className
+      )}>
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-muted-foreground text-sm font-bold tracking-wider uppercase">
           Danh sách đối tác
@@ -62,7 +66,7 @@ export function CompanyListSidebar({
         />
       </div>
 
-      <ScrollArea className="-mx-2 flex-1 px-2">
+      <ScrollArea className="-mx-2 min-h-0 flex-1 px-2">
         <div className="space-y-3 pb-4">
           {filteredCompanies.map((company) => {
             const isSelected = company.id === selectedCompanyId;

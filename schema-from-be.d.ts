@@ -2157,7 +2157,7 @@ export interface components {
             practiceSetName?: string;
             objective?: string;
             /** @enum {string} */
-            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE" | "SENIOR";
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: date-time */
             startDate?: string;
             /** @enum {string} */
@@ -2297,7 +2297,7 @@ export interface components {
             requirements?: string;
             benefits?: string;
             /** @enum {string} */
-            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE" | "SENIOR";
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: double */
             salaryMin?: number;
             /** Format: double */
@@ -2316,7 +2316,7 @@ export interface components {
             requirements?: string;
             benefits?: string;
             /** @enum {string} */
-            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE" | "SENIOR";
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: double */
             salaryMin?: number;
             /** Format: double */
@@ -2750,7 +2750,7 @@ export interface components {
             requirements?: string;
             benefits?: string;
             /** @enum {string} */
-            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE" | "SENIOR";
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: double */
             salaryMin?: number;
             /** Format: double */
@@ -2908,7 +2908,7 @@ export interface components {
             practiceSetName?: string;
             objective?: string;
             /** @enum {string} */
-            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE" | "SENIOR";
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
             /** Format: date-time */
             startDate?: string;
             /** Format: int32 */
@@ -2989,11 +2989,11 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
             unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
@@ -3237,8 +3237,8 @@ export interface components {
             defaultProfiles?: string[];
         };
         FilterRegistration: {
-            urlPatternMappings?: string[];
             servletNameMappings?: string[];
+            urlPatternMappings?: string[];
             initParameters?: {
                 [key: string]: string;
             };
@@ -3256,19 +3256,19 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             scriptingInvalid?: string;
             includePreludes?: string[];
-            includeCodas?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            elIgnored?: string;
-            isXml?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            includeCodas?: string[];
+            elIgnored?: string;
+            isXml?: string;
             trimDirectiveWhitespaces?: string;
             defaultContentType?: string;
             urlPatterns?: string[];
@@ -3306,14 +3306,31 @@ export interface components {
             };
         };
         ServletContext: {
-            initParameterNames?: unknown;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             /** Format: int32 */
             sessionTimeout?: number;
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            attributeNames?: unknown;
+            initParameterNames?: unknown;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            requestCharacterEncoding?: string;
+            responseCharacterEncoding?: string;
+            /** Format: int32 */
+            effectiveMajorVersion?: number;
+            /** Format: int32 */
+            effectiveMinorVersion?: number;
+            servletContextName?: string;
+            servletRegistrations?: {
+                [key: string]: components["schemas"]["ServletRegistration"];
+            };
+            filterRegistrations?: {
+                [key: string]: components["schemas"]["FilterRegistration"];
+            };
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            serverInfo?: string;
             contextPath?: string;
+            attributeNames?: unknown;
             classLoader?: {
                 name?: string;
                 registeredAsParallelCapable?: boolean;
@@ -3378,23 +3395,6 @@ export interface components {
             majorVersion?: number;
             /** Format: int32 */
             minorVersion?: number;
-            requestCharacterEncoding?: string;
-            responseCharacterEncoding?: string;
-            /** Format: int32 */
-            effectiveMajorVersion?: number;
-            /** Format: int32 */
-            effectiveMinorVersion?: number;
-            servletContextName?: string;
-            servletRegistrations?: {
-                [key: string]: components["schemas"]["ServletRegistration"];
-            };
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            filterRegistrations?: {
-                [key: string]: components["schemas"]["FilterRegistration"];
-            };
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
         };
         ServletRegistration: {
             runAsRole?: string;
@@ -3406,10 +3406,10 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
-            secure?: boolean;
             /** Format: int32 */
             maxAge?: number;
             path?: string;
+            secure?: boolean;
             domain?: string;
             httpOnly?: boolean;
             name?: string;
@@ -6528,7 +6528,7 @@ export interface operations {
             query?: {
                 titleKeyword?: string;
                 status?: "OPEN" | "CLOSED" | "DRAFT";
-                level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE" | "SENIOR";
+                level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
                 salaryMin?: number;
                 salaryMax?: number;
             };

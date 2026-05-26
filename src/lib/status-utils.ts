@@ -229,4 +229,3 @@ export function getJobDescriptionLevelBadge(level?: string): StatusBadgeConfig {
       return { label: level || "Không rõ", variant: "outline" };
   }
 }
-
