@@ -321,8 +321,14 @@ export function DashboardOverviewPage() {
 
   const incomeRecords = useMemo(() => incomeResponse?.data ?? [], [incomeResponse?.data]);
   const walletRecords = useMemo(() => transactionResponse?.data ?? [], [transactionResponse?.data]);
-  const usageLogs = useMemo(() => usageResponse?.data ?? [], [usageResponse?.data]);
-  const userUsageRecords = useMemo(() => userUsageResponse?.data ?? [], [userUsageResponse?.data]);
+  const usageLogs = useMemo(() => {
+    const raw = usageResponse?.data;
+    return Array.isArray(raw) ? raw : [];
+  }, [usageResponse?.data]);
+  const userUsageRecords = useMemo(() => {
+    const raw = userUsageResponse?.data;
+    return Array.isArray(raw) ? raw : [];
+  }, [userUsageResponse?.data]);
 
   const membershipUsageChartData = useMemo(
     () => buildMembershipUsageChartData(userUsageRecords),
