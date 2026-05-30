@@ -51,6 +51,7 @@ export interface SettingsState {
 const DEFAULT_SETTINGS: Omit<
   SettingsState,
   | "setFontSize"
+  | "setLanguage"
   | "setSidebarBehavior"
   | "setMuteSoundNotification"
   | "setMuteToastNotification"
