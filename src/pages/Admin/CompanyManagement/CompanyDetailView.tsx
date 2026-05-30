@@ -371,11 +371,11 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
     jobDescriptions.length > 0 ? Math.round((activeJobCount / jobDescriptions.length) * 100) : 0;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex flex-col">
       {/* Banner + Header */}
       <div className="relative shrink-0">
         {/* Banner image or gradient placeholder */}
-        <div className="from-primary/20 via-primary/10 to-background h-40 w-full overflow-hidden bg-gradient-to-br">
+        <div className="from-primary/20 via-primary/10 to-background h-28 w-full overflow-hidden bg-gradient-to-br">
           {company?.bannerUrl && (
             <img
               src={company.bannerUrl}
@@ -420,7 +420,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       </div>
 
       {/* Info + Actions row */}
-      <div className="flex flex-col gap-4 px-6 pt-12 pb-6 md:flex-row md:items-end md:justify-between">
+      <div className="flex flex-col gap-4 px-6 pt-8 pb-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-foreground text-2xl font-bold">
             {company?.name || "Chi tiết công ty"}
@@ -447,14 +447,14 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 px-6 pb-6">
-        <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-4 shadow-sm">
+      <div className="grid grid-cols-2 gap-4 px-6 pb-4">
+        <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-3 shadow-sm">
           <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             Tổng số JD
           </span>
           <span className="text-foreground text-3xl font-bold">{jobDescriptions.length}</span>
         </div>
-        <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-4 shadow-sm">
+        <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-3 shadow-sm">
           <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             JD Đang hoạt động
           </span>
@@ -470,8 +470,8 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       </div>
 
       {/* JD Table */}
-      <div className="border-border/50 bg-card/40 mx-6 mb-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm">
-        <div className="border-border/50 bg-card/50 flex shrink-0 flex-col items-start justify-between gap-4 border-b p-4 md:flex-row md:items-center">
+      <div className="border-border/50 bg-card/40 mx-6 mb-4 flex flex-col rounded-2xl border shadow-sm">
+        <div className="border-border/50 bg-card/50 flex flex-col items-start justify-between gap-4 border-b p-4 md:flex-row md:items-center">
           <h3 className="text-foreground text-lg font-bold">Danh sách JD</h3>
           <div className="flex items-center gap-3">
             <Select
@@ -513,7 +513,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 overflow-auto">
+        <div className="overflow-x-auto">
           {isJobLoading ? (
             <div className="p-8">
               <SpinnerBlock size="lg" label="Đang tải danh sách JD..." />
@@ -530,7 +530,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         </div>
 
         {sortedData.length > 0 && !isJobLoading && (
-          <div className="border-border/50 bg-card/30 shrink-0 border-t p-4">
+          <div className="border-border/50 bg-card/30 border-t p-4">
             <PaginationControl
               pagination={pagination}
               onPageSizeChange={(nextPageSize) => {
