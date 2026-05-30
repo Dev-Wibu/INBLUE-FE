@@ -530,7 +530,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         </div>
 
         {sortedData.length > 0 && !isJobLoading && (
-          <div className="border-border/50 bg-card/30 border-t p-4">
+          <div className="border-border/50 bg-card/30 border-t pr-4 pl-4">
             <PaginationControl
               pagination={pagination}
               onPageSizeChange={(nextPageSize) => {
