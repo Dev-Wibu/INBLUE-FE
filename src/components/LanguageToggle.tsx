@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Language, useSettingsStore } from "@/stores/settingsStore";
+import { type Language, useSettingsStore } from "@/stores/settingsStore";
 import { Globe } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
