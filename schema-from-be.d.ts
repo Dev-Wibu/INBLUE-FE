@@ -805,6 +805,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/application-details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submitApplicationDetail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/interview/start/{sessionKey}": {
         parameters: {
             query?: never;
@@ -2018,6 +2034,7 @@ export interface components {
             passThreshold?: number;
             configData?: components["schemas"]["RoundConfig"];
             isDeleted?: boolean;
+            isAuto?: boolean;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
@@ -2733,6 +2750,20 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        SubmissionData: {
+            textContent?: string;
+            /** Format: binary */
+            file?: string;
+            quizAnswers?: string[];
+        };
+        SubmitRequest: {
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int64 */
+            roundId?: number;
+            submissionData?: components["schemas"]["SubmissionData"];
+        };
+        SubmissionResult: unknown;
         UserResponse: {
             /** Format: int32 */
             id?: number;
@@ -2863,19 +2894,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3130,22 +3161,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            elIgnored?: string;
+            isXml?: string;
+            defaultContentType?: string;
+            urlPatterns?: string[];
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            errorOnELNotFound?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            elIgnored?: string;
-            isXml?: string;
-            urlPatterns?: string[];
-            defaultContentType?: string;
-            trimDirectiveWhitespaces?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -3180,6 +3211,11 @@ export interface components {
             };
         };
         ServletContext: {
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -3190,19 +3226,14 @@ export interface components {
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -3294,8 +3325,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
     };
     responses: never;
@@ -5007,6 +5038,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["Application"];
+                };
+            };
+        };
+    };
+    submitApplicationDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SubmissionResult"];
                 };
             };
         };
