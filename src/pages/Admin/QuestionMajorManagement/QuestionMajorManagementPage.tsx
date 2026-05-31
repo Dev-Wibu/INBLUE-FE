@@ -1,36 +1,32 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Plus, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SpinnerBlock } from "@/components/ui/spinner";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { extractDataArray } from "@/lib/utils";
 import { questionMajorManager } from "@/services";
+import { Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 import {
   DeleteQuestionMajorDialog,
   QuestionMajorFormDialog,
   QuestionMajorTable,
 } from "./components";
 import type { Major, MajorFormData } from "./types";
-
 type SortableMajor = Major & {
   idSortValue: number;
   nameSortValue: string;
   descriptionSortValue: string;
 };
-
 export function QuestionMajorManagementPage() {
+  const { t } = useTranslation();
   const [majors, setMajors] = useState<Major[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -38,32 +34,33 @@ export function QuestionMajorManagementPage() {
   const [formData, setFormData] = useState<Partial<MajorFormData>>({});
 
   // Load majors using the question major manager service
-  const loadMajors = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const response = await questionMajorManager.getAll();
-      if (response.success) {
-        setMajors(extractDataArray<Major>(response));
-      } else {
-        toast.error(response.error || "Không thể tải danh sách chuyên ngành");
-      }
-    } catch (error) {
-      console.error("Error loading majors:", error);
-      toast.error("Không thể tải danh sách chuyên ngành");
-    } finally {
+  const loadMajors = useCallback(
+    async (showReloading = false) => {
       if (showReloading) {
-        setIsReloading(false);
+        setIsReloading(true);
       } else {
-        setIsInitialLoading(false);
+        setIsInitialLoading(true);
       }
-    }
-  }, []);
-
+      try {
+        const response = await questionMajorManager.getAll();
+        if (response.success) {
+          setMajors(extractDataArray<Major>(response));
+        } else {
+          toast.error(response.error || t("adminQuestionmajormanagement.unableToLoadMajorList"));
+        }
+      } catch (error) {
+        console.error("Error loading majors:", error);
+        toast.error(t("adminQuestionmajormanagement.unableToLoadMajorList"));
+      } finally {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void loadMajors();
   }, [loadMajors]);
@@ -79,7 +76,6 @@ export function QuestionMajorManagementPage() {
       );
     });
   }, [majors, searchQuery]);
-
   const sortableMajors = useMemo<SortableMajor[]>(() => {
     return filteredMajors.map((major) => ({
       ...major,
@@ -88,7 +84,6 @@ export function QuestionMajorManagementPage() {
       descriptionSortValue: major.description?.toLowerCase() || "",
     }));
   }, [filteredMajors]);
-
   const { sortedData, getSortProps } = useSortable(sortableMajors, {
     defaultSort: {
       key: "idSortValue",
@@ -108,17 +103,14 @@ export function QuestionMajorManagementPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
     [pagination.endIndex, pagination.startIndex, sortedData]
   );
-
   const handleCreate = () => {
     setFormData({});
     setIsCreateDialogOpen(true);
   };
-
   const handleEdit = (major: Major) => {
     setSelectedMajor(major);
     setFormData({
@@ -127,73 +119,66 @@ export function QuestionMajorManagementPage() {
     });
     setIsEditDialogOpen(true);
   };
-
   const handleDelete = (major: Major) => {
     setSelectedMajor(major);
     setIsDeleteDialogOpen(true);
   };
-
   const handleSubmitCreate = async () => {
     try {
       const response = await questionMajorManager.create(formData);
       if (response.success) {
-        toast.success("Đã tạo chuyên ngành thành công");
+        toast.success(t("adminQuestionmajormanagement.successfullyCreatedMajor"));
         setIsCreateDialogOpen(false);
         void loadMajors(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể tạo chuyên ngành");
+        toast.error(response.error || t("adminQuestionmajormanagement.cannotCreateMajor"));
       }
     } catch (error) {
       console.error("Error creating major:", error);
-      toast.error("Không thể tạo chuyên ngành");
+      toast.error(t("adminQuestionmajormanagement.cannotCreateMajor"));
     }
   };
-
   const handleSubmitEdit = async () => {
     if (!selectedMajor?.id) return;
-
     try {
       const response = await questionMajorManager.update(selectedMajor.id, formData);
       if (response.success) {
-        toast.success("Đã cập nhật chuyên ngành thành công");
+        toast.success(t("adminQuestionmajormanagement.majorUpdatedSuccessfully"));
         setIsEditDialogOpen(false);
         void loadMajors(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể cập nhật chuyên ngành");
+        toast.error(response.error || t("adminQuestionmajormanagement.unableToUpdateMajors"));
       }
     } catch (error) {
       console.error("Error updating major:", error);
-      toast.error("Không thể cập nhật chuyên ngành");
+      toast.error(t("adminQuestionmajormanagement.unableToUpdateMajors"));
     }
   };
-
   const handleConfirmDelete = async () => {
     if (!selectedMajor?.id) return;
-
     try {
       const response = await questionMajorManager.delete(selectedMajor.id);
       if (response.success) {
-        toast.success("Đã xóa chuyên ngành thành công");
+        toast.success(t("adminQuestionmajormanagement.deletedMajorSuccessfully"));
         setIsDeleteDialogOpen(false);
         void loadMajors(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể xóa chuyên ngành");
+        toast.error(response.error || t("adminQuestionmajormanagement.majorsCannotBeDeleted"));
       }
     } catch (error) {
       console.error("Error deleting major:", error);
-      toast.error("Không thể xóa chuyên ngành");
+      toast.error(t("adminQuestionmajormanagement.majorsCannotBeDeleted"));
     }
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản Lý Chuyên Ngành
+          {t("adminQuestionmajormanagement.specializedManagement")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Quản lý các chuyên ngành cho bộ câu hỏi phỏng vấn
+          {t("adminQuestionmajormanagement.manageMajorsForInterviewQuestions")}
         </p>
       </div>
 
@@ -204,7 +189,7 @@ export function QuestionMajorManagementPage() {
           <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
           <Input
             type="text"
-            placeholder="Tìm kiếm theo tên hoặc mô tả..."
+            placeholder={t("common.searchByNameOrDescription")}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -222,19 +207,19 @@ export function QuestionMajorManagementPage() {
                 setSearchQuery("");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
           <ReloadButton
             onReload={() => loadMajors(true)}
             isLoading={isReloading}
-            tooltip="Tải lại danh sách chuyên ngành"
+            tooltip={t("adminQuestionmajormanagement.reloadTheListOfMajors")}
             showLabel
             hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Thêm Chuyên Ngành
+            {t("adminQuestionmajormanagement.addSpecialization")}
           </Button>
         </div>
       </div>
@@ -242,7 +227,7 @@ export function QuestionMajorManagementPage() {
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isInitialLoading ? (
-          <SpinnerBlock size="lg" label="Đang tải danh sách chuyên ngành..." />
+          <SpinnerBlock size="lg" label={t("adminQuestionmajormanagement.loadingListOfMajors")} />
         ) : (
           <>
             <QuestionMajorTable
@@ -271,7 +256,7 @@ export function QuestionMajorManagementPage() {
                     setSearchQuery("");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -286,9 +271,9 @@ export function QuestionMajorManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitCreate}
-        title="Thêm Chuyên Ngành Mới"
-        description="Điền thông tin để tạo chuyên ngành mới."
-        submitLabel="Tạo mới"
+        title={t("adminQuestionmajormanagement.addNewSpecialization")}
+        description={t("adminQuestionmajormanagement.fillInTheInformationTo")}
+        submitLabel={t("adminQuestionmajormanagement.createNew")}
       />
 
       {/* Edit Dialog */}
@@ -298,9 +283,9 @@ export function QuestionMajorManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitEdit}
-        title="Chỉnh Sửa Chuyên Ngành"
-        description="Cập nhật thông tin chuyên ngành."
-        submitLabel="Lưu thay đổi"
+        title={t("adminQuestionmajormanagement.specializedEditing")}
+        description={t("adminQuestionmajormanagement.updateSpecializedInformation")}
+        submitLabel={t("common.saveChanges")}
       />
 
       {/* Delete Confirmation Dialog */}

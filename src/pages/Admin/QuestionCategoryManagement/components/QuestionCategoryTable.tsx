@@ -1,5 +1,3 @@
-import { Edit, ExternalLink, Power, Search } from "lucide-react";
-
 import { SortButton, type SortDirection } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,16 +9,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { openUrlInNewTab } from "@/lib/media-file-utils";
-
+import { Edit, ExternalLink, Power, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { QuestionCategory } from "../types";
-
 type QuestionCategorySortKey = "idSortValue" | "nameSortValue" | "descriptionSortValue";
-
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
-
 interface QuestionCategoryTableProps {
   categories: QuestionCategory[];
   onEdit: (category: QuestionCategory) => void;
@@ -39,22 +35,23 @@ function isValidHttpUrl(urlString: string): boolean {
     return false;
   }
 }
-
 export function QuestionCategoryTable({
   categories,
   onEdit,
   onDelete,
   getSortProps,
 }: QuestionCategoryTableProps) {
+  const { t } = useTranslation();
   if (categories.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
         <Search className="h-12 w-12 text-gray-400" />
-        <p className="font-['Inter'] text-lg text-gray-500">Không tìm thấy danh mục câu hỏi nào</p>
+        <p className="font-['Inter'] text-lg text-gray-500">
+          {t("adminQuestioncategorymanagement.noQuestionCategoriesFound")}
+        </p>
       </div>
     );
   }
-
   return (
     <Table>
       <TableHeader>
@@ -64,20 +61,24 @@ export function QuestionCategoryTable({
           </TableHead>
           <TableHead>
             {getSortProps ? (
-              <SortButton {...getSortProps("nameSortValue")}>Tên danh mục</SortButton>
+              <SortButton {...getSortProps("nameSortValue")}>
+                {t("adminQuestioncategorymanagement.categoryName")}
+              </SortButton>
             ) : (
-              "Tên danh mục"
+              t("adminQuestioncategorymanagement.categoryName")
             )}
           </TableHead>
           <TableHead>
             {getSortProps ? (
-              <SortButton {...getSortProps("descriptionSortValue")}>Mô tả</SortButton>
+              <SortButton {...getSortProps("descriptionSortValue")}>
+                {t("common.describe")}
+              </SortButton>
             ) : (
-              "Mô tả"
+              t("common.describe")
             )}
           </TableHead>
-          <TableHead>URL Hướng dẫn</TableHead>
-          <TableHead className="w-24 text-right">Thao tác</TableHead>
+          <TableHead>{t("adminQuestioncategorymanagement.instructionsUrl")}</TableHead>
+          <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -103,7 +104,7 @@ export function QuestionCategoryTable({
                 </a>
               ) : category.urlTutorial ? (
                 <span className="text-muted-foreground text-xs" title={category.urlTutorial}>
-                  URL không hợp lệ
+                  {t("adminQuestioncategorymanagement.invalidUrl")}
                 </span>
               ) : (
                 <span className="text-muted-foreground">-</span>
@@ -116,7 +117,7 @@ export function QuestionCategoryTable({
                   size="sm"
                   onClick={() => onEdit(category)}
                   className="h-8 w-8 p-0 hover:bg-blue-50"
-                  title="Chỉnh sửa">
+                  title={t("general.edit")}>
                   <Edit className="h-4 w-4 text-blue-600" />
                 </Button>
                 <Button
@@ -124,7 +125,7 @@ export function QuestionCategoryTable({
                   size="sm"
                   onClick={() => onDelete(category)}
                   className="h-8 w-8 p-0 hover:bg-red-50"
-                  title="Xóa">
+                  title={t("general.delete")}>
                   <Power className="h-4 w-4 text-red-600" />
                 </Button>
               </div>

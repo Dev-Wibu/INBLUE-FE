@@ -1,28 +1,26 @@
-import { Bot, Camera, CameraOff, GripVertical, LoaderCircle, Mic, MicOff } from "lucide-react";
-import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-
 import logo from "@/assets/icon.svg";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
+import { Bot, Camera, CameraOff, GripVertical, LoaderCircle, Mic, MicOff } from "lucide-react";
+import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { CameraPreviewState } from "./useUserCameraPreview";
-
+const t = i18n.t.bind(i18n);
 const CAMERA_STATE_LABELS: Record<CameraPreviewState, string> = {
-  idle: "Camera đang tắt",
-  requesting: "Đang xin quyền camera",
-  granted: "Camera đang bật",
-  denied: "Quyền camera bị từ chối",
-  unsupported: "Không hỗ trợ camera",
-  error: "Lỗi camera",
+  idle: t("userAiinterview.cameraIsOff"),
+  requesting: t("userAiinterview.askingForCameraPermission"),
+  granted: t("userAiinterview.cameraIsOn"),
+  denied: t("userAiinterview.cameraPermissionDenied"),
+  unsupported: t("userAiinterview.cameraIsNotSupported"),
+  error: t("userAiinterview.cameraError"),
 };
-
 const CAMERA_PANEL_MIN_WIDTH = 240;
 const CAMERA_PANEL_MAX_WIDTH = 520;
 const CAMERA_PANEL_DEFAULT_WIDTH = 360;
 const CAMERA_PANEL_COLLAPSED_HEIGHT = 100;
-
 interface InterviewStageProps {
   phaseName: string;
   questionIndex: number;
@@ -41,7 +39,6 @@ interface InterviewStageProps {
   onToggleListening: () => void;
   onToggleCamera: () => void;
 }
-
 const resolveStageStatus = (params: {
   interviewFinished: boolean;
   sessionExpiredMidway: boolean;
@@ -50,28 +47,22 @@ const resolveStageStatus = (params: {
   isListening: boolean;
 }): string => {
   if (params.sessionExpiredMidway) {
-    return "Phiên đã hết hạn, vui lòng tạo buổi phỏng vấn mới";
+    return t("userAiinterview.sessionHasExpiredPleaseCreate");
   }
-
   if (params.interviewFinished) {
-    return "Phỏng vấn hoàn tất, bạn có thể xem kết quả chi tiết";
+    return t("userAiinterview.interviewCompletedYouCanSee");
   }
-
   if (params.isEvaluating) {
-    return "AI đang đánh giá phản hồi của bạn";
+    return t("userAiinterview.aiIsEvaluatingYourResponses");
   }
-
   if (params.isSubmitting) {
-    return "AI đang xử lý câu trả lời vừa gửi";
+    return t("userAiinterview.aiIsProcessingTheAnswer");
   }
-
   if (params.isListening) {
-    return "Đang thu âm câu trả lời của bạn";
+    return t("userAiinterview.recordingYourAnswer");
   }
-
-  return "Nhấn mic để bắt đầu nói";
+  return t("userAiinterview.pressTheMicToStart");
 };
-
 export function InterviewStage({
   phaseName,
   questionIndex,
@@ -90,48 +81,41 @@ export function InterviewStage({
   onToggleListening,
   onToggleCamera,
 }: InterviewStageProps) {
+  const { t } = useTranslation();
   const [cameraPanelWidth, setCameraPanelWidth] = useState(CAMERA_PANEL_DEFAULT_WIDTH);
   const resizeStartRef = useRef({
     pointerId: -1,
     startX: 0,
     startWidth: CAMERA_PANEL_DEFAULT_WIDTH,
   });
-
   const clampPanelWidth = useCallback((nextWidth: number) => {
     if (typeof window === "undefined") {
       return Math.min(CAMERA_PANEL_MAX_WIDTH, Math.max(CAMERA_PANEL_MIN_WIDTH, nextWidth));
     }
-
     const viewportMax = Math.min(
       CAMERA_PANEL_MAX_WIDTH,
       Math.max(CAMERA_PANEL_MIN_WIDTH, window.innerWidth - 24)
     );
     return Math.min(viewportMax, Math.max(CAMERA_PANEL_MIN_WIDTH, nextWidth));
   }, []);
-
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
-
     const handleWindowResize = () => {
       setCameraPanelWidth((prevWidth) => clampPanelWidth(prevWidth));
     };
-
     handleWindowResize();
     window.addEventListener("resize", handleWindowResize);
-
     return () => {
       window.removeEventListener("resize", handleWindowResize);
     };
   }, [clampPanelWidth]);
-
   useEffect(() => {
     return () => {
       document.body.style.userSelect = "";
     };
   }, []);
-
   const handleResizePointerDown = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
       event.preventDefault();
@@ -145,32 +129,27 @@ export function InterviewStage({
     },
     [cameraPanelWidth]
   );
-
   const handleResizePointerMove = useCallback(
     (event: ReactPointerEvent<HTMLButtonElement>) => {
       if (resizeStartRef.current.pointerId !== event.pointerId) {
         return;
       }
-
       const deltaX = resizeStartRef.current.startX - event.clientX;
       const nextWidth = resizeStartRef.current.startWidth + deltaX;
       setCameraPanelWidth(clampPanelWidth(nextWidth));
     },
     [clampPanelWidth]
   );
-
   const handleResizePointerUp = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
     if (resizeStartRef.current.pointerId !== event.pointerId) {
       return;
     }
-
     resizeStartRef.current.pointerId = -1;
     document.body.style.userSelect = "";
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
   }, []);
-
   const stageStatus = resolveStageStatus({
     interviewFinished,
     sessionExpiredMidway,
@@ -178,11 +157,9 @@ export function InterviewStage({
     isSubmitting,
     isListening,
   });
-
   const canShowPulse = !interviewFinished && (isListening || isSubmitting || isEvaluating);
   const canToggleMic = isSpeechSupported && (isListening || canUseSpeechInput);
   const isCameraCollapsed = cameraState === "idle";
-
   return (
     <section className="relative flex min-h-80 flex-1 items-center justify-center overflow-hidden border-b border-slate-800 bg-slate-950 px-4 py-6 md:border-r md:border-b-0 md:px-6">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.22),transparent_56%),radial-gradient(circle_at_bottom,rgba(14,116,144,0.35),rgba(2,6,23,1)_64%)]" />
@@ -198,7 +175,7 @@ export function InterviewStage({
           <Badge
             variant="outline"
             className="rounded-full border-slate-500 bg-slate-900/80 text-slate-100">
-            Câu {questionIndex}/{totalQuestions}
+            {t("common.sentence")} {questionIndex}/{totalQuestions}
           </Badge>
         )}
       </div>
@@ -227,7 +204,7 @@ export function InterviewStage({
         {isListening && (
           <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/50 bg-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-200">
             <Mic className="h-3.5 w-3.5" />
-            Đang ghi âm
+            {t("userAiinterview.recording")}
           </div>
         )}
       </div>
@@ -281,14 +258,14 @@ export function InterviewStage({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 text-[11px] text-slate-200">
               <Bot className="h-3.5 w-3.5 text-cyan-300" />
-              <span>Camera của bạn</span>
+              <span>{t("userAiinterview.yourCamera")}</span>
             </div>
             <Button
               type="button"
               size="sm"
               onClick={onToggleCamera}
               className="h-7 rounded-lg bg-slate-700 px-2 text-[10px] text-white hover:bg-slate-600">
-              {cameraState === "granted" ? "Tắt" : "Bật"}
+              {cameraState === "granted" ? t("userAiinterview.turnOff") : t("common.turnOn")}
             </Button>
           </div>
 
@@ -307,7 +284,7 @@ export function InterviewStage({
 
         <button
           type="button"
-          aria-label="Kéo để thay đổi kích thước khung camera"
+          aria-label={t("userAiinterview.dragToResizeTheCamera")}
           onPointerDown={handleResizePointerDown}
           onPointerMove={handleResizePointerMove}
           onPointerUp={handleResizePointerUp}
@@ -332,12 +309,16 @@ export function InterviewStage({
           <span className="mr-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
             {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </span>
-          {isListening ? "Dừng ghi âm và gửi ngay" : `Bắt đầu nói (${speechLanguageLabel})`}
+          {isListening
+            ? t("userAiinterview.stopRecordingAndSendImmediately")
+            : t("general.startSpeaking", {
+                var_0: speechLanguageLabel,
+              })}
         </Button>
 
         {!isSpeechSupported && (
           <p className="mt-2 text-center text-xs text-slate-300">
-            Trình duyệt hiện tại chưa hỗ trợ nhận diện giọng nói.
+            {t("userAiinterview.currentBrowsersDoNotSupport")}
           </p>
         )}
       </div>

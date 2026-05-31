@@ -1,12 +1,10 @@
+import i18n from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 /**
  * Session History Page
  * Displays user's interview sessions with option to join or write reviews
  */
-
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { ArrowRight, Calendar, Clock, Search, Star, User, Video } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { PaymentMethodDialog } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
@@ -26,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMentorFeedbacksByUser } from "@/hooks/useMentorFeedback";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useMakeSessionPayment, useUserSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import { useWalletBalanceReconciliation } from "@/hooks/useWalletBalanceReconciliation";
@@ -52,22 +50,56 @@ import {
 } from "@/lib/formatting";
 import { sessionManager, transactionManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
+import { ArrowRight, Calendar, Clock, Search, Star, User, Video } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 // Status badge mapping
 const statusMap: Record<
   string,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline"; color: string }
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+    color: string;
+  }
 > = {
-  DRAFT: { label: "Chờ duyệt", variant: "secondary", color: "bg-amber-100 text-amber-700" },
-  SCHEDULED: { label: "Sắp diễn ra", variant: "secondary", color: "bg-blue-100 text-blue-700" },
-  PAID: { label: "Đã thanh toán", variant: "secondary", color: "bg-emerald-100 text-emerald-700" },
-  ONGOING: { label: "Đang diễn ra", variant: "default", color: "bg-green-100 text-green-700" },
-  COMPLETED: { label: "Hoàn thành", variant: "outline", color: "bg-slate-100 text-slate-600" },
-  REJECTED: { label: "Bị từ chối", variant: "destructive", color: "bg-red-100 text-red-600" },
-  CANCELED: { label: "Đã hủy", variant: "destructive", color: "bg-red-100 text-red-600" },
+  DRAFT: {
+    label: t("common.waitingForApproval"),
+    variant: "secondary",
+    color: "bg-amber-100 text-amber-700",
+  },
+  SCHEDULED: {
+    label: t("common.comingSoon"),
+    variant: "secondary",
+    color: "bg-blue-100 text-blue-700",
+  },
+  PAID: {
+    label: t("common.paid"),
+    variant: "secondary",
+    color: "bg-emerald-100 text-emerald-700",
+  },
+  ONGOING: {
+    label: t("common.ongoing"),
+    variant: "default",
+    color: "bg-green-100 text-green-700",
+  },
+  COMPLETED: {
+    label: t("general.completed"),
+    variant: "outline",
+    color: "bg-slate-100 text-slate-600",
+  },
+  REJECTED: {
+    label: t("common.rejected"),
+    variant: "destructive",
+    color: "bg-red-100 text-red-600",
+  },
+  CANCELED: {
+    label: t("common.canceled"),
+    variant: "destructive",
+    color: "bg-red-100 text-red-600",
+  },
 };
-
 type SessionStatusFilter =
   | "all"
   | "DRAFT"
@@ -77,7 +109,6 @@ type SessionStatusFilter =
   | "COMPLETED"
   | "REJECTED"
   | "CANCELED";
-
 interface SessionCardProps {
   session: Session;
   hasFeedback: boolean;
@@ -86,7 +117,6 @@ interface SessionCardProps {
   onWriteFeedback: () => void;
   onPaySession: () => void;
 }
-
 function SessionCard({
   session,
   hasFeedback,
@@ -102,7 +132,6 @@ function SessionCard({
   const isPaid = session.status === "PAID";
   const isDraft = session.status === "DRAFT";
   const isRejected = session.status === "REJECTED";
-
   return (
     <Card className="transition-all hover:shadow-md">
       <CardHeader className="pb-3">
@@ -113,7 +142,10 @@ function SessionCard({
             </div>
             <div>
               <CardTitle className="text-base">
-                {session.roomName || `Phiên #${session.id}`}
+                {session.roomName ||
+                  t("common.sessionVar0", {
+                    var_0: session.id,
+                  })}
               </CardTitle>
               <CardDescription className="flex items-center gap-2">
                 <User className="h-3 w-3" />
@@ -129,13 +161,13 @@ function SessionCard({
         {isDraft && (
           <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
             <Clock className="mr-1 inline h-3.5 w-3.5" />
-            Yêu cầu đang chờ mentor hoặc Staff/Admin xét duyệt
+            {t("common.theRequestIsAwaitingReviewByTheMe")}
           </div>
         )}
         {/* REJECTED banner */}
         {isRejected && (
           <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            Yêu cầu đã bị từ chối. Bạn có thể đặt lịch lại.
+            {t("common.theRequestWasDeniedYouCanReschedu")}
           </div>
         )}
 
@@ -143,21 +175,22 @@ function SessionCard({
           {session.joinTime && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Giờ hẹn: {formatDateTime(session.joinTime)}
+              {t("common.appointmentTime")} {formatDateTime(session.joinTime)}
             </span>
           )}
           {session.startTime1 && (
             <>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                Bắt đầu: {formatTime(treatZuluAsVietnamLocal(session.startTime1))}
+                {t("common.begin")} {formatTime(treatZuluAsVietnamLocal(session.startTime1))}
               </span>
             </>
           )}
           {!session.joinTime && !session.startTime1 && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Phiên #{session.id}
+              {t("common.session2")}
+              {session.id}
             </span>
           )}
           {typeof session.totalPrice === "number" && session.totalPrice > 0 && (
@@ -174,27 +207,27 @@ function SessionCard({
               onClick={onPaySession}
               disabled={isPaying}
               className="gap-1 bg-emerald-600 hover:bg-emerald-700">
-              {isPaying ? "Đang xử lý..." : "Thanh toán"}
+              {isPaying ? t("common.processing") : t("common.pay")}
             </Button>
           )}
           {isPaid && (
             <Button variant="secondary" size="sm" disabled className="gap-1">
-              Đã thanh toán
+              {t("common.paid")}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={onViewDetails}>
-            Xem chi tiết
+            {t("common.seeDetails")}
           </Button>
           {isCompleted && !hasFeedback && (
             <Button size="sm" onClick={onWriteFeedback} className="gap-1">
               <Star className="h-4 w-4" />
-              Viết phản hồi
+              {t("common.writeFeedback")}
             </Button>
           )}
           {isCompleted && hasFeedback && (
             <Button variant="secondary" size="sm" onClick={onWriteFeedback} className="gap-1">
               <Star className="h-4 w-4 text-[#FFD700]" />
-              Sửa phản hồi
+              {t("common.editResponse")}
             </Button>
           )}
           {isRejected && (
@@ -204,7 +237,7 @@ function SessionCard({
               onClick={() => navigate("/user/mock-interview/schedule")}
               className="gap-1 border-blue-200 text-blue-600 hover:bg-blue-50">
               <ArrowRight className="h-4 w-4" />
-              Đặt lịch lại
+              {t("common.reschedule")}
             </Button>
           )}
         </div>
@@ -212,14 +245,13 @@ function SessionCard({
     </Card>
   );
 }
-
 export function SessionHistoryPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<SessionStatusFilter>("all");
-
   const [payingSessionId, setPayingSessionId] = useState<number | null>(null);
   const [isPreparingPaymentDialog, setIsPreparingPaymentDialog] = useState(false);
   const [targetSessionForPayment, setTargetSessionForPayment] = useState<Session | null>(null);
@@ -240,47 +272,41 @@ export function SessionHistoryPage() {
     isRefetching: feedbacksRefetching,
     refetch: refetchFeedbacks,
   } = useMentorFeedbacksByUser(user?.id || 0);
-
   const isLoading = sessionsLoading || feedbacksLoading;
-
   const syncSessionPaidStatus = useCallback(
     async (
       session: Session,
       transactionCode?: string,
-      options?: { silent?: boolean }
+      options?: {
+        silent?: boolean;
+      }
     ): Promise<boolean> => {
       if (!session.id || !user?.id || paidStatusSyncInFlightRef.current) {
         return false;
       }
-
       paidStatusSyncInFlightRef.current = true;
-
       try {
         markPendingSessionPaidStatusSyncRetried(session.id, Number(user.id));
-
         const syncResult = await sessionManager.markSessionAsPaidWithRetry(
           session.id,
           transactionCode,
           3
         );
-
         if (!syncResult.success) {
           return false;
         }
-
         clearPendingSessionPaidStatusSync(session.id, Number(user.id));
         await refetchSessions();
-
         if (!options?.silent) {
-          toast.success("Đã đồng bộ trạng thái phiên sang ĐÃ THANH TOÁN.");
+          toast.success(t("userMockinterview.sessionStatusSyncedToPaid"));
         }
-
         return true;
       } finally {
         paidStatusSyncInFlightRef.current = false;
       }
     },
-    [refetchSessions, user?.id]
+
+    [refetchSessions, user?.id, t]
   );
 
   // Get session IDs where user already submitted mentor feedback
@@ -288,12 +314,17 @@ export function SessionHistoryPage() {
     () =>
       new Set(
         feedbacks
-          .map((f: { session?: { id?: number } }) => f.session?.id)
+          .map(
+            (f: {
+              session?: {
+                id?: number;
+              };
+            }) => f.session?.id
+          )
           .filter((id): id is number => typeof id === "number")
       ),
     [feedbacks]
   );
-
   const filteredSessions = useMemo(
     () =>
       [...sessions]
@@ -307,15 +338,12 @@ export function SessionHistoryPage() {
             statusMap[session.status || "SCHEDULED"]?.label
               ?.toLowerCase()
               .includes(normalizedSearch);
-
           if (!matchesSearch) {
             return false;
           }
-
           if (statusFilter !== "all" && session.status !== statusFilter) {
             return false;
           }
-
           return true;
         })
         .sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
@@ -339,25 +367,20 @@ export function SessionHistoryPage() {
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
-
   const handleViewDetails = (session: Session) => {
     navigate(`/user/mock-interview/history/${session.id}`);
   };
-
   const handleWriteFeedback = (session: Session) => {
     navigate(`/user/mock-interview/history/${session.id}/feedback`);
   };
-
   const handlePaySessionWithPayOS = async (session: Session) => {
     if (!session.id || !user?.id) {
       return;
     }
-
     if (payosPaymentInFlightRef.current) {
-      toast.info("Hệ thống đang tạo liên kết thanh toán. Vui lòng chờ trong giây lát.");
+      toast.info(t("common.theSystemIsGeneratingAPaymentLink"));
       return;
     }
-
     payosPaymentInFlightRef.current = true;
     setPayingSessionId(session.id);
     try {
@@ -370,7 +393,6 @@ export function SessionHistoryPage() {
         typeof session.totalPrice === "number" && session.totalPrice > 0
           ? session.totalPrice
           : undefined;
-
       const createdRecovery = upsertPaymentRecoveryContext({
         orderCode,
         transactionCode,
@@ -381,9 +403,8 @@ export function SessionHistoryPage() {
         sessionId: session.id,
         checkoutUrl: normalizedCheckoutUrl,
         status: "CREATED",
-        note: "Đã tạo checkoutUrl thanh toán phiên phỏng vấn.",
+        note: t("userMockinterview.createdInterviewSessionPaymentCheckouturl"),
       });
-
       addPaymentSupportLog({
         supportCode: createdRecovery.supportCode,
         orderCode,
@@ -394,9 +415,8 @@ export function SessionHistoryPage() {
         paymentPurpose: "MENTOR_INTERVIEW",
         sessionId: session.id,
         status: "CREATED",
-        message: "Đã tạo checkoutUrl thành công cho thanh toán phiên phỏng vấn.",
+        message: t("userMockinterview.successfullyCreatedCheckouturlForInterview"),
       });
-
       const redirectedRecovery = upsertPaymentRecoveryContext({
         supportCode: createdRecovery.supportCode,
         orderCode,
@@ -408,9 +428,8 @@ export function SessionHistoryPage() {
         sessionId: session.id,
         checkoutUrl: normalizedCheckoutUrl,
         status: "REDIRECTED",
-        note: "Đã redirect sang trang thanh toán phiên phỏng vấn.",
+        note: t("userMockinterview.redirectedToInterviewSessionPayment"),
       });
-
       if (!transactionCode) {
         addPaymentSupportLog({
           supportCode: redirectedRecovery.supportCode,
@@ -421,8 +440,7 @@ export function SessionHistoryPage() {
           paymentPurpose: "MENTOR_INTERVIEW",
           sessionId: session.id,
           status: "UNMAPPED_ORDER",
-          message:
-            "Checkout URL phiên phỏng vấn chưa có transactionCode, sẽ fallback orderCode có guard khi callback hủy.",
+          message: t("userMockinterview.checkoutTheInterviewSessionUrl"),
           payload: {
             orderCode: orderCode || null,
             checkoutToken: checkoutToken || null,
@@ -430,7 +448,6 @@ export function SessionHistoryPage() {
           },
         });
       }
-
       savePendingSessionPaymentContext({
         sessionId: session.id,
         userId: Number(user.id),
@@ -447,7 +464,7 @@ export function SessionHistoryPage() {
         paymentPurpose: "MENTOR_INTERVIEW",
         sessionId: session.id,
         status: "CREATE_FAILED",
-        message: "Tạo link thanh toán phiên phỏng vấn thất bại.",
+        message: t("userMockinterview.createALinkToPay"),
         payload: {
           error: error instanceof Error ? error.message : "unknown",
         },
@@ -458,57 +475,47 @@ export function SessionHistoryPage() {
       setPayingSessionId(null);
     }
   };
-
   const handleOpenPaymentMethodDialog = async (session: Session) => {
     if (!session.id || !user?.id || isPreparingPaymentDialog || !!targetSessionForPayment) {
       return;
     }
-
     setIsPreparingPaymentDialog(true);
     try {
       const walletRefresh = await refreshWalletBalance(Number(user.id));
       if (walletRefresh.source === "unavailable") {
-        toast.info("Chưa đồng bộ được số dư ví. Bạn vẫn có thể chọn PayOS để thanh toán.");
+        toast.info(t("userMockinterview.unableToSynchronizeWalletBalance"));
       }
     } catch (error) {
-      console.warn("Không thể đồng bộ số dư ví trước khi mở phương thức thanh toán", error);
-      toast.info("Không thể đồng bộ số dư ví. Bạn vẫn có thể chọn PayOS để thanh toán.");
+      console.warn(t("userMockinterview.unableToSyncWalletBalance"), error);
+      toast.info(t("common.unableToSyncWalletBalanceYouCanS"));
     } finally {
       setIsPreparingPaymentDialog(false);
     }
-
     setTargetSessionForPayment(session);
   };
-
   const handlePaySessionWithWallet = async (session: Session) => {
     if (!session.id || !user?.id) {
       return;
     }
-
     const paymentAmount =
       typeof session.totalPrice === "number" && session.totalPrice > 0 ? session.totalPrice : 0;
     if (paymentAmount <= 0) {
-      toast.error("Phiên phỏng vấn chưa có tổng tiền hợp lệ để thanh toán bằng ví.");
+      toast.error(t("common.theInterviewSessionDoesNotHaveAVa"));
       return;
     }
-
     if (walletPaymentInFlightRef.current) {
-      toast.info("Hệ thống đang xử lý giao dịch ví. Vui lòng chờ trong giây lát.");
+      toast.info(t("common.theSystemIsProcessingTheWalletTran"));
       return;
     }
-
     walletPaymentInFlightRef.current = true;
     setPayingSessionId(session.id);
-
     try {
       const walletRefresh = await refreshWalletBalance(Number(user.id));
       const freshWalletBalance = walletRefresh.walletBalance;
-
       if (typeof freshWalletBalance !== "number") {
-        toast.error("Không thể đồng bộ số dư ví. Vui lòng thử lại hoặc chọn PayOS.");
+        toast.error(t("userMockinterview.unableToSyncWalletBalance2"));
         return;
       }
-
       if (freshWalletBalance < paymentAmount) {
         addPaymentSupportLog({
           userId: Number(user.id),
@@ -516,30 +523,27 @@ export function SessionHistoryPage() {
           paymentPurpose: "MENTOR_INTERVIEW",
           sessionId: session.id,
           status: "CREATE_FAILED",
-          message: "Thanh toán ví thất bại do số dư không đủ từ trang lịch sử phiên.",
+          message: t("userMockinterview.walletPaymentFailedDueTo"),
           payload: {
             walletBalance: freshWalletBalance,
           },
         });
-        toast.error("Số dư ví không đủ. Vui lòng nạp thêm tiền hoặc chọn PayOS.");
+        toast.error(t("common.walletBalanceIsNotEnoughPleaseDep"));
         return;
       }
-
       addPaymentSupportLog({
         userId: Number(user.id),
         amount: paymentAmount,
         paymentPurpose: "MENTOR_INTERVIEW",
         sessionId: session.id,
         status: "CREATED",
-        message: "Bắt đầu thanh toán bằng ví cho phiên phỏng vấn từ trang lịch sử.",
+        message: t("userMockinterview.startPayingWithYourWallet"),
       });
-
       const transferOutResult = await transactionManager.transferOut(
         paymentAmount,
         Number(user.id),
         "MENTOR_INTERVIEW"
       );
-
       if (!transferOutResult.success || !transferOutResult.data) {
         addPaymentSupportLog({
           userId: Number(user.id),
@@ -547,24 +551,21 @@ export function SessionHistoryPage() {
           paymentPurpose: "MENTOR_INTERVIEW",
           sessionId: session.id,
           status: "CREATE_FAILED",
-          message: "Thanh toán ví thất bại từ trang lịch sử phiên.",
+          message: t("userMockinterview.walletPaymentFailedFromSession"),
           payload: {
             error: transferOutResult.error || null,
           },
         });
-        toast.error(transferOutResult.error || "Không thể thanh toán bằng ví lúc này.");
+        toast.error(transferOutResult.error || t("common.paymentByWalletIsNotPossibleAtThi"));
         return;
       }
-
       const transferData = transferOutResult.data;
-
       if (typeof transferData.currentBalance === "number") {
         setUser({
           ...user,
           walletBalance: transferData.currentBalance,
         });
       }
-
       if (transferData.redirectUrl) {
         const normalizedCheckoutUrl = new URL(
           transferData.redirectUrl,
@@ -576,7 +577,6 @@ export function SessionHistoryPage() {
           extractTransactionCodeFromUrl(normalizedCheckoutUrl) ||
           undefined;
         const checkoutToken = extractCheckoutTokenFromUrl(normalizedCheckoutUrl) || undefined;
-
         const createdRecovery = upsertPaymentRecoveryContext({
           orderCode,
           transactionCode,
@@ -589,7 +589,6 @@ export function SessionHistoryPage() {
           status: "CREATED",
           note: "Transfer-out tra ve checkoutUrl, fallback sang flow redirect o trang lich su.",
         });
-
         upsertPaymentRecoveryContext({
           supportCode: createdRecovery.supportCode,
           orderCode,
@@ -601,19 +600,17 @@ export function SessionHistoryPage() {
           sessionId: session.id,
           checkoutUrl: normalizedCheckoutUrl,
           status: "REDIRECTED",
-          note: "Đã redirect sang checkoutUrl được trả về từ transfer-out.",
+          note: t("userMockinterview.redirectedToCheckouturlReturnedFrom"),
         });
-
         savePendingSessionPaymentContext({
           sessionId: session.id,
           userId: Number(user.id),
           checkoutUrl: normalizedCheckoutUrl,
         });
-        toast.success("Đã tạo phiên thanh toán. Đang chuyển hướng...");
+        toast.success(t("userMockinterview.paymentSessionCreatedChangingDirection"));
         window.location.assign(normalizedCheckoutUrl);
         return;
       }
-
       const recoveryContext = upsertPaymentRecoveryContext({
         transactionCode: transferData.transactionCode,
         userId: Number(user.id),
@@ -621,9 +618,8 @@ export function SessionHistoryPage() {
         paymentPurpose: "MENTOR_INTERVIEW",
         sessionId: session.id,
         status: "CALLBACK_SUCCESS",
-        note: transferData.message || "Thanh toán bằng ví thành công.",
+        note: transferData.message || t("common.paymentByWalletSuccessful"),
       });
-
       addPaymentSupportLog({
         supportCode: recoveryContext.supportCode,
         transactionCode: transferData.transactionCode,
@@ -632,31 +628,26 @@ export function SessionHistoryPage() {
         paymentPurpose: "MENTOR_INTERVIEW",
         sessionId: session.id,
         status: "CALLBACK_SUCCESS",
-        message: transferData.message || "Thanh toán bằng ví thành công.",
+        message: transferData.message || t("common.paymentByWalletSuccessful"),
         payload: {
           currentBalance: transferData.currentBalance,
           status: transferData.status,
         },
       });
-
       upsertPendingSessionPaidStatusSync({
         sessionId: session.id,
         userId: Number(user.id),
         transactionCode: transferData.transactionCode,
       });
-
       const synced = await syncSessionPaidStatus(session, transferData.transactionCode, {
         silent: true,
       });
-
       setTargetSessionForPayment(null);
-
       if (synced) {
-        toast.success("Thanh toán bằng ví thành công. Trạng thái phiên đã được cập nhật.");
+        toast.success(t("userMockinterview.paymentByWalletSuccessfulThe"));
         return;
       }
-
-      toast.info("Đã trừ ví thành công. Hệ thống đang tiếp tục đồng bộ trạng thái phiên.");
+      toast.info(t("userMockinterview.walletDeductedSuccessfullyTheSystem"));
       navigate(`/user/mock-interview/history/${session.id}?payment=success`);
     } catch (error) {
       addPaymentSupportLog({
@@ -665,60 +656,50 @@ export function SessionHistoryPage() {
         paymentPurpose: "MENTOR_INTERVIEW",
         sessionId: session.id,
         status: "CREATE_FAILED",
-        message: "Exception khi thanh toán bằng ví từ trang lịch sử phiên.",
+        message: t("userMockinterview.exceptionWhenPayingWithWallet1"),
         payload: {
           error: error instanceof Error ? error.message : "unknown",
         },
       });
-      toast.error("Không thể thanh toán bằng ví lúc này. Vui lòng thử lại.");
+      toast.error(t("common.paymentByWalletIsNotPossibleAtThi1"));
     } finally {
       walletPaymentInFlightRef.current = false;
       setPayingSessionId(null);
     }
   };
-
   const handleConfirmPaymentMethod = async (method: "payos" | "wallet") => {
     if (!targetSessionForPayment) {
       return;
     }
-
     if (method === "wallet") {
       await handlePaySessionWithWallet(targetSessionForPayment);
       return;
     }
-
     setTargetSessionForPayment(null);
     await handlePaySessionWithPayOS(targetSessionForPayment);
   };
-
   useEffect(() => {
     if (!user?.id || sessions.length === 0) {
       return;
     }
-
     for (const currentSession of sessions) {
       if (!currentSession.id) {
         continue;
       }
-
       if (currentSession.status === "PAID") {
         clearPendingSessionPaidStatusSync(currentSession.id, Number(user.id));
       }
     }
-
     const scheduledWithPending = sessions.find((currentSession) => {
       if (!currentSession.id || currentSession.status !== "SCHEDULED") {
         return false;
       }
-
       const pendingSync = getPendingSessionPaidStatusSync(currentSession.id, Number(user.id));
       return !!pendingSync && canRetryPendingSessionPaidStatusSync(pendingSync);
     });
-
     if (!scheduledWithPending) {
       return;
     }
-
     const pendingSync = getPendingSessionPaidStatusSync(
       scheduledWithPending.id as number,
       Number(user.id)
@@ -726,8 +707,9 @@ export function SessionHistoryPage() {
     if (!pendingSync) {
       return;
     }
-
-    void syncSessionPaidStatus(scheduledWithPending, pendingSync.transactionCode, { silent: true });
+    void syncSessionPaidStatus(scheduledWithPending, pendingSync.transactionCode, {
+      silent: true,
+    });
   }, [sessions, syncSessionPaidStatus, user?.id]);
 
   // Stats — DRAFT is counted separately
@@ -737,17 +719,16 @@ export function SessionHistoryPage() {
   ).length;
   const completedCount = sessions.filter((s) => s.status === "COMPLETED").length;
   const hasActiveFilters = searchQuery.trim().length > 0 || statusFilter !== "all";
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            Lịch Sử Phỏng Vấn
+            {t("userMockinterview.interviewHistory")}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Xem lại các phiên phỏng vấn và gửi phản hồi cho mentor
+            {t("userMockinterview.reviewTheInterviewSessionsAnd")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -756,13 +737,13 @@ export function SessionHistoryPage() {
               await Promise.all([refetchSessions(), refetchFeedbacks()]);
             }}
             isLoading={sessionsRefetching || feedbacksRefetching}
-            tooltip="Tải lại lịch sử phiên"
+            tooltip={t("userMockinterview.reloadSessionHistory")}
           />
           <Button
             onClick={() => navigate("/user/mock-interview/schedule")}
             className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
             <Video className="h-4 w-4" />
-            Đặt lịch phỏng vấn mới
+            {t("userMockinterview.scheduleANewInterview")}
           </Button>
         </div>
       </div>
@@ -771,33 +752,33 @@ export function SessionHistoryPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Tổng phiên</CardDescription>
+            <CardDescription>{t("common.totalSession")}</CardDescription>
             <CardTitle className="text-2xl">{sessions.length}</CardTitle>
           </CardHeader>
         </Card>
         {draftCount > 0 && (
           <Card className="border-amber-200 dark:border-amber-900">
             <CardHeader className="pb-2">
-              <CardDescription>Chờ duyệt</CardDescription>
+              <CardDescription>{t("common.waitingForApproval")}</CardDescription>
               <CardTitle className="text-2xl text-amber-600">{draftCount}</CardTitle>
             </CardHeader>
           </Card>
         )}
         <Card className="border-blue-200 dark:border-blue-900">
           <CardHeader className="pb-2">
-            <CardDescription>Sắp diễn ra</CardDescription>
+            <CardDescription>{t("common.comingSoon")}</CardDescription>
             <CardTitle className="text-2xl text-blue-600">{scheduledCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Hoàn thành</CardDescription>
+            <CardDescription>{t("general.completed")}</CardDescription>
             <CardTitle className="text-2xl text-green-600">{completedCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Chờ đánh giá</CardDescription>
+            <CardDescription>{t("common.waitingForReview")}</CardDescription>
             <CardTitle className="text-2xl text-amber-600">
               {
                 sessions.filter(
@@ -818,11 +799,11 @@ export function SessionHistoryPage() {
       ) : sessions.length === 0 ? (
         <EmptyState
           icon={Video}
-          title="Chưa có phiên phỏng vấn"
-          description="Bạn chưa có phiên phỏng vấn nào. Hãy đặt lịch phỏng vấn với mentor!"
+          title={t("common.noInterviewSessionYet")}
+          description={t("userMockinterview.youHavenTHadAny1")}
           action={
             <Button onClick={() => navigate("/user/mock-interview/schedule")}>
-              Đặt lịch phỏng vấn
+              {t("userMockinterview.scheduleAnInterview")}
             </Button>
           }
         />
@@ -840,7 +821,7 @@ export function SessionHistoryPage() {
                     pagination.goToFirstPage();
                   }}
                   className="pl-9"
-                  placeholder="Tìm theo ID phiên, mentor, tên phòng, trạng thái..."
+                  placeholder={t("userMockinterview.searchBySessionIdMentor")}
                 />
               </div>
 
@@ -851,17 +832,17 @@ export function SessionHistoryPage() {
                   pagination.goToFirstPage();
                 }}>
                 <SelectTrigger className="w-full min-w-[200px]">
-                  <SelectValue placeholder="Lọc theo trạng thái" />
+                  <SelectValue placeholder={t("common.filterByStatus")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                  <SelectItem value="DRAFT">Chờ duyệt</SelectItem>
-                  <SelectItem value="SCHEDULED">Sắp diễn ra</SelectItem>
-                  <SelectItem value="PAID">Đã thanh toán</SelectItem>
-                  <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
-                  <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
-                  <SelectItem value="REJECTED">Bị từ chối</SelectItem>
-                  <SelectItem value="CANCELED">Đã hủy</SelectItem>
+                  <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                  <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+                  <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
+                  <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+                  <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+                  <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                  <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+                  <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -873,25 +854,25 @@ export function SessionHistoryPage() {
                     setStatusFilter("all");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               )}
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Sắp xếp theo:
+                {t("common.sortBy")}
               </span>
               <SortButton {...getSortProps("id")}>ID</SortButton>
-              <SortButton {...getSortProps("status")}>Trạng thái</SortButton>
+              <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
             </div>
           </Card>
 
           {sortedData.length === 0 ? (
             <EmptyState
               icon={Search}
-              title="Không tìm thấy phiên phù hợp"
-              description="Hãy thử từ khóa khác hoặc thay đổi bộ lọc trạng thái."
+              title={t("userMockinterview.noMatchingSessionFound")}
+              description={t("userMockinterview.tryADifferentKeywordOr")}
             />
           ) : (
             <>
@@ -930,8 +911,8 @@ export function SessionHistoryPage() {
                 setTargetSessionForPayment(null);
               }
             }}
-            title="Chọn phương thức thanh toán phiên"
-            description="Bạn có thể thanh toán qua PayOS hoặc sử dụng số dư ví hiện tại."
+            title={t("common.selectSessionPaymentMethod")}
+            description={t("common.youCanPayViaPayosOrUseYourExisti")}
             amount={
               typeof targetSessionForPayment?.totalPrice === "number" &&
               targetSessionForPayment.totalPrice > 0

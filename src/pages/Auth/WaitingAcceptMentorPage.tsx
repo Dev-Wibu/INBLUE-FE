@@ -1,4 +1,5 @@
 import { CheckCircle, Clock, Mail } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { Footer, Header } from "@/components/layouts";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function WaitingAcceptMentorPage() {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
       <Header />
@@ -18,10 +20,11 @@ export function WaitingAcceptMentorPage() {
               <Clock className="h-10 w-10 text-amber-600" />
             </div>
 
-            <CardTitle className="mt-6 text-2xl">Đơn đăng ký đang được xem xét</CardTitle>
+            <CardTitle className="mt-6 text-2xl">
+              {t("auth_waitingacceptmentorpage.tsx.on_ang_ky_ang_uoc_xem_xet")}
+            </CardTitle>
             <CardDescription className="text-base">
-              Cảm ơn bạn đã đăng ký trở thành Mentor tại INBLUE Interview. Đơn đăng ký của bạn đang
-              được đội ngũ của chúng tôi xem xét kỹ lưỡng.
+              {t("auth_waitingacceptmentorpage.tsx.cam_on_ban_a_ang_ky_tro_thanh_mentor_tai")}
             </CardDescription>
           </CardHeader>
 
@@ -31,26 +34,33 @@ export function WaitingAcceptMentorPage() {
               <div className="flex items-center gap-3">
                 <Clock className="h-5 w-5 text-amber-600" />
                 <p className="text-sm text-slate-700">
-                  Thời gian xét duyệt: <span className="font-semibold">24-48 giờ</span>
+                  {t("auth_waitingacceptmentorpage.tsx.thoi_gian_xet_duyet")}{" "}
+                  <span className="font-semibold">
+                    {t("auth_waitingacceptmentorpage.tsx.24_48_gio")}
+                  </span>
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-amber-600" />
-                <p className="text-sm text-slate-700">Chúng tôi sẽ gửi email thông báo kết quả</p>
+                <p className="text-sm text-slate-700">
+                  {t("auth_waitingacceptmentorpage.tsx.chung_toi_se_gui_email_thong_bao_ket_qua")}
+                </p>
               </div>
 
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-amber-600" />
                 <p className="text-sm text-slate-700">
-                  Kiểm tra email thường xuyên để không bỏ lỡ thông báo
+                  {t("auth_waitingacceptmentorpage.tsx.kiem_tra_email_thuong_xuyen_e_khong_bo_l")}
                 </p>
               </div>
             </div>
 
             {/* Progress Steps */}
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-slate-900">Tiến trình xử lý</h4>
+              <h4 className="text-sm font-medium text-slate-900">
+                {t("auth_waitingacceptmentorpage.tsx.tien_trinh_xu_ly")}
+              </h4>
 
               {/* Step 1: Submitted */}
               <div className="flex gap-3">
@@ -61,9 +71,11 @@ export function WaitingAcceptMentorPage() {
                   <div className="h-8 w-0.5 bg-slate-200" />
                 </div>
                 <div>
-                  <h5 className="font-medium text-slate-900">Đã nộp đơn</h5>
+                  <h5 className="font-medium text-slate-900">
+                    {t("auth_waitingacceptmentorpage.tsx.a_nop_on")}
+                  </h5>
                   <p className="text-sm text-slate-500">
-                    Đơn đăng ký của bạn đã được gửi thành công
+                    {t("auth_waitingacceptmentorpage.tsx.on_ang_ky_cua_ban_a_uoc_gui_thanh_cong")}
                   </p>
                 </div>
               </div>
@@ -77,8 +89,12 @@ export function WaitingAcceptMentorPage() {
                   <div className="h-8 w-0.5 bg-slate-200" />
                 </div>
                 <div>
-                  <h5 className="font-medium text-slate-900">Đang xem xét</h5>
-                  <p className="text-sm text-slate-500">Chúng tôi đang xem xét hồ sơ của bạn</p>
+                  <h5 className="font-medium text-slate-900">
+                    {t("auth_waitingacceptmentorpage.tsx.ang_xem_xet")}
+                  </h5>
+                  <p className="text-sm text-slate-500">
+                    {t("auth_waitingacceptmentorpage.tsx.chung_toi_ang_xem_xet_ho_so_cua_ban")}
+                  </p>
                 </div>
               </div>
 
@@ -88,15 +104,19 @@ export function WaitingAcceptMentorPage() {
                   <div className="h-6 w-6 rounded-full bg-slate-200" />
                 </div>
                 <div>
-                  <h5 className="font-medium text-slate-500">Thông báo kết quả</h5>
-                  <p className="text-sm text-slate-400">Bạn sẽ nhận được email thông báo</p>
+                  <h5 className="font-medium text-slate-500">
+                    {t("auth_waitingacceptmentorpage.tsx.thong_bao_ket_qua")}
+                  </h5>
+                  <p className="text-sm text-slate-400">
+                    {t("auth_waitingacceptmentorpage.tsx.ban_se_nhan_uoc_email_thong_bao")}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Back Button */}
             <Button variant="outline" className="w-full" asChild>
-              <Link to="/">Quay về trang chủ</Link>
+              <Link to="/">{t("auth_waitingacceptmentorpage.tsx.quay_ve_trang_chu")}</Link>
             </Button>
           </CardContent>
         </Card>

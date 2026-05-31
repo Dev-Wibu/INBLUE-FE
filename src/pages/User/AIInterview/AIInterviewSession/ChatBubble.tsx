@@ -1,29 +1,32 @@
-import { Sparkles, User, Volume2, VolumeX } from "lucide-react";
-
 import logo from "@/assets/icon.svg";
 import { Badge } from "@/components/ui/badge";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
+import { Sparkles, User, Volume2, VolumeX } from "lucide-react";
 import type { ChatMessage } from "./types";
-
-const QUESTION_TYPE_CONFIG: Record<string, { label: string; className: string }> = {
+const t = i18n.t.bind(i18n);
+const QUESTION_TYPE_CONFIG: Record<
+  string,
+  {
+    label: string;
+    className: string;
+  }
+> = {
   BLUEPRINT: {
-    label: "Câu chính",
+    label: t("userAiinterview.mainSentence"),
     className:
       "border-indigo-300 bg-indigo-100 text-indigo-700 dark:border-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
   },
   FOLLOW_UP: {
-    label: "Câu tiếp theo",
+    label: t("userAiinterview.nextSentence"),
     className:
       "border-violet-300 bg-violet-100 text-violet-700 dark:border-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
   },
 };
-
 const ROLE_LABELS: Record<ChatMessage["role"], string> = {
   ai: "AI Interviewer",
-  user: "Bạn",
+  user: t("common.friend"),
 };
-
 export function ChatBubble({
   message,
   userAvatarUrl,
@@ -37,7 +40,6 @@ export function ChatBubble({
 }) {
   const isAI = message.role === "ai";
   const isThisSpeaking = speakingId === message.id;
-
   return (
     <div className={cn("flex gap-3", isAI ? "justify-start" : "flex-row-reverse")}>
       {/* Avatar */}
@@ -108,7 +110,11 @@ export function ChatBubble({
           {isAI && onSpeak && (
             <button
               onClick={() => onSpeak(message.content, message.id)}
-              title={isThisSpeaking ? "Dừng đọc" : "Đọc to tin nhắn"}
+              title={
+                isThisSpeaking
+                  ? t("userAiinterview.stopReading")
+                  : t("userAiinterview.readTheMessageOutLoud")
+              }
               className={cn(
                 "flex h-5 w-5 items-center justify-center rounded-full transition-all",
                 "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100",
@@ -128,7 +134,6 @@ export function ChatBubble({
     </div>
   );
 }
-
 export function TypingIndicator() {
   return (
     <div className="flex items-center gap-3">
@@ -145,7 +150,6 @@ export function TypingIndicator() {
     </div>
   );
 }
-
 export function EvaluatingIndicator() {
   return (
     <div className="flex items-center gap-3">
@@ -156,7 +160,7 @@ export function EvaluatingIndicator() {
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 animate-pulse text-cyan-700 dark:text-cyan-300" />
           <span className="text-sm font-medium text-cyan-700 dark:text-cyan-200">
-            AI đang đánh giá buổi phỏng vấn...
+            {t("userAiinterview.aiIsEvaluatingTheInterview")}
           </span>
         </div>
       </div>

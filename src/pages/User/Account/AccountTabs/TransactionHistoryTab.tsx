@@ -1,4 +1,5 @@
 import { AlertCircle, ArrowDownLeft, ArrowUpRight, Hash } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Spinner } from "@/components/ui/spinner";
@@ -43,25 +44,26 @@ const TransactionTypeIcon = ({ type }: { type: "deposit" | "payment" | "refund" 
 };
 
 export function TransactionHistoryTab({ transactions, isLoading }: TransactionHistoryTabProps) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-5">
         <h3 className="font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
-          Lịch sử giao dịch
+          {t("userAccount.transactionHistory")}
         </h3>
         <p className="mt-1 font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
-          Theo dõi toàn bộ giao dịch thanh toán, ví và phiên phỏng vấn của tài khoản.
+          {t("userAccount.trackAllAccountPaymentsWallets")}
         </p>
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 py-6 text-sm text-slate-500 dark:text-slate-400">
           <Spinner size="md" />
-          <span>Đang tải lịch sử giao dịch...</span>
+          <span>{t("userAccount.loadingTransactionHistory")}</span>
         </div>
       ) : transactions.length === 0 ? (
         <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
-          Chưa có giao dịch nào.
+          {t("userAccount.thereAreNoTransactionsYet")}
         </p>
       ) : (
         <div className="flex flex-col gap-4">
@@ -98,7 +100,8 @@ export function TransactionHistoryTab({ transactions, isLoading }: TransactionHi
                         </span>
                         {typeof item.currentBalance === "number" && (
                           <span className="rounded-md bg-white px-2 py-1 dark:bg-slate-900/60">
-                            Số dư sau GD: {formatCurrency(item.currentBalance)}
+                            {t("userAccount.balanceAfterTransaction")}{" "}
+                            {formatCurrency(item.currentBalance)}
                           </span>
                         )}
                       </div>
@@ -113,7 +116,7 @@ export function TransactionHistoryTab({ transactions, isLoading }: TransactionHi
                           : "text-rose-600 dark:text-rose-400"
                       }`}>
                       {item.amount >= 0 ? "+" : ""}
-                      {new Intl.NumberFormat("vi-VN").format(item.amount)} đ
+                      {new Intl.NumberFormat("vi-VN").format(item.amount)} {t("general.text")}
                     </p>
                     <div className="mt-1 flex flex-wrap gap-2 sm:justify-end">
                       {item.status && (

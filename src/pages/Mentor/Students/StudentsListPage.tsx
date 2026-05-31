@@ -1,12 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * Mentor Students List Page
  * Displays list of students who had sessions with this mentor
  */
-
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Calendar, MessageSquare, Search, Star, Users } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { ReloadButton } from "@/components/shared/ReloadButton";
@@ -28,13 +24,15 @@ import {
 import { StarRating } from "@/components/ui/star-rating";
 import { useMentorFeedbacksByMentor } from "@/hooks/useMentorFeedback";
 import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import { toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
-
+import { Calendar, MessageSquare, Search, Star, Users } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 interface StudentInfo {
   id: number;
   name?: string;
@@ -47,15 +45,13 @@ interface StudentInfo {
   avgRating: number;
   lastSessionDate?: string;
 }
-
 type StudentFilter = "all" | "reviewed" | "feedbacked" | "noReview";
-
 export function StudentsListPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
   const [studentFilter, setStudentFilter] = useState<StudentFilter>("all");
-
   const {
     data: allSessions = [],
     isLoading: sessionsLoading,
@@ -74,7 +70,6 @@ export function StudentsListPage() {
     isRefetching: reviewsRefetching,
     refetch: refetchReviews,
   } = useMentorReviewsByMentor(user?.id || 0);
-
   const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading;
 
   // Filter sessions where current user is the mentor (userId2)
@@ -82,19 +77,26 @@ export function StudentsListPage() {
 
   // Group sessions by student (userId)
   const studentsMap = new Map<number, StudentInfo>();
-
   mentorSessions.forEach((session: Session) => {
     const studentId = session.userId;
     if (!studentId) return;
-
     if (!studentsMap.has(studentId)) {
       // Find user info from feedbacks or reviews
       const userFeedback = feedbacks.find(
-        (f: { user?: { id?: number } }) => f.user?.id === studentId
+        (f: {
+          user?: {
+            id?: number;
+          };
+        }) => f.user?.id === studentId
       );
-      const userReview = reviews.find((r: { user?: { id?: number } }) => r.user?.id === studentId);
+      const userReview = reviews.find(
+        (r: {
+          user?: {
+            id?: number;
+          };
+        }) => r.user?.id === studentId
+      );
       const userInfo = userFeedback?.user || userReview?.user || null;
-
       studentsMap.set(studentId, {
         id: studentId,
         name: userInfo?.name,
@@ -108,14 +110,12 @@ export function StudentsListPage() {
         lastSessionDate: undefined,
       });
     }
-
     const student = studentsMap.get(studentId)!;
     student.sessionCount += 1;
 
     // Track last session
     const sessionEndTimestamp = toTimestamp(treatZuluAsVietnamLocal(session.endTime1));
     const lastSessionTimestamp = toTimestamp(treatZuluAsVietnamLocal(student.lastSessionDate));
-
     if (
       sessionEndTimestamp &&
       (!lastSessionTimestamp || sessionEndTimestamp > lastSessionTimestamp)
@@ -125,46 +125,63 @@ export function StudentsListPage() {
   });
 
   // Add feedback and review counts
-  feedbacks.forEach((feedback: { user?: { id?: number } }) => {
-    const studentId = feedback.user?.id;
-    if (studentId && studentsMap.has(studentId)) {
-      studentsMap.get(studentId)!.feedbackCount += 1;
+  feedbacks.forEach(
+    (feedback: {
+      user?: {
+        id?: number;
+      };
+    }) => {
+      const studentId = feedback.user?.id;
+      if (studentId && studentsMap.has(studentId)) {
+        studentsMap.get(studentId)!.feedbackCount += 1;
+      }
     }
-  });
-
-  reviews.forEach((review: { user?: { id?: number }; rating?: number }) => {
-    const studentId = review.user?.id;
-    if (studentId && studentsMap.has(studentId)) {
-      const student = studentsMap.get(studentId)!;
-      student.reviewCount += 1;
+  );
+  reviews.forEach(
+    (review: {
+      user?: {
+        id?: number;
+      };
+      rating?: number;
+    }) => {
+      const studentId = review.user?.id;
+      if (studentId && studentsMap.has(studentId)) {
+        const student = studentsMap.get(studentId)!;
+        student.reviewCount += 1;
+      }
     }
-  });
+  );
 
   // Calculate average rating from reviews
   studentsMap.forEach((student) => {
     const studentReviews = reviews.filter(
-      (r: { user?: { id?: number } }) => r.user?.id === student.id
+      (r: {
+        user?: {
+          id?: number;
+        };
+      }) => r.user?.id === student.id
     );
     if (studentReviews.length > 0) {
       const total = studentReviews.reduce(
-        (sum: number, r: { rating?: number }) => sum + (r.rating || 0),
+        (
+          sum: number,
+          r: {
+            rating?: number;
+          }
+        ) => sum + (r.rating || 0),
         0
       );
       student.avgRating = total / studentReviews.length;
     }
   });
-
   const students = Array.from(studentsMap.values()).sort((a, b) => {
     const aTimestamp = toTimestamp(treatZuluAsVietnamLocal(a.lastSessionDate)) ?? 0;
     const bTimestamp = toTimestamp(treatZuluAsVietnamLocal(b.lastSessionDate)) ?? 0;
-
     if (aTimestamp !== bTimestamp) {
       return aTimestamp - bTimestamp;
     }
-
     return a.id - b.id;
   });
-
   const filteredStudents = useMemo(
     () =>
       students.filter((student) => {
@@ -175,23 +192,18 @@ export function StudentsListPage() {
           student.name?.toLowerCase().includes(normalizedSearch) ||
           student.email?.toLowerCase().includes(normalizedSearch) ||
           student.university?.toLowerCase().includes(normalizedSearch);
-
         if (!matchesSearch) {
           return false;
         }
-
         if (studentFilter === "reviewed") {
           return student.reviewCount > 0;
         }
-
         if (studentFilter === "feedbacked") {
           return student.feedbackCount > 0;
         }
-
         if (studentFilter === "noReview") {
           return student.reviewCount === 0;
         }
-
         return true;
       }),
     [searchQuery, studentFilter, students]
@@ -214,15 +226,16 @@ export function StudentsListPage() {
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Học Viên</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            {t("mentorStudents.student")}
+          </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Danh sách học viên đã có phiên phỏng vấn với bạn
+            {t("mentorStudents.listOfStudentsWhoHave")}
           </p>
         </div>
         <ReloadButton
@@ -230,7 +243,7 @@ export function StudentsListPage() {
             await Promise.all([refetchSessions(), refetchFeedbacks(), refetchReviews()]);
           }}
           isLoading={sessionsRefetching || feedbacksRefetching || reviewsRefetching}
-          tooltip="Tải lại danh sách học viên"
+          tooltip={t("mentorStudents.reloadStudentList")}
         />
       </div>
 
@@ -240,7 +253,7 @@ export function StudentsListPage() {
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
               <Users className="h-4 w-4" />
-              Tổng học viên
+              {t("mentorStudents.totalStudents")}
             </CardDescription>
             <CardTitle className="text-2xl">{students.length}</CardTitle>
           </CardHeader>
@@ -249,7 +262,7 @@ export function StudentsListPage() {
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Tổng phiên
+              {t("common.totalSession")}
             </CardDescription>
             <CardTitle className="text-2xl text-emerald-600">{mentorSessions.length}</CardTitle>
           </CardHeader>
@@ -258,7 +271,7 @@ export function StudentsListPage() {
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
               <MessageSquare className="h-4 w-4" />
-              Phản hồi đã gửi
+              {t("mentorStudents.responseSent")}
             </CardDescription>
             <CardTitle className="text-2xl text-blue-600">{feedbacks.length}</CardTitle>
           </CardHeader>
@@ -267,7 +280,7 @@ export function StudentsListPage() {
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
               <Star className="h-4 w-4" />
-              Đánh giá nhận được
+              {t("mentorStudents.reviewsReceived")}
             </CardDescription>
             <CardTitle className="text-2xl text-[#FFD700]">{reviews.length}</CardTitle>
           </CardHeader>
@@ -279,9 +292,9 @@ export function StudentsListPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-emerald-600" />
-            <CardTitle>Danh sách học viên</CardTitle>
+            <CardTitle>{t("mentorStudents.listOfStudents")}</CardTitle>
           </div>
-          <CardDescription>Học viên đã tham gia phỏng vấn với bạn</CardDescription>
+          <CardDescription>{t("mentorStudents.theStudentHasParticipatedIn")}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -289,8 +302,8 @@ export function StudentsListPage() {
           ) : students.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="Chưa có học viên"
-              description="Bạn chưa có phiên phỏng vấn nào với học viên."
+              title={t("mentorStudents.noStudentsYet")}
+              description={t("common.youHaveNotHadAnyInterviewSessions")}
             />
           ) : (
             <>
@@ -304,7 +317,7 @@ export function StudentsListPage() {
                       pagination.goToFirstPage();
                     }}
                     className="pl-9"
-                    placeholder="Tìm theo ID, tên, email, trường..."
+                    placeholder={t("mentorStudents.searchByIdNameEmail")}
                   />
                 </div>
                 <Select
@@ -314,13 +327,13 @@ export function StudentsListPage() {
                     pagination.goToFirstPage();
                   }}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Lọc theo tương tác" />
+                    <SelectValue placeholder={t("mentorStudents.filterByInteraction")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tất cả học viên</SelectItem>
-                    <SelectItem value="reviewed">Đã được đánh giá</SelectItem>
-                    <SelectItem value="feedbacked">Đã gửi phản hồi</SelectItem>
-                    <SelectItem value="noReview">Chưa có đánh giá</SelectItem>
+                    <SelectItem value="all">{t("mentorStudents.allStudents")}</SelectItem>
+                    <SelectItem value="reviewed">{t("mentorStudents.reviewed")}</SelectItem>
+                    <SelectItem value="feedbacked">{t("mentorStudents.responseSent1")}</SelectItem>
+                    <SelectItem value="noReview">{t("common.thereAreNoReviewsYet")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -328,11 +341,13 @@ export function StudentsListPage() {
               {/* Sort Controls */}
               <div className="mb-4 flex items-center gap-4 border-b pb-3">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Sắp xếp theo:
+                  {t("common.sortBy")}
                 </span>
-                <SortButton {...getSortProps("sessionCount")}>Số phiên</SortButton>
-                <SortButton {...getSortProps("avgRating")}>Đánh giá</SortButton>
-                <SortButton {...getSortProps("name")}>Tên</SortButton>
+                <SortButton {...getSortProps("sessionCount")}>
+                  {t("mentorStudents.numberOfSessions")}
+                </SortButton>
+                <SortButton {...getSortProps("avgRating")}>{t("common.evaluate")}</SortButton>
+                <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
                 {(searchQuery || studentFilter !== "all") && (
                   <Button
                     variant="outline"
@@ -342,7 +357,7 @@ export function StudentsListPage() {
                       setStudentFilter("all");
                       pagination.goToFirstPage();
                     }}>
-                    Xóa bộ lọc
+                    {t("common.clearFilter")}
                   </Button>
                 )}
               </div>
@@ -350,8 +365,8 @@ export function StudentsListPage() {
               {pageData.length === 0 ? (
                 <EmptyState
                   icon={Search}
-                  title="Không tìm thấy học viên phù hợp"
-                  description="Hãy thử từ khóa khác hoặc đổi bộ lọc."
+                  title={t("mentorStudents.noSuitableStudentsWereFound")}
+                  description={t("mentorStudents.tryAnotherKeywordOrChange")}
                 />
               ) : (
                 <>
@@ -370,7 +385,10 @@ export function StudentsListPage() {
                           </Avatar>
                           <div>
                             <h3 className="font-semibold">
-                              {student.name || `Học viên #${student.id}`}
+                              {student.name ||
+                                t("common.studentVar0", {
+                                  var_0: student.id,
+                                })}
                             </h3>
                             <p className="text-sm text-slate-500">
                               {student.email || student.university}
@@ -379,17 +397,17 @@ export function StudentsListPage() {
                         </div>
                         <div className="flex items-center gap-6 text-sm">
                           <div className="text-center">
-                            <p className="text-slate-500">Phiên</p>
+                            <p className="text-slate-500">{t("common.session")}</p>
                             <p className="font-semibold">{student.sessionCount}</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-slate-500">Phản hồi</p>
+                            <p className="text-slate-500">{t("common.feedback1")}</p>
                             <Badge variant={student.feedbackCount > 0 ? "default" : "secondary"}>
                               {student.feedbackCount}
                             </Badge>
                           </div>
                           <div className="text-center">
-                            <p className="text-slate-500">Đánh giá</p>
+                            <p className="text-slate-500">{t("common.evaluate")}</p>
                             {student.reviewCount > 0 ? (
                               <div className="flex items-center gap-1">
                                 <StarRating value={student.avgRating} readOnly size="sm" />

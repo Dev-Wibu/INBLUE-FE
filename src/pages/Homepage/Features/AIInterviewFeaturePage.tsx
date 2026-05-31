@@ -1,3 +1,10 @@
+import { HomepageHeader } from "@/components/homepage-redesign";
+import { Footer } from "@/components/layouts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import i18n from "@/lib/i18n";
+import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ArrowRight,
   Bot,
@@ -11,74 +18,74 @@ import {
   Video,
   Zap,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-
-import { HomepageHeader } from "@/components/homepage-redesign";
-import { Footer } from "@/components/layouts";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDashboardPath, useAuthStore } from "@/stores/authStore";
-
+const t = i18n.t.bind(i18n);
 const aiFeatures = [
   {
     id: 1,
-    title: "Phản hồi thời gian thực",
-    description:
-      "Nhận phản hồi ngay lập tức về cách trả lời, giọng nói và ngôn ngữ cơ thể trong quá trình phỏng vấn.",
+    title: t("homepageFeatures.realTimeFeedback"),
+    description: t("homepageFeatures.getImmediateFeedbackOnYour"),
     icon: Zap,
   },
   {
     id: 2,
-    title: "Phân tích ngôn ngữ",
-    description:
-      "AI phân tích từ ngữ, cấu trúc câu và mức độ chuyên nghiệp trong câu trả lời của bạn.",
+    title: t("homepageFeatures.languageAnalysis"),
+    description: t("homepageFeatures.aiAnalyzesYourWordsSentence"),
     icon: MessageSquare,
   },
   {
     id: 3,
-    title: "Đánh giá biểu cảm khuôn mặt",
-    description:
-      "Theo dõi biểu cảm, ánh mắt và ngôn ngữ cơ thể để cải thiện cách giao tiếp phi ngôn ngữ.",
+    title: t("homepageFeatures.evaluationOfFacialExpressions"),
+    description: t("homepageFeatures.monitorExpressionsEyeContactAnd"),
     icon: Brain,
   },
   {
     id: 4,
-    title: "Báo cáo chi tiết",
-    description:
-      "Nhận báo cáo đầy đủ với điểm số, gợi ý cải thiện và so sánh với các ứng viên khác.",
+    title: t("homepageFeatures.detailedReport"),
+    description: t("homepageFeatures.getAFullReportWith"),
     icon: LineChart,
   },
 ];
-
 const interviewModes = [
   {
     id: 1,
-    title: "Chế độ văn bản",
-    description: "Luyện tập viết câu trả lời với phản hồi chi tiết về nội dung và cấu trúc.",
+    title: t("common.textMode"),
+    description: t("homepageFeatures.practiceWritingAnswersWithDetailed"),
     icon: MessageSquare,
-    benefits: ["Tập trung vào nội dung", "Có thời gian suy nghĩ", "Dễ chỉnh sửa"],
+    benefits: [
+      t("homepageFeatures.focusOnContent"),
+      t("homepageFeatures.haveTimeToThink"),
+      t("homepageFeatures.easyToEdit"),
+    ],
   },
   {
     id: 2,
-    title: "Chế độ giọng nói",
-    description: "Luyện nói với AI và nhận phản hồi về giọng điệu, tốc độ và sự tự tin.",
+    title: t("common.voiceMode"),
+    description: t("homepageFeatures.practiceSpeakingWithTheAi"),
     icon: Mic,
-    benefits: ["Cải thiện phát âm", "Kiểm soát tốc độ nói", "Giảm từ đệm"],
+    benefits: [
+      t("homepageFeatures.improvePronunciation"),
+      t("homepageFeatures.controlYourSpeakingSpeed"),
+      t("homepageFeatures.reduceFromBuffering"),
+    ],
   },
   {
     id: 3,
-    title: "Chế độ video",
-    description: "Trải nghiệm phỏng vấn chân thực với camera và phân tích ngôn ngữ cơ thể.",
+    title: t("homepageFeatures.videoMode"),
+    description: t("homepageFeatures.experienceAuthenticInterviewsWithCameras"),
     icon: Video,
-    benefits: ["Thực tế nhất", "Phân tích biểu cảm", "Chuẩn bị toàn diện"],
+    benefits: [
+      t("homepageFeatures.mostRealistic"),
+      t("homepageFeatures.expressionAnalysis"),
+      t("homepageFeatures.comprehensivePreparation"),
+    ],
   },
 ];
-
 export function AIInterviewFeaturePage() {
+  const { t } = useTranslation();
   const { isLoggedIn, user } = useAuthStore();
   const ctaPath = isLoggedIn ? getDashboardPath(user?.role) : "/select-role";
-
   return (
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
       <HomepageHeader />
@@ -100,14 +107,13 @@ export function AIInterviewFeaturePage() {
                 AI Interview
               </Badge>
               <h1 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl dark:text-white">
-                Phỏng vấn với{" "}
+                {t("homepageFeatures.interviewWith")}{" "}
                 <span className="bg-gradient-to-r from-[#0047AB] to-[#007BFF] bg-clip-text text-transparent">
-                  Trí tuệ nhân tạo
+                  {t("homepageFeatures.artificialIntelligence")}
                 </span>
               </h1>
               <p className="mb-8 text-lg text-slate-600 dark:text-slate-400">
-                Luyện tập phỏng vấn 24/7 với AI tiên tiến. Nhận phản hồi tức thì, phân tích chi tiết
-                và gợi ý cải thiện để bạn tự tin hơn trong buổi phỏng vấn thực.
+                {t("homepageFeatures.practiceInterviews247With")}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
                 <Button
@@ -116,7 +122,7 @@ export function AIInterviewFeaturePage() {
                   asChild>
                   <Link to={ctaPath}>
                     <Play className="mr-2 h-5 w-5" />
-                    {isLoggedIn ? "Mở Dashboard" : "Thử ngay miễn phí"}
+                    {isLoggedIn ? t("common.openDashboard") : t("homepageFeatures.tryNowForFree")}
                   </Link>
                 </Button>
               </div>
@@ -134,14 +140,14 @@ export function AIInterviewFeaturePage() {
                     AI Interviewer
                   </h3>
                   <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-                    Sẵn sàng phỏng vấn bạn bất cứ lúc nào
+                    {t("homepageFeatures.readyToInterviewYouAt")}
                   </p>
                   <div className="mt-4 flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                     <span className="relative flex h-3 w-3">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
                       <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500"></span>
                     </span>
-                    Đang hoạt động
+                    {t("common.active")}
                   </div>
                 </CardContent>
               </Card>
@@ -155,10 +161,10 @@ export function AIInterviewFeaturePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-12 text-center">
             <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              Tính năng AI
+              {t("homepageFeatures.aiFeatures")}
             </Badge>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Công nghệ AI tiên tiến
+              {t("homepageFeatures.advancedAiTechnology")}
             </h2>
           </div>
 
@@ -190,10 +196,10 @@ export function AIInterviewFeaturePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-12 text-center">
             <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              Chế độ phỏng vấn
+              {t("common.interviewMode")}
             </Badge>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Chọn cách luyện tập của bạn
+              {t("homepageFeatures.chooseYourPractice")}
             </h2>
           </div>
 
@@ -238,19 +244,19 @@ export function AIInterviewFeaturePage() {
           <div className="grid gap-8 text-center md:grid-cols-4">
             <div>
               <div className="text-4xl font-bold text-white">24/7</div>
-              <div className="mt-2 text-[#A5C8F2]">Luyện tập mọi lúc</div>
+              <div className="mt-2 text-[#A5C8F2]">{t("homepageFeatures.practiceAllTheTime")}</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-white">90%</div>
-              <div className="mt-2 text-[#A5C8F2]">Độ chính xác AI</div>
+              <div className="mt-2 text-[#A5C8F2]">{t("homepageFeatures.aiAccuracy")}</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-white">1,500+</div>
-              <div className="mt-2 text-[#A5C8F2]">Câu hỏi phỏng vấn</div>
+              <div className="mt-2 text-[#A5C8F2]">{t("homepageFeatures.interviewQuestions")}</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-white">50K+</div>
-              <div className="mt-2 text-[#A5C8F2]">Người dùng tin tưởng</div>
+              <div className="mt-2 text-[#A5C8F2]">{t("homepageFeatures.usersTrust")}</div>
             </div>
           </div>
         </div>
@@ -261,17 +267,17 @@ export function AIInterviewFeaturePage() {
         <div className="mx-auto max-w-7xl px-6 text-center">
           <Sparkles className="mx-auto mb-4 h-12 w-12 text-[#0047AB] dark:text-[#66B2FF]" />
           <h2 className="mb-4 text-3xl font-bold text-slate-900 dark:text-white">
-            Bắt đầu phỏng vấn với AI ngay hôm nay
+            {t("homepageFeatures.startInterviewingWithAiToday")}
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-slate-600 dark:text-slate-400">
-            Đăng ký miễn phí và nhận 3 buổi phỏng vấn AI miễn phí. Không cần thẻ tín dụng.
+            {t("homepageFeatures.signUpForFreeAnd")}
           </p>
           <Button
             size="lg"
             className="rounded-full bg-gradient-to-r from-[#0047AB] to-[#007BFF] px-8"
             asChild>
             <Link to={ctaPath}>
-              {isLoggedIn ? "Mở Dashboard" : "Đăng ký miễn phí"}
+              {isLoggedIn ? t("common.openDashboard") : t("common.signUpForFree")}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>

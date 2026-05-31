@@ -1,5 +1,3 @@
-import { Check, Edit, Eye, Search, X, XCircle } from "lucide-react";
-
 import { SortButton, type SortDirection } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,14 +11,13 @@ import {
 } from "@/components/ui/table";
 import { formatCurrency, formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { getSessionStatusBadge } from "@/lib/status-utils";
-
+import { Check, Edit, Eye, Search, X, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { Session } from "../types";
-
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
-
 interface SessionTableProps {
   sessions: Session[];
   onView: (session: Session) => void;
@@ -30,12 +27,10 @@ interface SessionTableProps {
   onReject?: (session: Session) => void;
   getSortProps?: (key: keyof Session | "startTimeSortValue") => SortProps;
 }
-
 const formatDuration = (seconds?: number, minutes?: number) => {
   if (typeof minutes === "number" && minutes > 0) {
     return `${minutes}p`;
   }
-
   if (!seconds) return "-";
   const hours = Math.floor(seconds / 3600);
   const minutesFromSeconds = Math.floor((seconds % 3600) / 60);
@@ -44,7 +39,6 @@ const formatDuration = (seconds?: number, minutes?: number) => {
   }
   return `${minutesFromSeconds}p`;
 };
-
 export function SessionTable({
   sessions,
   onView,
@@ -54,42 +48,46 @@ export function SessionTable({
   onReject,
   getSortProps,
 }: SessionTableProps) {
+  const { t } = useTranslation();
   if (sessions.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
         <Search className="h-12 w-12 text-gray-400" />
-        <p className="font-['Inter'] text-lg text-gray-500">Không tìm thấy buổi học nào</p>
+        <p className="font-['Inter'] text-lg text-gray-500">
+          {t("adminSessionmanagement.noLessonsFound")}
+        </p>
       </div>
     );
   }
-
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead className="w-16">ID</TableHead>
-          <TableHead>Tên phòng</TableHead>
-          <TableHead className="w-24">ID người dùng</TableHead>
+          <TableHead>{t("common.roomName1")}</TableHead>
+          <TableHead className="w-24">{t("general.userId1")}</TableHead>
           <TableHead className="w-24">ID Mentor</TableHead>
           <TableHead>
             {getSortProps ? (
-              <SortButton {...getSortProps("startTimeSortValue")}>Thời gian bắt đầu</SortButton>
+              <SortButton {...getSortProps("startTimeSortValue")}>
+                {t("adminSessionmanagement.startTime")}
+              </SortButton>
             ) : (
-              "Thời gian bắt đầu"
+              t("adminSessionmanagement.startTime")
             )}
           </TableHead>
-          <TableHead>Giờ họp</TableHead>
-          <TableHead className="w-24">Thời lượng</TableHead>
-          <TableHead className="w-36">Tổng giá</TableHead>
-          <TableHead className="w-40">Mã giao dịch</TableHead>
+          <TableHead>{t("adminSessionmanagement.meetingTime")}</TableHead>
+          <TableHead className="w-24">{t("common.duration")}</TableHead>
+          <TableHead className="w-36">{t("adminSessionmanagement.totalPrice")}</TableHead>
+          <TableHead className="w-40">{t("common.transactionCode")}</TableHead>
           <TableHead className="w-28">
             {getSortProps ? (
-              <SortButton {...getSortProps("status")}>Trạng thái</SortButton>
+              <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
             ) : (
-              "Trạng thái"
+              t("common.status")
             )}
           </TableHead>
-          <TableHead className="w-28 text-right">Thao tác</TableHead>
+          <TableHead className="w-28 text-right">{t("common.operation")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -135,7 +133,7 @@ export function SessionTable({
                       size="sm"
                       onClick={() => onApprove(session)}
                       className="h-8 w-8 p-0 hover:bg-emerald-50"
-                      title="Duyệt phiên">
+                      title={t("adminSessionmanagement.browseSessions")}>
                       <Check className="h-4 w-4 text-emerald-600" />
                     </Button>
                     <Button
@@ -143,7 +141,7 @@ export function SessionTable({
                       size="sm"
                       onClick={() => onReject(session)}
                       className="h-8 w-8 p-0 hover:bg-rose-50"
-                      title="Từ chối phiên">
+                      title={t("adminSessionmanagement.rejectSession")}>
                       <X className="h-4 w-4 text-rose-600" />
                     </Button>
                   </>
@@ -153,7 +151,7 @@ export function SessionTable({
                   size="sm"
                   onClick={() => onView(session)}
                   className="h-8 w-8 p-0 hover:bg-green-50"
-                  title="Xem chi tiết">
+                  title={t("common.seeDetails")}>
                   <Eye className="h-4 w-4 text-green-600" />
                 </Button>
                 <Button
@@ -162,7 +160,7 @@ export function SessionTable({
                   onClick={() => onEdit(session)}
                   className="h-8 w-8 p-0 hover:bg-blue-50 disabled:opacity-50"
                   disabled={session.status === "COMPLETED" || session.status === "CANCELED"}
-                  title="Chỉnh sửa">
+                  title={t("general.edit")}>
                   <Edit className="h-4 w-4 text-blue-600" />
                 </Button>
                 <Button
@@ -171,7 +169,7 @@ export function SessionTable({
                   onClick={() => onCancel(session)}
                   className="h-8 w-8 p-0 hover:bg-red-50 disabled:opacity-50"
                   disabled={session.status === "COMPLETED" || session.status === "CANCELED"}
-                  title="Hủy buổi học">
+                  title={t("adminSessionmanagement.cancelClass")}>
                   <XCircle className="h-4 w-4 text-red-600" />
                 </Button>
               </div>

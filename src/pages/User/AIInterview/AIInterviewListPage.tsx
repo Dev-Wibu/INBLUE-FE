@@ -1,3 +1,15 @@
+import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
+import { useSortable } from "@/hooks/useSortable";
+import { $api } from "@/lib/api";
+import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
+import { useAuthStore } from "@/stores/authStore";
 import {
   AlertTriangle,
   Briefcase,
@@ -15,71 +27,78 @@ import {
   Zap,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-
-import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { useSortable } from "@/hooks/useSortable";
-import { $api } from "@/lib/api";
-import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
-import { useAuthStore } from "@/stores/authStore";
+const t = i18n.t.bind(i18n);
 
 // Map interview mode enum → label tiếng Việt
 const MODE_LABELS: Record<string, string> = {
-  STANDARD_MOCK: "Phỏng vấn thử",
-  THEORY_CHECK: "Kiểm tra lý thuyết",
-  PROJECT_DEFENSE: "Bảo vệ dự án",
+  STANDARD_MOCK: t("common.trialInterview"),
+  THEORY_CHECK: t("common.testTheTheory"),
+  PROJECT_DEFENSE: t("common.projectProtection"),
 };
 
 // Map status → Vietnamese + color
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  CREATED: { label: "Đã tạo", className: "bg-blue-100 text-blue-700" },
-  IN_PROGRESS: { label: "Đang diễn ra", className: "bg-amber-100 text-amber-700" },
-  COMPLETED: { label: "Hoàn thành", className: "bg-emerald-100 text-emerald-700" },
-  CANCELLED: { label: "Đã hủy", className: "bg-red-100 text-red-700" },
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    className: string;
+  }
+> = {
+  CREATED: {
+    label: t("common.created"),
+    className: "bg-blue-100 text-blue-700",
+  },
+  IN_PROGRESS: {
+    label: t("common.ongoing"),
+    className: "bg-amber-100 text-amber-700",
+  },
+  COMPLETED: {
+    label: t("general.completed"),
+    className: "bg-emerald-100 text-emerald-700",
+  },
+  CANCELLED: {
+    label: t("common.canceled"),
+    className: "bg-red-100 text-red-700",
+  },
 };
 
 // Map difficulty → label
 const DIFFICULTY_LABELS: Record<string, string> = {
-  FRESHER_BASIC: "Cơ bản",
-  FRESHER_ADVANCED: "Nâng cao",
+  FRESHER_BASIC: t("userAiinterview.basic"),
+  FRESHER_ADVANCED: t("userAiinterview.advanced"),
 };
 
 // Map language → label
 const LANGUAGE_LABELS: Record<string, string> = {
-  VI: "Tiếng Việt",
+  VI: t("common.vietnamese"),
   EN: "English",
 };
 
 // Map domain → label
 const DOMAIN_LABELS: Record<string, string> = {
   IT: "IT",
-  NON_IT: "Ngoài IT",
+  NON_IT: t("common.outsideOfIt"),
 };
 
 // Map result → label
 const RESULT_LABELS: Record<string, string> = {
-  STRONG_HIRE: "Xuất sắc",
-  HIRE: "Đạt",
-  CONSIDER: "Cần cân nhắc",
-  REJECT: "Không đạt",
+  STRONG_HIRE: t("common.excellent"),
+  HIRE: t("common.obtain"),
+  CONSIDER: t("common.needToConsider"),
+  REJECT: t("common.failed"),
 };
 
 // SessionKey hết hạn sau 1 giờ kể từ lúc tạo (backend chỉ cập nhật status CANCELLED lazily)
 const SESSION_EXPIRY_MS = 60 * 60 * 1000;
-
 const isSessionExpired = (createdAt?: string) => {
   const createdTimestamp = toUtcNaiveTimestamp(createdAt);
   if (!createdTimestamp) return true;
   return Date.now() - createdTimestamp >= SESSION_EXPIRY_MS;
 };
-
 export function AIInterviewListPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyPageSize, setHistoryPageSize] = useHybridPageSize({
@@ -87,7 +106,6 @@ export function AIInterviewListPage() {
     defaultPageSize: 10,
   });
   const userId = useAuthStore((s) => s.user?.id);
-
   const {
     data: sessions,
     isLoading,
@@ -97,10 +115,17 @@ export function AIInterviewListPage() {
   } = $api.useQuery(
     "get",
     "/api/interview-sessions/user/{userId}",
-    { params: { path: { userId: userId ?? 0 } } },
-    { enabled: !!userId }
+    {
+      params: {
+        path: {
+          userId: userId ?? 0,
+        },
+      },
+    },
+    {
+      enabled: !!userId,
+    }
   );
-
   const allSessions = useMemo(
     () =>
       [...(Array.isArray(sessions) ? sessions : [])].sort(
@@ -108,7 +133,6 @@ export function AIInterviewListPage() {
       ),
     [sessions]
   );
-
   const activeSessions = useMemo(
     () =>
       allSessions.filter(
@@ -116,7 +140,6 @@ export function AIInterviewListPage() {
       ),
     [allSessions]
   );
-
   const historySessions = useMemo(() => {
     // Session bị loại khỏi activeSessions (không phải IN_PROGRESS, không có sessionKey, hoặc đã hết hạn) → vào lịch sử
     const list = allSessions.filter(
@@ -130,7 +153,6 @@ export function AIInterviewListPage() {
       return modeLabel.toLowerCase().includes(q) || domain.toLowerCase().includes(q);
     });
   }, [allSessions, searchQuery]);
-
   const sortableHistorySessions = useMemo(() => {
     return historySessions.map((session) => ({
       ...session,
@@ -142,7 +164,6 @@ export function AIInterviewListPage() {
       statusSortValue: (session.status ?? "").toUpperCase(),
     }));
   }, [historySessions]);
-
   const { sortedData: sortedHistorySessions, getSortProps: getHistorySortProps } = useSortable(
     sortableHistorySessions,
     {
@@ -157,25 +178,20 @@ export function AIInterviewListPage() {
       },
     }
   );
-
   const historyPagination = usePagination({
     totalCount: sortedHistorySessions.length,
     pageSize: historyPageSize,
   });
-
   const historyPageData = useMemo(
     () => sortedHistorySessions.slice(historyPagination.startIndex, historyPagination.endIndex + 1),
     [historyPagination.endIndex, historyPagination.startIndex, sortedHistorySessions]
   );
-
   const handleResume = (key: string) => {
     navigate(`/user/ai-interview/session?sessionKey=${key}`);
   };
-
   const handleViewResult = (sessionId: number | undefined) => {
     navigate(`/user/ai-interview/result/${sessionId}`);
   };
-
   return (
     <div className="bg-background min-h-screen p-8">
       {/* Top Banner */}
@@ -184,19 +200,16 @@ export function AIInterviewListPage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-white" />
-              <h1 className="text-3xl font-bold text-white">Phỏng vấn với AI</h1>
+              <h1 className="text-3xl font-bold text-white">{t("common.interviewWithAi")}</h1>
             </div>
-            <p className="max-w-lg text-lg text-white/90">
-              Luyện tập với AI để cải thiện kỹ năng phỏng vấn. Nhận phản hồi chi tiết và điểm số
-              ngay lập tức!
-            </p>
+            <p className="max-w-lg text-lg text-white/90">{t("general.practiceWithAiToImprove")}</p>
             <Button
               variant="secondary"
               size="lg"
               className="mt-2 w-fit"
               onClick={() => navigate("/user/ai-interview/setup")}>
               <Plus className="mr-2 h-5 w-5" />
-              Bắt đầu phỏng vấn mới
+              {t("userAiinterview.startNewInterview")}
             </Button>
           </div>
           <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
@@ -227,8 +240,12 @@ export function AIInterviewListPage() {
       {/* Error */}
       {isError && (
         <Card className="flex h-64 flex-col items-center justify-center gap-4">
-          <p className="text-destructive font-medium">Không thể tải lịch sử phỏng vấn</p>
-          <p className="text-muted-foreground text-sm">Vui lòng thử lại sau</p>
+          <p className="text-destructive font-medium">
+            {t("common.unableToDownloadInterviewHistory")}
+          </p>
+          <p className="text-muted-foreground text-sm">
+            {t("userAiinterview.pleaseTryAgainLater")}
+          </p>
         </Card>
       )}
 
@@ -238,16 +255,18 @@ export function AIInterviewListPage() {
           {activeSessions.length > 0 && (
             <section>
               <div className="mb-4">
-                <h2 className="text-foreground text-2xl font-bold">Phiên đang tiến hành</h2>
+                <h2 className="text-foreground text-2xl font-bold">
+                  {t("userAiinterview.sessionInProgress")}
+                </h2>
                 <p className="text-muted-foreground text-sm">
-                  Các buổi phỏng vấn chưa hoàn thành — còn hiệu lực trong 1 giờ từ lúc tạo
+                  {t("userAiinterview.incompleteInterviewsValidFor1")}
                 </p>
               </div>
               <div className="space-y-4">
                 {activeSessions.map((session, index) => {
                   const activeKey = session.sessionKey!;
                   const modeLabel =
-                    MODE_LABELS[session.mode ?? ""] ?? session.mode ?? "Phỏng vấn AI";
+                    MODE_LABELS[session.mode ?? ""] ?? session.mode ?? t("common.aiInterview");
                   const targetRole = session.candidateProfile?.targetRole;
                   const targetLevel = session.candidateProfile?.targetLevel;
                   const difficulty = session.sessionConfig?.difficulty;
@@ -288,18 +307,24 @@ export function AIInterviewListPage() {
                           <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
-                              <span>Tạo: {formatUtcNaiveDateTime(session.createdAt)}</span>
+                              <span>
+                                {t("common.create")} {formatUtcNaiveDateTime(session.createdAt)}
+                              </span>
                             </div>
                             {session.updatedAt && (
                               <div className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
-                                <span>Cập nhật: {formatUtcNaiveDateTime(session.updatedAt)}</span>
+                                <span>
+                                  {t("common.update")} {formatUtcNaiveDateTime(session.updatedAt)}
+                                </span>
                               </div>
                             )}
                             {session.sessionConfig?.duration_minutes && (
                               <div className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
-                                <span>{session.sessionConfig.duration_minutes} phút</span>
+                                <span>
+                                  {session.sessionConfig.duration_minutes} {t("common.minute")}
+                                </span>
                               </div>
                             )}
                             {language && (
@@ -310,7 +335,9 @@ export function AIInterviewListPage() {
                             )}
                           </div>
                           <div className="mt-3 flex flex-wrap gap-2">
-                            <Badge className="bg-amber-100 text-amber-700">Đang diễn ra</Badge>
+                            <Badge className="bg-amber-100 text-amber-700">
+                              {t("common.ongoing")}
+                            </Badge>
                             {session.domain && (
                               <Badge variant="secondary">
                                 {DOMAIN_LABELS[session.domain] ?? session.domain}
@@ -331,7 +358,7 @@ export function AIInterviewListPage() {
                           className="bg-amber-500 text-white hover:bg-amber-600"
                           onClick={() => handleResume(activeKey)}>
                           <Play className="mr-1 h-3.5 w-3.5" />
-                          Tiếp tục phỏng vấn
+                          {t("userAiinterview.continueInterview")}
                         </Button>
                       </CardContent>
                     </Card>
@@ -345,9 +372,11 @@ export function AIInterviewListPage() {
           <section>
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-foreground text-2xl font-bold">Lịch sử phỏng vấn</h2>
+                <h2 className="text-foreground text-2xl font-bold">
+                  {t("common.interviewHistory")}
+                </h2>
                 <p className="text-muted-foreground text-sm">
-                  Xem lại các buổi phỏng vấn trước đây
+                  {t("userAiinterview.reviewPreviousInterviews")}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -355,7 +384,7 @@ export function AIInterviewListPage() {
                   <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                   <Input
                     type="text"
-                    placeholder="Tìm kiếm theo chế độ, lĩnh vực..."
+                    placeholder={t("userAiinterview.searchByModeField")}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -369,16 +398,24 @@ export function AIInterviewListPage() {
                     await refetch();
                   }}
                   isLoading={isRefetching}
-                  tooltip="Tải lại lịch sử phỏng vấn AI"
+                  tooltip={t("userAiinterview.reloadAiInterviewHistory")}
                 />
               </div>
 
               {sortedHistorySessions.length > 0 && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <SortButton {...getHistorySortProps("createdAtSortValue")}>Mới nhất</SortButton>
-                  <SortButton {...getHistorySortProps("scoreSortValue")}>Điểm số</SortButton>
-                  <SortButton {...getHistorySortProps("modeSortValue")}>Chế độ</SortButton>
-                  <SortButton {...getHistorySortProps("statusSortValue")}>Trạng thái</SortButton>
+                  <SortButton {...getHistorySortProps("createdAtSortValue")}>
+                    {t("common.latest")}
+                  </SortButton>
+                  <SortButton {...getHistorySortProps("scoreSortValue")}>
+                    {t("userAiinterview.score")}
+                  </SortButton>
+                  <SortButton {...getHistorySortProps("modeSortValue")}>
+                    {t("userAiinterview.regime")}
+                  </SortButton>
+                  <SortButton {...getHistorySortProps("statusSortValue")}>
+                    {t("common.status")}
+                  </SortButton>
                 </div>
               )}
             </div>
@@ -389,12 +426,16 @@ export function AIInterviewListPage() {
                   (session.status === "CREATED" || session.status === "IN_PROGRESS") &&
                   (session.sessionKey == null || isSessionExpired(session.createdAt));
                 const statusConfig = isExpired
-                  ? { label: "Đã hết hạn", className: "bg-gray-100 text-gray-600" }
+                  ? {
+                      label: t("userAiinterview.expired"),
+                      className: "bg-gray-100 text-gray-600",
+                    }
                   : (STATUS_CONFIG[session.status ?? ""] ?? {
                       label: session.status,
                       className: "bg-gray-100 text-gray-700",
                     });
-                const modeLabel = MODE_LABELS[session.mode ?? ""] ?? session.mode ?? "Phỏng vấn AI";
+                const modeLabel =
+                  MODE_LABELS[session.mode ?? ""] ?? session.mode ?? t("common.aiInterview");
                 const hasScore =
                   session.overallScore !== undefined && session.overallScore !== null;
                 const histTargetRole = session.candidateProfile?.targetRole;
@@ -404,7 +445,6 @@ export function AIInterviewListPage() {
                 const jobTitle = (
                   session.jobRequirement?.basic_info as Record<string, string> | undefined
                 )?.job_title;
-
                 return (
                   <Card
                     key={session.id}
@@ -443,24 +483,33 @@ export function AIInterviewListPage() {
                         <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
-                            <span>Tạo: {formatUtcNaiveDateTime(session.createdAt)}</span>
+                            <span>
+                              {t("common.create")} {formatUtcNaiveDateTime(session.createdAt)}
+                            </span>
                           </div>
                           {session.updatedAt && (
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
-                              <span>Cập nhật: {formatUtcNaiveDateTime(session.updatedAt)}</span>
+                              <span>
+                                {t("common.update")} {formatUtcNaiveDateTime(session.updatedAt)}
+                              </span>
                             </div>
                           )}
                           {session.completedAt && (
                             <div className="flex items-center gap-1">
                               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                              <span>Hoàn thành: {formatUtcNaiveDateTime(session.completedAt)}</span>
+                              <span>
+                                {t("userAiinterview.complete")}{" "}
+                                {formatUtcNaiveDateTime(session.completedAt)}
+                              </span>
                             </div>
                           )}
                           {session.sessionConfig?.duration_minutes && (
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
-                              <span>{session.sessionConfig.duration_minutes} phút</span>
+                              <span>
+                                {session.sessionConfig.duration_minutes} {t("common.minute")}
+                              </span>
                             </div>
                           )}
                           {histLanguage && (
@@ -508,7 +557,9 @@ export function AIInterviewListPage() {
                             </span>
                             <span className="text-sm text-emerald-600">/10</span>
                           </div>
-                          <span className="text-muted-foreground text-xs">Điểm số</span>
+                          <span className="text-muted-foreground text-xs">
+                            {t("userAiinterview.score")}
+                          </span>
                         </div>
                       )}
 
@@ -518,7 +569,7 @@ export function AIInterviewListPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleViewResult(session.id)}>
-                          Xem chi tiết
+                          {t("common.seeDetails")}
                         </Button>
                       )}
                     </CardContent>
@@ -549,13 +600,13 @@ export function AIInterviewListPage() {
                   <div className="text-center">
                     <p className="text-foreground font-medium">
                       {searchQuery
-                        ? "Không tìm thấy buổi phỏng vấn nào"
-                        : "Chưa có buổi phỏng vấn nào"}
+                        ? t("userAiinterview.noInterviewsFound")
+                        : t("userAiinterview.thereHaveBeenNoInterviews")}
                     </p>
                     <p className="text-muted-foreground mt-1 text-sm">
                       {searchQuery
-                        ? "Hãy thử tìm kiếm với từ khóa khác"
-                        : "Bắt đầu phỏng vấn mới để luyện tập"}
+                        ? t("common.trySearchingWithOtherKeywords")
+                        : t("userAiinterview.startANewInterviewFor")}
                     </p>
                   </div>
                 </Card>
@@ -567,15 +618,17 @@ export function AIInterviewListPage() {
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
                     <Plus className="h-10 w-10 text-white" />
                   </div>
-                  <CardTitle className="text-2xl text-white">Bắt đầu buổi phỏng vấn mới</CardTitle>
+                  <CardTitle className="text-2xl text-white">
+                    {t("general.startANewInterviewSession")}
+                  </CardTitle>
                   <CardDescription className="text-white/90">
-                    Luyện tập với AI để cải thiện kỹ năng phỏng vấn của bạn
+                    {t("userAiinterview.practiceWithAiToImprove")}
                   </CardDescription>
                   <Button
                     variant="secondary"
                     size="lg"
                     onClick={() => navigate("/user/ai-interview/setup")}>
-                    Tạo phỏng vấn mới
+                    {t("userAiinterview.createNewInterview")}
                   </Button>
                 </CardContent>
               </Card>

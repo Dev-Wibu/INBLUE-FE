@@ -1,3 +1,9 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { formatCurrency, formatDate } from "@/lib/formatting";
+import { openUrlInNewTab } from "@/lib/media-file-utils";
 import {
   Award,
   BookOpen,
@@ -13,16 +19,8 @@ import {
   User,
   X,
 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { formatCurrency, formatDate } from "@/lib/formatting";
-import { openUrlInNewTab } from "@/lib/media-file-utils";
-
+import { useTranslation } from "react-i18next";
 import type { MentorProfileData } from "./types";
-
 interface MentorProfileSectionProps {
   mentorProfile: MentorProfileData;
   isEditing: boolean;
@@ -37,7 +35,6 @@ interface MentorProfileSectionProps {
   onClearAvatar: () => void;
   onInputChange: (_field: keyof MentorProfileData, _value: string | number) => void;
 }
-
 export function MentorProfileSection({
   mentorProfile,
   isEditing,
@@ -52,6 +49,7 @@ export function MentorProfileSection({
   onClearAvatar,
   onInputChange,
 }: MentorProfileSectionProps) {
+  const { t } = useTranslation();
   return (
     <>
       {/* Avatar Section */}
@@ -102,20 +100,16 @@ export function MentorProfileSection({
           <div className="mt-2 flex items-center justify-center gap-4">
             <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-slate-400">
               <Star className="h-4 w-4 text-yellow-500" />
-              {mentorProfile.totalSession || 0} phiên
+              {mentorProfile.totalSession || 0} {t("common.session1")}
             </span>
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                mentorProfile.active
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                  : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
-              }`}>
-              {mentorProfile.active ? "Đang hoạt động" : "Không hoạt động"}
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${mentorProfile.active ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"}`}>
+              {mentorProfile.active ? t("common.active") : t("mentorAccount.inactive")}
             </span>
           </div>
           {mentorProfile.createdAt && (
             <p className="mt-1 font-['Inter'] text-base font-normal text-gray-500 dark:text-slate-400">
-              Mentor từ {formatDate(mentorProfile.createdAt)}
+              {t("mentorAccount.mentorFrom")} {formatDate(mentorProfile.createdAt)}
             </p>
           )}
         </div>
@@ -127,25 +121,29 @@ export function MentorProfileSection({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h3 className="font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
-                Thông tin cá nhân
+                {t("common.personalInformation")}
               </h3>
-              <Button variant="ghost" size="icon" onClick={onRefreshData} title="Làm mới dữ liệu">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onRefreshData}
+                title={t("common.refreshData")}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
             {!isEditing ? (
               <Button variant="outline" size="sm" onClick={onStartEdit}>
-                Chỉnh sửa
+                {t("general.edit")}
               </Button>
             ) : (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={onCancelEdit} disabled={isSaving}>
                   <X className="mr-1 h-4 w-4" />
-                  Hủy
+                  {t("general.cancel")}
                 </Button>
                 <Button size="sm" onClick={onSaveProfile} disabled={isSaving}>
                   <Save className="mr-1 h-4 w-4" />
-                  {isSaving ? "Đang lưu..." : "Lưu"}
+                  {isSaving ? t("common.saving") : t("general.save")}
                 </Button>
               </div>
             )}
@@ -160,7 +158,9 @@ export function MentorProfileSection({
                 <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div className="flex-1">
-                <Label className="text-sm text-gray-500 dark:text-slate-400">Họ và tên</Label>
+                <Label className="text-sm text-gray-500 dark:text-slate-400">
+                  {t("common.fullName")}
+                </Label>
                 {isEditing ? (
                   <Input
                     value={formData.name || ""}
@@ -184,7 +184,7 @@ export function MentorProfileSection({
                 <div className="flex items-center gap-2">
                   <Label className="text-sm text-gray-500 dark:text-slate-400">Email</Label>
                   <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-slate-400">
-                    Không thể thay đổi
+                    {t("common.cannotBeChanged")}
                   </span>
                 </div>
                 <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
@@ -200,19 +200,19 @@ export function MentorProfileSection({
               </div>
               <div className="flex-1">
                 <Label className="text-sm text-gray-500 dark:text-slate-400">
-                  Giới thiệu bản thân
+                  {t("common.introduceYourself")}
                 </Label>
                 {isEditing ? (
                   <Textarea
                     value={formData.bio || ""}
                     onChange={(e) => onInputChange("bio", e.target.value)}
                     className="mt-1"
-                    placeholder="Viết vài dòng giới thiệu về bản thân..."
+                    placeholder={t("mentorAccount.writeAFewLinesIntroducing")}
                     rows={3}
                   />
                 ) : (
                   <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                    {mentorProfile.bio || "Chưa cập nhật"}
+                    {mentorProfile.bio || t("common.notUpdatedYet")}
                   </p>
                 )}
               </div>
@@ -225,7 +225,7 @@ export function MentorProfileSection({
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/50">
         <div className="border-b border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40">
           <h3 className="font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
-            Thông tin nghề nghiệp
+            {t("common.careerInformation")}
           </h3>
         </div>
 
@@ -237,18 +237,20 @@ export function MentorProfileSection({
                 <Briefcase className="h-5 w-5 text-orange-500" />
               </div>
               <div className="flex-1">
-                <Label className="text-sm text-gray-500 dark:text-slate-400">Chuyên môn</Label>
+                <Label className="text-sm text-gray-500 dark:text-slate-400">
+                  {t("common.expertise")}
+                </Label>
                 {isEditing ? (
                   <Textarea
                     value={formData.expertise || ""}
                     onChange={(e) => onInputChange("expertise", e.target.value)}
                     className="mt-1"
-                    placeholder="VD: React, Node.js, AWS, Thiết kế hệ thống..."
+                    placeholder={t("mentorAccount.forExampleReactNodeJs")}
                     rows={2}
                   />
                 ) : (
                   <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                    {mentorProfile.expertise || "Chưa cập nhật"}
+                    {mentorProfile.expertise || t("common.notUpdatedYet")}
                   </p>
                 )}
               </div>
@@ -261,7 +263,7 @@ export function MentorProfileSection({
               </div>
               <div className="flex-1">
                 <Label className="text-sm text-gray-500 dark:text-slate-400">
-                  Số năm kinh nghiệm
+                  {t("common.numberOfYearsOfExperience")}
                 </Label>
                 {isEditing ? (
                   <Input
@@ -277,7 +279,7 @@ export function MentorProfileSection({
                   />
                 ) : (
                   <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                    {mentorProfile.yearsOfExperience || 0} năm
+                    {mentorProfile.yearsOfExperience || 0} {t("common.year")}
                   </p>
                 )}
               </div>
@@ -290,18 +292,18 @@ export function MentorProfileSection({
               </div>
               <div className="flex-1">
                 <Label className="text-sm text-gray-500 dark:text-slate-400">
-                  Công ty hiện tại
+                  {t("common.currentCompany")}
                 </Label>
                 {isEditing ? (
                   <Input
                     value={formData.currentCompany || ""}
                     onChange={(e) => onInputChange("currentCompany", e.target.value)}
                     className="mt-1"
-                    placeholder="VD: Tập đoàn công nghệ lớn, công ty sản phẩm, công ty outsourcing..."
+                    placeholder={t("mentorAccount.forExampleLargeTechnologyCorporations")}
                   />
                 ) : (
                   <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                    {mentorProfile.currentCompany || "Chưa cập nhật"}
+                    {mentorProfile.currentCompany || t("common.notUpdatedYet")}
                   </p>
                 )}
               </div>
@@ -314,7 +316,7 @@ export function MentorProfileSection({
               </div>
               <div className="flex-1">
                 <Label className="text-sm text-gray-500 dark:text-slate-400">
-                  Đơn giá mỗi phút
+                  {t("mentorAccount.unitPricePerMinute")}
                 </Label>
                 {isEditing ? (
                   <Input
@@ -326,13 +328,15 @@ export function MentorProfileSection({
                       onInputChange("pricePerMinute", value === "" ? 0 : parseInt(value, 10));
                     }}
                     className="mt-1"
-                    placeholder="Nhập đơn giá (VNĐ)"
+                    placeholder={t("mentorAccount.enterUnitPriceVnd")}
                   />
                 ) : (
                   <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
                     {mentorProfile.pricePerMinute && mentorProfile.pricePerMinute > 0
-                      ? `${formatCurrency(mentorProfile.pricePerMinute)} / phút`
-                      : "Chưa cập nhật"}
+                      ? t("common.var0Min", {
+                          var_0: formatCurrency(mentorProfile.pricePerMinute),
+                        })
+                      : t("common.notUpdatedYet")}
                   </p>
                 )}
               </div>
@@ -345,7 +349,7 @@ export function MentorProfileSection({
               </div>
               <div className="flex-1">
                 <Label className="text-sm text-gray-500 dark:text-slate-400">
-                  Đường dẫn LinkedIn
+                  {t("common.linkedinLink")}
                 </Label>
                 {isEditing ? (
                   <Input
@@ -368,7 +372,7 @@ export function MentorProfileSection({
                   </a>
                 ) : (
                   <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                    Chưa cập nhật
+                    {t("common.notUpdatedYet")}
                   </p>
                 )}
               </div>
@@ -381,7 +385,7 @@ export function MentorProfileSection({
               </div>
               <div className="flex-1">
                 <Label className="text-sm text-gray-500 dark:text-slate-400">
-                  Đánh giá trung bình
+                  {t("common.averageRating")}
                 </Label>
                 <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
                   {mentorProfile.averageRating ? mentorProfile.averageRating.toFixed(1) : "0.0"}/5

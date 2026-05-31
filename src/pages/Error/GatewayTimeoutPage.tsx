@@ -1,9 +1,11 @@
 import { Clock, Home, RefreshCcw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 
 export function GatewayTimeoutPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleRefresh = () => {
@@ -26,28 +28,29 @@ export function GatewayTimeoutPage() {
         </div>
 
         {/* Title & Description */}
-        <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">Hết thời gian chờ</h1>
+        <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+          {t("error_gatewaytimeoutpage.tsx.het_thoi_gian_cho")}
+        </h1>
         <p className="mb-8 max-w-md text-gray-600 dark:text-slate-400">
-          Máy chủ không phản hồi kịp thời. Điều này có thể do mạng chậm hoặc máy chủ đang quá tải.
-          Vui lòng thử lại sau.
+          {t("error_gatewaytimeoutpage.tsx.may_chu_khong_phan_hoi_kip_thoi_ieu_nay_")}
         </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button variant="outline" onClick={handleRefresh} className="gap-2">
             <RefreshCcw className="h-4 w-4" />
-            Tải lại trang
+            {t("error_serviceunavailablepage.tsx.tai_lai_trang")}
           </Button>
           <Button onClick={() => navigate("/")} className="gap-2 bg-blue-600 hover:bg-blue-700">
             <Home className="h-4 w-4" />
-            Về trang chủ
+            {t("error_unauthorizedpage.tsx.ve_trang_chu")}
           </Button>
         </div>
       </div>
 
       {/* Footer */}
       <div className="mt-16 text-sm text-gray-500 dark:text-slate-500">
-        Mã lỗi: 504 - Hết thời gian chờ cổng
+        {t("error_gatewaytimeoutpage.tsx.ma_loi_504_het_thoi_gian_cho_cong")}
       </div>
     </div>
   );

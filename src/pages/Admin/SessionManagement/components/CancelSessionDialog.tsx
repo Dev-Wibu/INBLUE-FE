@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next";
 
 import type { Session } from "../types";
 
@@ -24,22 +25,24 @@ export function CancelSessionDialog({
   session,
   onConfirm,
 }: CancelSessionDialogProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Hủy Buổi Học</AlertDialogTitle>
+          <AlertDialogTitle>{t("general.cancelSession")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn hủy buổi học "{session?.roomName || `#${session?.id}`}"? Hành động
-            này không thể hoàn tác.
+            {t("adminSessionmanagement.areYouSureYouWant")}
+            {session?.roomName || `#${session?.id}`}
+            {t("adminSessionmanagement.actionThisCannotBeUndone")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Đóng</AlertDialogCancel>
+          <AlertDialogCancel>{t("general.close")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600">
-            Xác nhận hủy
+            {t("adminSessionmanagement.confirmCancellation")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,4 +1,20 @@
+import icon2 from "@/assets/icon2.svg";
+import { NotificationBell } from "@/components/notification";
+import type { SidebarMenuGroup } from "@/components/shared";
+import {
+  DashboardBreadcrumb,
+  DashboardSidebar,
+  DashboardSidebarToggle,
+  getInitialSidebarCollapsed,
+  SettingsModal,
+} from "@/components/shared";
+import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
+import { useDashboardBreadcrumb } from "@/hooks/useDashboardBreadcrumb";
+import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
+import { useTabsState } from "@/hooks/useTabsState";
+import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
 import { cn } from "@/lib/utils";
+import { useSettingsStore } from "@/stores/settingsStore";
 import {
   Bot,
   Briefcase,
@@ -14,25 +30,6 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
-
-import icon2 from "@/assets/icon2.svg";
-
-import { NotificationBell } from "@/components/notification";
-import type { SidebarMenuGroup } from "@/components/shared";
-import {
-  DashboardBreadcrumb,
-  DashboardSidebar,
-  DashboardSidebarToggle,
-  getInitialSidebarCollapsed,
-  SettingsModal,
-} from "@/components/shared";
-import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
-import { useDashboardBreadcrumb } from "@/hooks/useDashboardBreadcrumb";
-import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
-import { useTabsState } from "@/hooks/useTabsState";
-import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
-import { useSettingsStore } from "@/stores/settingsStore";
-
 import { AccountPage } from "../Account";
 import { AIInterviewListPage } from "../AIInterview";
 import { ApplicationHistoryPage } from "../ApplicationHistory";
@@ -44,7 +41,6 @@ import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
 import { UserNotificationsPage } from "../Notifications";
 import { OverviewPage } from "../Overview";
 import { PracticeQuestionsPage, PracticeSetsPage } from "../Practice";
-
 type TabType =
   | "homeFeed"
   | "overview"
@@ -59,7 +55,6 @@ type TabType =
   | "notifications"
   | "messenger"
   | "account";
-
 const isValidTabType = (value: string): value is TabType => {
   return [
     "homeFeed",
@@ -77,32 +72,79 @@ const isValidTabType = (value: string): value is TabType => {
     "account",
   ].includes(value as TabType);
 };
-
-const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; label: string }> => [
-  { type: "homeFeed", label: t("common.home") },
-  { type: "overview", label: t("common.overview") },
-  { type: "mentors", label: t("sidebar.mentors_list") },
-  { type: "mockInterview", label: t("navigation.mentor_interview_alt") },
-  { type: "interviewHistory", label: t("sidebar.interview_history") },
-  { type: "applicationHistory", label: t("sidebar.application_history") },
-  { type: "feedback", label: t("sidebar.mentor_feedback") },
-  { type: "aiInterview", label: t("navigation.ai_interview_alt") },
-  { type: "practice", label: t("sidebar.practice_sets") },
-  { type: "practiceQuestions", label: t("sidebar.practice_questions") },
-  { type: "notifications", label: t("settings.notifications") },
-  { type: "messenger", label: t("common.messages") },
-  { type: "account", label: t("common.account") },
+const getAvailableTabs = (
+  t: (key: string) => string
+): Array<{
+  type: TabType;
+  label: string;
+}> => [
+  {
+    type: "homeFeed",
+    label: t("common.home"),
+  },
+  {
+    type: "overview",
+    label: t("common.overview"),
+  },
+  {
+    type: "mentors",
+    label: t("common.mentors"),
+  },
+  {
+    type: "mockInterview",
+    label: t("common.interviewWithMentor"),
+  },
+  {
+    type: "interviewHistory",
+    label: t("common.interviewHistory"),
+  },
+  {
+    type: "applicationHistory",
+    label: t("common.applicationHistory"),
+  },
+  {
+    type: "feedback",
+    label: t("common.feedbackFromMentors"),
+  },
+  {
+    type: "aiInterview",
+    label: t("common.aiInterview1"),
+  },
+  {
+    type: "practice",
+    label: t("common.trainingSet"),
+  },
+  {
+    type: "practiceQuestions",
+    label: t("common.practiceQuestions"),
+  },
+  {
+    type: "notifications",
+    label: t("common.notification"),
+  },
+  {
+    type: "messenger",
+    label: t("common.messages"),
+  },
+  {
+    type: "account",
+    label: t("common.account"),
+  },
 ];
-
 const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] => [
   {
-    label: t("sidebar.home_group"),
+    label: t("common.home"),
     items: [
-      { type: "homeFeed", icon: Newspaper, label: t("common.home"), color: "text-orange-600" },
+      {
+        type: "homeFeed",
+        icon: Newspaper,
+        label: t("common.home"),
+        color: "text-orange-600",
+      },
     ],
   },
   {
-    label: t("sidebar.interview_group"),
+    label: t("common.interview"),
     items: [
       {
         type: "overview",
@@ -113,60 +155,60 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
       {
         type: "mentors",
         icon: UserIcon,
-        label: t("sidebar.mentors_list"),
+        label: t("common.mentors"),
         color: "text-indigo-600",
       },
       {
         type: "mockInterview",
         icon: Users,
-        label: t("navigation.mentor_interview_alt"),
+        label: t("common.interviewWithMentor"),
         color: "text-purple-600",
       },
       {
         type: "interviewHistory",
         icon: History,
-        label: t("sidebar.interview_history"),
+        label: t("common.interviewHistory"),
         color: "text-orange-600",
       },
       {
         type: "applicationHistory",
         icon: Briefcase,
-        label: t("sidebar.application_history"),
+        label: t("common.applicationHistory"),
         color: "text-teal-600",
       },
       {
         type: "feedback",
         icon: MessageSquare,
-        label: t("sidebar.mentor_feedback"),
+        label: t("common.feedbackFromMentors"),
         color: "text-cyan-600",
       },
     ],
   },
   {
-    label: t("sidebar.ai_learning_group"),
+    label: t("common.aiLearning"),
     items: [
       {
         type: "aiInterview",
         icon: Bot,
-        label: t("navigation.ai_interview_alt"),
+        label: t("common.aiInterview1"),
         color: "text-green-600",
       },
       {
         type: "practice",
         icon: GraduationCap,
-        label: t("sidebar.practice"),
+        label: t("common.practice"),
         color: "text-indigo-600",
         children: [
           {
             type: "practice",
             icon: GraduationCap,
-            label: t("sidebar.practice_sets"),
+            label: t("common.trainingSet"),
             color: "text-indigo-600",
           },
           {
             type: "practiceQuestions",
             icon: FileQuestion,
-            label: t("sidebar.practice_questions"),
+            label: t("common.practiceQuestions"),
             color: "text-violet-600",
           },
         ],
@@ -174,7 +216,7 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
     ],
   },
   {
-    label: t("sidebar.personal_group"),
+    label: t("common.individual"),
     items: [
       {
         type: "messenger",
@@ -182,24 +224,25 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         label: t("common.messages"),
         color: "text-blue-500",
       },
-      { type: "account", icon: UserIcon, label: t("common.account"), color: "text-gray-600" },
+      {
+        type: "account",
+        icon: UserIcon,
+        label: t("common.account"),
+        color: "text-gray-600",
+      },
     ],
   },
 ];
-
 const USER_SIDEBAR_LOGO = (
   <>
     <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
     <span className="text-lg font-bold text-[#002654] dark:text-white">INBLUE AI</span>
   </>
 );
-
 const USER_SIDEBAR_LOGO_COLLAPSED = (
   <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
 );
-
 const DEFAULT_TAB: TabType = "homeFeed";
-
 export function UserDashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -215,18 +258,14 @@ export function UserDashboardPage() {
     )
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
   const availableTabs = useMemo(() => getAvailableTabs(t), [t]);
   const sidebarMenuGroups = useMemo(() => getSidebarMenuGroups(t), [t]);
-
   const { activeTab, openTab } = useTabsState({
     storageKey: "user",
     defaultTab: DEFAULT_TAB,
     availableTabs: availableTabs,
   });
-
   const outlet = useOutlet();
-
   const routedTab = getDashboardTabFromPath({
     role: "user",
     pathname: location.pathname,
@@ -241,27 +280,22 @@ export function UserDashboardPage() {
     : isValidTabType(activeTab)
       ? activeTab
       : DEFAULT_TAB;
-
   const { items: breadcrumbItems } = useDashboardBreadcrumb({
     role: "user",
     pathname: location.pathname,
     activeTab: typedActiveTab,
     availableTabs: availableTabs,
   });
-
   const shouldHideScrollButton =
     location.pathname.startsWith("/user/ai-interview/session") ||
     location.pathname.startsWith("/user/mock-interview/room/");
-
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
     setScrollTarget(node);
   }, []);
-
   useDashboardScrollRestoration(contentRef, {
     enabled: typedActiveTab !== "messenger",
   });
-
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");
   }, [sidebarBehavior]);
@@ -277,7 +311,6 @@ export function UserDashboardPage() {
     },
     [outlet, openTab, navigate]
   );
-
   const renderContent = () => {
     switch (typedActiveTab) {
       case "homeFeed":
@@ -307,10 +340,9 @@ export function UserDashboardPage() {
       case "account":
         return <AccountPage />;
       default:
-        return <div>Loại tab không hợp lệ</div>;
+        return <div>{t("common.invalidTabType")}</div>;
     }
   };
-
   return (
     <div className="isolate flex h-screen bg-white dark:bg-slate-950">
       <DashboardSidebar
@@ -324,7 +356,7 @@ export function UserDashboardPage() {
         logo={USER_SIDEBAR_LOGO}
         collapsedLogo={USER_SIDEBAR_LOGO_COLLAPSED}
         showSettings
-        settingsLabel={t("settings.system_settings")}
+        settingsLabel={t("common.systemSettings")}
         onSettingsClick={() => setIsSettingsOpen(true)}
         theme={{
           wrapper: "h-screen flex-shrink-0 border-r border-slate-200 bg-slate-50",

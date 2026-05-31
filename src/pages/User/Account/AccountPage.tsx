@@ -1,7 +1,3 @@
-import { FileText, History, User } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-
 import { CVUploadModal } from "@/components/ui/cv-upload-modal";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { normalizeMajor } from "@/constants/majors";
@@ -17,15 +13,16 @@ import {
 import { formatDate } from "@/lib/formatting";
 import { transactionManager, usersAdminManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
+import { FileText, History, User } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-
 import { ProfileTab, TransactionHistoryTab, WalletTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 import { shouldHideTransactionFromHistory } from "./wallet-mapping";
-
 type AccountSubTab = "profile" | "wallet" | "transactionHistory" | "candidateProfile";
-
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
   if (
     value === "profile" ||
@@ -35,20 +32,17 @@ const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
   ) {
     return value as AccountSubTab;
   }
-
   return null;
 };
-
 const TOP_UP_MIN_AMOUNT = 10_000;
 const TOP_UP_MAX_AMOUNT = 20_000_000;
 const TOP_UP_STEP = 1_000;
 const TOP_UP_PRESET_AMOUNTS = [50_000, 100_000, 200_000, 500_000, 1_000_000, 2_000_000];
-
 export function AccountPage() {
+  const { t } = useTranslation();
   const { user: authUser, setUser } = useAuthStore();
   const authUserId = authUser?.id;
   const [searchParams, setSearchParams] = useSearchParams();
-
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [walletBalance, setWalletBalance] = useState(0);
   const [transactions, setTransactions] = useState<TransactionEntity[]>([]);
@@ -78,16 +72,13 @@ export function AccountPage() {
   // Fetch user data from backend
   const fetchUserData = useCallback(async () => {
     const currentAuthUser = useAuthStore.getState().user;
-
     if (!authUserId || !currentAuthUser) {
       setIsLoading(false);
       return;
     }
-
     if (!hasLoadedUserDataRef.current) {
       setIsLoading(true);
     }
-
     try {
       const response = await usersAdminManager.getById(authUserId);
       if (response.success && response.data) {
@@ -104,14 +95,12 @@ export function AccountPage() {
           cv_public_id: userData.cv_public_id || null,
           createdAt: new Date().toISOString(), // Backend doesn't provide createdAt
         });
-
         const transactionResponse = await transactionManager.getByUserId(Number(authUserId));
         const walletResolution = reconcileWalletBalance({
           userDetailBalance: userData.walletBalance,
           transactions: transactionResponse.success ? transactionResponse.data : undefined,
           authStoreBalance: currentAuthUser.walletBalance,
         });
-
         if (walletResolution.hasMismatch) {
           console.warn("Wallet balance mismatch detected", {
             userId: Number(authUserId),
@@ -120,16 +109,13 @@ export function AccountPage() {
             authStoreBalance: walletResolution.authStoreBalance,
           });
         }
-
         const nextWalletBalance =
           typeof walletResolution.walletBalance === "number"
             ? walletResolution.walletBalance
             : typeof currentAuthUser.walletBalance === "number"
               ? currentAuthUser.walletBalance
               : 0;
-
         setWalletBalance(nextWalletBalance);
-
         if (currentAuthUser.walletBalance !== nextWalletBalance) {
           setUser({
             ...currentAuthUser,
@@ -174,13 +160,11 @@ export function AccountPage() {
       hasLoadedUserDataRef.current = true;
     }
   }, [authUserId, setUser]);
-
   const fetchUserTransactions = useCallback(async () => {
     if (!authUserId) {
       setTransactions([]);
       return;
     }
-
     setIsWalletLoading(true);
     try {
       const response = await transactionManager.getByUserId(Number(authUserId));
@@ -188,11 +172,9 @@ export function AccountPage() {
         const visibleTransactions = response.data.filter(
           (transaction) => !shouldHideTransactionFromHistory(transaction)
         );
-
         const sortedTransactions = [...visibleTransactions].sort((a, b) => {
           return Date.parse(b.createdAt || "") - Date.parse(a.createdAt || "");
         });
-
         setTransactions(sortedTransactions);
       }
     } catch {
@@ -206,28 +188,25 @@ export function AccountPage() {
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
-
   useEffect(() => {
     void fetchUserTransactions();
   }, [fetchUserTransactions]);
-
   useEffect(() => {
     const nextTab = parseAccountSubTab(searchParams.get("subtab")) || "profile";
     setActiveTab((prev) => (prev === nextTab ? prev : nextTab));
   }, [searchParams]);
-
   const handleSwitchTab = useCallback(
     (nextTab: AccountSubTab) => {
       setActiveTab(nextTab);
-
       const nextParams = new URLSearchParams(searchParams);
       if (nextTab === "profile") {
         nextParams.delete("subtab");
       } else {
         nextParams.set("subtab", nextTab);
       }
-
-      setSearchParams(nextParams, { replace: true });
+      setSearchParams(nextParams, {
+        replace: true,
+      });
     },
     [searchParams, setSearchParams]
   );
@@ -240,10 +219,9 @@ export function AccountPage() {
       }
     };
   }, [avatarPreview]);
-
   const handleRefreshData = async () => {
     await Promise.all([fetchUserData(), fetchUserTransactions()]);
-    toast.success("Đã cập nhật dữ liệu!");
+    toast.success(t("common.dataUpdated"));
   };
 
   // Start editing - populate form with current values
@@ -290,23 +268,22 @@ export function AccountPage() {
   // Handle CV upload via dedicated modal
   const handleCvUpload = async (file: File) => {
     if (!userProfile?.id) {
-      toast.error("Không tìm thấy ID người dùng");
+      toast.error(t("userAccount.userIdNotFound"));
       return;
     }
-
     setIsCvUploading(true);
     try {
       const response = await usersAdminManager.uploadCv(userProfile.id, file);
       if (response.success) {
         // Refresh data to get updated CV URL
         await fetchUserData();
-        toast.success("Upload CV thành công!");
+        toast.success(t("common.uploadCvSuccessfully"));
       } else {
-        toast.error(response.error || "Upload CV thất bại");
+        toast.error(response.error || t("common.uploadCvFailed"));
         throw new Error(response.error);
       }
     } catch {
-      throw new Error("Upload CV thất bại");
+      throw new Error(t("common.uploadCvFailed"));
     } finally {
       setIsCvUploading(false);
     }
@@ -315,10 +292,9 @@ export function AccountPage() {
   // Save profile changes to backend
   const handleSaveProfile = async () => {
     if (!userProfile?.id) {
-      toast.error("Không tìm thấy ID người dùng");
+      toast.error(t("userAccount.userIdNotFound"));
       return;
     }
-
     setIsSaving(true);
     try {
       // Call backend API to update user (with optional file uploads)
@@ -332,13 +308,20 @@ export function AccountPage() {
           university: formData.university,
           major: normalizeMajor(formData.major),
           // Include Cloudinary public_id for proper file management (only when present)
-          ...(userProfile.public_id ? { public_id: userProfile.public_id } : {}),
-          ...(userProfile.cv_public_id ? { cv_public_id: userProfile.cv_public_id } : {}),
+          ...(userProfile.public_id
+            ? {
+                public_id: userProfile.public_id,
+              }
+            : {}),
+          ...(userProfile.cv_public_id
+            ? {
+                cv_public_id: userProfile.cv_public_id,
+              }
+            : {}),
         },
         avatarFile || undefined,
         undefined // CV is uploaded separately
       );
-
       if (response.success) {
         // Refresh data from backend to get updated URLs
         await fetchUserData();
@@ -350,17 +333,16 @@ export function AccountPage() {
             ...response.data,
           });
         }
-
-        toast.success("Cập nhật thông tin thành công!");
+        toast.success(t("common.updatedInformationSuccessfully"));
         setIsEditing(false);
         setFormData({});
         setAvatarFile(null);
         setAvatarPreview(null);
       } else {
-        toast.error(response.error || "Cập nhật thất bại. Vui lòng thử lại.");
+        toast.error(response.error || t("common.updateFailedPleaseTryAgain"));
       }
     } catch {
-      toast.error("Cập nhật thất bại. Vui lòng thử lại.");
+      toast.error(t("common.updateFailedPleaseTryAgain"));
     } finally {
       setIsSaving(false);
     }
@@ -368,31 +350,33 @@ export function AccountPage() {
 
   // Handle form input changes
   const handleInputChange = (field: keyof UserProfileData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
-
   const handleTopUpAmountChange = (value: string) => {
     const normalized = value.replace(/[^\d]/g, "");
     setTopUpAmount(normalized);
   };
-
   const handleTopUpWallet = async (amount: number) => {
     if (!authUser?.id) {
-      toast.error("Không tìm thấy tài khoản người dùng");
+      toast.error(t("userAccount.userAccountNotFound"));
       return;
     }
-
     if (topUpInFlightRef.current) {
       return;
     }
-
     if (amount < TOP_UP_MIN_AMOUNT || amount > TOP_UP_MAX_AMOUNT || amount % TOP_UP_STEP !== 0) {
       toast.error(
-        `Số tiền nạp phải từ ${TOP_UP_MIN_AMOUNT.toLocaleString("vi-VN")} đến ${TOP_UP_MAX_AMOUNT.toLocaleString("vi-VN")} và chia hết cho ${TOP_UP_STEP.toLocaleString("vi-VN")}.`
+        t("general.depositAmountMustBeBetween", {
+          var_0: TOP_UP_MIN_AMOUNT.toLocaleString("vi-VN"),
+          var_1: TOP_UP_MAX_AMOUNT.toLocaleString("vi-VN"),
+          var_2: TOP_UP_STEP.toLocaleString("vi-VN"),
+        })
       );
       return;
     }
-
     topUpInFlightRef.current = true;
     setIsTopUpLoading(true);
     try {
@@ -403,20 +387,18 @@ export function AccountPage() {
           amount,
           paymentPurpose: "TOP_UP_WALLET",
           status: "CREATE_FAILED",
-          message: "Tạo link nạp tiền ví thất bại.",
+          message: t("userAccount.creatingWalletDepositLinkFailed"),
           payload: {
             error: response.error || null,
           },
         });
-        toast.error(response.error || "Không thể tạo link nạp tiền.");
+        toast.error(response.error || t("userAccount.unableToCreateDepositLink"));
         return;
       }
-
       const redirectUrl = new URL(response.data, window.location.origin).toString();
       const orderCode = extractOrderCodeFromUrl(redirectUrl) || undefined;
       const transactionCode = extractTransactionCodeFromUrl(redirectUrl) || undefined;
       const checkoutToken = extractCheckoutTokenFromUrl(redirectUrl) || undefined;
-
       const createdRecovery = upsertPaymentRecoveryContext({
         orderCode,
         transactionCode,
@@ -426,9 +408,8 @@ export function AccountPage() {
         paymentPurpose: "TOP_UP_WALLET",
         checkoutUrl: redirectUrl,
         status: "CREATED",
-        note: "Đã tạo checkoutUrl nạp tiền ví.",
+        note: t("userAccount.createdCheckouturlToTopUp"),
       });
-
       addPaymentSupportLog({
         supportCode: createdRecovery.supportCode,
         orderCode,
@@ -438,12 +419,11 @@ export function AccountPage() {
         amount: createdRecovery.amount,
         paymentPurpose: "TOP_UP_WALLET",
         status: "CREATED",
-        message: "Đã tạo checkoutUrl nạp tiền ví thành công.",
+        message: t("userAccount.createdCheckouturlToTopUp1"),
         payload: {
           checkoutUrl: redirectUrl,
         },
       });
-
       const redirectedRecovery = upsertPaymentRecoveryContext({
         supportCode: createdRecovery.supportCode,
         orderCode,
@@ -454,9 +434,8 @@ export function AccountPage() {
         paymentPurpose: "TOP_UP_WALLET",
         checkoutUrl: redirectUrl,
         status: "REDIRECTED",
-        note: "Đã redirect sang trang thanh toán nạp tiền ví.",
+        note: t("userAccount.redirectedToWalletTopUp"),
       });
-
       if (!transactionCode) {
         addPaymentSupportLog({
           supportCode: redirectedRecovery.supportCode,
@@ -466,8 +445,7 @@ export function AccountPage() {
           amount: redirectedRecovery.amount,
           paymentPurpose: "TOP_UP_WALLET",
           status: "UNMAPPED_ORDER",
-          message:
-            "Checkout URL nạp ví chưa có transactionCode, sẽ fallback orderCode có guard khi callback hủy.",
+          message: t("userAccount.checkoutUrlToDepositWallet"),
           payload: {
             orderCode: orderCode || null,
             checkoutToken: checkoutToken || null,
@@ -475,8 +453,7 @@ export function AccountPage() {
           },
         });
       }
-
-      toast.success("Đã tạo link nạp tiền. Đang chuyển hướng...");
+      toast.success(t("userAccount.depositLinkHasBeenCreated"));
       window.location.assign(redirectUrl);
     } catch (error) {
       addPaymentSupportLog({
@@ -484,18 +461,17 @@ export function AccountPage() {
         amount,
         paymentPurpose: "TOP_UP_WALLET",
         status: "CREATE_FAILED",
-        message: "Exception khi tạo link nạp tiền ví.",
+        message: t("userAccount.exceptionWhenCreatingAWallet"),
         payload: {
           error: error instanceof Error ? error.message : "unknown",
         },
       });
-      toast.error("Không thể tạo link nạp tiền.");
+      toast.error(t("userAccount.unableToCreateDepositLink"));
     } finally {
       topUpInFlightRef.current = false;
       setIsTopUpLoading(false);
     }
   };
-
   const renderTabContent = () => {
     switch (activeTab) {
       case "profile":
@@ -554,7 +530,6 @@ export function AccountPage() {
         ) : null;
     }
   };
-
   const tabItems: Array<{
     id: AccountSubTab;
     label: string;
@@ -563,29 +538,27 @@ export function AccountPage() {
   }> = [
     {
       id: "profile",
-      label: "Thông tin cá nhân",
-      description: "Cập nhật hồ sơ, học vấn và CV",
+      label: t("common.personalInformation"),
+      description: t("userAccount.updateYourProfileEducationAnd"),
       icon: User,
     },
     {
       id: "transactionHistory",
-      label: "Lịch sử giao dịch",
-      description: "Xem các khoản thanh toán gần đây",
+      label: t("userAccount.transactionHistory"),
+      description: t("userAccount.viewRecentPayments"),
       icon: History,
     },
     {
       id: "candidateProfile",
-      label: "Hồ sơ ứng viên",
-      description: "Quản lý hồ sơ tuyển dụng cá nhân",
+      label: t("common.candidateProfile"),
+      description: t("userAccount.managePersonalRecruitmentRecords"),
       icon: FileText,
     },
   ];
-
   const summaryAvatar = avatarPreview || userProfile?.avatar || authUser?.avatarUrl || null;
-  const summaryName = userProfile?.name || authUser?.name || "Tài khoản";
+  const summaryName = userProfile?.name || authUser?.name || t("common.account");
   const summaryEmail = userProfile?.email || authUser?.email || "—";
   const summaryJoinedAt = userProfile?.createdAt ? formatDate(userProfile.createdAt) : "—";
-
   return (
     <div className="px-2 pt-6 pb-10">
       <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6">
@@ -614,7 +587,7 @@ export function AccountPage() {
                     {summaryEmail}
                   </p>
                   <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                    Ngày tham gia: {summaryJoinedAt}
+                    {t("userAccount.joinDate")} {summaryJoinedAt}
                   </p>
                 </div>
               </div>
@@ -624,7 +597,7 @@ export function AccountPage() {
 
             <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
               <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
-                Danh mục
+                {t("common.category")}
               </p>
               <div className="mt-3 flex flex-col gap-1">
                 {tabItems.map((tab) => {
@@ -634,17 +607,9 @@ export function AccountPage() {
                     <button
                       key={tab.id}
                       onClick={() => handleSwitchTab(tab.id)}
-                      className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors ${
-                        isActive
-                          ? "border-[#0047AB]/40 bg-[#DCEEFF]/60 text-[#0047AB] shadow-sm dark:border-[#66B2FF]/40 dark:bg-[#0047AB]/20 dark:text-[#66B2FF]"
-                          : "border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                      }`}>
+                      className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors ${isActive ? "border-[#0047AB]/40 bg-[#DCEEFF]/60 text-[#0047AB] shadow-sm dark:border-[#66B2FF]/40 dark:bg-[#0047AB]/20 dark:text-[#66B2FF]" : "border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"}`}>
                       <div
-                        className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                          isActive
-                            ? "bg-white text-[#0047AB] dark:bg-slate-900 dark:text-[#66B2FF]"
-                            : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"
-                        }`}>
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg ${isActive ? "bg-white text-[#0047AB] dark:bg-slate-900 dark:text-[#66B2FF]" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300"}`}>
                         <TabIcon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
@@ -680,7 +645,7 @@ export function AccountPage() {
         onUpload={handleCvUpload}
         isUploading={isCvUploading}
         title="Upload CV"
-        description="Tải lên CV của bạn để mentor có thể xem trước khi phỏng vấn. Chỉ chấp nhận file PDF."
+        description={t("userAccount.uploadYourCvSoThe")}
       />
     </div>
   );

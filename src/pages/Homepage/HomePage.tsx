@@ -1,5 +1,3 @@
-import { CheckCircle2, FileText, Mic, Video } from "lucide-react";
-
 import {
   CompanyGridSection,
   EnhancedStatsSection,
@@ -12,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TestimonialCarousel } from "@/components/ui/testimonial-carousel";
 import { homepageInterviewModes } from "@/constants/homepage";
-
+import { CheckCircle2, FileText, Mic, Video } from "lucide-react";
+import { useTranslation } from "react-i18next";
 export function HomePage() {
+  const { t } = useTranslation();
   return (
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
       {/* Header - Homepage Redesign with 3 main menus */}
@@ -36,14 +36,13 @@ export function HomePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-10 text-center">
             <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              Chế độ phỏng vấn
+              {t("common.interviewMode")}
             </Badge>
             <h2 className="mb-3 text-2xl font-bold tracking-tight text-slate-900 lg:text-3xl dark:text-white">
-              Chọn phong cách phỏng vấn của bạn
+              {t("homepage_homepage.tsx.chon_phong_cach_phong_van_cua_ban")}
             </h2>
             <p className="mx-auto max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-              Thực hành phỏng vấn theo cách phù hợp nhất với bạn. Tất cả các chế độ đều cung cấp
-              phản hồi chất lượng như nhau.
+              {t("homepage_homepage.tsx.thuc_hanh_phong_van_theo_cach_phu_hop_nh")}
             </p>
           </div>
 
@@ -92,10 +91,10 @@ export function HomePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-10 text-center">
             <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              Đánh giá
+              {t("common.evaluate")}
             </Badge>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 lg:text-3xl dark:text-white">
-              Mọi người nói gì về chúng tôi
+              {t("homepage_homepage.tsx.moi_nguoi_noi_gi_ve_chung_toi")}
             </h2>
           </div>
           <div className="mt-8">
@@ -103,7 +102,7 @@ export function HomePage() {
               testimonials={[
                 {
                   id: 1,
-                  name: "Nguyễn Phạm Thu Hà",
+                  name: t("homepage_homepage.tsx.nguyen_pham_thu_ha"),
                   role: "Software Engineering",
                   content:
                     "I always felt confident about coding, but behavioral questions were a different story. AMA Interview helped me practice clear, impactful answers using the STAR method. It gave me the confidence to handle even the toughest behavioral rounds.",
@@ -112,7 +111,7 @@ export function HomePage() {
                 },
                 {
                   id: 2,
-                  name: "Trần Minh Đức",
+                  name: t("homepage_homepage.tsx.tran_minh_uc"),
                   role: "Data Science",
                   content:
                     "The AI interview practice sessions were incredibly helpful. I could practice anytime, anywhere, and the feedback was detailed and actionable. After two weeks of practice, I landed my dream job at a top tech company.",
@@ -121,7 +120,7 @@ export function HomePage() {
                 },
                 {
                   id: 3,
-                  name: "Lê Thị Mai Anh",
+                  name: t("homepage_homepage.tsx.le_thi_mai_anh"),
                   role: "Product Management",
                   content:
                     "As a PM transitioning from engineering, I needed help with product sense questions. InBlue Interview's curated questions and AI feedback helped me understand what interviewers look for. Highly recommend!",
@@ -130,28 +129,25 @@ export function HomePage() {
                 },
                 {
                   id: 4,
-                  name: "Phạm Văn Hùng",
+                  name: t("homepage_homepage.tsx.pham_van_hung"),
                   role: "Frontend Developer",
-                  content:
-                    "Tôi đã chuẩn bị rất nhiều cho các buổi phỏng vấn kỹ thuật nhưng vẫn thất bại. InBlue AI đã giúp tôi thực hành với các câu hỏi thực tế và nhận feedback chi tiết. Sau 1 tháng, tôi đã nhận được offer từ công ty mơ ước!",
+                  content: t("homepage_homepage.tsx.toi_a_chuan_bi_rat_nhieu_cho_cac_buoi_ph"),
                   avatar: null,
                   rating: 5,
                 },
                 {
                   id: 5,
-                  name: "Hoàng Thị Linh",
+                  name: t("homepage_homepage.tsx.hoang_thi_linh"),
                   role: "UX Designer",
-                  content:
-                    "Các câu hỏi phỏng vấn thiết kế rất khó tìm trên mạng. InBlue AI cung cấp những câu hỏi thực tế từ các công ty lớn và hướng dẫn cách trả lời hiệu quả. Tuyệt vời!",
+                  content: t("homepage_homepage.tsx.cac_cau_hoi_phong_van_thiet_ke_rat_kho_t"),
                   avatar: null,
                   rating: 4,
                 },
                 {
                   id: 6,
-                  name: "Ngô Đình Khoa",
+                  name: t("homepage_homepage.tsx.ngo_inh_khoa"),
                   role: "Backend Engineer",
-                  content:
-                    "AI Interview giúp tôi tự tin hơn rất nhiều khi trả lời các câu hỏi behavioral. Feedback chi tiết và gợi ý cải thiện rất hữu ích. Đã recommend cho tất cả bạn bè!",
+                  content: t("homepage_homepage.tsx.ai_interview_giup_toi_tu_tin_hon_rat_nhi"),
                   avatar: null,
                   rating: 5,
                 },

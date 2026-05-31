@@ -1,27 +1,25 @@
-import { Award, ExternalLink, FileText } from "lucide-react";
-import { useState } from "react";
-
 import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
 import { Label } from "@/components/ui/label";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
-
+import { Award, ExternalLink, FileText } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { MentorProfileData } from "./types";
-
 interface MentorDocumentsSectionProps {
   mentorProfile: MentorProfileData;
 }
-
 export function MentorDocumentsSection({ mentorProfile }: MentorDocumentsSectionProps) {
+  const { t } = useTranslation();
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
-
   const handleOpenDocument = (label: string, url: string) => {
-    const kind = inferFileKind({ fileName: url });
+    const kind = inferFileKind({
+      fileName: url,
+    });
     if (kind === "other") {
       openUrlInNewTab(url);
       return;
     }
-
     setViewerItems([
       {
         id: `mentor-doc-${label}`,
@@ -33,12 +31,11 @@ export function MentorDocumentsSection({ mentorProfile }: MentorDocumentsSection
     ]);
     setViewerOpen(true);
   };
-
   return (
     <>
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/50">
         <h3 className="mb-4 font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
-          Giấy tờ đã nộp
+          {t("mentorAccount.documentsSubmitted")}
         </h3>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-1">
@@ -58,7 +55,9 @@ export function MentorDocumentsSection({ mentorProfile }: MentorDocumentsSection
                   <ExternalLink className="h-3 w-3" />
                 </button>
               ) : (
-                <p className="font-['Inter'] text-sm font-medium text-gray-400">Chưa có</p>
+                <p className="font-['Inter'] text-sm font-medium text-gray-400">
+                  {t("shared_speechplaygroundpage.tsx.chua_co")}
+                </p>
               )}
             </div>
           </div>
@@ -70,20 +69,22 @@ export function MentorDocumentsSection({ mentorProfile }: MentorDocumentsSection
             </div>
             <div className="flex-1">
               <Label className="text-sm text-gray-500 dark:text-slate-400">
-                Bằng cấp/Chứng chỉ
+                {t("common.degreecertificate")}
               </Label>
               {mentorProfile.degreeImg ? (
                 <button
                   type="button"
                   onClick={() =>
-                    handleOpenDocument("Bằng cấp/Chứng chỉ", mentorProfile.degreeImg || "")
+                    handleOpenDocument(t("common.degreecertificate"), mentorProfile.degreeImg || "")
                   }
                   className="flex items-center gap-2 bg-transparent p-0 font-['Inter'] text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
                   Xem file
                   <ExternalLink className="h-3 w-3" />
                 </button>
               ) : (
-                <p className="font-['Inter'] text-sm font-medium text-gray-400">Chưa có</p>
+                <p className="font-['Inter'] text-sm font-medium text-gray-400">
+                  {t("shared_speechplaygroundpage.tsx.chua_co")}
+                </p>
               )}
             </div>
           </div>
@@ -94,17 +95,23 @@ export function MentorDocumentsSection({ mentorProfile }: MentorDocumentsSection
               <FileText className="h-5 w-5 text-slate-500" />
             </div>
             <div className="flex-1">
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Tài liệu khác</Label>
+              <Label className="text-sm text-gray-500 dark:text-slate-400">
+                {t("common.otherDocuments")}
+              </Label>
               {mentorProfile.otherFile ? (
                 <button
                   type="button"
-                  onClick={() => handleOpenDocument("Tài liệu khác", mentorProfile.otherFile || "")}
+                  onClick={() =>
+                    handleOpenDocument(t("common.otherDocuments"), mentorProfile.otherFile || "")
+                  }
                   className="flex items-center gap-2 bg-transparent p-0 font-['Inter'] text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
                   Xem file
                   <ExternalLink className="h-3 w-3" />
                 </button>
               ) : (
-                <p className="font-['Inter'] text-sm font-medium text-gray-400">Chưa có</p>
+                <p className="font-['Inter'] text-sm font-medium text-gray-400">
+                  {t("shared_speechplaygroundpage.tsx.chua_co")}
+                </p>
               )}
             </div>
           </div>

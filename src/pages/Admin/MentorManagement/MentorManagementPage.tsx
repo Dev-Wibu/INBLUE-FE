@@ -1,7 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Plus, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,15 +9,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { mentorManager } from "@/services";
+import { Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 import { DeleteMentorDialog, MentorFormDialog, MentorTable } from "./components";
 import type { Mentor, MentorFormData } from "./types";
-
 export function MentorManagementPage() {
+  const { t } = useTranslation();
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
@@ -34,34 +32,35 @@ export function MentorManagementPage() {
   const [formData, setFormData] = useState<Partial<MentorFormData>>({});
 
   // Load mentors using the mentor manager service
-  const loadMentors = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const response = await mentorManager.getAll();
-      if (response.success && response.data) {
-        // Handle both paginated and array responses
-        const mentorData = Array.isArray(response.data) ? response.data : response.data.data;
-        setMentors(mentorData as Mentor[]);
-      } else {
-        toast.error(response.error || "Không thể tải danh sách mentor");
-      }
-    } catch (error) {
-      console.error("Error loading mentors:", error);
-      toast.error("Không thể tải danh sách mentor");
-    } finally {
+  const loadMentors = useCallback(
+    async (showReloading = false) => {
       if (showReloading) {
-        setIsReloading(false);
+        setIsReloading(true);
       } else {
-        setIsInitialLoading(false);
+        setIsInitialLoading(true);
       }
-    }
-  }, []);
-
+      try {
+        const response = await mentorManager.getAll();
+        if (response.success && response.data) {
+          // Handle both paginated and array responses
+          const mentorData = Array.isArray(response.data) ? response.data : response.data.data;
+          setMentors(mentorData as Mentor[]);
+        } else {
+          toast.error(response.error || t("common.unableToLoadMentorList"));
+        }
+      } catch (error) {
+        console.error("Error loading mentors:", error);
+        toast.error(t("common.unableToLoadMentorList"));
+      } finally {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void loadMentors();
   }, [loadMentors]);
@@ -76,7 +75,6 @@ export function MentorManagementPage() {
       if (statusFilter === "inactive" && mentor.active !== false) {
         return false;
       }
-
       if (!searchQuery) return true;
       const lowerQuery = searchQuery.toLowerCase();
       return (
@@ -106,12 +104,10 @@ export function MentorManagementPage() {
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
-
   const handleCreate = () => {
     setFormData({});
     setIsCreateDialogOpen(true);
   };
-
   const handleEdit = (mentor: Mentor) => {
     setSelectedMentor(mentor);
     setFormData({
@@ -127,75 +123,75 @@ export function MentorManagementPage() {
     });
     setIsEditDialogOpen(true);
   };
-
   const handleToggleActive = (mentor: Mentor) => {
     setSelectedMentor(mentor);
     setIsDeleteDialogOpen(true);
   };
-
   const handleSubmitCreate = async () => {
     try {
       const response = await mentorManager.create(formData);
       if (response.success) {
-        toast.success("Đã tạo mentor thành công");
+        toast.success(t("adminMentormanagement.successfullyCreatedMentor"));
         setIsCreateDialogOpen(false);
         void loadMentors(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể tạo mentor");
+        toast.error(response.error || t("common.cannotCreateMentor"));
       }
     } catch (error) {
       console.error("Error creating mentor:", error);
-      toast.error("Không thể tạo mentor");
+      toast.error(t("common.cannotCreateMentor"));
     }
   };
-
   const handleSubmitEdit = async () => {
     if (!selectedMentor?.id) return;
-
     try {
       console.log("Updating mentor with formData:", formData);
       const response = await mentorManager.update(selectedMentor.id, formData);
       if (response.success) {
-        toast.success("Đã cập nhật mentor thành công");
+        toast.success(t("adminMentormanagement.mentorUpdatedSuccessfully"));
         setIsEditDialogOpen(false);
         void loadMentors(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể cập nhật mentor");
+        toast.error(response.error || t("common.unableToUpdateMentor"));
       }
     } catch (error) {
       console.error("Error updating mentor:", error);
-      toast.error("Không thể cập nhật mentor");
+      toast.error(t("common.unableToUpdateMentor"));
     }
   };
-
   const handleConfirmToggle = async () => {
     if (!selectedMentor?.id) return;
-
     try {
       const response = await mentorManager.toggleActive(selectedMentor.id);
       if (response.success) {
-        const action = selectedMentor.active !== false ? "vô hiệu hóa" : "kích hoạt";
-        toast.success(`Đã ${action} mentor thành công`);
+        const action =
+          selectedMentor.active !== false
+            ? t("adminMentormanagement.disable")
+            : t("adminMentormanagement.activate");
+        toast.success(
+          t("general.successfullyMentor", {
+            var_0: action,
+          })
+        );
         setIsDeleteDialogOpen(false);
         void loadMentors(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể thay đổi trạng thái mentor");
+        toast.error(response.error || t("adminMentormanagement.mentorStatusCannotBeChanged"));
       }
     } catch (error) {
       console.error("Error toggling mentor status:", error);
-      toast.error("Không thể thay đổi trạng thái mentor");
+      toast.error(t("adminMentormanagement.mentorStatusCannotBeChanged"));
     }
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản Lý Mentor
+          {t("adminMentormanagement.mentorManagement")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Quản lý tài khoản, hồ sơ và cài đặt mentor
+          {t("adminMentormanagement.manageAccountsProfilesAndMentor")}
         </p>
       </div>
 
@@ -207,7 +203,7 @@ export function MentorManagementPage() {
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo tên, email, chuyên môn..."
+              placeholder={t("common.searchByNameEmailExpertise")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -225,12 +221,12 @@ export function MentorManagementPage() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="Lọc theo trạng thái" />
+              <SelectValue placeholder={t("common.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="active">Đang hoạt động</SelectItem>
-              <SelectItem value="inactive">Ngưng hoạt động</SelectItem>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
+              <SelectItem value="active">{t("common.active")}</SelectItem>
+              <SelectItem value="inactive">{t("common.shutDown")}</SelectItem>
+              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -244,19 +240,19 @@ export function MentorManagementPage() {
                 setStatusFilter("active");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
           <ReloadButton
             onReload={() => loadMentors(true)}
             isLoading={isReloading}
-            tooltip="Tải lại danh sách mentor"
+            tooltip={t("common.reloadMentorList")}
             showLabel
             hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Thêm Mentor
+            {t("adminMentormanagement.addMentor")}
           </Button>
         </div>
       </div>
@@ -264,7 +260,7 @@ export function MentorManagementPage() {
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isInitialLoading ? (
-          <SpinnerBlock size="lg" label="Đang tải danh sách mentor..." />
+          <SpinnerBlock size="lg" label={t("adminMentormanagement.loadingListOfMentors")} />
         ) : (
           <>
             <MentorTable
@@ -295,7 +291,7 @@ export function MentorManagementPage() {
                     setStatusFilter("active");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -310,9 +306,9 @@ export function MentorManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitCreate}
-        title="Thêm Mentor Mới"
-        description="Điền thông tin để tạo tài khoản mentor mới."
-        submitLabel="Tạo Mentor"
+        title={t("adminMentormanagement.addNewMentor")}
+        description={t("adminMentormanagement.fillInTheInformationTo")}
+        submitLabel={t("adminMentormanagement.createMentors")}
       />
 
       {/* Edit Dialog */}
@@ -322,9 +318,9 @@ export function MentorManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitEdit}
-        title="Chỉnh Sửa Mentor"
-        description="Cập nhật thông tin mentor."
-        submitLabel="Lưu thay đổi"
+        title={t("adminMentormanagement.editMentor")}
+        description={t("adminMentormanagement.updateMentorInformation")}
+        submitLabel={t("common.saveChanges")}
         selectedMentor={selectedMentor}
       />
 

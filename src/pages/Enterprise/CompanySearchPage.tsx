@@ -1,29 +1,51 @@
-import { Building2, Search } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-
 import { HomepageHeader } from "@/components/homepage-redesign";
 import { Footer } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { companyManager, type Company } from "@/services/company.manager";
-
+import { Building2, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useSearchParams } from "react-router-dom";
 function getColorScheme(index: number) {
   const schemes = [
-    { bg: "bg-[#0047AB]/10", border: "border-[#0047AB]/20", text: "text-[#0047AB]" },
-    { bg: "bg-red-500/10", border: "border-red-500/20", text: "text-red-500" },
-    { bg: "bg-sky-500/10", border: "border-sky-500/20", text: "text-sky-500" },
-    { bg: "bg-indigo-500/10", border: "border-indigo-500/20", text: "text-indigo-500" },
-    { bg: "bg-[#007BFF]/10", border: "border-[#007BFF]/20", text: "text-[#007BFF]" },
-    { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-500" },
+    {
+      bg: "bg-[#0047AB]/10",
+      border: "border-[#0047AB]/20",
+      text: "text-[#0047AB]",
+    },
+    {
+      bg: "bg-red-500/10",
+      border: "border-red-500/20",
+      text: "text-red-500",
+    },
+    {
+      bg: "bg-sky-500/10",
+      border: "border-sky-500/20",
+      text: "text-sky-500",
+    },
+    {
+      bg: "bg-indigo-500/10",
+      border: "border-indigo-500/20",
+      text: "text-indigo-500",
+    },
+    {
+      bg: "bg-[#007BFF]/10",
+      border: "border-[#007BFF]/20",
+      text: "text-[#007BFF]",
+    },
+    {
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+      text: "text-emerald-500",
+    },
   ];
   return schemes[index % schemes.length];
 }
-
 export function CompanySearchPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
-
   const [searchInput, setSearchInput] = useState(query);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,21 +61,22 @@ export function CompanySearchPage() {
       searchCompanies("");
     }
   }, [query]);
-
   const searchCompanies = async (searchTerm: string) => {
     setIsLoading(true);
     setHasSearched(true);
-
     try {
       const result = await companyManager.getAll();
-
       if (result.success && result.data) {
         let companyList: Company[] = [];
         const data = result.data;
         if (Array.isArray(data)) {
           companyList = data;
         } else if (data && "content" in data) {
-          companyList = (data as { content: Company[] }).content;
+          companyList = (
+            data as {
+              content: Company[];
+            }
+          ).content;
         }
 
         // Filter by search term if provided
@@ -66,7 +89,6 @@ export function CompanySearchPage() {
               company.industry?.toLowerCase().includes(term)
           );
         }
-
         setCompanies(companyList);
       } else {
         setCompanies([]);
@@ -78,17 +100,16 @@ export function CompanySearchPage() {
       setIsLoading(false);
     }
   };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchParams({ q: searchInput });
+    setSearchParams({
+      q: searchInput,
+    });
   };
-
   const handleClear = () => {
     setSearchInput("");
     setSearchParams({});
   };
-
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
       <HomepageHeader />
@@ -102,13 +123,15 @@ export function CompanySearchPage() {
               <Search className="absolute left-4 h-5 w-5 text-slate-400" />
               <Input
                 type="text"
-                placeholder="Tìm kiếm theo tên công ty, ngành nghề..."
+                placeholder={t(
+                  "enterprise_companysearchpage.tsx.tim_kiem_theo_ten_cong_ty_nganh_nghe"
+                )}
                 className="h-12 pr-4 pl-12"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
               <Button type="submit" className="ml-2 h-12 bg-[#0047AB] px-6">
-                Tìm kiếm
+                {t("general.search")}
               </Button>
             </div>
           </form>
@@ -117,14 +140,14 @@ export function CompanySearchPage() {
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {isLoading ? (
-                "Đang tìm kiếm..."
+                t("enterprise_companysearchpage.tsx.ang_tim_kiem")
               ) : (
                 <>
-                  Tìm thấy{" "}
+                  {t("enterprise_companysearchpage.tsx.tim_thay")}{" "}
                   <span className="font-semibold text-slate-900 dark:text-white">
                     {companies.length}
                   </span>{" "}
-                  công ty
+                  {t("userMentorlist.company")}
                   {query && (
                     <span className="ml-2">
                       cho "<span className="font-medium">{query}</span>"
@@ -139,7 +162,7 @@ export function CompanySearchPage() {
                 size="sm"
                 onClick={handleClear}
                 className="text-sm text-slate-500 hover:text-[#0047AB]">
-                Xóa tìm kiếm
+                {t("enterprise_companysearchpage.tsx.xoa_tim_kiem")}
               </Button>
             )}
           </div>
@@ -160,16 +183,16 @@ export function CompanySearchPage() {
                 </div>
               </div>
               <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
-                Không tìm thấy công ty nào
+                {t("enterprise_companysearchpage.tsx.khong_tim_thay_cong_ty_nao")}
               </h3>
               <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-                Thử tìm kiếm với từ khóa khác hoặc xem tất cả công ty
+                {t("enterprise_companysearchpage.tsx.thu_tim_kiem_voi_tu_khoa_khac_hoac_xem_t")}
               </p>
               <Button
                 variant="outline"
                 onClick={handleClear}
                 className="border-[#0047AB] text-[#0047AB] hover:bg-[#0047AB]/10 dark:border-[#66B2FF] dark:text-[#66B2FF]">
-                Xem tất cả công ty
+                {t("enterprise_companysearchpage.tsx.xem_tat_ca_cong_ty")}
               </Button>
             </div>
           )}
@@ -200,16 +223,21 @@ export function CompanySearchPage() {
                       </div>
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${colorScheme.bg} ${colorScheme.text}`}>
-                        {company.jobDescriptions?.length || 0} vị trí
+                        {company.jobDescriptions?.length || 0}{" "}
+                        {t("enterprise_companysearchpage.tsx.vi_tri")}
                       </span>
                     </div>
 
                     <h3 className="mb-2 text-lg font-semibold text-slate-900 transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
-                      {company.name || "Công ty"}
+                      {company.name || t("common.company")}
                     </h3>
 
                     <div className="mb-5 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                      <span>{company.description || company.industry || "Công nghệ"}</span>
+                      <span>
+                        {company.description ||
+                          company.industry ||
+                          t("enterprise_companysearchpage.tsx.cong_nghe")}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between border-t border-slate-200/50 pt-4 dark:border-slate-700/50">
@@ -219,7 +247,7 @@ export function CompanySearchPage() {
                         <div className="h-6 w-6 rounded-full border-2 border-white bg-[#66B2FF] dark:border-slate-800 dark:bg-[#007BFF]/30" />
                       </div>
                       <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                        Nhiều người đã tham gia
+                        {t("enterprise_companysearchpage.tsx.nhieu_nguoi_a_tham_gia")}
                       </span>
                     </div>
                   </Link>

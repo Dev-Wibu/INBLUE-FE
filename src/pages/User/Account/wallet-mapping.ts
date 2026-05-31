@@ -1,9 +1,9 @@
 import type { PaymentPurpose, TransactionEntity } from "@/interfaces";
-
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 export type AccountTransactionDirection = "in" | "out";
 export type AccountTransactionType = "deposit" | "payment" | "refund" | "unknown";
 export type AccountTransactionStatus = "completed" | "pending";
-
 export interface AccountTransactionItem {
   id: number;
   type: AccountTransactionType;
@@ -19,7 +19,6 @@ export interface AccountTransactionItem {
   description: string;
   currentBalance?: number;
 }
-
 const normalizePaymentPurpose = (
   value: TransactionEntity["paymentPurpose"] | ""
 ): PaymentPurpose | "UNKNOWN" => {
@@ -30,33 +29,27 @@ const normalizePaymentPurpose = (
     ? value
     : "UNKNOWN";
 };
-
 const resolvePurpose = (transaction: TransactionEntity): PaymentPurpose | "UNKNOWN" => {
   return normalizePaymentPurpose(
     (transaction.paymentPurpose as TransactionEntity["paymentPurpose"] | "") || ""
   );
 };
-
 const hasMeaningfulDescription = (value: TransactionEntity["description"]): boolean => {
   return typeof value === "string" && value.trim().length > 0;
 };
-
 const hasZeroCurrentBalance = (value: TransactionEntity["currentBalance"]): boolean => {
   return typeof value === "number" && Number.isFinite(value) && value === 0;
 };
-
 export const shouldHideTransactionFromHistory = (transaction: TransactionEntity): boolean => {
   const purpose = resolvePurpose(transaction);
   if (purpose !== "UNKNOWN") {
     return false;
   }
-
   return (
     !hasMeaningfulDescription(transaction.description) &&
     hasZeroCurrentBalance(transaction.currentBalance)
   );
 };
-
 const resolveDirection = (
   transaction: TransactionEntity,
   purpose: PaymentPurpose | "UNKNOWN"
@@ -64,7 +57,6 @@ const resolveDirection = (
   if (purpose === "TOP_UP_WALLET") {
     return "in";
   }
-
   if (
     purpose === "WITHDRAW_FROM_WALLET" ||
     purpose === "BUY_MEMBERSHIP" ||
@@ -72,33 +64,28 @@ const resolveDirection = (
   ) {
     return "out";
   }
-
   if (transaction.transactionType === true) {
     return "in";
   }
-
   if (transaction.transactionType === false) {
     return "out";
   }
-
   return Number(transaction.amount || 0) >= 0 ? "in" : "out";
 };
-
 export const getTransactionPurposeLabel = (purpose: PaymentPurpose | "UNKNOWN"): string => {
   switch (purpose) {
     case "TOP_UP_WALLET":
-      return "Nạp tiền vào ví";
+      return t("userAccount.topUpYourWallet");
     case "WITHDRAW_FROM_WALLET":
-      return "Rút tiền từ ví";
+      return t("userAccount.withdrawMoneyFromWallet");
     case "BUY_MEMBERSHIP":
-      return "Thanh toán gói thành viên";
+      return t("userAccount.payForMembershipPackages");
     case "MENTOR_INTERVIEW":
-      return "Thanh toán phiên mentor";
+      return t("common.payForMentorSessions");
     default:
-      return "Giao dịch chưa phân loại";
+      return t("userAccount.unclassifiedTransactions");
   }
 };
-
 const resolveType = (
   purpose: PaymentPurpose | "UNKNOWN",
   direction: AccountTransactionDirection
@@ -115,17 +102,14 @@ const resolveType = (
       return direction === "in" ? "deposit" : "payment";
   }
 };
-
 const resolveStatus = (
   purpose: PaymentPurpose | "UNKNOWN"
 ): AccountTransactionStatus | undefined => {
   if (purpose === "UNKNOWN") {
     return undefined;
   }
-
   return "completed";
 };
-
 export const mapTransactionToAccountTransaction = (
   transaction: TransactionEntity
 ): AccountTransactionItem => {
@@ -138,8 +122,7 @@ export const mapTransactionToAccountTransaction = (
   const hasClassifiedPurpose = purpose !== "UNKNOWN";
   const description =
     (transaction.description || "").trim() ||
-    (hasClassifiedPurpose ? purposeLabel : "Giao dịch ví");
-
+    (hasClassifiedPurpose ? purposeLabel : t("userAccount.walletTransactions"));
   return {
     id: Number(transaction.id || Date.now()),
     type: resolveType(purpose, direction),

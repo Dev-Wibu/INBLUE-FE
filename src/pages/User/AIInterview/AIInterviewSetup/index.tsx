@@ -1,19 +1,17 @@
-import { ArrowLeft, Briefcase, CheckCircle2, Settings, Sparkles, User } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-
+import { ArrowLeft, Briefcase, CheckCircle2, Settings, Sparkles, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { CandidateProfileStep } from "./CandidateProfileStep";
 import { ConfigStep } from "./ConfigStep";
 import { JobRequirementsStep } from "./JobRequirementsStep";
 import { StepIndicator } from "./StepIndicator";
 import { useAIInterviewSetup } from "./useAIInterviewSetup";
-
 export function AIInterviewSetupPage() {
+  const { t } = useTranslation();
   const hook = useAIInterviewSetup();
-
   const {
     currentStep,
     handleNext,
@@ -30,7 +28,6 @@ export function AIInterviewSetupPage() {
     isStep3Complete,
     getSelectedLabel,
   } = hook;
-
   return (
     <div className="bg-background min-h-screen p-6">
       {/* Header */}
@@ -39,9 +36,11 @@ export function AIInterviewSetupPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-foreground text-2xl font-bold">Thiết lập phỏng vấn mới</h1>
+          <h1 className="text-foreground text-2xl font-bold">
+            {t("userAiinterview.setUpANewInterview")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            Hoàn thành 3 bước để bắt đầu buổi phỏng vấn AI
+            {t("userAiinterview.completeThe3StepsTo")}
           </p>
         </div>
       </div>
@@ -63,7 +62,7 @@ export function AIInterviewSetupPage() {
         <div className="w-96 shrink-0">
           <Card className="sticky top-6">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Tóm tắt thiết lập</CardTitle>
+              <CardTitle className="text-lg">{t("userAiinterview.setupSummary")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               {/* Step 1 summary */}
@@ -74,11 +73,13 @@ export function AIInterviewSetupPage() {
                   ) : (
                     <Settings className="text-muted-foreground h-4 w-4" />
                   )}
-                  Bước 1: Cấu hình
+                  {t("userAiinterview.step1Configuration")}
                 </div>
                 <div className="space-y-1.5 pl-6">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs">Chế độ</span>
+                    <span className="text-muted-foreground text-xs">
+                      {t("userAiinterview.regime")}
+                    </span>
                     <Badge
                       variant={selectedMode ? "default" : "secondary"}
                       className="max-w-50 truncate text-xs">
@@ -86,7 +87,9 @@ export function AIInterviewSetupPage() {
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs">Độ khó</span>
+                    <span className="text-muted-foreground text-xs">
+                      {t("userAiinterview.difficultyLevel")}
+                    </span>
                     <Badge
                       variant={selectedDifficulty ? "default" : "secondary"}
                       className="max-w-40 truncate text-xs">
@@ -94,7 +97,7 @@ export function AIInterviewSetupPage() {
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs">Ngôn ngữ</span>
+                    <span className="text-muted-foreground text-xs">{t("common.language")}</span>
                     <Badge
                       variant={selectedLanguage ? "default" : "secondary"}
                       className="max-w-40 truncate text-xs">
@@ -102,7 +105,9 @@ export function AIInterviewSetupPage() {
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs">Lĩnh vực</span>
+                    <span className="text-muted-foreground text-xs">
+                      {t("userAiinterview.field")}
+                    </span>
                     <Badge
                       variant={selectedDomain ? "default" : "secondary"}
                       className="max-w-40 truncate text-xs">
@@ -110,9 +115,9 @@ export function AIInterviewSetupPage() {
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-xs">Thời lượng</span>
+                    <span className="text-muted-foreground text-xs">{t("common.duration")}</span>
                     <Badge variant="default" className="max-w-40 truncate text-xs">
-                      {selectedDuration} phút
+                      {selectedDuration} {t("common.minute")}
                     </Badge>
                   </div>
                 </div>
@@ -128,15 +133,17 @@ export function AIInterviewSetupPage() {
                   ) : (
                     <User className="text-muted-foreground h-4 w-4" />
                   )}
-                  Bước 2: Hồ sơ ứng viên
+                  {t("userAiinterview.step2CandidateProfile")}
                 </div>
                 <div className="pl-6">
                   {isStep2Complete ? (
                     <Badge variant="default" className="text-xs">
-                      Hồ sơ đã lưu
+                      {t("userAiinterview.profileSaved")}
                     </Badge>
                   ) : (
-                    <span className="text-muted-foreground text-xs">Chưa hoàn thành</span>
+                    <span className="text-muted-foreground text-xs">
+                      {t("userAiinterview.unfinished")}
+                    </span>
                   )}
                 </div>
               </div>
@@ -151,15 +158,17 @@ export function AIInterviewSetupPage() {
                   ) : (
                     <Briefcase className="text-muted-foreground h-4 w-4" />
                   )}
-                  Bước 3: Yêu cầu công việc
+                  {t("userAiinterview.step3JobRequest")}
                 </div>
                 <div className="pl-6">
                   {isStep3Complete ? (
                     <Badge variant="default" className="text-xs">
-                      Đã tạo yêu cầu
+                      {t("userAiinterview.requestCreated")}
                     </Badge>
                   ) : (
-                    <span className="text-muted-foreground text-xs">Chưa hoàn thành</span>
+                    <span className="text-muted-foreground text-xs">
+                      {t("userAiinterview.unfinished")}
+                    </span>
                   )}
                 </div>
               </div>
@@ -170,7 +179,7 @@ export function AIInterviewSetupPage() {
               <div className="flex gap-3">
                 {currentStep > 1 && (
                   <Button variant="outline" className="flex-1" onClick={handleBack}>
-                    Quay lại
+                    {t("general.back")}
                   </Button>
                 )}
                 <Button
@@ -181,15 +190,15 @@ export function AIInterviewSetupPage() {
                   {isCreatingSession ? (
                     <>
                       <Spinner size="sm" tone="white" className="mr-2" />
-                      Đang tạo...
+                      {t("common.creating")}
                     </>
                   ) : currentStep === 3 ? (
                     <>
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Bắt đầu phỏng vấn
+                      {t("userAiinterview.startInterviewing")}
                     </>
                   ) : (
-                    "Tiếp theo"
+                    t("common.next")
                   )}
                 </Button>
               </div>

@@ -1,11 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * Admin Review Management Page
  * Allows admin to view and moderate all mentor reviews for candidates
  */
-
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Eye, Search, Star, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
 
 import { ReviewStats } from "@/components/review";
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
@@ -42,14 +39,15 @@ import {
 } from "@/components/ui/table";
 import type { MentorReview } from "@/hooks/useMentorReview";
 import { useDeleteMentorReview, useMentorReviews } from "@/hooks/useMentorReview";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import { Eye, Search, Star, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-
 export function ReviewManagementPage() {
+  const { t } = useTranslation();
   const { data: reviews = [], isLoading, isRefetching, refetch } = useMentorReviews();
   const { mutate: deleteReview, isPending: isDeleting } = useDeleteMentorReview();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [selectedReview, setSelectedReview] = useState<MentorReview | null>(null);
@@ -76,11 +74,9 @@ export function ReviewManagementPage() {
       if (numericRatingFilter !== null && review.rating !== numericRatingFilter) {
         return false;
       }
-
       return true;
     });
   }, [reviews, searchQuery, numericRatingFilter]);
-
   const hasActiveFilters = searchQuery.trim().length > 0 || ratingFilter !== "all";
 
   // Sorting
@@ -107,39 +103,35 @@ export function ReviewManagementPage() {
     reviews.length > 0
       ? reviews.reduce((sum: number, r: MentorReview) => sum + (r.rating || 0), 0) / reviews.length
       : 0;
-
   const handleViewDetail = (review: MentorReview) => {
     setSelectedReview(review);
     setIsDetailOpen(true);
   };
-
   const handleDeleteClick = (review: MentorReview) => {
     setSelectedReview(review);
     setIsDeleteOpen(true);
   };
-
   const handleDeleteConfirm = () => {
     if (selectedReview?.id) {
       deleteReview(selectedReview.id, {
         onSuccess: () => {
           setIsDeleteOpen(false);
           setSelectedReview(null);
-          toast.success("Đã xóa đánh giá");
+          toast.success(t("common.reviewRemoved"));
         },
       });
     }
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-            Đánh Giá Từ Mentor
+            {t("common.reviewsFromMentors")}
           </h1>
           <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-            Xem danh sách đánh giá mentor gửi cho ứng viên
+            {t("adminReviewmanagement.seeTheListOfMentor")}
           </p>
         </div>
         <ReloadButton
@@ -147,7 +139,7 @@ export function ReviewManagementPage() {
             await refetch();
           }}
           isLoading={isRefetching}
-          tooltip="Tải lại danh sách đánh giá"
+          tooltip={t("common.reloadReviewList")}
           showLabel
           hideTooltip
         />
@@ -157,13 +149,13 @@ export function ReviewManagementPage() {
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Tổng đánh giá</CardDescription>
+            <CardDescription>{t("common.totalRating")}</CardDescription>
             <CardTitle className="text-2xl">{reviews.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Điểm trung bình</CardDescription>
+            <CardDescription>{t("common.averageScore")}</CardDescription>
             <CardTitle className="text-2xl text-emerald-600">{avgRating.toFixed(1)}</CardTitle>
           </CardHeader>
         </Card>
@@ -191,14 +183,14 @@ export function ReviewManagementPage() {
       {/* Filters */}
       <Card className="mb-6">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Bộ lọc</CardTitle>
+          <CardTitle className="text-base">{t("common.filter")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
             <div className="relative w-full min-w-0">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
-                placeholder="Tìm theo tên mentor, ứng viên, phiên..."
+                placeholder={t("adminReviewmanagement.searchByMentorNameCandidate")}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -214,10 +206,10 @@ export function ReviewManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-full lg:w-[170px]">
-                <SelectValue placeholder="Số sao" />
+                <SelectValue placeholder={t("common.numberOfStars")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="all">{t("general.all")}</SelectItem>
                 <SelectItem value="5">5 sao</SelectItem>
                 <SelectItem value="4">4 sao</SelectItem>
                 <SelectItem value="3">3 sao</SelectItem>
@@ -235,7 +227,7 @@ export function ReviewManagementPage() {
                     setRatingFilter("all");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -248,10 +240,11 @@ export function ReviewManagementPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Star className="h-5 w-5 text-[#FFD700]" />
-            <CardTitle>Danh sách đánh giá</CardTitle>
+            <CardTitle>{t("common.reviewList")}</CardTitle>
           </div>
           <CardDescription>
-            Hiển thị {filteredReviews.length} / {reviews.length} đánh giá
+            {t("common.show")} {filteredReviews.length} / {reviews.length}{" "}
+            {t("compReview.evaluate")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -260,8 +253,8 @@ export function ReviewManagementPage() {
           ) : pageData.length === 0 ? (
             <EmptyState
               icon={Star}
-              title="Không có đánh giá"
-              description="Không tìm thấy đánh giá nào phù hợp với bộ lọc."
+              title={t("common.thereAreNoReviews")}
+              description={t("adminReviewmanagement.noReviewsFoundMatchingThe")}
             />
           ) : (
             <>
@@ -269,15 +262,15 @@ export function ReviewManagementPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Mentor gửi</TableHead>
-                    <TableHead>Ứng viên được đánh giá</TableHead>
-                    <TableHead>Phiên</TableHead>
+                    <TableHead>{t("common.mentorSent")}</TableHead>
+                    <TableHead>{t("common.candidatesAreEvaluated")}</TableHead>
+                    <TableHead>{t("common.session")}</TableHead>
                     <TableHead>
                       <SortButton {...getSortProps("rating" as keyof MentorReview)}>
-                        Đánh giá
+                        {t("common.evaluate")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead className="text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -291,7 +284,7 @@ export function ReviewManagementPage() {
                             <AvatarFallback>{review.mentor?.name?.charAt(0) || "M"}</AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
-                            {review.mentor?.name || "Không có dữ liệu"}
+                            {review.mentor?.name || t("common.noDataAvailable")}
                           </span>
                         </div>
                       </TableCell>
@@ -301,7 +294,7 @@ export function ReviewManagementPage() {
                             <AvatarImage src={review.user?.avatarUrl} />
                             <AvatarFallback>{review.user?.name?.charAt(0) || "U"}</AvatarFallback>
                           </Avatar>
-                          <span>{review.user?.name || "Không có dữ liệu"}</span>
+                          <span>{review.user?.name || t("common.noDataAvailable")}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -350,11 +343,14 @@ export function ReviewManagementPage() {
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Chi Tiết Đánh Giá #{selectedReview?.id}</DialogTitle>
+            <DialogTitle>
+              {t("common.reviewDetails")}
+              {selectedReview?.id}
+            </DialogTitle>
             <DialogDescription>
-              Đánh giá từ mentor {selectedReview?.mentor?.name}
+              {t("common.reviewFromMentor")} {selectedReview?.mentor?.name}
               {" -> "}
-              ứng viên {selectedReview?.user?.name}
+              {t("common.candidate")} {selectedReview?.user?.name}
             </DialogDescription>
           </DialogHeader>
           {selectedReview && (
@@ -365,7 +361,7 @@ export function ReviewManagementPage() {
 
               {selectedReview.situationNote && (
                 <div>
-                  <h4 className="mb-1 font-medium text-emerald-600">Tình huống</h4>
+                  <h4 className="mb-1 font-medium text-emerald-600">{t("common.situation")}</h4>
                   <p className="rounded bg-emerald-50 p-3 text-sm dark:bg-emerald-900/20">
                     {selectedReview.situationNote}
                   </p>
@@ -374,7 +370,7 @@ export function ReviewManagementPage() {
 
               {selectedReview.taskNote && (
                 <div>
-                  <h4 className="mb-1 font-medium text-blue-600">Nhiệm vụ</h4>
+                  <h4 className="mb-1 font-medium text-blue-600">{t("common.mission")}</h4>
                   <p className="rounded bg-blue-50 p-3 text-sm dark:bg-blue-900/20">
                     {selectedReview.taskNote}
                   </p>
@@ -383,7 +379,7 @@ export function ReviewManagementPage() {
 
               {selectedReview.actionNote && (
                 <div>
-                  <h4 className="mb-1 font-medium text-purple-600">Hành động</h4>
+                  <h4 className="mb-1 font-medium text-purple-600">{t("common.act")}</h4>
                   <p className="rounded bg-purple-50 p-3 text-sm dark:bg-purple-900/20">
                     {selectedReview.actionNote}
                   </p>
@@ -392,7 +388,7 @@ export function ReviewManagementPage() {
 
               {selectedReview.resultNote && (
                 <div>
-                  <h4 className="mb-1 font-medium text-amber-600">Kết quả</h4>
+                  <h4 className="mb-1 font-medium text-amber-600">{t("common.result")}</h4>
                   <p className="rounded bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
                     {selectedReview.resultNote}
                   </p>
@@ -401,7 +397,7 @@ export function ReviewManagementPage() {
 
               {selectedReview.strength && (
                 <div>
-                  <h4 className="mb-1 font-medium text-green-600">Điểm mạnh</h4>
+                  <h4 className="mb-1 font-medium text-green-600">{t("common.strengths")}</h4>
                   <p className="rounded bg-green-50 p-3 text-sm dark:bg-green-900/20">
                     {selectedReview.strength}
                   </p>
@@ -410,7 +406,9 @@ export function ReviewManagementPage() {
 
               {selectedReview.weakness && (
                 <div>
-                  <h4 className="mb-1 font-medium text-red-600">Điểm yếu</h4>
+                  <h4 className="mb-1 font-medium text-red-600">
+                    {t("adminReviewmanagement.weakness")}
+                  </h4>
                   <p className="rounded bg-red-50 p-3 text-sm dark:bg-red-900/20">
                     {selectedReview.weakness}
                   </p>
@@ -419,7 +417,9 @@ export function ReviewManagementPage() {
 
               {selectedReview.improve && (
                 <div>
-                  <h4 className="mb-1 font-medium text-indigo-600">Đề xuất cải tiến</h4>
+                  <h4 className="mb-1 font-medium text-indigo-600">
+                    {t("common.suggestedImprovements")}
+                  </h4>
                   <p className="rounded bg-indigo-50 p-3 text-sm dark:bg-indigo-900/20">
                     {selectedReview.improve}
                   </p>
@@ -434,18 +434,19 @@ export function ReviewManagementPage() {
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác Nhận Xóa</DialogTitle>
+            <DialogTitle>{t("common.confirmDeletion")}</DialogTitle>
             <DialogDescription>
-              Bạn có chắc chắn muốn xóa đánh giá #{selectedReview?.id}? Hành động này không thể hoàn
-              tác.
+              {t("adminReviewmanagement.areYouSureYouWant")}
+              {selectedReview?.id}
+              {t("adminReviewmanagement.thisActionCannotBeUndone")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={isDeleting}>
-              Hủy
+              {t("general.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
-              {isDeleting ? "Đang xóa..." : "Xóa"}
+              {isDeleting ? t("common.deleting") : t("general.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

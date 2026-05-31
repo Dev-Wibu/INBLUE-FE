@@ -1,7 +1,3 @@
-import { X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,16 +15,18 @@ import { Textarea } from "@/components/ui/textarea";
 import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-
+import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 interface PostEditFormProps {
   postId: number;
   onSuccess: () => void;
   onCancel: () => void;
 }
-
 export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
-
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
@@ -40,7 +38,6 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const tagInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     const fetchPost = async () => {
       setLoading(true);
@@ -56,14 +53,13 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
           setCoverPreview(post.coverImgUrl);
         }
       } else {
-        toast.error("Không thể tải bài viết");
+        toast.error(t("common.unableToLoadArticle"));
         onCancel();
       }
       setLoading(false);
     };
     void fetchPost();
-  }, [postId, onCancel]);
-
+  }, [postId, onCancel, t]);
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -73,7 +69,6 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
       reader.readAsDataURL(file);
     }
   };
-
   const addTag = () => {
     const trimmed = tagInput.trim();
     if (!trimmed) return;
@@ -82,7 +77,6 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
     }
     setTagInput("");
   };
-
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
@@ -91,20 +85,16 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
       setTags((prev) => prev.slice(0, -1));
     }
   };
-
   const removeTag = (index: number) => {
     setTags((prev) => prev.filter((_, i) => i !== index));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("Tiêu đề không được để trống");
+      toast.error(t("adminPostmanagement.theTitleCannotBeBlank"));
       return;
     }
-
     const finalTags = tagInput.trim() ? [...tags, tagInput.trim()] : tags;
-
     setSubmitting(true);
     try {
       const result = await postManager.updatePost(postId, {
@@ -116,37 +106,34 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
         status,
         coverImg: coverFile ?? undefined,
       });
-
       if (result.success) {
-        toast.success("Cập nhật bài viết thành công");
+        toast.success(t("adminPostmanagement.postUpdatedSuccessfully"));
         onSuccess();
       } else {
-        toast.error(result.error ?? "Cập nhật bài viết thất bại");
+        toast.error(result.error ?? t("adminPostmanagement.postUpdateFailed"));
       }
     } catch {
-      toast.error("Đã xảy ra lỗi khi cập nhật bài viết");
+      toast.error(t("adminPostmanagement.anErrorOccurredWhileUpdating"));
     } finally {
       setSubmitting(false);
     }
   };
-
   if (loading) {
     return <SpinnerBlock size="lg" />;
   }
-
   return (
     <div className="mx-auto max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>Chỉnh sửa bài viết</CardTitle>
+          <CardTitle>{t("adminPostmanagement.editArticle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Tiêu đề *</Label>
+              <Label htmlFor="title">{t("common.title1")}</Label>
               <Input
                 id="title"
-                placeholder="Nhập tiêu đề bài viết"
+                placeholder={t("adminPostmanagement.enterThePostTitle")}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -154,10 +141,10 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Nội dung</Label>
+              <Label htmlFor="content">{t("common.content")}</Label>
               <Textarea
                 id="content"
-                placeholder="Nhập nội dung bài viết"
+                placeholder={t("adminPostmanagement.enterArticleContent")}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={6}
@@ -165,10 +152,10 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="summary">Tóm tắt</Label>
+              <Label htmlFor="summary">{t("common.summary")}</Label>
               <Textarea
                 id="summary"
-                placeholder="Nhập tóm tắt bài viết"
+                placeholder={t("adminPostmanagement.enterArticleSummary")}
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
                 rows={3}
@@ -176,19 +163,19 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cover">Ảnh bìa</Label>
+              <Label htmlFor="cover">{t("common.coverPhoto")}</Label>
               <Input id="cover" type="file" accept="image/*" onChange={handleFileChange} />
               {coverPreview && (
                 <img
                   src={coverPreview}
-                  alt="Xem trước ảnh bìa"
+                  alt={t("adminPostmanagement.previewCoverPhoto")}
                   className="mt-2 max-h-48 rounded-md object-cover"
                 />
               )}
             </div>
 
             <div className="space-y-2">
-              <Label>Thẻ</Label>
+              <Label>{t("adminPostmanagement.card")}</Label>
               <div
                 className="border-input bg-background flex min-h-10 cursor-text flex-wrap items-center gap-1.5 rounded-md border px-3 py-2 text-sm"
                 onClick={() => tagInputRef.current?.focus()}>
@@ -202,7 +189,9 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
                         e.stopPropagation();
                         removeTag(i);
                       }}
-                      aria-label={`Xóa thẻ ${tag}`}>
+                      aria-label={t("general.deleteTag", {
+                        var_0: tag,
+                      })}>
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -214,7 +203,7 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
                   onKeyDown={handleTagKeyDown}
                   onBlur={addTag}
                   placeholder={
-                    tags.length === 0 ? "Nhập thẻ, nhấn Enter hoặc dấu phẩy để thêm" : ""
+                    tags.length === 0 ? t("adminPostmanagement.enterATagPressEnter") : ""
                   }
                   className="placeholder:text-muted-foreground min-w-40 flex-1 bg-transparent outline-none"
                 />
@@ -222,25 +211,25 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
             </div>
 
             <div className="space-y-2">
-              <Label>Trạng thái</Label>
+              <Label>{t("common.status")}</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as PostStatus)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="DRAFT">Bản nháp</SelectItem>
-                  <SelectItem value="PUBLISHED">Đã xuất bản</SelectItem>
-                  <SelectItem value="ARCHIVED">Đã lưu trữ</SelectItem>
+                  <SelectItem value="DRAFT">{t("common.draft")}</SelectItem>
+                  <SelectItem value="PUBLISHED">{t("common.published")}</SelectItem>
+                  <SelectItem value="ARCHIVED">{t("common.archived")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex gap-3 pt-2">
               <Button type="submit" disabled={submitting}>
-                {submitting ? "Đang lưu..." : "Lưu thay đổi"}
+                {submitting ? t("common.saving") : t("common.saveChanges")}
               </Button>
               <Button type="button" variant="outline" onClick={onCancel}>
-                Hủy
+                {t("general.cancel")}
               </Button>
             </div>
           </form>

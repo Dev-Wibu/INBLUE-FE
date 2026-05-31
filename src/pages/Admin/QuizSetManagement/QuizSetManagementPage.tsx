@@ -1,7 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Eye, Search, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,14 +19,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate } from "@/lib/formatting";
 import { quizSetManager } from "@/services";
 import type { QuizItem, QuizSet } from "@/services/quiz-set.manager";
+import { Eye, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 export function QuizSetManagementPage() {
+  const { t } = useTranslation();
   const [quizSets, setQuizSets] = useState<QuizSet[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
@@ -40,33 +39,33 @@ export function QuizSetManagementPage() {
   const [selectedQuizSet, setSelectedQuizSet] = useState<QuizSet | null>(null);
   const [quizItems, setQuizItems] = useState<QuizItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(false);
-
-  const loadData = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const response = await quizSetManager.getAll();
-      if (response.success && response.data) {
-        setQuizSets(response.data);
-      } else {
-        toast.error(response.error || "Không thể tải danh sách quiz");
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast.error("Không thể tải dữ liệu");
-    } finally {
+  const loadData = useCallback(
+    async (showReloading = false) => {
       if (showReloading) {
-        setIsReloading(false);
+        setIsReloading(true);
       } else {
-        setIsInitialLoading(false);
+        setIsInitialLoading(true);
       }
-    }
-  }, []);
-
+      try {
+        const response = await quizSetManager.getAll();
+        if (response.success && response.data) {
+          setQuizSets(response.data);
+        } else {
+          toast.error(response.error || t("adminQuizsetmanagement.unableToLoadQuizList"));
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        toast.error(t("common.unableToDownloadData"));
+      } finally {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void loadData();
   }, [loadData]);
@@ -96,33 +95,29 @@ export function QuizSetManagementPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
-
   const handleDelete = (quizSet: QuizSet) => {
     setSelectedQuizSet(quizSet);
     setIsDeleteDialogOpen(true);
   };
-
   const handleConfirmDelete = async () => {
     if (!selectedQuizSet?.quizId) return;
     try {
       const response = await quizSetManager.delete(selectedQuizSet.quizId);
       if (response.success) {
-        toast.success("Đã xóa quiz thành công");
+        toast.success(t("adminQuizsetmanagement.quizSuccessfullyDeleted"));
         setIsDeleteDialogOpen(false);
         void loadData();
       } else {
-        toast.error(response.error || "Không thể xóa quiz");
+        toast.error(response.error || t("adminQuizsetmanagement.cannotDeleteQuiz"));
       }
     } catch (error) {
       console.error("Error deleting quiz set:", error);
-      toast.error("Không thể xóa quiz");
+      toast.error(t("adminQuizsetmanagement.cannotDeleteQuiz"));
     }
   };
-
   const handleViewItems = async (quizSet: QuizSet) => {
     if (!quizSet.quizId) return;
     setSelectedQuizSet(quizSet);
@@ -133,25 +128,24 @@ export function QuizSetManagementPage() {
       if (response.success && response.data) {
         setQuizItems(response.data);
       } else {
-        toast.error(response.error || "Không thể tải câu hỏi quiz");
+        toast.error(response.error || t("adminQuizsetmanagement.unableToDownloadQuizQuestions"));
       }
     } catch (error) {
       console.error("Error loading quiz items:", error);
-      toast.error("Không thể tải câu hỏi quiz");
+      toast.error(t("adminQuizsetmanagement.unableToDownloadQuizQuestions"));
     } finally {
       setLoadingItems(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản Lý Quiz
+          {t("adminQuizsetmanagement.quizManagement")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Quản lý các bộ quiz và kết quả thi
+          {t("adminQuizsetmanagement.manageQuizSetsAndExam")}
         </p>
       </div>
 
@@ -161,7 +155,7 @@ export function QuizSetManagementPage() {
           <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
           <Input
             type="text"
-            placeholder="Tìm kiếm theo tên quiz hoặc bộ luyện tập..."
+            placeholder={t("adminQuizsetmanagement.searchByQuizNameOr")}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -178,13 +172,13 @@ export function QuizSetManagementPage() {
                 setSearchQuery("");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
           <ReloadButton
             onReload={() => loadData(true)}
             isLoading={isReloading}
-            tooltip="Tải lại danh sách quiz"
+            tooltip={t("adminQuizsetmanagement.reloadQuizList")}
             showLabel
             hideTooltip
           />
@@ -194,7 +188,7 @@ export function QuizSetManagementPage() {
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isInitialLoading ? (
-          <SpinnerBlock size="lg" label="Đang tải danh sách quiz..." />
+          <SpinnerBlock size="lg" label={t("adminQuizsetmanagement.loadingQuizList")} />
         ) : (
           <>
             <Table>
@@ -203,28 +197,30 @@ export function QuizSetManagementPage() {
                   <TableHead
                     className="cursor-pointer"
                     onClick={() => toggleSort("quizName" as keyof QuizSet)}>
-                    Tên Quiz
+                    {t("adminQuizsetmanagement.nameQuiz")}
                   </TableHead>
                   <TableHead
                     className="cursor-pointer"
                     onClick={() => toggleSort("score" as keyof QuizSet)}>
-                    Điểm
+                    {t("adminQuizsetmanagement.point")}
                   </TableHead>
-                  <TableHead>Bộ Luyện Tập</TableHead>
+                  <TableHead>{t("common.practiceSet")}</TableHead>
                   <TableHead
                     className="cursor-pointer"
                     onClick={() => toggleSort("createdAt" as keyof QuizSet)}>
-                    Ngày tạo
+                    {t("common.creationDate")}
                   </TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="text-right">Hành động</TableHead>
+                  <TableHead>{t("common.status")}</TableHead>
+                  <TableHead className="text-right">{t("common.act")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {pageData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="py-8 text-center">
-                      <p className="text-gray-500 dark:text-slate-400">Không có quiz nào</p>
+                      <p className="text-gray-500 dark:text-slate-400">
+                        {t("adminQuizsetmanagement.thereAreNoQuizzes")}
+                      </p>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -236,7 +232,9 @@ export function QuizSetManagementPage() {
                       <TableCell>{formatDate(quizSet.createdAt)}</TableCell>
                       <TableCell>
                         <Badge variant={quizSet.submitted ? "default" : "secondary"}>
-                          {quizSet.submitted ? "Đã nộp" : "Chưa nộp"}
+                          {quizSet.submitted
+                            ? t("adminQuizsetmanagement.submitted")
+                            : t("common.notYetSubmitted")}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -282,7 +280,7 @@ export function QuizSetManagementPage() {
                     setSearchQuery("");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -294,18 +292,19 @@ export function QuizSetManagementPage() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác nhận xóa</DialogTitle>
+            <DialogTitle>{t("common.confirmDeletion1")}</DialogTitle>
             <DialogDescription>
-              Bạn có chắc chắn muốn xóa quiz &quot;{selectedQuizSet?.quizName}&quot;? Hành động này
-              không thể hoàn tác.
+              {t("adminQuizsetmanagement.areYouSureYouWant")}
+              {selectedQuizSet?.quizName}
+              {t("common.quotThisActionCannotBeUndone")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Hủy
+              {t("general.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleConfirmDelete}>
-              Xóa
+              {t("general.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -315,15 +314,19 @@ export function QuizSetManagementPage() {
       <Dialog open={isItemsDialogOpen} onOpenChange={setIsItemsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Câu hỏi trong Quiz: {selectedQuizSet?.quizName}</DialogTitle>
-            <DialogDescription>Danh sách các câu hỏi trong bộ quiz này</DialogDescription>
+            <DialogTitle>
+              {t("adminQuizsetmanagement.questionsInQuiz")} {selectedQuizSet?.quizName}
+            </DialogTitle>
+            <DialogDescription>
+              {t("adminQuizsetmanagement.listOfQuestionsInThis")}
+            </DialogDescription>
           </DialogHeader>
           {loadingItems ? (
             <div className="flex items-center justify-center py-8">
               <Spinner size="md" />
             </div>
           ) : quizItems.length === 0 ? (
-            <p className="py-8 text-center text-gray-500">Không có câu hỏi nào</p>
+            <p className="py-8 text-center text-gray-500">{t("common.noQuestionsAsked")}</p>
           ) : (
             <div className="max-h-96 space-y-3 overflow-y-auto">
               {quizItems.map((item, index) => (
@@ -332,9 +335,15 @@ export function QuizSetManagementPage() {
                     {index + 1}. {item.question}
                   </p>
                   <div className="mt-1 text-xs text-gray-500">
-                    {item.correctAnswer && <span>Đáp án: {item.correctAnswer}</span>}
+                    {item.correctAnswer && (
+                      <span>
+                        {t("common.answer")} {item.correctAnswer}
+                      </span>
+                    )}
                     {item.userResponse && (
-                      <span className="ml-4">Trả lời: {item.userResponse}</span>
+                      <span className="ml-4">
+                        {t("adminQuizsetmanagement.reply")} {item.userResponse}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -343,7 +352,7 @@ export function QuizSetManagementPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsItemsDialogOpen(false)}>
-              Đóng
+              {t("general.close")}
             </Button>
           </DialogFooter>
         </DialogContent>

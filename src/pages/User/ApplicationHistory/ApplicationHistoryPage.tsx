@@ -1,8 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { Briefcase, Clock, FileSearch, Search, Star, XCircle } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,17 +14,23 @@ import {
 } from "@/components/ui/select";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { formatDateTime } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { applicationService, companyManager } from "@/services";
 import type { Application } from "@/services/application.manager";
 import type { Company, JobDescription } from "@/services/company.manager";
+import { useQuery } from "@tanstack/react-query";
+import { Briefcase, Clock, FileSearch, Search, Star, XCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+const t = i18n.t.bind(i18n);
 
 // ============================================================
 // Types
 // ============================================================
 
 type ApplicationStatus = "IN_PROGRESS" | "PASSED" | "FAILED" | "SOFT_FAILED";
-
 interface EnrichedApplication extends Application {
   jobDescription?: JobDescription;
   company?: Company;
@@ -41,41 +42,44 @@ interface EnrichedApplication extends Application {
 
 const APPLICATION_STATUS_CONFIG: Record<
   ApplicationStatus,
-  { label: string; className: string; dotColor: string; bgClass: string }
+  {
+    label: string;
+    className: string;
+    dotColor: string;
+    bgClass: string;
+  }
 > = {
   IN_PROGRESS: {
-    label: "Đang xử lý",
+    label: t("common.processing1"),
     className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
     dotColor: "bg-yellow-500",
     bgClass: "border-slate-200 dark:border-slate-700",
   },
   PASSED: {
-    label: "Đạt",
+    label: t("common.obtain"),
     className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
     dotColor: "bg-emerald-500",
     bgClass: "border-slate-200 dark:border-slate-700",
   },
   FAILED: {
-    label: "Không đạt",
+    label: t("common.failed"),
     className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     dotColor: "bg-red-500",
     bgClass: "border-slate-200 dark:border-slate-700",
   },
   SOFT_FAILED: {
-    label: "Cần cải thiện",
+    label: t("userApplicationhistory.needsImprovement"),
     className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
     dotColor: "bg-amber-500",
     bgClass: "border-slate-200 dark:border-slate-700",
   },
 };
-
 const LEVEL_LABELS: Record<string, string> = {
-  INTERN: "Thực tập",
+  INTERN: t("userApplicationhistory.internship"),
   FRESHER: "Fresher",
   JUNIOR: "Junior",
   MIDDLE: "Middle",
 };
-
 const ROUND_TYPE_LABELS: Record<string, string> = {
   CV_SCREENING: "CV Screening",
   EMAIL_SIMULATOR: "Email Simulator",
@@ -93,9 +97,13 @@ function ScoreRing({ score, size = 64 }: { score: number; size?: number }) {
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (score / 100) * circumference;
-
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div
+      className="relative"
+      style={{
+        width: size,
+        height: size,
+      }}>
       <svg className="h-full w-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
         {/* Background circle */}
         <circle
@@ -161,13 +169,10 @@ function ApplicationCard({
   };
   const rounds = jd?.rounds ?? [];
   const currentRound = rounds.find((r) => r.roundOrder === application.currentRoundOrder);
-
   const currentRoundTypeLabel = currentRound?.roundType
     ? ROUND_TYPE_LABELS[currentRound.roundType] || currentRound.roundType
     : null;
-
   const hasScore = application.overallScore !== undefined && application.overallScore !== null;
-
   return (
     <div
       className={cn(
@@ -197,11 +202,13 @@ function ApplicationCard({
             <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
                 <h3 className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
-                  {jd?.title ?? "Không có tiêu đề"}
+                  {jd?.title ?? t("common.noTitle")}
                 </h3>
                 <p className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                   <FileSearch className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">{application.company?.name ?? "Công ty"}</span>
+                  <span className="truncate">
+                    {application.company?.name ?? t("common.company")}
+                  </span>
                 </p>
               </div>
               <Badge className={cn("shrink-0 gap-1", statusConfig.className)}>
@@ -240,7 +247,7 @@ function ApplicationCard({
                 <div className="flex items-center gap-1.5">
                   <Clock className="h-4 w-4 shrink-0 text-slate-400" />
                   <span className="truncate text-slate-600 dark:text-slate-400">
-                    {currentRound.configData.timeLimitMinutes} phút
+                    {currentRound.configData.timeLimitMinutes} {t("common.minute")}
                   </span>
                 </div>
               )}
@@ -250,7 +257,7 @@ function ApplicationCard({
             {currentRound && (
               <div className="mt-2 rounded-md bg-slate-50 px-3 py-1.5 text-xs dark:bg-slate-800/50">
                 <span className="font-medium text-slate-600 dark:text-slate-300">
-                  Vòng hiện tại:
+                  {t("userApplicationhistory.currentRound")}
                 </span>{" "}
                 <span className="text-slate-500 dark:text-slate-400">{currentRound.name}</span>
                 <span className="ml-1.5 text-slate-400">
@@ -266,14 +273,18 @@ function ApplicationCard({
           {hasScore ? (
             <div className="flex flex-col items-center gap-1">
               <ScoreRing score={Math.round(application.overallScore ?? 0)} />
-              <span className="text-xs text-slate-500 dark:text-slate-400">Điểm tổng</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {t("userApplicationhistory.totalScore")}
+              </span>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-1">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
                 <Clock className="h-6 w-6 text-slate-400" />
               </div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">Đang chấm</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {t("userApplicationhistory.grading")}
+              </span>
             </div>
           )}
           <Button
@@ -284,7 +295,7 @@ function ApplicationCard({
               !hasScore && "cursor-not-allowed opacity-50"
             )}
             disabled={!hasScore}>
-            Chi tiết
+            {t("common.detail")}
           </Button>
         </div>
       </div>
@@ -318,8 +329,8 @@ function GlassStatCard({
 // ============================================================
 
 export function ApplicationHistoryPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -369,14 +380,27 @@ export function ApplicationHistoryPage() {
       if (result.success) {
         const data = result.data;
         if (Array.isArray(data)) return data as Company[];
-        if (data && "content" in data && Array.isArray((data as { content: unknown[] }).content)) {
-          return (data as { content: Company[] }).content;
+        if (
+          data &&
+          "content" in data &&
+          Array.isArray(
+            (
+              data as {
+                content: unknown[];
+              }
+            ).content
+          )
+        ) {
+          return (
+            data as {
+              content: Company[];
+            }
+          ).content;
         }
       }
       return [];
     },
   });
-
   const isLoading = applicationsLoading;
   const isRefetching = applicationsRefetching || jdRefetching || companiesRefetching;
 
@@ -399,19 +423,20 @@ export function ApplicationHistoryPage() {
           c.jobDescriptions?.some((jdItem) => jdItem.id === app.jdId)
         );
       }
-
-      return { ...app, jobDescription: jd, company };
+      return {
+        ...app,
+        jobDescription: jd,
+        company,
+      };
     });
   }, [applicationsResult, jobDescriptionsResult, companiesResult]);
 
   // Filter
   const filteredApplications = useMemo(() => {
     let items = enrichedApplications;
-
     if (statusFilter !== "all") {
       items = items.filter((app) => app.status === statusFilter);
     }
-
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       items = items.filter(
@@ -421,7 +446,6 @@ export function ApplicationHistoryPage() {
           app.jobDescription?.level?.toLowerCase().includes(q)
       );
     }
-
     return items;
   }, [enrichedApplications, statusFilter, searchQuery]);
 
@@ -442,28 +466,25 @@ export function ApplicationHistoryPage() {
     totalCount: filteredApplications.length,
     pageSize,
   });
-
   const pageData = useMemo(
     () => filteredApplications.slice(pagination.startIndex, pagination.endIndex + 1),
     [filteredApplications, pagination.startIndex, pagination.endIndex]
   );
-
   const handleViewDetails = (app: EnrichedApplication) => {
     if (app.jdId) {
       navigate(`/enterprise/job/${app.jdId}`);
     }
   };
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            Lịch sử ứng tuyển
+            {t("common.applicationHistory")}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Theo dõi tình trạng các đơn ứng tuyển của bạn
+            {t("userApplicationhistory.trackTheStatusOfYour")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -476,7 +497,7 @@ export function ApplicationHistoryPage() {
               ]);
             }}
             isLoading={isRefetching}
-            tooltip="Tải lại"
+            tooltip={t("common.reload")}
           />
         </div>
       </div>
@@ -484,22 +505,22 @@ export function ApplicationHistoryPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <GlassStatCard
-          label="Tổng đơn"
+          label={t("userApplicationhistory.totalOrder")}
           value={totalCount}
           colorClass="text-slate-900 dark:text-slate-100"
         />
         <GlassStatCard
-          label="Đang xử lý"
+          label={t("common.processing1")}
           value={inProgressCount}
           colorClass="text-yellow-600 dark:text-yellow-400"
         />
         <GlassStatCard
-          label="Đạt"
+          label={t("common.obtain")}
           value={passedCount}
           colorClass="text-emerald-600 dark:text-emerald-400"
         />
         <GlassStatCard
-          label="Không đạt"
+          label={t("common.failed")}
           value={failedCount}
           colorClass="text-red-600 dark:text-red-400"
         />
@@ -517,7 +538,7 @@ export function ApplicationHistoryPage() {
               pagination.goToFirstPage();
             }}
             className="pl-9"
-            placeholder="Tìm kiếm theo vị trí, công ty..."
+            placeholder={t("userApplicationhistory.searchByLocationCompany")}
           />
         </div>
 
@@ -529,14 +550,16 @@ export function ApplicationHistoryPage() {
             pagination.goToFirstPage();
           }}>
           <SelectTrigger className="w-full min-w-[180px]">
-            <SelectValue placeholder="Lọc theo trạng thái" />
+            <SelectValue placeholder={t("common.filterByStatus")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả trạng thái</SelectItem>
-            <SelectItem value="IN_PROGRESS">Đang xử lý</SelectItem>
-            <SelectItem value="PASSED">Đạt</SelectItem>
-            <SelectItem value="FAILED">Không đạt</SelectItem>
-            <SelectItem value="SOFT_FAILED">Cần cải thiện</SelectItem>
+            <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+            <SelectItem value="IN_PROGRESS">{t("common.processing1")}</SelectItem>
+            <SelectItem value="PASSED">{t("common.obtain")}</SelectItem>
+            <SelectItem value="FAILED">{t("common.failed")}</SelectItem>
+            <SelectItem value="SOFT_FAILED">
+              {t("userApplicationhistory.needsImprovement")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -547,22 +570,24 @@ export function ApplicationHistoryPage() {
       ) : applicationsError ? (
         <Card className="flex h-48 flex-col items-center justify-center gap-4">
           <XCircle className="h-8 w-8 text-red-500" />
-          <p className="text-destructive font-medium">Không thể tải lịch sử ứng tuyển</p>
+          <p className="text-destructive font-medium">
+            {t("userApplicationhistory.unableToDownloadApplicationHistory")}
+          </p>
           <Button variant="outline" onClick={() => void refetchApplications()}>
-            Thử lại
+            {t("common.retry")}
           </Button>
         </Card>
       ) : filteredApplications.length === 0 ? (
         <EmptyState
           icon={Briefcase}
-          title="Chưa có đơn ứng tuyển"
-          description="Hãy tìm việc và ứng tuyển để theo dõi tại đây."
+          title={t("userApplicationhistory.thereAreNoApplicationsYet")}
+          description={t("userApplicationhistory.findJobsAndApplyTo")}
           action={
             <Button
               onClick={() => navigate("/enterprise/companies")}
               className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
               <Briefcase className="h-4 w-4" />
-              Tìm việc ngay
+              {t("userApplicationhistory.findAJobNow")}
             </Button>
           }
         />

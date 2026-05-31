@@ -1,12 +1,12 @@
-import { AlertCircle, CheckCircle2, MessageSquare, Send } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
+import { AlertCircle, CheckCircle2, MessageSquare, Send } from "lucide-react";
+import { useCallback, useEffect, useRef } from "react";
 import { ChatBubble, EvaluatingIndicator, TypingIndicator } from "./ChatBubble";
 import type { ChatMessage } from "./types";
+const t = i18n.t.bind(i18n);
 
 // ============================================================================
 // ChatInput (local component)
@@ -32,7 +32,6 @@ function ChatInput({
   onValueChange: (_val: string) => void;
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
   const handleSend = useCallback(() => {
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
@@ -50,7 +49,6 @@ function ChatInput({
     }
     prevDisabledRef.current = disabled;
   }, [disabled]);
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -71,7 +69,6 @@ function ChatInput({
     isListening && interimTranscript ? (value ? value + " " : "") + interimTranscript : value;
   const characterCount = value.length;
   const canSend = value.trim().length > 0 && !disabled && !isListening;
-
   return (
     <div className="border-t border-slate-200/80 bg-white/95 p-3 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
       <div className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900">
@@ -85,8 +82,8 @@ function ChatInput({
             onKeyDown={handleKeyDown}
             placeholder={
               isListening
-                ? "Đang lắng nghe... dùng nút mic ở màn hình chính để dừng và gửi"
-                : (placeholder ?? "Nhập câu trả lời của bạn...")
+                ? t("userAiinterview.listeningUseTheMicButton")
+                : (placeholder ?? t("userAiinterview.enterYourAnswer"))
             }
             disabled={disabled}
             rows={1}
@@ -96,7 +93,7 @@ function ChatInput({
                 ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200"
                 : "focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 dark:focus:ring-cyan-900/40"
             )}
-            aria-label="Nhập câu trả lời"
+            aria-label={t("userAiinterview.enterYourAnswer1")}
           />
         </div>
         <Button
@@ -111,22 +108,24 @@ function ChatInput({
       <div className="mt-2 flex items-center justify-between px-1 text-[11px]">
         <p className="text-muted-foreground truncate pr-3">
           {isListening
-            ? "Mic đang ghi âm. Bấm nút mic ở giữa màn hình để dừng và gửi ngay."
-            : `Nhận diện giọng nói hiện tại: ${speechLanguageLabel}`}
+            ? t("userAiinterview.micIsRecordingPressThe")
+            : t("general.currentSpeechRecognition", {
+                var_0: speechLanguageLabel,
+              })}
         </p>
         <span
           className={cn(
             "shrink-0",
             characterCount > 1200 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
           )}>
-          {characterCount} ký tự
+          {characterCount} {t("userAiinterview.character")}
         </span>
       </div>
 
       {isListening && (
         <p className="text-muted-foreground mt-2 text-center text-xs">
           <span className="mr-1.5 inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />
-          Đang nghe... Dùng nút mic trên màn hình chính để dừng và gửi
+          {t("userAiinterview.listeningUseTheMicButton1")}
         </p>
       )}
     </div>
@@ -182,11 +181,10 @@ export function ChatPanel({
 }) {
   const inputDisabled = isSubmitting || isEvaluating || !hasStarted;
   const inputPlaceholder = isEvaluating
-    ? "AI đang đánh giá buổi phỏng vấn..."
+    ? t("userAiinterview.aiIsEvaluatingTheInterview")
     : isSubmitting
-      ? "AI đang xử lý..."
-      : "Câu trả lời... (Enter để gửi, Shift+Enter để xuống dòng)";
-
+      ? t("userAiinterview.aiIsProcessing")
+      : t("userAiinterview.answerEnterToSendShift");
   return (
     <section className="flex h-full min-h-0 flex-col border-t border-slate-200/80 bg-white md:border-t-0 md:border-l dark:border-slate-800 dark:bg-slate-900">
       <div className="border-b border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/70">
@@ -197,16 +195,16 @@ export function ChatPanel({
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Tin nhắn trong phiên
+                {t("userAiinterview.sessionMessages")}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {messages.length} nội dung trao đổi
+                {messages.length} {t("userAiinterview.exchangeContent")}
               </p>
             </div>
           </div>
           {isListening && (
             <span className="rounded-full bg-red-100 px-2 py-1 text-[10px] font-semibold text-red-600 dark:bg-red-900/40 dark:text-red-300">
-              Đang ghi âm
+              {t("userAiinterview.recording")}
             </span>
           )}
         </div>
@@ -216,11 +214,8 @@ export function ChatPanel({
         <div className="space-y-4">
           {!interviewFinished && (
             <div className="rounded-2xl border border-cyan-200/80 bg-linear-to-r from-cyan-50/90 via-blue-50/80 to-cyan-50/90 px-3.5 py-2.5 text-xs text-cyan-800 shadow-sm dark:border-cyan-900/70 dark:from-cyan-950/30 dark:via-blue-950/20 dark:to-cyan-950/30 dark:text-cyan-200">
-              <p className="font-semibold">Gợi ý nhanh</p>
-              <p className="mt-0.5 opacity-90">
-                Trả lời theo bối cảnh thật, nêu hành động cụ thể và kết quả định lượng để AI đánh
-                giá sát hơn.
-              </p>
+              <p className="font-semibold">{t("userAiinterview.quickHint")}</p>
+              <p className="mt-0.5 opacity-90">{t("userAiinterview.answerInRealContextState")}</p>
             </div>
           )}
 
@@ -239,7 +234,7 @@ export function ChatPanel({
 
           {messages.length === 0 && (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
-              Cuộc trò chuyện sẽ hiển thị tại đây khi phiên bắt đầu.
+              {t("userAiinterview.theChatWillShowUp")}
             </div>
           )}
 
@@ -255,20 +250,22 @@ export function ChatPanel({
                 <div className="flex items-center gap-2.5">
                   <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
                   <div>
-                    <p className="font-semibold text-red-700 dark:text-red-300">Phiên đã hết hạn</p>
+                    <p className="font-semibold text-red-700 dark:text-red-300">
+                      {t("userAiinterview.sessionHasExpired")}
+                    </p>
                     <p className="text-muted-foreground text-sm">
-                      Session key quá 1 giờ — không thể tiếp tục phiên này
+                      {t("userAiinterview.sessionKeyIsOver1")}
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" onClick={onNavigateToList}>
-                    Quay lại danh sách
+                    {t("common.backToTheList")}
                   </Button>
                   <Button
                     onClick={onNavigateToSetup}
                     className="bg-linear-to-r from-cyan-600 to-blue-700 text-white hover:from-cyan-700 hover:to-blue-800">
-                    Tạo phỏng vấn mới
+                    {t("userAiinterview.createNewInterview")}
                   </Button>
                 </div>
               </CardContent>
@@ -280,17 +277,17 @@ export function ChatPanel({
                   <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   <div>
                     <p className="font-semibold text-emerald-700 dark:text-emerald-300">
-                      Phỏng vấn hoàn tất!
+                      {t("userAiinterview.interviewCompleted")}
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      Xem đánh giá chi tiết và điểm số của bạn
+                      {t("userAiinterview.seeDetailedReviewsAndYour")}
                     </p>
                   </div>
                 </div>
                 <Button
                   onClick={onViewResults}
                   className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
-                  Xem kết quả
+                  {t("userAiinterview.seeResults")}
                 </Button>
               </CardContent>
             </Card>

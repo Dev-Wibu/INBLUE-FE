@@ -1,6 +1,3 @@
-import { Plus, Search, Trash2, Wand2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,29 +21,29 @@ import { Spinner } from "@/components/ui/spinner";
 import { practiceSetItemManager, questionManager } from "@/services";
 import type { PracticeSetItem } from "@/services/practice-set-item.manager";
 import type { PracticeQuestion } from "@/services/question.manager";
+import { Plus, Search, Trash2, Wand2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 import type { PracticeSet } from "../types";
-
 const questionLevelBadgeMap: Record<string, string> = {
   EASY: "bg-green-100 text-green-700 hover:bg-green-100",
   MEDIUM: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
   HARD: "bg-red-100 text-red-700 hover:bg-red-100",
 };
-
 interface ViewPracticeSetItemsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   practiceSet: PracticeSet | null;
   onItemsChanged?: () => void;
 }
-
 export function ViewPracticeSetItemsDialog({
   isOpen,
   onOpenChange,
   practiceSet,
   onItemsChanged,
 }: ViewPracticeSetItemsDialogProps) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<PracticeSetItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [removingId, setRemovingId] = useState<number | null>(null);
@@ -65,7 +62,6 @@ export function ViewPracticeSetItemsDialog({
   const [mediumCnt, setMediumCnt] = useState(0);
   const [hardCnt, setHardCnt] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-
   const loadItems = useCallback(async () => {
     if (!practiceSet?.id) return;
     setLoading(true);
@@ -74,16 +70,15 @@ export function ViewPracticeSetItemsDialog({
       if (response.success && response.data) {
         setItems(response.data);
       } else {
-        toast.error(response.error || "Không thể tải danh sách câu hỏi");
+        toast.error(response.error || t("common.unableToLoadQuestionList"));
       }
     } catch (error) {
       console.error("Error loading practice set items:", error);
-      toast.error("Không thể tải dữ liệu");
+      toast.error(t("common.unableToDownloadData"));
     } finally {
       setLoading(false);
     }
-  }, [practiceSet?.id]);
-
+  }, [practiceSet?.id, t]);
   const loadAllQuestions = useCallback(async () => {
     setQuestionsLoading(true);
     try {
@@ -99,7 +94,6 @@ export function ViewPracticeSetItemsDialog({
       setQuestionsLoading(false);
     }
   }, []);
-
   useEffect(() => {
     if (isOpen && practiceSet?.id) {
       loadItems();
@@ -134,65 +128,74 @@ export function ViewPracticeSetItemsDialog({
       return true;
     });
   }, [allQuestions, existingQuestionIds, searchQuery, levelFilter]);
-
   const handleRemoveItem = async (itemId: number) => {
     setRemovingId(itemId);
     try {
       const response = await practiceSetItemManager.delete(itemId);
       if (response.success) {
-        toast.success("Đã xóa câu hỏi khỏi bộ luyện tập");
+        toast.success(t("adminPracticesetmanagement.questionRemovedFromPracticeSet"));
         setItems((prev) => prev.filter((i) => i.id !== itemId));
         onItemsChanged?.();
       } else {
-        toast.error(response.error || "Không thể xóa câu hỏi");
+        toast.error(response.error || t("common.questionCannotBeDeleted"));
       }
     } catch (error) {
       console.error("Error removing item:", error);
-      toast.error("Không thể xóa câu hỏi");
+      toast.error(t("common.questionCannotBeDeleted"));
     } finally {
       setRemovingId(null);
     }
   };
-
   const handleAddQuestion = async (question: PracticeQuestion) => {
     if (!practiceSet?.id || !question.questionId) return;
     setAddingQuestionId(question.questionId);
     try {
       const response = await practiceSetItemManager.create({
         practiceQuestion: question,
-        practiceSet: { id: practiceSet.id },
+        practiceSet: {
+          id: practiceSet.id,
+        },
         orderIndex: items.length + 1,
       });
       if (response.success) {
-        toast.success("Đã thêm câu hỏi vào bộ luyện tập");
+        toast.success(t("adminPracticesetmanagement.addedQuestionsToThePractice"));
         await loadItems();
         onItemsChanged?.();
       } else {
-        toast.error(response.error || "Không thể thêm câu hỏi");
+        toast.error(response.error || t("adminPracticesetmanagement.cannotAddQuestion"));
       }
     } catch (error) {
       console.error("Error adding question:", error);
-      toast.error("Không thể thêm câu hỏi");
+      toast.error(t("adminPracticesetmanagement.cannotAddQuestion"));
     } finally {
       setAddingQuestionId(null);
     }
   };
-
   const handleAutoGenerate = async () => {
     if (!practiceSet?.id) return;
     const total = easyCnt + mediumCnt + hardCnt;
     if (total === 0) {
-      toast.error("Vui lòng chọn số lượng câu hỏi");
+      toast.error(t("adminPracticesetmanagement.pleaseSelectTheNumberOf"));
       return;
     }
     setIsGenerating(true);
     try {
       const response = await practiceSetItemManager.createBulk(
-        { id: practiceSet.id } as PracticeSet,
-        { easy: easyCnt, medium: mediumCnt, hard: hardCnt }
+        {
+          id: practiceSet.id,
+        } as PracticeSet,
+        {
+          easy: easyCnt,
+          medium: mediumCnt,
+          hard: hardCnt,
+        }
       );
       if (response.success) {
-        toast.success(`Đã tạo ${total} câu hỏi tự động`);
+        toast.success(
+          t("general.generatedAutomaticQuestions", {
+            var_0: total,
+          })
+        );
         await loadItems();
         onItemsChanged?.();
         setShowAutoGenerate(false);
@@ -200,16 +203,17 @@ export function ViewPracticeSetItemsDialog({
         setMediumCnt(0);
         setHardCnt(0);
       } else {
-        toast.error(response.error || "Không thể tạo câu hỏi tự động");
+        toast.error(
+          response.error || t("adminPracticesetmanagement.cannotCreateAutomaticQuestions")
+        );
       }
     } catch (error) {
       console.error("Error auto-generating:", error);
-      toast.error("Không thể tạo câu hỏi tự động");
+      toast.error(t("adminPracticesetmanagement.cannotCreateAutomaticQuestions"));
     } finally {
       setIsGenerating(false);
     }
   };
-
   const handleOpenAddPanel = () => {
     setShowAddPanel(true);
     setShowAutoGenerate(false);
@@ -217,14 +221,15 @@ export function ViewPracticeSetItemsDialog({
       loadAllQuestions();
     }
   };
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Quản lý câu hỏi — {practiceSet?.practiceSetName}</DialogTitle>
+          <DialogTitle>
+            {t("adminPracticesetmanagement.questionManagement")} {practiceSet?.practiceSetName}
+          </DialogTitle>
           <DialogDescription>
-            Thêm, xóa hoặc tự động tạo câu hỏi cho bộ luyện tập này.
+            {t("adminPracticesetmanagement.addDeleteOrAutomaticallyCreate")}
           </DialogDescription>
         </DialogHeader>
 
@@ -232,7 +237,7 @@ export function ViewPracticeSetItemsDialog({
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={handleOpenAddPanel}>
             <Plus className="h-4 w-4" />
-            Thêm câu hỏi
+            {t("adminPracticesetmanagement.moreQuestions")}
           </Button>
           <Button
             variant="outline"
@@ -243,14 +248,16 @@ export function ViewPracticeSetItemsDialog({
               setShowAddPanel(false);
             }}>
             <Wand2 className="h-4 w-4" />
-            Tạo tự động
+            {t("adminPracticesetmanagement.createAutomatically")}
           </Button>
         </div>
 
         {/* Auto-generate panel */}
         {showAutoGenerate && (
           <div className="rounded-lg border border-dashed border-blue-300 bg-blue-50/50 p-4 dark:border-blue-800 dark:bg-blue-950/20">
-            <p className="mb-3 text-sm font-medium">Tự động thêm câu hỏi theo độ khó</p>
+            <p className="mb-3 text-sm font-medium">
+              {t("adminPracticesetmanagement.automaticallyAddQuestionsAccordingTo")}
+            </p>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Easy</Label>
@@ -294,10 +301,12 @@ export function ViewPracticeSetItemsDialog({
               {isGenerating ? (
                 <>
                   <Spinner size="xs" className="mr-1.5" />
-                  Đang tạo...
+                  {t("common.creating")}
                 </>
               ) : (
-                `Tạo ${easyCnt + mediumCnt + hardCnt} câu hỏi`
+                t("general.createQuestions", {
+                  var_0: easyCnt + mediumCnt + hardCnt,
+                })
               )}
             </Button>
           </div>
@@ -306,12 +315,14 @@ export function ViewPracticeSetItemsDialog({
         {/* Add question panel */}
         {showAddPanel && (
           <div className="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 dark:border-green-800 dark:bg-green-950/20">
-            <p className="mb-3 text-sm font-medium">Chọn câu hỏi từ ngân hàng</p>
+            <p className="mb-3 text-sm font-medium">
+              {t("adminPracticesetmanagement.chooseQuestionsFromTheBank")}
+            </p>
             <div className="mb-3 flex items-center gap-2">
               <div className="relative flex-1">
                 <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-gray-400" />
                 <Input
-                  placeholder="Tìm câu hỏi..."
+                  placeholder={t("adminPracticesetmanagement.findQuestions")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-8 pl-8 text-sm"
@@ -322,7 +333,7 @@ export function ViewPracticeSetItemsDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="all">{t("general.all")}</SelectItem>
                   <SelectItem value="EASY">Easy</SelectItem>
                   <SelectItem value="MEDIUM">Medium</SelectItem>
                   <SelectItem value="HARD">Hard</SelectItem>
@@ -335,7 +346,7 @@ export function ViewPracticeSetItemsDialog({
               </div>
             ) : filteredQuestions.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center text-sm">
-                Không tìm thấy câu hỏi phù hợp
+                {t("common.noMatchingQuestionsWereFound")}
               </p>
             ) : (
               <div className="max-h-48 space-y-1.5 overflow-y-auto">
@@ -368,7 +379,7 @@ export function ViewPracticeSetItemsDialog({
                       ) : (
                         <>
                           <Plus className="h-3.5 w-3.5" />
-                          Thêm
+                          {t("common.more")}
                         </>
                       )}
                     </Button>
@@ -376,7 +387,9 @@ export function ViewPracticeSetItemsDialog({
                 ))}
                 {filteredQuestions.length > 20 && (
                   <p className="text-muted-foreground pt-1 text-center text-xs">
-                    Hiển thị 20/{filteredQuestions.length} câu hỏi. Hãy tìm kiếm để thu hẹp.
+                    {t("adminPracticesetmanagement.show20")}
+                    {filteredQuestions.length}{" "}
+                    {t("adminPracticesetmanagement.questionPleaseSearchToNarrow")}
                   </p>
                 )}
               </div>
@@ -391,12 +404,12 @@ export function ViewPracticeSetItemsDialog({
           </div>
         ) : items.length === 0 ? (
           <div className="text-muted-foreground py-8 text-center">
-            Chưa có câu hỏi nào trong bộ luyện tập này
+            {t("adminPracticesetmanagement.thereAreNoQuestionsIn")}
           </div>
         ) : (
           <div className="space-y-2">
             <p className="text-muted-foreground text-sm">
-              {items.length} câu hỏi trong bộ luyện tập
+              {items.length} {t("adminPracticesetmanagement.questionsInThePracticeSet")}
             </p>
             {items.map((item, index) => (
               <div
@@ -408,14 +421,11 @@ export function ViewPracticeSetItemsDialog({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-foreground text-sm font-medium">
-                      {item.practiceQuestion?.title || "Không có tiêu đề"}
+                      {item.practiceQuestion?.title || t("common.noTitle")}
                     </p>
                     <div className="flex shrink-0 items-center gap-1.5">
                       <Badge
-                        className={`text-xs ${
-                          questionLevelBadgeMap[item.practiceQuestion?.level || ""] ||
-                          "bg-gray-100 text-gray-700"
-                        }`}>
+                        className={`text-xs ${questionLevelBadgeMap[item.practiceQuestion?.level || ""] || "bg-gray-100 text-gray-700"}`}>
                         {item.practiceQuestion?.level || "-"}
                       </Badge>
                       <Button
@@ -424,7 +434,7 @@ export function ViewPracticeSetItemsDialog({
                         className="h-7 w-7 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
                         onClick={() => item.id && handleRemoveItem(item.id)}
                         disabled={removingId === item.id}
-                        title="Xóa khỏi bộ luyện tập">
+                        title={t("adminPracticesetmanagement.removeFromPracticeSet")}>
                         {removingId === item.id ? (
                           <Spinner size="xs" />
                         ) : (
@@ -451,7 +461,7 @@ export function ViewPracticeSetItemsDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Đóng
+            {t("general.close")}
           </Button>
         </DialogFooter>
       </DialogContent>

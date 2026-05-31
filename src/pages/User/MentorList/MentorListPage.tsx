@@ -4,16 +4,15 @@ import type { SchemaMentorResponse } from "@/interfaces/schema.types";
 import { chatManager } from "@/services/chat.manager";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
 import { MentorFilters, MentorGridCard, MentorListHero } from "./components";
-
 function isActiveMentor(mentor: SchemaMentorResponse): boolean {
   return mentor.active === true;
 }
-
 export function MentorListPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [mentors, setMentors] = useState<SchemaMentorResponse[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -21,37 +20,35 @@ export function MentorListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExpertise, setSelectedExpertise] = useState("all");
   const hasLoadedRef = useRef(false);
-
-  const fetchMentors = useCallback(async (isReload = false) => {
-    const shouldShowInitialLoading = !hasLoadedRef.current && !isReload;
-
-    if (shouldShowInitialLoading) {
-      setIsInitialLoading(true);
-    } else {
-      setIsReloading(true);
-    }
-
-    try {
-      const res = await chatManager.getAllMentors();
-      if (res.success && res.data) {
-        setMentors(res.data.filter(isActiveMentor));
+  const fetchMentors = useCallback(
+    async (isReload = false) => {
+      const shouldShowInitialLoading = !hasLoadedRef.current && !isReload;
+      if (shouldShowInitialLoading) {
+        setIsInitialLoading(true);
       } else {
-        toast.error("Không thể tải danh sách Mentor");
+        setIsReloading(true);
       }
-    } catch (error) {
-      console.error("Error fetching mentors:", error);
-      toast.error("Đã xảy ra lỗi khi tải danh sách");
-    } finally {
-      hasLoadedRef.current = true;
-      setIsInitialLoading(false);
-      setIsReloading(false);
-    }
-  }, []);
-
+      try {
+        const res = await chatManager.getAllMentors();
+        if (res.success && res.data) {
+          setMentors(res.data.filter(isActiveMentor));
+        } else {
+          toast.error(t("userMentorlist.unableToLoadMentorList"));
+        }
+      } catch (error) {
+        console.error("Error fetching mentors:", error);
+        toast.error(t("userMentorlist.anErrorOccurredWhileLoading"));
+      } finally {
+        hasLoadedRef.current = true;
+        setIsInitialLoading(false);
+        setIsReloading(false);
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void fetchMentors();
   }, [fetchMentors]);
-
   const expertiseOptions = useMemo(
     () =>
       Array.from(
@@ -66,10 +63,8 @@ export function MentorListPage() {
       ).slice(0, 8),
     [mentors]
   );
-
   const filteredMentors = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
-
     return mentors
       .filter(isActiveMentor)
       .filter((mentor) => {
@@ -78,10 +73,8 @@ export function MentorListPage() {
           (mentor.name || "").toLowerCase().includes(normalizedSearch) ||
           (mentor.expertise || "").toLowerCase().includes(normalizedSearch) ||
           (mentor.currentCompany || "").toLowerCase().includes(normalizedSearch);
-
         const matchExpertise =
           selectedExpertise === "all" || (mentor.expertise || "") === selectedExpertise;
-
         return matchSearch && matchExpertise;
       })
       .sort((mentorA, mentorB) => {
@@ -89,11 +82,9 @@ export function MentorListPage() {
         if (ratingDiff !== 0) {
           return ratingDiff;
         }
-
         return (mentorB.totalSession || 0) - (mentorA.totalSession || 0);
       });
   }, [mentors, searchQuery, selectedExpertise]);
-
   const mentorStats = useMemo(() => {
     const companies = new Set(mentors.map((mentor) => mentor.currentCompany).filter(Boolean));
     return {
@@ -102,18 +93,15 @@ export function MentorListPage() {
       expertise: expertiseOptions.length,
     };
   }, [mentors, expertiseOptions.length]);
-
   const handleStartChat = (mentor: SchemaMentorResponse) => {
     if (!isActiveMentor(mentor)) {
-      toast.error("Mentor hiện không hoạt động");
+      toast.error(t("common.mentorIsCurrentlyInactive"));
       return;
     }
-
     if (mentor.id === undefined) {
-      toast.error("Không đủ thông tin Mentor để bắt đầu hội thoại");
+      toast.error(t("userMentorlist.notEnoughMentorInformationTo"));
       return;
     }
-
     navigate("/user?tab=messenger", {
       state: {
         openMentorId: mentor.id,
@@ -121,21 +109,17 @@ export function MentorListPage() {
       },
     });
   };
-
   const handleViewProfile = (mentor: SchemaMentorResponse) => {
     if (!isActiveMentor(mentor)) {
-      toast.error("Mentor hiện không hoạt động");
+      toast.error(t("common.mentorIsCurrentlyInactive"));
       return;
     }
-
     if (mentor.id === undefined) {
-      toast.error("Không đủ thông tin Mentor để xem hồ sơ");
+      toast.error(t("userMentorlist.notEnoughMentorInformationTo1"));
       return;
     }
-
     navigate(`/user/mentors/${mentor.id}`);
   };
-
   return (
     <section className="relative h-full overflow-hidden bg-linear-to-br from-white via-slate-50 to-sky-50/40 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
       <div className="pointer-events-none absolute -top-20 -left-14 h-72 w-72 rounded-full bg-blue-300/30 blur-3xl dark:bg-blue-900/25" />
@@ -157,7 +141,7 @@ export function MentorListPage() {
                 await fetchMentors(true);
               }}
               isLoading={isReloading}
-              tooltip="Tải lại danh sách mentor"
+              tooltip={t("common.reloadMentorList")}
             />
           </div>
 
@@ -178,7 +162,9 @@ export function MentorListPage() {
         <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-5 md:px-6 md:pb-6">
           {isInitialLoading ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
+              {Array.from({
+                length: 6,
+              }).map((_, index) => (
                 <Card
                   key={index}
                   className="h-[290px] animate-pulse rounded-2xl border-slate-200/80 bg-white/80 p-6 dark:border-slate-800 dark:bg-slate-900/70"
@@ -191,10 +177,10 @@ export function MentorListPage() {
                 <Search className="h-7 w-7" />
               </div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                Không có mentor phù hợp với bộ lọc hiện tại
+                {t("userMentorlist.thereIsNoMentorThat")}
               </h2>
               <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">
-                Hãy thử đổi từ khóa tìm kiếm hoặc bấm "Tất cả" để xem toàn bộ mạng lưới mentor.
+                {t("userMentorlist.tryChangingYourSearchKeywords")}
               </p>
             </Card>
           ) : (

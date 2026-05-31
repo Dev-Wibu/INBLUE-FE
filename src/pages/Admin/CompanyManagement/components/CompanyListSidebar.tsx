@@ -1,5 +1,6 @@
 import { CheckCircle2, Plus, PlusCircle, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ export function CompanyListSidebar({
   onCreateCompany,
   className,
 }: CompanyListSidebarProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCompanies = useMemo(() => {
@@ -44,14 +46,14 @@ export function CompanyListSidebar({
       )}>
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-muted-foreground text-sm font-bold tracking-wider uppercase">
-          Danh sách đối tác
+          {t("adminCompanymanagement.listOfPartners")}
         </h3>
         <Button
           variant="ghost"
           size="icon"
           onClick={onCreateCompany}
           className="text-primary hover:bg-primary/10 hover:text-primary h-8 w-8"
-          title="Thêm đối tác">
+          title={t("general.addPartner")}>
           <Plus className="h-5 w-5" />
         </Button>
       </div>
@@ -59,7 +61,7 @@ export function CompanyListSidebar({
       <div className="relative mb-4">
         <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <Input
-          placeholder="Tìm công ty..."
+          placeholder={t("adminCompanymanagement.findCompany")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
@@ -106,7 +108,7 @@ export function CompanyListSidebar({
                       "text-xs",
                       isSelected ? "text-primary font-semibold" : "text-muted-foreground"
                     )}>
-                    {openJobsCount} JD đang tuyển
+                    {openJobsCount} {t("adminCompanymanagement.jdIsRecruiting")}
                   </p>
                 </div>
 
@@ -120,7 +122,7 @@ export function CompanyListSidebar({
             className="group border-border/60 hover:bg-muted/50 hover:border-primary/50 flex w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed py-4 transition-colors">
             <PlusCircle className="text-muted-foreground group-hover:text-primary h-6 w-6 transition-colors" />
             <span className="text-muted-foreground group-hover:text-primary text-xs font-bold transition-colors">
-              Thêm Đối tác
+              {t("adminCompanymanagement.addPartner")}
             </span>
           </button>
         </div>

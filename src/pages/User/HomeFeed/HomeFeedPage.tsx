@@ -1,7 +1,11 @@
 import { CommunityFeedPage } from "@/components/post";
-
+import { useTranslation } from "react-i18next";
 export function HomeFeedPage() {
+  const { t } = useTranslation();
   return (
-    <CommunityFeedPage title="Trang chủ" description="Cập nhật bài viết mới nhất từ cộng đồng" />
+    <CommunityFeedPage
+      title={t("common.home")}
+      description={t("common.updateTheLatestPostsFromTheCommuni")}
+    />
   );
 }

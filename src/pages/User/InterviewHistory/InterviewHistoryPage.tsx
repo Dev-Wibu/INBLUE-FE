@@ -1,22 +1,3 @@
-import {
-  AlertTriangle,
-  Bot,
-  Briefcase,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Globe,
-  History,
-  Search,
-  Sparkles,
-  Star,
-  User,
-  Video,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
 import { PaginationControl, PaymentMethodDialog, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,52 +30,127 @@ import {
   formatTime,
   treatZuluAsVietnamLocal,
 } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { sessionManager, transactionManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  AlertTriangle,
+  Bot,
+  Briefcase,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Globe,
+  History,
+  Search,
+  Sparkles,
+  Star,
+  User,
+  Video,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+const t = i18n.t.bind(i18n);
 
 // ============================================================
 // Constants & Config
 // ============================================================
 
 type InterviewType = "all" | "ai" | "mock";
-
-const INTERVIEW_TYPE_TABS: Array<{ value: InterviewType; label: string }> = [
-  { value: "all", label: "Tất cả" },
-  { value: "ai", label: "Phỏng vấn AI" },
-  { value: "mock", label: "Phỏng vấn Mentor" },
+const INTERVIEW_TYPE_TABS: Array<{
+  value: InterviewType;
+  label: string;
+}> = [
+  {
+    value: "all",
+    label: t("general.all"),
+  },
+  {
+    value: "ai",
+    label: t("common.aiInterview"),
+  },
+  {
+    value: "mock",
+    label: t("common.mentorInterview"),
+  },
 ];
 
 // AI Interview configs
 const AI_MODE_LABELS: Record<string, string> = {
-  STANDARD_MOCK: "Phỏng vấn thử",
-  THEORY_CHECK: "Kiểm tra lý thuyết",
-  PROJECT_DEFENSE: "Bảo vệ dự án",
+  STANDARD_MOCK: t("common.trialInterview"),
+  THEORY_CHECK: t("common.testTheTheory"),
+  PROJECT_DEFENSE: t("common.projectProtection"),
 };
-
-const AI_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  CREATED: { label: "Đã tạo", className: "bg-blue-100 text-blue-700" },
-  IN_PROGRESS: { label: "Đang diễn ra", className: "bg-amber-100 text-amber-700" },
-  COMPLETED: { label: "Hoàn thành", className: "bg-emerald-100 text-emerald-700" },
-  CANCELLED: { label: "Đã hủy", className: "bg-red-100 text-red-700" },
+const AI_STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    className: string;
+  }
+> = {
+  CREATED: {
+    label: t("common.created"),
+    className: "bg-blue-100 text-blue-700",
+  },
+  IN_PROGRESS: {
+    label: t("common.ongoing"),
+    className: "bg-amber-100 text-amber-700",
+  },
+  COMPLETED: {
+    label: t("general.completed"),
+    className: "bg-emerald-100 text-emerald-700",
+  },
+  CANCELLED: {
+    label: t("common.canceled"),
+    className: "bg-red-100 text-red-700",
+  },
 };
-
 const AI_RESULT_LABELS: Record<string, string> = {
-  STRONG_HIRE: "Xuất sắc",
-  HIRE: "Đạt",
-  CONSIDER: "Cần cân nhắc",
-  REJECT: "Không đạt",
+  STRONG_HIRE: t("common.excellent"),
+  HIRE: t("common.obtain"),
+  CONSIDER: t("common.needToConsider"),
+  REJECT: t("common.failed"),
 };
 
 // Mock Interview status configs
-const MOCK_STATUS_MAP: Record<string, { label: string; color: string }> = {
-  DRAFT: { label: "Chờ duyệt", color: "bg-amber-100 text-amber-700" },
-  SCHEDULED: { label: "Sắp diễn ra", color: "bg-blue-100 text-blue-700" },
-  PAID: { label: "Đã thanh toán", color: "bg-emerald-100 text-emerald-700" },
-  ONGOING: { label: "Đang diễn ra", color: "bg-green-100 text-green-700" },
-  COMPLETED: { label: "Hoàn thành", color: "bg-slate-100 text-slate-600" },
-  REJECTED: { label: "Bị từ chối", color: "bg-red-100 text-red-600" },
-  CANCELED: { label: "Đã hủy", color: "bg-red-100 text-red-600" },
+const MOCK_STATUS_MAP: Record<
+  string,
+  {
+    label: string;
+    color: string;
+  }
+> = {
+  DRAFT: {
+    label: t("common.waitingForApproval"),
+    color: "bg-amber-100 text-amber-700",
+  },
+  SCHEDULED: {
+    label: t("common.comingSoon"),
+    color: "bg-blue-100 text-blue-700",
+  },
+  PAID: {
+    label: t("common.paid"),
+    color: "bg-emerald-100 text-emerald-700",
+  },
+  ONGOING: {
+    label: t("common.ongoing"),
+    color: "bg-green-100 text-green-700",
+  },
+  COMPLETED: {
+    label: t("general.completed"),
+    color: "bg-slate-100 text-slate-600",
+  },
+  REJECTED: {
+    label: t("common.rejected"),
+    color: "bg-red-100 text-red-600",
+  },
+  CANCELED: {
+    label: t("common.canceled"),
+    color: "bg-red-100 text-red-600",
+  },
 };
 
 // ============================================================
@@ -108,7 +164,6 @@ interface BaseHistoryItem {
   completedAt?: string;
   status: string;
 }
-
 interface AIHistoryItem extends BaseHistoryItem {
   type: "ai";
   mode?: string;
@@ -128,7 +183,6 @@ interface AIHistoryItem extends BaseHistoryItem {
     basic_info?: Record<string, string>;
   };
 }
-
 interface MockHistoryItem extends BaseHistoryItem {
   type: "mock";
   roomName?: string;
@@ -137,9 +191,7 @@ interface MockHistoryItem extends BaseHistoryItem {
   totalPrice?: number;
   userId2?: number;
 }
-
 type HistoryItem = AIHistoryItem | MockHistoryItem;
-
 type SessionStatusFilter =
   | "all"
   | "DRAFT"
@@ -149,7 +201,6 @@ type SessionStatusFilter =
   | "COMPLETED"
   | "REJECTED"
   | "CANCELED";
-
 type AIStatusFilter = "all" | "CREATED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
 // ============================================================
@@ -160,9 +211,13 @@ function ProgressRing({ score, size = 64 }: { score: number; size?: number }) {
   const radius = (size - 8) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = `${(score / 10) * circumference} ${circumference}`;
-
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div
+      className="relative"
+      style={{
+        width: size,
+        height: size,
+      }}>
       <svg className="h-full w-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
         <circle
           className="fill-none stroke-[3px]"
@@ -170,7 +225,9 @@ function ProgressRing({ score, size = 64 }: { score: number; size?: number }) {
           cy={size / 2}
           r={radius}
           stroke="currentColor"
-          style={{ color: "rgb(220, 233, 255)" }}
+          style={{
+            color: "rgb(220, 233, 255)",
+          }}
         />
         <circle
           className="fill-none stroke-[3px] transition-all duration-500"
@@ -204,12 +261,11 @@ function AIInterviewCard({
     label: session.status ?? "",
     className: "bg-gray-100 text-gray-700",
   };
-  const modeLabel = AI_MODE_LABELS[session.mode ?? ""] ?? session.mode ?? "Phỏng vấn AI";
+  const modeLabel = AI_MODE_LABELS[session.mode ?? ""] ?? session.mode ?? t("common.aiInterview");
   const hasScore = session.overallScore !== undefined && session.overallScore !== null;
   const targetRole = session.candidateProfile?.targetRole;
   const targetLevel = session.candidateProfile?.targetLevel;
   const jobTitle = session.jobRequirement?.basic_info?.job_title;
-
   return (
     <Card className="group transition-all hover:shadow-md">
       <CardHeader className="pb-3">
@@ -222,7 +278,7 @@ function AIInterviewCard({
               <CardTitle className="text-base">{modeLabel}</CardTitle>
               <CardDescription className="flex items-center gap-2">
                 <Sparkles className="h-3 w-3" />
-                Phỏng vấn AI
+                {t("common.aiInterview")}
               </CardDescription>
             </div>
           </div>
@@ -255,13 +311,13 @@ function AIInterviewCard({
             {session.sessionConfig?.duration_minutes && (
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {session.sessionConfig.duration_minutes} phút
+                {session.sessionConfig.duration_minutes} {t("common.minute")}
               </span>
             )}
             {session.sessionConfig?.language && (
               <span className="flex items-center gap-1">
                 <Globe className="h-4 w-4" />
-                {session.sessionConfig.language === "VI" ? "Tiếng Việt" : "English"}
+                {session.sessionConfig.language === "VI" ? t("common.vietnamese") : "English"}
               </span>
             )}
           </div>
@@ -270,7 +326,9 @@ function AIInterviewCard({
         <div className="mt-3 flex items-center justify-between">
           <div className="flex flex-wrap gap-2">
             {session.domain && (
-              <Badge variant="secondary">{session.domain === "IT" ? "IT" : "Ngoài IT"}</Badge>
+              <Badge variant="secondary">
+                {session.domain === "IT" ? "IT" : t("common.outsideOfIt")}
+              </Badge>
             )}
             {session.result && (
               <Badge variant="outline">{AI_RESULT_LABELS[session.result] ?? session.result}</Badge>
@@ -281,12 +339,12 @@ function AIInterviewCard({
             {session.status === "COMPLETED" && (
               <Button size="sm" onClick={onViewDetails} className="gap-1">
                 <CheckCircle2 className="h-4 w-4" />
-                Xem chi tiết
+                {t("common.seeDetails")}
               </Button>
             )}
             {session.status !== "COMPLETED" && session.status !== "CANCELLED" && (
               <Button size="sm" variant="outline" onClick={onViewDetails}>
-                Xem chi tiết
+                {t("common.seeDetails")}
               </Button>
             )}
           </div>
@@ -323,7 +381,6 @@ function MockInterviewCard({
   const isPaid = session.status === "PAID";
   const isDraft = session.status === "DRAFT";
   const isRejected = session.status === "REJECTED";
-
   return (
     <Card className={cn("transition-all hover:shadow-md", isDraft && "opacity-90")}>
       <CardHeader className="pb-3">
@@ -334,7 +391,10 @@ function MockInterviewCard({
             </div>
             <div>
               <CardTitle className="text-base">
-                {session.roomName || `Phiên #${session.id}`}
+                {session.roomName ||
+                  t("common.sessionVar0", {
+                    var_0: session.id,
+                  })}
               </CardTitle>
               <CardDescription className="flex items-center gap-2">
                 <User className="h-3 w-3" />
@@ -349,12 +409,12 @@ function MockInterviewCard({
         {isDraft && (
           <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
             <Clock className="mr-1 inline h-3.5 w-3.5" />
-            Yêu cầu đang chờ mentor hoặc Staff/Admin xét duyệt
+            {t("common.theRequestIsAwaitingReviewByTheMe")}
           </div>
         )}
         {isRejected && (
           <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            Yêu cầu đã bị từ chối. Bạn có thể đặt lịch lại.
+            {t("common.theRequestWasDeniedYouCanReschedu")}
           </div>
         )}
 
@@ -362,19 +422,20 @@ function MockInterviewCard({
           {session.joinTime && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Giờ hẹn: {formatDateTime(session.joinTime)}
+              {t("common.appointmentTime")} {formatDateTime(session.joinTime)}
             </span>
           )}
           {session.startTime1 && (
             <span className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              Bắt đầu: {formatTime(treatZuluAsVietnamLocal(session.startTime1))}
+              {t("common.begin")} {formatTime(treatZuluAsVietnamLocal(session.startTime1))}
             </span>
           )}
           {!session.joinTime && !session.startTime1 && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Phiên #{session.id}
+              {t("common.session2")}
+              {session.id}
             </span>
           )}
           {typeof session.totalPrice === "number" && session.totalPrice > 0 && (
@@ -391,27 +452,27 @@ function MockInterviewCard({
               onClick={onPaySession}
               disabled={isPaying}
               className="gap-1 bg-emerald-600 hover:bg-emerald-700">
-              {isPaying ? "Đang xử lý..." : "Thanh toán"}
+              {isPaying ? t("common.processing") : t("common.pay")}
             </Button>
           )}
           {isPaid && (
             <Button variant="secondary" size="sm" disabled className="gap-1">
-              Đã thanh toán
+              {t("common.paid")}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={onViewDetails}>
-            Xem chi tiết
+            {t("common.seeDetails")}
           </Button>
           {isCompleted && !hasFeedback && (
             <Button size="sm" onClick={onWriteFeedback} className="gap-1">
               <Star className="h-4 w-4" />
-              Viết phản hồi
+              {t("common.writeFeedback")}
             </Button>
           )}
           {isCompleted && hasFeedback && (
             <Button variant="secondary" size="sm" onClick={onWriteFeedback} className="gap-1">
               <Star className="h-4 w-4 text-[#FFD700]" />
-              Sửa phản hồi
+              {t("common.editResponse")}
             </Button>
           )}
           {isRejected && (
@@ -420,7 +481,7 @@ function MockInterviewCard({
               variant="outline"
               onClick={navigateToSchedule}
               className="gap-1 border-blue-200 text-blue-600 hover:bg-blue-50">
-              Đặt lịch lại
+              {t("common.reschedule")}
             </Button>
           )}
         </div>
@@ -437,26 +498,24 @@ function EmptyHistoryState({ type, onAction }: { type: InterviewType; onAction?:
   const config = {
     all: {
       icon: History,
-      title: "Chưa có lịch sử phỏng vấn",
-      description: "Bạn chưa tham gia buổi phỏng vấn nào. Hãy bắt đầu để luyện tập ngay!",
-      actionLabel: "Phỏng vấn với AI",
+      title: t("common.noInterviewHistoryYet"),
+      description: t("userInterviewhistory.youHaveNotParticipatedIn"),
+      actionLabel: t("common.interviewWithAi"),
     },
     ai: {
       icon: Bot,
-      title: "Chưa có phỏng vấn AI",
-      description: "Hãy bắt đầu phỏng vấn với AI để luyện tập và cải thiện kỹ năng.",
-      actionLabel: "Bắt đầu phỏng vấn AI",
+      title: t("userInterviewhistory.thereIsNoAiInterview"),
+      description: t("userInterviewhistory.startInterviewingWithAiTo"),
+      actionLabel: t("common.startInterviewingAi"),
     },
     mock: {
       icon: Video,
-      title: "Chưa có phỏng vấn Mentor",
-      description: "Đặt lịch phỏng vấn với mentor để nhận phản hồi chi tiết.",
-      actionLabel: "Đặt lịch mentor",
+      title: t("userInterviewhistory.thereIsNoMentorInterview"),
+      description: t("userInterviewhistory.scheduleAnInterviewWithA"),
+      actionLabel: t("common.scheduleAMentoringAppointment"),
     },
   };
-
   const { icon: Icon, title, description, actionLabel } = config[type];
-
   return (
     <EmptyState
       icon={Icon}
@@ -485,16 +544,15 @@ function EmptyHistoryState({ type, onAction }: { type: InterviewType; onAction?:
 // ============================================================
 
 export function InterviewHistoryPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const userId = user?.id;
-
   const [interviewType, setInterviewType] = useState<InterviewType>("all");
   const [aiStatusFilter, setAiStatusFilter] = useState<AIStatusFilter>("all");
   const [mockStatusFilter, setMockStatusFilter] = useState<SessionStatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
-
   const [payingSessionId, setPayingSessionId] = useState<number | null>(null);
   const [isPreparingPaymentDialog, setIsPreparingPaymentDialog] = useState(false);
   const [targetSessionForPayment, setTargetSessionForPayment] = useState<Session | null>(null);
@@ -511,8 +569,16 @@ export function InterviewHistoryPage() {
   } = $api.useQuery(
     "get",
     "/api/interview-sessions/user/{userId}",
-    { params: { path: { userId: userId ?? 0 } } },
-    { enabled: !!userId }
+    {
+      params: {
+        path: {
+          userId: userId ?? 0,
+        },
+      },
+    },
+    {
+      enabled: !!userId,
+    }
   );
 
   // Fetch Mock Interview sessions
@@ -529,10 +595,8 @@ export function InterviewHistoryPage() {
     isRefetching: feedbacksRefetching,
     refetch: refetchFeedbacks,
   } = useMentorFeedbacksByUser(userId ?? 0);
-
   const { mutateAsync: makeSessionPayment } = useMakeSessionPayment();
   const { refreshWalletBalance } = useWalletBalanceReconciliation();
-
   const isLoading = aiLoading || mockLoading;
   const isRefetching = aiRefetching || mockRefetching || feedbacksRefetching;
 
@@ -541,7 +605,13 @@ export function InterviewHistoryPage() {
     () =>
       new Set(
         feedbacks
-          .map((f: { session?: { id?: number } }) => f.session?.id)
+          .map(
+            (f: {
+              session?: {
+                id?: number;
+              };
+            }) => f.session?.id
+          )
           .filter((id): id is number => typeof id === "number")
       ),
     [feedbacks]
@@ -585,7 +655,6 @@ export function InterviewHistoryPage() {
   // Combine and filter history
   const filteredHistory = useMemo(() => {
     let items: HistoryItem[] = [];
-
     if (interviewType === "all" || interviewType === "ai") {
       let filtered = [...aiHistoryItems];
       if (aiStatusFilter !== "all") {
@@ -593,7 +662,6 @@ export function InterviewHistoryPage() {
       }
       items = [...items, ...filtered];
     }
-
     if (interviewType === "all" || interviewType === "mock") {
       let filtered = [...mockHistoryItems];
       if (mockStatusFilter !== "all") {
@@ -633,7 +701,6 @@ export function InterviewHistoryPage() {
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return sortBy === "newest" ? dateB - dateA : dateA - dateB;
     });
-
     return items;
   }, [
     interviewType,
@@ -654,7 +721,6 @@ export function InterviewHistoryPage() {
     totalCount: filteredHistory.length,
     pageSize,
   });
-
   const pageData = useMemo(
     () => filteredHistory.slice(pagination.startIndex, pagination.endIndex + 1),
     [filteredHistory, pagination.startIndex, pagination.endIndex]
@@ -671,19 +737,17 @@ export function InterviewHistoryPage() {
     },
     [navigate]
   );
-
   const handleWriteFeedback = useCallback(
     (item: MockHistoryItem) => {
       navigate(`/user/mock-interview/history/${item.id}/feedback`);
     },
     [navigate]
   );
-
   const handlePaySessionWithPayOS = useCallback(
     async (session: Session) => {
       if (!session.id || !user?.id) return;
       if (payosPaymentInFlightRef.current) {
-        toast.info("Hệ thống đang tạo liên kết thanh toán. Vui lòng chờ trong giây lát.");
+        toast.info(t("common.theSystemIsGeneratingAPaymentLink"));
         return;
       }
       payosPaymentInFlightRef.current = true;
@@ -698,9 +762,9 @@ export function InterviewHistoryPage() {
         setPayingSessionId(null);
       }
     },
-    [makeSessionPayment, user?.id]
-  );
 
+    [makeSessionPayment, user?.id, t]
+  );
   const handleOpenPaymentMethodDialog = useCallback(
     async (session: Session) => {
       if (!user?.id) return;
@@ -708,25 +772,25 @@ export function InterviewHistoryPage() {
       try {
         await refreshWalletBalance(Number(user.id));
       } catch {
-        toast.info("Không thể đồng bộ số dư ví. Bạn vẫn có thể chọn PayOS để thanh toán.");
+        toast.info(t("common.unableToSyncWalletBalanceYouCanS"));
       } finally {
         setIsPreparingPaymentDialog(false);
       }
       setTargetSessionForPayment(session);
     },
-    [refreshWalletBalance, user?.id]
-  );
 
+    [refreshWalletBalance, user?.id, t]
+  );
   const handlePaySessionWithWallet = useCallback(
     async (session: Session) => {
       if (!session.id || !user?.id) return;
       const paymentAmount = session.totalPrice ?? 0;
       if (paymentAmount <= 0) {
-        toast.error("Phiên phỏng vấn chưa có tổng tiền hợp lệ để thanh toán bằng ví.");
+        toast.error(t("common.theInterviewSessionDoesNotHaveAVa"));
         return;
       }
       if (walletPaymentInFlightRef.current) {
-        toast.info("Hệ thống đang xử lý giao dịch ví. Vui lòng chờ trong giây lát.");
+        toast.info(t("common.theSystemIsProcessingTheWalletTran"));
         return;
       }
       walletPaymentInFlightRef.current = true;
@@ -735,11 +799,11 @@ export function InterviewHistoryPage() {
         const walletRefresh = await refreshWalletBalance(Number(user.id));
         const freshWalletBalance = walletRefresh.walletBalance;
         if (typeof freshWalletBalance !== "number") {
-          toast.error("Không thể đồng bộ số dư ví. Vui lòng thử lại.");
+          toast.error(t("userInterviewhistory.unableToSyncWalletBalance1"));
           return;
         }
         if (freshWalletBalance < paymentAmount) {
-          toast.error("Số dư ví không đủ. Vui lòng nạp thêm tiền hoặc chọn PayOS.");
+          toast.error(t("common.walletBalanceIsNotEnoughPleaseDep"));
           return;
         }
         const transferOutResult = await transactionManager.transferOut(
@@ -748,7 +812,7 @@ export function InterviewHistoryPage() {
           "MENTOR_INTERVIEW"
         );
         if (!transferOutResult.success || !transferOutResult.data) {
-          toast.error(transferOutResult.error || "Không thể thanh toán bằng ví lúc này.");
+          toast.error(transferOutResult.error || t("common.paymentByWalletIsNotPossibleAtThi"));
           return;
         }
         if (transferOutResult.data.redirectUrl) {
@@ -767,24 +831,24 @@ export function InterviewHistoryPage() {
             3
           );
           if (syncResult.success) {
-            toast.success("Thanh toán bằng ví thành công.");
+            toast.success(t("common.paymentByWalletSuccessful"));
             void refetchMockSessions();
           } else {
-            toast.info("Đã trừ ví thành công. Hệ thống đang đồng bộ trạng thái phiên.");
+            toast.info(t("userInterviewhistory.walletDeductedSuccessfullyTheSystem"));
           }
           navigate(`/user/mock-interview/history/${session.id}?payment=success`);
         }
       } catch {
-        toast.error("Không thể thanh toán bằng ví lúc này. Vui lòng thử lại.");
+        toast.error(t("common.paymentByWalletIsNotPossibleAtThi1"));
       } finally {
         walletPaymentInFlightRef.current = false;
         setPayingSessionId(null);
         setTargetSessionForPayment(null);
       }
     },
-    [refreshWalletBalance, user?.id, refetchMockSessions, navigate]
-  );
 
+    [refreshWalletBalance, user?.id, refetchMockSessions, navigate, t]
+  );
   const handleConfirmPaymentMethod = useCallback(
     async (method: "payos" | "wallet") => {
       if (!targetSessionForPayment) return;
@@ -834,17 +898,16 @@ export function InterviewHistoryPage() {
   const mockCount = mockHistoryItems.length;
   const completedAiCount = aiHistoryItems.filter((s) => s.status === "COMPLETED").length;
   const completedMockCount = mockHistoryItems.filter((s) => s.status === "COMPLETED").length;
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            Lịch sử Phỏng vấn
+            {t("userInterviewhistory.interviewHistory")}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Theo dõi tiến trình và xem lại nhận xét từ các buổi phỏng vấn của bạn
+            {t("userInterviewhistory.trackYourProgressAndReview")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -853,7 +916,7 @@ export function InterviewHistoryPage() {
               await Promise.all([refetchAISessions(), refetchMockSessions(), refetchFeedbacks()]);
             }}
             isLoading={isRefetching}
-            tooltip="Tải lại lịch sử"
+            tooltip={t("userInterviewhistory.reloadHistory")}
           />
         </div>
       </div>
@@ -862,25 +925,25 @@ export function InterviewHistoryPage() {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Tổng phiên</CardDescription>
+            <CardDescription>{t("common.totalSession")}</CardDescription>
             <CardTitle className="text-2xl">{totalCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-blue-200 dark:border-blue-900">
           <CardHeader className="pb-2">
-            <CardDescription>Phỏng vấn AI</CardDescription>
+            <CardDescription>{t("common.aiInterview")}</CardDescription>
             <CardTitle className="text-2xl text-blue-600">{aiCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-emerald-200 dark:border-emerald-900">
           <CardHeader className="pb-2">
-            <CardDescription>Phỏng vấn Mentor</CardDescription>
+            <CardDescription>{t("common.mentorInterview")}</CardDescription>
             <CardTitle className="text-2xl text-emerald-600">{mockCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-purple-200 dark:border-purple-900">
           <CardHeader className="pb-2">
-            <CardDescription>Đã hoàn thành</CardDescription>
+            <CardDescription>{t("common.completed1")}</CardDescription>
             <CardTitle className="text-2xl text-purple-600">
               {completedAiCount + completedMockCount}
             </CardTitle>
@@ -920,7 +983,7 @@ export function InterviewHistoryPage() {
                 pagination.goToFirstPage();
               }}
               className="pl-9"
-              placeholder="Tìm kiếm theo chế độ, vị trí, mentor..."
+              placeholder={t("userInterviewhistory.searchByRegimeLocationMentor")}
             />
           </div>
 
@@ -933,14 +996,14 @@ export function InterviewHistoryPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-full min-w-[180px]">
-                <SelectValue placeholder="Lọc theo trạng thái" />
+                <SelectValue placeholder={t("common.filterByStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="CREATED">Đã tạo</SelectItem>
-                <SelectItem value="IN_PROGRESS">Đang diễn ra</SelectItem>
-                <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
-                <SelectItem value="CANCELLED">Đã hủy</SelectItem>
+                <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                <SelectItem value="CREATED">{t("common.created")}</SelectItem>
+                <SelectItem value="IN_PROGRESS">{t("common.ongoing")}</SelectItem>
+                <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                <SelectItem value="CANCELLED">{t("common.canceled")}</SelectItem>
               </SelectContent>
             </Select>
           ) : interviewType === "mock" ? (
@@ -951,17 +1014,17 @@ export function InterviewHistoryPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-full min-w-[180px]">
-                <SelectValue placeholder="Lọc theo trạng thái" />
+                <SelectValue placeholder={t("common.filterByStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="DRAFT">Chờ duyệt</SelectItem>
-                <SelectItem value="SCHEDULED">Sắp diễn ra</SelectItem>
-                <SelectItem value="PAID">Đã thanh toán</SelectItem>
-                <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
-                <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
-                <SelectItem value="REJECTED">Bị từ chối</SelectItem>
-                <SelectItem value="CANCELED">Đã hủy</SelectItem>
+                <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+                <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
+                <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+                <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+                <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+                <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
               </SelectContent>
             </Select>
           ) : (
@@ -971,11 +1034,11 @@ export function InterviewHistoryPage() {
           {/* Sort */}
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as "newest" | "oldest")}>
             <SelectTrigger className="w-full min-w-[140px]">
-              <SelectValue placeholder="Sắp xếp" />
+              <SelectValue placeholder={t("userInterviewhistory.arrange")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Mới nhất</SelectItem>
-              <SelectItem value="oldest">Cũ nhất</SelectItem>
+              <SelectItem value="newest">{t("common.latest")}</SelectItem>
+              <SelectItem value="oldest">{t("common.oldest")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -983,10 +1046,10 @@ export function InterviewHistoryPage() {
         {/* Active filters indicator */}
         {(searchQuery || aiStatusFilter !== "all" || mockStatusFilter !== "all") && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-500">Bộ lọc đang áp dụng:</span>
+            <span className="text-sm text-slate-500">{t("userInterviewhistory.filtersInUse")}</span>
             {searchQuery && (
               <Badge variant="secondary" className="gap-1">
-                Tìm: {searchQuery}
+                {t("userInterviewhistory.find")} {searchQuery}
                 <button onClick={() => setSearchQuery("")} className="ml-1 hover:text-red-500">
                   ×
                 </button>
@@ -1021,7 +1084,7 @@ export function InterviewHistoryPage() {
                 setMockStatusFilter("all");
                 pagination.goToFirstPage();
               }}>
-              Xóa tất cả
+              {t("common.deleteAll")}
             </Button>
           </div>
         )}
@@ -1033,9 +1096,11 @@ export function InterviewHistoryPage() {
       ) : aiError ? (
         <Card className="flex h-48 flex-col items-center justify-center gap-4">
           <AlertTriangle className="h-8 w-8 text-red-500" />
-          <p className="text-destructive font-medium">Không thể tải lịch sử phỏng vấn</p>
+          <p className="text-destructive font-medium">
+            {t("common.unableToDownloadInterviewHistory")}
+          </p>
           <Button variant="outline" onClick={() => void refetchAISessions()}>
-            Thử lại
+            {t("common.retry")}
           </Button>
         </Card>
       ) : filteredHistory.length === 0 ? (
@@ -1101,8 +1166,8 @@ export function InterviewHistoryPage() {
             setTargetSessionForPayment(null);
           }
         }}
-        title="Chọn phương thức thanh toán phiên"
-        description="Bạn có thể thanh toán qua PayOS hoặc sử dụng số dư ví hiện tại."
+        title={t("common.selectSessionPaymentMethod")}
+        description={t("common.youCanPayViaPayosOrUseYourExisti")}
         amount={
           typeof targetSessionForPayment?.totalPrice === "number" &&
           targetSessionForPayment.totalPrice > 0

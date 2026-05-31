@@ -1,32 +1,27 @@
-import { Check, User, Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
 import { HomepageHeader } from "@/components/homepage-redesign";
 import { Footer } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-
+import { Check, User, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 export function SelectRolePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-
   const isMentor = user?.role?.toUpperCase() === "MENTOR" || user?.role?.toLowerCase() === "mentor";
-
   const handleUserSelect = () => {
     navigate("/signup?role=user");
   };
-
   const handleMentorSelect = () => {
     if (isMentor) {
       navigate("/mentor");
       return;
     }
-
     navigate("/mentor-register");
   };
-
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-linear-to-br from-slate-50 via-blue-50/70 to-[#DCEEFF]/40 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
       <div className="pointer-events-none absolute inset-0">
@@ -39,13 +34,13 @@ export function SelectRolePage() {
         <div className="w-full max-w-5xl">
           <div className="mb-10 text-center">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl dark:text-white">
-              Chào mừng đến với{" "}
+              {t("auth_selectrolepage.tsx.chao_mung_en_voi")}{" "}
               <span className="bg-linear-to-r from-[#0047AB] to-[#007BFF] bg-clip-text text-transparent dark:from-[#66B2FF] dark:to-[#A5C8F2]">
                 INBLUE AI Interview
               </span>
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-base text-slate-600 md:text-lg dark:text-slate-300">
-              Chọn vai trò phù hợp để tiếp tục với trải nghiệm được tối ưu riêng cho bạn.
+              {t("auth_selectrolepage.tsx.chon_vai_tro_phu_hop_e_tiep_tuc_voi_trai")}
             </p>
           </div>
 
@@ -55,23 +50,29 @@ export function SelectRolePage() {
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0047AB]/10 dark:bg-[#0047AB]/25">
                   <User className="h-8 w-8 text-[#0047AB] dark:text-[#66B2FF]" />
                 </div>
-                <CardTitle className="mt-1 text-slate-900 dark:text-white">Người dùng</CardTitle>
+                <CardTitle className="mt-1 text-slate-900 dark:text-white">
+                  {t("common.user")}
+                </CardTitle>
                 <CardDescription className="text-slate-600 dark:text-slate-300">
-                  Luyện tập phỏng vấn với AI và mentor chuyên nghiệp để cải thiện kỹ năng từng ngày.
+                  {t("auth_selectrolepage.tsx.luyen_tap_phong_van_voi_ai_va_mentor_chu")}
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-5">
                 <div className="space-y-2">
-                  <BenefitItem text="Luyện tập phỏng vấn với AI thông minh" />
-                  <BenefitItem text="Nhận feedback chi tiết từ mentor" />
-                  <BenefitItem text="Theo dõi tiến độ học tập" />
+                  <BenefitItem
+                    text={t("auth_selectrolepage.tsx.luyen_tap_phong_van_voi_ai_thong_minh")}
+                  />
+                  <BenefitItem
+                    text={t("auth_selectrolepage.tsx.nhan_feedback_chi_tiet_tu_mentor")}
+                  />
+                  <BenefitItem text={t("auth_selectrolepage.tsx.theo_doi_tien_o_hoc_tap")} />
                 </div>
 
                 <Button
                   className="w-full bg-[#0047AB] text-white hover:bg-[#003A8C] dark:bg-[#005FD1] dark:hover:bg-[#4A90FF]"
                   onClick={handleUserSelect}>
-                  Bắt đầu ngay
+                  {t("auth_selectrolepage.tsx.bat_au_ngay")}
                 </Button>
               </CardContent>
             </Card>
@@ -84,8 +85,8 @@ export function SelectRolePage() {
                 <CardTitle className="mt-1 text-slate-900 dark:text-white">Mentor</CardTitle>
                 <CardDescription className="text-slate-600 dark:text-slate-300">
                   {isMentor
-                    ? "Truy cập nhanh vào khu vực quản lý mentor của bạn."
-                    : "Chia sẻ kinh nghiệm, đồng hành cùng ứng viên và tạo thêm nguồn thu nhập linh hoạt."}
+                    ? t("auth_selectrolepage.tsx.truy_cap_nhanh_vao_khu_vuc_quan_ly_mento")
+                    : t("auth_selectrolepage.tsx.chia_se_kinh_nghiem_ong_hanh_cung_ung_vi")}
                 </CardDescription>
               </CardHeader>
 
@@ -93,15 +94,19 @@ export function SelectRolePage() {
                 <div className="space-y-2">
                   {isMentor ? (
                     <>
-                      <BenefitItem text="Quản lý phiên phỏng vấn" />
-                      <BenefitItem text="Xem đánh giá từ học viên" />
-                      <BenefitItem text="Theo dõi thu nhập" />
+                      <BenefitItem text={t("common.manageInterviewSessions")} />
+                      <BenefitItem text={t("auth_selectrolepage.tsx.xem_anh_gia_tu_hoc_vien")} />
+                      <BenefitItem text={t("auth_selectrolepage.tsx.theo_doi_thu_nhap")} />
                     </>
                   ) : (
                     <>
-                      <BenefitItem text="Hỗ trợ người học trên toàn quốc" />
-                      <BenefitItem text="Linh hoạt thời gian làm việc" />
-                      <BenefitItem text="Nhận thu nhập hấp dẫn" />
+                      <BenefitItem
+                        text={t("auth_selectrolepage.tsx.ho_tro_nguoi_hoc_tren_toan_quoc")}
+                      />
+                      <BenefitItem
+                        text={t("auth_selectrolepage.tsx.linh_hoat_thoi_gian_lam_viec")}
+                      />
+                      <BenefitItem text={t("auth_selectrolepage.tsx.nhan_thu_nhap_hap_dan")} />
                     </>
                   )}
                 </div>
@@ -115,7 +120,9 @@ export function SelectRolePage() {
                       : "border-slate-300 bg-white text-slate-800 hover:border-emerald-500 hover:bg-emerald-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-emerald-400 dark:hover:bg-emerald-900/20"
                   )}
                   onClick={handleMentorSelect}>
-                  {isMentor ? "Vào trang Mentor" : "Đăng ký Mentor"}
+                  {isMentor
+                    ? t("auth_selectrolepage.tsx.vao_trang_mentor")
+                    : t("auth_selectrolepage.tsx.ang_ky_mentor")}
                 </Button>
               </CardContent>
             </Card>
@@ -127,7 +134,6 @@ export function SelectRolePage() {
     </div>
   );
 }
-
 function BenefitItem({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-2">

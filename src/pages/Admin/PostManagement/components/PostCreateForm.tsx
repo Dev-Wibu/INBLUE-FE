@@ -1,7 +1,3 @@
-import { X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,15 +15,17 @@ import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
 import { type Major, questionMajorManager } from "@/services/question-major.manager";
 import { useAuthStore } from "@/stores/authStore";
-
+import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 interface PostCreateFormProps {
   onSuccess: () => void;
   onCancel: () => void;
 }
-
 export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
-
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
@@ -40,7 +38,6 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
   const [majorId, setMajorId] = useState<number | undefined>(undefined);
   const [majors, setMajors] = useState<Major[]>([]);
   const tagInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     const fetchMajors = async () => {
       const result = await questionMajorManager.getAll();
@@ -51,7 +48,6 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
     };
     void fetchMajors();
   }, []);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -61,7 +57,6 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
       reader.readAsDataURL(file);
     }
   };
-
   const addTag = () => {
     const trimmed = tagInput.trim();
     if (!trimmed) return;
@@ -70,7 +65,6 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
     }
     setTagInput("");
   };
-
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
@@ -79,20 +73,16 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
       setTags((prev) => prev.slice(0, -1));
     }
   };
-
   const removeTag = (index: number) => {
     setTags((prev) => prev.filter((_, i) => i !== index));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("Tiêu đề không được để trống");
+      toast.error(t("adminPostmanagement.theTitleCannotBeBlank"));
       return;
     }
-
     const finalTags = tagInput.trim() ? [...tags, tagInput.trim()] : tags;
-
     setSubmitting(true);
     try {
       const result = await postManager.createPost({
@@ -105,34 +95,32 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
         tags: finalTags.length > 0 ? finalTags : undefined,
         status,
       });
-
       if (result.success) {
-        toast.success("Tạo bài viết thành công");
+        toast.success(t("adminPostmanagement.createdASuccessfulPost"));
         onSuccess();
       } else {
-        toast.error(result.error ?? "Tạo bài viết thất bại");
+        toast.error(result.error ?? t("adminPostmanagement.postCreationFailed"));
       }
     } catch {
-      toast.error("Đã xảy ra lỗi khi tạo bài viết");
+      toast.error(t("adminPostmanagement.anErrorOccurredWhileCreating"));
     } finally {
       setSubmitting(false);
     }
   };
-
   return (
     <div className="mx-auto max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>Tạo bài viết</CardTitle>
+          <CardTitle>{t("common.createArticles")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <form onSubmit={handleSubmit} className="max-h-[calc(100vh-12rem)] overflow-y-auto">
             <div className="space-y-4 px-6 pt-6 pb-24">
               <div className="space-y-2">
-                <Label htmlFor="title">Tiêu đề *</Label>
+                <Label htmlFor="title">{t("common.title1")}</Label>
                 <Input
                   id="title"
-                  placeholder="Nhập tiêu đề bài viết"
+                  placeholder={t("adminPostmanagement.enterThePostTitle")}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
@@ -140,10 +128,10 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="content">Nội dung</Label>
+                <Label htmlFor="content">{t("common.content")}</Label>
                 <Textarea
                   id="content"
-                  placeholder="Nhập nội dung bài viết"
+                  placeholder={t("adminPostmanagement.enterArticleContent")}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={6}
@@ -151,10 +139,10 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="summary">Tóm tắt</Label>
+                <Label htmlFor="summary">{t("common.summary")}</Label>
                 <Textarea
                   id="summary"
-                  placeholder="Nhập tóm tắt bài viết"
+                  placeholder={t("adminPostmanagement.enterArticleSummary")}
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   rows={3}
@@ -162,24 +150,24 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cover">Ảnh bìa</Label>
+                <Label htmlFor="cover">{t("common.coverPhoto")}</Label>
                 <Input id="cover" type="file" accept="image/*" onChange={handleFileChange} />
                 {coverPreview && (
                   <img
                     src={coverPreview}
-                    alt="Xem trước ảnh bìa"
+                    alt={t("adminPostmanagement.previewCoverPhoto")}
                     className="mt-2 max-h-48 rounded-md object-cover"
                   />
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Chuyên ngành</Label>
+                <Label>{t("common.specialized")}</Label>
                 <Select
                   value={majorId?.toString()}
                   onValueChange={(v) => setMajorId(v ? Number(v) : undefined)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn chuyên ngành" />
+                    <SelectValue placeholder={t("common.chooseAMajor")} />
                   </SelectTrigger>
                   <SelectContent>
                     {majors.map((m) => (
@@ -192,7 +180,7 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label>Thẻ</Label>
+                <Label>{t("adminPostmanagement.card")}</Label>
                 <div
                   className="border-input bg-background flex min-h-10 cursor-text flex-wrap items-center gap-1.5 rounded-md border px-3 py-2 text-sm"
                   onClick={() => tagInputRef.current?.focus()}>
@@ -206,7 +194,9 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
                           e.stopPropagation();
                           removeTag(i);
                         }}
-                        aria-label={`Xóa thẻ ${tag}`}>
+                        aria-label={t("general.deleteTag", {
+                          var_0: tag,
+                        })}>
                         <X className="h-3 w-3" />
                       </button>
                     </Badge>
@@ -218,7 +208,7 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
                     onKeyDown={handleTagKeyDown}
                     onBlur={addTag}
                     placeholder={
-                      tags.length === 0 ? "Nhập thẻ, nhấn Enter hoặc dấu phẩy để thêm" : ""
+                      tags.length === 0 ? t("adminPostmanagement.enterATagPressEnter") : ""
                     }
                     className="placeholder:text-muted-foreground min-w-40 flex-1 bg-transparent outline-none"
                   />
@@ -226,15 +216,15 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label>Trạng thái</Label>
+                <Label>{t("common.status")}</Label>
                 <Select value={status} onValueChange={(v) => setStatus(v as PostStatus)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DRAFT">Bản nháp</SelectItem>
-                    <SelectItem value="PUBLISHED">Đã xuất bản</SelectItem>
-                    <SelectItem value="ARCHIVED">Đã lưu trữ</SelectItem>
+                    <SelectItem value="DRAFT">{t("common.draft")}</SelectItem>
+                    <SelectItem value="PUBLISHED">{t("common.published")}</SelectItem>
+                    <SelectItem value="ARCHIVED">{t("common.archived")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -242,10 +232,10 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
 
             <div className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky bottom-0 z-10 flex gap-3 border-t px-6 py-4 backdrop-blur">
               <Button type="submit" disabled={submitting}>
-                {submitting ? "Đang tạo..." : "Tạo bài viết"}
+                {submitting ? t("common.creating") : t("common.createArticles")}
               </Button>
               <Button type="button" variant="outline" onClick={onCancel}>
-                Hủy
+                {t("general.cancel")}
               </Button>
             </div>
           </form>

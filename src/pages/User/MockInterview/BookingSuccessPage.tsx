@@ -1,25 +1,23 @@
+import { useTranslation } from "react-i18next";
 /**
  * BookingSuccessPage
  * Shown after user successfully submits a session booking request (DRAFT).
  * Receives mentor name and joinTime via React Router location state.
  */
 
-import { ArrowRight, Calendar, CheckCircle, Clock, User } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { ArrowRight, Calendar, CheckCircle, Clock, User } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 interface BookingState {
   mentorName?: string;
   joinTime?: string;
 }
-
 export function BookingSuccessPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state as BookingState) || {};
-
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <Card className="w-full max-w-lg text-center">
@@ -27,10 +25,9 @@ export function BookingSuccessPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
             <CheckCircle className="h-8 w-8 text-amber-600" />
           </div>
-          <CardTitle className="text-2xl">Yêu cầu đã được gửi!</CardTitle>
+          <CardTitle className="text-2xl">{t("userMockinterview.requestHasBeenSent")}</CardTitle>
           <CardDescription className="text-base">
-            Phiên phỏng vấn của bạn đang chờ Mentor xét duyệt. Bạn sẽ có thể vào phòng sau khi được
-            duyệt.
+            {t("userMockinterview.yourInterviewSessionIsWaiting")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -47,7 +44,9 @@ export function BookingSuccessPage() {
               {state.joinTime && (
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-amber-600" />
-                  <span className="text-slate-600 dark:text-slate-400">Thời gian:</span>
+                  <span className="text-slate-600 dark:text-slate-400">
+                    {t("enterprise_jobdescriptiondetailpage.tsx.thoi_gian")}
+                  </span>
                   <span className="font-medium">{state.joinTime}</span>
                 </div>
               )}
@@ -57,7 +56,7 @@ export function BookingSuccessPage() {
           {/* Status info */}
           <div className="flex items-center justify-center gap-2 text-sm text-amber-700 dark:text-amber-400">
             <Clock className="h-4 w-4" />
-            <span>Trạng thái: Đang chờ xét duyệt</span>
+            <span>{t("userMockinterview.statusWaitingForReview")}</span>
           </div>
 
           {/* Actions */}
@@ -66,10 +65,10 @@ export function BookingSuccessPage() {
               onClick={() => navigate("/user?tab=interviewHistory")}
               className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
               <ArrowRight className="h-4 w-4" />
-              Xem lịch sử phỏng vấn
+              {t("common.viewInterviewHistory")}
             </Button>
             <Button variant="outline" onClick={() => navigate("/user?tab=mockInterview")}>
-              Về trang chính
+              {t("userMockinterview.backToMainPage")}
             </Button>
           </div>
         </CardContent>

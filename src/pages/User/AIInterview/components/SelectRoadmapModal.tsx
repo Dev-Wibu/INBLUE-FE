@@ -1,7 +1,3 @@
-import { format } from "date-fns";
-import { BookOpen, Calendar, Zap } from "lucide-react";
-import { useState } from "react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
+import { format } from "date-fns";
+import { BookOpen, Calendar, Zap } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 interface RoadmapOption {
   days: number;
   label: string;
@@ -26,13 +27,12 @@ interface RoadmapOption {
   disabledReason?: string;
   recommended?: boolean;
 }
-
 const roadmapOptions: RoadmapOption[] = [
   {
     days: 7,
-    label: "7 Ngày",
-    tag: "Cấp tốc",
-    description: "Cường độ cao, tập trung các kỹ năng cốt lõi nhất.",
+    label: t("userAiinterview.7Days"),
+    tag: t("userAiinterview.express"),
+    description: t("userAiinterview.highIntensityFocusingOnThe"),
     icon: <Zap className="h-8 w-8" />,
     iconBg: "bg-orange-100 dark:bg-orange-900/40",
     iconColor: "text-orange-500",
@@ -40,9 +40,9 @@ const roadmapOptions: RoadmapOption[] = [
   },
   {
     days: 14,
-    label: "14 Ngày",
-    tag: "Tiêu chuẩn",
-    description: "Cân bằng giữa lý thuyết và thực hành mỗi ngày.",
+    label: t("userAiinterview.14Days"),
+    tag: t("userAiinterview.standard"),
+    description: t("userAiinterview.balanceTheoryAndPracticeEvery"),
     icon: <Calendar className="h-8 w-8" />,
     iconBg: "bg-blue-100 dark:bg-blue-900/40",
     iconColor: "text-[#0047AB]",
@@ -51,42 +51,39 @@ const roadmapOptions: RoadmapOption[] = [
   },
   {
     days: 21,
-    label: "21 Ngày",
-    tag: "Chuyên sâu",
-    description: "Hoàn thiện mọi kỹ năng từ cơ bản đến nâng cao.",
+    label: t("userAiinterview.21Days"),
+    tag: t("userAiinterview.inDepth"),
+    description: t("userAiinterview.perfectAllSkillsFromBasic"),
     icon: <BookOpen className="h-8 w-8" />,
     iconBg: "bg-emerald-100 dark:bg-emerald-900/40",
     iconColor: "text-emerald-600",
     disabled: true,
-    disabledReason: "Sắp ra mắt",
+    disabledReason: t("userAiinterview.comingSoon"),
   },
 ];
-
 interface Props {
   open: boolean;
   onClose: () => void;
   onConfirm: (dateNumber: number) => void;
   loading?: boolean;
 }
-
 export function SelectRoadmapModal({ open, onClose, onConfirm, loading = false }: Props) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<number>(14);
   const todayLabel = format(new Date(), "dd/MM/yyyy");
-
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Chọn lộ trình học tập</DialogTitle>
-          <DialogDescription>
-            Vui lòng chọn thời gian phù hợp với mục tiêu và cường độ luyện tập của bạn
-          </DialogDescription>
+          <DialogTitle className="text-xl font-bold">
+            {t("userAiinterview.chooseALearningPath")}
+          </DialogTitle>
+          <DialogDescription>{t("userAiinterview.pleaseChooseATimeThat")}</DialogDescription>
         </DialogHeader>
 
         <div className="mt-2 grid grid-cols-3 gap-3">
           {roadmapOptions.map((option) => {
             const isSelected = selected === option.days;
-
             return (
               <div
                 key={option.days}
@@ -107,7 +104,7 @@ export function SelectRoadmapModal({ open, onClose, onConfirm, loading = false }
                 {option.recommended && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="bg-[#0047AB] px-2 py-0.5 text-[10px] font-bold text-white uppercase">
-                      Khuyến dùng
+                      {t("userAiinterview.recommended")}
                     </Badge>
                   </div>
                 )}
@@ -157,19 +154,19 @@ export function SelectRoadmapModal({ open, onClose, onConfirm, loading = false }
 
         {/* Start date note */}
         <p className="text-muted-foreground mt-1 text-center text-xs">
-          Lộ trình sẽ bắt đầu từ ngày{" "}
+          {t("userAiinterview.theRouteWillStartFrom")}{" "}
           <span className="text-foreground font-medium">{todayLabel}</span>
         </p>
 
         <DialogFooter className="mt-4 gap-2 sm:gap-2">
           <Button variant="ghost" onClick={onClose} disabled={loading}>
-            Hủy bỏ
+            {t("userAiinterview.cancel")}
           </Button>
           <Button
             onClick={() => onConfirm(selected)}
             disabled={loading}
             className="bg-[#0047AB] text-white hover:bg-[#005B9A]">
-            {loading ? "Đang tạo..." : "Xác nhận"}
+            {loading ? t("common.creating") : t("common.confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

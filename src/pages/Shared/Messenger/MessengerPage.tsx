@@ -18,6 +18,7 @@ import {
   toTimestamp,
   toVietnamDateKey,
 } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { chatManager, type ChatHistoryMessage } from "@/services/chat.manager";
 import {
@@ -48,9 +49,10 @@ import {
   useState,
   type TouchEvent as ReactTouchEvent,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
-
+const t = i18n.t.bind(i18n);
 interface Contact {
   id: number;
   name: string;
@@ -60,12 +62,10 @@ interface Contact {
   time?: string;
   unreadCount?: number;
 }
-
 interface MessengerLocationState {
   openMentorId?: number;
   mentorData?: SchemaMentorResponse;
 }
-
 interface MessengerMessage {
   id: string;
   sender: "ai" | "user";
@@ -74,18 +74,15 @@ interface MessengerMessage {
   status?: MessageDeliveryStatus;
   retries?: number;
 }
-
 interface ConversationMeta {
   lastMessage: string;
   lastTimestamp: string;
 }
-
 interface TimelineDayItem {
   type: "day";
   key: string;
   label: string;
 }
-
 interface TimelineMessageItem {
   type: "message";
   key: string;
@@ -93,19 +90,15 @@ interface TimelineMessageItem {
   isGroupedWithPrevious: boolean;
   isGroupedWithNext: boolean;
 }
-
 type TimelineItem = TimelineDayItem | TimelineMessageItem;
-
 const MESSAGE_RENDER_STEP = 80;
 const MAX_RETRY_ATTEMPTS = 4;
 const RETRY_BASE_DELAY_MS = 1200;
 const GROUPING_WINDOW_MS = 5 * 60 * 1000;
-
 const createContactFromMentor = (mentorData?: SchemaMentorResponse): Contact | null => {
   if (mentorData?.id === undefined || !mentorData.name) {
     return null;
   }
-
   return {
     id: mentorData.id,
     name: mentorData.name,
@@ -113,19 +106,15 @@ const createContactFromMentor = (mentorData?: SchemaMentorResponse): Contact | n
     role: "MENTOR",
   };
 };
-
 const getRoleLabel = (role: Contact["role"]): string => {
-  return role === "MENTOR" ? "Mentor" : "Học viên";
+  return role === "MENTOR" ? "Mentor" : t("common.students");
 };
-
 const createMessageId = (prefix: "temp" | "server" = "temp", rawId?: string | number): string => {
   if (prefix === "server" && rawId !== undefined) {
     return `server-${rawId}`;
   }
-
   return `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 };
-
 const getDraftStorageKey = (
   userRole: string,
   userId: number | string,
@@ -134,9 +123,7 @@ const getDraftStorageKey = (
 ) => {
   return `messenger-draft:${userRole}:${userId}:${contactRole}:${contactId}`;
 };
-
 const getConversationKey = (contact: Contact) => `${contact.role}_${contact.id}`;
-
 const getPinnedStorageKey = (
   userRole: string,
   userId: number | string,
@@ -145,21 +132,17 @@ const getPinnedStorageKey = (
 ) => {
   return `messenger-pinned:${userRole}:${userId}:${contactRole}:${contactId}`;
 };
-
 const getTimestampValue = (timestamp: string): number => {
   return toTimestamp(timestamp) ?? 0;
 };
-
 const getDayKey = (timestamp: string): string => {
   return toVietnamDateKey(timestamp) || "unknown";
 };
-
 const formatDayLabel = (timestamp: string): string => {
   const parsed = parseBackendDate(timestamp);
   if (!parsed) {
-    return "Hôm nay";
+    return t("common.today");
   }
-
   return parsed.toLocaleDateString("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
     weekday: "short",
@@ -168,41 +151,31 @@ const formatDayLabel = (timestamp: string): string => {
     year: "numeric",
   });
 };
-
 const formatConversationTime = (timestamp: string): string => {
   const parsed = parseBackendDate(timestamp);
   if (!parsed) {
     return "";
   }
-
   const sameDay = toVietnamDateKey(parsed) === toVietnamDateKey(new Date());
-
   if (sameDay) {
     return formatTime(parsed, "");
   }
-
   return formatDayMonth(parsed, "");
 };
-
 const buildTimelineItems = (messages: MessengerMessage[]): TimelineItem[] => {
   if (messages.length === 0) {
     return [];
   }
-
   const sortedMessages = [...messages].sort(
     (a, b) => getTimestampValue(a.timestamp) - getTimestampValue(b.timestamp)
   );
-
   const timeline: TimelineItem[] = [];
-
   for (let index = 0; index < sortedMessages.length; index += 1) {
     const message = sortedMessages[index];
     const previous = sortedMessages[index - 1];
     const next = sortedMessages[index + 1];
-
     const previousDayKey = previous ? getDayKey(previous.timestamp) : "";
     const currentDayKey = getDayKey(message.timestamp);
-
     if (!previous || previousDayKey !== currentDayKey) {
       timeline.push({
         type: "day",
@@ -210,14 +183,12 @@ const buildTimelineItems = (messages: MessengerMessage[]): TimelineItem[] => {
         label: formatDayLabel(message.timestamp),
       });
     }
-
     const isGroupedWithPrevious =
       !!previous &&
       previous.sender === message.sender &&
       previousDayKey === currentDayKey &&
       Math.abs(getTimestampValue(message.timestamp) - getTimestampValue(previous.timestamp)) <=
         GROUPING_WINDOW_MS;
-
     const nextDayKey = next ? getDayKey(next.timestamp) : "";
     const isGroupedWithNext =
       !!next &&
@@ -225,7 +196,6 @@ const buildTimelineItems = (messages: MessengerMessage[]): TimelineItem[] => {
       nextDayKey === currentDayKey &&
       Math.abs(getTimestampValue(next.timestamp) - getTimestampValue(message.timestamp)) <=
         GROUPING_WINDOW_MS;
-
     timeline.push({
       type: "message",
       key: message.id,
@@ -234,11 +204,10 @@ const buildTimelineItems = (messages: MessengerMessage[]): TimelineItem[] => {
       isGroupedWithNext,
     });
   }
-
   return timeline;
 };
-
 export function MessengerPage() {
+  const { t } = useTranslation();
   const location = useLocation();
   const isMobile = useIsMobile();
   const locationState = location.state as MessengerLocationState | null;
@@ -246,7 +215,6 @@ export function MessengerPage() {
   const currentUserId = user?.id;
   const currentRole = user?.role?.toUpperCase();
   const initialSelectedContact = createContactFromMentor(locationState?.mentorData);
-
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loadingContacts, setLoadingContacts] = useState(true);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(initialSelectedContact);
@@ -256,7 +224,6 @@ export function MessengerPage() {
     if (!initialSelectedContact || !currentRole || !currentUserId) {
       return "";
     }
-
     try {
       return (
         localStorage.getItem(
@@ -276,7 +243,6 @@ export function MessengerPage() {
     if (!initialSelectedContact || !currentRole || !currentUserId) {
       return {};
     }
-
     try {
       const storedPinnedId = localStorage.getItem(
         getPinnedStorageKey(
@@ -286,11 +252,9 @@ export function MessengerPage() {
           initialSelectedContact.id
         )
       );
-
       if (!storedPinnedId) {
         return {};
       }
-
       return {
         [getConversationKey(initialSelectedContact)]: storedPinnedId,
       };
@@ -312,7 +276,6 @@ export function MessengerPage() {
   const [contactSearchQuery, setContactSearchQuery] = useState("");
   const [messageSearchQuery, setMessageSearchQuery] = useState("");
   const [isMessageSearchOpen, setIsMessageSearchOpen] = useState(false);
-
   const deferredContactSearchQuery = useDeferredValue(contactSearchQuery);
   const deferredMessageSearchQuery = useDeferredValue(messageSearchQuery);
 
@@ -320,15 +283,16 @@ export function MessengerPage() {
   const [showMentorList, setShowMentorList] = useState(false);
   const [mentors, setMentors] = useState<SchemaMentorResponse[]>([]);
   const [loadingMentors, setLoadingMentors] = useState(false);
-
   const selectedContactRef = useRef<Contact | null>(null);
   const messagesRef = useRef<MessengerMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchStartRef = useRef<{
+    x: number;
+    y: number;
+  } | null>(null);
   const retryTimeoutRef = useRef<Record<string, number>>({});
   const retryAttemptRef = useRef<Record<string, number>>({});
   const destroyedRef = useRef(false);
-
   useEffect(() => {
     return () => {
       destroyedRef.current = true;
@@ -342,16 +306,16 @@ export function MessengerPage() {
   useEffect(() => {
     selectedContactRef.current = selectedContact;
   }, [selectedContact]);
-
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
   // Auto scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
   }, [messages]);
-
   const clearRetryTimer = (messageId: string) => {
     const timeoutId = retryTimeoutRef.current[messageId];
     if (timeoutId !== undefined) {
@@ -359,16 +323,13 @@ export function MessengerPage() {
       delete retryTimeoutRef.current[messageId];
     }
   };
-
   const updateConversationMeta = (contact: Contact, content: string, timestamp: string) => {
     const conversationKey = getConversationKey(contact);
-
     setConversationMetaMap((previous) => {
       const existing = previous[conversationKey];
       if (existing && getTimestampValue(existing.lastTimestamp) > getTimestampValue(timestamp)) {
         return previous;
       }
-
       return {
         ...previous,
         [conversationKey]: {
@@ -378,14 +339,12 @@ export function MessengerPage() {
       };
     });
   };
-
   const mapHistoryMessageToUi = (
     msg: ChatHistoryMessage,
     currentFullId: string
   ): MessengerMessage => {
     const senderId = msg.senderId ?? msg.sender_id;
     const senderType = msg.senderType ?? msg.sender_type;
-
     let isMe = false;
     if (senderId !== undefined && senderType !== undefined) {
       const combinedSenderId = `${senderType}_${senderId}`;
@@ -393,7 +352,6 @@ export function MessengerPage() {
     } else if (msg.sender) {
       isMe = msg.sender === "user" || msg.sender === "me";
     }
-
     return {
       id: typeof msg.id === "number" ? createMessageId("server", msg.id) : createMessageId("temp"),
       content: msg.content ?? "",
@@ -403,7 +361,6 @@ export function MessengerPage() {
       retries: 0,
     };
   };
-
   const scheduleRetry = (
     messageId: string,
     content: string,
@@ -413,38 +370,42 @@ export function MessengerPage() {
     if (destroyedRef.current) {
       return;
     }
-
     if (attempt >= MAX_RETRY_ATTEMPTS) {
       clearRetryTimer(messageId);
       delete retryAttemptRef.current[messageId];
       setMessages((previous) =>
         previous.map((message) =>
-          message.id === messageId ? { ...message, status: "failed", retries: attempt } : message
+          message.id === messageId
+            ? {
+                ...message,
+                status: "failed",
+                retries: attempt,
+              }
+            : message
         )
       );
-      toast.error("Tin nhắn chưa gửi được sau nhiều lần thử. Vui lòng gửi lại thủ công");
+      toast.error(t("sharedMessenger.theMessageHasNotBeen"));
       return;
     }
-
     const nextAttempt = attempt + 1;
     retryAttemptRef.current[messageId] = nextAttempt;
-
     setMessages((previous) =>
       previous.map((message) =>
         message.id === messageId
-          ? { ...message, status: attempt === 0 ? "queued" : "retrying", retries: nextAttempt }
+          ? {
+              ...message,
+              status: attempt === 0 ? "queued" : "retrying",
+              retries: nextAttempt,
+            }
           : message
       )
     );
-
     clearRetryTimer(messageId);
-
     const retryDelay = Math.min(RETRY_BASE_DELAY_MS * 2 ** attempt, 12000);
     retryTimeoutRef.current[messageId] = window.setTimeout(() => {
       if (destroyedRef.current) {
         return;
       }
-
       const isSent = socketService.sendMessage(recipientFullId, content);
       if (isSent) {
         clearRetryTimer(messageId);
@@ -452,13 +413,16 @@ export function MessengerPage() {
         setMessages((previous) =>
           previous.map((message) =>
             message.id === messageId
-              ? { ...message, status: "sent", retries: nextAttempt }
+              ? {
+                  ...message,
+                  status: "sent",
+                  retries: nextAttempt,
+                }
               : message
           )
         );
         return;
       }
-
       scheduleRetry(messageId, content, recipientFullId, nextAttempt);
     }, retryDelay);
   };
@@ -469,29 +433,24 @@ export function MessengerPage() {
       if (!currentUserId || !currentRole) {
         return;
       }
-
       setLoadingContacts(true);
-
       try {
         const res = await chatManager.getContacts(currentUserId, currentRole);
         if (!res.success || !res.data) {
-          toast.error("Không thể tải danh sách liên hệ");
+          toast.error(t("sharedMessenger.unableToLoadContactList"));
           return;
         }
-
         const contactIds = res.data;
         if (contactIds.length === 0) {
           setContacts([]);
           return;
         }
-
         const detailResults = await Promise.all(
           contactIds.map(async (id) => {
             const detailRes =
               currentRole === "USER"
                 ? await chatManager.getMentorDetail(id)
                 : await chatManager.getUserDetail(id);
-
             if (
               !detailRes.success ||
               !detailRes.data ||
@@ -500,7 +459,6 @@ export function MessengerPage() {
             ) {
               return null;
             }
-
             return {
               id: detailRes.data.id,
               name: detailRes.data.name,
@@ -509,15 +467,12 @@ export function MessengerPage() {
             } satisfies Contact;
           })
         );
-
         const contactDetails = detailResults.filter((contact): contact is Contact => !!contact);
         setContacts(contactDetails);
-
         const previewTargets = contactDetails.slice(0, 6);
         if (previewTargets.length === 0) {
           return;
         }
-
         const currentFullId = `${currentRole}_${currentUserId}`;
         const previewResults = await Promise.allSettled(
           previewTargets.map(async (contact) => {
@@ -526,11 +481,9 @@ export function MessengerPage() {
               currentFullId,
               recipientFullId
             );
-
             if (!historyRes.success || !historyRes.data || historyRes.data.length === 0) {
               return null;
             }
-
             const lastMessage = historyRes.data[historyRes.data.length - 1];
             return {
               key: getConversationKey(contact),
@@ -541,33 +494,31 @@ export function MessengerPage() {
             };
           })
         );
-
         if (destroyedRef.current) {
           return;
         }
-
         const previewMeta = previewResults.reduce<Record<string, ConversationMeta>>(
           (acc, result) => {
             if (result.status !== "fulfilled" || !result.value) {
               return acc;
             }
-
             acc[result.value.key] = result.value.value;
             return acc;
           },
           {}
         );
-
         if (Object.keys(previewMeta).length > 0) {
-          setConversationMetaMap((previous) => ({ ...previous, ...previewMeta }));
+          setConversationMetaMap((previous) => ({
+            ...previous,
+            ...previewMeta,
+          }));
         }
       } finally {
         setLoadingContacts(false);
       }
     };
-
     fetchContacts();
-  }, [currentUserId, currentRole]);
+  }, [currentUserId, currentRole, t]);
 
   // Load mentors when discovery mode is active
   useEffect(() => {
@@ -575,7 +526,6 @@ export function MessengerPage() {
       if (!showMentorList || mentors.length > 0) {
         return;
       }
-
       setLoadingMentors(true);
       const res = await chatManager.getAllMentors();
       if (res.success && res.data) {
@@ -583,22 +533,18 @@ export function MessengerPage() {
       }
       setLoadingMentors(false);
     };
-
     fetchMentors();
   }, [showMentorList, mentors.length]);
-
   useEffect(() => {
     if (!selectedContact || !currentRole || !currentUserId) {
       return;
     }
-
     const draftKey = getDraftStorageKey(
       currentRole,
       currentUserId,
       selectedContact.role,
       selectedContact.id
     );
-
     try {
       if (messageInput.trim().length === 0) {
         localStorage.removeItem(draftKey);
@@ -611,12 +557,10 @@ export function MessengerPage() {
       // Ignore draft persistence errors to keep chat usable.
     }
   }, [messageInput, selectedContact, currentRole, currentUserId]);
-
   useEffect(() => {
     if (!selectedContact || !currentRole || !currentUserId) {
       return;
     }
-
     const conversationKey = getConversationKey(selectedContact);
     const pinnedMessageId = pinnedMessageIds[conversationKey];
     const pinnedStorageKey = getPinnedStorageKey(
@@ -625,7 +569,6 @@ export function MessengerPage() {
       selectedContact.role,
       selectedContact.id
     );
-
     try {
       if (!pinnedMessageId) {
         localStorage.removeItem(pinnedStorageKey);
@@ -643,7 +586,6 @@ export function MessengerPage() {
       if (!selectedContact || !currentUserId || !currentRole) {
         return;
       }
-
       Object.values(retryTimeoutRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
       retryTimeoutRef.current = {};
       retryAttemptRef.current = {};
@@ -651,21 +593,16 @@ export function MessengerPage() {
       setLoadingMessages(true);
       const currentFullId = `${currentRole}_${currentUserId}`;
       const recipientFullId = `${selectedContact.role}_${selectedContact.id}`;
-
       try {
         const res = await chatManager.getChatHistoryByParticipants(currentFullId, recipientFullId);
-
         if (!res.success || !res.data) {
-          toast.error("Không thể tải lịch sử tin nhắn");
+          toast.error(t("sharedMessenger.unableToDownloadMessageHistory"));
           return;
         }
-
         const mappedMessages: MessengerMessage[] = res.data.map((msg: ChatHistoryMessage) =>
           mapHistoryMessageToUi(msg, currentFullId)
         );
-
         setMessages(mappedMessages);
-
         const latestMessage = mappedMessages[mappedMessages.length - 1];
         if (latestMessage) {
           updateConversationMeta(selectedContact, latestMessage.content, latestMessage.timestamp);
@@ -674,18 +611,15 @@ export function MessengerPage() {
         setLoadingMessages(false);
       }
     };
-
     fetchMessages();
-  }, [selectedContact, currentRole, currentUserId]);
+  }, [selectedContact, currentRole, currentUserId, t]);
 
   // Handle incoming socket messages
   useEffect(() => {
     if (!currentUserId || !currentRole) {
       return;
     }
-
     const currentFullId = `${currentRole}_${currentUserId}`;
-
     socketService.connect(
       currentFullId,
       (receivedMsg: ChatMessageDto) => {
@@ -696,11 +630,9 @@ export function MessengerPage() {
           String(receivedMsg.senderId).split("_").pop() || "",
           10
         );
-
         const recipientFullId = receivedMsg.recipientType
           ? `${receivedMsg.recipientType}_${receivedMsg.recipientId}`
           : String(receivedMsg.recipientId);
-
         if (
           recipientFullId.toUpperCase() === currentFullId.toUpperCase() ||
           String(receivedMsg.recipientId) === String(currentUserId)
@@ -709,7 +641,6 @@ export function MessengerPage() {
           const activeContactFullId = activeContact
             ? `${activeContact.role}_${activeContact.id}`
             : "";
-
           if (
             activeContact &&
             (senderFullId.toUpperCase() === activeContactFullId.toUpperCase() ||
@@ -719,21 +650,18 @@ export function MessengerPage() {
               receivedMsg.id !== undefined ? "server" : "temp",
               receivedMsg.id
             );
-
             const newMessage: MessengerMessage = {
               id: incomingId,
               sender: "ai",
               content: receivedMsg.content,
               timestamp: receivedMsg.timestamp || new Date().toISOString(),
             };
-
             setMessages((prev) => {
               if (prev.some((message) => message.id === incomingId)) {
                 return prev;
               }
               return [...prev, newMessage];
             });
-
             updateConversationMeta(
               activeContact,
               receivedMsg.content,
@@ -750,37 +678,31 @@ export function MessengerPage() {
                 );
               }
             }
-            toast.info("Bạn có tin nhắn mới");
+            toast.info(t("sharedMessenger.youHaveANewMessage"));
           }
         }
       },
       setConnectionState
     );
-
     return () => {
       socketService.disconnect();
     };
-  }, [contacts, currentRole, currentUserId]);
-
+  }, [contacts, currentRole, currentUserId, t]);
   useEffect(() => {
     if (connectionState !== "connected" || !selectedContact) {
       return;
     }
-
     const recipientFullId = `${selectedContact.role.toUpperCase()}_${selectedContact.id}`;
     const queuedMessages = messagesRef.current.filter(
       (message) =>
         message.sender === "user" && (message.status === "queued" || message.status === "retrying")
     );
-
     queuedMessages.forEach((message) => {
       const attempt = retryAttemptRef.current[message.id] ?? message.retries ?? 0;
       attemptSendMessage(message.id, message.content, recipientFullId, attempt);
     });
     // Avoid forcing retry effect to rerun when send handler identity changes between renders.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionState, selectedContact]);
-
   const closeConversation = () => {
     setSelectedContact(null);
     setMessageInput("");
@@ -790,23 +712,21 @@ export function MessengerPage() {
     setIsMessageSearchOpen(false);
     setIsPinnedMessageCollapsed(false);
   };
-
   const openConversation = (contact: Contact) => {
     const conversationKey = getConversationKey(contact);
     const storedPinnedId = getStoredPinnedMessageId(contact);
-
     setSelectedContact(contact);
     setMessageInput(getStoredDraft(contact));
     setDraftLastSavedAt(null);
     setPinnedMessageIds((prev) => {
-      const next = { ...prev };
-
+      const next = {
+        ...prev,
+      };
       if (!storedPinnedId) {
         delete next[conversationKey];
       } else {
         next[conversationKey] = storedPinnedId;
       }
-
       return next;
     });
     setVisibleMessageLimit(MESSAGE_RENDER_STEP);
@@ -814,7 +734,6 @@ export function MessengerPage() {
     setIsMessageSearchOpen(false);
     setIsPinnedMessageCollapsed(false);
   };
-
   const attemptSendMessage = (
     messageId: string,
     content: string,
@@ -827,27 +746,28 @@ export function MessengerPage() {
       delete retryAttemptRef.current[messageId];
       setMessages((previous) =>
         previous.map((message) =>
-          message.id === messageId ? { ...message, status: "sent", retries: attempt } : message
+          message.id === messageId
+            ? {
+                ...message,
+                status: "sent",
+                retries: attempt,
+              }
+            : message
         )
       );
       return true;
     }
-
     scheduleRetry(messageId, content, recipientFullId, attempt);
     return false;
   };
-
   const handleSendMessage = () => {
     const trimmed = messageInput.trim();
-
     if (!trimmed || !selectedContact) {
       return;
     }
-
     const recipientFullId = `${selectedContact.role.toUpperCase()}_${selectedContact.id}`;
     const newMessageId = createMessageId("temp");
     const messageTimestamp = new Date().toISOString();
-
     setMessages((prev) => [
       ...prev,
       {
@@ -859,37 +779,34 @@ export function MessengerPage() {
         retries: 0,
       },
     ]);
-
     updateConversationMeta(selectedContact, trimmed, messageTimestamp);
     setMessageInput("");
-
     const immediateSuccess = attemptSendMessage(newMessageId, trimmed, recipientFullId, 0);
     if (!immediateSuccess) {
-      toast.info("Tin nhắn sẽ tự động gửi lại khi kết nối ổn định");
+      toast.info(t("sharedMessenger.theMessageWillAutomaticallyBe"));
     }
   };
-
   const handleRetryMessage = (messageId: string) => {
     if (!selectedContact) {
       return;
     }
-
     const messageToRetry = messages.find((message) => message.id === messageId);
     if (!messageToRetry) {
       return;
     }
-
     const recipientFullId = `${selectedContact.role.toUpperCase()}_${selectedContact.id}`;
     const currentRetry = retryAttemptRef.current[messageId] ?? messageToRetry.retries ?? 0;
-
     setMessages((prev) =>
       prev.map((message) =>
         message.id === messageId
-          ? { ...message, status: "retrying", retries: currentRetry }
+          ? {
+              ...message,
+              status: "retrying",
+              retries: currentRetry,
+            }
           : message
       )
     );
-
     const isSent = attemptSendMessage(
       messageId,
       messageToRetry.content,
@@ -897,138 +814,118 @@ export function MessengerPage() {
       currentRetry
     );
     if (isSent) {
-      toast.success("Đã gửi lại tin nhắn");
+      toast.success(t("sharedMessenger.messageSentAgain"));
     } else {
-      toast.info("Tin nhắn sẽ tiếp tục tự động gửi lại trong nền");
+      toast.info(t("sharedMessenger.messagesWillContinueToResend"));
     }
   };
-
   const handleCopyMessage = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content);
-      toast.success("Đã sao chép nội dung tin nhắn");
+      toast.success(t("sharedMessenger.messageContentCopied"));
     } catch {
-      toast.error("Không thể sao chép nội dung. Vui lòng thử lại");
+      toast.error(t("sharedMessenger.contentCannotBeCopiedPlease"));
     }
   };
-
   const handleForwardMessage = (content: string) => {
     const quotedContent = content
       .split("\n")
       .map((line) => `> ${line}`)
       .join("\n");
-
     setMessageInput((current) => {
       if (!current.trim()) {
         return `${quotedContent}\n`;
       }
-
       return `${current}\n\n${quotedContent}\n`;
     });
-
     const composer = document.querySelector<HTMLTextAreaElement>(
       "textarea[data-messenger-composer='true']"
     );
     composer?.focus();
-    toast.success("Đã chuyển nội dung vào ô soạn");
+    toast.success(t("sharedMessenger.contentHasBeenMovedTo"));
   };
-
   const handleApplyQuickCommand = (command: string) => {
-    toast.success(`Đã áp dụng lệnh nhanh ${command}`);
+    toast.success(
+      t("general.appliedQuickCommand", {
+        var_0: command,
+      })
+    );
   };
-
   const handleTogglePinMessage = (messageId: string) => {
     if (!selectedContact) {
       return;
     }
-
     const conversationKey = getConversationKey(selectedContact);
     const isPinned = pinnedMessageIds[conversationKey] === messageId;
-
     setPinnedMessageIds((prev) => {
-      const next = { ...prev };
-
+      const next = {
+        ...prev,
+      };
       if (isPinned) {
         delete next[conversationKey];
       } else {
         next[conversationKey] = messageId;
       }
-
       return next;
     });
-
     if (isPinned) {
-      toast.info("Đã bỏ ghim tin nhắn");
+      toast.info(t("sharedMessenger.unpinnedMessage"));
     } else {
-      toast.success("Đã ghim tin nhắn quan trọng");
+      toast.success(t("sharedMessenger.importantMessagePinned"));
     }
   };
-
   const handleConversationTouchStart = (event: ReactTouchEvent<HTMLElement>) => {
     if (!isMobile || !selectedContact) {
       return;
     }
-
     const touch = event.changedTouches[0];
     touchStartRef.current = {
       x: touch.clientX,
       y: touch.clientY,
     };
   };
-
   const handleConversationTouchEnd = (event: ReactTouchEvent<HTMLElement>) => {
     if (!isMobile || !selectedContact || !touchStartRef.current) {
       return;
     }
-
     const touch = event.changedTouches[0];
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = touch.clientY - touchStartRef.current.y;
     touchStartRef.current = null;
-
     if (deltaX > 90 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
       closeConversation();
-      toast.info("Đã quay lại danh sách hội thoại");
+      toast.info(t("sharedMessenger.returnedToTheConversationList"));
     }
   };
-
   useEffect(() => {
     const handleGlobalShortcut = (event: KeyboardEvent) => {
       const canSwitchConversation = (event.ctrlKey || event.metaKey) && event.shiftKey;
       if (canSwitchConversation && event.key === "ArrowDown" && filteredContacts.length > 0) {
         event.preventDefault();
-
         const currentIndex = selectedContact
           ? filteredContacts.findIndex((contact) => contact.id === selectedContact.id)
           : -1;
-
         const nextIndex =
           currentIndex === -1 ? 0 : Math.min(filteredContacts.length - 1, currentIndex + 1);
         openConversation(filteredContacts[nextIndex]);
         return;
       }
-
       if (canSwitchConversation && event.key === "ArrowUp" && filteredContacts.length > 0) {
         event.preventDefault();
-
         const currentIndex = selectedContact
           ? filteredContacts.findIndex((contact) => contact.id === selectedContact.id)
           : filteredContacts.length;
-
         const nextIndex = currentIndex <= 0 ? 0 : currentIndex - 1;
         openConversation(filteredContacts[nextIndex]);
         return;
       }
-
       if (!selectedContact) {
         return;
       }
-
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setIsMessageSearchOpen(true);
       }
-
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "m") {
         event.preventDefault();
         const composer = document.querySelector<HTMLTextAreaElement>(
@@ -1036,32 +933,29 @@ export function MessengerPage() {
         );
         composer?.focus();
       }
-
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "p") {
         event.preventDefault();
         const conversationKey = getConversationKey(selectedContact);
         const pinnedMessageId = pinnedMessageIds[conversationKey];
-
         if (pinnedMessageId) {
           setPinnedMessageIds((prev) => {
-            const next = { ...prev };
+            const next = {
+              ...prev,
+            };
             delete next[conversationKey];
             return next;
           });
-          toast.info("Đã bỏ ghim tin nhắn");
+          toast.info(t("sharedMessenger.unpinnedMessage"));
         }
       }
-
       if (event.key === "Escape" && isMessageSearchOpen) {
         setMessageSearchQuery("");
         setIsMessageSearchOpen(false);
       }
     };
-
     window.addEventListener("keydown", handleGlobalShortcut);
     return () => window.removeEventListener("keydown", handleGlobalShortcut);
     // Keep shortcut dependencies stable and avoid listener re-registration loops.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     contacts,
     conversationMetaMap,
@@ -1069,13 +963,12 @@ export function MessengerPage() {
     selectedContact,
     isMessageSearchOpen,
     pinnedMessageIds,
+    t,
   ]);
-
   const getStoredDraft = (contact: Contact): string => {
     if (!currentRole || !currentUserId) {
       return "";
     }
-
     try {
       return (
         localStorage.getItem(
@@ -1086,12 +979,10 @@ export function MessengerPage() {
       return "";
     }
   };
-
   const getStoredPinnedMessageId = (contact: Contact): string | null => {
     if (!currentRole || !currentUserId) {
       return null;
     }
-
     try {
       return localStorage.getItem(
         getPinnedStorageKey(currentRole, currentUserId, contact.role, contact.id)
@@ -1100,48 +991,37 @@ export function MessengerPage() {
       return null;
     }
   };
-
   const filteredContacts = useMemo(() => {
     const normalizedQuery = deferredContactSearchQuery.trim().toLowerCase();
-
     const candidates = contacts.filter((contact) =>
       contact.name.toLowerCase().includes(normalizedQuery)
     );
-
     return [...candidates].sort((first, second) => {
       const firstMeta = conversationMetaMap[getConversationKey(first)];
       const secondMeta = conversationMetaMap[getConversationKey(second)];
-
       const firstTimestamp = getTimestampValue(firstMeta?.lastTimestamp || "");
       const secondTimestamp = getTimestampValue(secondMeta?.lastTimestamp || "");
-
       if (firstTimestamp !== secondTimestamp) {
         return secondTimestamp - firstTimestamp;
       }
-
       return first.name.localeCompare(second.name, "vi-VN");
     });
   }, [contacts, conversationMetaMap, deferredContactSearchQuery]);
-
   const filteredMentors = useMemo(() => {
     const normalizedQuery = deferredContactSearchQuery.trim().toLowerCase();
     return mentors.filter((mentor) => (mentor.name || "").toLowerCase().includes(normalizedQuery));
   }, [deferredContactSearchQuery, mentors]);
-
   const filteredMessages = useMemo(() => {
     const normalizedQuery = deferredMessageSearchQuery.trim().toLowerCase();
     if (!normalizedQuery) {
       return messages;
     }
-
     return messages.filter((message) => message.content.toLowerCase().includes(normalizedQuery));
   }, [deferredMessageSearchQuery, messages]);
-
   const visibleMessages = useMemo(() => {
     const startIndex = Math.max(0, filteredMessages.length - visibleMessageLimit);
     return filteredMessages.slice(startIndex);
   }, [filteredMessages, visibleMessageLimit]);
-
   const timelineItems = useMemo(() => buildTimelineItems(visibleMessages), [visibleMessages]);
   const hasMoreMessageHistory = filteredMessages.length > visibleMessages.length;
   const pendingOutboxCount = useMemo(
@@ -1150,7 +1030,6 @@ export function MessengerPage() {
         .length,
     [messages]
   );
-
   const activeConversationKey = selectedContact ? getConversationKey(selectedContact) : null;
   const pinnedMessageId = activeConversationKey
     ? pinnedMessageIds[activeConversationKey]
@@ -1158,10 +1037,8 @@ export function MessengerPage() {
   const pinnedMessage = pinnedMessageId
     ? messages.find((message) => message.id === pinnedMessageId)
     : undefined;
-
   const shouldShowSidebar = !isMobile || !selectedContact;
   const shouldShowConversation = !isMobile || !!selectedContact;
-
   return (
     <div className="h-full w-full bg-slate-100/70 dark:bg-slate-950">
       <div
@@ -1183,12 +1060,14 @@ export function MessengerPage() {
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-                    {showMentorList ? "Tìm Mentor" : "Tin nhắn"}
+                    {showMentorList ? t("sharedMessenger.findMentors") : t("common.messages")}
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     {showMentorList
-                      ? "Chọn mentor để bắt đầu hội thoại"
-                      : `${contacts.length} liên hệ khả dụng`}
+                      ? t("sharedMessenger.chooseAMentorToStart")
+                      : t("general.contactsAvailable", {
+                          var_0: contacts.length,
+                        })}
                   </p>
                 </div>
 
@@ -1216,7 +1095,11 @@ export function MessengerPage() {
               <div className="relative">
                 <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
-                  placeholder={showMentorList ? "Tìm mentor theo tên..." : "Tìm kiếm liên hệ..."}
+                  placeholder={
+                    showMentorList
+                      ? t("sharedMessenger.findMentorByName")
+                      : t("sharedMessenger.searchContact")
+                  }
                   className="h-11 rounded-xl border-slate-200 bg-slate-50 pl-10 text-sm dark:border-slate-700 dark:bg-slate-800"
                   value={contactSearchQuery}
                   onChange={(event) => setContactSearchQuery(event.target.value)}
@@ -1228,7 +1111,9 @@ export function MessengerPage() {
               <div className="space-y-2">
                 {showMentorList ? (
                   loadingMentors ? (
-                    Array.from({ length: 6 }).map((_, index) => (
+                    Array.from({
+                      length: 6,
+                    }).map((_, index) => (
                       <div
                         key={index}
                         className="flex items-center gap-3 rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
@@ -1242,7 +1127,7 @@ export function MessengerPage() {
                   ) : filteredMentors.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 px-4 py-14 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
                       <UserIcon className="mb-3 h-8 w-8 opacity-40" />
-                      <p className="text-sm font-semibold">Không tìm thấy mentor phù hợp</p>
+                      <p className="text-sm font-semibold">{t("common.noSuitableMentorFound")}</p>
                     </div>
                   ) : (
                     filteredMentors.map((mentor, index) => (
@@ -1250,25 +1135,21 @@ export function MessengerPage() {
                         key={mentor.id ?? mentor.email ?? `${mentor.name ?? "mentor"}-${index}`}
                         onClick={() => {
                           if (mentor.id === undefined || !mentor.name) {
-                            toast.error("Không đủ thông tin để bắt đầu hội thoại");
+                            toast.error(t("common.notEnoughInformationToStartAConver"));
                             return;
                           }
-
                           const nextContact: Contact = {
                             id: mentor.id,
                             name: mentor.name,
                             avatarUrl: mentor.avatarUrl ?? null,
                             role: "MENTOR",
                           };
-
                           setContacts((previous) => {
                             if (previous.some((contact) => contact.id === nextContact.id)) {
                               return previous;
                             }
-
                             return [nextContact, ...previous];
                           });
-
                           openConversation(nextContact);
                           setShowMentorList(false);
                           setContactSearchQuery("");
@@ -1290,7 +1171,7 @@ export function MessengerPage() {
                               {mentor.name || "Mentor"}
                             </p>
                             <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                              {mentor.expertise || "Mentor chuyên nghiệp"}
+                              {mentor.expertise || t("common.professionalMentor")}
                             </p>
                           </div>
                         </div>
@@ -1298,7 +1179,9 @@ export function MessengerPage() {
                     ))
                   )
                 ) : loadingContacts ? (
-                  Array.from({ length: 6 }).map((_, index) => (
+                  Array.from({
+                    length: 6,
+                  }).map((_, index) => (
                     <div
                       key={index}
                       className="flex items-center gap-3 rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
@@ -1312,15 +1195,17 @@ export function MessengerPage() {
                 ) : contacts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 px-4 py-14 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
                     <MessageSquare className="mb-3 h-9 w-9 opacity-40" />
-                    <p className="text-sm font-semibold">Chưa có hội thoại nào</p>
-                    <p className="mt-1 text-xs">
-                      Bạn có thể chọn mentor để bắt đầu cuộc trò chuyện mới.
+                    <p className="text-sm font-semibold">
+                      {t("sharedMessenger.thereAreNoConversationsYet")}
                     </p>
+                    <p className="mt-1 text-xs">{t("sharedMessenger.youCanChooseAMentor")}</p>
                   </div>
                 ) : filteredContacts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 px-4 py-14 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
                     <Search className="mb-3 h-8 w-8 opacity-40" />
-                    <p className="text-sm font-semibold">Không có kết quả phù hợp</p>
+                    <p className="text-sm font-semibold">
+                      {t("sharedMessenger.noMatchingResults")}
+                    </p>
                   </div>
                 ) : (
                   filteredContacts.map((contact) => {
@@ -1329,11 +1214,12 @@ export function MessengerPage() {
                     const previewMessage =
                       conversationMeta?.lastMessage ||
                       contact.lastMessage ||
-                      `Nhấn để mở hội thoại với ${getRoleLabel(contact.role)}`;
+                      t("general.clickToOpenConversationWith", {
+                        var_0: getRoleLabel(contact.role),
+                      });
                     const previewTime = conversationMeta?.lastTimestamp
                       ? formatConversationTime(conversationMeta.lastTimestamp)
                       : contact.time;
-
                     return (
                       <button
                         key={contact.id}
@@ -1354,7 +1240,7 @@ export function MessengerPage() {
                             </Avatar>
                             <span
                               className="absolute -right-1 -bottom-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-slate-300 dark:border-slate-900 dark:bg-slate-600"
-                              title="Chưa có trạng thái hoạt động theo thời gian thực"
+                              title={t("sharedMessenger.thereIsNoRealTime")}
                             />
                           </div>
 
@@ -1431,20 +1317,20 @@ export function MessengerPage() {
 
                     <div className="flex items-center gap-1.5 md:gap-2">
                       <p className="hidden text-[11px] text-slate-400 xl:block">
-                        Ctrl+K tìm kiếm · Ctrl+Shift+M soạn nhanh · /camon lệnh nhanh
+                        {t("sharedMessenger.ctrlKSearchCtrlShift")}
                       </p>
 
                       {pendingOutboxCount > 0 && (
                         <Badge className="hidden h-7 items-center gap-1 rounded-full bg-amber-100 px-2.5 text-[11px] text-amber-800 md:inline-flex dark:bg-amber-900/40 dark:text-amber-200">
                           <Sparkles className="h-3.5 w-3.5" />
-                          {pendingOutboxCount} tin đang chờ gửi
+                          {pendingOutboxCount} {t("sharedMessenger.messageWaitingToBeSent")}
                         </Badge>
                       )}
 
                       {isMessageSearchOpen && (
                         <div className={cn("relative", isMobile ? "w-36" : "w-56 lg:w-72")}>
                           <Input
-                            placeholder="Tìm tin nhắn..."
+                            placeholder={t("sharedMessenger.findMessages")}
                             className="h-9 rounded-xl border-slate-200 bg-white pr-8 text-xs focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900"
                             value={messageSearchQuery}
                             onChange={(event) => setMessageSearchQuery(event.target.value)}
@@ -1490,7 +1376,7 @@ export function MessengerPage() {
 
                       <div className="min-w-0 flex-1">
                         <p className="text-[11px] font-semibold tracking-wide text-amber-700 uppercase dark:text-amber-300">
-                          Tin nhắn đã ghim
+                          {t("sharedMessenger.pinnedMessage")}
                         </p>
 
                         {!isPinnedMessageCollapsed && (
@@ -1508,12 +1394,12 @@ export function MessengerPage() {
                         {isPinnedMessageCollapsed ? (
                           <>
                             <ChevronDown className="mr-1.5 h-3.5 w-3.5" />
-                            Mở rộng
+                            {t("common.extend")}
                           </>
                         ) : (
                           <>
                             <ChevronUp className="mr-1.5 h-3.5 w-3.5" />
-                            Thu gọn
+                            {t("common.collapse")}
                           </>
                         )}
                       </Button>
@@ -1524,7 +1410,7 @@ export function MessengerPage() {
                         className="h-8 rounded-lg text-xs text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                         onClick={() => handleTogglePinMessage(pinnedMessage.id)}>
                         <PinOff className="mr-1.5 h-3.5 w-3.5" />
-                        Bỏ ghim
+                        {t("sharedMessenger.unpin")}
                       </Button>
                     </div>
                   </div>
@@ -1548,17 +1434,17 @@ export function MessengerPage() {
                           <MessageSquare className="h-8 w-8" />
                         </div>
                         <p className="text-base font-bold text-slate-900 dark:text-white">
-                          Bắt đầu cuộc trò chuyện
+                          {t("sharedMessenger.startAConversation")}
                         </p>
                         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                          Gửi tin nhắn đầu tiên để mở cuộc hội thoại với liên hệ này.
+                          {t("sharedMessenger.sendTheFirstMessageTo")}
                         </p>
                       </div>
                     ) : visibleMessages.length === 0 ? (
                       <div className="flex min-h-[220px] flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white/70 p-8 text-center dark:border-slate-700 dark:bg-slate-900/50">
                         <Search className="mb-3 h-8 w-8 text-slate-400" />
                         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                          Không tìm thấy nội dung khớp từ khóa
+                          {t("sharedMessenger.noContentMatchingKeywordsWas")}
                         </p>
                       </div>
                     ) : (
@@ -1573,7 +1459,8 @@ export function MessengerPage() {
                                 setVisibleMessageLimit((current) => current + MESSAGE_RENDER_STEP)
                               }>
                               <ChevronsUp className="mr-1.5 h-3.5 w-3.5" />
-                              Tải thêm tin cũ ({visibleMessages.length}/{filteredMessages.length})
+                              {t("sharedMessenger.downloadMoreOldNews")}
+                              {visibleMessages.length}/{filteredMessages.length})
                             </Button>
                           </div>
                         )}
@@ -1588,7 +1475,6 @@ export function MessengerPage() {
                               </div>
                             );
                           }
-
                           const message = timelineItem.message;
                           return (
                             <MessageBubble
@@ -1619,13 +1505,12 @@ export function MessengerPage() {
                 <div className="border-t border-slate-200/80 bg-white/90 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-5 md:py-4 dark:border-slate-800 dark:bg-slate-900/90">
                   <div className="mx-auto mb-2 flex w-full max-w-5xl items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">
-                      Tin nhắn được lưu tự động khi bạn nhập, không cần lo mất nội dung khi chuyển
-                      cuộc hội thoại hoặc đóng trình duyệt.
+                      {t("sharedMessenger.messagesAreAutomaticallySavedAs")}
                     </span>
 
                     {messageInput.trim().length > 0 && draftLastSavedAt && (
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                        Đã lưu lúc {draftLastSavedAt}
+                        {t("sharedMessenger.savedAt")} {draftLastSavedAt}
                       </span>
                     )}
                   </div>
@@ -1638,8 +1523,8 @@ export function MessengerPage() {
                     isMobile={isMobile}
                     placeholder={
                       isMobile
-                        ? "Nhập nội dung tin nhắn..."
-                        : "Nhập nội dung tin nhắn... (Enter gửi, Shift+Enter xuống dòng)"
+                        ? t("sharedMessenger.enterMessageContent")
+                        : t("sharedMessenger.enterMessageContentEnterSend")
                     }
                   />
                 </div>
@@ -1653,7 +1538,7 @@ export function MessengerPage() {
                   Messenger
                 </h3>
                 <p className="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
-                  Chọn một liên hệ ở cột bên trái để xem lịch sử hội thoại và bắt đầu nhắn tin ngay.
+                  {t("sharedMessenger.selectAContactInThe")}
                 </p>
               </div>
             )}

@@ -1,10 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * User Notifications Page
  * Full list of notifications for the user
  */
-
-import { Bell, CheckCheck } from "lucide-react";
-import { useMemo, useState } from "react";
 
 import { NotificationDetailModal, NotificationList } from "@/components/notification";
 import { ReloadButton } from "@/components/shared";
@@ -19,16 +17,16 @@ import {
 } from "@/constants/notification-types";
 import { useMarkAllAsRead, useMarkAsRead, useNotifications } from "@/hooks/useNotification";
 import type { Notification } from "@/services/notification.manager";
-
+import { Bell, CheckCheck } from "lucide-react";
+import { useMemo, useState } from "react";
 type NotificationFilter = "all" | "unread" | "read";
-
 export function UserNotificationsPage() {
+  const { t } = useTranslation();
   const [filterStatus, setFilterStatus] = useState<NotificationFilter>("all");
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const { data: notifications = [], isLoading, isRefetching, refetch } = useNotifications();
   const { mutate: markAsRead } = useMarkAsRead();
   const { mutate: markAllAsRead, isPending: isMarkingAllAsRead } = useMarkAllAsRead();
-
   const unreadCount = notifications.filter((n) => !n.isRead).length;
   const readCount = notifications.length - unreadCount;
   const unreadNotificationIds = useMemo(
@@ -36,61 +34,59 @@ export function UserNotificationsPage() {
       notifications.filter((n) => !n.isRead && typeof n.id === "number").map((n) => n.id as number),
     [notifications]
   );
-
   const filteredNotifications = useMemo(() => {
     if (filterStatus === "unread") {
       return notifications.filter((notification) => !notification.isRead);
     }
-
     if (filterStatus === "read") {
       return notifications.filter((notification) => notification.isRead);
     }
-
     return notifications;
   }, [filterStatus, notifications]);
-
   const groupedNotifications = useMemo(() => {
     const groupedMap = new Map<string, Notification[]>();
-
     for (const notification of filteredNotifications) {
       const type = inferNotificationType(notification.title);
       const currentGroup = groupedMap.get(type) ?? [];
       currentGroup.push(notification);
       groupedMap.set(type, currentGroup);
     }
-
     return NOTIFICATION_GROUP_ORDER.map((type) => ({
       type,
       label: getNotificationTypeConfig(type).label,
       notifications: groupedMap.get(type) ?? [],
     })).filter((group) => group.notifications.length > 0);
   }, [filteredNotifications]);
-
   const handleMarkAllRead = () => {
     if (!unreadNotificationIds.length) {
       return;
     }
-
     markAllAsRead(unreadNotificationIds);
   };
-
   const handleMarkRead = (notificationId: number) => {
     markAsRead(notificationId);
   };
-
   const handleItemClick = (notification: Notification) => {
-    setSelectedNotification(notification.isRead ? notification : { ...notification, isRead: true });
+    setSelectedNotification(
+      notification.isRead
+        ? notification
+        : {
+            ...notification,
+            isRead: true,
+          }
+    );
   };
-
   return (
     <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Thông báo</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              {t("common.notification")}
+            </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Quản lý tất cả thông báo của bạn
+              {t("common.manageAllYourNotifications")}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -99,7 +95,7 @@ export function UserNotificationsPage() {
                 await refetch();
               }}
               isLoading={isRefetching}
-              tooltip="Tải lại thông báo"
+              tooltip={t("common.reloadNotifications")}
             />
             {unreadCount > 0 && (
               <Button
@@ -108,7 +104,7 @@ export function UserNotificationsPage() {
                 disabled={isMarkingAllAsRead}
                 className="gap-2">
                 {isMarkingAllAsRead ? <Spinner size="sm" /> : <CheckCheck className="h-4 w-4" />}
-                Đánh dấu tất cả đã đọc
+                {t("common.markAllAsRead")}
               </Button>
             )}
           </div>
@@ -118,9 +114,18 @@ export function UserNotificationsPage() {
           value={filterStatus}
           onValueChange={(value) => setFilterStatus(value as NotificationFilter)}>
           <TabsList className="grid w-full grid-cols-3 sm:w-auto">
-            <TabsTrigger value="all">Tất cả ({notifications.length})</TabsTrigger>
-            <TabsTrigger value="unread">Chưa đọc ({unreadCount})</TabsTrigger>
-            <TabsTrigger value="read">Đã đọc ({readCount})</TabsTrigger>
+            <TabsTrigger value="all">
+              {t("common.all")}
+              {notifications.length})
+            </TabsTrigger>
+            <TabsTrigger value="unread">
+              {t("general.unread")}
+              {unreadCount})
+            </TabsTrigger>
+            <TabsTrigger value="read">
+              {t("general.read")}
+              {readCount})
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -128,19 +133,19 @@ export function UserNotificationsPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Tổng thông báo</CardDescription>
+              <CardDescription>{t("common.generalAnnouncement")}</CardDescription>
               <CardTitle className="text-2xl">{notifications.length}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Chưa đọc</CardDescription>
+              <CardDescription>{t("common.haventReadYet")}</CardDescription>
               <CardTitle className="text-2xl text-[#0047AB]">{unreadCount}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Đã đọc</CardDescription>
+              <CardDescription>{t("common.read")}</CardDescription>
               <CardTitle className="text-2xl text-green-600">{readCount}</CardTitle>
             </CardHeader>
           </Card>
@@ -151,7 +156,7 @@ export function UserNotificationsPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-[#0047AB]" />
-              <CardTitle>Danh sách thông báo</CardTitle>
+              <CardTitle>{t("common.notificationList")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -163,7 +168,7 @@ export function UserNotificationsPage() {
               <NotificationList
                 notifications={[]}
                 isLoading={isLoading}
-                emptyMessage="Không tìm thấy thông báo phù hợp với bộ lọc"
+                emptyMessage={t("common.noMessagesMatchingTheFilterWereFou")}
               />
             ) : (
               <div className="space-y-6">
@@ -174,7 +179,7 @@ export function UserNotificationsPage() {
                         {group.label}
                       </h3>
                       <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {group.notifications.length} thông báo
+                        {group.notifications.length} {t("common.notification1")}
                       </span>
                     </div>
                     <NotificationList

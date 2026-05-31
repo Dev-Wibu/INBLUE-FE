@@ -1,19 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * Student Detail Page (Mentor View)
  * Displays student profile and session/feedback history
  */
-
-import {
-  ArrowLeft,
-  Calendar,
-  FileText,
-  Mail,
-  MessageSquare,
-  School,
-  Star,
-  User,
-} from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
 
 import { FeedbackCard } from "@/components/feedback";
 import { ReviewCard } from "@/components/review";
@@ -32,20 +21,30 @@ import type { Session } from "@/interfaces";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { useCandidateProfile } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
-
+import {
+  ArrowLeft,
+  Calendar,
+  FileText,
+  Mail,
+  MessageSquare,
+  School,
+  Star,
+  User,
+} from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 export function StudentDetailPage() {
-  const { userId } = useParams<{ userId: string }>();
+  const { t } = useTranslation();
+  const { userId } = useParams<{
+    userId: string;
+  }>();
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
-
   const studentId = Number(userId);
-
   const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
   const { data: allFeedbacks = [], isLoading: feedbacksLoading } = useMentorFeedbacks();
   const { data: allReviews = [], isLoading: reviewsLoading } = useMentorReviews();
   const { data: candidateProfileData, isLoading: profileLoading } = useCandidateProfile(studentId);
   const candidateProfile = (candidateProfileData as unknown as CandidateProfile) ?? null;
-
   const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading || profileLoading;
 
   // Filter sessions for this student with current mentor
@@ -55,18 +54,33 @@ export function StudentDetailPage() {
 
   // Filter feedbacks for this student from current mentor
   const studentFeedbacks = allFeedbacks.filter(
-    (feedback: { user?: { id?: number }; mentor?: { id?: number } }) =>
-      feedback.user?.id === studentId && feedback.mentor?.id === currentUser?.id
+    (feedback: {
+      user?: {
+        id?: number;
+      };
+      mentor?: {
+        id?: number;
+      };
+    }) => feedback.user?.id === studentId && feedback.mentor?.id === currentUser?.id
   );
 
   // Filter reviews from this student for current mentor
   const studentReviews = allReviews.filter(
-    (review: { user?: { id?: number }; mentor?: { id?: number } }) =>
-      review.user?.id === studentId && review.mentor?.id === currentUser?.id
+    (review: {
+      user?: {
+        id?: number;
+      };
+      mentor?: {
+        id?: number;
+      };
+    }) => review.user?.id === studentId && review.mentor?.id === currentUser?.id
   );
 
   // Get student info from feedbacks or reviews
-  const studentInfo = studentFeedbacks[0]?.user || studentReviews[0]?.user || { id: studentId };
+  const studentInfo = studentFeedbacks[0]?.user ||
+    studentReviews[0]?.user || {
+      id: studentId,
+    };
 
   // Calculate stats
   const totalSessions = studentSessions.length;
@@ -75,10 +89,16 @@ export function StudentDetailPage() {
   const totalReviews = studentReviews.length;
   const avgRating =
     totalReviews > 0
-      ? studentReviews.reduce((sum: number, r: { rating?: number }) => sum + (r.rating || 0), 0) /
-        totalReviews
+      ? studentReviews.reduce(
+          (
+            sum: number,
+            r: {
+              rating?: number;
+            }
+          ) => sum + (r.rating || 0),
+          0
+        ) / totalReviews
       : 0;
-
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -89,33 +109,31 @@ export function StudentDetailPage() {
       </div>
     );
   }
-
   if (!studentInfo || totalSessions === 0) {
     return (
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => navigate("/mentor?tab=students")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Quay lại
+          {t("general.back")}
         </Button>
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardContent className="py-12 text-center">
             <User className="mx-auto h-12 w-12 text-slate-400" />
-            <h3 className="mt-4 font-semibold">Không tìm thấy học viên</h3>
+            <h3 className="mt-4 font-semibold">{t("mentorStudents.noStudentFound")}</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Học viên này không tồn tại hoặc chưa có phiên phỏng vấn với bạn
+              {t("mentorStudents.thisStudentDoesNotExist")}
             </p>
           </CardContent>
         </Card>
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       {/* Back Button */}
       <Button variant="ghost" onClick={() => navigate("/mentor?tab=students")}>
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Quay lại danh sách
+        {t("common.backToTheList")}
       </Button>
 
       {/* Student Profile Card */}
@@ -130,7 +148,10 @@ export function StudentDetailPage() {
             </Avatar>
             <div className="flex-1">
               <CardTitle className="text-2xl">
-                {studentInfo.name || `Học viên #${studentId}`}
+                {studentInfo.name ||
+                  t("common.studentVar0", {
+                    var_0: studentId,
+                  })}
               </CardTitle>
               <div className="mt-2 space-y-1 text-sm text-slate-500">
                 {studentInfo.email && (
@@ -148,7 +169,9 @@ export function StudentDetailPage() {
               </div>
               {totalReviews > 0 && (
                 <div className="mt-3 flex items-center gap-2">
-                  <span className="text-sm text-slate-500">Đánh giá của học viên:</span>
+                  <span className="text-sm text-slate-500">
+                    {t("mentorStudents.studentReviews")}
+                  </span>
                   <StarRating value={avgRating} readOnly size="sm" />
                   <span className="text-sm text-slate-500">({totalReviews})</span>
                 </div>
@@ -164,14 +187,14 @@ export function StudentDetailPage() {
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Tổng phiên
+              {t("common.totalSession")}
             </CardDescription>
             <CardTitle className="text-2xl">{totalSessions}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardHeader className="pb-2">
-            <CardDescription>Hoàn thành</CardDescription>
+            <CardDescription>{t("general.completed")}</CardDescription>
             <CardTitle className="text-2xl text-green-600">{completedSessions}</CardTitle>
           </CardHeader>
         </Card>
@@ -179,7 +202,7 @@ export function StudentDetailPage() {
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
               <MessageSquare className="h-4 w-4" />
-              Phản hồi nhận được
+              {t("common.responseReceived")}
             </CardDescription>
             <CardTitle className="text-2xl text-blue-600">{totalFeedbacks}</CardTitle>
           </CardHeader>
@@ -188,7 +211,7 @@ export function StudentDetailPage() {
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
               <Star className="h-4 w-4" />
-              Đánh giá đã gửi
+              {t("mentorMentordashboard.reviewSent")}
             </CardDescription>
             <CardTitle className="text-2xl text-[#FFD700]">{totalReviews}</CardTitle>
           </CardHeader>
@@ -198,12 +221,21 @@ export function StudentDetailPage() {
       {/* Tabs: Sessions, Feedbacks, Reviews */}
       <Tabs defaultValue="sessions">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="sessions">Phiên ({totalSessions})</TabsTrigger>
-          <TabsTrigger value="feedbacks">Phản hồi nhận ({totalFeedbacks})</TabsTrigger>
-          <TabsTrigger value="reviews">Đánh giá gửi ({totalReviews})</TabsTrigger>
+          <TabsTrigger value="sessions">
+            {t("general.session8")}
+            {totalSessions})
+          </TabsTrigger>
+          <TabsTrigger value="feedbacks">
+            {t("mentorStudents.responseReceived1")}
+            {totalFeedbacks})
+          </TabsTrigger>
+          <TabsTrigger value="reviews">
+            {t("mentorStudents.submittedReview")}
+            {totalReviews})
+          </TabsTrigger>
           <TabsTrigger value="profile">
             <FileText className="mr-1 h-4 w-4" />
-            Hồ sơ
+            {t("mentorStudents.file")}
           </TabsTrigger>
         </TabsList>
 
@@ -211,15 +243,17 @@ export function StudentDetailPage() {
         <TabsContent value="sessions" className="mt-4">
           <Card className="border-emerald-100 dark:border-slate-800">
             <CardHeader>
-              <CardTitle>Lịch Sử Phiên Phỏng Vấn</CardTitle>
-              <CardDescription>Các phiên phỏng vấn với học viên này</CardDescription>
+              <CardTitle>{t("mentorStudents.interviewSessionHistory")}</CardTitle>
+              <CardDescription>
+                {t("mentorStudents.interviewSessionsWithThisStudent")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {studentSessions.length === 0 ? (
                 <EmptyState
                   icon={Calendar}
-                  title="Chưa có phiên nào"
-                  description="Chưa có phiên phỏng vấn nào với học viên này."
+                  title={t("mentorStudents.thereAreNoSessionsYet")}
+                  description={t("mentorStudents.thereHasBeenNoInterview")}
                 />
               ) : (
                 <div className="space-y-4">
@@ -228,7 +262,12 @@ export function StudentDetailPage() {
                       key={session.id}
                       className="flex items-center justify-between rounded-lg border border-emerald-100 p-4 dark:border-slate-800">
                       <div>
-                        <p className="font-medium">{session.roomName || `Phiên #${session.id}`}</p>
+                        <p className="font-medium">
+                          {session.roomName ||
+                            t("common.sessionVar0", {
+                              var_0: session.id,
+                            })}
+                        </p>
                         <p className="text-sm text-slate-500">ID: {session.id}</p>
                       </div>
                       <Badge
@@ -240,12 +279,12 @@ export function StudentDetailPage() {
                               : "secondary"
                         }>
                         {session.status === "COMPLETED"
-                          ? "Hoàn thành"
+                          ? t("general.completed")
                           : session.status === "CANCELED"
-                            ? "Đã hủy"
+                            ? t("common.canceled")
                             : session.status === "ONGOING"
-                              ? "Đang diễn ra"
-                              : "Đã lên lịch"}
+                              ? t("common.ongoing")
+                              : t("common.scheduled")}
                       </Badge>
                     </div>
                   ))}
@@ -259,27 +298,34 @@ export function StudentDetailPage() {
         <TabsContent value="feedbacks" className="mt-4">
           <Card className="border-emerald-100 dark:border-slate-800">
             <CardHeader>
-              <CardTitle>Phản Hồi Từ Học Viên</CardTitle>
-              <CardDescription>Các phản hồi học viên này gửi cho bạn</CardDescription>
+              <CardTitle>{t("mentorStudents.feedbackFromStudents")}</CardTitle>
+              <CardDescription>{t("mentorStudents.theseStudentResponsesWereSent")}</CardDescription>
             </CardHeader>
             <CardContent>
               {studentFeedbacks.length === 0 ? (
                 <EmptyState
                   icon={MessageSquare}
-                  title="Chưa có phản hồi"
-                  description="Học viên này chưa gửi phản hồi nào cho bạn."
+                  title={t("common.noResponseYet")}
+                  description={t("mentorStudents.thisStudentHasNotSent")}
                 />
               ) : (
                 <div className="space-y-4">
-                  {studentFeedbacks.map((feedback: { id?: number; session?: { id?: number } }) => (
-                    <FeedbackCard
-                      key={feedback.id}
-                      feedback={feedback}
-                      showMentor={false}
-                      showUser
-                      showSession
-                    />
-                  ))}
+                  {studentFeedbacks.map(
+                    (feedback: {
+                      id?: number;
+                      session?: {
+                        id?: number;
+                      };
+                    }) => (
+                      <FeedbackCard
+                        key={feedback.id}
+                        feedback={feedback}
+                        showMentor={false}
+                        showUser
+                        showSession
+                      />
+                    )
+                  )}
                 </div>
               )}
             </CardContent>
@@ -290,15 +336,15 @@ export function StudentDetailPage() {
         <TabsContent value="reviews" className="mt-4">
           <Card className="border-emerald-100 dark:border-slate-800">
             <CardHeader>
-              <CardTitle>Đánh Giá Đã Gửi</CardTitle>
-              <CardDescription>Các đánh giá bạn đã gửi cho học viên này</CardDescription>
+              <CardTitle>{t("common.reviewSubmitted")}</CardTitle>
+              <CardDescription>{t("mentorStudents.reviewsYouHaveSubmittedFor")}</CardDescription>
             </CardHeader>
             <CardContent>
               {studentReviews.length === 0 ? (
                 <EmptyState
                   icon={Star}
-                  title="Chưa có đánh giá"
-                  description="Bạn chưa gửi đánh giá nào cho học viên này."
+                  title={t("common.thereAreNoReviewsYet")}
+                  description={t("mentorStudents.youHaveNotSubmittedAny")}
                 />
               ) : (
                 <div className="space-y-4">
@@ -315,28 +361,34 @@ export function StudentDetailPage() {
         <TabsContent value="profile" className="mt-4">
           <Card className="border-emerald-100 dark:border-slate-800">
             <CardHeader>
-              <CardTitle>Hồ Sơ Ứng Viên</CardTitle>
-              <CardDescription>Thông tin hồ sơ ứng viên của học viên</CardDescription>
+              <CardTitle>{t("mentorStudents.candidateProfile")}</CardTitle>
+              <CardDescription>
+                {t("mentorStudents.studentCandidateProfileInformation")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {!candidateProfile?.id ? (
                 <EmptyState
                   icon={FileText}
-                  title="Chưa có hồ sơ ứng viên"
-                  description="Học viên này chưa tạo hồ sơ ứng viên."
+                  title={t("common.thereAreNoCandidateProfilesYet")}
+                  description={t("mentorStudents.thisStudentHasNotCreated")}
                 />
               ) : (
                 <div className="space-y-6">
                   {/* Basic Info */}
                   <div>
-                    <h4 className="mb-2 font-semibold">Thông tin cơ bản</h4>
+                    <h4 className="mb-2 font-semibold">{t("common.basicInformation")}</h4>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <span className="text-gray-500 dark:text-slate-400">Vai trò mục tiêu:</span>{" "}
+                        <span className="text-gray-500 dark:text-slate-400">
+                          {t("mentorStudents.targetRole")}
+                        </span>{" "}
                         {candidateProfile.targetRole || "—"}
                       </div>
                       <div>
-                        <span className="text-gray-500 dark:text-slate-400">Cấp độ:</span>{" "}
+                        <span className="text-gray-500 dark:text-slate-400">
+                          {t("mentorStudents.level")}
+                        </span>{" "}
                         {candidateProfile.targetLevel || "—"}
                       </div>
                     </div>
@@ -347,11 +399,11 @@ export function StudentDetailPage() {
 
                   {/* Skills */}
                   <div>
-                    <h4 className="mb-2 font-semibold">Kỹ năng</h4>
+                    <h4 className="mb-2 font-semibold">{t("common.skill")}</h4>
                     <div className="space-y-2">
                       <div>
                         <span className="text-sm text-gray-500 dark:text-slate-400">
-                          Kỹ năng kỹ thuật:
+                          {t("mentorStudents.technicalSkills")}
                         </span>
                         <div className="mt-1 flex flex-wrap gap-1">
                           {(candidateProfile.technicalSkills ?? []).map((s) => (
@@ -366,7 +418,7 @@ export function StudentDetailPage() {
                       </div>
                       <div>
                         <span className="text-sm text-gray-500 dark:text-slate-400">
-                          Kỹ năng mềm:
+                          {t("mentorStudents.softSkills")}
                         </span>
                         <div className="mt-1 flex flex-wrap gap-1">
                           {(candidateProfile.softSkills ?? []).map((s) => (
@@ -380,7 +432,9 @@ export function StudentDetailPage() {
                         </div>
                       </div>
                       <div>
-                        <span className="text-sm text-gray-500 dark:text-slate-400">Công cụ:</span>
+                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                          {t("mentorStudents.tools")}
+                        </span>
                         <div className="mt-1 flex flex-wrap gap-1">
                           {(candidateProfile.tools ?? []).map((t) => (
                             <Badge key={t} variant="secondary">
@@ -398,14 +452,15 @@ export function StudentDetailPage() {
                   {/* Projects */}
                   {(candidateProfile.projects ?? []).length > 0 && (
                     <div>
-                      <h4 className="mb-2 font-semibold">Dự án</h4>
+                      <h4 className="mb-2 font-semibold">{t("common.project")}</h4>
                       <div className="space-y-2">
                         {candidateProfile.projects!.map((p, i) => (
                           <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
                             <p className="font-medium">{p.name}</p>
                             <p className="text-gray-600 dark:text-slate-300">{p.description}</p>
                             <p className="text-gray-500 dark:text-slate-400">
-                              {p.role} · Đội {p.teamSize} người · {p.outcome}
+                              {p.role} {t("mentorStudents.team")} {p.teamSize}{" "}
+                              {t("mentorStudents.people")} {p.outcome}
                             </p>
                           </div>
                         ))}
@@ -416,7 +471,7 @@ export function StudentDetailPage() {
                   {/* Work Experience */}
                   {(candidateProfile.workExperiences ?? []).length > 0 && (
                     <div>
-                      <h4 className="mb-2 font-semibold">Kinh nghiệm làm việc</h4>
+                      <h4 className="mb-2 font-semibold">{t("common.workExperience")}</h4>
                       <div className="space-y-2">
                         {candidateProfile.workExperiences!.map((w, i) => (
                           <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
@@ -425,7 +480,7 @@ export function StudentDetailPage() {
                             </p>
                             <p className="text-gray-600 dark:text-slate-300">{w.description}</p>
                             <p className="text-xs text-gray-400">
-                              {w.start_date} — {w.end_date || "Hiện tại"}
+                              {w.start_date} — {w.end_date || t("common.present")}
                             </p>
                           </div>
                         ))}
@@ -436,7 +491,7 @@ export function StudentDetailPage() {
                   {/* Education */}
                   {(candidateProfile.educations ?? []).length > 0 && (
                     <div>
-                      <h4 className="mb-2 font-semibold">Học vấn</h4>
+                      <h4 className="mb-2 font-semibold">{t("common.education")}</h4>
                       <div className="space-y-2">
                         {candidateProfile.educations!.map((e, i) => (
                           <div key={i} className="rounded border p-3 text-sm dark:border-slate-700">
@@ -446,7 +501,7 @@ export function StudentDetailPage() {
                             </p>
                             {e.gpa && <p>GPA: {e.gpa}</p>}
                             <p className="text-xs text-gray-400">
-                              {e.start_date} — {e.end_date || "Hiện tại"}
+                              {e.start_date} — {e.end_date || t("common.present")}
                             </p>
                           </div>
                         ))}
@@ -457,7 +512,7 @@ export function StudentDetailPage() {
                   {/* Certifications */}
                   {(candidateProfile.certifications ?? []).length > 0 && (
                     <div>
-                      <h4 className="mb-2 font-semibold">Chứng chỉ</h4>
+                      <h4 className="mb-2 font-semibold">{t("common.certificate")}</h4>
                       <div className="flex flex-wrap gap-1">
                         {candidateProfile.certifications!.map((c) => (
                           <Badge key={c} variant="secondary">
@@ -471,7 +526,7 @@ export function StudentDetailPage() {
                   {/* Achievements */}
                   {(candidateProfile.achievements ?? []).length > 0 && (
                     <div>
-                      <h4 className="mb-2 font-semibold">Thành tích</h4>
+                      <h4 className="mb-2 font-semibold">{t("common.achievements")}</h4>
                       <div className="flex flex-wrap gap-1">
                         {candidateProfile.achievements!.map((a) => (
                           <Badge key={a} variant="outline">

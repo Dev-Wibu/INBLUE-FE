@@ -18,9 +18,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { datetimeLocalToVietnamISOString } from "@/lib/utils";
-
+import { useTranslation } from "react-i18next";
 import type { JobDescriptionFormData, JobDescriptionLevel, JobDescriptionStatus } from "../types";
-
 interface JobDescriptionFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,10 +30,8 @@ interface JobDescriptionFormDialogProps {
   description: string;
   submitLabel: string;
 }
-
 const LEVEL_OPTIONS: JobDescriptionLevel[] = ["INTERN", "FRESHER", "JUNIOR", "MIDDLE"];
 const STATUS_OPTIONS: JobDescriptionStatus[] = ["OPEN", "CLOSED", "DRAFT"];
-
 export function JobDescriptionFormDialog({
   isOpen,
   onOpenChange,
@@ -45,6 +42,7 @@ export function JobDescriptionFormDialog({
   description,
   submitLabel,
 }: JobDescriptionFormDialogProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
@@ -55,24 +53,32 @@ export function JobDescriptionFormDialog({
         <div className="grid gap-4 py-4">
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="jd-title">Tiêu đề *</Label>
+              <Label htmlFor="jd-title">{t("common.title1")}</Label>
               <Input
                 id="jd-title"
                 value={formData.title || ""}
-                onChange={(e) => onFormChange({ ...formData, title: e.target.value })}
-                placeholder="Nhập tiêu đề JD"
+                onChange={(e) =>
+                  onFormChange({
+                    ...formData,
+                    title: e.target.value,
+                  })
+                }
+                placeholder={t("adminCompanymanagement.enterJdTitle")}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="jd-level">Cấp độ *</Label>
+                <Label htmlFor="jd-level">{t("general.level")}</Label>
                 <Select
                   value={formData.level}
                   onValueChange={(value) =>
-                    onFormChange({ ...formData, level: value as JobDescriptionLevel })
+                    onFormChange({
+                      ...formData,
+                      level: value as JobDescriptionLevel,
+                    })
                   }>
                   <SelectTrigger id="jd-level">
-                    <SelectValue placeholder="Chọn cấp độ" />
+                    <SelectValue placeholder={t("common.chooseLevel")} />
                   </SelectTrigger>
                   <SelectContent>
                     {LEVEL_OPTIONS.map((level) => (
@@ -84,14 +90,17 @@ export function JobDescriptionFormDialog({
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="jd-status">Trạng thái *</Label>
+                <Label htmlFor="jd-status">{t("general.status")}</Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) =>
-                    onFormChange({ ...formData, status: value as JobDescriptionStatus })
+                    onFormChange({
+                      ...formData,
+                      status: value as JobDescriptionStatus,
+                    })
                   }>
                   <SelectTrigger id="jd-status">
-                    <SelectValue placeholder="Chọn trạng thái" />
+                    <SelectValue placeholder={t("common.selectStatus")} />
                   </SelectTrigger>
                   <SelectContent>
                     {STATUS_OPTIONS.map((status) => (
@@ -106,34 +115,51 @@ export function JobDescriptionFormDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="jd-description">Mô tả</Label>
+            <Label htmlFor="jd-description">{t("common.describe")}</Label>
             <Textarea
               id="jd-description"
               value={formData.description || ""}
-              onChange={(e) => onFormChange({ ...formData, description: e.target.value })}
-              placeholder="Mô tả công việc"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  description: e.target.value,
+                })
+              }
+              placeholder={t("common.jobDescription")}
               rows={4}
             />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="jd-requirements">Yêu cầu</Label>
+              <Label htmlFor="jd-requirements">{t("adminCompanymanagement.request")}</Label>
               <Textarea
                 id="jd-requirements"
                 value={formData.requirements || ""}
-                onChange={(e) => onFormChange({ ...formData, requirements: e.target.value })}
-                placeholder="Yêu cầu ứng viên"
+                onChange={(e) =>
+                  onFormChange({
+                    ...formData,
+                    requirements: e.target.value,
+                  })
+                }
+                placeholder={t("enterprise_jobdescriptiondetailpage.tsx.yeu_cau_ung_vien")}
                 rows={4}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="jd-benefits">Phúc lợi</Label>
+              <Label htmlFor="jd-benefits">
+                {t("enterprise_jobdescriptiondetailpage.tsx.phuc_loi")}
+              </Label>
               <Textarea
                 id="jd-benefits"
                 value={formData.benefits || ""}
-                onChange={(e) => onFormChange({ ...formData, benefits: e.target.value })}
-                placeholder="Phúc lợi/Quyền lợi"
+                onChange={(e) =>
+                  onFormChange({
+                    ...formData,
+                    benefits: e.target.value,
+                  })
+                }
+                placeholder={t("adminCompanymanagement.welfareBenefits")}
                 rows={4}
               />
             </div>
@@ -141,7 +167,7 @@ export function JobDescriptionFormDialog({
 
           <div className="grid gap-4 lg:grid-cols-3">
             <div className="space-y-1.5">
-              <Label htmlFor="jd-salary-min">Lương tối thiểu</Label>
+              <Label htmlFor="jd-salary-min">{t("adminCompanymanagement.minimumWage")}</Label>
               <Input
                 id="jd-salary-min"
                 type="number"
@@ -157,7 +183,7 @@ export function JobDescriptionFormDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="jd-salary-max">Lương tối đa</Label>
+              <Label htmlFor="jd-salary-max">{t("adminCompanymanagement.maximumSalary")}</Label>
               <Input
                 id="jd-salary-max"
                 type="number"
@@ -173,18 +199,23 @@ export function JobDescriptionFormDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="jd-currency">Đơn vị tiền tệ</Label>
+              <Label htmlFor="jd-currency">{t("adminCompanymanagement.currencyUnit")}</Label>
               <Input
                 id="jd-currency"
                 value={formData.currency || ""}
-                onChange={(e) => onFormChange({ ...formData, currency: e.target.value })}
+                onChange={(e) =>
+                  onFormChange({
+                    ...formData,
+                    currency: e.target.value,
+                  })
+                }
                 placeholder="VND"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="jd-deadline">Hạn nộp hồ sơ</Label>
+            <Label htmlFor="jd-deadline">{t("adminCompanymanagement.applicationDeadline")}</Label>
             <Input
               id="jd-deadline"
               type="datetime-local"
@@ -202,7 +233,7 @@ export function JobDescriptionFormDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t("general.cancel")}
           </Button>
           <Button onClick={onSubmit}>{submitLabel}</Button>
         </DialogFooter>

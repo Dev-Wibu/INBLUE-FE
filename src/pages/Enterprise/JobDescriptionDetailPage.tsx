@@ -1,3 +1,13 @@
+import { HomepageHeader } from "@/components/homepage-redesign";
+import { Footer } from "@/components/layouts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import i18n from "@/lib/i18n";
+import { applicationService } from "@/services/application.manager";
+import { companyManager, type JobDescription } from "@/services/company.manager";
+import { useAuthStore } from "@/stores/authStore";
 import {
   AlertCircle,
   ArrowLeft,
@@ -12,19 +22,10 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-
-import { HomepageHeader } from "@/components/homepage-redesign";
-import { Footer } from "@/components/layouts";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { applicationService } from "@/services/application.manager";
-import { companyManager, type JobDescription } from "@/services/company.manager";
-import { useAuthStore } from "@/stores/authStore";
-
+const t = i18n.t.bind(i18n);
 function formatSalary(min?: number, max?: number, currency = "VND") {
   const format = (num: number) => {
     if (num >= 1000000) {
@@ -32,21 +33,25 @@ function formatSalary(min?: number, max?: number, currency = "VND") {
     }
     return `${(num / 1000).toFixed(0)}K`;
   };
-
   if (min && max) {
     return `${format(min)} - ${format(max)} ${currency}`;
   }
   if (min) {
-    return `Từ ${format(min)} ${currency}`;
+    return t("common.fromVar0Var1", {
+      var_0: format(min),
+      var_1: currency,
+    });
   }
   if (max) {
-    return `Đến ${format(max)} ${currency}`;
+    return t("common.toVar0Var1", {
+      var_0: format(max),
+      var_1: currency,
+    });
   }
-  return "Thỏa thuận";
+  return t("enterprise_jobdescriptiondetailpage.tsx.thoa_thuan");
 }
-
 function formatDate(dateStr?: string) {
-  if (!dateStr) return "Không giới hạn";
+  if (!dateStr) return t("enterprise_jobdescriptiondetailpage.tsx.khong_gioi_han");
   const date = new Date(dateStr);
   return date.toLocaleDateString("vi-VN", {
     day: "2-digit",
@@ -54,7 +59,6 @@ function formatDate(dateStr?: string) {
     year: "numeric",
   });
 }
-
 function getLevelBadgeColor(level?: string) {
   switch (level?.toUpperCase()) {
     case "INTERN":
@@ -65,12 +69,10 @@ function getLevelBadgeColor(level?: string) {
       return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
     case "MIDDLE":
       return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
-
     default:
       return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
   }
 }
-
 function getStatusBadgeColor(status?: string) {
   switch (status?.toUpperCase()) {
     case "OPEN":
@@ -83,7 +85,6 @@ function getStatusBadgeColor(status?: string) {
       return "bg-slate-100 text-slate-700";
   }
 }
-
 function getRoundTypeIcon(type?: string) {
   switch (type?.toUpperCase()) {
     case "CV_SCREENING":
@@ -100,32 +101,31 @@ function getRoundTypeIcon(type?: string) {
       return <CheckCircle2 className="h-5 w-5" />;
   }
 }
-
 export function JobDescriptionDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
+  const { id } = useParams<{
+    id: string;
+  }>();
   const navigate = useNavigate();
   const { isLoggedIn } = useAuthStore();
-
   const [job, setJob] = useState<JobDescription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     const fetchJob = async () => {
       if (!id) return;
-
       setIsLoading(true);
       setError(null);
-
       try {
         const result = await companyManager.getJobById(Number(id));
-
         if (result.success && result.data) {
           setJob(result.data);
         } else {
-          setError("Không tìm thấy thông tin vị trí tuyển dụng");
+          setError(
+            t("enterprise_jobdescriptiondetailpage.tsx.khong_tim_thay_thong_tin_vi_tri_tuyen_du")
+          );
         }
 
         // Check if user has already applied for this job
@@ -140,35 +140,33 @@ export function JobDescriptionDetailPage() {
         }
       } catch (err) {
         console.error("[JobDescriptionDetailPage] Error:", err);
-        setError("Đã xảy ra lỗi khi tải thông tin");
+        setError(t("enterprise_jobdescriptiondetailpage.tsx.a_xay_ra_loi_khi_tai_thong_tin"));
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchJob();
-  }, [id, isLoggedIn]);
-
+  }, [id, isLoggedIn, t]);
   const handleApply = async () => {
     if (!isLoggedIn) {
-      toast.error("Vui lòng đăng nhập để ứng tuyển");
+      toast.error(t("enterprise_jobdescriptiondetailpage.tsx.vui_long_ang_nhap_e_ung_tuyen"));
       navigate(`/login?redirect=/enterprise/job/${id}`);
       return;
     }
-
     if (job?.status !== "OPEN") {
-      toast.warning("Vị trí này hiện không còn tuyển dụng");
+      toast.warning(
+        t("enterprise_jobdescriptiondetailpage.tsx.vi_tri_nay_hien_khong_con_tuyen_dung")
+      );
       return;
     }
-
     if (!job?.id) return;
-
     setIsApplying(true);
     try {
       const result = await applicationService.apply(job.id);
-
       if (result.success) {
-        toast.success("Ứng tuyển thành công! Chúc bạn may mắn!");
+        toast.success(
+          t("enterprise_jobdescriptiondetailpage.tsx.ung_tuyen_thanh_cong_chuc_ban_may_man")
+        );
         setHasApplied(true);
         // Refresh job data to update applied count
         const refreshResult = await companyManager.getJobById(job.id);
@@ -176,19 +174,22 @@ export function JobDescriptionDetailPage() {
           setJob(refreshResult.data);
         }
       } else {
-        const errorMsg = result.error || "Ứng tuyển không thành công. Vui lòng thử lại sau.";
+        const errorMsg =
+          result.error ||
+          t("enterprise_jobdescriptiondetailpage.tsx.ung_tuyen_khong_thanh_cong_vui_long_thu_");
         toast.error(errorMsg, {
           duration: 5000,
         });
       }
     } catch (err) {
       console.error("[Apply] Catch error:", err);
-      toast.error("Đã xảy ra lỗi khi ứng tuyển. Vui lòng thử lại.");
+      toast.error(
+        t("enterprise_jobdescriptiondetailpage.tsx.a_xay_ra_loi_khi_ung_tuyen_vui_long_thu_")
+      );
     } finally {
       setIsApplying(false);
     }
   };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -205,7 +206,6 @@ export function JobDescriptionDetailPage() {
       </div>
     );
   }
-
   if (error || !job) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -215,12 +215,14 @@ export function JobDescriptionDetailPage() {
             onClick={() => navigate(-1)}
             className="mb-6 inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[#0047AB] dark:text-slate-400 dark:hover:text-[#66B2FF]">
             <ArrowLeft className="h-4 w-4" />
-            Quay lại
+            {t("general.back")}
           </button>
           <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
             <CardContent className="flex items-center gap-3 p-6">
               <AlertCircle className="h-6 w-6 text-red-500" />
-              <p className="text-red-700 dark:text-red-400">{error || "Không tìm thấy vị trí"}</p>
+              <p className="text-red-700 dark:text-red-400">
+                {error || t("enterprise_jobdescriptiondetailpage.tsx.khong_tim_thay_vi_tri")}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -228,7 +230,6 @@ export function JobDescriptionDetailPage() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <HomepageHeader />
@@ -238,7 +239,7 @@ export function JobDescriptionDetailPage() {
           onClick={() => navigate(-1)}
           className="mb-6 inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[#0047AB] dark:text-slate-400 dark:hover:text-[#66B2FF]">
           <ArrowLeft className="h-4 w-4" />
-          Quay lại
+          {t("general.back")}
         </button>
 
         {/* Header card */}
@@ -248,18 +249,18 @@ export function JobDescriptionDetailPage() {
               <div className="flex-1">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <Badge className={getLevelBadgeColor(job.level)}>
-                    {job.level || "Không xác định"}
+                    {job.level || t("shared_speechplaygroundpage.tsx.khong_xac_inh")}
                   </Badge>
                   <Badge className={`border ${getStatusBadgeColor(job.status)}`}>
                     {job.status === "OPEN"
-                      ? "Đang tuyển"
+                      ? t("enterprise_jobdescriptiondetailpage.tsx.ang_tuyen")
                       : job.status === "CLOSED"
-                        ? "Đã đóng"
-                        : "Nháp"}
+                        ? t("enterprise_jobdescriptiondetailpage.tsx.a_ong")
+                        : t("enterprise_jobdescriptiondetailpage.tsx.nhap")}
                   </Badge>
                 </div>
                 <h1 className="mb-2 text-2xl font-bold text-slate-900 md:text-3xl dark:text-white">
-                  {job.title || "Vị trí tuyển dụng"}
+                  {job.title || t("enterprise_jobdescriptiondetailpage.tsx.vi_tri_tuyen_dung")}
                 </h1>
                 <div className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-400">
                   <div className="flex items-center gap-1.5">
@@ -268,11 +269,15 @@ export function JobDescriptionDetailPage() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-4 w-4" />
-                    <span>{job.location || "Hồ Chí Minh"}</span>
+                    <span>
+                      {job.location || t("enterprise_jobdescriptiondetailpage.tsx.ho_chi_minh")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Users className="h-4 w-4" />
-                    <span>{job.appliedCount || 0} ứng viên</span>
+                    <span>
+                      {job.appliedCount || 0} {t("common.candidate")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -281,27 +286,21 @@ export function JobDescriptionDetailPage() {
               <Button
                 onClick={handleApply}
                 disabled={isApplying || job.status !== "OPEN" || hasApplied}
-                className={`text-white ${
-                  hasApplied || job.status !== "OPEN"
-                    ? "cursor-not-allowed bg-green-600 hover:bg-green-600"
-                    : !isLoggedIn
-                      ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500"
-                      : "bg-[#0047AB] hover:bg-[#003d8f]"
-                }`}
+                className={`text-white ${hasApplied || job.status !== "OPEN" ? "cursor-not-allowed bg-green-600 hover:bg-green-600" : !isLoggedIn ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500" : "bg-[#0047AB] hover:bg-[#003d8f]"}`}
                 size="lg">
                 {isApplying ? (
                   <>
                     <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Đang xử lý...
+                    {t("common.processing")}
                   </>
                 ) : hasApplied ? (
-                  "Đã ứng tuyển ✓"
+                  t("enterprise_jobdescriptiondetailpage.tsx.a_ung_tuyen")
                 ) : job.status !== "OPEN" ? (
-                  "Đã đóng tuyển"
+                  t("enterprise_jobdescriptiondetailpage.tsx.a_ong_tuyen")
                 ) : !isLoggedIn ? (
-                  "Đăng nhập để ứng tuyển"
+                  t("enterprise_jobdescriptiondetailpage.tsx.ang_nhap_e_ung_tuyen")
                 ) : (
-                  "Ứng tuyển ngay"
+                  t("enterprise_jobdescriptiondetailpage.tsx.ung_tuyen_ngay")
                 )}
               </Button>
             </div>
@@ -310,7 +309,7 @@ export function JobDescriptionDetailPage() {
             <div className="mt-4 flex items-center gap-2 rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
               <Calendar className="h-5 w-5 text-slate-500" />
               <span className="text-sm text-slate-600 dark:text-slate-400">
-                Hạn nộp:{" "}
+                {t("general.deadline")}{" "}
                 <span className="font-medium text-slate-900 dark:text-white">
                   {formatDate(job.deadlineAt)}
                 </span>
@@ -328,12 +327,13 @@ export function JobDescriptionDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase className="h-5 w-5 text-[#0047AB]" />
-                  Mô tả công việc
+                  {t("common.jobDescription")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-slate-600 dark:text-slate-400">
-                  {job.description || "Chưa có mô tả công việc."}
+                  {job.description ||
+                    t("enterprise_jobdescriptiondetailpage.tsx.chua_co_mo_ta_cong_viec")}
                 </p>
               </CardContent>
             </Card>
@@ -343,12 +343,13 @@ export function JobDescriptionDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-[#0047AB]" />
-                  Yêu cầu ứng viên
+                  {t("enterprise_jobdescriptiondetailpage.tsx.yeu_cau_ung_vien")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-slate-600 dark:text-slate-400">
-                  {job.requirements || "Chưa có yêu cầu cụ thể."}
+                  {job.requirements ||
+                    t("enterprise_jobdescriptiondetailpage.tsx.chua_co_yeu_cau_cu_the")}
                 </p>
               </CardContent>
             </Card>
@@ -358,12 +359,13 @@ export function JobDescriptionDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="h-5 w-5 text-amber-500" />
-                  Phúc lợi
+                  {t("enterprise_jobdescriptiondetailpage.tsx.phuc_loi")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-slate-600 dark:text-slate-400">
-                  {job.benefits || "Chưa có thông tin phúc lợi."}
+                  {job.benefits ||
+                    t("enterprise_jobdescriptiondetailpage.tsx.chua_co_thong_tin_phuc_loi")}
                 </p>
               </CardContent>
             </Card>
@@ -374,7 +376,8 @@ export function JobDescriptionDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-[#0047AB]" />
-                    Quy trình phỏng vấn ({job.rounds.length} vòng)
+                    {t("enterprise_jobdescriptiondetailpage.tsx.quy_trinh_phong_van")}
+                    {job.rounds.length} {t("enterprise_jobdescriptiondetailpage.tsx.vong")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -389,20 +392,35 @@ export function JobDescriptionDetailPage() {
                         <div className="flex-1">
                           <div className="mb-1 flex items-center gap-2">
                             <span className="font-semibold text-slate-900 dark:text-white">
-                              {round.name || `Vòng ${index + 1}`}
+                              {round.name ||
+                                t("common.roundVar0", {
+                                  var_0: index + 1,
+                                })}
                             </span>
                             <Badge variant="outline" className="text-xs">
                               {getRoundTypeIcon(round.roundType)}
                               <span className="ml-1">
-                                {round.roundType?.replace("_", " ") || "Không xác định"}
+                                {round.roundType?.replace("_", " ") ||
+                                  t("shared_speechplaygroundpage.tsx.khong_xac_inh")}
                               </span>
                             </Badge>
                           </div>
                           <div className="mb-2 flex flex-wrap gap-3 text-sm text-slate-600 dark:text-slate-400">
-                            <span>Thứ tự: {round.roundOrder || index + 1}</span>
-                            {round.passThreshold && <span>Ngưỡng đạt: {round.passThreshold}%</span>}
+                            <span>
+                              {t("enterprise_jobdescriptiondetailpage.tsx.thu_tu")}{" "}
+                              {round.roundOrder || index + 1}
+                            </span>
+                            {round.passThreshold && (
+                              <span>
+                                {t("enterprise_jobdescriptiondetailpage.tsx.nguong_at")}{" "}
+                                {round.passThreshold}%
+                              </span>
+                            )}
                             {round.configData?.timeLimitMinutes && (
-                              <span>Thời gian: {round.configData.timeLimitMinutes} phút</span>
+                              <span>
+                                {t("enterprise_jobdescriptiondetailpage.tsx.thoi_gian")}{" "}
+                                {round.configData.timeLimitMinutes} {t("common.minute")}
+                              </span>
                             )}
                           </div>
                           {round.configData?.instruction && (
@@ -425,63 +443,67 @@ export function JobDescriptionDetailPage() {
             <Button
               onClick={handleApply}
               disabled={isApplying || job.status !== "OPEN" || hasApplied}
-              className={`w-full text-white ${
-                hasApplied || job.status !== "OPEN"
-                  ? "cursor-not-allowed bg-green-600 hover:bg-green-600"
-                  : !isLoggedIn
-                    ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500"
-                    : "bg-[#0047AB] hover:bg-[#003d8f]"
-              }`}
+              className={`w-full text-white ${hasApplied || job.status !== "OPEN" ? "cursor-not-allowed bg-green-600 hover:bg-green-600" : !isLoggedIn ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500" : "bg-[#0047AB] hover:bg-[#003d8f]"}`}
               size="lg">
               {isApplying ? (
                 <>
                   <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Đang xử lý...
+                  {t("common.processing")}
                 </>
               ) : hasApplied ? (
-                "Đã ứng tuyển ✓"
+                t("enterprise_jobdescriptiondetailpage.tsx.a_ung_tuyen")
               ) : job.status !== "OPEN" ? (
-                "Đã đóng tuyển"
+                t("enterprise_jobdescriptiondetailpage.tsx.a_ong_tuyen")
               ) : !isLoggedIn ? (
-                "Đăng nhập để ứng tuyển"
+                t("enterprise_jobdescriptiondetailpage.tsx.ang_nhap_e_ung_tuyen")
               ) : (
-                "Ứng tuyển ngay"
+                t("enterprise_jobdescriptiondetailpage.tsx.ung_tuyen_ngay")
               )}
             </Button>
 
             {/* Job Overview */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardHeader>
-                <CardTitle className="text-base">Thông tin tuyển dụng</CardTitle>
+                <CardTitle className="text-base">
+                  {t("enterprise_jobdescriptiondetailpage.tsx.thong_tin_tuyen_dung")}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">Cấp bậc</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {t("enterprise_jobdescriptiondetailpage.tsx.cap_bac")}
+                  </span>
                   <Badge className={getLevelBadgeColor(job.level)}>
-                    {job.level || "Không xác định"}
+                    {job.level || t("shared_speechplaygroundpage.tsx.khong_xac_inh")}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">Mức lương</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {t("enterprise_jobdescriptiondetailpage.tsx.muc_luong")}
+                  </span>
                   <span className="text-sm font-medium text-slate-900 dark:text-white">
                     {formatSalary(job.salaryMin, job.salaryMax, job.currency)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">Địa điểm</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {t("enterprise_jobdescriptiondetailpage.tsx.ia_iem")}
+                  </span>
                   <span className="text-sm font-medium text-slate-900 dark:text-white">
-                    {job.location || "Hồ Chí Minh"}
+                    {job.location || t("enterprise_jobdescriptiondetailpage.tsx.ho_chi_minh")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">Hạn nộp</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {t("enterprise_jobdescriptiondetailpage.tsx.han_nop")}
+                  </span>
                   <span className="text-sm font-medium text-slate-900 dark:text-white">
                     {formatDate(job.deadlineAt)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-500 dark:text-slate-400">
-                    Số người ứng tuyển
+                    {t("enterprise_jobdescriptiondetailpage.tsx.so_nguoi_ung_tuyen")}
                   </span>
                   <span className="text-sm font-medium text-slate-900 dark:text-white">
                     {job.appliedCount || 0}
@@ -494,7 +516,9 @@ export function JobDescriptionDetailPage() {
             {job.skills && job.skills.length > 0 && (
               <Card className="border-slate-200 dark:border-slate-700">
                 <CardHeader>
-                  <CardTitle className="text-base">Kỹ năng yêu cầu</CardTitle>
+                  <CardTitle className="text-base">
+                    {t("enterprise_jobdescriptiondetailpage.tsx.ky_nang_yeu_cau")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
@@ -511,7 +535,9 @@ export function JobDescriptionDetailPage() {
             {/* Company Info */}
             <Card className="border-slate-200 dark:border-slate-700">
               <CardHeader>
-                <CardTitle className="text-base">Thông tin công ty</CardTitle>
+                <CardTitle className="text-base">
+                  {t("enterprise_jobdescriptiondetailpage.tsx.thong_tin_cong_ty")}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3">
@@ -520,13 +546,14 @@ export function JobDescriptionDetailPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white">
-                      {job.companyName || "Công ty tuyển dụng"}
+                      {job.companyName ||
+                        t("enterprise_jobdescriptiondetailpage.tsx.cong_ty_tuyen_dung")}
                     </p>
                     {job.companyId && (
                       <Link
                         to={`/enterprise/company/${job.companyId}`}
                         className="text-xs text-[#0047AB] hover:underline dark:text-[#66B2FF]">
-                        Xem công ty
+                        {t("enterprise_jobdescriptiondetailpage.tsx.xem_cong_ty")}
                       </Link>
                     )}
                   </div>

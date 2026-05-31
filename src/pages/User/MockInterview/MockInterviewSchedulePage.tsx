@@ -1,3 +1,6 @@
+import i18n from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 /**
  * MockInterviewSchedulePage.tsx
  * Redesigned "Schedule a New Interview" page
@@ -5,22 +8,6 @@
  *
  * BE requirement: User chooses a date/time for meeting start (joinTime). exp defaults to 0.
  */
-
-import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarIcon,
-  Check,
-  Clock,
-  Search,
-  Star,
-  User,
-  Users,
-  Video,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,51 +25,86 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency, formatDateTime, formatTime, toVietnamDateKey } from "@/lib/formatting";
-import { cn, formatToVietnamISOString } from "@/lib/utils";
-
 import { useMentors } from "@/hooks/useMentor";
 import { useCreateSession } from "@/hooks/useSession";
+import { formatCurrency, formatDateTime, formatTime, toVietnamDateKey } from "@/lib/formatting";
+import { cn, formatToVietnamISOString } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarIcon,
+  Check,
+  Clock,
+  Search,
+  Star,
+  User,
+  Users,
+  Video,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 // Step definitions
 const STEPS = [
-  { id: 1, label: "Chọn Mentor", icon: Users },
-  { id: 2, label: "Chọn thời gian", icon: CalendarIcon },
-  { id: 3, label: "Xác nhận", icon: Check },
+  {
+    id: 1,
+    label: t("userMockinterview.selectMentor"),
+    icon: Users,
+  },
+  {
+    id: 2,
+    label: t("userMockinterview.chooseTime"),
+    icon: CalendarIcon,
+  },
+  {
+    id: 3,
+    label: t("common.confirm"),
+    icon: Check,
+  },
 ] as const;
 
 // Time options for the select dropdown
-const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({
-  value: String(i).padStart(2, "0"),
-  label: String(i).padStart(2, "0"),
-}));
+const HOUR_OPTIONS = Array.from(
+  {
+    length: 24,
+  },
+  (_, i) => ({
+    value: String(i).padStart(2, "0"),
+    label: String(i).padStart(2, "0"),
+  })
+);
 
 // All 60 minutes for full flexibility; 5-minute intervals are highlighted
-const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => ({
-  value: String(i).padStart(2, "0"),
-  label: String(i).padStart(2, "0"),
-  is5Min: i % 5 === 0,
-}));
+const MINUTE_OPTIONS = Array.from(
+  {
+    length: 60,
+  },
+  (_, i) => ({
+    value: String(i).padStart(2, "0"),
+    label: String(i).padStart(2, "0"),
+    is5Min: i % 5 === 0,
+  })
+);
 
 // Minimum time offset in milliseconds (1 minute)
 const MIN_FUTURE_OFFSET_MS = 60 * 1000;
 const VIETNAM_UTC_OFFSET_HOURS = 7;
-
 const parseVietnamDateKey = (dateKey: string): Date => {
   const [yearRaw, monthRaw, dayRaw] = dateKey.split("-");
   const year = Number.parseInt(yearRaw, 10);
   const month = Number.parseInt(monthRaw, 10);
   const day = Number.parseInt(dayRaw, 10);
-
   return new Date(year, month - 1, day);
 };
-
 const getVietnamTimeParts = (value: Date) => {
   const [hour = "00", minute = "00"] = formatTime(value, "00:00").split(":");
-  return { hour, minute };
+  return {
+    hour,
+    minute,
+  };
 };
-
 const buildJoinDateFromVietnamSelection = (
   selectedDate: Date,
   selectedHour: string,
@@ -105,7 +127,6 @@ const buildJoinDateFromVietnamSelection = (
     )
   );
 };
-
 const formatVietnamDateLabel = (selectedDate: Date) => {
   const dateInVietnam = buildJoinDateFromVietnamSelection(selectedDate, "00", "00");
   return dateInVietnam.toLocaleDateString("vi-VN", {
@@ -116,32 +137,27 @@ const formatVietnamDateLabel = (selectedDate: Date) => {
     day: "numeric",
   });
 };
-
 type MockInterviewScheduleLocationState = {
   preselectedMentorId?: number;
 };
-
 export function MockInterviewSchedulePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const { data: mentors = [], isLoading } = useMentors();
   const createSession = useCreateSession();
-
   const preselectedMentorId = useMemo(() => {
     const state = location.state as MockInterviewScheduleLocationState | null;
     const rawIdFromState = state?.preselectedMentorId;
     const rawIdFromQuery = Number(new URLSearchParams(location.search).get("mentorId"));
-
     const rawId =
       typeof rawIdFromState === "number" && Number.isFinite(rawIdFromState)
         ? rawIdFromState
         : rawIdFromQuery;
-
     if (typeof rawId !== "number") {
       return null;
     }
-
     return Number.isFinite(rawId) && rawId > 0 ? rawId : null;
   }, [location.search, location.state]);
 
@@ -150,7 +166,6 @@ export function MockInterviewSchedulePage() {
 
   // Step 1: Mentor selection
   const [selectedMentorId, setSelectedMentorId] = useState<number | null>(preselectedMentorId);
-
   useEffect(() => {
     if (preselectedMentorId !== null) {
       setSelectedMentorId(preselectedMentorId);
@@ -172,11 +187,9 @@ export function MockInterviewSchedulePage() {
     const now = new Date(Date.now() + MIN_FUTURE_OFFSET_MS * 2);
     const vietnamDateKey = toVietnamDateKey(now);
     const { hour, minute } = getVietnamTimeParts(now);
-
     if (vietnamDateKey) {
       setSelectedDate(parseVietnamDateKey(vietnamDateKey));
     }
-
     setSelectedHour(hour);
     setSelectedMinute(minute);
   };
@@ -206,7 +219,6 @@ export function MockInterviewSchedulePage() {
     if (durationMinutes <= 0 || mentorPricePerMinute <= 0) {
       return 0;
     }
-
     return durationMinutes * mentorPricePerMinute;
   }, [durationMinutes, mentorPricePerMinute]);
 
@@ -219,9 +231,9 @@ export function MockInterviewSchedulePage() {
 
   // Format selected date/time for display
   const formatSelectedDateTime = (): string => {
-    if (!selectedDate) return "Chưa chọn";
+    if (!selectedDate) return t("common.notSelectedYet");
     const joinDate = buildJoinDateFromVietnamSelection(selectedDate, selectedHour, selectedMinute);
-    return formatDateTime(joinDate, "Chưa chọn");
+    return formatDateTime(joinDate, t("common.notSelectedYet"));
   };
 
   // Validation
@@ -230,7 +242,6 @@ export function MockInterviewSchedulePage() {
     const joinDate = buildJoinDateFromVietnamSelection(selectedDate, selectedHour, selectedMinute);
     return joinDate.getTime() > Date.now() + MIN_FUTURE_OFFSET_MS;
   };
-
   const canProceedStep1 = selectedMentorId !== null && hasValidMentorPrice;
   const canProceedStep2 = isDateTimeValid() && durationMinutes > 0 && hasValidMentorPrice;
 
@@ -254,22 +265,18 @@ export function MockInterviewSchedulePage() {
   // Handle session creation
   const handleCreateSession = async () => {
     if (!selectedMentorId || !user?.id) return;
-
     if (!hasValidMentorPrice) {
-      toast.error("Mentor chưa cấu hình đơn giá hợp lệ");
+      toast.error(t("userMockinterview.mentorHasNotConfiguredA"));
       return;
     }
-
     const normalizedUserId = Math.round(Number(user.id));
     const normalizedMentorId = Math.round(Number(selectedMentorId));
     const normalizedDuration = Math.max(1, Math.round(durationMinutes));
     const normalizedTotalPrice = Math.round(totalPrice);
-
     if (!Number.isFinite(normalizedTotalPrice) || normalizedTotalPrice <= 0) {
-      toast.error("Không thể đặt lịch vì mentor chưa có đơn giá hợp lệ");
+      toast.error(t("userMockinterview.unableToScheduleAnAppointment"));
       return;
     }
-
     if (
       !Number.isFinite(normalizedUserId) ||
       !Number.isFinite(normalizedMentorId) ||
@@ -278,7 +285,6 @@ export function MockInterviewSchedulePage() {
     ) {
       return;
     }
-
     setIsCreating(true);
     try {
       const joinTime = calculateJoinTime();
@@ -316,21 +322,20 @@ export function MockInterviewSchedulePage() {
       setIsCreating(false);
     }
   };
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => navigate("/user?tab=mockInterview")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Quay lại
+          {t("general.back")}
         </Button>
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            Đặt lịch phỏng vấn mới
+            {t("userMockinterview.scheduleANewInterview")}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Chọn mentor, thời gian và tạo phiên phỏng vấn
+            {t("userMockinterview.chooseAMentorTimeAnd")}
           </p>
         </div>
       </div>
@@ -369,7 +374,7 @@ export function MockInterviewSchedulePage() {
           <div className="relative max-w-md">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
-              placeholder="Tìm kiếm theo tên, chuyên môn..."
+              placeholder={t("userMockinterview.searchByNameExpertise")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -384,9 +389,13 @@ export function MockInterviewSchedulePage() {
               <CardContent>
                 <User className="mx-auto mb-3 h-12 w-12 text-slate-300" />
                 <p className="font-medium text-slate-600">
-                  {searchQuery ? "Không tìm thấy mentor phù hợp" : "Chưa có mentor nào"}
+                  {searchQuery
+                    ? t("common.noSuitableMentorFound")
+                    : t("userMockinterview.thereAreNoMentorsYet")}
                 </p>
-                <p className="mt-1 text-sm text-slate-400">Hãy thử tìm kiếm với từ khóa khác</p>
+                <p className="mt-1 text-sm text-slate-400">
+                  {t("common.trySearchingWithOtherKeywords")}
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -419,11 +428,15 @@ export function MockInterviewSchedulePage() {
                           <div>
                             <CardTitle className="text-base">{mentor.name || "Mentor"}</CardTitle>
                             <CardDescription>
-                              {mentor.currentCompany || "Chuyên gia phỏng vấn"}
+                              {mentor.currentCompany || t("common.interviewExpert")}
                             </CardDescription>
                           </div>
                         </div>
-                        {isSelected && <Badge className="bg-[#0047AB] text-white">✓ Đã chọn</Badge>}
+                        {isSelected && (
+                          <Badge className="bg-[#0047AB] text-white">
+                            {t("userMockinterview.selected")}
+                          </Badge>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -440,10 +453,14 @@ export function MockInterviewSchedulePage() {
                         )}
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           {mentor.totalSession != null && (
-                            <span>{mentor.totalSession} buổi phỏng vấn</span>
+                            <span>
+                              {mentor.totalSession} {t("userMockinterview.interview")}
+                            </span>
                           )}
                           {mentor.yearsOfExperience != null && (
-                            <span>{mentor.yearsOfExperience} năm KN</span>
+                            <span>
+                              {mentor.yearsOfExperience} {t("userMockinterview.yearKn")}
+                            </span>
                           )}
                           {typeof mentor.pricePerMinute === "number" &&
                             mentor.pricePerMinute > 0 && (
@@ -453,7 +470,7 @@ export function MockInterviewSchedulePage() {
                             )}
                           {(!mentor.pricePerMinute || mentor.pricePerMinute <= 0) && (
                             <span className="font-medium text-amber-700">
-                              Chưa cấu hình đơn giá
+                              {t("userMockinterview.unitPriceHasNotBeen")}
                             </span>
                           )}
                         </div>
@@ -472,7 +489,7 @@ export function MockInterviewSchedulePage() {
           <div className="flex justify-end pt-4">
             {selectedMentorId !== null && !hasValidMentorPrice && (
               <p className="mr-auto text-sm text-amber-700">
-                Mentor đã chọn chưa có đơn giá hợp lệ. Vui lòng chọn mentor khác.
+                {t("userMockinterview.theSelectedMentorDoesNot")}
               </p>
             )}
             <Button
@@ -480,7 +497,7 @@ export function MockInterviewSchedulePage() {
               onClick={() => setCurrentStep(2)}
               disabled={!canProceedStep1}
               className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
-              Tiếp theo
+              {t("common.next")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -494,17 +511,17 @@ export function MockInterviewSchedulePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5 text-[#0047AB]" />
-                Chọn thời gian bắt đầu cuộc họp
+                {t("userMockinterview.chooseTheMeetingStartTime")}
               </CardTitle>
               <CardDescription>
-                Chọn ngày và giờ bắt đầu cuộc phỏng vấn. Đây là thời gian cuộc họp sẽ bắt đầu.
+                {t("userMockinterview.selectTheInterviewStartDate")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Date Picker */}
               <div className="space-y-2">
                 <div className="ju flex items-center">
-                  <Label>Ngày bắt đầu</Label>
+                  <Label>{t("common.startDate")}</Label>
                 </div>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -515,11 +532,13 @@ export function MockInterviewSchedulePage() {
                         !selectedDate && "text-muted-foreground"
                       )}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? formatVietnamDateLabel(selectedDate) : "Chọn ngày"}
+                      {selectedDate
+                        ? formatVietnamDateLabel(selectedDate)
+                        : t("userMockinterview.selectDate")}
                     </Button>
                   </PopoverTrigger>
                   <Button variant="outline" size="sm" onClick={handleSetNow}>
-                    Bây giờ
+                    {t("userMockinterview.now")}
                   </Button>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
@@ -531,10 +550,8 @@ export function MockInterviewSchedulePage() {
                         if (!todayKey) {
                           return false;
                         }
-
                         const today = parseVietnamDateKey(todayKey);
                         today.setHours(0, 0, 0, 0);
-
                         const selected = new Date(
                           date.getFullYear(),
                           date.getMonth(),
@@ -549,11 +566,11 @@ export function MockInterviewSchedulePage() {
 
               {/* Time Picker */}
               <div className="space-y-2">
-                <Label>Giờ bắt đầu</Label>
+                <Label>{t("userMockinterview.startTime")}</Label>
                 <div className="flex items-center gap-2">
                   <Select value={selectedHour} onValueChange={setSelectedHour}>
                     <SelectTrigger className="w-24">
-                      <SelectValue placeholder="Giờ" />
+                      <SelectValue placeholder={t("userMockinterview.hour")} />
                     </SelectTrigger>
                     <SelectContent>
                       {HOUR_OPTIONS.map((opt) => (
@@ -566,7 +583,7 @@ export function MockInterviewSchedulePage() {
                   <span className="text-lg font-bold">:</span>
                   <Select value={selectedMinute} onValueChange={setSelectedMinute}>
                     <SelectTrigger className="w-24">
-                      <SelectValue placeholder="Phút" />
+                      <SelectValue placeholder={t("general.minutes1")} />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
                       {MINUTE_OPTIONS.map((opt) => (
@@ -587,31 +604,31 @@ export function MockInterviewSchedulePage() {
                 <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/20">
                   <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
                     <Clock className="h-4 w-4" />
-                    <span>Thông tin thời gian</span>
+                    <span>{t("userMockinterview.timeInformation")}</span>
                   </div>
                   <div className="mt-2 space-y-1 text-sm text-blue-600 dark:text-blue-400">
-                    <p>Bắt đầu lúc: {formatSelectedDateTime()}</p>
+                    <p>
+                      {t("general.startsAt")} {formatSelectedDateTime()}
+                    </p>
                   </div>
                 </div>
               )}
 
               {/* Warning if date is in the past */}
               {selectedDate && !isDateTimeValid() && (
-                <p className="text-sm text-red-500">
-                  ⚠ Thời gian bắt đầu phải lớn hơn thời gian hiện tại ít nhất 1 phút.
-                </p>
+                <p className="text-sm text-red-500">{t("userMockinterview.theStartTimeMustBe")}</p>
               )}
 
               {/* Recording mode */}
               <div className="space-y-2">
-                <Label>Chế độ ghi hình</Label>
+                <Label>{t("userMockinterview.recordingMode")}</Label>
                 <Select value={recordingMode} onValueChange={setRecordingMode}>
                   <SelectTrigger className="w-full sm:w-[320px]">
-                    <SelectValue placeholder="Chọn chế độ ghi hình" />
+                    <SelectValue placeholder={t("common.selectRecordingMode")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cloud">Cloud (đám mây)</SelectItem>
-                    <SelectItem value="local">Local (máy tính)</SelectItem>
+                    <SelectItem value="cloud">{t("common.cloudCloud")}</SelectItem>
+                    <SelectItem value="local">{t("common.localComputer")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -620,7 +637,7 @@ export function MockInterviewSchedulePage() {
               <div
                 className={cn("grid gap-4", totalPrice > 0 ? "sm:grid-cols-2" : "sm:grid-cols-1")}>
                 <div className="space-y-2">
-                  <Label htmlFor="durationMinutes">Thời lượng (phút)</Label>
+                  <Label htmlFor="durationMinutes">{t("userMockinterview.durationMinutes")}</Label>
                   <Input
                     id="durationMinutes"
                     type="number"
@@ -635,7 +652,7 @@ export function MockInterviewSchedulePage() {
                 </div>
                 {totalPrice > 0 && (
                   <div className="space-y-2">
-                    <Label htmlFor="totalPrice">Tổng giá dự kiến</Label>
+                    <Label htmlFor="totalPrice">{t("userMockinterview.estimatedTotalPrice")}</Label>
                     <Input id="totalPrice" value={formatCurrency(totalPrice)} readOnly disabled />
                   </div>
                 )}
@@ -647,14 +664,14 @@ export function MockInterviewSchedulePage() {
           <div className="flex justify-between pt-4">
             <Button variant="outline" onClick={() => setCurrentStep(1)} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Quay lại
+              {t("general.back")}
             </Button>
             <Button
               size="lg"
               onClick={() => setCurrentStep(3)}
               disabled={!canProceedStep2}
               className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
-              Tiếp theo
+              {t("common.next")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -668,17 +685,17 @@ export function MockInterviewSchedulePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-green-600" />
-                Xác nhận thông tin phiên phỏng vấn
+                {t("userMockinterview.confirmInterviewSessionInformation")}
               </CardTitle>
               <CardDescription>
-                Kiểm tra lại thông tin trước khi tạo phiên phỏng vấn
+                {t("userMockinterview.doubleCheckTheInformationBefore")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Mentor Info */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-slate-500 uppercase">
-                  Mentor đã chọn
+                  {t("userMockinterview.mentorSelected")}
                 </h3>
                 {selectedMentor && (
                   <div className="flex items-center gap-4 rounded-lg border p-4">
@@ -696,7 +713,7 @@ export function MockInterviewSchedulePage() {
                     <div>
                       <p className="font-semibold">{selectedMentor.name || "Mentor"}</p>
                       <p className="text-sm text-slate-500">
-                        {selectedMentor.currentCompany || "Chuyên gia phỏng vấn"}
+                        {selectedMentor.currentCompany || t("common.interviewExpert")}
                       </p>
                       {renderStars(selectedMentor.averageRating)}
                     </div>
@@ -709,28 +726,32 @@ export function MockInterviewSchedulePage() {
               {/* Time Info */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-slate-500 uppercase">
-                  Thời gian phiên
+                  {t("userMockinterview.sessionTime")}
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="flex items-center gap-2 rounded-lg border p-3">
                     <CalendarIcon className="h-4 w-4 text-slate-400" />
                     <div>
-                      <p className="text-xs text-slate-500">Bắt đầu lúc</p>
+                      <p className="text-xs text-slate-500">{t("userMockinterview.startAt")}</p>
                       <p className="text-sm font-medium">{formatSelectedDateTime()}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 rounded-lg border p-3">
                     <Clock className="h-4 w-4 text-slate-400" />
                     <div>
-                      <p className="text-xs text-slate-500">Thời lượng</p>
-                      <p className="text-sm font-medium">{durationMinutes} phút</p>
+                      <p className="text-xs text-slate-500">{t("common.duration")}</p>
+                      <p className="text-sm font-medium">
+                        {durationMinutes} {t("common.minute")}
+                      </p>
                     </div>
                   </div>
                   {totalPrice > 0 && (
                     <div className="flex items-center gap-2 rounded-lg border p-3 sm:col-span-2">
                       <Video className="h-4 w-4 text-slate-400" />
                       <div>
-                        <p className="text-xs text-slate-500">Tổng giá dự kiến</p>
+                        <p className="text-xs text-slate-500">
+                          {t("userMockinterview.estimatedTotalPrice")}
+                        </p>
                         <p className="text-sm font-medium text-emerald-700">
                           {formatCurrency(totalPrice)}
                         </p>
@@ -745,21 +766,25 @@ export function MockInterviewSchedulePage() {
               {/* Room Config Info */}
               <div>
                 <h3 className="mb-3 text-sm font-semibold text-slate-500 uppercase">
-                  Cấu hình phòng
+                  {t("userMockinterview.roomConfiguration")}
                 </h3>
                 <div className="grid gap-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Số người tham gia tối đa</span>
+                    <span className="text-slate-500">
+                      {t("userMockinterview.maximumNumberOfParticipants")}
+                    </span>
                     <span className="font-medium">2</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Chia sẻ màn hình</span>
-                    <span className="font-medium text-green-600">Bật</span>
+                    <span className="text-slate-500">{t("userMockinterview.screenSharing")}</span>
+                    <span className="font-medium text-green-600">{t("common.turnOn")}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Ghi hình</span>
+                    <span className="text-slate-500">{t("common.videoRecording")}</span>
                     <span className="font-medium text-green-600">
-                      {recordingMode === "cloud" ? "Cloud (đám mây)" : "Local (máy tính)"}
+                      {recordingMode === "cloud"
+                        ? t("common.cloudCloud")
+                        : t("common.localComputer")}
                     </span>
                   </div>
                 </div>
@@ -771,7 +796,7 @@ export function MockInterviewSchedulePage() {
           <div className="flex justify-between pt-4">
             <Button variant="outline" onClick={() => setCurrentStep(2)} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Quay lại
+              {t("general.back")}
             </Button>
             <Button
               size="lg"
@@ -779,7 +804,7 @@ export function MockInterviewSchedulePage() {
               disabled={isCreating}
               className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
               <Video className="h-5 w-5" />
-              {isCreating ? "Đang tạo..." : "Tạo phiên phỏng vấn"}
+              {isCreating ? t("common.creating") : t("userMockinterview.createAnInterviewSession")}
             </Button>
           </div>
         </div>

@@ -18,9 +18,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { datetimeLocalToVietnamISOString } from "@/lib/utils";
-
+import { useTranslation } from "react-i18next";
 import type { SessionFormData, SessionStatus } from "../types";
-
 interface SessionFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,7 +30,6 @@ interface SessionFormDialogProps {
   description: string;
   submitLabel: string;
 }
-
 const SESSION_STATUSES: SessionStatus[] = [
   "DRAFT",
   "SCHEDULED",
@@ -41,7 +39,6 @@ const SESSION_STATUSES: SessionStatus[] = [
   "COMPLETED",
   "CANCELED",
 ];
-
 export function SessionFormDialog({
   isOpen,
   onOpenChange,
@@ -52,6 +49,7 @@ export function SessionFormDialog({
   description,
   submitLabel,
 }: SessionFormDialogProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -61,15 +59,18 @@ export function SessionFormDialog({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="userId">ID người dùng</Label>
+            <Label htmlFor="userId">{t("general.userId1")}</Label>
             <Input
               id="userId"
               type="number"
               value={formData.userId || ""}
               onChange={(e) =>
-                onFormChange({ ...formData, userId: parseInt(e.target.value) || undefined })
+                onFormChange({
+                  ...formData,
+                  userId: parseInt(e.target.value) || undefined,
+                })
               }
-              placeholder="Nhập ID người dùng"
+              placeholder={t("adminSessionmanagement.enterUserId")}
             />
           </div>
           <div className="grid gap-2">
@@ -79,13 +80,16 @@ export function SessionFormDialog({
               type="number"
               value={formData.userId2 || ""}
               onChange={(e) =>
-                onFormChange({ ...formData, userId2: parseInt(e.target.value) || undefined })
+                onFormChange({
+                  ...formData,
+                  userId2: parseInt(e.target.value) || undefined,
+                })
               }
-              placeholder="Nhập ID mentor"
+              placeholder={t("adminSessionmanagement.enterMentorId")}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="joinTime">Thời gian bắt đầu cuộc họp</Label>
+            <Label htmlFor="joinTime">{t("adminSessionmanagement.meetingStartTime")}</Label>
             <Input
               id="joinTime"
               type="datetime-local"
@@ -101,7 +105,7 @@ export function SessionFormDialog({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="duration">Thời lượng dự kiến (phút)</Label>
+            <Label htmlFor="duration">{t("adminSessionmanagement.estimatedTimeMinutes")}</Label>
             <Input
               id="duration"
               type="number"
@@ -113,11 +117,11 @@ export function SessionFormDialog({
                   duration: e.target.value === "" ? undefined : Number(e.target.value),
                 })
               }
-              placeholder="Nhập thời lượng"
+              placeholder={t("adminSessionmanagement.enterDuration")}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="totalPrice">Tổng giá (VND)</Label>
+            <Label htmlFor="totalPrice">{t("adminSessionmanagement.totalPriceVnd")}</Label>
             <Input
               id="totalPrice"
               type="number"
@@ -129,57 +133,84 @@ export function SessionFormDialog({
                   totalPrice: e.target.value === "" ? undefined : Number(e.target.value),
                 })
               }
-              placeholder="Nhập tổng giá"
+              placeholder={t("adminSessionmanagement.enterTotalPrice")}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="transactionCode">Mã giao dịch</Label>
+            <Label htmlFor="transactionCode">{t("common.transactionCode")}</Label>
             <Input
               id="transactionCode"
               value={formData.transactionCode || ""}
-              onChange={(e) => onFormChange({ ...formData, transactionCode: e.target.value })}
-              placeholder="Nhập mã giao dịch"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  transactionCode: e.target.value,
+                })
+              }
+              placeholder={t("adminSessionmanagement.enterTransactionCode")}
             />
           </div>
           <div className="flex items-center justify-between">
-            <Label htmlFor="start_video_off">Tắt video khi bắt đầu</Label>
+            <Label htmlFor="start_video_off">
+              {t("adminSessionmanagement.turnOffVideoWhenStarting")}
+            </Label>
             <Switch
               id="start_video_off"
               checked={formData.start_video_off ?? true}
-              onCheckedChange={(checked) => onFormChange({ ...formData, start_video_off: checked })}
+              onCheckedChange={(checked) =>
+                onFormChange({
+                  ...formData,
+                  start_video_off: checked,
+                })
+              }
             />
           </div>
           <div className="flex items-center justify-between">
-            <Label htmlFor="start_audio_off">Tắt audio khi bắt đầu</Label>
+            <Label htmlFor="start_audio_off">
+              {t("adminSessionmanagement.turnOffAudioWhenStarting")}
+            </Label>
             <Switch
               id="start_audio_off"
               checked={formData.start_audio_off ?? true}
-              onCheckedChange={(checked) => onFormChange({ ...formData, start_audio_off: checked })}
+              onCheckedChange={(checked) =>
+                onFormChange({
+                  ...formData,
+                  start_audio_off: checked,
+                })
+              }
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="enable_recording">Ghi hình</Label>
+            <Label htmlFor="enable_recording">{t("common.videoRecording")}</Label>
             <Select
               value={formData.enable_recording || "cloud"}
-              onValueChange={(value) => onFormChange({ ...formData, enable_recording: value })}>
+              onValueChange={(value) =>
+                onFormChange({
+                  ...formData,
+                  enable_recording: value,
+                })
+              }>
               <SelectTrigger>
-                <SelectValue placeholder="Chọn chế độ ghi hình" />
+                <SelectValue placeholder={t("common.selectRecordingMode")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cloud">Cloud (đám mây)</SelectItem>
-                <SelectItem value="local">Local (máy tính)</SelectItem>
+                <SelectItem value="cloud">{t("common.cloudCloud")}</SelectItem>
+                <SelectItem value="local">{t("common.localComputer")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="status">Trạng thái</Label>
+            <Label htmlFor="status">{t("common.status")}</Label>
             <Select
               value={formData.status || "SCHEDULED"}
               onValueChange={(value) =>
-                onFormChange({ ...formData, status: value as SessionStatus })
+                onFormChange({
+                  ...formData,
+                  status: value as SessionStatus,
+                })
               }>
               <SelectTrigger>
-                <SelectValue placeholder="Chọn trạng thái" />
+                <SelectValue placeholder={t("common.selectStatus")} />
               </SelectTrigger>
               <SelectContent>
                 {SESSION_STATUSES.map((status) => (
@@ -193,7 +224,7 @@ export function SessionFormDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t("general.cancel")}
           </Button>
           <Button onClick={onSubmit}>{submitLabel}</Button>
         </DialogFooter>

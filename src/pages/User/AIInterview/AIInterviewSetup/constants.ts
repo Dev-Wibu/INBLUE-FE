@@ -1,21 +1,34 @@
-import { BookOpen, Briefcase, Globe, Layers, Settings, Target, User } from "lucide-react";
-import type { ElementType } from "react";
-
 import type {
   EducationEntry,
   InterviewConfigOptions,
   ProjectDetail,
   WorkExperience,
 } from "@/interfaces/schema.types";
+import i18n from "@/lib/i18n";
+import { BookOpen, Briefcase, Globe, Layers, Settings, Target, User } from "lucide-react";
+import type { ElementType } from "react";
+const t = i18n.t.bind(i18n);
 
 // ============================================================================
 // Constants
 // ============================================================================
 
 export const STEPS = [
-  { id: 1, label: "Cấu hình", icon: Settings },
-  { id: 2, label: "Hồ sơ ứng viên", icon: User },
-  { id: 3, label: "Yêu cầu công việc", icon: Briefcase },
+  {
+    id: 1,
+    label: t("userAiinterview.configuration"),
+    icon: Settings,
+  },
+  {
+    id: 2,
+    label: t("common.candidateProfile"),
+    icon: User,
+  },
+  {
+    id: 3,
+    label: t("userAiinterview.jobRequirements"),
+    icon: Briefcase,
+  },
 ] as const;
 
 // Store component references — rendered as <Icon className="h-5 w-5" /> at call site
@@ -25,17 +38,20 @@ export const CATEGORY_ICONS: Record<string, ElementType> = {
   languages: Globe,
   domains: BookOpen,
 };
-
 export const CATEGORY_LABELS: Record<string, string> = {
-  interview_modes: "Chế độ phỏng vấn",
-  difficulties: "Độ khó",
-  languages: "Ngôn ngữ",
-  domains: "Lĩnh vực",
+  interview_modes: t("common.interviewMode"),
+  difficulties: t("userAiinterview.difficultyLevel"),
+  languages: t("common.language"),
+  domains: t("userAiinterview.field"),
 };
-
 export const CATEGORY_COLORS: Record<
   string,
-  { bg: string; border: string; text: string; icon: string }
+  {
+    bg: string;
+    border: string;
+    text: string;
+    icon: string;
+  }
 > = {
   interview_modes: {
     bg: "bg-violet-50 dark:bg-violet-950/40",
@@ -62,7 +78,6 @@ export const CATEGORY_COLORS: Record<
     icon: "text-emerald-600 dark:text-emerald-400",
   },
 };
-
 export type ConfigCategoryKey = keyof InterviewConfigOptions;
 
 /** Candidate profile form state (for manual entry) */
@@ -79,7 +94,6 @@ export interface CandidateFormData {
   workExperiences: WorkExperience[];
   educations: EducationEntry[];
 }
-
 export const INITIAL_CANDIDATE_FORM: CandidateFormData = {
   targetRole: "",
   targetLevel: "",
@@ -93,10 +107,21 @@ export const INITIAL_CANDIDATE_FORM: CandidateFormData = {
   workExperiences: [],
   educations: [],
 };
-
 export const DURATION_OPTIONS = [
-  { value: 15, label: "15 phút" },
-  { value: 30, label: "30 phút" },
-  { value: 45, label: "45 phút" },
-  { value: 60, label: "60 phút" },
+  {
+    value: 15,
+    label: t("userAiinterview.15Minutes"),
+  },
+  {
+    value: 30,
+    label: t("userAiinterview.30Minutes"),
+  },
+  {
+    value: 45,
+    label: t("userAiinterview.45Minutes"),
+  },
+  {
+    value: 60,
+    label: t("userAiinterview.60Minutes"),
+  },
 ] as const;

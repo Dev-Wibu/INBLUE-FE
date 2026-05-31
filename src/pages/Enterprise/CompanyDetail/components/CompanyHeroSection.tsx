@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Company Hero Section
  * Displays company banner, logo, name, and quick info
@@ -16,6 +17,7 @@ interface CompanyHeroSectionProps {
 }
 
 export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
+  const { t } = useTranslation();
   const bannerUrl =
     company.bannerUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80";
 
@@ -94,7 +96,7 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
                     )}
                     {company.status === "ACTIVE" && (
                       <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                        Đối tác tin cậy
+                        {t("enterpriseCompanydetail.trustedPartner")}
                       </Badge>
                     )}
                   </div>
@@ -120,7 +122,7 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
                     {company.size && (
                       <span className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        Quy mô: {company.size}
+                        {t("enterpriseCompanydetail.scale")} {company.size}
                       </span>
                     )}
                     {company.website && (
@@ -136,7 +138,7 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
                     )}
                     {company.foundedYear && (
                       <span className="hidden text-slate-400 sm:inline">
-                        Thành lập {company.foundedYear}
+                        {t("enterpriseCompanydetail.establish")} {company.foundedYear}
                       </span>
                     )}
                   </div>
@@ -159,7 +161,7 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
                       navigator.clipboard.writeText(window.location.href);
                     }
                   }}>
-                  Chia sẻ
+                  {t("enterpriseCompanydetail.share")}
                 </Button>
               </div>
             </div>

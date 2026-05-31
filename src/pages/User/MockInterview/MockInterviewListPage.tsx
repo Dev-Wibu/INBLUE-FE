@@ -1,8 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Calendar, Clock, LogIn, Search, User as UserIcon, Users, Video } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { SortButton } from "@/components/shared/SortButton";
@@ -19,14 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useUserSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate, formatTime, toTimestamp } from "@/lib/formatting";
 import { getMockInterviewStatusBadge } from "@/lib/status-utils";
-
+import { Calendar, Clock, LogIn, Search, User as UserIcon, Users, Video } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 type InterviewStatusFilter = "all" | "SCHEDULED" | "PAID" | "ONGOING";
-
 type InterviewItem = {
   id?: number;
   title: string;
@@ -40,18 +37,16 @@ type InterviewItem = {
   statusSortValue: number;
   sessionSortValue: number;
 };
-
 const mockInterviewStatusSortMap: Record<InterviewItem["status"], number> = {
   upcoming: 1,
   paid: 2,
   ongoing: 3,
 };
-
 export function MockInterviewListPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<InterviewStatusFilter>("all");
-
   const { data: sessions = [], isLoading, isRefetching, refetch } = useUserSessions();
 
   // Current time state for joinTime-based blocking (updates every 30s)
@@ -60,7 +55,6 @@ export function MockInterviewListPage() {
     const timer = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, []);
-
   const interviewSessions = useMemo(
     () =>
       [...sessions]
@@ -81,22 +75,24 @@ export function MockInterviewListPage() {
       const isTimeReached = joinTimestamp ? joinTimestamp <= now : true;
       const normalizedStatus: InterviewItem["status"] =
         session.status === "ONGOING" ? "ongoing" : session.status === "PAID" ? "paid" : "upcoming";
-
       const sessionSortValue =
         joinTimestamp ??
         toTimestamp(session.startTime1) ??
         (typeof session.id === "number" ? session.id : 0);
-
       return {
         id: session.id,
-        title: session.roomName || `Phiên #${session.id}`,
-        mentorName: `Mentor #${session.userId2 || "Không có dữ liệu"}`,
+        title:
+          session.roomName ||
+          t("common.sessionVar0", {
+            var_0: session.id,
+          }),
+        mentorName: `Mentor #${session.userId2 || t("common.noDataAvailable")}`,
         date: session.joinTime
-          ? formatDate(session.joinTime, "Không có dữ liệu")
-          : formatDate(session.startTime1, "Không có dữ liệu"),
+          ? formatDate(session.joinTime, t("common.noDataAvailable"))
+          : formatDate(session.startTime1, t("common.noDataAvailable")),
         time: session.joinTime
-          ? formatTime(session.joinTime, "Không có dữ liệu")
-          : formatTime(session.startTime1, "Không có dữ liệu"),
+          ? formatTime(session.joinTime, t("common.noDataAvailable"))
+          : formatTime(session.startTime1, t("common.noDataAvailable")),
         joinTime: session.joinTime,
         status: normalizedStatus,
         canJoin:
@@ -108,12 +104,11 @@ export function MockInterviewListPage() {
         sessionSortValue,
       };
     });
-  }, [interviewSessions, now]);
+  }, [interviewSessions, now, t]);
 
   // Filter interviews based on search query and status
   const filteredInterviews = useMemo(() => {
     if (!searchQuery && statusFilter === "all") return interviews;
-
     const lowerQuery = searchQuery.toLowerCase();
     return interviews.filter(
       (interview) =>
@@ -126,7 +121,6 @@ export function MockInterviewListPage() {
           interview.mentorName.toLowerCase().includes(lowerQuery))
     );
   }, [interviews, searchQuery, statusFilter]);
-
   const { sortedData, getSortProps } = useSortable(filteredInterviews);
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_user_mockinterview_mockinterviewlistpage_tsx_pagesize",
@@ -136,12 +130,10 @@ export function MockInterviewListPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
     [pagination.endIndex, pagination.startIndex, sortedData]
   );
-
   return (
     <div className="bg-background min-h-screen p-8">
       {/* Top Banner */}
@@ -150,12 +142,14 @@ export function MockInterviewListPage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <Users className="h-6 w-6 text-white" />
-              <h1 className="text-3xl font-bold text-white">Phỏng vấn với Mentor</h1>
+              <h1 className="text-3xl font-bold text-white">{t("common.interviewWithMentor1")}</h1>
             </div>
             <p className="max-w-lg text-lg text-white/90">
               {sessions.length > 0
-                ? `Bạn đã hoàn thành ${sessions.filter((s) => s.status === "COMPLETED").length} buổi phỏng vấn giả lập với mentor. Hãy tiếp tục giữ vững phong độ nhé!`
-                : "Bạn chưa có buổi phỏng vấn nào. Hãy đặt lịch phỏng vấn với mentor ngay hôm nay!"}
+                ? t("general.youHaveCompletedMockInterview", {
+                    var_0: sessions.filter((s) => s.status === "COMPLETED").length,
+                  })
+                : t("userMockinterview.youHavenTHadAny")}
             </p>
             <Button
               variant="secondary"
@@ -163,7 +157,7 @@ export function MockInterviewListPage() {
               className="mt-2 w-fit"
               onClick={() => navigate("/user/mock-interview/schedule")}>
               <Video className="mr-2 h-5 w-5" />
-              Đặt lịch phỏng vấn mới
+              {t("userMockinterview.scheduleANewInterview")}
             </Button>
           </div>
           <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
@@ -175,9 +169,9 @@ export function MockInterviewListPage() {
       {/* Search Section */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-foreground text-2xl font-bold">Phiên sắp diễn ra</h2>
+          <h2 className="text-foreground text-2xl font-bold">{t("common.sessionIsComingSoon")}</h2>
           <p className="text-muted-foreground text-sm">
-            Danh sách các phiên sắp diễn ra hoặc đang diễn ra
+            {t("userMockinterview.listOfUpcomingOrOngoing")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -185,7 +179,7 @@ export function MockInterviewListPage() {
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo tên, mentor..."
+              placeholder={t("userMockinterview.searchByNameMentor")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -201,20 +195,22 @@ export function MockInterviewListPage() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="w-52">
-              <SelectValue placeholder="Lọc theo trạng thái" />
+              <SelectValue placeholder={t("common.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="SCHEDULED">Sắp diễn ra</SelectItem>
-              <SelectItem value="PAID">Đã thanh toán</SelectItem>
-              <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
+              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+              <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
+              <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+              <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
             </SelectContent>
           </Select>
           <div className="flex items-center gap-2 rounded-md border px-3 py-2">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Sắp xếp:</span>
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              {t("userMockinterview.arrange")}
+            </span>
             <SortButton {...getSortProps("id")}>ID</SortButton>
-            <SortButton {...getSortProps("sessionSortValue")}>Thời gian</SortButton>
-            <SortButton {...getSortProps("statusSortValue")}>Trạng thái</SortButton>
+            <SortButton {...getSortProps("sessionSortValue")}>{t("common.time")}</SortButton>
+            <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
           </div>
           {(searchQuery || statusFilter !== "all") && (
             <Button
@@ -224,7 +220,7 @@ export function MockInterviewListPage() {
                 setStatusFilter("all");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
           <ReloadButton
@@ -232,7 +228,7 @@ export function MockInterviewListPage() {
               await refetch();
             }}
             isLoading={isRefetching}
-            tooltip="Tải lại danh sách phiên"
+            tooltip={t("common.reloadSessionList")}
           />
         </div>
       </div>
@@ -290,13 +286,13 @@ export function MockInterviewListPage() {
                       }}
                       className="gap-1 bg-green-600 hover:bg-green-700">
                       <LogIn className="h-3.5 w-3.5" />
-                      Tham gia
+                      {t("general.join")}
                     </Button>
                   )}
                   {!interview.isTimeReached && interview.joinTime && (
                     <Badge className="inline-flex items-center gap-1 border border-amber-200 bg-amber-50 px-2.5 py-1 text-amber-700 hover:bg-amber-100">
                       <Clock className="h-3.5 w-3.5" />
-                      Chưa đến giờ
+                      {t("common.itsNotTimeYet")}
                     </Badge>
                   )}
                   <StatusBadge {...getMockInterviewStatusBadge(interview.status)} />
@@ -312,12 +308,14 @@ export function MockInterviewListPage() {
               </div>
               <div className="text-center">
                 <p className="text-foreground font-medium">
-                  {searchQuery ? "Không tìm thấy phiên phù hợp" : "Không có phiên chưa hoàn thành"}
+                  {searchQuery
+                    ? t("userMockinterview.noMatchingSessionFound")
+                    : t("userMockinterview.thereAreNoUnfinishedSessions")}
                 </p>
                 <p className="text-muted-foreground mt-1 text-sm">
                   {searchQuery
-                    ? "Hãy thử tìm kiếm với từ khóa khác"
-                    : "Bạn đang không có phiên chờ xử lý nào"}
+                    ? t("common.trySearchingWithOtherKeywords")
+                    : t("userMockinterview.youHaveNoPendingSessions")}
                 </p>
               </div>
             </Card>
@@ -327,15 +325,13 @@ export function MockInterviewListPage() {
           {sortedData.length > 0 && (
             <Card className="overflow-hidden border-dashed">
               <CardHeader className="text-center">
-                <CardTitle>Đặt lịch phỏng vấn mới?</CardTitle>
-                <CardDescription>
-                  Chọn mentor phù hợp và đặt lịch phỏng vấn ngay hôm nay
-                </CardDescription>
+                <CardTitle>{t("general.bookNewInterviewSession")}</CardTitle>
+                <CardDescription>{t("userMockinterview.chooseTheRightMentorAnd")}</CardDescription>
               </CardHeader>
               <CardContent className="flex justify-center pb-6">
                 <Button size="lg" onClick={() => navigate("/user/mock-interview/schedule")}>
                   <Users className="mr-2 h-5 w-5" />
-                  Chọn Mentor
+                  {t("userMockinterview.selectMentor")}
                 </Button>
               </CardContent>
             </Card>

@@ -17,9 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
+import { useTranslation } from "react-i18next";
 import type { Major, PracticeSetFormData, PracticeSetLevel } from "../types";
-
 interface PracticeSetFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -32,7 +31,6 @@ interface PracticeSetFormDialogProps {
   majors: Major[];
   isSubmitting?: boolean;
 }
-
 export function PracticeSetFormDialog({
   isOpen,
   onOpenChange,
@@ -45,6 +43,7 @@ export function PracticeSetFormDialog({
   majors,
   isSubmitting,
 }: PracticeSetFormDialogProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -54,24 +53,34 @@ export function PracticeSetFormDialog({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-1.5">
-            <Label htmlFor="practiceSetName">Tên bộ câu hỏi *</Label>
+            <Label htmlFor="practiceSetName">
+              {t("adminPracticesetmanagement.questionSetName")}
+            </Label>
             <Input
               id="practiceSetName"
               value={formData.practiceSetName || ""}
-              onChange={(e) => onFormChange({ ...formData, practiceSetName: e.target.value })}
-              placeholder="Nhập tên bộ câu hỏi"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  practiceSetName: e.target.value,
+                })
+              }
+              placeholder={t("adminPracticesetmanagement.enterTheNameOfThe")}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="level">Cấp độ *</Label>
+              <Label htmlFor="level">{t("general.level")}</Label>
               <Select
                 value={formData.level}
                 onValueChange={(value) =>
-                  onFormChange({ ...formData, level: value as PracticeSetLevel })
+                  onFormChange({
+                    ...formData,
+                    level: value as PracticeSetLevel,
+                  })
                 }>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn cấp độ" />
+                  <SelectValue placeholder={t("common.chooseLevel")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="INTERN">Intern</SelectItem>
@@ -82,14 +91,17 @@ export function PracticeSetFormDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="majorId">Chuyên ngành</Label>
+              <Label htmlFor="majorId">{t("common.specialized")}</Label>
               <Select
                 value={formData.majorId?.toString()}
                 onValueChange={(value) =>
-                  onFormChange({ ...formData, majorId: value ? Number(value) : undefined })
+                  onFormChange({
+                    ...formData,
+                    majorId: value ? Number(value) : undefined,
+                  })
                 }>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn chuyên ngành" />
+                  <SelectValue placeholder={t("common.chooseAMajor")} />
                 </SelectTrigger>
                 <SelectContent>
                   {majors
@@ -104,22 +116,27 @@ export function PracticeSetFormDialog({
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="objective">Mục tiêu</Label>
+            <Label htmlFor="objective">{t("adminPracticesetmanagement.target")}</Label>
             <Textarea
               id="objective"
               value={formData.objective || ""}
-              onChange={(e) => onFormChange({ ...formData, objective: e.target.value })}
-              placeholder="Nhập mục tiêu"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  objective: e.target.value,
+                })
+              }
+              placeholder={t("adminPracticesetmanagement.enterTarget")}
               rows={3}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t("general.cancel")}
           </Button>
           <Button onClick={onSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Đang xử lý..." : submitLabel}
+            {isSubmitting ? t("common.processing") : submitLabel}
           </Button>
         </DialogFooter>
       </DialogContent>
