@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * Type-safe API Client using openapi-fetch and openapi-react-query
  * Based on schema-from-be.d.ts
@@ -129,7 +131,7 @@ fetchClient.use({
           status: response.status,
           data: payload,
         },
-        "Đã xảy ra lỗi khi gọi API."
+        t("general.anErrorOccurredWhileCalling")
       );
 
       // ALWAYS log failed API requests with traceId in all environments

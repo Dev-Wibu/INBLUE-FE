@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 export interface ResponsiveVoiceOptions {
   rate?: number;
   pitch?: number;
@@ -85,7 +87,7 @@ export const loadResponsiveVoice = async (timeoutMs = 8000): Promise<ResponsiveV
   }
 
   if (typeof document === "undefined") {
-    throw new Error("Môi trường hiện tại không hỗ trợ tải script ResponsiveVoice.");
+    throw new Error(t("general.theCurrentEnvironmentDoesNot"));
   }
 
   if (responsiveVoiceLoadingPromise) {
@@ -123,12 +125,12 @@ export const loadResponsiveVoice = async (timeoutMs = 8000): Promise<ResponsiveV
 
     const handleError = () => {
       cleanup();
-      reject(new Error("Không tải được ResponsiveVoice.js."));
+      reject(new Error(t("general.responsivevoiceJsFailedToLoad")));
     };
 
     timeoutId = window.setTimeout(() => {
       cleanup();
-      reject(new Error("ResponsiveVoice.js tải quá lâu, vui lòng thử lại."));
+      reject(new Error(t("general.responsivevoiceJsTookTooLong")));
     }, timeoutMs);
 
     pollId = window.setInterval(tryResolve, 180);

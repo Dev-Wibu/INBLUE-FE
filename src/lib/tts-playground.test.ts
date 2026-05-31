@@ -1,13 +1,15 @@
+import i18n from "@/lib/i18n";
 import { describe, expect, it } from "vitest";
+const t = i18n.t.bind(i18n);
 
 import { resolveResponsiveVoiceName } from "./tts-playground";
 
 describe("resolveResponsiveVoiceName", () => {
-  it("trả về voice tiếng Việt cho vi-VN", () => {
+  it(t("general.returnsVietnameseVoiceForVi"), () => {
     expect(resolveResponsiveVoiceName("vi-VN")).toBe("Vietnamese Male");
   });
 
-  it("trả về voice tiếng Anh cho en-US", () => {
+  it(t("general.returnsEnglishVoiceForEn"), () => {
     expect(resolveResponsiveVoiceName("en-US")).toBe("US English Male");
   });
 });
