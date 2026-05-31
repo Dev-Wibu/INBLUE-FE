@@ -1,4 +1,5 @@
 import { Edit, Search, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { SortButton, type SortDirection } from "@/components/shared";
 import { Button } from "@/components/ui/button";
@@ -33,11 +34,14 @@ export function QuestionMajorTable({
   onDelete,
   getSortProps,
 }: QuestionMajorTableProps) {
+  const { t } = useTranslation();
   if (majors.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
         <Search className="h-12 w-12 text-gray-400" />
-        <p className="font-['Inter'] text-lg text-gray-500">Không tìm thấy chuyên ngành nào</p>
+        <p className="font-['Inter'] text-lg text-gray-500">
+          {t("adminQuestionmajormanagement.noMajorsFound")}
+        </p>
       </div>
     );
   }
@@ -51,19 +55,25 @@ export function QuestionMajorTable({
           </TableHead>
           <TableHead>
             {getSortProps ? (
-              <SortButton {...getSortProps("nameSortValue")}>Tên Chuyên Ngành</SortButton>
+              <SortButton {...getSortProps("nameSortValue")}>
+                {t("adminQuestionmajormanagement.nameOfSpecialization")}
+              </SortButton>
             ) : (
-              "Tên Chuyên Ngành"
+              t("adminQuestionmajormanagement.nameOfSpecialization")
             )}
           </TableHead>
           <TableHead>
             {getSortProps ? (
-              <SortButton {...getSortProps("descriptionSortValue")}>Mô Tả</SortButton>
+              <SortButton {...getSortProps("descriptionSortValue")}>
+                {t("adminQuestionmajormanagement.describe")}
+              </SortButton>
             ) : (
-              "Mô Tả"
+              t("adminQuestionmajormanagement.describe")
             )}
           </TableHead>
-          <TableHead className="w-24 text-right">Thao Tác</TableHead>
+          <TableHead className="w-24 text-right">
+            {t("adminQuestionmajormanagement.operation")}
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -81,7 +91,7 @@ export function QuestionMajorTable({
                   size="sm"
                   onClick={() => onEdit(major)}
                   className="h-8 w-8 p-0 hover:bg-blue-50"
-                  title="Chỉnh sửa">
+                  title={t("general.edit")}>
                   <Edit className="h-4 w-4 text-blue-600" />
                 </Button>
                 <Button
@@ -89,7 +99,7 @@ export function QuestionMajorTable({
                   size="sm"
                   onClick={() => onDelete(major)}
                   className="h-8 w-8 p-0 hover:bg-red-50"
-                  title="Xóa">
+                  title={t("general.delete")}>
                   <Trash2 className="h-4 w-4 text-red-600" />
                 </Button>
               </div>

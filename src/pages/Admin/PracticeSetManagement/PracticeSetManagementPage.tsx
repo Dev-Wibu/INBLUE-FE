@@ -1,7 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Plus, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { extractDataArray } from "@/lib/utils";
 import { practiceSetManager, questionMajorManager } from "@/services";
+import { Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 import {
   DeletePracticeSetDialog,
   PracticeSetFormDialog,
@@ -26,8 +24,8 @@ import {
   ViewPracticeSetItemsDialog,
 } from "./components";
 import type { Major, PracticeSet, PracticeSetFormData } from "./types";
-
 export function PracticeSetManagementPage() {
+  const { t } = useTranslation();
   const [practiceSets, setPracticeSets] = useState<PracticeSet[]>([]);
   const [majors, setMajors] = useState<Major[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -43,40 +41,41 @@ export function PracticeSetManagementPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load practice sets and majors
-  const loadData = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const [practiceSetsResponse, majorsResponse] = await Promise.all([
-        practiceSetManager.getAll(),
-        questionMajorManager.getAll(),
-      ]);
-
-      if (practiceSetsResponse.success) {
-        setPracticeSets(extractDataArray<PracticeSet>(practiceSetsResponse));
-      } else {
-        toast.error(practiceSetsResponse.error || "Không thể tải danh sách bộ câu hỏi");
-      }
-
-      if (majorsResponse.success) {
-        setMajors(extractDataArray<Major>(majorsResponse));
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast.error("Không thể tải dữ liệu");
-    } finally {
+  const loadData = useCallback(
+    async (showReloading = false) => {
       if (showReloading) {
-        setIsReloading(false);
+        setIsReloading(true);
       } else {
-        setIsInitialLoading(false);
+        setIsInitialLoading(true);
       }
-    }
-  }, []);
-
+      try {
+        const [practiceSetsResponse, majorsResponse] = await Promise.all([
+          practiceSetManager.getAll(),
+          questionMajorManager.getAll(),
+        ]);
+        if (practiceSetsResponse.success) {
+          setPracticeSets(extractDataArray<PracticeSet>(practiceSetsResponse));
+        } else {
+          toast.error(
+            practiceSetsResponse.error || t("adminPracticesetmanagement.unableToLoadQuestionList1")
+          );
+        }
+        if (majorsResponse.success) {
+          setMajors(extractDataArray<Major>(majorsResponse));
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        toast.error(t("common.unableToDownloadData"));
+      } finally {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void loadData();
   }, [loadData]);
@@ -98,7 +97,6 @@ export function PracticeSetManagementPage() {
       if (levelFilter !== "all" && ps.level !== levelFilter) {
         return false;
       }
-
       return true;
     });
   }, [practiceSets, searchQuery, levelFilter]);
@@ -121,12 +119,10 @@ export function PracticeSetManagementPage() {
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
-
   const handleCreate = () => {
     setFormData({});
     setIsCreateDialogOpen(true);
   };
-
   const handleEdit = (practiceSet: PracticeSet) => {
     setSelectedPracticeSet(practiceSet);
     setFormData({
@@ -137,17 +133,14 @@ export function PracticeSetManagementPage() {
     });
     setIsEditDialogOpen(true);
   };
-
   const handleDelete = (practiceSet: PracticeSet) => {
     setSelectedPracticeSet(practiceSet);
     setIsDeleteDialogOpen(true);
   };
-
   const handleViewItems = (practiceSet: PracticeSet) => {
     setSelectedPracticeSet(practiceSet);
     setIsViewItemsDialogOpen(true);
   };
-
   const handleSubmitCreate = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -156,75 +149,78 @@ export function PracticeSetManagementPage() {
         practiceSetName: formData.practiceSetName,
         objective: formData.objective,
         level: formData.level,
-        major: formData.majorId ? { id: formData.majorId } : undefined,
+        major: formData.majorId
+          ? {
+              id: formData.majorId,
+            }
+          : undefined,
       };
       const response = await practiceSetManager.create(createData);
       if (response.success) {
-        toast.success("Đã tạo bộ câu hỏi thành công");
+        toast.success(t("adminPracticesetmanagement.questionnaireCreatedSuccessfully"));
         setIsCreateDialogOpen(false);
         void loadData(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể tạo bộ câu hỏi");
+        toast.error(response.error || t("adminPracticesetmanagement.unableToCreateQuestionSet"));
       }
     } catch (error) {
       console.error("Error creating practice set:", error);
-      toast.error("Không thể tạo bộ câu hỏi");
+      toast.error(t("adminPracticesetmanagement.unableToCreateQuestionSet"));
     } finally {
       setIsSubmitting(false);
     }
   };
-
   const handleSubmitEdit = async () => {
     if (!selectedPracticeSet?.id) return;
-
     try {
       const updateData: Partial<PracticeSet> = {
         practiceSetName: formData.practiceSetName,
         objective: formData.objective,
         level: formData.level,
-        major: formData.majorId ? { id: formData.majorId } : undefined,
+        major: formData.majorId
+          ? {
+              id: formData.majorId,
+            }
+          : undefined,
       };
       const response = await practiceSetManager.update(selectedPracticeSet.id, updateData);
       if (response.success) {
-        toast.success("Đã cập nhật bộ câu hỏi thành công");
+        toast.success(t("adminPracticesetmanagement.theQuestionSetHasBeen"));
         setIsEditDialogOpen(false);
         void loadData(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể cập nhật bộ câu hỏi");
+        toast.error(response.error || t("adminPracticesetmanagement.unableToUpdateQuestionSet"));
       }
     } catch (error) {
       console.error("Error updating practice set:", error);
-      toast.error("Không thể cập nhật bộ câu hỏi");
+      toast.error(t("adminPracticesetmanagement.unableToUpdateQuestionSet"));
     }
   };
-
   const handleConfirmDelete = async () => {
     if (!selectedPracticeSet?.id) return;
-
     try {
       const response = await practiceSetManager.delete(selectedPracticeSet.id);
       if (response.success) {
-        toast.success("Đã xóa bộ câu hỏi thành công");
+        toast.success(t("adminPracticesetmanagement.questionSetSuccessfullyDeleted"));
         setIsDeleteDialogOpen(false);
         void loadData(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể xóa bộ câu hỏi");
+        toast.error(response.error || t("adminPracticesetmanagement.cannotDeleteQuestionSet"));
       }
     } catch (error) {
       console.error("Error deleting practice set:", error);
-      toast.error("Không thể xóa bộ câu hỏi");
+      toast.error(t("adminPracticesetmanagement.cannotDeleteQuestionSet"));
     }
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản Lý Bộ Câu Hỏi
+          {t("adminPracticesetmanagement.questionnaireManagement")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Quản lý các bộ câu hỏi cho các cấp độ phỏng vấn khác nhau
+          {t("adminPracticesetmanagement.manageQuestionSetsForDifferent")}
         </p>
       </div>
 
@@ -236,7 +232,7 @@ export function PracticeSetManagementPage() {
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo tên hoặc mục tiêu..."
+              placeholder={t("common.searchByNameOrTarget")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -254,10 +250,10 @@ export function PracticeSetManagementPage() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="Lọc theo cấp độ" />
+              <SelectValue placeholder={t("common.filterByLevel")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả cấp độ</SelectItem>
+              <SelectItem value="all">{t("common.allLevels")}</SelectItem>
               <SelectItem value="INTERN">Intern</SelectItem>
               <SelectItem value="FRESHER">Fresher</SelectItem>
               <SelectItem value="JUNIOR">Junior</SelectItem>
@@ -275,19 +271,19 @@ export function PracticeSetManagementPage() {
                 setLevelFilter("all");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
           <ReloadButton
             onReload={() => loadData(true)}
             isLoading={isReloading}
-            tooltip="Tải lại danh sách bộ câu hỏi"
+            tooltip={t("adminPracticesetmanagement.reloadTheListOfQuestion")}
             showLabel
             hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Thêm Bộ Câu Hỏi
+            {t("adminPracticesetmanagement.moreQuestionSets")}
           </Button>
         </div>
       </div>
@@ -295,7 +291,10 @@ export function PracticeSetManagementPage() {
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isInitialLoading ? (
-          <SpinnerBlock size="lg" label="Đang tải danh sách bộ câu hỏi..." />
+          <SpinnerBlock
+            size="lg"
+            label={t("adminPracticesetmanagement.loadingListOfQuestionSets")}
+          />
         ) : (
           <>
             <PracticeSetTable
@@ -327,7 +326,7 @@ export function PracticeSetManagementPage() {
                     setLevelFilter("all");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -342,9 +341,9 @@ export function PracticeSetManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitCreate}
-        title="Thêm Bộ Câu Hỏi Mới"
-        description="Điền thông tin để tạo bộ câu hỏi mới."
-        submitLabel="Tạo bộ câu hỏi"
+        title={t("adminPracticesetmanagement.addNewQuestionSet")}
+        description={t("adminPracticesetmanagement.fillInTheInformationTo")}
+        submitLabel={t("adminPracticesetmanagement.createAQuestionSet")}
         majors={majors}
         isSubmitting={isSubmitting}
       />
@@ -356,9 +355,9 @@ export function PracticeSetManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitEdit}
-        title="Chỉnh Sửa Bộ Câu Hỏi"
-        description="Cập nhật thông tin bộ câu hỏi."
-        submitLabel="Lưu thay đổi"
+        title={t("adminPracticesetmanagement.editQuestionSet")}
+        description={t("adminPracticesetmanagement.updateQuestionSetInformation")}
+        submitLabel={t("common.saveChanges")}
         majors={majors}
       />
 

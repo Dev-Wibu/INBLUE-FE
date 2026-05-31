@@ -1,5 +1,3 @@
-import { Edit, FileText, Power, Search, User } from "lucide-react";
-
 import { SortButton, type SortDirection } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,14 +10,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getMajorLabel } from "@/constants/majors";
-
+import { Edit, FileText, Power, Search, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { UserRole, User as UserType } from "../types";
-
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
-
 interface UserTableProps {
   users: UserType[];
   onEdit: (user: UserType) => void;
@@ -28,7 +25,6 @@ interface UserTableProps {
   onViewProfile?: (user: UserType) => void;
   getSortProps?: (key: keyof UserType) => SortProps;
 }
-
 const getRoleBadgeClass = (role?: UserRole): string => {
   switch (role) {
     case "ADMIN":
@@ -41,7 +37,6 @@ const getRoleBadgeClass = (role?: UserRole): string => {
       return "bg-gray-500 hover:bg-gray-500";
   }
 };
-
 export function UserTable({
   users,
   onEdit,
@@ -50,29 +45,35 @@ export function UserTable({
   onViewProfile,
   getSortProps,
 }: UserTableProps) {
+  const { t } = useTranslation();
   if (users.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
         <Search className="h-12 w-12 text-gray-400" />
-        <p className="font-['Inter'] text-lg text-gray-500">Không tìm thấy người dùng nào</p>
+        <p className="font-['Inter'] text-lg text-gray-500">
+          {t("adminUsermanagement.noUsersFound")}
+        </p>
       </div>
     );
   }
-
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead className="w-16">ID</TableHead>
           <TableHead>
-            {getSortProps ? <SortButton {...getSortProps("name")}>Tên</SortButton> : "Tên"}
+            {getSortProps ? (
+              <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
+            ) : (
+              t("common.name")
+            )}
           </TableHead>
           <TableHead>Email</TableHead>
-          <TableHead className="w-24">Vai trò</TableHead>
-          <TableHead>Trường đại học</TableHead>
-          <TableHead>Chuyên ngành</TableHead>
-          <TableHead className="w-24">Trạng thái</TableHead>
-          <TableHead className="w-24 text-right">Thao tác</TableHead>
+          <TableHead className="w-24">{t("common.role")}</TableHead>
+          <TableHead>{t("common.university")}</TableHead>
+          <TableHead>{t("common.specialized")}</TableHead>
+          <TableHead className="w-24">{t("common.status")}</TableHead>
+          <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -90,7 +91,7 @@ export function UserTable({
             <TableCell>{getMajorLabel(user.major || "") || "-"}</TableCell>
             <TableCell>
               <Badge variant={user.isActive !== false ? "default" : "destructive"}>
-                {user.isActive !== false ? "Hoạt động" : "Ngưng hoạt động"}
+                {user.isActive !== false ? t("common.work") : t("common.shutDown")}
               </Badge>
             </TableCell>
             <TableCell className="text-right">
@@ -101,7 +102,7 @@ export function UserTable({
                     size="sm"
                     onClick={() => onViewProfile(user)}
                     className="h-8 w-8 p-0 hover:bg-purple-50"
-                    title="Xem hồ sơ ứng viên">
+                    title={t("adminUsermanagement.viewCandidateProfile")}>
                     <User className="h-4 w-4 text-purple-600" />
                   </Button>
                 )}
@@ -110,7 +111,7 @@ export function UserTable({
                   size="sm"
                   onClick={() => onUploadCV(user)}
                   className="h-8 w-8 p-0 hover:bg-green-50"
-                  title={user.cvUrl ? "Cập nhật CV" : "Upload CV"}>
+                  title={user.cvUrl ? t("common.updateCv") : "Upload CV"}>
                   <FileText
                     className={`h-4 w-4 ${user.cvUrl ? "text-green-600" : "text-gray-400"}`}
                   />
@@ -120,7 +121,7 @@ export function UserTable({
                   size="sm"
                   onClick={() => onEdit(user)}
                   className="h-8 w-8 p-0 hover:bg-blue-50"
-                  title="Chỉnh sửa">
+                  title={t("general.edit")}>
                   <Edit className="h-4 w-4 text-blue-600" />
                 </Button>
                 <Button
@@ -128,7 +129,7 @@ export function UserTable({
                   size="sm"
                   onClick={() => onDelete(user)}
                   className={`h-8 w-8 p-0 ${user.isActive !== false ? "hover:bg-red-50" : "hover:bg-green-50"}`}
-                  title={user.isActive !== false ? "Vô hiệu hóa" : "Kích hoạt"}>
+                  title={user.isActive !== false ? t("common.disable") : t("common.activate")}>
                   <Power
                     className={`h-4 w-4 ${user.isActive !== false ? "text-red-600" : "text-green-600"}`}
                   />

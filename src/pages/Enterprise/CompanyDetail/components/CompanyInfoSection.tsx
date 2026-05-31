@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * Company Info Section
  * Displays about, culture, benefits, and company stats
@@ -13,15 +14,28 @@ interface CompanyInfoSectionProps {
 }
 
 export function CompanyInfoSection({ company }: CompanyInfoSectionProps) {
+  const { t } = useTranslation();
   const benefits = company.benefits || [];
 
   const benefitIcons: Record<string, React.ReactNode> = {
-    "Bảo hiểm sức khỏe cao cấp": <Shield className="h-5 w-5 text-[#0047AB]" />,
-    "Môi trường làm việc hiện đại": <Lightbulb className="h-5 w-5 text-[#0047AB]" />,
-    "Lộ trình thăng tiến rõ ràng": <TrendingUp className="h-5 w-5 text-[#0047AB]" />,
-    "Đào tạo và phát triển kỹ năng": <BookOpen className="h-5 w-5 text-[#0047AB]" />,
-    "Công việc linh hoạt (Hybrid)": <Briefcase className="h-5 w-5 text-[#0047AB]" />,
-    "Team building hàng quý": <Award className="h-5 w-5 text-[#0047AB]" />,
+    [t("enterpriseCompanydetail.premiumHealthInsurance")]: (
+      <Shield className="h-5 w-5 text-[#0047AB]" />
+    ),
+    [t("enterpriseCompanydetail.modernWorkingEnvironment")]: (
+      <Lightbulb className="h-5 w-5 text-[#0047AB]" />
+    ),
+    [t("enterpriseCompanydetail.clearPromotionPath")]: (
+      <TrendingUp className="h-5 w-5 text-[#0047AB]" />
+    ),
+    [t("enterpriseCompanydetail.trainingAndSkillsDevelopment")]: (
+      <BookOpen className="h-5 w-5 text-[#0047AB]" />
+    ),
+    [t("enterpriseCompanydetail.flexibleWorkHybrid")]: (
+      <Briefcase className="h-5 w-5 text-[#0047AB]" />
+    ),
+    [t("enterpriseCompanydetail.teamBuildingQuarterly")]: (
+      <Award className="h-5 w-5 text-[#0047AB]" />
+    ),
   };
 
   const benefitIcon = <Award className="h-5 w-5 text-[#0047AB]" />;
@@ -32,10 +46,10 @@ export function CompanyInfoSection({ company }: CompanyInfoSectionProps) {
         {/* Section Header */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-            Giới thiệu về {company.name}
+            {t("enterpriseCompanydetail.about")} {company.name}
           </h2>
           <p className="mt-2 text-sm text-slate-600 sm:text-base dark:text-slate-400">
-            Tìm hiểu thêm về công ty và văn hóa làm việc
+            {t("enterpriseCompanydetail.learnMoreAboutTheCompany")}
           </p>
         </div>
 
@@ -50,7 +64,7 @@ export function CompanyInfoSection({ company }: CompanyInfoSectionProps) {
                     <BookOpen className="h-5 w-5 text-[#0047AB]" />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    Về công ty
+                    {t("enterpriseCompanydetail.aboutTheCompany")}
                   </h3>
                 </div>
                 <p className="leading-relaxed text-slate-600 dark:text-slate-400">
@@ -68,7 +82,7 @@ export function CompanyInfoSection({ company }: CompanyInfoSectionProps) {
                       <Award className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                     </div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      Phúc lợi
+                      {t("enterprise_jobdescriptiondetailpage.tsx.phuc_loi")}
                     </h3>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">

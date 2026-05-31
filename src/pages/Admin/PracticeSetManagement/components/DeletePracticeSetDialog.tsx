@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next";
 
 import type { PracticeSet } from "../types";
 
@@ -24,22 +25,24 @@ export function DeletePracticeSetDialog({
   practiceSet,
   onConfirm,
 }: DeletePracticeSetDialogProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xóa Bộ Câu Hỏi</AlertDialogTitle>
+          <AlertDialogTitle>{t("adminPracticesetmanagement.deleteQuestionSet")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn xóa bộ câu hỏi &quot;{practiceSet?.practiceSetName}&quot;? Hành
-            động này không thể hoàn tác.
+            {t("adminPracticesetmanagement.areYouSureYouWant")}
+            {practiceSet?.practiceSetName}
+            {t("adminPracticesetmanagement.quotOnionThisActionCannot")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogCancel>{t("general.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600">
-            Xóa
+            {t("general.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

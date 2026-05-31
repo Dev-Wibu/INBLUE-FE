@@ -1,36 +1,32 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Plus, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SpinnerBlock } from "@/components/ui/spinner";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { extractDataArray } from "@/lib/utils";
 import { questionCategoryManager } from "@/services";
+import { Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 import {
   DeleteQuestionCategoryDialog,
   QuestionCategoryFormDialog,
   QuestionCategoryTable,
 } from "./components";
 import type { QuestionCategory, QuestionCategoryFormData } from "./types";
-
 type SortableQuestionCategory = QuestionCategory & {
   idSortValue: number;
   nameSortValue: string;
   descriptionSortValue: string;
 };
-
 export function QuestionCategoryManagementPage() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -38,32 +34,35 @@ export function QuestionCategoryManagementPage() {
   const [formData, setFormData] = useState<Partial<QuestionCategoryFormData>>({});
 
   // Load categories using the question category manager service
-  const loadCategories = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const response = await questionCategoryManager.getAll();
-      if (response.success) {
-        setCategories(extractDataArray<QuestionCategory>(response));
-      } else {
-        toast.error(response.error || "Không thể tải danh sách danh mục câu hỏi");
-      }
-    } catch (error) {
-      console.error("Error loading categories:", error);
-      toast.error("Không thể tải danh sách danh mục câu hỏi");
-    } finally {
+  const loadCategories = useCallback(
+    async (showReloading = false) => {
       if (showReloading) {
-        setIsReloading(false);
+        setIsReloading(true);
       } else {
-        setIsInitialLoading(false);
+        setIsInitialLoading(true);
       }
-    }
-  }, []);
-
+      try {
+        const response = await questionCategoryManager.getAll();
+        if (response.success) {
+          setCategories(extractDataArray<QuestionCategory>(response));
+        } else {
+          toast.error(
+            response.error || t("adminQuestioncategorymanagement.unableToLoadQuestionCategory")
+          );
+        }
+      } catch (error) {
+        console.error("Error loading categories:", error);
+        toast.error(t("adminQuestioncategorymanagement.unableToLoadQuestionCategory"));
+      } finally {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void loadCategories();
   }, [loadCategories]);
@@ -79,7 +78,6 @@ export function QuestionCategoryManagementPage() {
       );
     });
   }, [categories, searchQuery]);
-
   const sortableCategories = useMemo<SortableQuestionCategory[]>(() => {
     return filteredCategories.map((category) => ({
       ...category,
@@ -88,7 +86,6 @@ export function QuestionCategoryManagementPage() {
       descriptionSortValue: category.description?.toLowerCase() || "",
     }));
   }, [filteredCategories]);
-
   const { sortedData, getSortProps } = useSortable(sortableCategories, {
     defaultSort: {
       key: "idSortValue",
@@ -108,17 +105,14 @@ export function QuestionCategoryManagementPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
     [pagination.endIndex, pagination.startIndex, sortedData]
   );
-
   const handleCreate = () => {
     setFormData({});
     setIsCreateDialogOpen(true);
   };
-
   const handleEdit = (category: QuestionCategory) => {
     setSelectedCategory(category);
     setFormData({
@@ -128,73 +122,66 @@ export function QuestionCategoryManagementPage() {
     });
     setIsEditDialogOpen(true);
   };
-
   const handleDelete = (category: QuestionCategory) => {
     setSelectedCategory(category);
     setIsDeleteDialogOpen(true);
   };
-
   const handleSubmitCreate = async () => {
     try {
       const response = await questionCategoryManager.create(formData);
       if (response.success) {
-        toast.success("Đã tạo danh mục câu hỏi thành công");
+        toast.success(t("adminQuestioncategorymanagement.questionListCreatedSuccessfully"));
         setIsCreateDialogOpen(false);
         void loadCategories(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể tạo danh mục câu hỏi");
+        toast.error(response.error || t("common.unableToCreateQuestionCategory"));
       }
     } catch (error) {
       console.error("Error creating category:", error);
-      toast.error("Không thể tạo danh mục câu hỏi");
+      toast.error(t("common.unableToCreateQuestionCategory"));
     }
   };
-
   const handleSubmitEdit = async () => {
     if (!selectedCategory?.id) return;
-
     try {
       const response = await questionCategoryManager.update(selectedCategory.id, formData);
       if (response.success) {
-        toast.success("Đã cập nhật danh mục câu hỏi thành công");
+        toast.success(t("adminQuestioncategorymanagement.questionListHasBeenUpdated"));
         setIsEditDialogOpen(false);
         void loadCategories(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể cập nhật danh mục câu hỏi");
+        toast.error(response.error || t("common.unableToUpdateQuestionList"));
       }
     } catch (error) {
       console.error("Error updating category:", error);
-      toast.error("Không thể cập nhật danh mục câu hỏi");
+      toast.error(t("common.unableToUpdateQuestionList"));
     }
   };
-
   const handleConfirmDelete = async () => {
     if (!selectedCategory?.id) return;
-
     try {
       const response = await questionCategoryManager.delete(selectedCategory.id);
       if (response.success) {
-        toast.success("Đã xóa danh mục câu hỏi thành công");
+        toast.success(t("adminQuestioncategorymanagement.questionCategoryHasBeenSuccessfully"));
         setIsDeleteDialogOpen(false);
         void loadCategories(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể xóa danh mục câu hỏi");
+        toast.error(response.error || t("common.cannotDeleteQuestionCategories"));
       }
     } catch (error) {
       console.error("Error deleting category:", error);
-      toast.error("Không thể xóa danh mục câu hỏi");
+      toast.error(t("common.cannotDeleteQuestionCategories"));
     }
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản Lý Danh Mục Câu Hỏi
+          {t("adminQuestioncategorymanagement.questionListManagement")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Quản lý các danh mục câu hỏi cho đánh giá phỏng vấn
+          {t("adminQuestioncategorymanagement.manageQuestionCategoriesForInterview")}
         </p>
       </div>
 
@@ -205,7 +192,7 @@ export function QuestionCategoryManagementPage() {
           <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
           <Input
             type="text"
-            placeholder="Tìm kiếm theo tên hoặc mô tả..."
+            placeholder={t("common.searchByNameOrDescription")}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -223,19 +210,19 @@ export function QuestionCategoryManagementPage() {
                 setSearchQuery("");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
           <ReloadButton
             onReload={() => loadCategories(true)}
             isLoading={isReloading}
-            tooltip="Tải lại danh sách danh mục"
+            tooltip={t("adminQuestioncategorymanagement.reloadCategoryList")}
             showLabel
             hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Thêm Danh Mục
+            {t("adminQuestioncategorymanagement.addCategory")}
           </Button>
         </div>
       </div>
@@ -243,7 +230,10 @@ export function QuestionCategoryManagementPage() {
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isInitialLoading ? (
-          <SpinnerBlock size="lg" label="Đang tải danh mục câu hỏi..." />
+          <SpinnerBlock
+            size="lg"
+            label={t("adminQuestioncategorymanagement.loadingQuestionList")}
+          />
         ) : (
           <>
             <QuestionCategoryTable
@@ -272,7 +262,7 @@ export function QuestionCategoryManagementPage() {
                     setSearchQuery("");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -287,9 +277,9 @@ export function QuestionCategoryManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitCreate}
-        title="Thêm Danh Mục Câu Hỏi Mới"
-        description="Điền thông tin để tạo danh mục câu hỏi mới."
-        submitLabel="Tạo danh mục"
+        title={t("adminQuestioncategorymanagement.addNewQuestionCategory")}
+        description={t("adminQuestioncategorymanagement.fillInTheInformationTo")}
+        submitLabel={t("adminQuestioncategorymanagement.createCategories")}
       />
 
       {/* Edit Dialog */}
@@ -299,9 +289,9 @@ export function QuestionCategoryManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitEdit}
-        title="Chỉnh Sửa Danh Mục Câu Hỏi"
-        description="Cập nhật thông tin danh mục câu hỏi."
-        submitLabel="Lưu thay đổi"
+        title={t("adminQuestioncategorymanagement.editQuestionList")}
+        description={t("adminQuestioncategorymanagement.updateQuestionListInformation")}
+        submitLabel={t("common.saveChanges")}
       />
 
       {/* Delete Confirmation Dialog */}

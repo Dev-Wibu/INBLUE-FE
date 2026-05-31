@@ -1,3 +1,10 @@
+import { HomepageHeader } from "@/components/homepage-redesign";
+import { Footer } from "@/components/layouts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import i18n from "@/lib/i18n";
+import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ArrowRight,
   Award,
@@ -9,105 +16,95 @@ import {
   Users,
   Video,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-
-import { HomepageHeader } from "@/components/homepage-redesign";
-import { Footer } from "@/components/layouts";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDashboardPath, useAuthStore } from "@/stores/authStore";
-
+const t = i18n.t.bind(i18n);
 const mentorBenefits = [
   {
     id: 1,
-    title: "Phản hồi từ chuyên gia",
-    description:
-      "Nhận phản hồi chi tiết và cá nhân hóa từ mentor có nhiều năm kinh nghiệm phỏng vấn.",
+    title: t("homepageFeatures.feedbackFromExperts"),
+    description: t("homepageFeatures.receiveDetailedAndPersonalizedFeedback"),
     icon: MessageSquare,
   },
   {
     id: 2,
-    title: "Mô phỏng thực tế",
-    description: "Trải nghiệm buổi phỏng vấn như thật với video call và câu hỏi ngành cụ thể.",
+    title: t("homepageFeatures.realisticSimulation"),
+    description: t("homepageFeatures.experienceARealLifeInterview"),
     icon: Video,
   },
   {
     id: 3,
-    title: "Lịch linh hoạt",
-    description: "Đặt lịch phỏng vấn vào thời gian phù hợp với bạn, 7 ngày trong tuần.",
+    title: t("homepageFeatures.flexibleSchedule"),
+    description: t("homepageFeatures.scheduleYourInterviewAtA"),
     icon: Calendar,
   },
   {
     id: 4,
-    title: "Đánh giá STAR",
-    description: "Nhận đánh giá chi tiết theo phương pháp STAR cho từng câu trả lời của bạn.",
+    title: t("homepageFeatures.starReview"),
+    description: t("homepageFeatures.getADetailedStarMethod"),
     icon: Award,
   },
 ];
-
 const featuredMentors = [
   {
     id: 1,
-    name: "Nguyễn Văn An",
+    name: t("homepageFeatures.nguyenVanAn"),
     title: "Senior Software Engineer",
     company: "Google",
-    experience: "8 năm",
+    experience: t("homepageFeatures.8Years"),
     rating: 4.9,
     sessions: 150,
     expertise: ["System Design", "Algorithms", "Backend"],
   },
   {
     id: 2,
-    name: "Trần Thị Bình",
+    name: t("homepageFeatures.tranThiBinh"),
     title: "Data Science Lead",
     company: "Microsoft",
-    experience: "6 năm",
+    experience: t("homepageFeatures.6Years"),
     rating: 4.8,
     sessions: 120,
     expertise: ["Machine Learning", "Data Analysis", "Python"],
   },
   {
     id: 3,
-    name: "Lê Minh Châu",
+    name: t("homepageFeatures.leMinhChau"),
     title: "Product Manager",
     company: "Meta",
-    experience: "7 năm",
+    experience: t("homepageFeatures.7Years"),
     rating: 4.9,
     sessions: 180,
     expertise: ["Product Strategy", "User Research", "Agile"],
   },
 ];
-
 const howItWorks = [
   {
     step: 1,
-    title: "Chọn mentor",
-    description: "Duyệt qua danh sách mentor và chọn người phù hợp với ngành và vị trí của bạn.",
+    title: t("common.chooseAMentor"),
+    description: t("homepageFeatures.browseTheListOfMentors"),
   },
   {
     step: 2,
-    title: "Đặt lịch",
-    description: "Chọn thời gian phù hợp trong lịch của mentor và xác nhận buổi phỏng vấn.",
+    title: t("homepageFeatures.book"),
+    description: t("homepageFeatures.chooseASuitableTimeIn"),
   },
   {
     step: 3,
-    title: "Phỏng vấn",
-    description: "Tham gia buổi phỏng vấn mô phỏng qua video call với mentor.",
+    title: t("common.interview"),
+    description: t("homepageFeatures.participateInASimulatedInterview"),
   },
   {
     step: 4,
-    title: "Nhận feedback",
-    description: "Nhận đánh giá chi tiết, điểm mạnh, điểm yếu và gợi ý cải thiện từ mentor.",
+    title: t("homepageFeatures.receiveFeedback"),
+    description: t("homepageFeatures.receiveDetailedAssessmentsStrengthsWeaknesses"),
   },
 ];
-
 export function MentorInterviewFeaturePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
   const dashboardPath = isLoggedIn ? getDashboardPath(user?.role) : "/login";
   const ctaPath = isLoggedIn ? getDashboardPath(user?.role) : "/select-role";
-
   return (
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
       <HomepageHeader />
@@ -129,14 +126,13 @@ export function MentorInterviewFeaturePage() {
                 Mock Interview
               </Badge>
               <h1 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl dark:text-white">
-                Phỏng vấn với{" "}
+                {t("homepageFeatures.interviewWith")}{" "}
                 <span className="bg-gradient-to-r from-[#0047AB] to-[#007BFF] bg-clip-text text-transparent">
-                  Mentor chuyên nghiệp
+                  {t("common.professionalMentor")}
                 </span>
               </h1>
               <p className="mb-8 text-lg text-slate-600 dark:text-slate-400">
-                Luyện tập với các chuyên gia từ Google, Microsoft, Meta và nhiều công ty hàng đầu.
-                Nhận feedback chi tiết và cá nhân hóa để cải thiện kỹ năng phỏng vấn.
+                {t("homepageFeatures.practiceWithExpertsFromGoogle")}
               </p>
               <div className="flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
                 <Button
@@ -145,7 +141,7 @@ export function MentorInterviewFeaturePage() {
                   asChild>
                   <Link to={ctaPath}>
                     <Play className="mr-2 h-5 w-5" />
-                    {isLoggedIn ? "Mở Dashboard" : "Đặt lịch ngay"}
+                    {isLoggedIn ? t("common.openDashboard") : t("common.scheduleNow")}
                   </Link>
                 </Button>
               </div>
@@ -161,10 +157,10 @@ export function MentorInterviewFeaturePage() {
                       <Users className="h-10 w-10 text-white" />
                     </div>
                     <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-white">
-                      50+ Mentor chuyên nghiệp
+                      {t("homepageFeatures.50ProfessionalMentors")}
                     </h3>
                     <p className="mb-4 text-center text-sm text-slate-600 dark:text-slate-400">
-                      Từ các công ty hàng đầu thế giới
+                      {t("homepageFeatures.fromTheWorldSLeading")}
                     </p>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
@@ -187,10 +183,10 @@ export function MentorInterviewFeaturePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-12 text-center">
             <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              Lợi ích
+              {t("homepageFeatures.benefit")}
             </Badge>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Tại sao chọn Mock Interview?
+              {t("homepageFeatures.whyChooseMockInterview")}
             </h2>
           </div>
 
@@ -222,10 +218,10 @@ export function MentorInterviewFeaturePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-12 text-center">
             <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              Mentor nổi bật
+              {t("homepageFeatures.outstandingMentor")}
             </Badge>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Học từ những người giỏi nhất
+              {t("homepageFeatures.learnFromTheBest")}
             </h2>
           </div>
 
@@ -240,7 +236,7 @@ export function MentorInterviewFeaturePage() {
                   </div>
                   <CardTitle className="text-lg dark:text-white">{mentor.name}</CardTitle>
                   <CardDescription className="dark:text-slate-400">
-                    {mentor.title} tại {mentor.company}
+                    {mentor.title} {t("homepageFeatures.in")} {mentor.company}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -279,7 +275,7 @@ export function MentorInterviewFeaturePage() {
               size="lg"
               className="rounded-full dark:border-slate-700"
               onClick={() => navigate(dashboardPath)}>
-              Xem tất cả mentor
+              {t("homepageFeatures.viewAllMentors")}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -291,10 +287,10 @@ export function MentorInterviewFeaturePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-12 text-center">
             <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              Quy trình
+              {t("homepageFeatures.procedure")}
             </Badge>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Cách thức hoạt động
+              {t("homepageFeatures.howItWorks")}
             </h2>
           </div>
 
@@ -317,9 +313,11 @@ export function MentorInterviewFeaturePage() {
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-[#0047AB] to-[#007BFF] py-16">
         <div className="mx-auto max-w-7xl px-6 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-white">Sẵn sàng phỏng vấn với mentor?</h2>
+          <h2 className="mb-4 text-3xl font-bold text-white">
+            {t("homepageFeatures.readyToInterviewWithA")}
+          </h2>
           <p className="mx-auto mb-8 max-w-xl text-[#A5C8F2]">
-            Đăng ký ngay và đặt lịch phỏng vấn đầu tiên với mentor chuyên nghiệp.
+            {t("homepageFeatures.registerNowAndScheduleYour")}
           </p>
           <div className="flex justify-center gap-4">
             <Button
@@ -327,7 +325,9 @@ export function MentorInterviewFeaturePage() {
               variant="secondary"
               className="rounded-full bg-white text-[#0047AB] hover:bg-slate-100"
               asChild>
-              <Link to={ctaPath}>{isLoggedIn ? "Mở Dashboard" : "Đăng ký miễn phí"}</Link>
+              <Link to={ctaPath}>
+                {isLoggedIn ? t("common.openDashboard") : t("common.signUpForFree")}
+              </Link>
             </Button>
             {!isLoggedIn && (
               <Button
@@ -335,7 +335,7 @@ export function MentorInterviewFeaturePage() {
                 variant="outline"
                 className="rounded-full border-white text-white hover:bg-white/10"
                 asChild>
-                <Link to="/login">Đăng nhập</Link>
+                <Link to="/login">{t("common.logIn")}</Link>
               </Button>
             )}
           </div>

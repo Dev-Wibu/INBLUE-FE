@@ -1,8 +1,8 @@
+import i18n from "@/lib/i18n";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-
 import { TransactionHistoryTab } from "./TransactionHistoryTab";
-
+const t = i18n.t.bind(i18n);
 describe("TransactionHistoryTab", () => {
   it("shows purpose badge for classified payment purpose", () => {
     render(
@@ -15,16 +15,14 @@ describe("TransactionHistoryTab", () => {
             transactionCode: "TX-1",
             createdAt: "2026-04-18T03:00:00",
             paymentPurpose: "BUY_MEMBERSHIP",
-            description: "Thanh toán gói thành viên",
+            description: t("userAccount.payForMembershipPackages"),
           } as never,
         ]}
       />
     );
-
-    expect(screen.getByText("Mua gói")).toBeInTheDocument();
+    expect(screen.getByText(t("common.buyPackages"))).toBeInTheDocument();
     expect(screen.getByText("Hoàn thành")).toBeInTheDocument();
   });
-
   it("does not show purpose badge when purpose is unknown", () => {
     render(
       <TransactionHistoryTab
@@ -42,7 +40,6 @@ describe("TransactionHistoryTab", () => {
         ]}
       />
     );
-
-    expect(screen.queryByText("Chưa phân loại")).not.toBeInTheDocument();
+    expect(screen.queryByText(t("common.uncategorized"))).not.toBeInTheDocument();
   });
 });

@@ -1,73 +1,73 @@
+import i18n from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 /**
  * Job Card Component
  * Individual job listing card with 3D hover effect
  */
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { JobDescription } from "@/services/company.manager";
 import { Clock, DollarSign, Eye, MapPin, Users } from "lucide-react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-
 interface JobCardProps {
   job: JobDescription;
 }
-
 const levelColors: Record<string, string> = {
   INTERN: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   FRESHER: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   JUNIOR: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   MIDDLE: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
-
 const levelLabels: Record<string, string> = {
-  INTERN: "Intern/Thực tập",
+  INTERN: t("enterpriseCompanydetail.internInternship"),
   FRESHER: "Fresher",
   JUNIOR: "Junior",
   MIDDLE: "Middle",
 };
-
 const formatSalary = (min?: number, max?: number, currency = "VND"): string => {
-  if (!min && !max) return "Thương lượng";
-
+  if (!min && !max) return t("enterpriseCompanydetail.negotiate");
   const format = (num: number) => {
     if (num >= 1000000) {
-      return `${(num / 1000000).toFixed(1).replace(/\.0$/, "")} triệu`;
+      return t("general.million1", {
+        var_0: (num / 1000000).toFixed(1).replace(/\.0$/, ""),
+      });
     }
     return num.toLocaleString("vi-VN");
   };
-
   if (min && max) {
     return `${format(min)} - ${format(max)} ${currency}`;
   }
-  if (min) return `Từ ${format(min)} ${currency}`;
-  if (max) return `Đến ${format(max)} ${currency}`;
-  return "Thương lượng";
+  if (min)
+    return t("common.fromVar0Var1", {
+      var_0: format(min),
+      var_1: currency,
+    });
+  if (max)
+    return t("common.toVar0Var1", {
+      var_0: format(max),
+      var_1: currency,
+    });
+  return t("enterpriseCompanydetail.negotiate");
 };
-
 export function JobCard({ job }: JobCardProps) {
+  const { t } = useTranslation();
   const cardRef = useRef<HTMLDivElement>(null);
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = cardRef.current;
     if (!card) return;
-
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-
     const rotateX = (y - centerY) / 25;
     const rotateY = (centerX - x) / 25;
-
     card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
     card.style.transition = "transform 0.1s ease-out";
   };
-
   const handleMouseLeave = () => {
     const card = cardRef.current;
     if (card) {
@@ -75,13 +75,13 @@ export function JobCard({ job }: JobCardProps) {
       card.style.transition = "transform 0.3s ease-out";
     }
   };
-
   const isHot = job.level === "MIDDLE";
-
   return (
     <div
       ref={cardRef}
-      style={{ transformStyle: "preserve-3d" }}
+      style={{
+        transformStyle: "preserve-3d",
+      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className="group relative overflow-hidden rounded-2xl border border-slate-200/50 bg-white p-5 shadow-sm transition-all hover:shadow-xl sm:p-6 dark:border-slate-700/50 dark:bg-slate-900">
@@ -132,7 +132,7 @@ export function JobCard({ job }: JobCardProps) {
           {job.appliedCount !== undefined && job.appliedCount > 0 && (
             <span className="flex items-center gap-1 whitespace-nowrap text-slate-500 dark:text-slate-400">
               <Users className="h-4 w-4" />
-              {job.appliedCount} ứng viên
+              {job.appliedCount} {t("common.candidate")}
             </span>
           )}
         </div>
@@ -169,7 +169,7 @@ export function JobCard({ job }: JobCardProps) {
             asChild>
             <Link to={`/enterprise/job/${job.id}`}>
               <Eye className="h-4 w-4" />
-              Xem chi tiết
+              {t("common.seeDetails")}
             </Link>
           </Button>
         </div>

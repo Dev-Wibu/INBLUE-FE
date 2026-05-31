@@ -1,3 +1,11 @@
+import { HomepageHeader } from "@/components/homepage-redesign";
+import { Footer } from "@/components/layouts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import i18n from "@/lib/i18n";
+import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ChevronDown,
   FileText,
@@ -7,20 +15,13 @@ import {
   Search,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-
-import { HomepageHeader } from "@/components/homepage-redesign";
-import { Footer } from "@/components/layouts";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { getDashboardPath, useAuthStore } from "@/stores/authStore";
-
+const t = i18n.t.bind(i18n);
 const faqCategories = [
   {
     id: "general",
-    name: "Câu hỏi chung",
+    name: t("homepageResources.generalQuestion"),
     icon: HelpCircle,
   },
   {
@@ -35,85 +36,74 @@ const faqCategories = [
   },
   {
     id: "account",
-    name: "Tài khoản",
+    name: t("common.account"),
     icon: FileText,
   },
 ];
-
 const faqs = [
   {
     id: 1,
     category: "general",
-    question: "INBLUE AI là gì?",
-    answer:
-      "INBLUE AI là nền tảng luyện tập phỏng vấn trực tuyến sử dụng trí tuệ nhân tạo và kết nối với mentor chuyên nghiệp. Chúng tôi giúp bạn chuẩn bị cho các buổi phỏng vấn thực tế với hơn 1,500 câu hỏi và phản hồi chi tiết.",
+    question: t("homepageResources.whatIsInblueAi"),
+    answer: t("homepageResources.inblueAiIsAnOnline"),
   },
   {
     id: 2,
     category: "general",
-    question: "Tôi có thể dùng thử miễn phí không?",
-    answer:
-      "Có! Bạn có thể đăng ký tài khoản miễn phí và nhận 3 buổi phỏng vấn AI miễn phí. Không cần thẻ tín dụng để bắt đầu.",
+    question: t("homepageResources.canITryItFor"),
+    answer: t("homepageResources.haveYouCanSignUp"),
   },
   {
     id: 3,
     category: "general",
-    question: "INBLUE AI hỗ trợ những ngành nghề nào?",
-    answer:
-      "Chúng tôi hỗ trợ đa dạng ngành nghề bao gồm: Công nghệ thông tin, Marketing, Tài chính, Thiết kế, Quản lý sản phẩm, và nhiều lĩnh vực khác. Câu hỏi được tổng hợp từ hơn 530 công ty hàng đầu.",
+    question: t("homepageResources.whatProfessionsDoesInblueAi"),
+    answer: t("homepageResources.weSupportAVarietyOf"),
   },
   {
     id: 4,
     category: "ai-interview",
-    question: "AI Interview hoạt động như thế nào?",
-    answer:
-      "AI Interview sử dụng công nghệ AI tiên tiến để đặt câu hỏi, lắng nghe và phân tích câu trả lời của bạn. Bạn có thể chọn chế độ văn bản, giọng nói hoặc video. Sau mỗi buổi, bạn sẽ nhận được báo cáo chi tiết về điểm mạnh, điểm yếu và gợi ý cải thiện.",
+    question: t("homepageResources.howDoesAiInterviewWork"),
+    answer: t("homepageResources.aiInterviewUsesAdvancedAi"),
   },
   {
     id: 5,
     category: "ai-interview",
-    question: "AI có thể phân tích ngôn ngữ cơ thể không?",
-    answer:
-      "Có! Trong chế độ video, AI sẽ phân tích biểu cảm khuôn mặt, ánh mắt và ngôn ngữ cơ thể của bạn. Bạn sẽ nhận được phản hồi về cách cải thiện giao tiếp phi ngôn ngữ.",
+    question: t("homepageResources.canAiAnalyzeBodyLanguage"),
+    answer: t("homepageResources.haveInVideoModeAi"),
   },
   {
     id: 6,
     category: "mentor",
-    question: "Mentor là ai?",
-    answer:
-      "Mentor của chúng tôi là các chuyên gia từ các công ty hàng đầu như Google, Microsoft, Meta, Amazon và nhiều công ty khác. Họ có nhiều năm kinh nghiệm phỏng vấn và tuyển dụng trong ngành.",
+    question: t("homepageResources.whoIsMentor"),
+    answer: t("homepageResources.ourMentorsAreExpertsFrom"),
   },
   {
     id: 7,
     category: "mentor",
-    question: "Làm sao để đặt lịch với mentor?",
-    answer:
-      "Sau khi đăng nhập, bạn có thể duyệt danh sách mentor, xem hồ sơ và đánh giá của họ. Chọn mentor phù hợp, chọn thời gian trong lịch của họ và xác nhận đặt lịch. Bạn sẽ nhận được link video call trước buổi phỏng vấn.",
+    question: t("homepageResources.howToScheduleAnAppointment"),
+    answer: t("homepageResources.afterLoggingInYouCan"),
   },
   {
     id: 8,
     category: "account",
-    question: "Làm sao để nâng cấp tài khoản?",
-    answer:
-      "Bạn có thể nâng cấp tài khoản trong mục Cài đặt > Gói dịch vụ. Chúng tôi hỗ trợ nhiều phương thức thanh toán bao gồm thẻ tín dụng, ví điện tử và chuyển khoản ngân hàng.",
+    question: t("homepageResources.howToUpgradeMyAccount"),
+    answer: t("homepageResources.youCanUpgradeYourAccount"),
   },
   {
     id: 9,
     category: "account",
-    question: "Dữ liệu của tôi có được bảo mật không?",
-    answer:
-      "Chắc chắn! Chúng tôi sử dụng mã hóa SSL và tuân thủ các tiêu chuẩn bảo mật quốc tế. Video và dữ liệu phỏng vấn của bạn được lưu trữ an toàn và chỉ bạn mới có quyền truy cập.",
+    question: t("homepageResources.isMyDataSecure"),
+    answer: t("homepageResources.sureWeUseSslEncryption"),
   },
 ];
-
 export function FAQPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
   const dashboardPath = isLoggedIn ? getDashboardPath(user?.role) : "/login";
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
   const filteredFaqs = faqs.filter((faq) => {
     const matchesCategory = selectedCategory === "all" || faq.category === selectedCategory;
     const matchesSearch =
@@ -121,7 +111,6 @@ export function FAQPage() {
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
-
   return (
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
       <HomepageHeader />
@@ -139,13 +128,13 @@ export function FAQPage() {
               variant="secondary"
               className="mb-4 bg-[#DCEEFF] text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
               <HelpCircle className="mr-2 h-4 w-4" />
-              Trung tâm hỗ trợ
+              {t("homepageResources.supportCenter")}
             </Badge>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl dark:text-white">
-              Câu hỏi thường gặp
+              {t("common.frequentlyAskedQuestions")}
             </h1>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
-              Tìm câu trả lời nhanh chóng cho các thắc mắc phổ biến về INBLUE AI
+              {t("homepageResources.findQuickAnswersToCommon")}
             </p>
 
             {/* Search */}
@@ -153,7 +142,7 @@ export function FAQPage() {
               <div className="relative">
                 <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-slate-400" />
                 <Input
-                  placeholder="Tìm kiếm câu hỏi..."
+                  placeholder={t("common.searchQuestions")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-12 pl-10 dark:border-slate-700 dark:bg-slate-800"
@@ -175,7 +164,7 @@ export function FAQPage() {
               className={
                 selectedCategory === "all" ? "bg-[#0047AB] text-white" : "dark:border-slate-700"
               }>
-              Tất cả
+              {t("general.all")}
             </Button>
             {faqCategories.map((category) => {
               const Icon = category.icon;
@@ -229,7 +218,9 @@ export function FAQPage() {
 
           {filteredFaqs.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-slate-500 dark:text-slate-400">Không tìm thấy câu hỏi phù hợp</p>
+              <p className="text-slate-500 dark:text-slate-400">
+                {t("common.noMatchingQuestionsWereFound")}
+              </p>
             </div>
           )}
         </div>
@@ -239,17 +230,17 @@ export function FAQPage() {
       <section className="bg-slate-50 py-16 dark:bg-slate-900/50">
         <div className="mx-auto max-w-7xl px-6 text-center">
           <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">
-            Không tìm thấy câu trả lời?
+            {t("homepageResources.didnTFindTheAnswer")}
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-slate-600 dark:text-slate-400">
-            Đội ngũ hỗ trợ của chúng tôi luôn sẵn sàng giúp đỡ bạn
+            {t("homepageResources.ourSupportTeamIsAlways")}
           </p>
           <Button
             size="lg"
             className="rounded-full bg-gradient-to-r from-[#0047AB] to-[#007BFF]"
             onClick={() => navigate(dashboardPath)}>
             <MessageCircle className="mr-2 h-5 w-5" />
-            Liên hệ hỗ trợ
+            {t("homepageResources.contactSupport")}
           </Button>
         </div>
       </section>

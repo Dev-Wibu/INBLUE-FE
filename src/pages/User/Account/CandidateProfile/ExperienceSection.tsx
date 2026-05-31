@@ -8,7 +8,7 @@ import type {
   ProjectDetail,
   WorkExperience,
 } from "@/interfaces/schema.types";
-
+import { useTranslation } from "react-i18next";
 interface ExperienceEditProps {
   mode: "edit";
   formData: Partial<CandidateProfile>;
@@ -26,22 +26,20 @@ interface ExperienceEditProps {
   updateEducation: (index: number, field: keyof EducationEntry, value: string) => void;
   removeEducation: (index: number) => void;
 }
-
 interface ExperienceViewProps {
   mode: "view";
   profile: CandidateProfile;
 }
-
 type ExperienceSectionProps = ExperienceEditProps | ExperienceViewProps;
-
 export function ExperienceSection(props: ExperienceSectionProps) {
+  const { t } = useTranslation();
   if (props.mode === "view") {
     const { profile } = props;
     return (
       <>
         <Card>
           <CardHeader>
-            <CardTitle>Dự án</CardTitle>
+            <CardTitle>{t("common.project")}</CardTitle>
           </CardHeader>
           <CardContent>
             {(profile.projects ?? []).length > 0 ? (
@@ -54,12 +52,18 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                     </p>
                     <div className="mt-3 space-y-1 text-sm text-gray-500 dark:text-slate-400">
                       {project.role && (
-                        <p className="break-words whitespace-pre-wrap">Vai trò: {project.role}</p>
+                        <p className="break-words whitespace-pre-wrap">
+                          {t("general.role")} {project.role}
+                        </p>
                       )}
-                      {project.teamSize && <p>Đội: {project.teamSize} người</p>}
+                      {project.teamSize && (
+                        <p>
+                          {t("common.team")} {project.teamSize} {t("common.people")}
+                        </p>
+                      )}
                       {project.outcome && (
                         <p className="break-words whitespace-pre-wrap">
-                          Kết quả: {project.outcome}
+                          {t("common.result1")} {project.outcome}
                         </p>
                       )}
                     </div>
@@ -67,14 +71,14 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-400">Chưa có dự án nào.</p>
+              <p className="text-sm text-gray-400">{t("userAccount.thereAreNoProjectsYet")}</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Kinh nghiệm làm việc</CardTitle>
+            <CardTitle>{t("common.workExperience")}</CardTitle>
           </CardHeader>
           <CardContent>
             {(profile.workExperiences ?? []).length > 0 ? (
@@ -85,20 +89,20 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                     <p className="text-sm text-gray-600 dark:text-slate-300">{exp.company}</p>
                     <p className="mt-1 text-sm">{exp.description}</p>
                     <p className="mt-1 text-xs text-gray-400">
-                      {exp.start_date} — {exp.end_date || "Hiện tại"}
+                      {exp.start_date} — {exp.end_date || t("common.present")}
                     </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-400">Chưa có kinh nghiệm nào.</p>
+              <p className="text-sm text-gray-400">{t("userAccount.noExperienceYet")}</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Học vấn</CardTitle>
+            <CardTitle>{t("common.education")}</CardTitle>
           </CardHeader>
           <CardContent>
             {(profile.educations ?? []).length > 0 ? (
@@ -111,20 +115,21 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                     </p>
                     {edu.gpa && <p className="text-sm">GPA: {edu.gpa}</p>}
                     <p className="mt-1 text-xs text-gray-400">
-                      {edu.start_date} — {edu.end_date || "Hiện tại"}
+                      {edu.start_date} — {edu.end_date || t("common.present")}
                     </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-400">Chưa có thông tin học vấn.</p>
+              <p className="text-sm text-gray-400">
+                {t("userAccount.noEducationInformationAvailable")}
+              </p>
             )}
           </CardContent>
         </Card>
       </>
     );
   }
-
   const {
     formData,
     addProject,
@@ -137,15 +142,14 @@ export function ExperienceSection(props: ExperienceSectionProps) {
     updateEducation,
     removeEducation,
   } = props;
-
   return (
     <>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Dự án</CardTitle>
+            <CardTitle>{t("common.project")}</CardTitle>
             <Button variant="outline" size="sm" onClick={addProject}>
-              Thêm dự án
+              {t("common.addProject")}
             </Button>
           </div>
         </CardHeader>
@@ -153,21 +157,23 @@ export function ExperienceSection(props: ExperienceSectionProps) {
           {(formData.projects ?? []).map((project, index) => (
             <div key={index} className="space-y-3 rounded-lg border p-4 dark:border-slate-700">
               <div className="flex justify-between">
-                <span className="font-medium">Dự án {index + 1}</span>
+                <span className="font-medium">
+                  {t("common.project")} {index + 1}
+                </span>
                 <Button variant="ghost" size="sm" onClick={() => removeProject(index)}>
-                  Xóa
+                  {t("general.delete")}
                 </Button>
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                  <Label>Tên dự án</Label>
+                  <Label>{t("common.projectName")}</Label>
                   <Input
                     value={project.name ?? ""}
                     onChange={(e) => updateProject(index, "name", e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label>Vai trò</Label>
+                  <Label>{t("common.role")}</Label>
                   <Input
                     value={project.role ?? ""}
                     onChange={(e) => updateProject(index, "role", e.target.value)}
@@ -175,7 +181,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                 </div>
               </div>
               <div>
-                <Label>Mô tả</Label>
+                <Label>{t("common.describe")}</Label>
                 <textarea
                   className="mt-1 min-h-28 w-full rounded-md border border-gray-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                   value={project.description ?? ""}
@@ -185,7 +191,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                  <Label>Quy mô đội</Label>
+                  <Label>{t("userAccount.teamSize")}</Label>
                   <Input
                     type="number"
                     value={project.teamSize ?? 1}
@@ -193,7 +199,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                   />
                 </div>
                 <div>
-                  <Label>Kết quả</Label>
+                  <Label>{t("common.result")}</Label>
                   <textarea
                     className="mt-1 min-h-28 w-full rounded-md border border-gray-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                     value={project.outcome ?? ""}
@@ -206,7 +212,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
           ))}
           {(formData.projects ?? []).length === 0 && (
             <p className="text-center text-sm text-gray-500 dark:text-slate-400">
-              Chưa có dự án nào. Nhấn &quot;Thêm dự án&quot; để thêm.
+              {t("userAccount.thereAreNoProjectsYet1")}
             </p>
           )}
         </CardContent>
@@ -215,9 +221,9 @@ export function ExperienceSection(props: ExperienceSectionProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Kinh nghiệm làm việc</CardTitle>
+            <CardTitle>{t("common.workExperience")}</CardTitle>
             <Button variant="outline" size="sm" onClick={addWorkExperience}>
-              Thêm kinh nghiệm
+              {t("common.moreExperience")}
             </Button>
           </div>
         </CardHeader>
@@ -225,21 +231,23 @@ export function ExperienceSection(props: ExperienceSectionProps) {
           {(formData.workExperiences ?? []).map((exp, index) => (
             <div key={index} className="space-y-3 rounded-lg border p-4 dark:border-slate-700">
               <div className="flex justify-between">
-                <span className="font-medium">Kinh nghiệm {index + 1}</span>
+                <span className="font-medium">
+                  {t("common.experience")} {index + 1}
+                </span>
                 <Button variant="ghost" size="sm" onClick={() => removeWorkExperience(index)}>
-                  Xóa
+                  {t("general.delete")}
                 </Button>
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                  <Label>Công ty</Label>
+                  <Label>{t("common.company")}</Label>
                   <Input
                     value={exp.company ?? ""}
                     onChange={(e) => updateWorkExperience(index, "company", e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label>Vị trí</Label>
+                  <Label>{t("common.location1")}</Label>
                   <Input
                     value={exp.position ?? ""}
                     onChange={(e) => updateWorkExperience(index, "position", e.target.value)}
@@ -247,7 +255,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                 </div>
               </div>
               <div>
-                <Label>Mô tả</Label>
+                <Label>{t("common.describe")}</Label>
                 <Input
                   value={exp.description ?? ""}
                   onChange={(e) => updateWorkExperience(index, "description", e.target.value)}
@@ -255,7 +263,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                  <Label>Ngày bắt đầu</Label>
+                  <Label>{t("common.startDate")}</Label>
                   <Input
                     type="date"
                     value={exp.start_date ?? ""}
@@ -263,7 +271,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                   />
                 </div>
                 <div>
-                  <Label>Ngày kết thúc</Label>
+                  <Label>{t("common.endDate")}</Label>
                   <Input
                     type="date"
                     value={exp.end_date ?? ""}
@@ -275,7 +283,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
           ))}
           {(formData.workExperiences ?? []).length === 0 && (
             <p className="text-center text-sm text-gray-500 dark:text-slate-400">
-              Chưa có kinh nghiệm nào. Nhấn &quot;Thêm kinh nghiệm&quot; để thêm.
+              {t("userAccount.noExperienceYetClickQuot")}
             </p>
           )}
         </CardContent>
@@ -284,9 +292,9 @@ export function ExperienceSection(props: ExperienceSectionProps) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Học vấn</CardTitle>
+            <CardTitle>{t("common.education")}</CardTitle>
             <Button variant="outline" size="sm" onClick={addEducation}>
-              Thêm học vấn
+              {t("common.moreEducation")}
             </Button>
           </div>
         </CardHeader>
@@ -294,21 +302,23 @@ export function ExperienceSection(props: ExperienceSectionProps) {
           {(formData.educations ?? []).map((edu, index) => (
             <div key={index} className="space-y-3 rounded-lg border p-4 dark:border-slate-700">
               <div className="flex justify-between">
-                <span className="font-medium">Học vấn {index + 1}</span>
+                <span className="font-medium">
+                  {t("common.education")} {index + 1}
+                </span>
                 <Button variant="ghost" size="sm" onClick={() => removeEducation(index)}>
-                  Xóa
+                  {t("general.delete")}
                 </Button>
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                  <Label>Trường</Label>
+                  <Label>{t("common.school")}</Label>
                   <Input
                     value={edu.school ?? ""}
                     onChange={(e) => updateEducation(index, "school", e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label>Chuyên ngành</Label>
+                  <Label>{t("common.specialized")}</Label>
                   <Input
                     value={edu.major ?? ""}
                     onChange={(e) => updateEducation(index, "major", e.target.value)}
@@ -317,7 +327,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <div>
-                  <Label>Bằng cấp</Label>
+                  <Label>{t("common.degree")}</Label>
                   <Input
                     value={edu.degree ?? ""}
                     onChange={(e) => updateEducation(index, "degree", e.target.value)}
@@ -333,7 +343,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
               </div>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                  <Label>Ngày bắt đầu</Label>
+                  <Label>{t("common.startDate")}</Label>
                   <Input
                     type="date"
                     value={edu.start_date ?? ""}
@@ -341,7 +351,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
                   />
                 </div>
                 <div>
-                  <Label>Ngày kết thúc</Label>
+                  <Label>{t("common.endDate")}</Label>
                   <Input
                     type="date"
                     value={edu.end_date ?? ""}
@@ -353,7 +363,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
           ))}
           {(formData.educations ?? []).length === 0 && (
             <p className="text-center text-sm text-gray-500 dark:text-slate-400">
-              Chưa có học vấn nào. Nhấn &quot;Thêm học vấn&quot; để thêm.
+              {t("userAccount.noEducationYetClickQuot")}
             </p>
           )}
         </CardContent>

@@ -1,12 +1,11 @@
-import { AlertCircle, CheckCircle2, Clock, Sparkles } from "lucide-react";
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { AlertCircle, CheckCircle2, Clock, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ConfigSection, LoadingSkeleton } from "./ConfigOptionCard";
 import { DURATION_OPTIONS } from "./constants";
 import type { AIInterviewSetupHook } from "./useAIInterviewSetup";
-
 export function ConfigStep({ hook }: { hook: AIInterviewSetupHook }) {
+  const { t } = useTranslation();
   const {
     configOptions,
     configLoading,
@@ -22,17 +21,14 @@ export function ConfigStep({ hook }: { hook: AIInterviewSetupHook }) {
     selectedDuration,
     setSelectedDuration,
   } = hook;
-
   return (
     <Card>
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-violet-600" />
-          <CardTitle className="text-lg">Cấu hình buổi phỏng vấn</CardTitle>
+          <CardTitle className="text-lg">{t("userAiinterview.configureTheInterview")}</CardTitle>
         </div>
-        <CardDescription>
-          Chọn chế độ, độ khó, ngôn ngữ và lĩnh vực cho buổi phỏng vấn
-        </CardDescription>
+        <CardDescription>{t("userAiinterview.chooseTheModeDifficultyLevel")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {configLoading && <LoadingSkeleton />}
@@ -41,9 +37,11 @@ export function ConfigStep({ hook }: { hook: AIInterviewSetupHook }) {
           <div className="flex flex-col items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-950/30">
             <AlertCircle className="h-8 w-8 text-red-500" />
             <p className="font-medium text-red-700 dark:text-red-300">
-              Không thể tải cấu hình phỏng vấn
+              {t("userAiinterview.unableToLoadInterviewConfiguration")}
             </p>
-            <p className="text-sm text-red-600 dark:text-red-400">Vui lòng thử lại sau</p>
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {t("userAiinterview.pleaseTryAgainLater")}
+            </p>
           </div>
         )}
 
@@ -88,18 +86,16 @@ export function ConfigStep({ hook }: { hook: AIInterviewSetupHook }) {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
                   <Clock className="h-5 w-5" />
                 </div>
-                <h4 className="text-foreground text-sm font-semibold">Thời lượng phỏng vấn</h4>
+                <h4 className="text-foreground text-sm font-semibold">
+                  {t("userAiinterview.interviewDuration")}
+                </h4>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {DURATION_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => setSelectedDuration(opt.value)}
-                    className={`relative flex w-full flex-col items-center gap-1 rounded-lg border-2 p-4 transition-all ${
-                      selectedDuration === opt.value
-                        ? "border-rose-500 bg-rose-50 shadow-sm dark:bg-rose-950/40"
-                        : "border-border bg-card hover:border-border/80 hover:bg-accent/50"
-                    }`}>
+                    className={`relative flex w-full flex-col items-center gap-1 rounded-lg border-2 p-4 transition-all ${selectedDuration === opt.value ? "border-rose-500 bg-rose-50 shadow-sm dark:bg-rose-950/40" : "border-border bg-card hover:border-border/80 hover:bg-accent/50"}`}>
                     {selectedDuration === opt.value && (
                       <CheckCircle2
                         className="absolute top-2 right-2 h-4 w-4 text-rose-600 dark:text-rose-400"
@@ -108,14 +104,10 @@ export function ConfigStep({ hook }: { hook: AIInterviewSetupHook }) {
                       />
                     )}
                     <span
-                      className={`text-lg font-bold ${
-                        selectedDuration === opt.value
-                          ? "text-rose-700 dark:text-rose-300"
-                          : "text-foreground"
-                      }`}>
+                      className={`text-lg font-bold ${selectedDuration === opt.value ? "text-rose-700 dark:text-rose-300" : "text-foreground"}`}>
                       {opt.value}
                     </span>
-                    <span className="text-muted-foreground text-xs">phút</span>
+                    <span className="text-muted-foreground text-xs">{t("common.minute")}</span>
                   </button>
                 ))}
               </div>

@@ -1,7 +1,3 @@
-import { ArrowLeft, ArrowRight, CheckCircle, ClipboardList, LogOut } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,9 +12,13 @@ import {
 import { quizSetManager } from "@/services";
 import type { QuizItem, QuizItemResponse, QuizSet } from "@/services/quiz-set.manager";
 import { useAuthStore } from "@/stores/authStore";
+import { ArrowLeft, ArrowRight, CheckCircle, ClipboardList, LogOut } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-
 export function QuizPage() {
+  const { t } = useTranslation();
   const { sessionId, practiceSetId, quizId } = useParams<{
     sessionId: string;
     practiceSetId: string;
@@ -39,7 +39,6 @@ export function QuizPage() {
   const defaultBackUrl = numericSessionId
     ? buildPracticeSessionPath(numericSessionId)
     : "/user?tab=practice";
-
   const location = useLocation();
   const locationState = location.state as {
     initialItems?: QuizItemResponse[];
@@ -65,14 +64,14 @@ export function QuizPage() {
       return defaultBackUrl;
     }
   });
-
   const loadData = useCallback(async () => {
     if (!numericQuizId || !numericSessionId || !numericPracticeSetId) {
-      toast.error("Đường dẫn bài kiểm tra không hợp lệ.");
-      navigate("/user?tab=practice", { replace: true });
+      toast.error(t("userPractice.invalidTestPath"));
+      navigate("/user?tab=practice", {
+        replace: true,
+      });
       return;
     }
-
     setLoading(true);
     try {
       const preloaded = initialItemsRef.current;
@@ -102,20 +101,26 @@ export function QuizPage() {
             /* ignore */
           }
         } else {
-          toast.error("Không tìm thấy bài kiểm tra");
+          toast.error(t("userPractice.noTestsFound"));
         }
       }
     } catch {
-      toast.error("Không thể tải dữ liệu bài trắc nghiệm");
+      toast.error(t("userPractice.unableToDownloadQuizData"));
     } finally {
       setLoading(false);
     }
-  }, [defaultBackUrl, navigate, numericPracticeSetId, numericQuizId, numericSessionId, storageKey]);
-
+  }, [
+    defaultBackUrl,
+    navigate,
+    numericPracticeSetId,
+    numericQuizId,
+    numericSessionId,
+    storageKey,
+    t,
+  ]);
   useEffect(() => {
     loadData();
   }, [loadData]);
-
   const parseOptions = (optionsStr?: string): Record<string, string> => {
     if (!optionsStr) return {};
     try {
@@ -127,7 +132,6 @@ export function QuizPage() {
       return {};
     }
   };
-
   const currentItem = quizItems[currentIndex];
   const options = parseOptions(currentItem?.options);
   const totalQuestions = quizItems.length;
@@ -135,24 +139,23 @@ export function QuizPage() {
   const progress = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
   const currentAnswer = currentItem?.id !== undefined ? answers[currentItem.id] : undefined;
   const isLastQuestion = currentIndex === totalQuestions - 1;
-
   const handleSelectAnswer = (key: string) => {
     if (currentItem?.id === undefined) return;
-    setAnswers((prev) => ({ ...prev, [currentItem.id!]: key }));
+    setAnswers((prev) => ({
+      ...prev,
+      [currentItem.id!]: key,
+    }));
   };
-
   const handleNext = () => {
     if (currentIndex < totalQuestions - 1) setCurrentIndex((prev) => prev + 1);
   };
-
   const handlePrevious = () => {
     if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
   };
-
   const handleSubmit = async () => {
     const qId = quizSet?.quizId;
     if (!qId) {
-      toast.error("Không tìm thấy bài trắc nghiệm để nộp bài");
+      toast.error(t("userPractice.noQuizzesToSubmit"));
       return;
     }
     // Backend expects Map<Integer, String>: { "<itemId>": "<selectedOption>" }
@@ -166,30 +169,32 @@ export function QuizPage() {
     try {
       const response = await quizSetManager.submit(qId, payload);
       if (response.success) {
-        toast.success("Đã nộp bài thành công!");
+        toast.success(t("userPractice.submittedSuccessfully"));
         if (!numericSessionId || !numericPracticeSetId) {
-          toast.error("Không thể mở kết quả vì thiếu thông tin phiên luyện tập.");
+          toast.error(t("userPractice.cannotOpenResultsBecauseTraining"));
           return;
         }
-
         navigate(
           buildPracticeQuizResultPath({
             sessionId: numericSessionId,
             practiceSetId: numericPracticeSetId,
             quizId: qId,
           }),
-          { state: { backUrl } }
+          {
+            state: {
+              backUrl,
+            },
+          }
         );
       } else {
-        toast.error(response.error ?? "Không thể nộp bài");
+        toast.error(response.error ?? t("userPractice.unableToSubmitAssignment"));
       }
     } catch {
-      toast.error("Không thể nộp bài");
+      toast.error(t("userPractice.unableToSubmitAssignment"));
     } finally {
       setSubmitting(false);
     }
   };
-
   if (loading) {
     return (
       <div className="bg-background min-h-screen p-6">
@@ -202,21 +207,19 @@ export function QuizPage() {
       </div>
     );
   }
-
   if (quizItems.length === 0) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
         <Card className="max-w-md p-8 text-center">
-          <p className="text-foreground font-medium">Không có câu hỏi nào trong bài trắc nghiệm</p>
+          <p className="text-foreground font-medium">{t("userPractice.thereAreNoQuestionsIn")}</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate(backUrl)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Quay lại
+            {t("general.back")}
           </Button>
         </Card>
       </div>
     );
   }
-
   return (
     <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-3xl space-y-4 p-6">
@@ -229,10 +232,11 @@ export function QuizPage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">
-                  {quizSet?.quizName ?? "Bài kiểm tra trắc nghiệm"}
+                  {quizSet?.quizName ?? t("userPractice.multipleChoiceTest")}
                 </p>
                 <p className="text-xs text-white/80">
-                  {user?.name ?? "Ứng viên"} • Mã đề: Q-{quizSet?.quizId}
+                  {user?.name ?? t("userPractice.candidate")} {t("userPractice.codeQ")}
+                  {quizSet?.quizId}
                 </p>
               </div>
             </div>
@@ -242,7 +246,7 @@ export function QuizPage() {
               className="gap-1.5 text-white hover:bg-white/20 hover:text-white"
               onClick={() => navigate(backUrl)}>
               <LogOut className="h-4 w-4" />
-              Thoát
+              {t("userPractice.exit")}
             </Button>
           </CardContent>
         </Card>
@@ -251,9 +255,11 @@ export function QuizPage() {
         <Card>
           <CardContent className="p-4">
             <div className="mb-3 flex items-center justify-between text-sm">
-              <span className="text-muted-foreground font-medium">Tiến độ làm bài</span>
               <span className="text-muted-foreground font-medium">
-                {answeredCount} / {totalQuestions} Câu hỏi
+                {t("userPractice.progressOfHomework")}
+              </span>
+              <span className="text-muted-foreground font-medium">
+                {answeredCount} / {totalQuestions} {t("common.question")}
               </span>
             </div>
             <Progress value={progress} className="mb-3 h-1.5" />
@@ -265,13 +271,7 @@ export function QuizPage() {
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
-                    className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold transition-all ${
-                      isCurrent
-                        ? "bg-[#0047AB] text-white shadow-sm ring-2 ring-[#0047AB]/40"
-                        : isAnswered
-                          ? "bg-[#DCEEFF] text-[#0047AB]"
-                          : "bg-muted text-muted-foreground hover:bg-[#DCEEFF] hover:text-[#0047AB]"
-                    }`}>
+                    className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold transition-all ${isCurrent ? "bg-[#0047AB] text-white shadow-sm ring-2 ring-[#0047AB]/40" : isAnswered ? "bg-[#DCEEFF] text-[#0047AB]" : "bg-muted text-muted-foreground hover:bg-[#DCEEFF] hover:text-[#0047AB]"}`}>
                     {idx + 1}
                   </button>
                 );
@@ -285,7 +285,7 @@ export function QuizPage() {
           <CardContent className="p-6">
             <div className="mb-5">
               <Badge className="bg-[#DCEEFF] text-xs font-bold text-[#0047AB]">
-                CÂU HỎI {currentIndex + 1}
+                {t("general.question1")} {currentIndex + 1}
               </Badge>
               <p className="text-foreground mt-3 text-base leading-relaxed font-semibold">
                 {currentItem?.question}
@@ -298,21 +298,15 @@ export function QuizPage() {
                   <button
                     key={key}
                     onClick={() => handleSelectAnswer(key)}
-                    className={`w-full rounded-lg border p-4 text-left transition-all ${
-                      isSelected
-                        ? "border-[#0047AB] bg-[#DCEEFF] dark:bg-[#0047AB]/10"
-                        : "border-border hover:bg-muted hover:border-[#0047AB]/50"
-                    }`}>
+                    className={`w-full rounded-lg border p-4 text-left transition-all ${isSelected ? "border-[#0047AB] bg-[#DCEEFF] dark:bg-[#0047AB]/10" : "border-border hover:bg-muted hover:border-[#0047AB]/50"}`}>
                     <div className="flex items-start gap-3">
                       <div
-                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                          isSelected ? "border-[#0047AB] bg-[#0047AB]" : "border-muted-foreground"
-                        }`}>
+                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${isSelected ? "border-[#0047AB] bg-[#0047AB]" : "border-muted-foreground"}`}>
                         {isSelected && <div className="h-2 w-2 rounded-full bg-white" />}
                       </div>
                       <div>
                         <span className="text-muted-foreground text-xs font-medium">
-                          Lựa chọn {key}
+                          {t("userPractice.select")} {key}
                         </span>
                         <p className="text-foreground text-sm leading-relaxed">{value}</p>
                       </div>
@@ -332,7 +326,7 @@ export function QuizPage() {
             disabled={currentIndex === 0}
             className="gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Quay lại
+            {t("general.back")}
           </Button>
 
           {isLastQuestion ? (
@@ -345,11 +339,11 @@ export function QuizPage() {
               ) : (
                 <CheckCircle className="h-4 w-4" />
               )}
-              Nộp bài
+              {t("userPractice.submitYourAssignment")}
             </Button>
           ) : (
             <Button onClick={handleNext} className="gap-2 bg-[#0047AB] hover:bg-[#003580]">
-              Tiếp theo
+              {t("common.next")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           )}

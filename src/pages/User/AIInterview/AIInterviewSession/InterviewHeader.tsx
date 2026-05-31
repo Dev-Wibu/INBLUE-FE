@@ -1,3 +1,9 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import i18n from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -6,15 +12,8 @@ import {
   Volume2,
   VolumeOff,
 } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-
 import type { SpeechLanguageCode } from "./types";
-
+const t = i18n.t.bind(i18n);
 export function InterviewHeader({
   phaseName,
   questionIndex,
@@ -48,7 +47,6 @@ export function InterviewHeader({
 }) {
   const progress = totalQuestions > 0 ? (questionIndex / totalQuestions) * 100 : 0;
   const safeProgress = Math.max(0, Math.min(progress, 100));
-
   return (
     <div className="border-b border-slate-200/80 bg-linear-to-r from-white via-cyan-50/40 to-blue-50/40 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
       <div className="flex items-center gap-3 px-4 py-3 md:px-6">
@@ -64,7 +62,7 @@ export function InterviewHeader({
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="text-foreground text-base font-black tracking-tight md:text-lg">
-            Phỏng vấn với AI
+            {t("common.interviewWithAi")}
           </h1>
           <div className="mt-0.5 flex flex-wrap items-center gap-2">
             {phaseName && (
@@ -74,20 +72,21 @@ export function InterviewHeader({
             )}
             {!finished && totalQuestions > 0 && (
               <span className="text-muted-foreground text-xs">
-                Câu {questionIndex}/{totalQuestions}
+                {t("common.sentence")} {questionIndex}/{totalQuestions}
               </span>
             )}
             {!finished && totalQuestions > 0 && (
               <Badge
                 variant="outline"
                 className="rounded-full border-cyan-200 bg-cyan-50 text-[11px] text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950/40 dark:text-cyan-300">
-                {Math.round(safeProgress)}% hoàn tất
+                {Math.round(safeProgress)}
+                {t("userAiinterview.complete1")}
               </Badge>
             )}
             {finished && (
               <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
                 <CheckCircle2 className="mr-1 h-3 w-3" />
-                Hoàn thành
+                {t("general.completed")}
               </Badge>
             )}
           </div>
@@ -96,7 +95,7 @@ export function InterviewHeader({
         {!finished && (
           <div className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 lg:inline-flex dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">
             <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-            Đang phỏng vấn trực tiếp
+            {t("userAiinterview.interviewingLive")}
           </div>
         )}
 
@@ -104,7 +103,7 @@ export function InterviewHeader({
           <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-2.5 py-1 text-[11px] md:inline-flex dark:border-slate-700 dark:bg-slate-800/70">
             <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-200">
               <Languages className="h-3.5 w-3.5" />
-              Giọng nói
+              {t("userAiinterview.voice")}
             </span>
             <div className="flex items-center gap-1">
               <button
@@ -138,7 +137,7 @@ export function InterviewHeader({
 
         {!finished && shouldWarnSpeechFallback && (
           <div className="hidden rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] text-amber-700 lg:inline-flex dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
-            Giọng Việt có thể không khả dụng, hệ thống có thể đọc bằng giọng mặc định
+            {t("userAiinterview.vietnameseVoiceMayNotBe")}
             {activeVoiceName && (
               <span className="ml-1 text-amber-600/80 dark:text-amber-200/80">
                 ({activeVoiceName})
@@ -155,20 +154,26 @@ export function InterviewHeader({
                 size="icon"
                 onClick={onToggleMute}
                 className={isMuted ? "text-muted-foreground" : "text-cyan-600"}
-                aria-label={isMuted ? "Bật âm thanh AI" : "Tắt âm thanh AI"}>
+                aria-label={
+                  isMuted
+                    ? t("userAiinterview.turnOnAiSounds")
+                    : t("userAiinterview.turnOffAiSounds")
+                }>
                 {isMuted ? <VolumeOff className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{isMuted ? "Âm thanh AI: Tắt" : "Âm thanh AI: Bật"}</TooltipContent>
+            <TooltipContent>
+              {isMuted ? t("userAiinterview.aiSoundOff") : t("userAiinterview.aiSoundOn")}
+            </TooltipContent>
           </Tooltip>
         )}
       </div>
       {!finished && totalQuestions > 0 && (
         <div className="px-4 pb-3 md:px-6">
           <div className="text-muted-foreground mb-1 flex items-center justify-between text-[11px]">
-            <span>Tiến độ phiên</span>
+            <span>{t("userAiinterview.sessionProgress")}</span>
             <span>
-              {questionIndex}/{totalQuestions} câu
+              {questionIndex}/{totalQuestions} {t("general.questions")}
             </span>
           </div>
           <Progress value={safeProgress} className="h-1.5" />

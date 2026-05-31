@@ -1,37 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
-
 import { useSpeechRecognition, useSpeechSynthesis } from "@/hooks";
 import { $api } from "@/lib/api";
 import { formatTime, formatUtcNaiveTime } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
 import { useAuthStore } from "@/stores/authStore";
-
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { resolveAutoSendDraft } from "./speech.utils";
 import { SPEECH_LANGUAGE_LABELS, type ChatMessage, type SpeechLanguageCode } from "./types";
-
 const normalizeServerTimestamp = (value?: string): string | null => {
   if (!value) {
     return null;
   }
-
   const normalized = formatUtcNaiveTime(value, "");
   return normalized || null;
 };
-
 const normalizeMessageContent = (value: string): string => {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 };
-
 const isEquivalentMessage = (first: ChatMessage, second: ChatMessage): boolean => {
   if (first.role !== second.role) {
     return false;
   }
-
   return normalizeMessageContent(first.content) === normalizeMessageContent(second.content);
 };
-
 const mergeServerAndLocalMessages = (
   serverMessages: ChatMessage[],
   localMessages: ChatMessage[]
@@ -39,10 +32,8 @@ const mergeServerAndLocalMessages = (
   if (serverMessages.length === 0) {
     return localMessages;
   }
-
   const merged = [...serverMessages];
   let searchStart = 0;
-
   for (const localMessage of localMessages) {
     let matchedIndex = -1;
     for (let index = searchStart; index < merged.length; index += 1) {
@@ -51,7 +42,6 @@ const mergeServerAndLocalMessages = (
         break;
       }
     }
-
     if (matchedIndex >= 0) {
       if (merged[matchedIndex].timestamp === "—" && localMessage.timestamp !== "—") {
         merged[matchedIndex] = {
@@ -62,45 +52,37 @@ const mergeServerAndLocalMessages = (
       searchStart = matchedIndex + 1;
       continue;
     }
-
     merged.push(localMessage);
     searchStart = merged.length;
   }
-
   return merged;
 };
-
 const removeMergedDuplicates = (messages: ChatMessage[]): ChatMessage[] => {
   const seen = new Set<string>();
   const deduped: ChatMessage[] = [];
-
   for (const message of messages) {
     const fingerprint = [message.role, normalizeMessageContent(message.content)].join("|");
-
     if (seen.has(fingerprint)) {
       continue;
     }
-
     seen.add(fingerprint);
     deduped.push(message);
   }
-
   return deduped;
 };
-
 const applyStableMessageIds = (
   nextMessages: ChatMessage[],
   previousMessages: ChatMessage[],
-  nextIdRef: { current: number }
+  nextIdRef: {
+    current: number;
+  }
 ): ChatMessage[] => {
   const usedPreviousIndexes = new Set<number>();
-
   return nextMessages.map((message) => {
     const matchedIndex = previousMessages.findIndex(
       (previousMessage, index) =>
         !usedPreviousIndexes.has(index) && isEquivalentMessage(previousMessage, message)
     );
-
     if (matchedIndex >= 0) {
       usedPreviousIndexes.add(matchedIndex);
       return {
@@ -108,7 +90,6 @@ const applyStableMessageIds = (
         id: previousMessages[matchedIndex].id,
       };
     }
-
     const newId = nextIdRef.current;
     nextIdRef.current += 1;
     return {
@@ -117,7 +98,6 @@ const applyStableMessageIds = (
     };
   });
 };
-
 const buildMessagesFromCache = (
   cacheData: {
     chatHistory?: Array<{
@@ -131,13 +111,14 @@ const buildMessagesFromCache = (
     currentQuestionType?: string;
   },
   fallbackTimestamp: () => string
-): { messages: ChatMessage[]; lastPhaseName?: string } => {
+): {
+  messages: ChatMessage[];
+  lastPhaseName?: string;
+} => {
   const restored: ChatMessage[] = [];
   let lastPhaseName: string | undefined;
-
   for (const exchange of cacheData.chatHistory ?? []) {
     const serverTimestamp = normalizeServerTimestamp(exchange.submittedAt) ?? fallbackTimestamp();
-
     if (exchange.questionText) {
       restored.push({
         id: 0,
@@ -150,7 +131,6 @@ const buildMessagesFromCache = (
         },
       });
     }
-
     if (exchange.answerText) {
       restored.push({
         id: 0,
@@ -159,17 +139,14 @@ const buildMessagesFromCache = (
         timestamp: serverTimestamp,
       });
     }
-
     if (exchange.phaseName) {
       lastPhaseName = exchange.phaseName;
     }
   }
-
   if (cacheData.currentQuestionText) {
     const lastMessage = restored[restored.length - 1];
     const isDuplicateCurrentQuestion =
       lastMessage?.role === "ai" && lastMessage.content === cacheData.currentQuestionText;
-
     if (!isDuplicateCurrentQuestion) {
       restored.push({
         id: 0,
@@ -183,21 +160,19 @@ const buildMessagesFromCache = (
       });
     }
   }
-
   return {
     messages: restored,
     lastPhaseName,
   };
 };
-
 export function useAIInterviewSession(isSessionActivated = false) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const [speechLanguage, setSpeechLanguage] = useState<SpeechLanguageCode>("vi-VN");
 
   // chatInputValue là state được lift lên từ ChatInput để callback STT có thể cập nhật trực tiếp
   const [chatInputValue, setChatInputValue] = useState("");
-
   const handleSpeechListeningReminder = useCallback((elapsedMs: number) => {
     const elapsedMinutes = Math.max(1, Math.floor(elapsedMs / 60000));
     toast.info(
@@ -222,7 +197,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
       onReminder: handleSpeechListeningReminder,
     }
   );
-
   const {
     speakingId,
     isSupported: isTTSSupported,
@@ -251,7 +225,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
   // Đọc session key từ URL params
   const [searchParams] = useSearchParams();
   const sessionKey = searchParams.get("sessionKey") ?? undefined;
-
   const [sessionExpiredMidway, setSessionExpiredMidway] = useState(false);
 
   // Kiểm tra xem phiên có đã được đánh dấu hoàn thành trong localStorage chưa
@@ -259,9 +232,7 @@ export function useAIInterviewSession(isSessionActivated = false) {
     if (!sessionKey) return false;
     return localStorage.getItem(`interview-finished-${sessionKey}`) === "true";
   });
-
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   // isEvaluating = true trong khoảng 3 giây sau khi trả lời xong câu hỏi cuối cùng
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -274,7 +245,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
   const [totalQuestions, setTotalQuestions] = useState(0);
   // hasStarted = true ngay nếu phiên đã hoàn thành — lịch sử chat luôn lấy từ /cache
   const [hasStarted, setHasStarted] = useState<boolean>(isAlreadyFinished);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const msgIdCounter = useRef(1);
   // Dùng ref thay vì state để guard khỏi StrictMode double-invocation
@@ -296,7 +266,13 @@ export function useAIInterviewSession(isSessionActivated = false) {
   } = $api.useQuery(
     "get",
     "/api/interview-sessions/cache/{sessionKey}",
-    { params: { path: { sessionKey: sessionKey ?? "" } } },
+    {
+      params: {
+        path: {
+          sessionKey: sessionKey ?? "",
+        },
+      },
+    },
     {
       enabled: !!sessionKey && !interviewFinished,
       refetchOnWindowFocus: false,
@@ -305,7 +281,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
 
   // sessionId từ cache Redis (dbId) — dùng để navigate đến trang kết quả
   const sessionId = cacheData?.dbId;
-
   const getNow = useCallback(() => formatTime(new Date()), []);
 
   // Lưu sessionId vào localStorage làm fallback (phòng khi cache đã hết hạn lúc navigate)
@@ -318,16 +293,13 @@ export function useAIInterviewSession(isSessionActivated = false) {
   // Khôi phục lịch sử chat từ Redis cache — nguồn dữ liệu duy nhất cho chat history
   useEffect(() => {
     if (!cacheData) return;
-
     const { messages: restored, lastPhaseName } = buildMessagesFromCache(cacheData, getNow);
     const hasServerConversation =
       (cacheData.chatHistory?.length ?? 0) > 0 || !!cacheData.currentQuestionText;
-
     if (hasServerConversation) {
       hasProcessedStartRef.current = true;
       setHasStarted(true);
     }
-
     if (restored.length > 0) {
       setMessages((previous) => {
         const merged = mergeServerAndLocalMessages(restored, previous);
@@ -336,17 +308,14 @@ export function useAIInterviewSession(isSessionActivated = false) {
         messagesRef.current = withStableIds;
         return withStableIds;
       });
-
       if (lastPhaseName) {
         setCurrentPhase(lastPhaseName);
       }
     }
-
     if (typeof cacheData.currentQuestionIndex === "number" && cacheData.currentQuestionIndex > 0) {
       setCurrentQuestionIndex(cacheData.currentQuestionIndex);
     }
   }, [cacheData, getNow]);
-
   const submitMutation = $api.useMutation("post", "/api/v1/interview/submit");
 
   // Giữ messagesRef luôn đồng bộ với messages state (tránh stale closure)
@@ -358,16 +327,16 @@ export function useAIInterviewSession(isSessionActivated = false) {
   useEffect(() => {
     chatInputValueRef.current = chatInputValue;
   }, [chatInputValue]);
-
   useEffect(() => {
     interimTranscriptRef.current = interimTranscript;
   }, [interimTranscript]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
   }, [messages, isSubmitting]);
-
   const addAIMessage = useCallback(
     (data: {
       questionContent?: string;
@@ -380,7 +349,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
       if (data.phaseName) setCurrentPhase(data.phaseName);
       if (data.currentQuestionIndex) setCurrentQuestionIndex(data.currentQuestionIndex);
       if (data.totalQuestionsInPhase) setTotalQuestions(data.totalQuestionsInPhase);
-
       if (data.finished) {
         // Dừng TTS nếu đang phát khi kết thúc buổi phỏng vấn
         cancelSpeech();
@@ -411,26 +379,22 @@ export function useAIInterviewSession(isSessionActivated = false) {
             {
               id: msgIdCounter.current++,
               role: "ai",
-              content:
-                "Cuộc phỏng vấn đã kết thúc. Cảm ơn bạn đã tham gia! Bạn có thể xem kết quả đánh giá chi tiết.",
+              content: t("userAiinterview.theInterviewHasEndedThank"),
               timestamp: getNow(),
             },
           ]);
         }, 3000);
         return;
       }
-
       if (data.questionContent) {
         const lastMessage = messagesRef.current[messagesRef.current.length - 1];
         const isSameAsLatestAiMessage =
           lastMessage?.role === "ai" &&
           normalizeMessageContent(lastMessage.content) ===
             normalizeMessageContent(data.questionContent);
-
         if (isSameAsLatestAiMessage) {
           return;
         }
-
         const newId = msgIdCounter.current++;
         setMessages((prev) => [
           ...prev,
@@ -453,7 +417,8 @@ export function useAIInterviewSession(isSessionActivated = false) {
         }
       }
     },
-    [cancelSpeech, getNow, isMuted, isSessionActivated, isTTSSupported, sessionKey, speak]
+
+    [cancelSpeech, getNow, isMuted, isSessionActivated, isTTSSupported, sessionKey, speak, t]
   );
 
   // Start interview — GET /api/v1/interview/start/{sessionKey}
@@ -466,7 +431,13 @@ export function useAIInterviewSession(isSessionActivated = false) {
   } = $api.useQuery(
     "get",
     "/api/v1/interview/start/{sessionKey}",
-    { params: { path: { sessionKey: sessionKey ?? "" } } },
+    {
+      params: {
+        path: {
+          sessionKey: sessionKey ?? "",
+        },
+      },
+    },
     {
       enabled:
         !!sessionKey &&
@@ -483,7 +454,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
     if (!isSessionActivated) {
       return;
     }
-
     if (startData && !hasProcessedStartRef.current) {
       hasProcessedStartRef.current = true;
       setHasStarted(true);
@@ -514,8 +484,7 @@ export function useAIInterviewSession(isSessionActivated = false) {
             {
               id: msgIdCounter.current++,
               role: "ai",
-              content:
-                "Cuộc phỏng vấn này đã hoàn tất trước đó. Bạn có thể xem kết quả đánh giá chi tiết.",
+              content: t("userAiinterview.thisInterviewHasBeenCompleted"),
               timestamp: getNow(),
             },
           ];
@@ -529,27 +498,23 @@ export function useAIInterviewSession(isSessionActivated = false) {
       if (lastMsg?.role === "ai" && lastMsg.content === startData.questionContent) {
         return;
       }
-
       setTimeout(() => {
         const hasServerConversation =
           (cacheData?.chatHistory?.length ?? 0) > 0 || !!cacheData?.currentQuestionText;
         if (hasServerConversation) return;
-
         const hasSameAiQuestion = messagesRef.current.some(
           (message) => message.role === "ai" && message.content === startData.questionContent
         );
         if (hasSameAiQuestion) return;
-
         addAIMessage(startData);
       }, 600);
     }
-  }, [addAIMessage, cacheData, getNow, isSessionActivated, sessionKey, startData]);
+  }, [addAIMessage, cacheData, getNow, isSessionActivated, sessionKey, startData, t]);
 
   // Handle send answer
   const handleSendAnswer = useCallback(
     async (answer: string) => {
       if (!sessionKey || isSubmitting || interviewFinished) return;
-
       setMessages((prev) => [
         ...prev,
         {
@@ -559,12 +524,14 @@ export function useAIInterviewSession(isSessionActivated = false) {
           timestamp: getNow(),
         },
       ]);
-
       setIsSubmitting(true);
       let finished = false;
       try {
         const response = await submitMutation.mutateAsync({
-          body: { sessionKey, answer },
+          body: {
+            sessionKey,
+            answer,
+          },
         });
         finished = !!response?.finished;
         addAIMessage(response);
@@ -574,7 +541,12 @@ export function useAIInterviewSession(isSessionActivated = false) {
           queryKey: ["get", "/api/interview-sessions/cache/{sessionKey}"],
         });
       } catch (err) {
-        const errMsg = (err as { message?: string })?.message?.toLowerCase() ?? "";
+        const errMsg =
+          (
+            err as {
+              message?: string;
+            }
+          )?.message?.toLowerCase() ?? "";
         const isExpiry =
           errMsg.includes("not found") || errMsg.includes("expired") || errMsg.includes("404");
         if (isExpiry) {
@@ -585,8 +557,7 @@ export function useAIInterviewSession(isSessionActivated = false) {
             {
               id: msgIdCounter.current++,
               role: "ai",
-              content:
-                "Phiên phỏng vấn đã hết hạn sau 1 giờ không hoạt động. Bạn không thể tiếp tục phiên này. Vui lòng tạo buổi phỏng vấn mới.",
+              content: t("userAiinterview.theInterviewSessionExpiredAfter"),
               timestamp: getNow(),
             },
           ]);
@@ -596,7 +567,7 @@ export function useAIInterviewSession(isSessionActivated = false) {
             {
               id: msgIdCounter.current++,
               role: "ai",
-              content: "Đã xảy ra lỗi khi xử lý câu trả lời. Vui lòng thử gửi lại.",
+              content: t("userAiinterview.anErrorOccurredWhileProcessing"),
               timestamp: getNow(),
             },
           ]);
@@ -609,16 +580,15 @@ export function useAIInterviewSession(isSessionActivated = false) {
         }
       }
     },
-    [sessionKey, isSubmitting, interviewFinished, submitMutation, addAIMessage, getNow]
-  );
 
+    [sessionKey, isSubmitting, interviewFinished, submitMutation, addAIMessage, getNow, t]
+  );
   const handleSendFromComposer = useCallback(
     (answer: string) => {
       const trimmedAnswer = answer.trim();
       if (!trimmedAnswer) {
         return;
       }
-
       setChatInputValue("");
       void handleSendAnswer(trimmedAnswer);
     },
@@ -632,46 +602,37 @@ export function useAIInterviewSession(isSessionActivated = false) {
     !isSubmitting &&
     !isEvaluating &&
     !interviewFinished;
-
   const handleToggleListening = useCallback(() => {
     if (!isSpeechRecognitionSupported) {
       return;
     }
-
     if (isListening) {
       pendingInterimForAutoSendRef.current = interimTranscriptRef.current;
       shouldAutoSendAfterStopRef.current = true;
       stopListening();
       return;
     }
-
     if (!canUseSpeechInput) {
       return;
     }
-
     shouldAutoSendAfterStopRef.current = false;
     pendingInterimForAutoSendRef.current = "";
     startListening();
   }, [canUseSpeechInput, isListening, isSpeechRecognitionSupported, startListening, stopListening]);
-
   const handleDeviceCheckConfirmed = useCallback(() => {
     setShouldAutoStartMicAfterDeviceCheck(true);
   }, []);
-
   useEffect(() => {
     if (!shouldAutoStartMicAfterDeviceCheck) {
       return;
     }
-
     if (!isSpeechRecognitionSupported || interviewFinished || sessionExpiredMidway) {
       setShouldAutoStartMicAfterDeviceCheck(false);
       return;
     }
-
     if (isListening || !canUseSpeechInput) {
       return;
     }
-
     setShouldAutoStartMicAfterDeviceCheck(false);
     shouldAutoSendAfterStopRef.current = false;
     pendingInterimForAutoSendRef.current = "";
@@ -685,14 +646,11 @@ export function useAIInterviewSession(isSessionActivated = false) {
     shouldAutoStartMicAfterDeviceCheck,
     startListening,
   ]);
-
   useEffect(() => {
     if (isListening || !shouldAutoSendAfterStopRef.current) {
       return;
     }
-
     shouldAutoSendAfterStopRef.current = false;
-
     const finalDraft = resolveAutoSendDraft(
       chatInputValueRef.current,
       pendingInterimForAutoSendRef.current
@@ -701,21 +659,17 @@ export function useAIInterviewSession(isSessionActivated = false) {
     if (!finalDraft) {
       return;
     }
-
     setChatInputValue("");
     void handleSendAnswer(finalDraft);
   }, [handleSendAnswer, isListening]);
-
   const canSwitchSpeechLanguage = !isListening && !isSubmitting && !isEvaluating;
   const shouldWarnSpeechFallback =
     speechLanguage === "vi-VN" && hasPreferredLanguageVoice === false;
-
   const handleSpeechLanguageChange = useCallback(
     (language: SpeechLanguageCode) => {
       if (!canSwitchSpeechLanguage || language === speechLanguage) {
         return;
       }
-
       setSpeechLanguage(language);
     },
     [canSwitchSpeechLanguage, speechLanguage]
@@ -754,7 +708,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
     });
     navigate("/user?tab=aiInterview");
   }, [navigate]);
-
   return {
     navigate,
     user,

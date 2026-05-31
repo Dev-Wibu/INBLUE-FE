@@ -1,14 +1,14 @@
+import i18n from "@/lib/i18n";
 import { render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
-
 import { InterviewStage } from "./InterviewStage";
-
+const t = i18n.t.bind(i18n);
 describe("InterviewStage", () => {
-  it("luôn mount thẻ video để nhận stream camera", () => {
+  it(t("userAiinterview.alwaysMountAVideoCard"), () => {
     const { container } = render(
       <InterviewStage
-        phaseName="Chào hỏi"
+        phaseName={t("userAiinterview.hello")}
         questionIndex={1}
         totalQuestions={3}
         interviewFinished={false}
@@ -16,7 +16,7 @@ describe("InterviewStage", () => {
         isListening={false}
         isSpeechSupported={true}
         canUseSpeechInput={true}
-        speechLanguageLabel="Tiếng Việt"
+        speechLanguageLabel={t("common.vietnamese")}
         isSubmitting={false}
         isEvaluating={false}
         cameraState="requesting"
@@ -26,15 +26,13 @@ describe("InterviewStage", () => {
         onToggleCamera={vi.fn()}
       />
     );
-
     expect(container.querySelector("video")).toBeInTheDocument();
-    expect(screen.getByText("Đang xin quyền camera")).toBeInTheDocument();
+    expect(screen.getByText(t("userAiinterview.askingForCameraPermission"))).toBeInTheDocument();
   });
-
-  it("thu gọn panel khi camera ở trạng thái tắt", () => {
+  it(t("userAiinterview.collapseThePanelWhenThe"), () => {
     const { getByTestId } = render(
       <InterviewStage
-        phaseName="Chào hỏi"
+        phaseName={t("userAiinterview.hello")}
         questionIndex={1}
         totalQuestions={3}
         interviewFinished={false}
@@ -42,7 +40,7 @@ describe("InterviewStage", () => {
         isListening={false}
         isSpeechSupported={true}
         canUseSpeechInput={true}
-        speechLanguageLabel="Tiếng Việt"
+        speechLanguageLabel={t("common.vietnamese")}
         isSubmitting={false}
         isEvaluating={false}
         cameraState="idle"
@@ -52,15 +50,15 @@ describe("InterviewStage", () => {
         onToggleCamera={vi.fn()}
       />
     );
-
-    expect(getByTestId("camera-panel")).toHaveStyle({ height: "100px" });
-    expect(screen.getByText("Camera đang tắt")).toBeInTheDocument();
+    expect(getByTestId("camera-panel")).toHaveStyle({
+      height: "100px",
+    });
+    expect(screen.getByText(t("userAiinterview.cameraIsOff"))).toBeInTheDocument();
   });
-
-  it("hiển thị tay nắm kéo thay đổi kích thước khung camera", () => {
+  it(t("userAiinterview.showTheHandleToResize"), () => {
     render(
       <InterviewStage
-        phaseName="Chào hỏi"
+        phaseName={t("userAiinterview.hello")}
         questionIndex={1}
         totalQuestions={3}
         interviewFinished={false}
@@ -68,7 +66,7 @@ describe("InterviewStage", () => {
         isListening={false}
         isSpeechSupported={true}
         canUseSpeechInput={true}
-        speechLanguageLabel="Tiếng Việt"
+        speechLanguageLabel={t("common.vietnamese")}
         isSubmitting={false}
         isEvaluating={false}
         cameraState="granted"
@@ -78,7 +76,6 @@ describe("InterviewStage", () => {
         onToggleCamera={vi.fn()}
       />
     );
-
-    expect(screen.getByLabelText("Kéo để thay đổi kích thước khung camera")).toBeInTheDocument();
+    expect(screen.getByLabelText(t("userAiinterview.dragToResizeTheCamera"))).toBeInTheDocument();
   });
 });

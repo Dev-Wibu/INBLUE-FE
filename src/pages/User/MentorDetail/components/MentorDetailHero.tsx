@@ -3,15 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
 import { ArrowLeft, Briefcase, Sparkles, Star, Users, Wallet } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 interface MentorDetailHeroProps {
   mentor: SchemaMentorResponse;
   ratingText: string;
   priceText: string;
   onBack: () => void;
 }
-
 export function MentorDetailHero({ mentor, ratingText, priceText, onBack }: MentorDetailHeroProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4 rounded-3xl border border-slate-200 bg-white/85 p-4 shadow-sm backdrop-blur-sm md:p-5 dark:border-slate-700/70 dark:bg-slate-900/55">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -21,12 +21,12 @@ export function MentorDetailHero({ mentor, ratingText, priceText, onBack }: Ment
           className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
           onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Quay lại danh sách Mentor
+          {t("userMentordetail.returnToMentorList")}
         </Button>
 
         <Badge className="rounded-full border border-cyan-300/40 bg-cyan-50 px-4 py-1 text-[11px] font-semibold tracking-[0.12em] text-cyan-700 uppercase dark:border-cyan-300/20 dark:bg-cyan-400/10 dark:text-cyan-200">
           <Sparkles className="mr-1 h-3.5 w-3.5" />
-          Hồ sơ mentor chuyên sâu
+          {t("userMentordetail.inDepthMentorProfile")}
         </Badge>
       </div>
 
@@ -44,7 +44,7 @@ export function MentorDetailHero({ mentor, ratingText, priceText, onBack }: Ment
               {mentor.name || "Mentor"}
             </h1>
             <p className="mt-1 text-sm font-semibold tracking-wider text-blue-700 uppercase dark:text-cyan-200">
-              {mentor.expertise || "Chuyên môn chưa cập nhật"}
+              {mentor.expertise || t("userMentordetail.expertiseNotUpdated")}
             </p>
           </div>
 
@@ -55,11 +55,11 @@ export function MentorDetailHero({ mentor, ratingText, priceText, onBack }: Ment
             </Badge>
             <Badge className="rounded-full border border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
               <Users className="mr-1 h-3.5 w-3.5" />
-              {mentor.totalSession || 0} phiên
+              {mentor.totalSession || 0} {t("common.session1")}
             </Badge>
             <Badge className="rounded-full border border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100">
               <Sparkles className="mr-1 h-3.5 w-3.5" />
-              {mentor.yearsOfExperience || 0} năm kinh nghiệm
+              {mentor.yearsOfExperience || 0} {t("userMentordetail.yearsOfExperience")}
             </Badge>
             <Badge className="rounded-full border border-emerald-300/40 bg-emerald-50 text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-400/15 dark:text-emerald-200">
               <Wallet className="mr-1 h-3.5 w-3.5" />

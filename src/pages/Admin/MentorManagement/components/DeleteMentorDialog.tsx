@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next";
 
 import type { Mentor } from "../types";
 
@@ -24,12 +25,17 @@ export function DeleteMentorDialog({
   mentor,
   onConfirm,
 }: DeleteMentorDialogProps) {
+  const { t } = useTranslation();
   const isActive = mentor?.active !== false;
-  const action = isActive ? "vô hiệu hóa" : "kích hoạt";
-  const actionTitle = isActive ? "Vô hiệu hóa Mentor" : "Kích hoạt Mentor";
+  const action = isActive
+    ? t("adminMentormanagement.disable")
+    : t("adminMentormanagement.activate");
+  const actionTitle = isActive
+    ? t("adminMentormanagement.disableMentor")
+    : t("adminMentormanagement.activateMentor");
   const actionDescription = isActive
-    ? `Bạn có chắc chắn muốn vô hiệu hóa mentor "${mentor?.name}"? Mentor sẽ không thể thực hiện các buổi phỏng vấn mới.`
-    : `Bạn có chắc chắn muốn kích hoạt lại mentor "${mentor?.name}"? Mentor sẽ có thể thực hiện các buổi phỏng vấn mới.`;
+    ? t("general.areYouSureYouWant5", { var_0: mentor?.name })
+    : t("general.areYouSureYouWant6", { var_0: mentor?.name });
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -39,7 +45,7 @@ export function DeleteMentorDialog({
           <AlertDialogDescription>{actionDescription}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogCancel>{t("general.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className={

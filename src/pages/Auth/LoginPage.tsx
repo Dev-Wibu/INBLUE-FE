@@ -1,8 +1,3 @@
-import { Eye, EyeOff } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
 import { DemoLoginButton } from "@/components/DemoLoginButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,12 +6,15 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
-
+import { Eye, EyeOff } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 type LoginNavigationState = {
   message?: string;
   prefillEmail?: string;
 };
-
 type LoginAuthPayload = {
   user: {
     id: string;
@@ -28,8 +26,8 @@ type LoginAuthPayload = {
   };
   token?: string;
 };
-
 export function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const navigationState = location.state as LoginNavigationState | null;
@@ -41,12 +39,10 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [infoMessage, setInfoMessage] = useState(() => navigationState?.message || "");
   const [error, setError] = useState("");
-
   const applyAuthState = useCallback(
     (payload: LoginAuthPayload) => {
       const parsedUserId = Number(payload.user.id);
       const userId = Number.isFinite(parsedUserId) ? parsedUserId : undefined;
-
       setUser({
         id: userId,
         name: payload.user.fullName,
@@ -61,65 +57,57 @@ export function LoginPage() {
       });
       setToken(payload.token ?? null);
       setIsLoggedIn(true);
-
       if (userId && !isNaN(userId)) {
         localStorage.setItem("current-user-id", String(userId));
       }
-
-      navigate(getDashboardPath(payload.user.role), { replace: true });
+      navigate(getDashboardPath(payload.user.role), {
+        replace: true,
+      });
     },
     [navigate, setIsLoggedIn, setToken, setUser]
   );
-
   useEffect(() => {
     const callbackUrl = window.location.href;
     if (!authManager.hasGoogleCallbackPayload(callbackUrl)) {
       return;
     }
-
     const timerId = window.setTimeout(() => {
       setInfoMessage("");
       setError("");
-
       const callbackError = authManager.getGoogleCallbackError(callbackUrl);
       if (callbackError) {
         setError(callbackError);
         return;
       }
-
       const callbackResult = authManager.consumeGoogleCallbackFromUrl(callbackUrl);
       if (!callbackResult.success || !callbackResult.data?.user || !callbackResult.data.token) {
-        setError(callbackResult.error || "Đăng nhập Google thất bại.");
+        setError(callbackResult.error || t("auth_signuppage.tsx.ang_nhap_google_that_bai"));
         return;
       }
-
       applyAuthState(callbackResult.data);
     }, 0);
-
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [applyAuthState, location.hash, location.search]);
-
+  }, [applyAuthState, location.hash, location.search, t]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
     setInfoMessage("");
-
-    const result = await authManager.login({ email, password });
-
+    const result = await authManager.login({
+      email,
+      password,
+    });
     if (result.success && result.data?.user) {
       applyAuthState(result.data);
     } else {
-      const errorMessage = result.error || "Đăng nhập thất bại";
+      const errorMessage = result.error || t("auth_loginpage.tsx.ang_nhap_that_bai");
       setError(errorMessage);
       toast.error(errorMessage);
     }
-
     setIsLoading(false);
   };
-
   const handleGoogleLogin = () => {
     setError("");
     setInfoMessage("");
@@ -133,17 +121,17 @@ export function LoginPage() {
     setError("");
     setInfoMessage("");
   };
-
   const inputClassName =
     "border-slate-200 bg-white/90 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#0047AB]/25 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus-visible:ring-[#66B2FF]/35";
   const passwordInputClassName = cn("pr-10", inputClassName);
-
   return (
     <Card className="w-full max-w-md border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl text-[#0047AB] dark:text-[#66B2FF]">Đăng nhập</CardTitle>
+        <CardTitle className="text-2xl text-[#0047AB] dark:text-[#66B2FF]">
+          {t("common.logIn")}
+        </CardTitle>
         <CardDescription className="text-slate-600 dark:text-slate-300">
-          Chào mừng quay trở lại. Vui lòng điền thông tin đăng nhập
+          {t("auth_loginpage.tsx.chao_mung_quay_tro_lai_vui_long_ien_thon")}
         </CardDescription>
       </CardHeader>
 
@@ -172,7 +160,7 @@ export function LoginPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Tiếp tục với Google
+          {t("auth_signuppage.tsx.tiep_tuc_voi_google")}
         </Button>
 
         <div className="relative">
@@ -181,7 +169,7 @@ export function LoginPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-white px-2 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
-              hoặc
+              {t("auth_signuppage.tsx.hoac")}
             </span>
           </div>
         </div>
@@ -197,7 +185,7 @@ export function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Nhập email"
+              placeholder={t("auth_loginpage.tsx.nhap_email")}
               required
               className={inputClassName}
             />
@@ -205,7 +193,7 @@ export function LoginPage() {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="dark:text-slate-300">
-              Mật khẩu
+              {t("auth_signuppage.tsx.mat_khau")}
             </Label>
             <div className="relative">
               <Input
@@ -213,7 +201,7 @@ export function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Nhập mật khẩu"
+                placeholder={t("auth_signuppage.tsx.nhap_mat_khau")}
                 required
                 className={passwordInputClassName}
               />
@@ -228,7 +216,7 @@ export function LoginPage() {
 
           <div className="text-right">
             <Link to="#" className="text-sm text-[#0047AB] hover:underline dark:text-[#66B2FF]">
-              Quên mật khẩu?
+              {t("auth_loginpage.tsx.quen_mat_khau")}
             </Link>
           </div>
 
@@ -244,7 +232,7 @@ export function LoginPage() {
           )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isLoading ? t("auth_loginpage.tsx.ang_ang_nhap") : t("common.logIn")}
           </Button>
         </form>
 
@@ -252,11 +240,13 @@ export function LoginPage() {
 
         {/* Signup Link */}
         <p className="text-center text-sm">
-          <span className="text-slate-600 dark:text-slate-400">Bạn có tài khoản chưa? </span>
+          <span className="text-slate-600 dark:text-slate-400">
+            {t("auth_loginpage.tsx.ban_co_tai_khoan_chua")}{" "}
+          </span>
           <Link
             to="/signup"
             className="font-medium text-[#0047AB] hover:underline dark:text-[#66B2FF]">
-            Đăng ký ngay
+            {t("auth_loginpage.tsx.ang_ky_ngay")}
           </Link>
         </p>
       </CardContent>

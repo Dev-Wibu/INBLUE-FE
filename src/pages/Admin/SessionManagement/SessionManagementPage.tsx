@@ -1,7 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Plus, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { sessionManager } from "@/services";
+import { Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 import {
   CancelSessionDialog,
   SessionFormDialog,
@@ -26,12 +24,11 @@ import {
   ViewSessionDialog,
 } from "./components";
 import type { Session, SessionFormData } from "./types";
-
 type SortableSession = Session & {
   startTimeSortValue: number;
 };
-
 export function SessionManagementPage() {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
@@ -45,34 +42,35 @@ export function SessionManagementPage() {
   const [formData, setFormData] = useState<Partial<SessionFormData>>({});
 
   // Load sessions using the session manager service
-  const loadSessions = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const response = await sessionManager.getAll();
-      if (response.success && response.data) {
-        // Handle both paginated and array responses
-        const sessionData = Array.isArray(response.data) ? response.data : response.data.data;
-        setSessions(sessionData as Session[]);
-      } else {
-        toast.error(response.error || "Không thể tải danh sách buổi học");
-      }
-    } catch (error) {
-      console.error("Error loading sessions:", error);
-      toast.error("Không thể tải danh sách buổi học");
-    } finally {
+  const loadSessions = useCallback(
+    async (showReloading = false) => {
       if (showReloading) {
-        setIsReloading(false);
+        setIsReloading(true);
       } else {
-        setIsInitialLoading(false);
+        setIsInitialLoading(true);
       }
-    }
-  }, []);
-
+      try {
+        const response = await sessionManager.getAll();
+        if (response.success && response.data) {
+          // Handle both paginated and array responses
+          const sessionData = Array.isArray(response.data) ? response.data : response.data.data;
+          setSessions(sessionData as Session[]);
+        } else {
+          toast.error(response.error || t("adminSessionmanagement.unableToLoadLessonList"));
+        }
+      } catch (error) {
+        console.error("Error loading sessions:", error);
+        toast.error(t("adminSessionmanagement.unableToLoadLessonList"));
+      } finally {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void loadSessions();
   }, [loadSessions]);
@@ -96,11 +94,9 @@ export function SessionManagementPage() {
       if (statusFilter !== "all" && session.status !== statusFilter) {
         return false;
       }
-
       return true;
     });
   }, [sessions, searchQuery, statusFilter]);
-
   const sortableSessions = useMemo<SortableSession[]>(() => {
     return filteredSessions.map((session) => ({
       ...session,
@@ -126,7 +122,6 @@ export function SessionManagementPage() {
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
-
   const handleCreate = () => {
     setFormData({
       status: "SCHEDULED",
@@ -138,12 +133,10 @@ export function SessionManagementPage() {
     });
     setIsCreateDialogOpen(true);
   };
-
   const handleView = (session: Session) => {
     setSelectedSession(session);
     setIsViewDialogOpen(true);
   };
-
   const handleEdit = (session: Session) => {
     setSelectedSession(session);
     setFormData({
@@ -159,63 +152,57 @@ export function SessionManagementPage() {
     });
     setIsEditDialogOpen(true);
   };
-
   const handleCancel = (session: Session) => {
     setSelectedSession(session);
     setIsCancelDialogOpen(true);
   };
-
   const handleApprove = async (session: Session) => {
     if (!session.id) return;
     try {
       const response = await sessionManager.updateStatus(session.id, true);
       if (response.success) {
-        toast.success("Đã duyệt phiên phỏng vấn");
+        toast.success(t("adminSessionmanagement.interviewSessionApproved"));
         void loadSessions();
       } else {
-        toast.error(response.error || "Không thể duyệt phiên");
+        toast.error(response.error || t("adminSessionmanagement.unableToBrowseSession"));
       }
     } catch (error) {
       console.error("Error approving session:", error);
-      toast.error("Không thể duyệt phiên");
+      toast.error(t("adminSessionmanagement.unableToBrowseSession"));
     }
   };
-
   const handleReject = async (session: Session) => {
     if (!session.id) return;
     try {
       const response = await sessionManager.updateStatus(session.id, false);
       if (response.success) {
-        toast.success("Đã từ chối phiên phỏng vấn");
+        toast.success(t("common.refusedTheInterviewSession"));
         void loadSessions();
       } else {
-        toast.error(response.error || "Không thể từ chối phiên");
+        toast.error(response.error || t("adminSessionmanagement.sessionCannotBeRejected"));
       }
     } catch (error) {
       console.error("Error rejecting session:", error);
-      toast.error("Không thể từ chối phiên");
+      toast.error(t("adminSessionmanagement.sessionCannotBeRejected"));
     }
   };
-
   const handleSubmitCreate = async () => {
     try {
       const response = await sessionManager.create(formData);
       if (response.success) {
-        toast.success("Đã tạo buổi học thành công");
+        toast.success(t("adminSessionmanagement.lessonCreatedSuccessfully"));
         setIsCreateDialogOpen(false);
         void loadSessions(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể tạo buổi học");
+        toast.error(response.error || t("adminSessionmanagement.unableToCreateLesson"));
       }
     } catch (error) {
       console.error("Error creating session:", error);
-      toast.error("Không thể tạo buổi học");
+      toast.error(t("adminSessionmanagement.unableToCreateLesson"));
     }
   };
-
   const handleSubmitEdit = async () => {
     if (!selectedSession?.id) return;
-
     try {
       // Merge full session data with form changes to prevent PUT from nulling fields
       const mergedData: Partial<Session> = {
@@ -230,21 +217,19 @@ export function SessionManagementPage() {
       };
       const response = await sessionManager.update(selectedSession.id, mergedData);
       if (response.success) {
-        toast.success("Đã cập nhật buổi học thành công");
+        toast.success(t("adminSessionmanagement.lessonUpdatedSuccessfully"));
         setIsEditDialogOpen(false);
         void loadSessions(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể cập nhật buổi học");
+        toast.error(response.error || t("adminSessionmanagement.unableToUpdateLesson"));
       }
     } catch (error) {
       console.error("Error updating session:", error);
-      toast.error("Không thể cập nhật buổi học");
+      toast.error(t("adminSessionmanagement.unableToUpdateLesson"));
     }
   };
-
   const handleConfirmCancel = async () => {
     if (!selectedSession?.id) return;
-
     try {
       // Use update with full session data + CANCELED status to prevent PUT from nulling fields
       const response = await sessionManager.update(selectedSession.id, {
@@ -252,27 +237,26 @@ export function SessionManagementPage() {
         status: "CANCELED",
       });
       if (response.success) {
-        toast.success("Đã hủy buổi học thành công");
+        toast.success(t("adminSessionmanagement.lessonCanceledSuccessfully"));
         setIsCancelDialogOpen(false);
         void loadSessions(); // Refresh the list
       } else {
-        toast.error(response.error || "Không thể hủy buổi học");
+        toast.error(response.error || t("adminSessionmanagement.lessonsCannotBeCanceled"));
       }
     } catch (error) {
       console.error("Error canceling session:", error);
-      toast.error("Không thể hủy buổi học");
+      toast.error(t("adminSessionmanagement.lessonsCannotBeCanceled"));
     }
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản Lý Buổi Học
+          {t("adminSessionmanagement.managingLessons")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Quản lý các buổi phỏng vấn, xem bản ghi và theo dõi trạng thái
+          {t("adminSessionmanagement.manageInterviewsViewRecordingsAnd")}
         </p>
       </div>
 
@@ -284,7 +268,7 @@ export function SessionManagementPage() {
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo ID, ID người dùng..."
+              placeholder={t("adminSessionmanagement.searchByIdUserId")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -302,17 +286,17 @@ export function SessionManagementPage() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="Lọc theo trạng thái" />
+              <SelectValue placeholder={t("common.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="DRAFT">Chờ duyệt</SelectItem>
-              <SelectItem value="SCHEDULED">Đã lên lịch</SelectItem>
-              <SelectItem value="PAID">Đã thanh toán</SelectItem>
-              <SelectItem value="REJECTED">Bị từ chối</SelectItem>
-              <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
-              <SelectItem value="COMPLETED">Đã hoàn thành</SelectItem>
-              <SelectItem value="CANCELED">Đã hủy</SelectItem>
+              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+              <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+              <SelectItem value="SCHEDULED">{t("common.scheduled")}</SelectItem>
+              <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+              <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+              <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+              <SelectItem value="COMPLETED">{t("common.completed1")}</SelectItem>
+              <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -326,19 +310,19 @@ export function SessionManagementPage() {
                 setStatusFilter("all");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
           <ReloadButton
             onReload={() => loadSessions(true)}
             isLoading={isReloading}
-            tooltip="Tải lại danh sách phiên"
+            tooltip={t("common.reloadSessionList")}
             showLabel
             hideTooltip
           />
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Tạo Buổi Học
+            {t("general.createSession")}
           </Button>
         </div>
       </div>
@@ -346,7 +330,7 @@ export function SessionManagementPage() {
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isInitialLoading ? (
-          <SpinnerBlock size="lg" label="Đang tải danh sách buổi học..." />
+          <SpinnerBlock size="lg" label={t("adminSessionmanagement.loadingClassList")} />
         ) : (
           <>
             <SessionTable
@@ -380,7 +364,7 @@ export function SessionManagementPage() {
                     setStatusFilter("all");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -402,9 +386,9 @@ export function SessionManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitCreate}
-        title="Tạo Buổi Học Mới"
-        description="Điền thông tin để tạo buổi học mới."
-        submitLabel="Tạo buổi học"
+        title={t("adminSessionmanagement.createANewLesson")}
+        description={t("adminSessionmanagement.fillInTheInformationTo")}
+        submitLabel={t("adminSessionmanagement.createAStudySession")}
       />
 
       {/* Edit Dialog */}
@@ -414,9 +398,9 @@ export function SessionManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitEdit}
-        title="Chỉnh Sửa Buổi Học"
-        description="Cập nhật thông tin buổi học."
-        submitLabel="Lưu thay đổi"
+        title={t("adminSessionmanagement.editingLessons")}
+        description={t("adminSessionmanagement.updateLessonInformation")}
+        submitLabel={t("common.saveChanges")}
       />
 
       {/* Cancel Confirmation Dialog */}

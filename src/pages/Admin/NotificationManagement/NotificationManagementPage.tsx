@@ -1,3 +1,6 @@
+import i18n from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 /**
  * Admin Notification Management Page
  * Allows admin to view all notifications and send system notifications.
@@ -12,10 +15,6 @@
  * Step 3 (per PLAN.md):
  * - Removed Delete button (BE does not support delete notification API)
  */
-
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Bell, Check, ChevronsUpDown, Eye, Plus, Search, Send } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
 
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -62,13 +61,15 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { TimeAgo } from "@/components/ui/time-ago";
 import { useCreateNotification, type Notification } from "@/hooks/useNotification";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { toVietnamDateKey } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { notificationManager } from "@/services/notification.manager";
 import { usersAdminManager } from "@/services/users-admin.manager";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, Check, ChevronsUpDown, Eye, Plus, Search, Send } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 // ---------- Notification templates ----------
@@ -78,52 +79,48 @@ interface NotificationTemplate {
   title: string;
   message: string;
 }
-
 const NOTIFICATION_TEMPLATES: NotificationTemplate[] = [
   {
-    label: "Cảnh báo vi phạm",
-    title: "Cảnh báo từ hệ thống",
-    message:
-      "Tài khoản của bạn đã bị ghi nhận vi phạm chính sách sử dụng. Vui lòng kiểm tra và tuân thủ các quy định để tránh bị khóa tài khoản.",
+    label: t("adminNotificationmanagement.violationWarning"),
+    title: t("adminNotificationmanagement.warningFromTheSystem"),
+    message: t("adminNotificationmanagement.yourAccountHasBeenRecorded"),
   },
   {
-    label: "Cập nhật hệ thống",
-    title: "Thông báo cập nhật hệ thống",
-    message:
-      "Hệ thống sẽ được bảo trì và nâng cấp vào lúc 02:00 ngày mai. Trong thời gian này, dịch vụ có thể bị gián đoạn trong khoảng 30 phút.",
+    label: t("adminNotificationmanagement.systemUpdate"),
+    title: t("adminNotificationmanagement.systemUpdateNotification"),
+    message: t("adminNotificationmanagement.theSystemWillBeMaintained"),
   },
   {
-    label: "Chào mừng thành viên mới",
-    title: "Chào mừng bạn đến với INBLUE AI!",
-    message:
-      "Cảm ơn bạn đã đăng ký tài khoản. Hãy khám phá các tính năng phỏng vấn AI và kết nối với mentor để nâng cao kỹ năng của bạn.",
+    label: t("adminNotificationmanagement.welcomeNewMembers"),
+    title: t("adminNotificationmanagement.welcomeToInblueAi"),
+    message: t("adminNotificationmanagement.thankYouForRegisteringAn"),
   },
   {
-    label: "Nhắc nhở thanh toán",
-    title: "Nhắc nhở thanh toán gói dịch vụ",
-    message:
-      "Gói dịch vụ của bạn sẽ hết hạn trong 3 ngày nữa. Vui lòng gia hạn để tiếp tục sử dụng đầy đủ các tính năng.",
+    label: t("adminNotificationmanagement.paymentReminder"),
+    title: t("adminNotificationmanagement.servicePackagePaymentReminder"),
+    message: t("adminNotificationmanagement.yourServicePackageWillExpire"),
   },
   {
-    label: "Phiên phỏng vấn được duyệt",
-    title: "Phiên phỏng vấn của bạn đã được xác nhận",
-    message:
-      "Mentor đã xác nhận lịch phỏng vấn với bạn. Hãy chuẩn bị kỹ càng và tham gia đúng giờ để có buổi phỏng vấn hiệu quả.",
+    label: t("adminNotificationmanagement.interviewSessionApproved"),
+    title: t("adminNotificationmanagement.yourInterviewSessionHasBeen"),
+    message: t("adminNotificationmanagement.mentorHasConfirmedTheInterview"),
   },
 ];
 
 // ---------- Recipient combobox ----------
 
 interface RecipientComboboxProps {
-  users: Array<{ id?: number; name?: string; email?: string }>;
+  users: Array<{
+    id?: number;
+    name?: string;
+    email?: string;
+  }>;
   value: string;
   onChange: (value: string) => void;
 }
-
 function RecipientCombobox({ users, value, onChange }: RecipientComboboxProps) {
   const [open, setOpen] = useState(false);
   const selectedUser = users.find((u) => String(u.id) === value);
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -138,16 +135,18 @@ function RecipientCombobox({ users, value, onChange }: RecipientComboboxProps) {
               <span className="shrink-0 text-xs text-slate-500">({selectedUser.email})</span>
             </span>
           ) : (
-            <span className="text-slate-500">Tìm kiếm người nhận...</span>
+            <span className="text-slate-500">
+              {t("adminNotificationmanagement.searchForRecipients")}
+            </span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput placeholder="Tìm theo tên hoặc email..." />
+          <CommandInput placeholder={t("adminNotificationmanagement.searchByNameOrEmail")} />
           <CommandList>
-            <CommandEmpty>Không tìm thấy người dùng.</CommandEmpty>
+            <CommandEmpty>{t("adminNotificationmanagement.userNotFound")}</CommandEmpty>
             <CommandGroup>
               {users.map((user) => (
                 <CommandItem
@@ -182,16 +181,15 @@ interface NotificationPreviewProps {
   message: string;
   recipientName?: string;
 }
-
 function NotificationPreview({ title, message, recipientName }: NotificationPreviewProps) {
   if (!title && !message) return null;
   return (
     <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 dark:border-blue-900/40 dark:bg-blue-950/20">
       <p className="mb-2 text-xs font-semibold tracking-wider text-blue-600 uppercase dark:text-blue-400">
-        Xem trước thông báo
+        {t("adminNotificationmanagement.previewNotifications")}
         {recipientName && (
           <span className="ml-1 font-normal text-slate-500 normal-case">
-            — gửi đến {recipientName}
+            {t("adminNotificationmanagement.sentTo")} {recipientName}
           </span>
         )}
       </p>
@@ -217,6 +215,7 @@ function NotificationPreview({ title, message, recipientName }: NotificationPrev
 // ---------- Main page ----------
 
 export function NotificationManagementPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Fetch all notifications
@@ -262,9 +261,7 @@ export function NotificationManagementPage() {
       return [];
     },
   });
-
   const { mutate: createNotification, isPending: isCreating } = useCreateNotification();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
@@ -277,10 +274,8 @@ export function NotificationManagementPage() {
     title: "",
     message: "",
   });
-
   const isLoading = notificationsLoading || usersLoading;
   const isReloading = notificationsRefetching || usersRefetching;
-
   const handleReload = useCallback(async () => {
     await Promise.all([refetchNotifications(), refetchUsers()]);
   }, [refetchNotifications, refetchUsers]);
@@ -301,11 +296,9 @@ export function NotificationManagementPage() {
       // Status filter
       if (statusFilter === "read" && !notification.isRead) return false;
       if (statusFilter === "unread" && notification.isRead) return false;
-
       return true;
     });
   }, [allNotifications, searchQuery, statusFilter]);
-
   const hasActiveFilters = searchQuery.trim().length > 0 || statusFilter !== "all";
 
   // Sorting
@@ -335,23 +328,23 @@ export function NotificationManagementPage() {
     const todayKey = toVietnamDateKey(new Date());
     return !!todayKey && toVietnamDateKey(n.createAt) === todayKey;
   }).length;
-
   const handleViewDetail = (notification: Notification) => {
     setSelectedNotification(notification);
     setIsDetailOpen(true);
   };
-
   const handleCreateOpen = () => {
-    setCreateForm({ userId: "", title: "", message: "" });
+    setCreateForm({
+      userId: "",
+      title: "",
+      message: "",
+    });
     setIsCreateOpen(true);
   };
-
   const handleCreateSubmit = () => {
     if (!createForm.userId || !createForm.title || !createForm.message) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+      toast.error(t("adminNotificationmanagement.pleaseFillInAllInformation"));
       return;
     }
-
     createNotification(
       {
         userId: Number(createForm.userId),
@@ -361,35 +354,36 @@ export function NotificationManagementPage() {
       {
         onSuccess: () => {
           setIsCreateOpen(false);
-          queryClient.invalidateQueries({ queryKey: ["admin", "notifications", "all"] });
+          queryClient.invalidateQueries({
+            queryKey: ["admin", "notifications", "all"],
+          });
         },
       }
     );
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-            Quản Lý Thông Báo
+            {t("adminNotificationmanagement.notificationManagement")}
           </h1>
           <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-            Xem tất cả thông báo và gửi thông báo hệ thống
+            {t("adminNotificationmanagement.viewAllNotificationsAndSend")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ReloadButton
             onReload={handleReload}
             isLoading={isReloading}
-            tooltip="Tải lại dữ liệu thông báo"
+            tooltip={t("adminNotificationmanagement.reloadNotificationData")}
             showLabel
             hideTooltip
           />
           <Button onClick={handleCreateOpen} className="gap-2">
             <Plus className="h-4 w-4" />
-            Gửi thông báo
+            {t("adminNotificationmanagement.sendNotification")}
           </Button>
         </div>
       </div>
@@ -398,19 +392,19 @@ export function NotificationManagementPage() {
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Tổng thông báo</CardDescription>
+            <CardDescription>{t("common.generalAnnouncement")}</CardDescription>
             <CardTitle className="text-2xl">{totalNotifications}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Chưa đọc</CardDescription>
+            <CardDescription>{t("common.haventReadYet")}</CardDescription>
             <CardTitle className="text-2xl text-amber-600">{unreadNotifications}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Đã đọc</CardDescription>
+            <CardDescription>{t("common.read")}</CardDescription>
             <CardTitle className="text-2xl text-green-600">
               {totalNotifications - unreadNotifications}
             </CardTitle>
@@ -418,7 +412,7 @@ export function NotificationManagementPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Hôm nay</CardDescription>
+            <CardDescription>{t("common.today")}</CardDescription>
             <CardTitle className="text-2xl text-blue-600">{todayNotifications}</CardTitle>
           </CardHeader>
         </Card>
@@ -427,14 +421,14 @@ export function NotificationManagementPage() {
       {/* Filters */}
       <Card className="mb-6">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Bộ lọc</CardTitle>
+          <CardTitle className="text-base">{t("common.filter")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
             <div className="relative w-full min-w-0">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
-                placeholder="Tìm theo tiêu đề, nội dung, người nhận..."
+                placeholder={t("adminNotificationmanagement.searchByTitleContentRecipient")}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -450,12 +444,12 @@ export function NotificationManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-full lg:w-[170px]">
-                <SelectValue placeholder="Trạng thái" />
+                <SelectValue placeholder={t("common.status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="unread">Chưa đọc</SelectItem>
-                <SelectItem value="read">Đã đọc</SelectItem>
+                <SelectItem value="all">{t("general.all")}</SelectItem>
+                <SelectItem value="unread">{t("common.haventReadYet")}</SelectItem>
+                <SelectItem value="read">{t("common.read")}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -468,7 +462,7 @@ export function NotificationManagementPage() {
                     setStatusFilter("all");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -481,10 +475,11 @@ export function NotificationManagementPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-emerald-600" />
-            <CardTitle>Danh sách thông báo</CardTitle>
+            <CardTitle>{t("common.notificationList")}</CardTitle>
           </div>
           <CardDescription>
-            Hiển thị {filteredNotifications.length} / {allNotifications.length} thông báo
+            {t("common.show")} {filteredNotifications.length} / {allNotifications.length}{" "}
+            {t("common.notification1")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -493,8 +488,8 @@ export function NotificationManagementPage() {
           ) : pageData.length === 0 ? (
             <EmptyState
               icon={Bell}
-              title="Không có thông báo"
-              description="Không tìm thấy thông báo nào phù hợp với bộ lọc."
+              title={t("adminNotificationmanagement.noNotifications")}
+              description={t("adminNotificationmanagement.noMessagesWereFoundThat")}
               action={
                 hasActiveFilters ? (
                   <Button
@@ -504,7 +499,7 @@ export function NotificationManagementPage() {
                       setStatusFilter("all");
                       pagination.goToFirstPage();
                     }}>
-                    Xóa bộ lọc
+                    {t("common.clearFilter")}
                   </Button>
                 ) : undefined
               }
@@ -515,20 +510,20 @@ export function NotificationManagementPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Người nhận</TableHead>
-                    <TableHead>Tiêu đề</TableHead>
-                    <TableHead>Nội dung</TableHead>
+                    <TableHead>{t("general.recipient")}</TableHead>
+                    <TableHead>{t("common.title")}</TableHead>
+                    <TableHead>{t("common.content")}</TableHead>
                     <TableHead>
                       <SortButton {...getSortProps("isRead" as keyof Notification)}>
-                        Trạng thái
+                        {t("common.status")}
                       </SortButton>
                     </TableHead>
                     <TableHead>
                       <SortButton {...getSortProps("createAt" as keyof Notification)}>
-                        Thời gian
+                        {t("common.time")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead className="text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -543,7 +538,7 @@ export function NotificationManagementPage() {
                               {notification.user?.name?.charAt(0) || "U"}
                             </AvatarFallback>
                           </Avatar>
-                          <span>{notification.user?.name || "Không có dữ liệu"}</span>
+                          <span>{notification.user?.name || t("common.noDataAvailable")}</span>
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{notification.title}</TableCell>
@@ -552,7 +547,7 @@ export function NotificationManagementPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={notification.isRead ? "secondary" : "default"}>
-                          {notification.isRead ? "Đã đọc" : "Chưa đọc"}
+                          {notification.isRead ? t("common.read") : t("common.haventReadYet")}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -594,12 +589,15 @@ export function NotificationManagementPage() {
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Chi Tiết Thông Báo #{selectedNotification?.id}</DialogTitle>
+            <DialogTitle>
+              {t("adminNotificationmanagement.notificationDetails")}
+              {selectedNotification?.id}
+            </DialogTitle>
           </DialogHeader>
           {selectedNotification && (
             <div className="space-y-4">
               <div>
-                <Label className="text-slate-500">Người nhận</Label>
+                <Label className="text-slate-500">{t("general.recipient")}</Label>
                 <div className="mt-1 flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={selectedNotification.user?.avatarUrl} />
@@ -611,22 +609,22 @@ export function NotificationManagementPage() {
                 </div>
               </div>
               <div>
-                <Label className="text-slate-500">Tiêu đề</Label>
+                <Label className="text-slate-500">{t("common.title")}</Label>
                 <p className="font-medium">{selectedNotification.title}</p>
               </div>
               <div>
-                <Label className="text-slate-500">Nội dung</Label>
+                <Label className="text-slate-500">{t("common.content")}</Label>
                 <p className="whitespace-pre-wrap">{selectedNotification.message}</p>
               </div>
               <div className="flex items-center gap-4">
                 <div>
-                  <Label className="text-slate-500">Trạng thái</Label>
+                  <Label className="text-slate-500">{t("common.status")}</Label>
                   <Badge variant={selectedNotification.isRead ? "secondary" : "default"}>
-                    {selectedNotification.isRead ? "Đã đọc" : "Chưa đọc"}
+                    {selectedNotification.isRead ? t("common.read") : t("common.haventReadYet")}
                   </Badge>
                 </div>
                 <div>
-                  <Label className="text-slate-500">Thời gian</Label>
+                  <Label className="text-slate-500">{t("common.time")}</Label>
                   <p>
                     {selectedNotification.createAt ? (
                       <TimeAgo date={selectedNotification.createAt} />
@@ -647,14 +645,16 @@ export function NotificationManagementPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Send className="h-5 w-5" />
-              Gửi Thông Báo Mới
+              {t("adminNotificationmanagement.sendNewNotification")}
             </DialogTitle>
-            <DialogDescription>Gửi thông báo đến người dùng cụ thể</DialogDescription>
+            <DialogDescription>
+              {t("adminNotificationmanagement.sendNotificationsToSpecificUsers")}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             {/* Template picker */}
             <div>
-              <Label>Chọn từ mẫu (tùy chọn)</Label>
+              <Label>{t("adminNotificationmanagement.chooseFromTemplateOptional")}</Label>
               <Select
                 onValueChange={(value) => {
                   const template = NOTIFICATION_TEMPLATES.find((t) => t.label === value);
@@ -667,7 +667,9 @@ export function NotificationManagementPage() {
                   }
                 }}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn mẫu thông báo..." />
+                  <SelectValue
+                    placeholder={t("adminNotificationmanagement.selectNotificationTemplate")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {NOTIFICATION_TEMPLATES.map((t) => (
@@ -683,34 +685,49 @@ export function NotificationManagementPage() {
 
             {/* Recipient searchable combobox */}
             <div>
-              <Label>Người nhận *</Label>
+              <Label>{t("adminNotificationmanagement.receiver")}</Label>
               <RecipientCombobox
                 users={users}
                 value={createForm.userId}
-                onChange={(value) => setCreateForm((prev) => ({ ...prev, userId: value }))}
+                onChange={(value) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    userId: value,
+                  }))
+                }
               />
             </div>
 
             {/* Title */}
             <div>
-              <Label htmlFor="notify-title">Tiêu đề *</Label>
+              <Label htmlFor="notify-title">{t("common.title1")}</Label>
               <Input
                 id="notify-title"
-                placeholder="Nhập tiêu đề thông báo"
+                placeholder={t("adminNotificationmanagement.enterTheNotificationTitle")}
                 value={createForm.title}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    title: e.target.value,
+                  }))
+                }
               />
             </div>
 
             {/* Message */}
             <div>
-              <Label htmlFor="notify-message">Nội dung *</Label>
+              <Label htmlFor="notify-message">{t("common.content1")}</Label>
               <Textarea
                 id="notify-message"
-                placeholder="Nhập nội dung thông báo"
+                placeholder={t("adminNotificationmanagement.enterNotificationContent")}
                 rows={4}
                 value={createForm.message}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, message: e.target.value }))}
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    message: e.target.value,
+                  }))
+                }
               />
             </div>
 
@@ -725,7 +742,7 @@ export function NotificationManagementPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateOpen(false)} disabled={isCreating}>
-              Hủy
+              {t("general.cancel")}
             </Button>
             <Button
               onClick={handleCreateSubmit}
@@ -735,7 +752,9 @@ export function NotificationManagementPage() {
                 !createForm.title.trim() ||
                 !createForm.message.trim()
               }>
-              {isCreating ? "Đang gửi..." : "Gửi thông báo"}
+              {isCreating
+                ? t("adminNotificationmanagement.sending")
+                : t("adminNotificationmanagement.sendNotification")}
             </Button>
           </DialogFooter>
         </DialogContent>

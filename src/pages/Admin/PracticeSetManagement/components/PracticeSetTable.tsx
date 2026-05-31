@@ -1,5 +1,3 @@
-import { Edit, Eye, Power, Search } from "lucide-react";
-
 import { SortButton, type SortDirection } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,14 +9,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { Edit, Eye, Power, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { PracticeSet, PracticeSetLevel } from "../types";
-
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
-
 interface PracticeSetTableProps {
   practiceSets: PracticeSet[];
   onEdit: (practiceSet: PracticeSet) => void;
@@ -26,7 +23,6 @@ interface PracticeSetTableProps {
   onViewItems: (practiceSet: PracticeSet) => void;
   getSortProps?: (key: keyof PracticeSet) => SortProps;
 }
-
 const getLevelBadgeClass = (level?: PracticeSetLevel): string => {
   switch (level) {
     case "INTERN":
@@ -41,7 +37,6 @@ const getLevelBadgeClass = (level?: PracticeSetLevel): string => {
       return "bg-gray-400 hover:bg-gray-400";
   }
 };
-
 export function PracticeSetTable({
   practiceSets,
   onEdit,
@@ -49,15 +44,17 @@ export function PracticeSetTable({
   onViewItems,
   getSortProps,
 }: PracticeSetTableProps) {
+  const { t } = useTranslation();
   if (practiceSets.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
         <Search className="h-12 w-12 text-gray-400" />
-        <p className="font-['Inter'] text-lg text-gray-500">Không tìm thấy bộ câu hỏi nào</p>
+        <p className="font-['Inter'] text-lg text-gray-500">
+          {t("adminPracticesetmanagement.noQuestionSetsFound")}
+        </p>
       </div>
     );
   }
-
   return (
     <Table>
       <TableHeader>
@@ -65,17 +62,21 @@ export function PracticeSetTable({
           <TableHead className="w-16">ID</TableHead>
           <TableHead>
             {getSortProps ? (
-              <SortButton {...getSortProps("practiceSetName")}>Tên</SortButton>
+              <SortButton {...getSortProps("practiceSetName")}>{t("common.name")}</SortButton>
             ) : (
-              "Tên"
+              t("common.name")
             )}
           </TableHead>
-          <TableHead>Mục tiêu</TableHead>
+          <TableHead>{t("adminPracticesetmanagement.target")}</TableHead>
           <TableHead className="w-24">
-            {getSortProps ? <SortButton {...getSortProps("level")}>Cấp độ</SortButton> : "Cấp độ"}
+            {getSortProps ? (
+              <SortButton {...getSortProps("level")}>{t("common.level")}</SortButton>
+            ) : (
+              t("common.level")
+            )}
           </TableHead>
-          <TableHead>Chuyên ngành</TableHead>
-          <TableHead className="w-24 text-right">Thao tác</TableHead>
+          <TableHead>{t("common.specialized")}</TableHead>
+          <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -101,7 +102,7 @@ export function PracticeSetTable({
                   size="sm"
                   onClick={() => onViewItems(ps)}
                   className="h-8 w-8 p-0 hover:bg-green-50"
-                  title="Xem câu hỏi">
+                  title={t("adminPracticesetmanagement.seeQuestion")}>
                   <Eye className="h-4 w-4 text-green-600" />
                 </Button>
                 <Button
@@ -109,7 +110,7 @@ export function PracticeSetTable({
                   size="sm"
                   onClick={() => onEdit(ps)}
                   className="h-8 w-8 p-0 hover:bg-blue-50"
-                  title="Chỉnh sửa">
+                  title={t("general.edit")}>
                   <Edit className="h-4 w-4 text-blue-600" />
                 </Button>
                 <Button
@@ -117,7 +118,7 @@ export function PracticeSetTable({
                   size="sm"
                   onClick={() => onDelete(ps)}
                   className="h-8 w-8 p-0 hover:bg-red-50"
-                  title="Xóa">
+                  title={t("general.delete")}>
                   <Power className="h-4 w-4 text-red-600" />
                 </Button>
               </div>

@@ -1,3 +1,21 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import i18n from "@/lib/i18n";
+import {
+  buildPracticeQuizPath,
+  buildPracticeQuizResultPath,
+  buildPracticeSessionPath,
+} from "@/lib/practice-quiz-route";
+import { practiceSetItemManager, practiceSetManager, quizSetManager } from "@/services";
+import type { PracticeSetItem } from "@/services/practice-set-item.manager";
+import type { PracticeSet, PracticeSetResponse } from "@/services/practice-set.manager";
+import type { QuizResponse, QuizSet } from "@/services/quiz-set.manager";
 import { format, isSameDay } from "date-fns";
 import {
   ArrowLeft,
@@ -15,26 +33,10 @@ import {
   Plus,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Spinner } from "@/components/ui/spinner";
-import {
-  buildPracticeQuizPath,
-  buildPracticeQuizResultPath,
-  buildPracticeSessionPath,
-} from "@/lib/practice-quiz-route";
-import { practiceSetItemManager, practiceSetManager, quizSetManager } from "@/services";
-import type { PracticeSetItem } from "@/services/practice-set-item.manager";
-import type { PracticeSet, PracticeSetResponse } from "@/services/practice-set.manager";
-import type { QuizResponse, QuizSet } from "@/services/quiz-set.manager";
 import { toast } from "sonner";
+const t = i18n.t.bind(i18n);
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -46,10 +48,8 @@ function parseDateNumber(name?: string): number {
   if (name.includes("7")) return 7;
   return 14;
 }
-
 type DayStatus = "COMPLETED" | "IN_PROGRESS" | "LOCKED";
 type ItemStatus = "DONE" | "NEXT" | "AVAILABLE" | "LOCKED";
-
 const levelBadge: Record<string, string> = {
   EASY: "bg-green-100 text-green-700",
   MEDIUM: "bg-yellow-100 text-yellow-700",
@@ -66,7 +66,6 @@ interface ItemCardProps {
   sessionId?: number;
   lastQuizId?: number;
 }
-
 function PracticeItemCard({
   item,
   index,
@@ -81,12 +80,9 @@ function PracticeItemCard({
   const isDone = status === "DONE";
   const isNext = status === "NEXT";
   const isLocked = status === "LOCKED";
-
   return (
     <div
-      className={`relative rounded-xl border p-4 transition-all ${
-        isLocked ? "opacity-50" : ""
-      } ${isNext ? "border-[#0047AB] bg-blue-50/60 shadow-sm ring-1 ring-[#0047AB]/20 dark:bg-blue-950/20" : "border-border bg-card"}`}>
+      className={`relative rounded-xl border p-4 transition-all ${isLocked ? "opacity-50" : ""} ${isNext ? "border-[#0047AB] bg-blue-50/60 shadow-sm ring-1 ring-[#0047AB]/20 dark:bg-blue-950/20" : "border-border bg-card"}`}>
       {/* NEXT badge */}
       {isNext && (
         <div className="absolute -top-2.5 right-3">
@@ -117,7 +113,10 @@ function PracticeItemCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <p className="text-foreground text-sm leading-snug font-semibold">
-              {item.practiceQuestion?.title ?? `Câu hỏi ${index + 1}`}
+              {item.practiceQuestion?.title ??
+                t("general.question", {
+                  var_0: index + 1,
+                })}
             </p>
             <Badge
               className={`shrink-0 text-xs ${levelBadge[item.practiceQuestion?.level ?? ""] ?? "bg-gray-100 text-gray-700"}`}>
@@ -147,7 +146,7 @@ function PracticeItemCard({
                     className="h-6 gap-1 px-2 text-xs text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400"
                     onClick={() => setShowHint((v) => !v)}>
                     <Lightbulb className="h-3 w-3" />
-                    Gợi ý
+                    {t("adminPracticequestionmanagement.suggest")}
                   </Button>
                 )}
                 {item.practiceQuestion?.answer && (
@@ -157,7 +156,7 @@ function PracticeItemCard({
                     className="h-6 gap-1 px-2 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400"
                     onClick={() => setShowAnswer((v) => !v)}>
                     <Eye className="h-3 w-3" />
-                    Đáp án
+                    {t("adminPracticequestionmanagement.answer")}
                   </Button>
                 )}
                 {isDone && lastQuizId && sessionId && (
@@ -174,20 +173,26 @@ function PracticeItemCard({
                         })
                       )
                     }>
-                    Xem lại
+                    {t("userPractice.review")}
                     <Eye className="h-3 w-3" />
                   </Button>
                 )}
               </>
             )}
 
-            {isLocked && <span className="text-muted-foreground ml-auto text-xs">Chưa mở</span>}
+            {isLocked && (
+              <span className="text-muted-foreground ml-auto text-xs">
+                {t("general.notOpened")}
+              </span>
+            )}
           </div>
 
           {/* Hint */}
           {showHint && item.practiceQuestion?.hint && (
             <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 dark:border-amber-800 dark:bg-amber-950/30">
-              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Gợi ý:</p>
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                {t("userPractice.suggest")}
+              </p>
               <p className="mt-0.5 text-xs leading-relaxed text-amber-900 dark:text-amber-200">
                 {item.practiceQuestion.hint}
               </p>
@@ -198,7 +203,7 @@ function PracticeItemCard({
           {showAnswer && item.practiceQuestion?.answer && (
             <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2 dark:border-emerald-800 dark:bg-emerald-950/30">
               <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                Đáp án:
+                {t("common.answer")}
               </p>
               <p className="mt-0.5 text-xs leading-relaxed text-emerald-900 dark:text-emerald-200">
                 {item.practiceQuestion.answer}
@@ -225,21 +230,15 @@ interface SessionItemCardProps {
   index: number;
   status: ItemStatus;
 }
-
 function SessionQuestionCard({ question, index, status }: SessionItemCardProps) {
   const [showHint, setShowHint] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
   const isDone = status === "DONE";
   const isNext = status === "NEXT";
   const isLocked = status === "LOCKED";
-
   return (
     <div
-      className={`relative rounded-xl border p-4 transition-all ${isLocked ? "opacity-50" : ""} ${
-        isNext
-          ? "border-[#0047AB] bg-blue-50/60 shadow-sm ring-1 ring-[#0047AB]/20 dark:bg-blue-950/20"
-          : "border-border bg-card"
-      }`}>
+      className={`relative rounded-xl border p-4 transition-all ${isLocked ? "opacity-50" : ""} ${isNext ? "border-[#0047AB] bg-blue-50/60 shadow-sm ring-1 ring-[#0047AB]/20 dark:bg-blue-950/20" : "border-border bg-card"}`}>
       {isNext && (
         <div className="absolute -top-2.5 right-3">
           <Badge className="bg-[#0047AB] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
@@ -268,12 +267,13 @@ function SessionQuestionCard({ question, index, status }: SessionItemCardProps) 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <p className="text-foreground text-sm leading-snug font-semibold">
-              {question.title ?? `Câu hỏi ${index + 1}`}
+              {question.title ??
+                t("general.question", {
+                  var_0: index + 1,
+                })}
             </p>
             <Badge
-              className={`shrink-0 text-xs ${
-                levelBadge[question.level ?? ""] ?? "bg-gray-100 text-gray-700"
-              }`}>
+              className={`shrink-0 text-xs ${levelBadge[question.level ?? ""] ?? "bg-gray-100 text-gray-700"}`}>
               {question.level}
             </Badge>
           </div>
@@ -297,7 +297,7 @@ function SessionQuestionCard({ question, index, status }: SessionItemCardProps) 
                     className="h-6 gap-1 px-2 text-xs text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400"
                     onClick={() => setShowHint((v) => !v)}>
                     <Lightbulb className="h-3 w-3" />
-                    Gợi ý
+                    {t("adminPracticequestionmanagement.suggest")}
                   </Button>
                 )}
                 {question.answer && (
@@ -307,18 +307,24 @@ function SessionQuestionCard({ question, index, status }: SessionItemCardProps) 
                     className="h-6 gap-1 px-2 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400"
                     onClick={() => setShowAnswer((v) => !v)}>
                     <Eye className="h-3 w-3" />
-                    Đáp án
+                    {t("adminPracticequestionmanagement.answer")}
                   </Button>
                 )}
               </>
             )}
 
-            {isLocked && <span className="text-muted-foreground ml-auto text-xs">Chưa mở</span>}
+            {isLocked && (
+              <span className="text-muted-foreground ml-auto text-xs">
+                {t("general.notOpened")}
+              </span>
+            )}
           </div>
 
           {showHint && question.hint && (
             <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 dark:border-amber-800 dark:bg-amber-950/30">
-              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Gợi ý:</p>
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                {t("userPractice.suggest")}
+              </p>
               <p className="mt-0.5 text-xs leading-relaxed text-amber-900 dark:text-amber-200">
                 {question.hint}
               </p>
@@ -328,7 +334,7 @@ function SessionQuestionCard({ question, index, status }: SessionItemCardProps) 
           {showAnswer && question.answer && (
             <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2 dark:border-emerald-800 dark:bg-emerald-950/30">
               <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                Đáp án:
+                {t("common.answer")}
               </p>
               <p className="mt-0.5 text-xs leading-relaxed text-emerald-900 dark:text-emerald-200">
                 {question.answer}
@@ -348,7 +354,6 @@ interface QuizHistoryPopoverProps {
   routePracticeSetId: string;
   sessionId?: number;
 }
-
 function QuizHistoryPopover({
   quizHistory,
   routePracticeSetId,
@@ -356,13 +361,11 @@ function QuizHistoryPopover({
 }: QuizHistoryPopoverProps) {
   const navigate = useNavigate();
   const sorted = [...quizHistory].sort((a, b) => (b.quizId ?? 0) - (a.quizId ?? 0));
-
   const handleNavigateToQuiz = (quiz: QuizSet) => {
     if (!sessionId || !quiz.quizId) {
-      toast.error("Không thể mở bài kiểm tra vì thiếu thông tin phiên luyện tập.");
+      toast.error(t("userPractice.cannotOpenTestBecausePractice"));
       return;
     }
-
     const targetPath = quiz.submitted
       ? buildPracticeQuizResultPath({
           sessionId,
@@ -374,14 +377,12 @@ function QuizHistoryPopover({
           practiceSetId: routePracticeSetId,
           quizId: quiz.quizId,
         });
-
     navigate(targetPath);
   };
-
   return (
     <PopoverContent className="w-72 p-0" align="start">
       <div className="border-b px-3 py-2">
-        <p className="text-foreground text-xs font-semibold">Lịch sử kiểm tra</p>
+        <p className="text-foreground text-xs font-semibold">{t("userPractice.testHistory")}</p>
       </div>
       <div className="max-h-56 overflow-y-auto">
         {sorted.map((quiz) => (
@@ -394,11 +395,11 @@ function QuizHistoryPopover({
             </span>
             {quiz.submitted ? (
               <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                {quiz.score ?? 0} điểm
+                {quiz.score ?? 0} {t("userPractice.point")}
               </span>
             ) : (
               <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-[#0047AB] dark:bg-blue-900/40 dark:text-blue-300">
-                Chưa nộp
+                {t("common.notYetSubmitted")}
               </span>
             )}
           </button>
@@ -417,7 +418,6 @@ interface SessionDayGroupProps {
   isOpen: boolean;
   onToggle: () => void;
 }
-
 function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: SessionDayGroupProps) {
   const navigate = useNavigate();
   const [quizHistory, setQuizHistory] = useState<QuizSet[]>(
@@ -434,7 +434,6 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
     backUrl: string;
     items?: unknown[];
   } | null>(null);
-
   const handleCreateAiQuiz = async () => {
     if (!ps.id) return;
     setIsCreating(true);
@@ -443,7 +442,7 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
       if (res.success && res.data) {
         const newQuizId = (res.data as QuizResponse).quizId;
         if (newQuizId) {
-          toast.success("Đã tạo bài kiểm tra AI!");
+          toast.success(t("userPractice.aiTestCreated"));
           const backUrl = ps.interviewSessionId
             ? buildPracticeSessionPath(ps.interviewSessionId)
             : "/user?tab=practice";
@@ -454,62 +453,70 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
           } else {
             setQuizHistory((prev) => [
               ...prev,
-              { quizId: newQuizId, quizName: `AI Quiz #${newQuizId}`, submitted: false },
+              {
+                quizId: newQuizId,
+                quizName: `AI Quiz #${newQuizId}`,
+                submitted: false,
+              },
             ]);
           }
           // Show confirmation dialog
-          setPendingQuiz({ quizId: newQuizId, backUrl, items: (res.data as QuizResponse).items });
+          setPendingQuiz({
+            quizId: newQuizId,
+            backUrl,
+            items: (res.data as QuizResponse).items,
+          });
         } else {
-          toast.error("Không lấy được ID bài kiểm tra");
+          toast.error(t("userPractice.unableToGetTestId"));
         }
       } else {
-        toast.error(res.error ?? "Không thể tạo bài kiểm tra AI");
+        toast.error(res.error ?? t("common.unableToCreateAiTest"));
       }
     } catch {
-      toast.error("Không thể tạo bài kiểm tra AI");
+      toast.error(t("common.unableToCreateAiTest"));
     } finally {
       setIsCreating(false);
     }
   };
-
-  const statusConfig: Record<DayStatus, { label: string; className: string }> = {
+  const statusConfig: Record<
+    DayStatus,
+    {
+      label: string;
+      className: string;
+    }
+  > = {
     COMPLETED: {
-      label: "HOÀN THÀNH",
+      label: t("general.completed2"),
       className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     },
     IN_PROGRESS: {
-      label: "ĐANG DIỄN RA",
+      label: t("userPractice.goingOn"),
       className: "bg-blue-100 text-[#0047AB] dark:bg-blue-900/40 dark:text-blue-300",
     },
     LOCKED: {
-      label: "CHƯA MỞ",
+      label: t("userPractice.notOpen"),
       className: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
     },
   };
   const cfg = statusConfig[dayStatus];
   const questions = ps.questions ?? [];
-
   const getItemStatus = (localIdx: number): ItemStatus => {
     if (dayStatus === "COMPLETED") return "DONE";
     if (dayStatus === "IN_PROGRESS") return localIdx === 0 ? "NEXT" : "AVAILABLE";
     // LOCKED day: questions are visible but not actionable
     return "AVAILABLE";
   };
-
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={onToggle}>
         <div
-          className={`bg-card rounded-xl border shadow-sm ${
-            dayStatus === "IN_PROGRESS"
-              ? "border-[#0047AB]/40"
-              : dayStatus === "COMPLETED"
-                ? "border-emerald-200 dark:border-emerald-900/40"
-                : "border-border"
-          }`}>
+          className={`bg-card rounded-xl border shadow-sm ${dayStatus === "IN_PROGRESS" ? "border-[#0047AB]/40" : dayStatus === "COMPLETED" ? "border-emerald-200 dark:border-emerald-900/40" : "border-border"}`}>
           <div className="flex items-center gap-3 px-4 py-3">
             <h2 className="text-foreground text-base font-bold">
-              {ps.practiceSetName ?? `Ngày ${dayNumber}`}
+              {ps.practiceSetName ??
+                t("general.day", {
+                  var_0: dayNumber,
+                })}
             </h2>
             {ps.startDate && (
               <span className="rounded-md bg-[#DCEEFF] px-2 py-0.5 text-xs font-bold text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-blue-300">
@@ -523,7 +530,7 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
                   <button
                     disabled={isCreating}
                     onClick={handleCreateAiQuiz}
-                    title="Tạo quiz mới"
+                    title={t("userPractice.createNewQuiz")}
                     className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0047AB] text-white transition-opacity hover:opacity-80 disabled:opacity-50">
                     {isCreating ? <Spinner size="xs" tone="white" /> : <Plus className="h-3 w-3" />}
                   </button>
@@ -531,7 +538,7 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
-                          title="Xem lịch sử kiểm tra"
+                          title={t("userPractice.viewTestHistory")}
                           className="flex h-6 w-6 items-center justify-center rounded-full border border-[#0047AB] text-[#0047AB] transition-colors hover:bg-[#DCEEFF] dark:hover:bg-[#0047AB]/20">
                           <History className="h-3 w-3" />
                         </button>
@@ -548,7 +555,7 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
               <CollapsibleTrigger asChild>
                 <button
                   className="text-muted-foreground hover:text-foreground ml-1 flex h-6 w-6 items-center justify-center rounded transition-colors"
-                  title={isOpen ? "Thu gọn" : "Mở rộng"}>
+                  title={isOpen ? t("common.collapse") : t("common.extend")}>
                   {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </button>
               </CollapsibleTrigger>
@@ -577,24 +584,23 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
               <div className="text-center">
                 <CheckCircle2 className="mx-auto mb-2 h-10 w-10 text-emerald-500" />
                 <p className="text-foreground text-base font-semibold">
-                  Tạo bài kiểm tra thành công!
+                  {t("userPractice.createASuccessfulTest")}
                 </p>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  Bạn có muốn làm bài kiểm tra ngay không?
+                  {t("userPractice.doYouWantToTake")}
                 </p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={() => setPendingQuiz(null)}>
-                  Để sau
+                  {t("userPractice.later")}
                 </Button>
                 <Button
                   className="flex-1 bg-[#0047AB] hover:bg-[#003580]"
                   onClick={() => {
                     if (!ps.interviewSessionId || !ps.id) {
-                      toast.error("Không thể mở bài kiểm tra vì thiếu thông tin phiên luyện tập.");
+                      toast.error(t("userPractice.cannotOpenTestBecausePractice"));
                       return;
                     }
-
                     navigate(
                       buildPracticeQuizPath({
                         sessionId: ps.interviewSessionId,
@@ -609,7 +615,7 @@ function SessionDayGroup({ ps, dayNumber, dayStatus, isOpen, onToggle }: Session
                       }
                     );
                   }}>
-                  Làm bài ngay
+                  {t("userPractice.doYourHomeworkNow")}
                 </Button>
               </div>
             </CardContent>
@@ -635,7 +641,6 @@ interface DayGroupProps {
   isOpen: boolean;
   onToggle: () => void;
 }
-
 function DayGroup({
   dayNumber,
   title,
@@ -651,7 +656,6 @@ function DayGroup({
 }: DayGroupProps) {
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
-
   const handleCreateAiQuiz = async () => {
     setIsCreating(true);
     try {
@@ -659,12 +663,11 @@ function DayGroup({
       if (res.success && res.data) {
         const newQuizId = (res.data as QuizResponse).quizId;
         if (newQuizId) {
-          toast.success("Đã tạo bài kiểm tra AI!");
+          toast.success(t("userPractice.aiTestCreated"));
           if (!interviewSessionId) {
-            toast.error("Không thể mở bài kiểm tra vì thiếu thông tin phiên luyện tập.");
+            toast.error(t("userPractice.cannotOpenTestBecausePractice"));
             return;
           }
-
           const quizBackUrl = buildPracticeSessionPath(interviewSessionId);
           navigate(
             buildPracticeQuizPath({
@@ -680,57 +683,58 @@ function DayGroup({
             }
           );
         } else {
-          toast.error("Không lấy được ID bài kiểm tra");
+          toast.error(t("userPractice.unableToGetTestId"));
         }
       } else {
-        toast.error(res.error ?? "Không thể tạo bài kiểm tra AI");
+        toast.error(res.error ?? t("common.unableToCreateAiTest"));
       }
     } catch {
-      toast.error("Không thể tạo bài kiểm tra AI");
+      toast.error(t("common.unableToCreateAiTest"));
     } finally {
       setIsCreating(false);
     }
   };
-
-  const statusConfig: Record<DayStatus, { label: string; className: string }> = {
+  const statusConfig: Record<
+    DayStatus,
+    {
+      label: string;
+      className: string;
+    }
+  > = {
     COMPLETED: {
-      label: "HOÀN THÀNH",
+      label: t("general.completed2"),
       className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     },
     IN_PROGRESS: {
-      label: "ĐANG DIỄN RA",
+      label: t("userPractice.goingOn"),
       className: "bg-blue-100 text-[#0047AB] dark:bg-blue-900/40 dark:text-blue-300",
     },
     LOCKED: {
-      label: "CHƯA MỞ",
+      label: t("userPractice.notOpen"),
       className: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
     },
   };
   const cfg = statusConfig[dayStatus];
-
   const getItemStatus = (localIdx: number): ItemStatus => {
     if (dayStatus === "LOCKED") return "LOCKED";
     if (dayStatus === "COMPLETED") return "DONE";
     // IN_PROGRESS: first item = NEXT, rest = AVAILABLE
     return localIdx === 0 && isCurrentDay ? "NEXT" : "AVAILABLE";
   };
-
   const firstLesson = dayItems[0]?.practiceQuestion?.lesson;
   const computedTitle = firstLesson
-    ? `Ngày ${dayNumber}: ${firstLesson.lessonName ?? ""}`
-    : `Ngày ${dayNumber}`;
+    ? t("general.day1", {
+        var_0: dayNumber,
+        var_1: firstLesson.lessonName ?? "",
+      })
+    : t("general.day", {
+        var_0: dayNumber,
+      });
   const dayTitle = title ?? computedTitle;
-
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle}>
       <div
-        className={`bg-card rounded-xl border shadow-sm ${
-          dayStatus === "IN_PROGRESS"
-            ? "border-[#0047AB]/40"
-            : dayStatus === "COMPLETED"
-              ? "border-emerald-200 dark:border-emerald-900/40"
-              : "border-border"
-        }`}>
+        className={`bg-card rounded-xl border shadow-sm ${dayStatus === "IN_PROGRESS" ? "border-[#0047AB]/40" : dayStatus === "COMPLETED" ? "border-emerald-200 dark:border-emerald-900/40" : "border-border"}`}>
         <div className="flex items-center gap-3 px-4 py-3">
           <h2 className="text-foreground text-base font-bold">{dayTitle}</h2>
           <Badge className={`text-[11px] font-semibold ${cfg.className}`}>{cfg.label}</Badge>
@@ -740,7 +744,7 @@ function DayGroup({
                 <button
                   disabled={isCreating}
                   onClick={handleCreateAiQuiz}
-                  title="Tạo quiz mới"
+                  title={t("userPractice.createNewQuiz")}
                   className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0047AB] text-white transition-opacity hover:opacity-80 disabled:opacity-50">
                   {isCreating ? <Spinner size="xs" tone="white" /> : <Plus className="h-3 w-3" />}
                 </button>
@@ -748,7 +752,7 @@ function DayGroup({
                   <Popover>
                     <PopoverTrigger asChild>
                       <button
-                        title="Xem lịch sử kiểm tra"
+                        title={t("userPractice.viewTestHistory")}
                         className="flex h-6 w-6 items-center justify-center rounded-full border border-[#0047AB] text-[#0047AB] transition-colors hover:bg-[#DCEEFF] dark:hover:bg-[#0047AB]/20">
                         <History className="h-3 w-3" />
                       </button>
@@ -765,7 +769,7 @@ function DayGroup({
             <CollapsibleTrigger asChild>
               <button
                 className="text-muted-foreground hover:text-foreground ml-1 flex h-6 w-6 items-center justify-center rounded transition-colors"
-                title={isOpen ? "Thu gọn" : "Mở rộng"}>
+                title={isOpen ? t("common.collapse") : t("common.extend")}>
                 {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </button>
             </CollapsibleTrigger>
@@ -794,13 +798,18 @@ function DayGroup({
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
 export function PracticeSetDetailPage() {
-  const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
+  const { t } = useTranslation();
+  const { id, sessionId } = useParams<{
+    id: string;
+    sessionId: string;
+  }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const locationState = location.state as { sessionSets?: PracticeSetResponse[] } | null;
+  const locationState = location.state as {
+    sessionSets?: PracticeSetResponse[];
+  } | null;
   // Capture location state once on mount — prevents re-reading stale state on re-renders
   const preloadedSets = useRef(locationState?.sessionSets);
-
   const [practiceSet, setPracticeSet] = useState<PracticeSet | null>(null);
   const [items, setItems] = useState<PracticeSetItem[]>([]);
   const [quizHistory, setQuizHistory] = useState<QuizSet[]>([]);
@@ -813,7 +822,6 @@ export function PracticeSetDetailPage() {
   // Collapse state — each day group can be expanded/collapsed independently
   const [dayOpenStates, setDayOpenStates] = useState<boolean[]>([]);
   const [sessionOpenStates, setSessionOpenStates] = useState<boolean[]>([]);
-
   const applySessionData = (data: PracticeSetResponse[]) => {
     const first = data[0];
     setPracticeSet({
@@ -827,7 +835,6 @@ export function PracticeSetDetailPage() {
     setSessionDays(data);
     setIsSessionView(true);
   };
-
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -845,7 +852,7 @@ export function PracticeSetDetailPage() {
           if (sessionRes.success && sessionRes.data && sessionRes.data.length > 0) {
             applySessionData(sessionRes.data);
           } else {
-            toast.error("Không tìm thấy bộ luyện tập nào cho phiên này");
+            toast.error(t("userPractice.noPracticeSetsFoundFor"));
           }
         }
         return;
@@ -863,18 +870,17 @@ export function PracticeSetDetailPage() {
           practiceSetItemManager.getByPracticeSetId(id),
         ]);
         if (setRes.success && setRes.data) setPracticeSet(setRes.data);
-        else toast.error(setRes.error ?? "Không thể tải thông tin bộ luyện tập");
+        else toast.error(setRes.error ?? t("userPractice.unableToLoadTrainingSet"));
         if (itemsRes.success && itemsRes.data) setItems(itemsRes.data as PracticeSetItem[]);
       }
       const quizRes = await quizSetManager.getByPracticeSet(Number(id));
       if (quizRes.success && quizRes.data) setQuizHistory(quizRes.data);
     } catch {
-      toast.error("Không thể tải dữ liệu");
+      toast.error(t("common.unableToDownloadData"));
     } finally {
       setLoading(false);
     }
-  }, [id, sessionId]);
-
+  }, [id, sessionId, t]);
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -885,10 +891,8 @@ export function PracticeSetDetailPage() {
     () => [...items].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)),
     [items]
   );
-
   const dateNumber = parseDateNumber(practiceSet?.practiceSetName);
   const itemsPerDay = Math.max(1, Math.ceil(sortedItems.length / dateNumber));
-
   const dayGroups = useMemo(() => {
     const groups: PracticeSetItem[][] = [];
     for (let d = 0; d < dateNumber; d++) {
@@ -904,22 +908,18 @@ export function PracticeSetDetailPage() {
     }
     return groups;
   }, [sortedItems, dateNumber, itemsPerDay]);
-
   const submittedCount = quizHistory.filter((q) => q.submitted).length;
   const completedDays = Math.min(submittedCount, dayGroups.length);
   const progressPct =
     dayGroups.length === 0 ? 0 : Math.round((completedDays / dayGroups.length) * 100);
-
   const lastSubmittedQuiz = quizHistory
     .filter((q) => q.submitted)
     .sort((a, b) => (b.quizId ?? 0) - (a.quizId ?? 0))[0];
-
   const getDayStatus = (dayIdx: number): DayStatus => {
     if (dayIdx < completedDays) return "COMPLETED";
     if (dayIdx === completedDays) return "IN_PROGRESS";
     return "LOCKED";
   };
-
   const startDateLabel = practiceSet?.startDate
     ? format(new Date(practiceSet.startDate), "dd/MM/yyyy")
     : null;
@@ -927,7 +927,6 @@ export function PracticeSetDetailPage() {
   // ── session-view: tính status theo startDate so với ngày hiện tại ──────────
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const getSessionDayStatus = (ps: PracticeSetResponse, index: number): DayStatus => {
     // Days without a startDate are treated as IN_PROGRESS so users can still
     // access their content (e.g. newly generated sets not yet scheduled).
@@ -947,7 +946,6 @@ export function PracticeSetDetailPage() {
     if (index < passedCount + 1) return "IN_PROGRESS";
     return "LOCKED";
   };
-
   const totalDays = sessionDays.length;
   // Số ngày đã trôi qua (bao gồm hôm nay): dùng cho tiến độ theo công thức 100/totalDays * elapsedDays
   const sessionElapsedCount = sessionDays.filter((ps) => {
@@ -963,7 +961,6 @@ export function PracticeSetDetailPage() {
   useEffect(() => {
     setDayOpenStates(Array(dayGroups.length).fill(true));
   }, [dayGroups.length]);
-
   useEffect(() => {
     setSessionOpenStates(Array(sessionDays.length).fill(true));
   }, [sessionDays.length]);
@@ -981,15 +978,14 @@ export function PracticeSetDetailPage() {
       </div>
     );
   }
-
   if (!practiceSet) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
         <Card className="p-8 text-center">
-          <p className="text-foreground font-medium">Không tìm thấy bộ luyện tập</p>
+          <p className="text-foreground font-medium">{t("userPractice.noTrainingSetFound")}</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate("/user?tab=practice")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Quay lại
+            {t("general.back")}
           </Button>
         </Card>
       </div>
@@ -1004,7 +1000,8 @@ export function PracticeSetDetailPage() {
           {/* Title block */}
           <div>
             <h1 className="text-foreground text-2xl font-bold">
-              Lộ trình luyện tập — Phiên #{practiceSet.interviewSessionId}
+              {t("userPractice.trainingPathSession")}
+              {practiceSet.interviewSessionId}
             </h1>
             <div className="mt-2 flex flex-wrap gap-2">
               {practiceSet.level && <Badge variant="secondary">{practiceSet.level}</Badge>}
@@ -1020,24 +1017,25 @@ export function PracticeSetDetailPage() {
               <div className="mb-2 flex items-baseline justify-between">
                 <div>
                   <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                    Tiến độ hiện tại
+                    {t("userPractice.currentProgress")}
                   </span>
                   <div className="mt-0.5 flex items-baseline gap-1.5">
                     <span className="text-foreground text-2xl font-bold">
                       {sessionProgressPct}%
                     </span>
 
-                    <span className="text-muted-foreground text-sm">hoàn thành</span>
+                    <span className="text-muted-foreground text-sm">{t("general.completed1")}</span>
                   </div>
                 </div>
                 <span className="text-muted-foreground text-sm font-medium">
-                  {sessionElapsedCount}/{totalDays} ngày
+                  {sessionElapsedCount}/{totalDays} {t("userPractice.day")}
                 </span>
               </div>
               <Progress value={sessionProgressPct} className="h-2.5" />
               {totalDays - sessionElapsedCount > 0 && (
                 <p className="text-muted-foreground mt-2 text-xs">
-                  Còn {totalDays - sessionElapsedCount} ngày nữa để hoàn thành lộ trình
+                  {t("userPractice.still")} {totalDays - sessionElapsedCount}{" "}
+                  {t("userPractice.anotherDayToCompleteThe")}
                 </p>
               )}
             </CardContent>
@@ -1047,7 +1045,7 @@ export function PracticeSetDetailPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
-                Lộ trình học tập
+                {t("userPractice.learningPath")}
               </h2>
               <Button
                 variant="ghost"
@@ -1060,12 +1058,12 @@ export function PracticeSetDetailPage() {
                 {sessionOpenStates.every(Boolean) ? (
                   <>
                     <ChevronUp className="h-3.5 w-3.5" />
-                    Thu gọn tất cả
+                    {t("userPractice.collapseAll")}
                   </>
                 ) : (
                   <>
                     <ChevronDown className="h-3.5 w-3.5" />
-                    Mở tất cả
+                    {t("userPractice.openAll")}
                   </>
                 )}
               </Button>
@@ -1092,16 +1090,16 @@ export function PracticeSetDetailPage() {
               <MessageCircle className="h-8 w-8 text-[#0047AB]" />
               <div>
                 <CardTitle className="text-foreground text-base">
-                  Bạn gặp khó khăn với bài tập?
+                  {t("userPractice.havingTroubleWithExercises")}
                 </CardTitle>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  Kết nối với Mentor để được giải đáp thắc mắc ngay lúc này.
+                  {t("userPractice.connectWithMentorToGet")}
                 </p>
               </div>
               <Button
                 className="bg-[#0047AB] text-white hover:bg-[#005B9A]"
                 onClick={() => navigate("/user?tab=mentors")}>
-                Đặt câu hỏi cho Mentor
+                {t("userPractice.askMentorQuestions")}
               </Button>
             </CardContent>
           </Card>
@@ -1109,14 +1107,13 @@ export function PracticeSetDetailPage() {
       </div>
     );
   }
-
   return (
     <div className="bg-background min-h-screen">
       <div className="mx-auto max-w-3xl space-y-6 p-6">
         {/* Title block */}
         <div>
           <h1 className="text-foreground text-2xl font-bold">
-            {practiceSet.practiceSetName ?? "Chi tiết bộ luyện tập"}
+            {practiceSet.practiceSetName ?? t("common.detailsOfPracticeSet")}
           </h1>
           {practiceSet.objective && (
             <p className="text-muted-foreground mt-1 text-sm">{practiceSet.objective}</p>
@@ -1128,7 +1125,7 @@ export function PracticeSetDetailPage() {
             )}
             {startDateLabel && (
               <Badge variant="outline" className="text-muted-foreground">
-                Bắt đầu: {startDateLabel}
+                {t("common.begin")} {startDateLabel}
               </Badge>
             )}
           </div>
@@ -1140,21 +1137,22 @@ export function PracticeSetDetailPage() {
             <div className="mb-2 flex items-baseline justify-between">
               <div>
                 <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                  Tiến độ hiện tại
+                  {t("userPractice.currentProgress")}
                 </span>
                 <div className="mt-0.5 flex items-baseline gap-1.5">
                   <span className="text-foreground text-2xl font-bold">{progressPct}%</span>
-                  <span className="text-muted-foreground text-sm">hoàn thành</span>
+                  <span className="text-muted-foreground text-sm">{t("general.completed1")}</span>
                 </div>
               </div>
               <span className="text-muted-foreground text-sm font-medium">
-                {completedDays}/{dayGroups.length} ngày
+                {completedDays}/{dayGroups.length} {t("userPractice.day")}
               </span>
             </div>
             <Progress value={progressPct} className="h-2.5" />
             {dayGroups.length - completedDays > 0 && (
               <p className="text-muted-foreground mt-2 text-xs">
-                Còn {dayGroups.length - completedDays} ngày nữa để hoàn thành lộ trình
+                {t("userPractice.still")} {dayGroups.length - completedDays}{" "}
+                {t("userPractice.anotherDayToCompleteThe")}
               </p>
             )}
           </CardContent>
@@ -1166,7 +1164,7 @@ export function PracticeSetDetailPage() {
             <CardContent className="py-10 text-center">
               <GraduationCap className="text-muted-foreground mx-auto h-10 w-10" />
               <p className="text-muted-foreground mt-2 text-sm">
-                Chưa có bài tập nào trong lộ trình này
+                {t("userPractice.thereAreNoExercisesIn")}
               </p>
             </CardContent>
           </Card>
@@ -1174,7 +1172,7 @@ export function PracticeSetDetailPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
-                Lộ trình học tập
+                {t("userPractice.learningPath")}
               </h2>
               <Button
                 variant="ghost"
@@ -1187,12 +1185,12 @@ export function PracticeSetDetailPage() {
                 {dayOpenStates.every(Boolean) ? (
                   <>
                     <ChevronUp className="h-3.5 w-3.5" />
-                    Thu gọn tất cả
+                    {t("userPractice.collapseAll")}
                   </>
                 ) : (
                   <>
                     <ChevronDown className="h-3.5 w-3.5" />
-                    Mở tất cả
+                    {t("userPractice.openAll")}
                   </>
                 )}
               </Button>
@@ -1225,16 +1223,16 @@ export function PracticeSetDetailPage() {
             <MessageCircle className="h-8 w-8 text-[#0047AB]" />
             <div>
               <CardTitle className="text-foreground text-base">
-                Bạn gặp khó khăn với bài tập?
+                {t("userPractice.havingTroubleWithExercises")}
               </CardTitle>
               <p className="text-muted-foreground mt-1 text-sm">
-                Kết nối với Mentor để được giải đáp thắc mắc ngay lúc này.
+                {t("userPractice.connectWithMentorToGet")}
               </p>
             </div>
             <Button
               className="bg-[#0047AB] text-white hover:bg-[#005B9A]"
               onClick={() => navigate("/user?tab=mentors")}>
-              Đặt câu hỏi cho Mentor
+              {t("userPractice.askMentorQuestions")}
             </Button>
           </CardContent>
         </Card>

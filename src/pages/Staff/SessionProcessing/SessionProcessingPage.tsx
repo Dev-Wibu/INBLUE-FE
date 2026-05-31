@@ -1,7 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Calendar, Check, Clock, Eye, Search, Video, X } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-
 import { PaginationControl, SortButton } from "@/components/shared";
 import { ReloadButton } from "@/components/shared/ReloadButton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -32,22 +28,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session, SessionStatus } from "@/interfaces";
 import { formatDateTime, toTimestamp } from "@/lib/formatting";
 import { openUrlInNewTab } from "@/lib/media-file-utils";
 import { getSessionStatusBadge } from "@/lib/status-utils";
-
+import { Calendar, Check, Clock, Eye, Search, Video, X } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 type StatusFilter = SessionStatus | "all";
 type SortableSession = Session & {
   idSortValue: number;
   joinTimeSortValue: number;
   statusSortValue: string;
 };
-
 export function SessionProcessingPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
@@ -85,7 +83,6 @@ export function SessionProcessingPage() {
       return true;
     });
   }, [sessions, searchQuery, statusFilter]);
-
   const sortableSessions = useMemo<SortableSession[]>(() => {
     return filteredSessions.map((session) => ({
       ...session,
@@ -94,7 +91,6 @@ export function SessionProcessingPage() {
       statusSortValue: session.status || "",
     }));
   }, [filteredSessions]);
-
   const { sortedData, getSortProps } = useSortable(sortableSessions, {
     defaultSort: {
       key: "idSortValue",
@@ -116,7 +112,6 @@ export function SessionProcessingPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [pagination.endIndex, pagination.startIndex, sortedData]);
@@ -129,15 +124,19 @@ export function SessionProcessingPage() {
       draft: sessions.filter((s) => s.status === "DRAFT").length,
     };
   }, [sessions]);
-
   const handleApproveReject = useCallback((session: Session, isApproved: boolean) => {
-    setConfirmAction({ session, isApproved });
+    setConfirmAction({
+      session,
+      isApproved,
+    });
   }, []);
-
   const handleConfirmAction = useCallback(() => {
     if (!confirmAction?.session.id) return;
     updateStatusMutation.mutate(
-      { sessionId: confirmAction.session.id, isApproved: confirmAction.isApproved },
+      {
+        sessionId: confirmAction.session.id,
+        isApproved: confirmAction.isApproved,
+      },
       {
         onSettled: () => {
           setConfirmAction(null);
@@ -145,7 +144,6 @@ export function SessionProcessingPage() {
       }
     );
   }, [confirmAction, updateStatusMutation]);
-
   if (isLoading) {
     return (
       <div className="bg-white dark:bg-slate-950">
@@ -153,27 +151,25 @@ export function SessionProcessingPage() {
       </div>
     );
   }
-
   if (isError) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white dark:bg-slate-950">
-        <p className="text-red-500">Không thể tải danh sách phiên phỏng vấn</p>
+        <p className="text-red-500">{t("staffSessionprocessing.unableToLoadInterviewSession")}</p>
         <Button variant="outline" onClick={() => refetch()}>
-          Thử lại
+          {t("common.retry")}
         </Button>
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản Lý Phiên Phỏng Vấn
+          {t("staffSessionprocessing.managingInterviewSessions")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Theo dõi và quản lý các phiên phỏng vấn giữa người dùng và mentor
+          {t("staffSessionprocessing.monitorAndManageInterviewSessions")}
         </p>
       </div>
 
@@ -185,7 +181,7 @@ export function SessionProcessingPage() {
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo ID, tên phòng, ID người dùng..."
+              placeholder={t("staffSessionprocessing.searchByIdRoomName")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -203,17 +199,17 @@ export function SessionProcessingPage() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="w-44">
-              <SelectValue placeholder="Lọc theo trạng thái" />
+              <SelectValue placeholder={t("common.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="DRAFT">Chờ duyệt</SelectItem>
-              <SelectItem value="SCHEDULED">Đã lên lịch</SelectItem>
-              <SelectItem value="PAID">Đã thanh toán</SelectItem>
-              <SelectItem value="REJECTED">Bị từ chối</SelectItem>
-              <SelectItem value="ONGOING">Đang diễn ra</SelectItem>
-              <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
-              <SelectItem value="CANCELED">Đã hủy</SelectItem>
+              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+              <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+              <SelectItem value="SCHEDULED">{t("common.scheduled")}</SelectItem>
+              <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+              <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+              <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+              <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+              <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
             </SelectContent>
           </Select>
           <ReloadButton
@@ -221,7 +217,7 @@ export function SessionProcessingPage() {
               await refetch();
             }}
             isLoading={isRefetching}
-            tooltip="Tải lại danh sách phiên"
+            tooltip={t("common.reloadSessionList")}
           />
         </div>
 
@@ -231,20 +227,20 @@ export function SessionProcessingPage() {
             <div className="flex items-center gap-2 rounded-lg bg-amber-100 px-3 py-2 dark:bg-amber-900/30">
               <Clock className="h-4 w-4 text-amber-600" />
               <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                {stats.draft} chờ duyệt
+                {stats.draft} {t("staffSessionprocessing.waitingForApproval")}
               </span>
             </div>
           )}
           <div className="flex items-center gap-2 rounded-lg bg-green-100 px-3 py-2 dark:bg-green-900/30">
             <Video className="h-4 w-4 text-green-600" />
             <span className="text-sm font-medium text-green-700 dark:text-green-400">
-              {stats.ongoing} đang diễn ra
+              {stats.ongoing} {t("staffSessionprocessing.isGoingOn")}
             </span>
           </div>
           <div className="flex items-center gap-2 rounded-lg bg-blue-100 px-3 py-2 dark:bg-blue-900/30">
             <Calendar className="h-4 w-4 text-blue-600" />
             <span className="text-sm font-medium text-blue-700 dark:text-blue-400">
-              {stats.scheduled} sắp tới
+              {stats.scheduled} {t("common.upcoming")}
             </span>
           </div>
         </div>
@@ -258,16 +254,18 @@ export function SessionProcessingPage() {
               <TableHead className="w-16">
                 <SortButton {...getSortProps("idSortValue")}>ID</SortButton>
               </TableHead>
-              <TableHead>Tên phòng</TableHead>
-              <TableHead>Người dùng (ID)</TableHead>
+              <TableHead>{t("common.roomName1")}</TableHead>
+              <TableHead>{t("general.userId")}</TableHead>
               <TableHead>Mentor (ID)</TableHead>
               <TableHead>
-                <SortButton {...getSortProps("joinTimeSortValue")}>Thời gian tham gia</SortButton>
+                <SortButton {...getSortProps("joinTimeSortValue")}>
+                  {t("general.joinTime")}
+                </SortButton>
               </TableHead>
               <TableHead>
-                <SortButton {...getSortProps("statusSortValue")}>Trạng thái</SortButton>
+                <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
               </TableHead>
-              <TableHead className="text-right">Hành động</TableHead>
+              <TableHead className="text-right">{t("common.act")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -296,7 +294,7 @@ export function SessionProcessingPage() {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Xem chi tiết</TooltipContent>
+                        <TooltipContent>{t("common.seeDetails")}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
 
@@ -313,7 +311,7 @@ export function SessionProcessingPage() {
                                 <Check className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Duyệt</TooltipContent>
+                            <TooltipContent>{t("common.browse")}</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                         <TooltipProvider>
@@ -327,7 +325,7 @@ export function SessionProcessingPage() {
                                 <X className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Từ chối</TooltipContent>
+                            <TooltipContent>{t("common.refuse")}</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </>
@@ -339,7 +337,7 @@ export function SessionProcessingPage() {
             {pageData.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="py-8 text-center text-gray-500">
-                  Không có phiên phỏng vấn nào
+                  {t("staffSessionprocessing.thereAreNoInterviewSessions")}
                 </TableCell>
               </TableRow>
             )}
@@ -367,7 +365,7 @@ export function SessionProcessingPage() {
                 setStatusFilter("all");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           </div>
         )}
@@ -377,8 +375,11 @@ export function SessionProcessingPage() {
       <Dialog open={!!viewSession} onOpenChange={() => setViewSession(null)}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Chi tiết phiên phỏng vấn</DialogTitle>
-            <DialogDescription>Thông tin chi tiết về phiên #{viewSession?.id}</DialogDescription>
+            <DialogTitle>{t("common.interviewSessionDetails")}</DialogTitle>
+            <DialogDescription>
+              {t("staffSessionprocessing.sessionDetails")}
+              {viewSession?.id}
+            </DialogDescription>
           </DialogHeader>
           {viewSession && (
             <div className="grid gap-3 py-4 text-sm">
@@ -387,11 +388,13 @@ export function SessionProcessingPage() {
                 <span>{viewSession.id}</span>
               </div>
               <div className="grid grid-cols-[140px_1fr] gap-2">
-                <span className="font-medium text-gray-600">Tên phòng:</span>
+                <span className="font-medium text-gray-600">{t("common.roomName")}</span>
                 <span className="font-mono text-xs break-all">{viewSession.roomName || "-"}</span>
               </div>
               <div className="grid grid-cols-[140px_1fr] gap-2">
-                <span className="font-medium text-gray-600">Người dùng (ID):</span>
+                <span className="font-medium text-gray-600">
+                  {t("staffSessionprocessing.userId")}
+                </span>
                 <span>{viewSession.userId ?? "-"}</span>
               </div>
               <div className="grid grid-cols-[140px_1fr] gap-2">
@@ -399,11 +402,15 @@ export function SessionProcessingPage() {
                 <span>{viewSession.userId2 ?? "-"}</span>
               </div>
               <div className="grid grid-cols-[140px_1fr] gap-2">
-                <span className="font-medium text-gray-600">Thời gian tham gia:</span>
+                <span className="font-medium text-gray-600">
+                  {t("staffSessionprocessing.participationTime")}
+                </span>
                 <span>{formatDateTime(viewSession.joinTime)}</span>
               </div>
               <div className="grid grid-cols-[140px_1fr] gap-2">
-                <span className="font-medium text-gray-600">URL phòng:</span>
+                <span className="font-medium text-gray-600">
+                  {t("staffSessionprocessing.roomUrl")}
+                </span>
                 <span className="text-xs break-all">
                   {viewSession.roomUrl ? (
                     <a
@@ -423,7 +430,9 @@ export function SessionProcessingPage() {
               </div>
               {viewSession.recordUrl && (
                 <div className="grid grid-cols-[140px_1fr] gap-2">
-                  <span className="font-medium text-gray-600">Bản ghi:</span>
+                  <span className="font-medium text-gray-600">
+                    {t("staffSessionprocessing.record")}
+                  </span>
                   <span className="text-xs break-all">
                     <a
                       href={viewSession.recordUrl}
@@ -439,7 +448,7 @@ export function SessionProcessingPage() {
                 </div>
               )}
               <div className="grid grid-cols-[140px_1fr] gap-2">
-                <span className="font-medium text-gray-600">Trạng thái:</span>
+                <span className="font-medium text-gray-600">{t("common.status1")}</span>
                 <span>
                   <StatusBadge {...getSessionStatusBadge(viewSession.status)} />
                 </span>
@@ -457,7 +466,7 @@ export function SessionProcessingPage() {
                     handleApproveReject(viewSession, false);
                   }}>
                   <X className="mr-1 h-4 w-4" />
-                  Từ chối
+                  {t("common.refuse")}
                 </Button>
                 <Button
                   className="bg-green-600 hover:bg-green-700"
@@ -466,7 +475,7 @@ export function SessionProcessingPage() {
                     handleApproveReject(viewSession, true);
                   }}>
                   <Check className="mr-1 h-4 w-4" />
-                  Duyệt
+                  {t("common.browse")}
                 </Button>
               </div>
             )}
@@ -479,27 +488,33 @@ export function SessionProcessingPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {confirmAction?.isApproved ? "Duyệt phiên phỏng vấn" : "Từ chối phiên phỏng vấn"}
+              {confirmAction?.isApproved
+                ? t("staffSessionprocessing.browseInterviewSessions")
+                : t("common.refuseTheInterviewSession")}
             </DialogTitle>
             <DialogDescription>
               {confirmAction?.isApproved
-                ? `Bạn có chắc muốn duyệt phiên phỏng vấn #${confirmAction?.session.id}? Phiên sẽ chuyển sang trạng thái "Đã lên lịch".`
-                : `Bạn có chắc muốn từ chối phiên phỏng vấn #${confirmAction?.session.id}? Hành động này không thể hoàn tác.`}
+                ? t("general.areYouSureYouWant1", {
+                    var_0: confirmAction?.session.id,
+                  })
+                : t("general.areYouSureYouWant2", {
+                    var_0: confirmAction?.session.id,
+                  })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmAction(null)}>
-              Hủy
+              {t("general.cancel")}
             </Button>
             <Button
               variant={confirmAction?.isApproved ? "default" : "destructive"}
               onClick={handleConfirmAction}
               disabled={updateStatusMutation.isPending}>
               {updateStatusMutation.isPending
-                ? "Đang xử lý..."
+                ? t("common.processing")
                 : confirmAction?.isApproved
-                  ? "Duyệt"
-                  : "Từ chối"}
+                  ? t("common.browse")
+                  : t("common.refuse")}
             </Button>
           </DialogFooter>
         </DialogContent>

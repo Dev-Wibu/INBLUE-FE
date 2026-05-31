@@ -8,41 +8,44 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
+import { useTranslation } from "react-i18next";
 import type { Company } from "../types";
-
 interface CompanyDeleteDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   company: Company | null;
   onConfirm: () => void;
 }
-
 const isCompanyActive = (company?: Company | null) =>
   (company?.status ?? "ACTIVE").toUpperCase() !== "INACTIVE";
-
 export function CompanyDeleteDialog({
   isOpen,
   onOpenChange,
   company,
   onConfirm,
 }: CompanyDeleteDialogProps) {
+  const { t } = useTranslation();
   const active = isCompanyActive(company);
-  const actionTitle = active ? "Vô hiệu hóa" : "Kích hoạt";
-
+  const actionTitle = active ? t("common.disable") : t("common.activate");
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{actionTitle} Công Ty</AlertDialogTitle>
+          <AlertDialogTitle>
+            {actionTitle} {t("adminCompanymanagement.company")}
+          </AlertDialogTitle>
           <AlertDialogDescription>
             {active
-              ? `Bạn có chắc chắn muốn vô hiệu hóa công ty "${company?.name}"? Công ty sẽ không còn hoạt động trong hệ thống.`
-              : `Bạn có chắc chắn muốn kích hoạt công ty "${company?.name}"? Công ty sẽ hoạt động trở lại.`}
+              ? t("general.areYouSureYouWant3", {
+                  var_0: company?.name,
+                })
+              : t("general.areYouSureYouWant4", {
+                  var_0: company?.name,
+                })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogCancel>{t("general.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className={

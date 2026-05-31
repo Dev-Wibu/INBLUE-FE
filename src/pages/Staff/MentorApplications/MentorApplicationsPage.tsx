@@ -1,8 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { CheckCircle, Search, UserCheck, XCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { ReloadButton } from "@/components/shared/ReloadButton";
 import { SortButton } from "@/components/shared/SortButton";
@@ -25,12 +20,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { Mentor } from "@/interfaces";
 import { getMentorApplicationBadge } from "@/lib/status-utils";
 import { mentorManager } from "@/services/mentor.manager";
-
+import { CheckCircle, Search, UserCheck, XCircle } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 type ApplicationStatus = "pending" | "approved" | "rejected" | "all";
 
 /**
@@ -40,15 +38,13 @@ type ApplicationStatus = "pending" | "approved" | "rejected" | "all";
 const getApplicationStatus = (mentor: Mentor): "pending" | "approved" => {
   return mentor.active ? "approved" : "pending";
 };
-
 export function MentorApplicationsPage() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus>("pending");
-
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
-
   const loadMentors = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -60,11 +56,11 @@ export function MentorApplicationsPage() {
       }
     } catch (error) {
       console.error("Failed to load mentors:", error);
-      toast.error("Không thể tải danh sách mentor");
+      toast.error(t("common.unableToLoadMentorList"));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Load mentors from API
   useEffect(() => {
@@ -89,7 +85,6 @@ export function MentorApplicationsPage() {
           mentor.expertise?.toLowerCase().includes(lowerQuery)
         );
       }
-
       return true;
     });
   }, [mentors, statusFilter, searchQuery]);
@@ -122,14 +117,23 @@ export function MentorApplicationsPage() {
       const result = await mentorManager.toggleActive(mentorId);
       if (result.success) {
         // Update local state
-        setMentors((prev) => prev.map((m) => (m.id === mentorId ? { ...m, active: true } : m)));
-        toast.success("Đã duyệt mentor thành công");
+        setMentors((prev) =>
+          prev.map((m) =>
+            m.id === mentorId
+              ? {
+                  ...m,
+                  active: true,
+                }
+              : m
+          )
+        );
+        toast.success(t("staffMentorapplications.successfullyApprovedForMentor"));
       } else {
-        toast.error(result.error || "Không thể duyệt mentor");
+        toast.error(result.error || t("staffMentorapplications.cannotApproveMentors"));
       }
     } catch (error) {
       console.error("Failed to accept mentor:", error);
-      toast.error("Có lỗi xảy ra khi duyệt mentor");
+      toast.error(t("staffMentorapplications.anErrorOccurredWhileBrowsing"));
     } finally {
       setProcessingIds((prev) => {
         const next = new Set(prev);
@@ -149,14 +153,23 @@ export function MentorApplicationsPage() {
       const result = await mentorManager.toggleActive(mentorId);
       if (result.success) {
         // Update local state
-        setMentors((prev) => prev.map((m) => (m.id === mentorId ? { ...m, active: false } : m)));
-        toast.success("Đã từ chối mentor");
+        setMentors((prev) =>
+          prev.map((m) =>
+            m.id === mentorId
+              ? {
+                  ...m,
+                  active: false,
+                }
+              : m
+          )
+        );
+        toast.success(t("staffMentorapplications.rejectedMentor"));
       } else {
-        toast.error(result.error || "Không thể từ chối mentor");
+        toast.error(result.error || t("staffMentorapplications.youCannotRefuseAMentor"));
       }
     } catch (error) {
       console.error("Failed to reject mentor:", error);
-      toast.error("Có lỗi xảy ra khi từ chối mentor");
+      toast.error(t("staffMentorapplications.anErrorOccurredWhenRejecting"));
     } finally {
       setProcessingIds((prev) => {
         const next = new Set(prev);
@@ -165,18 +178,16 @@ export function MentorApplicationsPage() {
       });
     }
   };
-
   const pendingCount = mentors.filter((m) => !m.active).length;
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Duyệt Đơn Đăng Ký Mentor
+          {t("staffMentorapplications.browseMentorRegistrationApplication")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Xem xét và phê duyệt đơn đăng ký từ các ứng viên mentor mới
+          {t("staffMentorapplications.reviewAndApproveApplicationsFrom")}
         </p>
       </div>
 
@@ -188,7 +199,7 @@ export function MentorApplicationsPage() {
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo tên, email, chuyên môn..."
+              placeholder={t("common.searchByNameEmailExpertise")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -200,12 +211,12 @@ export function MentorApplicationsPage() {
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as ApplicationStatus)}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Lọc theo trạng thái" />
+              <SelectValue placeholder={t("common.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="pending">Chờ duyệt</SelectItem>
-              <SelectItem value="approved">Đã duyệt</SelectItem>
-              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="pending">{t("common.waitingForApproval")}</SelectItem>
+              <SelectItem value="approved">{t("common.approved")}</SelectItem>
+              <SelectItem value="all">{t("general.all")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -214,11 +225,13 @@ export function MentorApplicationsPage() {
           <ReloadButton
             onReload={loadMentors}
             isLoading={isLoading}
-            tooltip="Tải lại danh sách đăng ký mentor"
+            tooltip={t("staffMentorapplications.reloadTheMentorRegistrationList")}
           />
           <div className="flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 dark:bg-slate-800">
             <UserCheck className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-medium">{pendingCount} đơn chờ duyệt</span>
+            <span className="text-sm font-medium">
+              {pendingCount} {t("staffMentorapplications.applicationPendingApproval")}
+            </span>
           </div>
         </div>
       </div>
@@ -229,16 +242,20 @@ export function MentorApplicationsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>
-                <SortButton {...getSortProps("name")}>Họ tên</SortButton>
+                <SortButton {...getSortProps("name")}>
+                  {t("staffMentorapplications.fullName")}
+                </SortButton>
               </TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Chuyên môn</TableHead>
+              <TableHead>{t("common.expertise")}</TableHead>
               <TableHead>
-                <SortButton {...getSortProps("yearsOfExperience")}>Kinh nghiệm</SortButton>
+                <SortButton {...getSortProps("yearsOfExperience")}>
+                  {t("common.experience")}
+                </SortButton>
               </TableHead>
-              <TableHead>Công ty</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+              <TableHead>{t("common.company")}</TableHead>
+              <TableHead>{t("common.status")}</TableHead>
+              <TableHead className="text-right">{t("common.operation")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -253,7 +270,7 @@ export function MentorApplicationsPage() {
             ) : pageData.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-8 text-center text-gray-500">
-                  Không có đơn đăng ký nào
+                  {t("staffMentorapplications.thereAreNoApplications")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -270,7 +287,9 @@ export function MentorApplicationsPage() {
                     <TableCell className="font-medium">{mentor.name}</TableCell>
                     <TableCell>{mentor.email}</TableCell>
                     <TableCell className="max-w-[200px] truncate">{mentor.expertise}</TableCell>
-                    <TableCell>{mentor.yearsOfExperience} năm</TableCell>
+                    <TableCell>
+                      {mentor.yearsOfExperience} {t("common.year")}
+                    </TableCell>
                     <TableCell>{mentor.currentCompany}</TableCell>
                     <TableCell>
                       <StatusBadge {...getMentorApplicationBadge(!!mentor.active)} />
@@ -289,7 +308,7 @@ export function MentorApplicationsPage() {
                             ) : (
                               <CheckCircle className="mr-1 h-4 w-4" />
                             )}
-                            Duyệt
+                            {t("common.browse")}
                           </Button>
                           <Button
                             size="sm"
@@ -302,7 +321,7 @@ export function MentorApplicationsPage() {
                             ) : (
                               <XCircle className="mr-1 h-4 w-4" />
                             )}
-                            Từ chối
+                            {t("common.refuse")}
                           </Button>
                         </div>
                       )}
@@ -318,7 +337,7 @@ export function MentorApplicationsPage() {
                           ) : (
                             <XCircle className="mr-1 h-4 w-4" />
                           )}
-                          Vô hiệu hóa
+                          {t("common.disable")}
                         </Button>
                       )}
                     </TableCell>

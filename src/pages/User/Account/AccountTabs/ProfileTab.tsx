@@ -1,3 +1,16 @@
+import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MAJOR_OPTIONS, getMajorLabel } from "@/constants/majors";
+import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
 import {
   BookOpen,
   ChevronRight,
@@ -13,23 +26,8 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-
-import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { MAJOR_OPTIONS, getMajorLabel } from "@/constants/majors";
-import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
-
+import { useTranslation } from "react-i18next";
 import type { UserProfileData } from "./types";
-
 interface ProfileTabProps {
   userProfile: UserProfileData;
   isEditing: boolean;
@@ -45,7 +43,6 @@ interface ProfileTabProps {
   onClearAvatar: () => void;
   onOpenCvModal: () => void;
 }
-
 export function ProfileTab({
   userProfile,
   isEditing,
@@ -61,24 +58,24 @@ export function ProfileTab({
   onClearAvatar,
   onOpenCvModal,
 }: ProfileTabProps) {
+  const { t } = useTranslation();
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
-
   const handlePreviewCurrentCv = () => {
     if (!userProfile.cvUrl) {
       return;
     }
-
-    const cvKind = inferFileKind({ fileName: userProfile.cvUrl });
+    const cvKind = inferFileKind({
+      fileName: userProfile.cvUrl,
+    });
     if (cvKind === "other") {
       openUrlInNewTab(userProfile.cvUrl);
       return;
     }
-
     setViewerItems([
       {
         id: "profile-current-cv",
-        name: "CV hiện tại",
+        name: t("common.currentCv"),
         src: userProfile.cvUrl,
         kind: cvKind,
         requireAuth: true,
@@ -86,7 +83,6 @@ export function ProfileTab({
     ]);
     setViewerOpen(true);
   };
-
   return (
     <div className="flex flex-col gap-6">
       {/* User Info Section */}
@@ -96,29 +92,33 @@ export function ProfileTab({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
-                  Thông tin cá nhân
+                  {t("common.personalInformation")}
                 </h3>
-                <Button variant="ghost" size="icon" onClick={onRefreshData} title="Làm mới dữ liệu">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onRefreshData}
+                  title={t("common.refreshData")}>
                   <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                Cập nhật hồ sơ cơ bản để hồ sơ hiển thị rõ ràng hơn.
+                {t("userAccount.updatedTheBasicProfileSo")}
               </p>
             </div>
             {!isEditing ? (
               <Button variant="outline" size="sm" onClick={onStartEdit}>
-                Chỉnh sửa
+                {t("general.edit")}
               </Button>
             ) : (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={onCancelEdit} disabled={isSaving}>
                   <X className="mr-1 h-4 w-4" />
-                  Hủy
+                  {t("general.cancel")}
                 </Button>
                 <Button size="sm" onClick={onSaveProfile} disabled={isSaving}>
                   <Save className="mr-1 h-4 w-4" />
-                  {isSaving ? "Đang lưu..." : "Lưu"}
+                  {isSaving ? t("common.saving") : t("general.save")}
                 </Button>
               </div>
             )}
@@ -140,9 +140,11 @@ export function ProfileTab({
                 )}
               </div>
               <p className="mt-4 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Ảnh đại diện
+                {t("common.avatar")}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">PNG hoặc JPG, tối đa 5MB</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {t("userAccount.pngOrJpgMaximum5mb")}
+              </p>
               {isEditing && (
                 <>
                   <input
@@ -155,14 +157,14 @@ export function ProfileTab({
                   <label
                     htmlFor="avatar-upload"
                     className="mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
-                    Đổi ảnh
+                    {t("userAccount.changePhoto")}
                   </label>
                   {avatarPreview && (
                     <button
                       type="button"
                       onClick={onClearAvatar}
                       className="mt-2 text-xs font-medium text-rose-500 hover:text-rose-600">
-                      Gỡ ảnh đã chọn
+                      {t("userAccount.removeSelectedPhoto")}
                     </button>
                   )}
                 </>
@@ -173,7 +175,7 @@ export function ProfileTab({
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                   <User className="h-4 w-4" />
-                  <Label className="text-sm">Họ và tên</Label>
+                  <Label className="text-sm">{t("common.fullName")}</Label>
                 </div>
                 {isEditing ? (
                   <Input
@@ -193,7 +195,7 @@ export function ProfileTab({
                   <Mail className="h-4 w-4" />
                   <Label className="text-sm">Email</Label>
                   <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                    Không thể thay đổi
+                    {t("common.cannotBeChanged")}
                   </span>
                 </div>
                 <p className="mt-2 text-base font-semibold text-slate-900 dark:text-white">
@@ -208,7 +210,7 @@ export function ProfileTab({
       {/* Education & Career Section */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0px_6px_20px_0px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
         <h3 className="mb-4 font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
-          Học vấn & Mục tiêu nghề nghiệp
+          {t("userAccount.educationCareerGoals")}
         </h3>
 
         <div className="grid gap-4 lg:grid-cols-2">
@@ -216,18 +218,18 @@ export function ProfileTab({
           <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
               <GraduationCap className="h-4 w-4" />
-              <Label className="text-sm">Trường đại học</Label>
+              <Label className="text-sm">{t("common.university")}</Label>
             </div>
             {isEditing ? (
               <Input
                 value={formData.university || ""}
                 onChange={(e) => onInputChange("university", e.target.value)}
                 className="mt-2"
-                placeholder="VD: Đại học Bách Khoa Hà Nội"
+                placeholder={t("userAccount.forExampleHanoiUniversityOf")}
               />
             ) : (
               <p className="mt-2 text-base font-semibold text-slate-900 dark:text-white">
-                {userProfile.university || "Chưa cập nhật"}
+                {userProfile.university || t("common.notUpdatedYet")}
               </p>
             )}
           </div>
@@ -236,14 +238,14 @@ export function ProfileTab({
           <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
               <BookOpen className="h-4 w-4" />
-              <Label className="text-sm">Chuyên ngành</Label>
+              <Label className="text-sm">{t("common.specialized")}</Label>
             </div>
             {isEditing ? (
               <Select
                 value={formData.major || ""}
                 onValueChange={(value) => onInputChange("major", value)}>
                 <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Chọn chuyên ngành" />
+                  <SelectValue placeholder={t("common.chooseAMajor")} />
                 </SelectTrigger>
                 <SelectContent>
                   {MAJOR_OPTIONS.map((option) => (
@@ -255,7 +257,7 @@ export function ProfileTab({
               </Select>
             ) : (
               <p className="mt-2 text-base font-semibold text-slate-900 dark:text-white">
-                {getMajorLabel(userProfile.major || "") || "Chưa cập nhật"}
+                {getMajorLabel(userProfile.major || "") || t("common.notUpdatedYet")}
               </p>
             )}
           </div>
@@ -274,20 +276,20 @@ export function ProfileTab({
                     onClick={handlePreviewCurrentCv}
                     className="mt-2 flex items-center gap-2 bg-transparent p-0 text-sm font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
                     <ExternalLink className="h-4 w-4" />
-                    Xem CV hiện tại
+                    {t("userAccount.viewCurrentCv")}
                   </button>
                 ) : (
                   <p className="mt-2 text-sm font-semibold text-slate-800 dark:text-white">
-                    Chưa có CV
+                    {t("userAccount.noCvYet")}
                   </p>
                 )}
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  Chỉ chấp nhận file PDF, tối đa 10MB
+                  {t("common.onlyAcceptPdfFilesMaximum10mb")}
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={onOpenCvModal}>
                 <Upload className="mr-2 h-4 w-4" />
-                {userProfile.cvUrl ? "Cập nhật CV" : "Upload CV"}
+                {userProfile.cvUrl ? t("common.updateCv") : "Upload CV"}
               </Button>
             </div>
           </div>
@@ -303,15 +305,15 @@ export function ProfileTab({
             </div>
             <div>
               <h3 className="font-['Inter'] text-lg font-semibold text-zinc-800 dark:text-white">
-                Đổi mật khẩu
+                {t("common.changePassword")}
               </h3>
               <p className="font-['Inter'] text-sm font-normal text-gray-500 dark:text-slate-400">
-                Đổi mật khẩu để bảo mật tài khoản
+                {t("common.changeYourPasswordToSecureYourAcco")}
               </p>
             </div>
           </div>
           <button className="flex items-center gap-2 font-['Inter'] text-base font-medium text-[#0047AB] hover:text-[#005B9A] dark:text-[#66B2FF] dark:hover:text-[#A5C8F2]">
-            Thay đổi
+            {t("common.change")}
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>

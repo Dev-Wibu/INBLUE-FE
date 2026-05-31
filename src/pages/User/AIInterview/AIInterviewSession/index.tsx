@@ -1,19 +1,18 @@
-import { AlertCircle, ArrowLeft, Settings } from "lucide-react";
-import { useState } from "react";
-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { DeviceCheckDialog } from "@/components/video-call";
-
+import { AlertCircle, ArrowLeft, Settings } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChatPanel } from "./ChatPanel";
 import { InterviewHeader } from "./InterviewHeader";
 import { InterviewStage } from "./InterviewStage";
 import { useAIInterviewSession } from "./useAIInterviewSession";
 import { useUserCameraPreview } from "./useUserCameraPreview";
-
 export function AIInterviewSessionPage() {
+  const { t } = useTranslation();
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [selectedVideoDeviceId, setSelectedVideoDeviceId] = useState<string | null>(null);
@@ -26,8 +25,8 @@ export function AIInterviewSessionPage() {
       <div className="flex min-h-screen items-center justify-center p-6">
         <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Không tìm thấy phiên phỏng vấn</AlertTitle>
-          <AlertDescription>Thiếu session key. Vui lòng tạo phiên phỏng vấn mới.</AlertDescription>
+          <AlertTitle>{t("common.noInterviewSessionsFound")}</AlertTitle>
+          <AlertDescription>{t("userAiinterview.missingSessionKeyPleaseCreate")}</AlertDescription>
         </Alert>
       </div>
     );
@@ -36,38 +35,44 @@ export function AIInterviewSessionPage() {
   // ---- Error state: start failed ----
   if (session.startError) {
     const errorBody =
-      (session.startError as { message?: string })?.message ??
-      JSON.stringify(session.startError).slice(0, 200);
+      (
+        session.startError as {
+          message?: string;
+        }
+      )?.message ?? JSON.stringify(session.startError).slice(0, 200);
     const isExpired =
       errorBody.includes("not found") || errorBody.includes("expired") || errorBody.includes("404");
-
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">
         <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>
-            {isExpired ? "Phiên phỏng vấn không tồn tại" : "Lỗi khởi động phỏng vấn"}
+            {isExpired
+              ? t("userAiinterview.interviewSessionDoesNotExist")
+              : t("userAiinterview.errorStartingInterview")}
           </AlertTitle>
           <AlertDescription className="space-y-1">
             <p>
               {isExpired
-                ? "Phiên phỏng vấn đã hết hạn hoặc không tồn tại. Vui lòng tạo phiên mới."
-                : "Không thể bắt đầu phiên phỏng vấn. Vui lòng thử lại."}
+                ? t("userAiinterview.theInterviewSessionHasExpired")
+                : t("userAiinterview.unableToStartInterviewSession")}
             </p>
             {import.meta.env.DEV && errorBody && (
-              <p className="text-xs break-all opacity-70">Chi tiết: {errorBody}</p>
+              <p className="text-xs break-all opacity-70">
+                {t("userAiinterview.detail")} {errorBody}
+              </p>
             )}
           </AlertDescription>
         </Alert>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => session.navigate("/user?tab=aiInterview")}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Quay lại danh sách
+            {t("common.backToTheList")}
           </Button>
           <Button
             onClick={() => session.navigate("/user/ai-interview/setup")}
             className="bg-[#0047AB] text-white hover:bg-[#005B9A]">
-            Tạo phỏng vấn mới
+            {t("userAiinterview.createNewInterview")}
           </Button>
         </div>
       </div>
@@ -89,7 +94,9 @@ export function AIInterviewSessionPage() {
         </div>
         <div className="flex flex-1 flex-col items-center justify-center gap-4">
           <Spinner size="xl" />
-          <p className="text-muted-foreground font-medium">Đang khởi động phỏng vấn...</p>
+          <p className="text-muted-foreground font-medium">
+            {t("userAiinterview.startingInterviews")}
+          </p>
         </div>
       </div>
     );
@@ -130,12 +137,12 @@ export function AIInterviewSessionPage() {
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4">
           <Settings className="h-12 w-12 text-cyan-200" />
           <p className="text-center text-lg font-semibold text-slate-100">
-            Vui lòng kiểm tra thiết bị trước khi vào phòng phỏng vấn
+            {t("userAiinterview.pleaseCheckYourEquipmentBefore")}
           </p>
           <Button
             onClick={() => setIsDeviceCheckOpen(true)}
             className="bg-cyan-600 text-white hover:bg-cyan-700">
-            Mở kiểm tra thiết bị
+            {t("userAiinterview.openDeviceCheck")}
           </Button>
         </div>
       ) : (

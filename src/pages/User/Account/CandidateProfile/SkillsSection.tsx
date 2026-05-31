@@ -1,15 +1,13 @@
-import { Plus, X } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { CandidateProfile } from "@/interfaces/schema.types";
-
+import { Plus, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { ListField, SkillField } from "./useCandidateProfileForm";
 import { SKILL_TABS } from "./useCandidateProfileForm";
-
 interface SkillsEditProps {
   mode: "edit";
   activeSkillTab: SkillField;
@@ -28,26 +26,26 @@ interface SkillsEditProps {
   updateListItem: (field: Exclude<ListField, SkillField>, index: number, value: string) => void;
   removeListItem: (field: Exclude<ListField, SkillField>, index: number) => void;
 }
-
 interface SkillsViewProps {
   mode: "view";
   profile: CandidateProfile;
 }
-
 type SkillsSectionProps = SkillsEditProps | SkillsViewProps;
-
 export function SkillsSection(props: SkillsSectionProps) {
+  const { t } = useTranslation();
   if (props.mode === "view") {
     const { profile } = props;
     return (
       <>
         <Card>
           <CardHeader>
-            <CardTitle>Kỹ năng</CardTitle>
+            <CardTitle>{t("common.skill")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng kỹ thuật</Label>
+              <Label className="text-sm text-gray-500 dark:text-slate-400">
+                {t("common.technicalSkills")}
+              </Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {(profile.technicalSkills ?? []).length > 0 ? (
                   profile.technicalSkills!.map((skill) => (
@@ -61,7 +59,9 @@ export function SkillsSection(props: SkillsSectionProps) {
               </div>
             </div>
             <div>
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Kỹ năng mềm</Label>
+              <Label className="text-sm text-gray-500 dark:text-slate-400">
+                {t("common.softSkills")}
+              </Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {(profile.softSkills ?? []).length > 0 ? (
                   profile.softSkills!.map((skill) => (
@@ -75,7 +75,9 @@ export function SkillsSection(props: SkillsSectionProps) {
               </div>
             </div>
             <div>
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Công cụ</Label>
+              <Label className="text-sm text-gray-500 dark:text-slate-400">
+                {t("common.tools")}
+              </Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {(profile.tools ?? []).length > 0 ? (
                   profile.tools!.map((tool) => (
@@ -93,11 +95,13 @@ export function SkillsSection(props: SkillsSectionProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Chứng chỉ & Thành tích</CardTitle>
+            <CardTitle>{t("userAccount.certificatesAchievements")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Chứng chỉ</Label>
+              <Label className="text-sm text-gray-500 dark:text-slate-400">
+                {t("common.certificate")}
+              </Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {(profile.certifications ?? []).length > 0 ? (
                   profile.certifications!.map((cert) => (
@@ -111,7 +115,9 @@ export function SkillsSection(props: SkillsSectionProps) {
               </div>
             </div>
             <div>
-              <Label className="text-sm text-gray-500 dark:text-slate-400">Thành tích</Label>
+              <Label className="text-sm text-gray-500 dark:text-slate-400">
+                {t("common.achievements")}
+              </Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {(profile.achievements ?? []).length > 0 ? (
                   profile.achievements!.map((ach) => (
@@ -129,7 +135,6 @@ export function SkillsSection(props: SkillsSectionProps) {
       </>
     );
   }
-
   const {
     activeSkillTab,
     setActiveSkillTab,
@@ -147,19 +152,17 @@ export function SkillsSection(props: SkillsSectionProps) {
     updateListItem,
     removeListItem,
   } = props;
-
   const activeSkills = getSkillList(activeSkillTab);
   const skillCounts: Record<SkillField, number> = {
     technicalSkills: techSkillsInput.filter(Boolean).length,
     softSkills: softSkillsInput.filter(Boolean).length,
     tools: toolsInput.filter(Boolean).length,
   };
-
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Kỹ năng</CardTitle>
+          <CardTitle>{t("common.skill")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -196,13 +199,15 @@ export function SkillsSection(props: SkillsSectionProps) {
                       type="button"
                       className="rounded-full p-0.5 hover:bg-black/10"
                       onClick={() => removeSkillBadge(activeSkillTab, index)}
-                      aria-label={`Xóa ${skill}`}>
+                      aria-label={t("common.deleteVar0", {
+                        var_0: skill,
+                      })}>
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
                 ))
               ) : (
-                <span className="text-sm text-slate-400">Chưa có dữ liệu.</span>
+                <span className="text-sm text-slate-400">{t("userAccount.noDataYet")}</span>
               )}
             </div>
 
@@ -215,7 +220,7 @@ export function SkillsSection(props: SkillsSectionProps) {
                     [activeSkillTab]: e.target.value,
                   }))
                 }
-                placeholder="Nhập kỹ năng và nhấn Thêm"
+                placeholder={t("userAccount.enterTheSkillAndTap")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -225,7 +230,7 @@ export function SkillsSection(props: SkillsSectionProps) {
               />
               <Button type="button" variant="outline" onClick={() => addSkillBadge(activeSkillTab)}>
                 <Plus className="mr-1 h-4 w-4" />
-                Thêm
+                {t("common.more")}
               </Button>
             </div>
           </div>
@@ -234,12 +239,12 @@ export function SkillsSection(props: SkillsSectionProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Chứng chỉ & Thành tích</CardTitle>
+          <CardTitle>{t("userAccount.certificatesAchievements")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <Label>Chứng chỉ</Label>
+              <Label>{t("common.certificate")}</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -247,7 +252,7 @@ export function SkillsSection(props: SkillsSectionProps) {
                 onClick={() => addListItem("certifications")}
                 className="gap-1">
                 <Plus className="h-4 w-4" />
-                Thêm
+                {t("common.more")}
               </Button>
             </div>
             <div className="space-y-2">
@@ -256,7 +261,7 @@ export function SkillsSection(props: SkillsSectionProps) {
                   <Input
                     value={cert}
                     onChange={(e) => updateListItem("certifications", index, e.target.value)}
-                    placeholder="VD: Kiến trúc sư giải pháp AWS"
+                    placeholder={t("userAccount.exampleAwsSolutionArchitect")}
                   />
                   <Button
                     type="button"
@@ -272,7 +277,7 @@ export function SkillsSection(props: SkillsSectionProps) {
           </div>
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <Label>Thành tích</Label>
+              <Label>{t("common.achievements")}</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -280,7 +285,7 @@ export function SkillsSection(props: SkillsSectionProps) {
                 onClick={() => addListItem("achievements")}
                 className="gap-1">
                 <Plus className="h-4 w-4" />
-                Thêm
+                {t("common.more")}
               </Button>
             </div>
             <div className="space-y-2">
@@ -290,7 +295,7 @@ export function SkillsSection(props: SkillsSectionProps) {
                     <Input
                       value={achievement}
                       onChange={(e) => updateListItem("achievements", index, e.target.value)}
-                      placeholder="VD: Danh sách sinh viên xuất sắc 2021"
+                      placeholder={t("userAccount.exampleListOfExcellentStudents")}
                     />
                     <Button
                       type="button"

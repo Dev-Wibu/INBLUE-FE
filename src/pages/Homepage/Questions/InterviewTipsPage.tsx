@@ -1,3 +1,10 @@
+import { HomepageHeader } from "@/components/homepage-redesign";
+import { Footer } from "@/components/layouts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import i18n from "@/lib/i18n";
+import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ArrowRight,
   BookCheck,
@@ -11,87 +18,73 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-
-import { HomepageHeader } from "@/components/homepage-redesign";
-import { Footer } from "@/components/layouts";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getDashboardPath, useAuthStore } from "@/stores/authStore";
-
+const t = i18n.t.bind(i18n);
 const interviewTips = [
   {
     id: 1,
-    title: "Phương pháp STAR",
-    description:
-      "Học cách trả lời câu hỏi hành vi với Situation (Tình huống), Task (Nhiệm vụ), Action (Hành động), Result (Kết quả).",
+    title: t("homepageQuestions.starMethod"),
+    description: t("homepageQuestions.learnHowToAnswerBehavioral"),
     icon: Target,
     category: "Behavioral",
-    readTime: "5 phút",
+    readTime: t("homepageQuestions.5Minutes"),
   },
   {
     id: 2,
-    title: "Nghiên cứu công ty",
-    description:
-      "Tìm hiểu kỹ về công ty, văn hóa, sản phẩm và đối thủ cạnh tranh trước khi phỏng vấn.",
+    title: t("homepageQuestions.companyResearch"),
+    description: t("homepageQuestions.researchThoroughlyAboutTheCompany"),
     icon: BookCheck,
-    category: "Chuẩn bị",
-    readTime: "8 phút",
+    category: t("homepageQuestions.prepare"),
+    readTime: t("homepageQuestions.8Minutes"),
   },
   {
     id: 3,
-    title: "Ngôn ngữ cơ thể",
-    description:
-      "Tầm quan trọng của giao tiếp phi ngôn ngữ: ánh mắt, tư thế, cử chỉ tay và nụ cười.",
+    title: t("homepageQuestions.bodyLanguage"),
+    description: t("homepageQuestions.theImportanceOfNonverbalCommunication"),
     icon: Users,
-    category: "Kỹ năng mềm",
-    readTime: "6 phút",
+    category: t("common.softSkills"),
+    readTime: t("homepageQuestions.6Minutes"),
   },
   {
     id: 4,
-    title: "Xử lý câu hỏi khó",
-    description:
-      "Chiến lược đối phó với những câu hỏi bất ngờ và cách giữ bình tĩnh trong tình huống áp lực.",
+    title: t("homepageQuestions.handlingDifficultQuestions"),
+    description: t("homepageQuestions.strategiesForDealingWithUnexpected"),
     icon: Brain,
-    category: "Kỹ năng",
-    readTime: "7 phút",
+    category: t("common.skill"),
+    readTime: t("homepageQuestions.7Minutes"),
   },
   {
     id: 5,
-    title: "Đàm phán lương",
-    description:
-      "Cách nghiên cứu mức lương thị trường và kỹ năng đàm phán để đạt được offer tốt nhất.",
+    title: t("homepageQuestions.salaryNegotiation"),
+    description: t("homepageQuestions.howToResearchMarketSalaries"),
     icon: TrendingUp,
-    category: "Đàm phán",
-    readTime: "10 phút",
+    category: t("homepageQuestions.negotiate"),
+    readTime: t("homepageQuestions.10Minutes"),
   },
   {
     id: 6,
-    title: "Câu hỏi cho nhà tuyển dụng",
-    description:
-      "Danh sách câu hỏi thông minh để hỏi nhà tuyển dụng, thể hiện sự quan tâm và hiểu biết.",
+    title: t("homepageQuestions.questionsForEmployers"),
+    description: t("homepageQuestions.listOfSmartQuestionsTo"),
     icon: MessageSquare,
-    category: "Chiến lược",
-    readTime: "5 phút",
+    category: t("homepageQuestions.strategy"),
+    readTime: t("homepageQuestions.5Minutes"),
   },
 ];
-
 const quickTips = [
-  "Đến sớm 10-15 phút trước giờ phỏng vấn",
-  "Mang theo bản sao CV và portfolio",
-  "Tắt điện thoại hoặc để chế độ im lặng",
-  "Ăn mặc chuyên nghiệp và phù hợp với văn hóa công ty",
-  "Chuẩn bị câu hỏi để hỏi nhà tuyển dụng",
-  "Gửi email cảm ơn sau buổi phỏng vấn",
+  t("homepageQuestions.arrive1015MinutesEarly"),
+  t("homepageQuestions.bringACopyOfYour"),
+  t("homepageQuestions.turnOffYourPhoneOr"),
+  t("homepageQuestions.dressProfessionallyAndInAccordance"),
+  t("homepageQuestions.prepareQuestionsToAskThe"),
+  t("homepageQuestions.sendAThankYouEmail"),
 ];
-
 export function InterviewTipsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
   const dashboardPath = isLoggedIn ? getDashboardPath(user?.role) : "/login";
   const ctaPath = isLoggedIn ? getDashboardPath(user?.role) : "/select-role";
-
   return (
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
       <HomepageHeader />
@@ -109,14 +102,13 @@ export function InterviewTipsPage() {
               variant="secondary"
               className="mb-4 bg-[#DCEEFF] text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
               <Lightbulb className="mr-2 h-4 w-4" />
-              Mẹo phỏng vấn
+              {t("common.interviewTips")}
             </Badge>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl dark:text-white">
-              Bí quyết phỏng vấn thành công
+              {t("homepageQuestions.secretsToSuccessfulInterviews")}
             </h1>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
-              Tổng hợp những mẹo và chiến lược phỏng vấn hiệu quả nhất từ các chuyên gia tuyển dụng
-              hàng đầu.
+              {t("homepageQuestions.collectionOfTheMostEffective")}
             </p>
           </div>
         </div>
@@ -127,7 +119,7 @@ export function InterviewTipsPage() {
         <div className="mx-auto max-w-7xl px-6">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
             <Clock className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
-            Mẹo nhanh cho ngày phỏng vấn
+            {t("homepageQuestions.quickTipsForInterviewDay")}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {quickTips.map((tip, index) => (
@@ -146,7 +138,7 @@ export function InterviewTipsPage() {
       <section className="py-16 dark:bg-slate-900">
         <div className="mx-auto max-w-7xl px-6">
           <h2 className="mb-8 text-2xl font-bold text-slate-900 dark:text-white">
-            Hướng dẫn chi tiết
+            {t("homepageQuestions.detailedInstructions")}
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {interviewTips.map((tip) => {
@@ -180,7 +172,7 @@ export function InterviewTipsPage() {
                         size="sm"
                         className="text-[#0047AB] dark:text-[#66B2FF]"
                         onClick={() => navigate(dashboardPath)}>
-                        Đọc thêm
+                        {t("homepageQuestions.readMore")}
                         <ArrowRight className="ml-1 h-4 w-4" />
                       </Button>
                     </div>
@@ -197,10 +189,10 @@ export function InterviewTipsPage() {
         <div className="mx-auto max-w-7xl px-6 text-center">
           <GraduationCap className="mx-auto mb-4 h-12 w-12 text-white/80" />
           <h2 className="mb-4 text-3xl font-bold text-white">
-            Sẵn sàng cho buổi phỏng vấn tiếp theo?
+            {t("homepageQuestions.readyForYourNextInterview")}
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-[#A5C8F2]">
-            Đăng ký để luyện tập với AI và nhận phản hồi chi tiết về kỹ năng phỏng vấn của bạn.
+            {t("homepageQuestions.signUpToPracticeWith")}
           </p>
           <div className="flex justify-center gap-4">
             <Button
@@ -208,7 +200,9 @@ export function InterviewTipsPage() {
               variant="secondary"
               className="rounded-full bg-white text-[#0047AB] hover:bg-slate-100"
               asChild>
-              <Link to={ctaPath}>{isLoggedIn ? "Mở Dashboard" : "Bắt đầu luyện tập"}</Link>
+              <Link to={ctaPath}>
+                {isLoggedIn ? t("common.openDashboard") : t("homepageQuestions.startPracticing")}
+              </Link>
             </Button>
           </div>
         </div>

@@ -1,19 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Columns2,
-  Eye,
-  LayoutGrid,
-  MessageSquare,
-  PenSquare,
-  Search,
-  ThumbsUp,
-  XCircle,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-
 import { CommentSection, LikeButton, LikeListModal } from "@/components/post";
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -45,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import type { Post, PostCommentResponse, PostLikeResponse, PostStatus } from "@/interfaces";
 import { formatDate, toTimestamp } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
@@ -53,19 +37,40 @@ import { getPostStatusBadge } from "@/lib/status-utils";
 import { extractDataArray } from "@/lib/utils";
 import { postManager, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Columns2,
+  Eye,
+  LayoutGrid,
+  MessageSquare,
+  PenSquare,
+  Search,
+  ThumbsUp,
+  XCircle,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { PostCreateForm } from "./components/PostCreateForm";
 import { PostEditForm } from "./components/PostEditForm";
-
 type StatusFilter = "all" | PostStatus;
 type ListLayout = "table" | "grid";
-
 type ViewState =
-  | { mode: "list" }
-  | { mode: "create" }
-  | { mode: "edit"; postId: number }
-  | { mode: "detail"; postId: number };
-
+  | {
+      mode: "list";
+    }
+  | {
+      mode: "create";
+    }
+  | {
+      mode: "edit";
+      postId: number;
+    }
+  | {
+      mode: "detail";
+      postId: number;
+    };
 type PostDetailPayload = {
   post?: Post;
   likeCount?: number;
@@ -73,79 +78,85 @@ type PostDetailPayload = {
   postLikes?: PostLikeResponse[];
   postComments?: PostCommentResponse[];
 };
-
 export function PostManagementPage() {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
-
-  const [view, setView] = useState<ViewState>({ mode: "list" });
+  const [view, setView] = useState<ViewState>({
+    mode: "list",
+  });
   const [posts, setPosts] = useState<Post[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
   const [statusUpdatingId, setStatusUpdatingId] = useState<number | null>(null);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [majorFilter, setMajorFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all");
   const [layout, setLayout] = useState<ListLayout>("table");
-
   const [likesOpen, setLikesOpen] = useState(false);
   const [commentToDeleteId, setCommentToDeleteId] = useState<number | null>(null);
   const [deletingComment, setDeletingComment] = useState(false);
-
   const detailPostId = view.mode === "detail" ? view.postId : 0;
   const { data: detailRaw, isLoading: detailLoading } = usePostById(
     detailPostId,
     view.mode === "detail" && detailPostId > 0
   );
   const detailData = detailRaw as unknown as PostDetailPayload | undefined;
-
-  const loadPosts = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const response = await postManager.getAll();
-      if (!response.success) {
-        toast.error(response.error || "Không thể tải danh sách bài viết");
-        return;
-      }
-      setPosts(extractDataArray<Post>(response));
-    } catch {
-      toast.error("Không thể tải danh sách bài viết");
-    } finally {
+  const loadPosts = useCallback(
+    async (showReloading = false) => {
       if (showReloading) {
-        setIsReloading(false);
+        setIsReloading(true);
       } else {
-        setIsInitialLoading(false);
+        setIsInitialLoading(true);
       }
-    }
-  }, []);
-
+      try {
+        const response = await postManager.getAll();
+        if (!response.success) {
+          toast.error(response.error || t("common.unableToLoadArticleList"));
+          return;
+        }
+        setPosts(extractDataArray<Post>(response));
+      } catch {
+        toast.error(t("common.unableToLoadArticleList"));
+      } finally {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void loadPosts();
   }, [loadPosts]);
-
   const invalidatePostDetail = useCallback((postId: number) => {
     queryClient.invalidateQueries({
-      queryKey: ["get", "/api/posts/{postId}", { params: { path: { postId } } }],
+      queryKey: [
+        "get",
+        "/api/posts/{postId}",
+        {
+          params: {
+            path: {
+              postId,
+            },
+          },
+        },
+      ],
     });
-    queryClient.invalidateQueries({ queryKey: ["get", "/api/posts/feed"] });
+    queryClient.invalidateQueries({
+      queryKey: ["get", "/api/posts/feed"],
+    });
   }, []);
-
   const allMajors = useMemo(() => {
     return [
       ...new Set(posts.map((p) => p.major?.name || p.major?.majorName).filter(Boolean)),
     ] as string[];
   }, [posts]);
-
   const allTags = useMemo(() => {
     return [...new Set(posts.flatMap((p) => p.tags ?? []))];
   }, [posts]);
-
   const filteredPosts = useMemo(() => {
     const keyword = searchQuery.trim().toLowerCase();
     return posts
@@ -153,20 +164,16 @@ export function PostManagementPage() {
         if (statusFilter !== "all" && post.status !== statusFilter) {
           return false;
         }
-
         const majorName = post.major?.name || post.major?.majorName;
         if (majorFilter !== "all" && majorName !== majorFilter) {
           return false;
         }
-
         if (tagFilter !== "all" && !post.tags?.includes(tagFilter)) {
           return false;
         }
-
         if (!keyword) {
           return true;
         }
-
         const fields = [
           post.title,
           post.summary,
@@ -175,7 +182,6 @@ export function PostManagementPage() {
           majorName,
           ...(post.tags ?? []),
         ];
-
         return fields.some((field) => field?.toLowerCase().includes(keyword));
       })
       .sort((a, b) => {
@@ -188,13 +194,14 @@ export function PostManagementPage() {
     key: "src_pages_admin_postmanagement_postmanagementpage_tsx_pagesize",
     defaultPageSize: 10,
   });
-
-  const pagination = usePagination({ totalCount: filteredPosts.length, pageSize });
+  const pagination = usePagination({
+    totalCount: filteredPosts.length,
+    pageSize,
+  });
   const pageItems = useMemo(
     () => filteredPosts.slice(pagination.startIndex, pagination.endIndex + 1),
     [filteredPosts, pagination.startIndex, pagination.endIndex]
   );
-
   const statusCounts = useMemo(() => {
     return {
       total: posts.length,
@@ -203,25 +210,21 @@ export function PostManagementPage() {
       archived: posts.filter((post) => post.status === "ARCHIVED").length,
     };
   }, [posts]);
-
   const hasActiveFilters =
     searchQuery.trim().length > 0 ||
     statusFilter !== "all" ||
     majorFilter !== "all" ||
     tagFilter !== "all";
-
   const detailPost = detailData?.post;
   const detailLikes = detailData?.postLikes ?? [];
   const detailComments = detailData?.postComments ?? [];
   const detailLikeCount = detailData?.likeCount ?? detailPost?.likeCount ?? 0;
   const detailCommentCount =
     detailData?.commentCount ?? detailData?.postComments?.length ?? detailPost?.commentCount ?? 0;
-
   const commentToDelete =
     commentToDeleteId != null
       ? detailComments.find((comment) => comment.id === commentToDeleteId)
       : undefined;
-
   const updateStatus = async (postId: number, status: PostStatus, successText: string) => {
     setStatusUpdatingId(postId);
     try {
@@ -231,108 +234,140 @@ export function PostManagementPage() {
         await loadPosts();
         invalidatePostDetail(postId);
       } else {
-        toast.error(response.error || "Không thể cập nhật trạng thái bài viết");
+        toast.error(response.error || t("adminPostmanagement.unableToUpdatePostStatus"));
       }
     } finally {
       setStatusUpdatingId(null);
     }
   };
-
   const handleDeleteComment = async () => {
     if (!commentToDeleteId) {
       return;
     }
-
     setDeletingComment(true);
     try {
       const response = await postManager.deleteComment(commentToDeleteId);
       if (response.success) {
-        toast.success("Đã xóa bình luận thành công");
+        toast.success(t("common.commentSuccessfullyDeleted"));
         setCommentToDeleteId(null);
         if (detailPostId > 0) {
           invalidatePostDetail(detailPostId);
         }
         await loadPosts();
       } else {
-        toast.error(response.error || "Không thể xóa bình luận");
+        toast.error(response.error || t("common.commentsCannotBeDeleted"));
       }
     } finally {
       setDeletingComment(false);
     }
   };
-
   const getPostKey = (post: Post, index: number) => {
     if (post.postId) {
       return `post-${post.postId}`;
     }
     return `post-${post.title ?? "untitled"}-${post.creationDate ?? "no-date"}-${index}`;
   };
-
   if (view.mode === "create") {
     return (
       <div className="space-y-4 p-6">
-        <Button variant="ghost" size="sm" onClick={() => setView({ mode: "list" })}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            setView({
+              mode: "list",
+            })
+          }>
           <ArrowLeft className="mr-1 h-4 w-4" />
-          Quay lại danh sách
+          {t("common.backToTheList")}
         </Button>
         <PostCreateForm
           onSuccess={() => {
-            setView({ mode: "list" });
+            setView({
+              mode: "list",
+            });
             void loadPosts();
           }}
-          onCancel={() => setView({ mode: "list" })}
+          onCancel={() =>
+            setView({
+              mode: "list",
+            })
+          }
         />
       </div>
     );
   }
-
   if (view.mode === "edit") {
     return (
       <div className="space-y-4 p-6">
-        <Button variant="ghost" size="sm" onClick={() => setView({ mode: "list" })}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            setView({
+              mode: "list",
+            })
+          }>
           <ArrowLeft className="mr-1 h-4 w-4" />
-          Quay lại danh sách
+          {t("common.backToTheList")}
         </Button>
         <PostEditForm
           postId={view.postId}
           onSuccess={() => {
-            setView({ mode: "list" });
+            setView({
+              mode: "list",
+            });
             void loadPosts();
           }}
-          onCancel={() => setView({ mode: "list" })}
+          onCancel={() =>
+            setView({
+              mode: "list",
+            })
+          }
         />
       </div>
     );
   }
-
   if (view.mode === "detail") {
     return (
       <div className="space-y-4 p-6">
-        <Button variant="ghost" size="sm" onClick={() => setView({ mode: "list" })}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            setView({
+              mode: "list",
+            })
+          }>
           <ArrowLeft className="mr-1 h-4 w-4" />
-          Quay lại danh sách
+          {t("common.backToTheList")}
         </Button>
 
         {detailLoading ? (
           <SpinnerBlock size="lg" />
         ) : !detailPost ? (
-          <p className="text-muted-foreground">Không tìm thấy bài viết</p>
+          <p className="text-muted-foreground">{t("common.noArticlesFound")}</p>
         ) : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-semibold">Chi tiết bài viết</h2>
+                <h2 className="text-xl font-semibold">{t("adminPostmanagement.articleDetails")}</h2>
                 <p className="text-muted-foreground text-sm">
-                  Theo dõi tương tác và kiểm duyệt bình luận tại một nơi.
+                  {t("adminPostmanagement.trackEngagementAndModerateComments")}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {detailPost.postId && (
                   <Button
                     variant="outline"
-                    onClick={() => setView({ mode: "edit", postId: detailPost.postId! })}>
+                    onClick={() =>
+                      setView({
+                        mode: "edit",
+                        postId: detailPost.postId!,
+                      })
+                    }>
                     <PenSquare className="mr-1 h-4 w-4" />
-                    Chỉnh sửa
+                    {t("general.edit")}
                   </Button>
                 )}
                 {detailPost.postId && detailPost.status === "DRAFT" && (
@@ -340,20 +375,24 @@ export function PostManagementPage() {
                     <Button
                       className="bg-emerald-600 hover:bg-emerald-700"
                       onClick={() =>
-                        void updateStatus(detailPost.postId!, "PUBLISHED", "Đã duyệt bài viết")
+                        void updateStatus(
+                          detailPost.postId!,
+                          "PUBLISHED",
+                          t("adminPostmanagement.theArticleHasBeenApproved")
+                        )
                       }
                       disabled={statusUpdatingId === detailPost.postId}>
                       <CheckCircle2 className="mr-1 h-4 w-4" />
-                      Duyệt
+                      {t("common.browse")}
                     </Button>
                     <Button
                       variant="destructive"
                       onClick={() =>
-                        void updateStatus(detailPost.postId!, "ARCHIVED", "Đã từ chối bài viết")
+                        void updateStatus(detailPost.postId!, "ARCHIVED", t("common.postRejected"))
                       }
                       disabled={statusUpdatingId === detailPost.postId}>
                       <XCircle className="mr-1 h-4 w-4" />
-                      Từ chối
+                      {t("common.refuse")}
                     </Button>
                   </>
                 )}
@@ -387,7 +426,7 @@ export function PostManagementPage() {
                 <CardTitle className="text-2xl">{detailPost.title}</CardTitle>
                 <div className="text-muted-foreground text-sm">
                   <span className="text-foreground font-medium">
-                    {detailPost.author?.name || "Ẩn danh"}
+                    {detailPost.author?.name || t("common.anonymous")}
                   </span>
                   <span className="mx-2">•</span>
                   <span>{formatDate(detailPost.creationDate)}</span>
@@ -402,11 +441,11 @@ export function PostManagementPage() {
                 <div className="flex flex-wrap items-center gap-4 border-t pt-4">
                   <div className="text-muted-foreground flex items-center gap-1 text-sm">
                     <ThumbsUp className="h-4 w-4" />
-                    {detailLikeCount} lượt thích
+                    {detailLikeCount} {t("general.likes")}
                   </div>
                   <div className="text-muted-foreground flex items-center gap-1 text-sm">
                     <MessageSquare className="h-4 w-4" />
-                    {detailCommentCount} bình luận
+                    {detailCommentCount} {t("general.comments")}
                   </div>
 
                   {user?.id && detailPost.postId && (
@@ -424,7 +463,7 @@ export function PostManagementPage() {
                     className="text-muted-foreground"
                     disabled={detailLikes.length === 0}
                     onClick={() => setLikesOpen(true)}>
-                    Xem danh sách lượt thích
+                    {t("adminPostmanagement.viewListOfLikes")}
                   </Button>
                 </div>
               </CardContent>
@@ -433,7 +472,9 @@ export function PostManagementPage() {
             {detailPost.postId && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Bình luận & phản hồi</CardTitle>
+                  <CardTitle className="text-lg">
+                    {t("adminPostmanagement.commentsFeedback")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CommentSection
@@ -454,22 +495,24 @@ export function PostManagementPage() {
         <Dialog open={commentToDeleteId !== null} onOpenChange={() => setCommentToDeleteId(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Xác nhận xóa bình luận</DialogTitle>
+              <DialogTitle>{t("common.confirmCommentDeletion")}</DialogTitle>
               <DialogDescription>
                 {commentToDelete?.content
-                  ? `Bạn có chắc chắn muốn xóa bình luận: "${commentToDelete.content}"?`
-                  : "Bạn có chắc chắn muốn xóa bình luận này?"}
+                  ? t("general.areYouSureYouWant", {
+                      var_0: commentToDelete.content,
+                    })
+                  : t("adminPostmanagement.areYouSureYouWant")}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setCommentToDeleteId(null)}>
-                Hủy
+                {t("general.cancel")}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => void handleDeleteComment()}
                 disabled={deletingComment}>
-                {deletingComment ? "Đang xóa..." : "Xóa bình luận"}
+                {deletingComment ? t("common.deleting") : t("adminPostmanagement.deleteComments")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -477,25 +520,31 @@ export function PostManagementPage() {
       </div>
     );
   }
-
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Bài viết & Cộng đồng</h1>
+          <h1 className="text-2xl font-bold">{t("common.articlesCommunity")}</h1>
           <p className="text-muted-foreground text-sm">
-            Quản lý nội dung, kiểm duyệt và theo dõi tương tác trong một màn hình.
+            {t("adminPostmanagement.manageContentModerationAndEngagement")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <ReloadButton
             onReload={() => loadPosts(true)}
             isLoading={isReloading}
-            tooltip="Tải lại danh sách bài viết"
+            tooltip={t("common.reloadArticleList")}
             showLabel
             hideTooltip
           />
-          <Button onClick={() => setView({ mode: "create" })}>Tạo bài viết</Button>
+          <Button
+            onClick={() =>
+              setView({
+                mode: "create",
+              })
+            }>
+            {t("common.createArticles")}
+          </Button>
         </div>
       </div>
 
@@ -503,7 +552,7 @@ export function PostManagementPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-muted-foreground text-sm font-medium">
-              Tổng bài viết
+              {t("adminPostmanagement.totalArticle")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -512,7 +561,9 @@ export function PostManagementPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">Bản nháp</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">
+              {t("common.draft")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-amber-600">{statusCounts.draft}</p>
@@ -520,7 +571,9 @@ export function PostManagementPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">Đã xuất bản</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">
+              {t("common.published")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-emerald-600">{statusCounts.published}</p>
@@ -528,7 +581,9 @@ export function PostManagementPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">Đã lưu trữ</CardTitle>
+            <CardTitle className="text-muted-foreground text-sm font-medium">
+              {t("common.archived")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-slate-600">{statusCounts.archived}</p>
@@ -542,7 +597,7 @@ export function PostManagementPage() {
             <div className="relative min-w-[220px] flex-1">
               <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
-                placeholder="Tìm theo tiêu đề, nội dung, tác giả, thẻ..."
+                placeholder={t("adminPostmanagement.searchByTitleContentAuthor")}
                 value={searchQuery}
                 onChange={(event) => {
                   setSearchQuery(event.target.value);
@@ -559,13 +614,13 @@ export function PostManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Trạng thái" />
+                <SelectValue placeholder={t("common.status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="DRAFT">Bản nháp</SelectItem>
-                <SelectItem value="PUBLISHED">Đã xuất bản</SelectItem>
-                <SelectItem value="ARCHIVED">Đã lưu trữ</SelectItem>
+                <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                <SelectItem value="DRAFT">{t("common.draft")}</SelectItem>
+                <SelectItem value="PUBLISHED">{t("common.published")}</SelectItem>
+                <SelectItem value="ARCHIVED">{t("common.archived")}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -576,10 +631,10 @@ export function PostManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Chuyên ngành" />
+                <SelectValue placeholder={t("common.specialized")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả chuyên ngành</SelectItem>
+                <SelectItem value="all">{t("common.allMajors")}</SelectItem>
                 {allMajors.map((major) => (
                   <SelectItem key={major} value={major}>
                     {major}
@@ -595,10 +650,10 @@ export function PostManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Thẻ" />
+                <SelectValue placeholder={t("adminPostmanagement.card")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả thẻ</SelectItem>
+                <SelectItem value="all">{t("adminPostmanagement.allCards")}</SelectItem>
                 {allTags.map((tag) => (
                   <SelectItem key={tag} value={tag}>
                     {tag}
@@ -613,14 +668,14 @@ export function PostManagementPage() {
                 size="sm"
                 onClick={() => setLayout("table")}>
                 <Columns2 className="mr-1 h-4 w-4" />
-                Bảng
+                {t("adminPostmanagement.board")}
               </Button>
               <Button
                 variant={layout === "grid" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setLayout("grid")}>
                 <LayoutGrid className="mr-1 h-4 w-4" />
-                Lưới
+                {t("adminPostmanagement.net")}
               </Button>
               {hasActiveFilters && (
                 <Button
@@ -633,7 +688,7 @@ export function PostManagementPage() {
                     setTagFilter("all");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               )}
             </div>
@@ -642,20 +697,22 @@ export function PostManagementPage() {
           {isInitialLoading ? (
             <SpinnerBlock size="lg" />
           ) : pageItems.length === 0 ? (
-            <p className="text-muted-foreground py-8 text-center">Không có bài viết phù hợp</p>
+            <p className="text-muted-foreground py-8 text-center">
+              {t("adminPostmanagement.thereAreNoMatchingArticles")}
+            </p>
           ) : layout === "table" ? (
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tiêu đề</TableHead>
-                    <TableHead>Tác giả</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead>Chuyên ngành</TableHead>
-                    <TableHead>Ngày tạo</TableHead>
-                    <TableHead>Lượt thích</TableHead>
-                    <TableHead>Bình luận</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead>{t("common.title")}</TableHead>
+                    <TableHead>{t("adminPostmanagement.author")}</TableHead>
+                    <TableHead>{t("common.status")}</TableHead>
+                    <TableHead>{t("common.specialized")}</TableHead>
+                    <TableHead>{t("common.creationDate")}</TableHead>
+                    <TableHead>{t("adminPostmanagement.likes")}</TableHead>
+                    <TableHead>{t("common.comment1")}</TableHead>
+                    <TableHead className="text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -681,7 +738,12 @@ export function PostManagementPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => setView({ mode: "detail", postId: post.postId! })}>
+                              onClick={() =>
+                                setView({
+                                  mode: "detail",
+                                  postId: post.postId!,
+                                })
+                              }>
                               <Eye className="h-4 w-4" />
                             </Button>
                           )}
@@ -689,7 +751,12 @@ export function PostManagementPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => setView({ mode: "edit", postId: post.postId! })}>
+                              onClick={() =>
+                                setView({
+                                  mode: "edit",
+                                  postId: post.postId!,
+                                })
+                              }>
                               <PenSquare className="h-4 w-4" />
                             </Button>
                           )}
@@ -700,7 +767,11 @@ export function PostManagementPage() {
                                 variant="ghost"
                                 className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                                 onClick={() =>
-                                  void updateStatus(post.postId!, "PUBLISHED", "Đã duyệt bài viết")
+                                  void updateStatus(
+                                    post.postId!,
+                                    "PUBLISHED",
+                                    t("adminPostmanagement.theArticleHasBeenApproved")
+                                  )
                                 }
                                 disabled={statusUpdatingId === post.postId}>
                                 <CheckCircle2 className="h-4 w-4" />
@@ -710,7 +781,11 @@ export function PostManagementPage() {
                                 variant="ghost"
                                 className="text-red-600 hover:bg-red-50 hover:text-red-700"
                                 onClick={() =>
-                                  void updateStatus(post.postId!, "ARCHIVED", "Đã từ chối bài viết")
+                                  void updateStatus(
+                                    post.postId!,
+                                    "ARCHIVED",
+                                    t("common.postRejected")
+                                  )
                                 }
                                 disabled={statusUpdatingId === post.postId}>
                                 <XCircle className="h-4 w-4" />
@@ -745,12 +820,12 @@ export function PostManagementPage() {
                       </span>
                     </div>
                     <CardTitle className="line-clamp-2 text-base">
-                      {post.title || "Không có tiêu đề"}
+                      {post.title || t("common.noTitle")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex flex-1 flex-col gap-3">
                     <p className="text-muted-foreground line-clamp-3 text-sm">
-                      {post.summary || post.content || "Không có nội dung"}
+                      {post.summary || post.content || t("adminPostmanagement.noContent")}
                     </p>
 
                     <div className="flex flex-wrap gap-1">
@@ -780,18 +855,28 @@ export function PostManagementPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setView({ mode: "detail", postId: post.postId! })}>
+                          onClick={() =>
+                            setView({
+                              mode: "detail",
+                              postId: post.postId!,
+                            })
+                          }>
                           <Eye className="mr-1 h-4 w-4" />
-                          Chi tiết
+                          {t("common.detail")}
                         </Button>
                       )}
                       {post.postId && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setView({ mode: "edit", postId: post.postId! })}>
+                          onClick={() =>
+                            setView({
+                              mode: "edit",
+                              postId: post.postId!,
+                            })
+                          }>
                           <PenSquare className="mr-1 h-4 w-4" />
-                          Chỉnh sửa
+                          {t("general.edit")}
                         </Button>
                       )}
                       {post.postId && post.status === "DRAFT" && (
@@ -800,19 +885,23 @@ export function PostManagementPage() {
                             size="sm"
                             className="bg-emerald-600 hover:bg-emerald-700"
                             onClick={() =>
-                              void updateStatus(post.postId!, "PUBLISHED", "Đã duyệt bài viết")
+                              void updateStatus(
+                                post.postId!,
+                                "PUBLISHED",
+                                t("adminPostmanagement.theArticleHasBeenApproved")
+                              )
                             }
                             disabled={statusUpdatingId === post.postId}>
-                            Duyệt
+                            {t("common.browse")}
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
                             onClick={() =>
-                              void updateStatus(post.postId!, "ARCHIVED", "Đã từ chối bài viết")
+                              void updateStatus(post.postId!, "ARCHIVED", t("common.postRejected"))
                             }
                             disabled={statusUpdatingId === post.postId}>
-                            Từ chối
+                            {t("common.refuse")}
                           </Button>
                         </>
                       )}

@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next";
 
 import type { JobDescription } from "../types";
 
@@ -24,22 +25,24 @@ export function JobDescriptionDeleteDialog({
   jobDescription,
   onConfirm,
 }: JobDescriptionDeleteDialogProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Đóng JD</AlertDialogTitle>
+          <AlertDialogTitle>{t("adminCompanymanagement.closeJd")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn đóng JD "{jobDescription?.title}"? JD sẽ chuyển sang trạng thái
-            CLOSED.
+            {t("adminCompanymanagement.areYouSureYouWant")}
+            {jobDescription?.title}
+            {t("adminCompanymanagement.jdWillSwitchToStatus")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogCancel>{t("general.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600">
-            Đóng JD
+            {t("adminCompanymanagement.closeJd")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

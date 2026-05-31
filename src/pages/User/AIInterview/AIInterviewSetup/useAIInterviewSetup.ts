@@ -1,7 +1,3 @@
-import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
 import type {
   EducationEntry,
   InterviewConfigOptionItem,
@@ -18,14 +14,17 @@ import {
 } from "@/services/candidate-profile.manager";
 import { usersAdminManager } from "@/services/users-admin.manager";
 import { useAuthStore } from "@/stores/authStore";
-
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
   INITIAL_CANDIDATE_FORM,
   type CandidateFormData,
   type ConfigCategoryKey,
 } from "./constants";
-
 export function useAIInterviewSetup() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const userId = user?.id;
@@ -97,68 +96,70 @@ export function useAIInterviewSetup() {
     selectedDifficulty !== null &&
     selectedLanguage !== null &&
     selectedDomain !== null;
-
   const isStep2Complete = !!hasExistingProfile && !isEditingProfile;
-
   const isStep3Complete = !!generatedJR;
 
   // ---- Helpers ----
   const getSelectedLabel = (categoryKey: ConfigCategoryKey, selectedKey: string | null): string => {
-    if (!configOptions || !selectedKey) return "Chưa chọn";
+    if (!configOptions || !selectedKey) return t("common.notSelectedYet");
     const items = configOptions[categoryKey];
     const found = items?.find((item: InterviewConfigOptionItem) => item.key === selectedKey);
-    return found?.label ?? "Chưa chọn";
+    return found?.label ?? t("common.notSelectedYet");
   };
-
   const updateCandidateForm = (field: keyof CandidateFormData, value: string | string[]) => {
-    setCandidateForm((prev) => ({ ...prev, [field]: value }));
+    setCandidateForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
-
   const addTechSkill = () => {
     const value = techSkillInput.trim();
     if (!value) return;
     if (candidateForm.technicalSkills.some((s) => s.toLowerCase() === value.toLowerCase())) return;
-    setCandidateForm((prev) => ({ ...prev, technicalSkills: [...prev.technicalSkills, value] }));
+    setCandidateForm((prev) => ({
+      ...prev,
+      technicalSkills: [...prev.technicalSkills, value],
+    }));
     setTechSkillInput("");
   };
-
   const removeTechSkill = (index: number) => {
     setCandidateForm((prev) => ({
       ...prev,
       technicalSkills: prev.technicalSkills.filter((_, i) => i !== index),
     }));
   };
-
   const addSoftSkill = () => {
     const value = softSkillInput.trim();
     if (!value) return;
     if (candidateForm.softSkills.some((s) => s.toLowerCase() === value.toLowerCase())) return;
-    setCandidateForm((prev) => ({ ...prev, softSkills: [...prev.softSkills, value] }));
+    setCandidateForm((prev) => ({
+      ...prev,
+      softSkills: [...prev.softSkills, value],
+    }));
     setSoftSkillInput("");
   };
-
   const removeSoftSkill = (index: number) => {
     setCandidateForm((prev) => ({
       ...prev,
       softSkills: prev.softSkills.filter((_, i) => i !== index),
     }));
   };
-
   const addTool = () => {
     const value = toolInput.trim();
     if (!value) return;
     if (candidateForm.tools.some((t) => t.toLowerCase() === value.toLowerCase())) return;
-    setCandidateForm((prev) => ({ ...prev, tools: [...prev.tools, value] }));
+    setCandidateForm((prev) => ({
+      ...prev,
+      tools: [...prev.tools, value],
+    }));
     setToolInput("");
   };
-
   const removeTool = (index: number) => {
     setCandidateForm((prev) => ({
       ...prev,
       tools: prev.tools.filter((_, i) => i !== index),
     }));
   };
-
   const populateFormFromProfile = (source: Record<string, unknown>) => {
     setCandidateForm({
       targetRole: String(source.targetRole ?? ""),
@@ -194,7 +195,6 @@ export function useAIInterviewSetup() {
     }
     setIsEditingProfile(true);
   };
-
   const handleCancelEditing = () => {
     setCandidateForm(INITIAL_CANDIDATE_FORM);
     setTechSkillInput("");
@@ -205,7 +205,6 @@ export function useAIInterviewSetup() {
     setUploadedProfileId(null);
     setIsEditingProfile(false);
   };
-
   const handleSaveProfile = async () => {
     if (!userId || !candidateForm.targetRole.trim() || !candidateForm.introduction.trim()) return;
     setIsSavingProfile(true);
@@ -216,11 +215,12 @@ export function useAIInterviewSetup() {
       : undefined;
     const resolvedId = fetchedId ?? uploadedProfileId ?? undefined;
     const isUpdate = resolvedId !== undefined;
-
     const body = {
       // PUT requires existing id; POST requires id: 0 (backend contract)
       id: isUpdate ? resolvedId : 0,
-      user: { id: userId },
+      user: {
+        id: userId,
+      },
       targetRole: candidateForm.targetRole,
       targetLevel: candidateForm.targetLevel,
       introduction: candidateForm.introduction,
@@ -235,9 +235,13 @@ export function useAIInterviewSetup() {
     };
     try {
       if (isUpdate) {
-        await updateProfileMutation.mutateAsync({ body: body as never });
+        await updateProfileMutation.mutateAsync({
+          body: body as never,
+        });
       } else {
-        await createProfileMutation.mutateAsync({ body: body as never });
+        await createProfileMutation.mutateAsync({
+          body: body as never,
+        });
       }
       await queryClient.invalidateQueries({
         queryKey: ["get", "/api/candidate-profiles/{userId}"],
@@ -247,21 +251,20 @@ export function useAIInterviewSetup() {
       setAchievementInput("");
       setUploadedProfileId(null);
       setIsEditingProfile(false);
-      toast.success("Đã lưu hồ sơ ứng viên thành công!");
+      toast.success(t("userAiinterview.candidateProfileSavedSuccessfully"));
     } catch {
-      toast.error("Không thể lưu hồ sơ. Vui lòng thử lại.");
+      toast.error(t("userAiinterview.unableToSaveProfilePlease"));
     } finally {
       setIsSavingProfile(false);
     }
   };
-
   const handleUploadCV = async (file: File) => {
     if (!userId) return;
     setIsUploading(true);
     try {
       const response = await usersAdminManager.uploadCv(userId, file);
       if (!response.success || !response.data) {
-        throw new Error(response.error || "Tải CV lên thất bại");
+        throw new Error(response.error || t("userAiinterview.cvUploadFailed"));
       }
       const cvProfile = response.data as unknown as Record<string, unknown>;
       // Tự động điền form từ kết quả CV — người dùng xem lại rồi nhấn Lưu
@@ -271,10 +274,10 @@ export function useAIInterviewSetup() {
         setUploadedProfileId(cvProfile.id);
       }
       setIsEditingProfile(true);
-      toast.success("Tải CV lên thành công! Kiểm tra lại thông tin và nhấn Lưu hồ sơ.");
+      toast.success(t("userAiinterview.cvUploadedSuccessfullyCheckThe"));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Tải CV lên thất bại. Vui lòng thử lại."
+        error instanceof Error ? error.message : t("userAiinterview.cvUploadFailedPleaseTry")
       );
     } finally {
       setIsUploading(false);
@@ -286,25 +289,28 @@ export function useAIInterviewSetup() {
     const value = certificationInput.trim();
     if (!value) return;
     if (candidateForm.certifications.some((c) => c.toLowerCase() === value.toLowerCase())) return;
-    setCandidateForm((prev) => ({ ...prev, certifications: [...prev.certifications, value] }));
+    setCandidateForm((prev) => ({
+      ...prev,
+      certifications: [...prev.certifications, value],
+    }));
     setCertificationInput("");
   };
-
   const removeCertification = (index: number) => {
     setCandidateForm((prev) => ({
       ...prev,
       certifications: prev.certifications.filter((_, i) => i !== index),
     }));
   };
-
   const addAchievement = () => {
     const value = achievementInput.trim();
     if (!value) return;
     if (candidateForm.achievements.some((a) => a.toLowerCase() === value.toLowerCase())) return;
-    setCandidateForm((prev) => ({ ...prev, achievements: [...prev.achievements, value] }));
+    setCandidateForm((prev) => ({
+      ...prev,
+      achievements: [...prev.achievements, value],
+    }));
     setAchievementInput("");
   };
-
   const removeAchievement = (index: number) => {
     setCandidateForm((prev) => ({
       ...prev,
@@ -318,11 +324,17 @@ export function useAIInterviewSetup() {
       ...prev,
       projects: [
         ...prev.projects,
-        { name: "", description: "", role: "", teamSize: 1, usedTools: [], outcome: "" },
+        {
+          name: "",
+          description: "",
+          role: "",
+          teamSize: 1,
+          usedTools: [],
+          outcome: "",
+        },
       ],
     }));
   };
-
   const updateProject = (
     index: number,
     field: keyof ProjectDetail,
@@ -330,11 +342,16 @@ export function useAIInterviewSetup() {
   ) => {
     setCandidateForm((prev) => {
       const projects = [...prev.projects];
-      projects[index] = { ...projects[index], [field]: value };
-      return { ...prev, projects };
+      projects[index] = {
+        ...projects[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        projects,
+      };
     });
   };
-
   const removeProject = (index: number) => {
     setCandidateForm((prev) => ({
       ...prev,
@@ -348,19 +365,29 @@ export function useAIInterviewSetup() {
       ...prev,
       workExperiences: [
         ...prev.workExperiences,
-        { company: "", position: "", description: "", start_date: "", end_date: "" },
+        {
+          company: "",
+          position: "",
+          description: "",
+          start_date: "",
+          end_date: "",
+        },
       ],
     }));
   };
-
   const updateWorkExperience = (index: number, field: keyof WorkExperience, value: string) => {
     setCandidateForm((prev) => {
       const workExperiences = [...prev.workExperiences];
-      workExperiences[index] = { ...workExperiences[index], [field]: value };
-      return { ...prev, workExperiences };
+      workExperiences[index] = {
+        ...workExperiences[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        workExperiences,
+      };
     });
   };
-
   const removeWorkExperience = (index: number) => {
     setCandidateForm((prev) => ({
       ...prev,
@@ -374,29 +401,39 @@ export function useAIInterviewSetup() {
       ...prev,
       educations: [
         ...prev.educations,
-        { school: "", major: "", degree: "", gpa: "", start_date: "", end_date: "" },
+        {
+          school: "",
+          major: "",
+          degree: "",
+          gpa: "",
+          start_date: "",
+          end_date: "",
+        },
       ],
     }));
   };
-
   const updateEducation = (index: number, field: keyof EducationEntry, value: string) => {
     setCandidateForm((prev) => {
       const educations = [...prev.educations];
-      educations[index] = { ...educations[index], [field]: value };
-      return { ...prev, educations };
+      educations[index] = {
+        ...educations[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        educations,
+      };
     });
   };
-
   const removeEducation = (index: number) => {
     setCandidateForm((prev) => ({
       ...prev,
       educations: prev.educations.filter((_, i) => i !== index),
     }));
   };
-
   const handleGenerateJR = async () => {
     if (!jobDescription.trim()) {
-      toast.error("Vui lòng nhập mô tả công việc.");
+      toast.error(t("userAiinterview.pleaseEnterJobDescription"));
       return;
     }
     setIsGeneratingJR(true);
@@ -406,25 +443,26 @@ export function useAIInterviewSetup() {
       });
       setGeneratedJR(result as unknown as Record<string, unknown>);
       setIsEditingJR(false);
-      toast.success("Đã tạo yêu cầu công việc thành công!");
+      toast.success(t("userAiinterview.jobRequestCreatedSuccessfully"));
     } catch {
-      toast.error("Không thể tạo yêu cầu công việc. Vui lòng thử lại.");
+      toast.error(t("userAiinterview.unableToCreateWorkRequest"));
     } finally {
       setIsGeneratingJR(false);
     }
   };
-
   const updateJRBasicInfo = (field: string, value: string) => {
     setGeneratedJR((prev) =>
       prev
         ? {
             ...prev,
-            basic_info: { ...(prev.basic_info as Record<string, string>), [field]: value },
+            basic_info: {
+              ...(prev.basic_info as Record<string, string>),
+              [field]: value,
+            },
           }
         : prev
     );
   };
-
   const addJRCompetency = (
     type: "hard_skills" | "soft_skills" | "tools_and_platforms",
     value: string
@@ -437,11 +475,13 @@ export function useAIInterviewSetup() {
       if (current.some((s) => s.toLowerCase() === value.trim().toLowerCase())) return prev;
       return {
         ...prev,
-        competencies: { ...competencies, [type]: [...current, value.trim()] },
+        competencies: {
+          ...competencies,
+          [type]: [...current, value.trim()],
+        },
       };
     });
   };
-
   const removeJRCompetency = (
     type: "hard_skills" | "soft_skills" | "tools_and_platforms",
     index: number
@@ -452,11 +492,13 @@ export function useAIInterviewSetup() {
       const current = Array.isArray(competencies[type]) ? (competencies[type] as string[]) : [];
       return {
         ...prev,
-        competencies: { ...competencies, [type]: current.filter((_, i) => i !== index) },
+        competencies: {
+          ...competencies,
+          [type]: current.filter((_, i) => i !== index),
+        },
       };
     });
   };
-
   const addJRResponsibility = (value: string) => {
     if (!value.trim()) return;
     setGeneratedJR((prev) => {
@@ -464,20 +506,24 @@ export function useAIInterviewSetup() {
       const current = Array.isArray(prev.responsibilities)
         ? (prev.responsibilities as string[])
         : [];
-      return { ...prev, responsibilities: [...current, value.trim()] };
+      return {
+        ...prev,
+        responsibilities: [...current, value.trim()],
+      };
     });
   };
-
   const removeJRResponsibility = (index: number) => {
     setGeneratedJR((prev) => {
       if (!prev) return prev;
       const current = Array.isArray(prev.responsibilities)
         ? (prev.responsibilities as string[])
         : [];
-      return { ...prev, responsibilities: current.filter((_, i) => i !== index) };
+      return {
+        ...prev,
+        responsibilities: current.filter((_, i) => i !== index),
+      };
     });
   };
-
   const updateJRResponsibility = (index: number, value: string) => {
     setGeneratedJR((prev) => {
       if (!prev) return prev;
@@ -485,13 +531,15 @@ export function useAIInterviewSetup() {
         ? [...(prev.responsibilities as string[])]
         : [];
       current[index] = value;
-      return { ...prev, responsibilities: current };
+      return {
+        ...prev,
+        responsibilities: current,
+      };
     });
   };
 
   // Hồ sơ luôn được lấy từ DB sau bước lưu — đảm bảo dữ liệu nhất quán với backend
   const buildCandidateProfile = () => existingProfile;
-
   const handleCreateSession = async () => {
     if (
       isCreatingRef.current ||
@@ -522,57 +570,55 @@ export function useAIInterviewSetup() {
         body: body as never,
         parseAs: "text",
       });
-
       if (error || !data) {
         throw new Error("Create session failed");
       }
-
       const rawKey = (data as string).trim().replace(/^"|"$/g, "");
 
       // Đảm bảo nhận đúng UUID (8-4-4-4-12) từ backend
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawKey)) {
-        throw new Error(`Phản hồi không hợp lệ từ server: "${rawKey.slice(0, 100)}"`);
+        throw new Error(
+          t("general.invalidResponseFromServer", {
+            var_0: rawKey.slice(0, 100),
+          })
+        );
       }
-
       const key = rawKey;
 
       // Lưu vào interview-session-keys để khôi phục lịch sử chat khi tải lại trang
       try {
         const stored = JSON.parse(localStorage.getItem("interview-session-keys") ?? "{}");
-        stored[key] = { createdAt: new Date().toISOString() };
+        stored[key] = {
+          createdAt: new Date().toISOString(),
+        };
         localStorage.setItem("interview-session-keys", JSON.stringify(stored));
       } catch {
         /* ignore */
       }
-
-      toast.success("Đã tạo phiên phỏng vấn thành công!");
+      toast.success(t("userAiinterview.successfullyCreatedInterviewSession"));
       navigate(`/user/ai-interview/session?sessionKey=${key}`);
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Không thể tạo phiên phỏng vấn. Vui lòng thử lại."
+        err instanceof Error ? err.message : t("userAiinterview.unableToCreateInterviewSession")
       );
     } finally {
       isCreatingRef.current = false;
       setIsCreatingSession(false);
     }
   };
-
   const handleNext = () => {
     if (currentStep === 1 && isStep1Complete) setCurrentStep(2);
     else if (currentStep === 2 && isStep2Complete) setCurrentStep(3);
     else if (currentStep === 3 && isStep3Complete) handleCreateSession();
   };
-
   const handleBack = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
     else navigate("/user?tab=aiInterview");
   };
-
   const canProceed =
     (currentStep === 1 && isStep1Complete) ||
     (currentStep === 2 && isStep2Complete) ||
     (currentStep === 3 && isStep3Complete);
-
   return {
     // Navigation
     currentStep,
@@ -580,7 +626,6 @@ export function useAIInterviewSetup() {
     handleBack,
     canProceed,
     isCreatingSession,
-
     // Step 1
     configOptions,
     configLoading,
@@ -597,7 +642,6 @@ export function useAIInterviewSetup() {
     setSelectedDuration,
     isStep1Complete,
     getSelectedLabel,
-
     // Step 2
     isEditingProfile,
     setIsEditingProfile,
@@ -643,7 +687,6 @@ export function useAIInterviewSetup() {
     profileLoading,
     hasExistingProfile,
     isStep2Complete,
-
     // Step 3
     jobDescription,
     setJobDescription,
@@ -670,5 +713,4 @@ export function useAIInterviewSetup() {
     isStep3Complete,
   };
 }
-
 export type AIInterviewSetupHook = ReturnType<typeof useAIInterviewSetup>;

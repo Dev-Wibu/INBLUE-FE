@@ -1,5 +1,3 @@
-import { Briefcase, CheckCircle2, Pencil, Plus, Sparkles, X } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-
+import { Briefcase, CheckCircle2, Pencil, Plus, Sparkles, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { AIInterviewSetupHook } from "./useAIInterviewSetup";
-
 export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
+  const { t } = useTranslation();
   const {
     jobDescription,
     setJobDescription,
@@ -35,34 +34,30 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
     removeJRResponsibility,
     updateJRResponsibility,
   } = hook;
-
   return (
     <Card>
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <Briefcase className="h-5 w-5 text-amber-600" />
-          <CardTitle className="text-lg">Yêu cầu công việc</CardTitle>
+          <CardTitle className="text-lg">{t("userAiinterview.jobRequirements")}</CardTitle>
         </div>
-        <CardDescription>
-          Nhập mô tả công việc để hệ thống tạo yêu cầu phỏng vấn phù hợp
-        </CardDescription>
+        <CardDescription>{t("userAiinterview.enterTheJobDescriptionFor")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="jobDescription">
-            Mô tả công việc <span className="text-red-500">*</span>
+            {t("common.jobDescription")} <span className="text-red-500">*</span>
           </Label>
           <Textarea
             id="jobDescription"
-            placeholder="Dán hoặc nhập mô tả công việc bạn muốn phỏng vấn. VD: Tuyển lập trình viên Backend có kinh nghiệm Java, Spring Boot, microservices..."
+            placeholder={t("userAiinterview.pasteOrTypeTheJob")}
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             rows={8}
             className="resize-y"
           />
           <p className="text-muted-foreground text-xs">
-            Hệ thống sẽ phân tích mô tả công việc và tạo yêu cầu phỏng vấn chi tiết (kỹ năng, công
-            cụ, trách nhiệm...) để AI đặt câu hỏi chính xác hơn.
+            {t("userAiinterview.theSystemWillAnalyzeThe")}
           </p>
         </div>
 
@@ -73,12 +68,12 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
           {isGeneratingJR ? (
             <>
               <Spinner size="sm" tone="white" className="mr-2" />
-              Đang phân tích mô tả công việc...
+              {t("userAiinterview.analyzingJobDescription")}
             </>
           ) : (
             <>
               <Sparkles className="mr-2 h-4 w-4" />
-              Tạo yêu cầu công việc
+              {t("userAiinterview.createAWorkRequest")}
             </>
           )}
         </Button>
@@ -90,13 +85,13 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
                 <h4 className="text-sm font-semibold text-green-800 dark:text-green-300">
-                  Yêu cầu công việc đã được tạo
+                  {t("userAiinterview.theWorkRequestHasBeen")}
                 </h4>
               </div>
               {!isEditingJR && (
                 <Button variant="outline" size="sm" onClick={() => setIsEditingJR(true)}>
                   <Pencil className="mr-1 h-3.5 w-3.5" />
-                  Chỉnh sửa
+                  {t("general.edit")}
                 </Button>
               )}
             </div>
@@ -107,28 +102,29 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                 {Boolean(generatedJR.basic_info) && typeof generatedJR.basic_info === "object" && (
                   <div className="space-y-1 text-sm">
                     <p>
-                      <span className="text-muted-foreground">Vị trí: </span>
+                      <span className="text-muted-foreground">{t("general.position")} </span>
                       <span className="text-foreground font-medium">
                         {String(
-                          (generatedJR.basic_info as Record<string, string>).job_title || "Không có"
+                          (generatedJR.basic_info as Record<string, string>).job_title ||
+                            t("userAiinterview.doNotHave")
                         )}
                       </span>
                     </p>
                     <p>
-                      <span className="text-muted-foreground">Lĩnh vực: </span>
+                      <span className="text-muted-foreground">{t("general.field")} </span>
                       <span className="text-foreground font-medium">
                         {String(
                           (generatedJR.basic_info as Record<string, string>).industry_domain ||
-                            "Không có"
+                            t("userAiinterview.doNotHave")
                         )}
                       </span>
                     </p>
                     <p>
-                      <span className="text-muted-foreground">Cấp độ: </span>
+                      <span className="text-muted-foreground">{t("mentorStudents.level")} </span>
                       <span className="text-foreground font-medium">
                         {String(
                           (generatedJR.basic_info as Record<string, string>).seniority_level ||
-                            "Không có"
+                            t("userAiinterview.doNotHave")
                         )}
                       </span>
                     </p>
@@ -143,7 +139,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                       ) && (
                         <div>
                           <span className="text-muted-foreground text-xs font-medium">
-                            Kỹ năng cứng:
+                            {t("general.hardSkills")}
                           </span>
                           <div className="mt-1 flex flex-wrap gap-1">
                             {(
@@ -162,7 +158,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                       ) && (
                         <div>
                           <span className="text-muted-foreground text-xs font-medium">
-                            Kỹ năng mềm:
+                            {t("mentorStudents.softSkills")}
                           </span>
                           <div className="mt-1 flex flex-wrap gap-1">
                             {(
@@ -181,7 +177,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                       ) && (
                         <div>
                           <span className="text-muted-foreground text-xs font-medium">
-                            Công cụ và nền tảng:
+                            {t("general.toolsAndPlatforms")}
                           </span>
                           <div className="mt-1 flex flex-wrap gap-1">
                             {(
@@ -201,7 +197,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                 {Array.isArray(generatedJR.responsibilities) && (
                   <div>
                     <span className="text-muted-foreground text-xs font-medium">
-                      Trách nhiệm chính:
+                      {t("general.mainResponsibilities")}
                     </span>
                     <ul className="text-muted-foreground mt-1 list-inside list-disc space-y-0.5 text-sm">
                       {(generatedJR.responsibilities as string[]).map((r, i) => (
@@ -212,7 +208,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                 )}
 
                 <Button variant="outline" size="sm" onClick={() => setGeneratedJR(null)}>
-                  Tạo lại
+                  {t("userAiinterview.recreate")}
                 </Button>
               </>
             )}
@@ -223,33 +219,33 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                 {/* Basic info editable */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div className="space-y-1">
-                    <Label className="text-xs">Vị trí</Label>
+                    <Label className="text-xs">{t("common.location1")}</Label>
                     <Input
                       value={String(
                         (generatedJR.basic_info as Record<string, string>)?.job_title ?? ""
                       )}
                       onChange={(e) => updateJRBasicInfo("job_title", e.target.value)}
-                      placeholder="Vị trí công việc"
+                      placeholder={t("userAiinterview.jobLocation")}
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Lĩnh vực</Label>
+                    <Label className="text-xs">{t("userAiinterview.field")}</Label>
                     <Input
                       value={String(
                         (generatedJR.basic_info as Record<string, string>)?.industry_domain ?? ""
                       )}
                       onChange={(e) => updateJRBasicInfo("industry_domain", e.target.value)}
-                      placeholder="Lĩnh vực"
+                      placeholder={t("userAiinterview.field")}
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Cấp độ</Label>
+                    <Label className="text-xs">{t("common.level")}</Label>
                     <Input
                       value={String(
                         (generatedJR.basic_info as Record<string, string>)?.seniority_level ?? ""
                       )}
                       onChange={(e) => updateJRBasicInfo("seniority_level", e.target.value)}
-                      placeholder="Cấp độ"
+                      placeholder={t("common.level")}
                     />
                   </div>
                 </div>
@@ -258,19 +254,19 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                 {[
                   {
                     type: "hard_skills" as const,
-                    label: "Kỹ năng cứng",
+                    label: t("userAiinterview.hardSkills"),
                     inputVal: hardSkillInputJR,
                     setInputVal: setHardSkillInputJR,
                   },
                   {
                     type: "soft_skills" as const,
-                    label: "Kỹ năng mềm",
+                    label: t("common.softSkills"),
                     inputVal: softSkillInputJR,
                     setInputVal: setSoftSkillInputJR,
                   },
                   {
                     type: "tools_and_platforms" as const,
-                    label: "Công cụ và nền tảng",
+                    label: t("userAiinterview.toolsAndPlatforms"),
                     inputVal: toolInputJR,
                     setInputVal: setToolInputJR,
                   },
@@ -294,7 +290,9 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                               type="button"
                               className="rounded-full p-0.5 hover:bg-black/10"
                               onClick={() => removeJRCompetency(type, i)}
-                              aria-label={`Xóa ${s}`}>
+                              aria-label={t("common.deleteVar0", {
+                                var_0: s,
+                              })}>
                               <X className="h-3 w-3" />
                             </button>
                           </Badge>
@@ -303,7 +301,9 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                       <div className="flex gap-2">
                         <Input
                           className="h-8 text-xs"
-                          placeholder={`Thêm ${label.toLowerCase()}`}
+                          placeholder={t("general.add", {
+                            var_0: label.toLowerCase(),
+                          })}
                           value={inputVal}
                           onChange={(e) => setInputVal(e.target.value)}
                           onKeyDown={(e) => {
@@ -332,7 +332,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
 
                 {/* Responsibilities editable */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Trách nhiệm chính</Label>
+                  <Label className="text-xs">{t("userAiinterview.mainResponsibilities")}</Label>
                   <div className="space-y-1.5">
                     {(Array.isArray(generatedJR.responsibilities)
                       ? (generatedJR.responsibilities as string[])
@@ -350,7 +350,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                           size="sm"
                           className="h-8 px-2 text-red-500 hover:text-red-600"
                           onClick={() => removeJRResponsibility(i)}
-                          aria-label="Xóa trách nhiệm">
+                          aria-label={t("userAiinterview.clearResponsibility")}>
                           <X className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -359,7 +359,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                   <div className="flex gap-2">
                     <Input
                       className="h-8 text-xs"
-                      placeholder="Thêm trách nhiệm mới"
+                      placeholder={t("userAiinterview.addNewResponsibilities")}
                       value={responsibilityInputJR}
                       onChange={(e) => setResponsibilityInputJR(e.target.value)}
                       onKeyDown={(e) => {
@@ -389,7 +389,7 @@ export function JobRequirementsStep({ hook }: { hook: AIInterviewSetupHook }) {
                     size="sm"
                     className="bg-[#0047AB] text-white hover:bg-[#005B9A]"
                     onClick={() => setIsEditingJR(false)}>
-                    Lưu thay đổi
+                    {t("common.saveChanges")}
                   </Button>
                 </div>
               </div>

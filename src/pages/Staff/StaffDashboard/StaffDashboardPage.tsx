@@ -1,6 +1,3 @@
-import { LayoutDashboard, MessageSquare, Newspaper, Star, UserCheck, Video } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-
 import type { ChromeTabMenuGroup, SidebarMenuGroup } from "@/components/shared";
 import {
   DashboardChromeTabs,
@@ -11,144 +8,150 @@ import {
 } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
+import i18n from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
-
+import { LayoutDashboard, MessageSquare, Newspaper, Star, UserCheck, Video } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FeedbackModerationPage } from "../FeedbackModeration";
 import { MentorApplicationsPage } from "../MentorApplications";
 import { PostModerationPage } from "../PostModeration";
 import { ReviewModerationPage } from "../ReviewModeration";
 import { SessionProcessingPage } from "../SessionProcessing";
-
+const t = i18n.t.bind(i18n);
 type TabType =
   | "mentorApplications"
   | "sessions"
   | "reviewModeration"
   | "feedbackModeration"
   | "postModeration";
-
 interface Tab {
   id: string;
   type: TabType;
   title: string;
 }
-
 const generateTabId = () => `tab-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-
 const getTabTitle = (type: TabType): string => {
   switch (type) {
     case "mentorApplications":
-      return "Duyệt mentor";
+      return t("staffStaffdashboard.browseMentors");
     case "sessions":
-      return "Phiên phỏng vấn";
+      return t("common.interviewSession");
     case "reviewModeration":
-      return "Kiểm duyệt đánh giá của mentor";
+      return t("staffStaffdashboard.moderateYourMentorSReviews");
     case "feedbackModeration":
-      return "Kiểm duyệt phản hồi từ ứng viên";
+      return t("staffStaffdashboard.moderateResponsesFromCandidates");
     case "postModeration":
-      return "Kiểm duyệt bài viết";
+      return t("staffStaffdashboard.postModeration");
     default:
-      return "Tab mới";
+      return t("staffStaffdashboard.newTab");
   }
 };
-
 const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
   {
     items: [
-      { type: "mentorApplications", label: "Duyệt mentor" },
-      { type: "sessions", label: "Phiên phỏng vấn" },
+      {
+        type: "mentorApplications",
+        label: t("staffStaffdashboard.browseMentors"),
+      },
+      {
+        type: "sessions",
+        label: t("common.interviewSession"),
+      },
     ],
   },
   {
     items: [
       {
         type: "reviewModeration",
-        label: "Kiểm duyệt đánh giá của mentor",
+        label: t("staffStaffdashboard.moderateYourMentorSReviews"),
         icon: Star,
         iconColor: "text-yellow-600",
       },
       {
         type: "feedbackModeration",
-        label: "Kiểm duyệt phản hồi của ứng viên",
+        label: t("staffStaffdashboard.moderateCandidateResponses"),
         icon: MessageSquare,
         iconColor: "text-cyan-600",
       },
       {
         type: "postModeration",
-        label: "Kiểm duyệt bài viết",
+        label: t("staffStaffdashboard.postModeration"),
         icon: Newspaper,
         iconColor: "text-purple-600",
       },
     ],
   },
 ];
-
 const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
   {
-    label: "Nghiệp vụ",
+    label: t("common.profession"),
     items: [
       {
         type: "mentorApplications",
         icon: UserCheck,
-        label: "Duyệt mentor",
+        label: t("staffStaffdashboard.browseMentors"),
         color: "text-green-600",
-        description: "Xử lý đăng ký mentor",
+        description: t("staffStaffdashboard.processMentorRegistration"),
       },
       {
         type: "sessions",
         icon: Video,
-        label: "Phiên phỏng vấn",
+        label: t("common.interviewSession"),
         color: "text-blue-600",
-        description: "Quản lý phiên phỏng vấn",
+        description: t("common.manageInterviewSessions"),
       },
     ],
   },
   {
-    label: "Kiểm duyệt",
+    label: t("staffStaffdashboard.censor"),
     items: [
       {
         type: "reviewModeration",
         icon: Star,
-        label: "Đánh giá của mentor",
+        label: t("staffStaffdashboard.mentorSReview"),
         color: "text-yellow-600",
-        description: "Kiểm duyệt đánh giá của mentor cho ứng viên",
+        description: t("staffStaffdashboard.moderateTheMentorSAssessment"),
       },
       {
         type: "feedbackModeration",
         icon: MessageSquare,
-        label: "Phản hồi của ứng viên",
+        label: t("staffStaffdashboard.candidateResponses"),
         color: "text-cyan-600",
-        description: "Kiểm duyệt phản hồi của ứng viên cho mentor",
+        description: t("staffStaffdashboard.moderateCandidatesResponsesToMentors"),
       },
       {
         type: "postModeration",
         icon: Newspaper,
-        label: "Bài viết",
+        label: t("common.article"),
         color: "text-purple-600",
-        description: "Kiểm duyệt bài viết",
+        description: t("staffStaffdashboard.postModeration"),
       },
     ],
   },
 ];
-
 const STAFF_SIDEBAR_LOGO = (
   <>
     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-600">
       <LayoutDashboard className="h-6 w-6 text-white" />
     </div>
     <div>
-      <h1 className="font-semibold text-gray-900 dark:text-white">Bảng Điều Phối</h1>
-      <p className="text-xs text-gray-500 dark:text-slate-400">Xử lý thường trực</p>
+      <h1 className="font-semibold text-gray-900 dark:text-white">
+        {t("staffStaffdashboard.coordinationPanel")}
+      </h1>
+      <p className="text-xs text-gray-500 dark:text-slate-400">
+        {t("staffStaffdashboard.permanentProcessing")}
+      </p>
     </div>
   </>
 );
-
 const STAFF_SIDEBAR_LOGO_COLLAPSED = (
   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-600">
     <LayoutDashboard className="h-6 w-6 text-white" />
   </div>
 );
-
 export function StaffDashboardPage() {
+  const { t } = useTranslation();
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollTarget, setScrollTarget] = useState<HTMLDivElement | null>(null);
@@ -161,22 +164,23 @@ export function StaffDashboardPage() {
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tabs, setTabs] = useState<Tab[]>([
-    { id: generateTabId(), type: "mentorApplications", title: "Duyệt mentor" },
+    {
+      id: generateTabId(),
+      type: "mentorApplications",
+      title: t("staffStaffdashboard.browseMentors"),
+    },
   ]);
   const [activeTabId, setActiveTabId] = useState<string>(tabs[0].id);
-
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
-
-  useDashboardScrollRestoration(contentRef, { scopeKey: activeTabId });
-
+  useDashboardScrollRestoration(contentRef, {
+    scopeKey: activeTabId,
+  });
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");
   }, [sidebarBehavior]);
-
   const handleTabSelect = useCallback((tabId: string) => {
     setActiveTabId(tabId);
   }, []);
-
   const handleTabClose = useCallback(
     (tabId: string) => {
       setTabs((prevTabs) => {
@@ -191,7 +195,6 @@ export function StaffDashboardPage() {
     },
     [activeTabId]
   );
-
   const handleNewTab = useCallback((type: string) => {
     const newTab: Tab = {
       id: generateTabId(),
@@ -201,7 +204,6 @@ export function StaffDashboardPage() {
     setTabs((prevTabs) => [...prevTabs, newTab]);
     setActiveTabId(newTab.id);
   }, []);
-
   const handleSidebarNavigate = useCallback(
     (type: string) => {
       const existingTab = tabs.find((tab) => tab.type === type);
@@ -213,10 +215,8 @@ export function StaffDashboardPage() {
     },
     [tabs, handleNewTab]
   );
-
   const renderContent = () => {
     if (!activeTab) return null;
-
     switch (activeTab.type) {
       case "mentorApplications":
         return <MentorApplicationsPage />;
@@ -229,15 +229,13 @@ export function StaffDashboardPage() {
       case "postModeration":
         return <PostModerationPage />;
       default:
-        return <div>Loại tab không hợp lệ</div>;
+        return <div>{t("common.invalidTabType")}</div>;
     }
   };
-
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
     setScrollTarget(node);
   }, []);
-
   return (
     <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
       <DashboardSidebar
@@ -251,7 +249,7 @@ export function StaffDashboardPage() {
         logo={STAFF_SIDEBAR_LOGO}
         collapsedLogo={STAFF_SIDEBAR_LOGO_COLLAPSED}
         showSettings
-        settingsLabel="Cài đặt"
+        settingsLabel={t("common.setting")}
         onSettingsClick={() => setIsSettingsOpen(true)}
         theme={{
           wrapper: "h-full border-r border-gray-200 bg-white",
@@ -278,7 +276,7 @@ export function StaffDashboardPage() {
           logoutCollapsedBtn:
             "flex items-center justify-center rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20",
           logoutIcon: "",
-          logoutLabel: "Đăng xuất",
+          logoutLabel: t("common.logout"),
         }}
       />
 

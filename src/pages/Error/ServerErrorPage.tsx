@@ -1,9 +1,11 @@
 import { Home, RefreshCcw, ServerCrash } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 
 export function ServerErrorPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleRefresh = () => {
@@ -26,28 +28,29 @@ export function ServerErrorPage() {
         </div>
 
         {/* Title & Description */}
-        <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">Lỗi máy chủ</h1>
+        <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+          {t("error_servererrorpage.tsx.loi_may_chu")}
+        </h1>
         <p className="mb-8 max-w-md text-gray-600 dark:text-slate-400">
-          Xin lỗi, đã có lỗi xảy ra từ phía máy chủ. Đội ngũ kỹ thuật đã được thông báo và đang khắc
-          phục. Vui lòng thử lại sau.
+          {t("error_servererrorpage.tsx.xin_loi_a_co_loi_xay_ra_tu_phia_may_chu_")}
         </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button variant="outline" onClick={handleRefresh} className="gap-2">
             <RefreshCcw className="h-4 w-4" />
-            Tải lại trang
+            {t("error_serviceunavailablepage.tsx.tai_lai_trang")}
           </Button>
           <Button onClick={() => navigate("/")} className="gap-2 bg-blue-600 hover:bg-blue-700">
             <Home className="h-4 w-4" />
-            Về trang chủ
+            {t("error_unauthorizedpage.tsx.ve_trang_chu")}
           </Button>
         </div>
       </div>
 
       {/* Footer */}
       <div className="mt-16 text-sm text-gray-500 dark:text-slate-500">
-        Mã lỗi: 500 - Lỗi máy chủ nội bộ
+        {t("error_servererrorpage.tsx.ma_loi_500_loi_may_chu_noi_bo")}
       </div>
     </div>
   );

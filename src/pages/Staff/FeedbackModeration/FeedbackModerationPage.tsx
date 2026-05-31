@@ -1,11 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * Staff Feedback Moderation Page
  * Allows staff to moderate feedback (focus on low ratings)
  */
-
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { AlertTriangle, Eye, Flag, MessageSquare, Search } from "lucide-react";
-import { useMemo, useState } from "react";
 
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -39,23 +36,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useMentorFeedbacks, type MentorFeedback } from "@/hooks/useMentorFeedback";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import { AlertTriangle, Eye, Flag, MessageSquare, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 
 // Rating thresholds for moderation
 const LOW_RATING_THRESHOLD = 2;
 const HIGH_RATING_MIN = 4;
-
 type SortableFeedback = MentorFeedback & {
   idSortValue: number;
   ratingSortValue: number;
   mentorNameSortValue: string;
   candidateNameSortValue: string;
 };
-
 export function FeedbackModerationPage() {
+  const { t } = useTranslation();
   const { data: feedbacks = [], isLoading, isRefetching, refetch } = useMentorFeedbacks();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("low"); // Default to low ratings
 
@@ -73,14 +70,11 @@ export function FeedbackModerationPage() {
           feedback.comment?.toLowerCase().includes(query);
         if (!matchesSearch) return false;
       }
-
       if (ratingFilter === "low" && (feedback.rating || 0) > LOW_RATING_THRESHOLD) return false;
       if (ratingFilter === "high" && (feedback.rating || 0) < HIGH_RATING_MIN) return false;
-
       return true;
     });
   }, [feedbacks, ratingFilter, searchQuery]);
-
   const sortableFeedbacks = useMemo<SortableFeedback[]>(() => {
     return filteredFeedbacks.map((feedback) => ({
       ...feedback,
@@ -90,7 +84,6 @@ export function FeedbackModerationPage() {
       candidateNameSortValue: feedback.user?.name?.toLowerCase() || "",
     }));
   }, [filteredFeedbacks]);
-
   const { sortedData, getSortProps } = useSortable(sortableFeedbacks, {
     defaultSort: {
       key: "idSortValue",
@@ -110,7 +103,6 @@ export function FeedbackModerationPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
     [pagination.endIndex, pagination.startIndex, sortedData]
@@ -120,21 +112,19 @@ export function FeedbackModerationPage() {
   const lowRatingFeedbacks = feedbacks.filter(
     (f: MentorFeedback) => (f.rating || 0) <= LOW_RATING_THRESHOLD
   ).length;
-
   const handleViewDetail = (feedback: MentorFeedback) => {
     setSelectedFeedback(feedback);
     setIsDetailOpen(true);
   };
-
   return (
     <div className="container mx-auto space-y-6 py-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-          Kiểm duyệt phản hồi ứng viên gửi
+          {t("staffFeedbackmoderation.moderateResponsesSubmittedByCandidates")}
         </h1>
         <p className="text-slate-500 dark:text-slate-400">
-          Xem xét và kiểm duyệt các phản hồi ứng viên gửi cho mentor, đặc biệt là phản hồi thấp
+          {t("staffFeedbackmoderation.reviewAndModerateResponsesCandidates")}
         </p>
       </div>
 
@@ -145,11 +135,12 @@ export function FeedbackModerationPage() {
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
               <CardTitle className="text-amber-700 dark:text-amber-400">
-                {lowRatingFeedbacks} phản hồi thấp cần xem xét
+                {lowRatingFeedbacks} {t("staffFeedbackmoderation.lowResponseNeedsConsideration")}
               </CardTitle>
             </div>
             <CardDescription className="text-amber-600 dark:text-amber-400">
-              Có {lowRatingFeedbacks} phản hồi với rating 1-2 sao cần được kiểm tra
+              {t("common.have")} {lowRatingFeedbacks}{" "}
+              {t("staffFeedbackmoderation.feedbackWithARatingOf")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -159,7 +150,7 @@ export function FeedbackModerationPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Tổng phản hồi</CardDescription>
+            <CardDescription>{t("common.totalResponse")}</CardDescription>
             <CardTitle className="text-2xl">{feedbacks.length}</CardTitle>
           </CardHeader>
         </Card>
@@ -194,13 +185,13 @@ export function FeedbackModerationPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
-            <CardTitle>Bộ lọc</CardTitle>
+            <CardTitle>{t("common.filter")}</CardTitle>
             <ReloadButton
               onReload={async () => {
                 await refetch();
               }}
               isLoading={isRefetching}
-              tooltip="Tải lại danh sách phản hồi"
+              tooltip={t("common.reloadTheResponseList")}
             />
           </div>
         </CardHeader>
@@ -209,7 +200,7 @@ export function FeedbackModerationPage() {
             <div className="relative min-w-[200px] flex-1">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
-                placeholder="Tìm theo tên ứng viên, mentor, nội dung phản hồi..."
+                placeholder={t("staffFeedbackmoderation.searchByCandidateNameMentor")}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -225,11 +216,13 @@ export function FeedbackModerationPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Mức đánh giá" />
+                <SelectValue placeholder={t("common.ratingLevel")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="low">⚠️ 1-{LOW_RATING_THRESHOLD} sao (Cần xem)</SelectItem>
+                <SelectItem value="all">{t("general.all")}</SelectItem>
+                <SelectItem value="low">
+                  ⚠️ 1-{LOW_RATING_THRESHOLD} {t("common.starsNeedToSee")}
+                </SelectItem>
                 <SelectItem value="high">{HIGH_RATING_MIN}-5 sao</SelectItem>
               </SelectContent>
             </Select>
@@ -242,10 +235,10 @@ export function FeedbackModerationPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-amber-500" />
-            <CardTitle>Danh Sách Kiểm Duyệt</CardTitle>
+            <CardTitle>{t("common.censorshipList")}</CardTitle>
           </div>
           <CardDescription>
-            Hiển thị {sortedData.length} / {feedbacks.length} phản hồi
+            {t("common.show")} {sortedData.length} / {feedbacks.length} {t("common.feedback")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -254,8 +247,8 @@ export function FeedbackModerationPage() {
           ) : sortedData.length === 0 ? (
             <EmptyState
               icon={MessageSquare}
-              title="Không có phản hồi"
-              description="Không tìm thấy phản hồi nào cần kiểm duyệt."
+              title={t("common.noResponse")}
+              description={t("staffFeedbackmoderation.noCommentsFoundThatNeeded")}
             />
           ) : (
             <>
@@ -266,18 +259,22 @@ export function FeedbackModerationPage() {
                       <SortButton {...getSortProps("idSortValue")}>ID</SortButton>
                     </TableHead>
                     <TableHead>
-                      <SortButton {...getSortProps("mentorNameSortValue")}>Mentor nhận</SortButton>
-                    </TableHead>
-                    <TableHead>
-                      <SortButton {...getSortProps("candidateNameSortValue")}>
-                        Ứng viên gửi
+                      <SortButton {...getSortProps("mentorNameSortValue")}>
+                        {t("common.mentorAccepted")}
                       </SortButton>
                     </TableHead>
                     <TableHead>
-                      <SortButton {...getSortProps("ratingSortValue")}>Đánh giá</SortButton>
+                      <SortButton {...getSortProps("candidateNameSortValue")}>
+                        {t("common.candidateSubmits")}
+                      </SortButton>
                     </TableHead>
-                    <TableHead>Nhận xét</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead>
+                      <SortButton {...getSortProps("ratingSortValue")}>
+                        {t("common.evaluate")}
+                      </SortButton>
+                    </TableHead>
+                    <TableHead>{t("common.comment")}</TableHead>
+                    <TableHead className="text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -299,17 +296,17 @@ export function FeedbackModerationPage() {
                             </AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
-                            {feedback.mentor?.name || "Không có dữ liệu"}
+                            {feedback.mentor?.name || t("common.noDataAvailable")}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>{feedback.user?.name || "Không có dữ liệu"}</TableCell>
+                      <TableCell>{feedback.user?.name || t("common.noDataAvailable")}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <StarRating value={feedback.rating || 0} readOnly size="sm" />
                           {(feedback.rating || 0) <= LOW_RATING_THRESHOLD && (
                             <Badge variant="destructive" className="text-xs">
-                              Thấp
+                              {t("common.short")}
                             </Badge>
                           )}
                         </div>
@@ -352,10 +349,11 @@ export function FeedbackModerationPage() {
               {(selectedFeedback?.rating || 0) <= LOW_RATING_THRESHOLD && (
                 <AlertTriangle className="h-5 w-5 text-red-500" />
               )}
-              Chi Tiết Phản Hồi #{selectedFeedback?.id}
+              {t("common.feedbackDetails")}
+              {selectedFeedback?.id}
             </DialogTitle>
             <DialogDescription>
-              Phản hồi từ ứng viên {selectedFeedback?.user?.name}
+              {t("common.feedbackFromCandidates")} {selectedFeedback?.user?.name}
               {" -> "}
               mentor {selectedFeedback?.mentor?.name}
             </DialogDescription>
@@ -382,16 +380,12 @@ export function FeedbackModerationPage() {
               {/* Comment */}
               <div>
                 <h4 className="mb-2 font-medium text-slate-700 dark:text-slate-300">
-                  Nhận xét của ứng viên
+                  {t("staffFeedbackmoderation.candidateComments")}
                 </h4>
                 <div
-                  className={`rounded-lg p-4 ${
-                    (selectedFeedback.rating || 0) <= LOW_RATING_THRESHOLD
-                      ? "border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
-                      : "bg-slate-50 dark:bg-slate-800"
-                  }`}>
+                  className={`rounded-lg p-4 ${(selectedFeedback.rating || 0) <= LOW_RATING_THRESHOLD ? "border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20" : "bg-slate-50 dark:bg-slate-800"}`}>
                   <p className="whitespace-pre-wrap">
-                    {selectedFeedback.comment || "Không có nhận xét chi tiết."}
+                    {selectedFeedback.comment || t("common.thereAreNoDetailedComments")}
                   </p>
                 </div>
               </div>
@@ -399,13 +393,15 @@ export function FeedbackModerationPage() {
               {/* Session Info */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-slate-500">Phiên phỏng vấn:</span>{" "}
+                  <span className="text-slate-500">
+                    {t("staffFeedbackmoderation.interviewSession")}
+                  </span>{" "}
                   <span className="font-medium">#{selectedFeedback.session?.id}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500">Tên phòng:</span>{" "}
+                  <span className="text-slate-500">{t("common.roomName")}</span>{" "}
                   <span className="font-medium">
-                    {selectedFeedback.session?.roomName || "Không có dữ liệu"}
+                    {selectedFeedback.session?.roomName || t("common.noDataAvailable")}
                   </span>
                 </div>
               </div>

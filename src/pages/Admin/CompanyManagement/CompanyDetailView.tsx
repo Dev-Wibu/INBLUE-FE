@@ -1,8 +1,3 @@
-import { ChevronLeft, Edit, Plus } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
 import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +12,11 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { extractDataArray } from "@/lib/utils";
 import { companyManager, jobDescriptionManager } from "@/services";
-
+import { ChevronLeft, Edit, Plus } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
   CompanyDeleteDialog,
   CompanyFormDialog,
@@ -35,15 +34,12 @@ import type {
   JobDescriptionLevel,
   JobDescriptionStatus,
 } from "./types";
-
 interface CompanyDetailViewProps {
   companyId: number;
   onCompanyUpdate?: () => void;
 }
-
 type JobStatusFilter = "all" | JobDescriptionStatus;
 type JobLevelFilter = "all" | JobDescriptionLevel;
-
 type SortableJobDescription = JobDescription & {
   idSortValue: number;
   titleSortValue: string;
@@ -53,35 +49,28 @@ type SortableJobDescription = JobDescription & {
   deadlineSortValue: number;
   updatedAtSortValue: number;
 };
-
 const STATUS_OPTIONS: JobDescriptionStatus[] = ["OPEN", "CLOSED", "DRAFT"];
 const LEVEL_OPTIONS: JobDescriptionLevel[] = ["INTERN", "FRESHER", "JUNIOR", "MIDDLE"];
-
 const isCompanyActive = (company?: Company | null) =>
   (company?.status ?? "ACTIVE").toUpperCase() !== "INACTIVE";
-
 export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailViewProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
   const [isCompanyLoading, setIsCompanyLoading] = useState(true);
-
   const [jobDescriptions, setJobDescriptions] = useState<JobDescription[]>([]);
   const [isJobLoading, setIsJobLoading] = useState(true);
-
   const [statusFilter, setStatusFilter] = useState<JobStatusFilter>("all");
   const [levelFilter, setLevelFilter] = useState<JobLevelFilter>("all");
-
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [companyFormData, setCompanyFormData] = useState<CompanyFormData>({});
-
   const [isCreateJobDialogOpen, setIsCreateJobDialogOpen] = useState(false);
   const [isEditJobDialogOpen, setIsEditJobDialogOpen] = useState(false);
   const [isDeleteJobDialogOpen, setIsDeleteJobDialogOpen] = useState(false);
   const [isViewJobDialogOpen, setIsViewJobDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<JobDescription | null>(null);
   const [jobFormData, setJobFormData] = useState<Partial<JobDescriptionFormData>>({});
-
   const loadCompany = useCallback(async () => {
     setIsCompanyLoading(true);
     try {
@@ -89,16 +78,15 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       if (response.success && response.data) {
         setCompany(response.data);
       } else {
-        toast.error(response.error || "Không thể tải thông tin công ty");
+        toast.error(response.error || t("common.unableToLoadCompanyInformation"));
       }
     } catch (error) {
       console.error("Error loading company:", error);
-      toast.error("Không thể tải thông tin công ty");
+      toast.error(t("common.unableToLoadCompanyInformation"));
     } finally {
       setIsCompanyLoading(false);
     }
-  }, [companyId]);
-
+  }, [companyId, t]);
   const loadJobDescriptions = useCallback(async () => {
     setIsJobLoading(true);
     try {
@@ -106,22 +94,20 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       if (response.success) {
         setJobDescriptions(extractDataArray<JobDescription>(response));
       } else {
-        toast.error(response.error || "Không thể tải danh sách JD");
+        toast.error(response.error || t("adminCompanymanagement.unableToLoadJdList"));
       }
     } catch (error) {
       console.error("Error loading job descriptions:", error);
-      toast.error("Không thể tải danh sách JD");
+      toast.error(t("adminCompanymanagement.unableToLoadJdList"));
     } finally {
       setIsJobLoading(false);
     }
-  }, [companyId]);
-
+  }, [companyId, t]);
   useEffect(() => {
     if (!Number.isFinite(companyId) || companyId <= 0) return;
     void loadCompany();
     void loadJobDescriptions();
   }, [companyId, loadCompany, loadJobDescriptions]);
-
   const handleEditCompany = () => {
     if (!company) return;
     setCompanyFormData({
@@ -131,7 +117,6 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
     });
     setIsEditDialogOpen(true);
   };
-
   const handleSubmitCompanyEdit = async () => {
     if (!company?.id) return;
     try {
@@ -146,19 +131,18 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         banner: companyFormData.banner,
       });
       if (response.success) {
-        toast.success("Đã cập nhật công ty thành công");
+        toast.success(t("adminCompanymanagement.companyUpdatedSuccessfully"));
         setIsEditDialogOpen(false);
         void loadCompany();
         onCompanyUpdate?.();
       } else {
-        toast.error(response.error || "Không thể cập nhật công ty");
+        toast.error(response.error || t("common.unableToUpdateCompany"));
       }
     } catch (error) {
       console.error("Error updating company:", error);
-      toast.error("Không thể cập nhật công ty");
+      toast.error(t("common.unableToUpdateCompany"));
     }
   };
-
   const handleConfirmCompanyToggle = async () => {
     if (!company?.id) return;
     try {
@@ -172,31 +156,39 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         },
       });
       if (response.success) {
-        const action = nextStatus === "INACTIVE" ? "vô hiệu hóa" : "kích hoạt";
-        toast.success(`Đã ${action} công ty thành công`);
+        const action =
+          nextStatus === "INACTIVE"
+            ? t("adminMentormanagement.disable")
+            : t("adminMentormanagement.activate");
+        toast.success(
+          t("general.successfullyCompany", {
+            var_0: action,
+          })
+        );
         setIsDeleteDialogOpen(false);
         void loadCompany();
         onCompanyUpdate?.();
       } else {
-        toast.error(response.error || "Không thể thay đổi trạng thái công ty");
+        toast.error(response.error || t("adminCompanymanagement.companyStatusCannotBeChanged"));
       }
     } catch (error) {
       console.error("Error updating company status:", error);
-      toast.error("Không thể thay đổi trạng thái công ty");
+      toast.error(t("adminCompanymanagement.companyStatusCannotBeChanged"));
     }
   };
-
   const handleCreateJob = () => {
-    setJobFormData({ status: "OPEN", level: "JUNIOR", currency: "VND" });
+    setJobFormData({
+      status: "OPEN",
+      level: "JUNIOR",
+      currency: "VND",
+    });
     setSelectedJob(null);
     setIsCreateJobDialogOpen(true);
   };
-
   const handleViewJob = (job: JobDescription) => {
     setSelectedJob(job);
     setIsViewJobDialogOpen(true);
   };
-
   const handleEditJob = (job: JobDescription) => {
     setSelectedJob(job);
     setJobFormData({
@@ -213,12 +205,10 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
     });
     setIsEditJobDialogOpen(true);
   };
-
   const handleDeleteJob = (job: JobDescription) => {
     setSelectedJob(job);
     setIsDeleteJobDialogOpen(true);
   };
-
   const handleSubmitCreateJob = async () => {
     try {
       const response = await jobDescriptionManager.create({
@@ -234,19 +224,18 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         deadlineAt: jobFormData.deadlineAt,
       });
       if (response.success) {
-        toast.success("Đã tạo JD thành công");
+        toast.success(t("adminCompanymanagement.successfullyCreatedJd"));
         setIsCreateJobDialogOpen(false);
         void loadJobDescriptions();
         onCompanyUpdate?.();
       } else {
-        toast.error(response.error || "Không thể tạo JD");
+        toast.error(response.error || t("adminCompanymanagement.unableToCreateJd"));
       }
     } catch (error) {
       console.error("Error creating job description:", error);
-      toast.error("Không thể tạo JD");
+      toast.error(t("adminCompanymanagement.unableToCreateJd"));
     }
   };
-
   const handleSubmitEditJob = async () => {
     if (!selectedJob?.id) return;
     try {
@@ -264,19 +253,18 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         deadlineAt: jobFormData.deadlineAt ?? selectedJob.deadlineAt,
       });
       if (response.success) {
-        toast.success("Đã cập nhật JD thành công");
+        toast.success(t("adminCompanymanagement.updatedJdSuccessfully"));
         setIsEditJobDialogOpen(false);
         void loadJobDescriptions();
         onCompanyUpdate?.();
       } else {
-        toast.error(response.error || "Không thể cập nhật JD");
+        toast.error(response.error || t("adminCompanymanagement.unableToUpdateJd"));
       }
     } catch (error) {
       console.error("Error updating job description:", error);
-      toast.error("Không thể cập nhật JD");
+      toast.error(t("adminCompanymanagement.unableToUpdateJd"));
     }
   };
-
   const handleConfirmCloseJob = async () => {
     if (!selectedJob?.id) return;
     try {
@@ -294,19 +282,18 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         deadlineAt: selectedJob.deadlineAt,
       });
       if (response.success) {
-        toast.success("Đã đóng JD thành công");
+        toast.success(t("adminCompanymanagement.successfullyClosedJd"));
         setIsDeleteJobDialogOpen(false);
         void loadJobDescriptions();
         onCompanyUpdate?.();
       } else {
-        toast.error(response.error || "Không thể đóng JD");
+        toast.error(response.error || t("adminCompanymanagement.unableToCloseJd"));
       }
     } catch (error) {
       console.error("Error closing job description:", error);
-      toast.error("Không thể đóng JD");
+      toast.error(t("adminCompanymanagement.unableToCloseJd"));
     }
   };
-
   const filteredJobs = useMemo(
     () =>
       jobDescriptions.filter((job) => {
@@ -316,7 +303,6 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       }),
     [jobDescriptions, levelFilter, statusFilter]
   );
-
   const sortableJobs = useMemo<SortableJobDescription[]>(
     () =>
       filteredJobs.map((job) => ({
@@ -331,45 +317,48 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       })),
     [filteredJobs]
   );
-
   const { sortedData, getSortProps } = useSortable(sortableJobs, {
-    defaultSort: { key: "updatedAtSortValue", direction: "desc" },
+    defaultSort: {
+      key: "updatedAtSortValue",
+      direction: "desc",
+    },
     noSortBehavior: "preserve",
-    tieBreaker: { key: "updatedAtSortValue", direction: "desc" },
+    tieBreaker: {
+      key: "updatedAtSortValue",
+      direction: "desc",
+    },
   });
-
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_admin_companymanagement_companydetailview_tsx_jobdescriptions_pagesize",
     defaultPageSize: 10,
   });
-  const pagination = usePagination({ totalCount: sortedData.length, pageSize });
+  const pagination = usePagination({
+    totalCount: sortedData.length,
+    pageSize,
+  });
   const pageData = useMemo(
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
     [pagination.endIndex, pagination.startIndex, sortedData]
   );
-
   if (!Number.isFinite(companyId) || companyId <= 0) {
     return (
       <div className="flex h-full items-center justify-center p-8">
         <div className="text-muted-foreground text-center">
-          ID công ty không hợp lệ. Vui lòng chọn lại.
+          {t("adminCompanymanagement.invalidCompanyIdPleaseSelect")}
         </div>
       </div>
     );
   }
-
   if (isCompanyLoading) {
     return (
       <div className="flex h-full items-center justify-center p-8">
-        <SpinnerBlock size="lg" label="Đang tải thông tin công ty..." />
+        <SpinnerBlock size="lg" label={t("common.loadingCompanyInformation")} />
       </div>
     );
   }
-
   const activeJobCount = jobDescriptions.filter((j) => j.status === "OPEN").length;
   const activeJobPercentage =
     jobDescriptions.length > 0 ? Math.round((activeJobCount / jobDescriptions.length) * 100) : 0;
-
   return (
     <div className="flex flex-col">
       {/* Banner + Header */}
@@ -395,7 +384,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
           className="bg-background/80 absolute top-3 left-3 flex items-center gap-1 rounded-lg text-sm backdrop-blur-sm md:hidden"
           onClick={() => navigate("/admin/companies?tab=companies")}>
           <ChevronLeft className="h-4 w-4" />
-          Quay lại
+          {t("general.back")}
         </Button>
 
         {/* Logo overlapping banner */}
@@ -423,7 +412,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       <div className="flex flex-col gap-4 px-6 pt-8 pb-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-foreground text-2xl font-bold">
-            {company?.name || "Chi tiết công ty"}
+            {company?.name || t("adminCompanymanagement.companyDetails")}
           </h2>
           {company?.description && (
             <p className="text-muted-foreground mt-1 max-w-xl text-sm">{company.description}</p>
@@ -435,13 +424,13 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
             className="bg-card hover:bg-card/80 flex items-center gap-2 rounded-xl"
             onClick={handleEditCompany}>
             <Edit className="h-4 w-4" />
-            Chỉnh sửa
+            {t("general.edit")}
           </Button>
           <Button
             className="flex items-center gap-2 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-95"
             onClick={handleCreateJob}>
             <Plus className="h-4 w-4" />
-            Tạo JD mới
+            {t("adminCompanymanagement.createNewJd")}
           </Button>
         </div>
       </div>
@@ -450,13 +439,13 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       <div className="grid grid-cols-2 gap-4 px-6 pb-4">
         <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-3 shadow-sm">
           <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            Tổng số JD
+            {t("adminCompanymanagement.totalJd")}
           </span>
           <span className="text-foreground text-3xl font-bold">{jobDescriptions.length}</span>
         </div>
         <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-3 shadow-sm">
           <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            JD Đang hoạt động
+            {t("adminCompanymanagement.jdActive")}
           </span>
           <div className="flex items-end justify-between">
             <span className="text-foreground text-3xl font-bold">{activeJobCount}</span>
@@ -472,7 +461,9 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       {/* JD Table */}
       <div className="border-border/50 bg-card/40 mx-6 mb-4 flex flex-col rounded-2xl border shadow-sm">
         <div className="border-border/50 bg-card/50 flex flex-col items-start justify-between gap-4 border-b p-4 md:flex-row md:items-center">
-          <h3 className="text-foreground text-lg font-bold">Danh sách JD</h3>
+          <h3 className="text-foreground text-lg font-bold">
+            {t("adminCompanymanagement.jdList")}
+          </h3>
           <div className="flex items-center gap-3">
             <Select
               value={statusFilter}
@@ -481,10 +472,10 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="bg-background/50 w-[160px] rounded-lg border-none">
-                <SelectValue placeholder="Tất cả trạng thái" />
+                <SelectValue placeholder={t("common.allStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                <SelectItem value="all">{t("common.allStatus")}</SelectItem>
                 {STATUS_OPTIONS.map((status) => (
                   <SelectItem key={status} value={status}>
                     {status}
@@ -499,10 +490,10 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="bg-background/50 w-[150px] rounded-lg border-none">
-                <SelectValue placeholder="Tất cả cấp độ" />
+                <SelectValue placeholder={t("common.allLevels")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả cấp độ</SelectItem>
+                <SelectItem value="all">{t("common.allLevels")}</SelectItem>
                 {LEVEL_OPTIONS.map((level) => (
                   <SelectItem key={level} value={level}>
                     {level}
@@ -516,7 +507,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         <div className="overflow-x-auto">
           {isJobLoading ? (
             <div className="p-8">
-              <SpinnerBlock size="lg" label="Đang tải danh sách JD..." />
+              <SpinnerBlock size="lg" label={t("adminCompanymanagement.loadingJdList")} />
             </div>
           ) : (
             <JobDescriptionTable
@@ -549,9 +540,9 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         formData={companyFormData}
         onFormChange={setCompanyFormData}
         onSubmit={handleSubmitCompanyEdit}
-        title="Chỉnh sửa công ty"
-        description="Cập nhật thông tin công ty"
-        submitLabel="Lưu thay đổi"
+        title={t("adminCompanymanagement.editCompany")}
+        description={t("adminCompanymanagement.updateCompanyInformation")}
+        submitLabel={t("common.saveChanges")}
         selectedCompany={company}
       />
 
@@ -575,9 +566,9 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         formData={jobFormData}
         onFormChange={setJobFormData}
         onSubmit={handleSubmitCreateJob}
-        title="Thêm JD mới"
-        description="Nhập thông tin JD để tạo mới"
-        submitLabel="Tạo JD"
+        title={t("adminCompanymanagement.addNewJd")}
+        description={t("adminCompanymanagement.enterJdInformationToCreate")}
+        submitLabel={t("adminCompanymanagement.createJd")}
       />
 
       <JobDescriptionFormDialog
@@ -586,9 +577,9 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         formData={jobFormData}
         onFormChange={setJobFormData}
         onSubmit={handleSubmitEditJob}
-        title="Chỉnh sửa JD"
-        description="Cập nhật thông tin JD"
-        submitLabel="Lưu thay đổi"
+        title={t("adminCompanymanagement.editJd")}
+        description={t("adminCompanymanagement.updateJdInformation")}
+        submitLabel={t("common.saveChanges")}
       />
 
       <JobDescriptionDeleteDialog

@@ -1,3 +1,12 @@
+import { Footer, Header } from "@/components/layouts";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import i18n from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+import { authManager } from "@/services/auth.manager";
 import {
   AlertCircle,
   ArrowLeft,
@@ -9,17 +18,9 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { type FileRejection, useDropzone } from "react-dropzone";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-
-import { Footer, Header } from "@/components/layouts";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { authManager } from "@/services/auth.manager";
-
+const t = i18n.t.bind(i18n);
 type MentorFormData = {
   name: string;
   email: string;
@@ -31,14 +32,12 @@ type MentorFormData = {
   linkedInUrl: string;
   currentCompany: string;
 };
-
 type MentorFieldKey =
   | keyof MentorFormData
   | "avatarFile"
   | "identityFile"
   | "degreeFile"
   | "otherFile";
-
 interface FileUploadProps {
   label: string;
   required?: boolean;
@@ -52,7 +51,6 @@ interface FileUploadProps {
   errorText?: string;
   onClearError?: () => void;
 }
-
 const FIELD_KEY_ALIASES: Record<string, MentorFieldKey> = {
   name: "name",
   fullname: "name",
@@ -70,14 +68,12 @@ const FIELD_KEY_ALIASES: Record<string, MentorFieldKey> = {
   degreefile: "degreeFile",
   otherfile: "otherFile",
 };
-
 const normalizeFieldErrors = (
   rawErrors?: Record<string, string>
 ): Partial<Record<MentorFieldKey, string>> => {
   if (!rawErrors) {
     return {};
   }
-
   return Object.entries(rawErrors).reduce<Partial<Record<MentorFieldKey, string>>>(
     (acc, [rawKey, message]) => {
       const normalizedKey = rawKey
@@ -85,31 +81,25 @@ const normalizeFieldErrors = (
         .replace(/\[(\d+)\]/g, "")
         .replace(/_/g, "")
         .toLowerCase();
-
       const mappedKey = FIELD_KEY_ALIASES[normalizedKey];
       if (mappedKey && message.trim().length > 0) {
         acc[mappedKey] = message;
       }
-
       return acc;
     },
     {}
   );
 };
-
 const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) {
     return `${bytes} B`;
   }
-
   const kb = bytes / 1024;
   if (kb < 1024) {
     return `${kb.toFixed(1)} KB`;
   }
-
   return `${(kb / 1024).toFixed(2)} MB`;
 };
-
 function FileUploadBox({
   label,
   required,
@@ -124,39 +114,40 @@ function FileUploadBox({
   onClearError,
 }: FileUploadProps) {
   const [dropError, setDropError] = useState("");
-
   const onDropAccepted = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) {
         return;
       }
-
       setDropError("");
       onClearError?.();
       onFileSelect(acceptedFiles[0]);
     },
     [onClearError, onFileSelect]
   );
-
   const onDropRejected = useCallback(
     (fileRejections: readonly FileRejection[]) => {
       const firstErrorCode = fileRejections[0]?.errors[0]?.code;
-
       if (firstErrorCode === "file-too-large") {
-        setDropError(`Tệp vượt quá ${maxSize}. Vui lòng chọn tệp nhỏ hơn.`);
+        setDropError(
+          t("general.fileExceedsPleaseSelectA", {
+            var_0: maxSize,
+          })
+        );
         return;
       }
-
       if (firstErrorCode === "file-invalid-type") {
-        setDropError(`Định dạng không hợp lệ. Chỉ hỗ trợ ${acceptedTypes}.`);
+        setDropError(
+          t("general.invalidFormatOnlySupports", {
+            var_0: acceptedTypes,
+          })
+        );
         return;
       }
-
-      setDropError("Không thể tải tệp này. Vui lòng thử tệp khác.");
+      setDropError(t("auth_mentorregisterpage.tsx.khong_the_tai_tep_nay_vui_long_thu_tep_k"));
     },
-    [acceptedTypes, maxSize]
+    [acceptedTypes, maxSize, t]
   );
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted,
     onDropRejected,
@@ -164,9 +155,7 @@ function FileUploadBox({
     accept,
     maxSize: maxSizeBytes,
   });
-
   const activeError = errorText || dropError;
-
   return (
     <div className="space-y-2">
       <div
@@ -192,7 +181,8 @@ function FileUploadBox({
               {selectedFile.name}
             </p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {formatFileSize(selectedFile.size)} • Nhấn để thay đổi tệp
+              {formatFileSize(selectedFile.size)}{" "}
+              {t("auth_mentorregisterpage.tsx.nhan_e_thay_oi_tep")}
             </p>
           </>
         ) : (
@@ -204,11 +194,11 @@ function FileUploadBox({
               {label} {required && <span className="text-red-500">*</span>}
             </p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Kéo thả tệp vào đây hoặc nhấn để chọn
+              {t("auth_mentorregisterpage.tsx.keo_tha_tep_vao_ay_hoac_nhan_e_chon")}
             </p>
             <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#0047AB]/10 px-3 py-1 text-xs font-medium text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
               <UploadCloud className="h-3.5 w-3.5" />
-              {acceptedTypes} • Tối đa {maxSize}
+              {acceptedTypes} {t("auth_mentorregisterpage.tsx.toi_a")} {maxSize}
             </div>
           </>
         )}
@@ -222,8 +212,8 @@ function FileUploadBox({
     </div>
   );
 }
-
 export function MentorRegisterPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<MentorFormData>({
     name: "",
@@ -243,67 +233,69 @@ export function MentorRegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<MentorFieldKey, string>>>({});
-
   const clearFieldError = useCallback((field: MentorFieldKey) => {
     setFieldErrors((prev) => {
       if (!prev[field]) {
         return prev;
       }
-
-      const next = { ...prev };
+      const next = {
+        ...prev,
+      };
       delete next[field];
       return next;
     });
   }, []);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const fieldName = e.target.name as keyof MentorFormData;
-
     setFormData((prev) => ({
       ...prev,
       [fieldName]: e.target.value,
     }));
-
     clearFieldError(fieldName);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
     const clientFieldErrors: Partial<Record<MentorFieldKey, string>> = {};
-
-    if (!formData.name.trim()) clientFieldErrors.name = "Vui lòng nhập họ và tên.";
-    if (!formData.email.trim()) clientFieldErrors.email = "Vui lòng nhập email.";
-    if (!formData.password.trim()) clientFieldErrors.password = "Vui lòng nhập mật khẩu.";
+    if (!formData.name.trim())
+      clientFieldErrors.name = t("auth_mentorregisterpage.tsx.vui_long_nhap_ho_va_ten");
+    if (!formData.email.trim())
+      clientFieldErrors.email = t("auth_mentorregisterpage.tsx.vui_long_nhap_email");
+    if (!formData.password.trim())
+      clientFieldErrors.password = t("auth_mentorregisterpage.tsx.vui_long_nhap_mat_khau");
     if (!formData.confirmPassword.trim()) {
-      clientFieldErrors.confirmPassword = "Vui lòng xác nhận mật khẩu.";
+      clientFieldErrors.confirmPassword = t(
+        "auth_mentorregisterpage.tsx.vui_long_xac_nhan_mat_khau"
+      );
     }
     if (!formData.currentCompany.trim()) {
-      clientFieldErrors.currentCompany = "Vui lòng nhập công ty hiện tại.";
+      clientFieldErrors.currentCompany = t(
+        "auth_mentorregisterpage.tsx.vui_long_nhap_cong_ty_hien_tai"
+      );
     }
     if (!formData.expertise.trim()) {
-      clientFieldErrors.expertise = "Vui lòng nhập lĩnh vực chuyên môn.";
+      clientFieldErrors.expertise = t(
+        "auth_mentorregisterpage.tsx.vui_long_nhap_linh_vuc_chuyen_mon"
+      );
     }
-
     const yearsOfExperience = formData.yearsOfExperience ? Number(formData.yearsOfExperience) : 0;
     if (Number.isNaN(yearsOfExperience) || yearsOfExperience < 0) {
-      clientFieldErrors.yearsOfExperience = "Số năm kinh nghiệm phải là số không âm.";
+      clientFieldErrors.yearsOfExperience = t(
+        "auth_mentorregisterpage.tsx.so_nam_kinh_nghiem_phai_la_so_khong_am"
+      );
     }
-
     if (formData.password !== formData.confirmPassword) {
-      clientFieldErrors.confirmPassword = "Mật khẩu xác nhận không khớp.";
+      clientFieldErrors.confirmPassword = t(
+        "auth_mentorregisterpage.tsx.mat_khau_xac_nhan_khong_khop"
+      );
     }
-
     if (Object.keys(clientFieldErrors).length > 0) {
       setFieldErrors(clientFieldErrors);
-      setError("Vui lòng kiểm tra lại thông tin bắt buộc trước khi gửi.");
+      setError(t("auth_mentorregisterpage.tsx.vui_long_kiem_tra_lai_thong_tin_bat_buoc"));
       return;
     }
-
     setFieldErrors({});
     setIsLoading(true);
-
     try {
       const result = await authManager.registerMentor({
         name: formData.name,
@@ -319,27 +311,24 @@ export function MentorRegisterPage() {
         degreeFile: degreeFile ?? undefined,
         otherFile: otherFile ?? undefined,
       });
-
       if (result.success) {
         navigate("/waiting-accept");
         return;
       }
-
       const normalizedFieldErrors = normalizeFieldErrors(result.fieldErrors);
       if (Object.keys(normalizedFieldErrors).length > 0) {
         setFieldErrors(normalizedFieldErrors);
       }
-
-      setError(result.error || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin và thử lại.");
+      setError(
+        result.error || t("auth_mentorregisterpage.tsx.ang_ky_that_bai_vui_long_kiem_tra_lai_th")
+      );
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleCancel = () => {
     navigate("/select-role");
   };
-
   const inputClass = (field: MentorFieldKey) =>
     cn(
       "border-slate-200 bg-white/90 dark:border-slate-700 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-500",
@@ -347,9 +336,7 @@ export function MentorRegisterPage() {
       fieldErrors[field] &&
         "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-200/60 dark:border-red-700 dark:focus-visible:border-red-500 dark:focus-visible:ring-red-900/40"
     );
-
   const helperTextClass = "text-xs font-medium text-red-600 dark:text-red-400";
-
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-b from-slate-100 via-slate-50 to-blue-50/30 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
       <Header />
@@ -360,16 +347,16 @@ export function MentorRegisterPage() {
             to="/select-role"
             className="mb-6 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[#0047AB] transition-colors hover:bg-[#0047AB]/10 dark:text-[#66B2FF] dark:hover:bg-[#66B2FF]/10">
             <ArrowLeft className="h-4 w-4" />
-            Quay lại
+            {t("general.back")}
           </Link>
 
           <Card className="border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40">
             <CardHeader className="space-y-2 text-center">
               <CardTitle className="text-2xl text-slate-900 dark:text-white">
-                Đăng ký trở thành Mentor
+                {t("auth_mentorregisterpage.tsx.ang_ky_tro_thanh_mentor")}
               </CardTitle>
               <CardDescription className="text-slate-600 dark:text-slate-300">
-                Cung cấp thông tin chuyên môn và giấy tờ xác minh để đội ngũ xét duyệt nhanh hơn.
+                {t("auth_mentorregisterpage.tsx.cung_cap_thong_tin_chuyen_mon_va_giay_to")}
               </CardDescription>
             </CardHeader>
 
@@ -388,20 +375,20 @@ export function MentorRegisterPage() {
 
                 <section className="space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    Thông tin tài khoản
+                    {t("auth_mentorregisterpage.tsx.thong_tin_tai_khoan")}
                   </h3>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="text-slate-700 dark:text-slate-200">
-                        Họ và tên <span className="text-red-500">*</span>
+                        {t("common.fullName")} <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="Nguyễn Văn A"
+                        placeholder={t("auth_signuppage.tsx.nguyen_van_a")}
                         className={inputClass("name")}
                         required
                       />
@@ -427,7 +414,7 @@ export function MentorRegisterPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="password" className="text-slate-700 dark:text-slate-200">
-                        Mật khẩu <span className="text-red-500">*</span>
+                        {t("auth_signuppage.tsx.mat_khau")} <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="password"
@@ -435,7 +422,7 @@ export function MentorRegisterPage() {
                         type="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Nhập mật khẩu"
+                        placeholder={t("auth_signuppage.tsx.nhap_mat_khau")}
                         className={inputClass("password")}
                         required
                       />
@@ -448,7 +435,8 @@ export function MentorRegisterPage() {
                       <Label
                         htmlFor="confirmPassword"
                         className="text-slate-700 dark:text-slate-200">
-                        Xác nhận mật khẩu <span className="text-red-500">*</span>
+                        {t("auth_signuppage.tsx.xac_nhan_mat_khau")}{" "}
+                        <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="confirmPassword"
@@ -456,7 +444,7 @@ export function MentorRegisterPage() {
                         type="password"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        placeholder="Nhập lại mật khẩu"
+                        placeholder={t("auth_signuppage.tsx.nhap_lai_mat_khau")}
                         className={inputClass("confirmPassword")}
                         required
                       />
@@ -469,7 +457,7 @@ export function MentorRegisterPage() {
 
                 <section className="space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    Thông tin nghề nghiệp
+                    {t("common.careerInformation")}
                   </h3>
 
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -477,14 +465,14 @@ export function MentorRegisterPage() {
                       <Label
                         htmlFor="currentCompany"
                         className="text-slate-700 dark:text-slate-200">
-                        Công ty hiện tại <span className="text-red-500">*</span>
+                        {t("common.currentCompany")} <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="currentCompany"
                         name="currentCompany"
                         value={formData.currentCompany}
                         onChange={handleChange}
-                        placeholder="Tên công ty hiện tại"
+                        placeholder={t("auth_mentorregisterpage.tsx.ten_cong_ty_hien_tai")}
                         className={inputClass("currentCompany")}
                         required
                       />
@@ -497,7 +485,8 @@ export function MentorRegisterPage() {
                       <Label
                         htmlFor="yearsOfExperience"
                         className="text-slate-700 dark:text-slate-200">
-                        Số năm kinh nghiệm <span className="text-red-500">*</span>
+                        {t("common.numberOfYearsOfExperience")}{" "}
+                        <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="yearsOfExperience"
@@ -517,7 +506,7 @@ export function MentorRegisterPage() {
 
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="linkedInUrl" className="text-slate-700 dark:text-slate-200">
-                        Hồ sơ LinkedIn
+                        {t("common.linkedinProfile")}
                       </Label>
                       <Input
                         id="linkedInUrl"
@@ -536,14 +525,17 @@ export function MentorRegisterPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="expertise" className="text-slate-700 dark:text-slate-200">
-                      Lĩnh vực chuyên môn <span className="text-red-500">*</span>
+                      {t("auth_mentorregisterpage.tsx.linh_vuc_chuyen_mon")}{" "}
+                      <span className="text-red-500">*</span>
                     </Label>
                     <Textarea
                       id="expertise"
                       name="expertise"
                       value={formData.expertise}
                       onChange={handleChange}
-                      placeholder="Ví dụ: AI, Học máy, Python, Khoa học dữ liệu..."
+                      placeholder={t(
+                        "auth_mentorregisterpage.tsx.vi_du_ai_hoc_may_python_khoa_hoc_du_lieu"
+                      )}
                       className={cn(inputClass("expertise"), "min-h-[90px]")}
                       required
                     />
@@ -554,14 +546,16 @@ export function MentorRegisterPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="bio" className="text-slate-700 dark:text-slate-200">
-                      Giới thiệu bản thân
+                      {t("common.introduceYourself")}
                     </Label>
                     <Textarea
                       id="bio"
                       name="bio"
                       value={formData.bio}
                       onChange={handleChange}
-                      placeholder="Viết vài dòng giới thiệu về kinh nghiệm và phong cách cố vấn của bạn..."
+                      placeholder={t(
+                        "auth_mentorregisterpage.tsx.viet_vai_dong_gioi_thieu_ve_kinh_nghiem_"
+                      )}
                       className={cn(inputClass("bio"), "min-h-[110px]")}
                     />
                     {fieldErrors.bio && <p className={helperTextClass}>{fieldErrors.bio}</p>}
@@ -571,16 +565,16 @@ export function MentorRegisterPage() {
                 <section className="space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      Giấy tờ chứng minh
+                      {t("auth_mentorregisterpage.tsx.giay_to_chung_minh")}
                     </h3>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      Tải lên giấy tờ giúp đội ngũ xác minh danh tính và năng lực của bạn.
+                      {t("auth_mentorregisterpage.tsx.tai_len_giay_to_giup_oi_ngu_xac_minh_dan")}
                     </p>
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FileUploadBox
-                      label="Ảnh đại diện"
+                      label={t("common.avatar")}
                       acceptedTypes="JPG, PNG"
                       maxSize="5MB"
                       icon={<User className="h-5 w-5" />}
@@ -619,7 +613,7 @@ export function MentorRegisterPage() {
                     />
 
                     <FileUploadBox
-                      label="Bằng cấp/Chứng chỉ"
+                      label={t("common.degreecertificate")}
                       acceptedTypes="PDF, JPG, PNG"
                       maxSize="5MB"
                       icon={<Award className="h-5 w-5" />}
@@ -639,7 +633,7 @@ export function MentorRegisterPage() {
                     />
 
                     <FileUploadBox
-                      label="Tài liệu khác"
+                      label={t("common.otherDocuments")}
                       acceptedTypes="PDF, JPG, PNG"
                       maxSize="5MB"
                       icon={<FileText className="h-5 w-5" />}
@@ -666,13 +660,15 @@ export function MentorRegisterPage() {
                     variant="outline"
                     className="flex-1 border-slate-300 bg-white/90 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                     onClick={handleCancel}>
-                    Hủy
+                    {t("general.cancel")}
                   </Button>
                   <Button
                     type="submit"
                     className="flex-1 bg-[#0047AB] text-white hover:bg-[#003A8C] dark:bg-[#005FD1] dark:hover:bg-[#4A90FF]"
                     disabled={isLoading}>
-                    {isLoading ? "Đang gửi đăng ký..." : "Gửi đăng ký"}
+                    {isLoading
+                      ? t("auth_mentorregisterpage.tsx.ang_gui_ang_ky")
+                      : t("auth_mentorregisterpage.tsx.gui_ang_ky")}
                   </Button>
                 </div>
               </form>

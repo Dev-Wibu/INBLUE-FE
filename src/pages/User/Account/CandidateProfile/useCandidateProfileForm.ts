@@ -1,12 +1,10 @@
-import { useState } from "react";
-import { toast } from "sonner";
-
 import type {
   CandidateProfile,
   EducationEntry,
   ProjectDetail,
   WorkExperience,
 } from "@/interfaces/schema.types";
+import i18n from "@/lib/i18n";
 import { queryClient } from "@/lib/queryClient";
 import {
   useCandidateProfile,
@@ -14,44 +12,51 @@ import {
   useUpdateCandidateProfile,
 } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
-
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+const t = i18n.t.bind(i18n);
 export type SkillField = "technicalSkills" | "softSkills" | "tools";
 export type ListField = SkillField | "certifications" | "achievements";
-
-export const SKILL_TABS: Array<{ key: SkillField; label: string }> = [
-  { key: "technicalSkills", label: "Kỹ năng kỹ thuật" },
-  { key: "softSkills", label: "Kỹ năng mềm" },
-  { key: "tools", label: "Công cụ" },
+export const SKILL_TABS: Array<{
+  key: SkillField;
+  label: string;
+}> = [
+  {
+    key: "technicalSkills",
+    label: t("common.technicalSkills"),
+  },
+  {
+    key: "softSkills",
+    label: t("common.softSkills"),
+  },
+  {
+    key: "tools",
+    label: t("common.tools"),
+  },
 ];
-
 export function useCandidateProfileForm() {
+  const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const userId = user?.id ?? 0;
-
   const { data: profileData, isLoading, error, refetch } = useCandidateProfile(userId);
   const profile = (profileData as unknown as CandidateProfile) ?? null;
-
   const createMutation = useCreateCandidateProfile();
   const updateMutation = useUpdateCandidateProfile();
-
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<CandidateProfile>>({});
-
   const [activeSkillTab, setActiveSkillTab] = useState<SkillField>("technicalSkills");
   const [newSkillValue, setNewSkillValue] = useState<Record<SkillField, string>>({
     technicalSkills: "",
     softSkills: "",
     tools: "",
   });
-
   const [techSkillsInput, setTechSkillsInput] = useState<string[]>([]);
   const [softSkillsInput, setSoftSkillsInput] = useState<string[]>([]);
   const [toolsInput, setToolsInput] = useState<string[]>([]);
   const [certificationsInput, setCertificationsInput] = useState<string[]>([]);
   const [achievementsInput, setAchievementsInput] = useState<string[]>([]);
-
   const hasProfile = !!profile?.id;
-
   const startEditing = () => {
     if (hasProfile) {
       setFormData({
@@ -82,16 +87,17 @@ export function useCandidateProfileForm() {
       setCertificationsInput([""]);
       setAchievementsInput([""]);
     }
-
     setActiveSkillTab("technicalSkills");
-    setNewSkillValue({ technicalSkills: "", softSkills: "", tools: "" });
+    setNewSkillValue({
+      technicalSkills: "",
+      softSkills: "",
+      tools: "",
+    });
     setIsEditing(true);
   };
-
   const cancelEditing = () => {
     setIsEditing(false);
   };
-
   const handleSave = async () => {
     const payload: Partial<CandidateProfile> = {
       ...formData,
@@ -101,30 +107,36 @@ export function useCandidateProfileForm() {
       certifications: certificationsInput.map((s) => s.trim()).filter(Boolean),
       achievements: achievementsInput.map((s) => s.trim()).filter(Boolean),
     };
-
     try {
       if (hasProfile) {
         await updateMutation.mutateAsync({
-          body: { id: profile.id, user: profile.user, ...payload } as never,
+          body: {
+            id: profile.id,
+            user: profile.user,
+            ...payload,
+          } as never,
         });
-        toast.success("Cập nhật hồ sơ thành công!");
+        toast.success(t("userAccount.profileUpdatedSuccessfully"));
       } else {
         await createMutation.mutateAsync({
-          body: { user: { id: userId }, ...payload } as never,
+          body: {
+            user: {
+              id: userId,
+            },
+            ...payload,
+          } as never,
         });
-        toast.success("Tạo hồ sơ thành công!");
+        toast.success(t("userAccount.profileCreatedSuccessfully"));
       }
-
       await queryClient.invalidateQueries({
         queryKey: ["get", "/api/candidate-profiles/{userId}"],
       });
       await refetch();
       setIsEditing(false);
     } catch {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      toast.error(t("userAccount.anErrorOccurredPleaseTry"));
     }
   };
-
   const getSkillList = (field: SkillField): string[] => {
     switch (field) {
       case "technicalSkills":
@@ -135,7 +147,6 @@ export function useCandidateProfileForm() {
         return toolsInput;
     }
   };
-
   const setSkillList = (field: SkillField, updater: (_prev: string[]) => string[]) => {
     switch (field) {
       case "technicalSkills":
@@ -149,32 +160,28 @@ export function useCandidateProfileForm() {
         break;
     }
   };
-
   const addSkillBadge = (field: SkillField) => {
     const value = newSkillValue[field].trim();
     if (!value) return;
-
     setSkillList(field, (prev) => {
       if (prev.some((item) => item.toLowerCase() === value.toLowerCase())) return prev;
       return [...prev, value];
     });
-
-    setNewSkillValue((prev) => ({ ...prev, [field]: "" }));
+    setNewSkillValue((prev) => ({
+      ...prev,
+      [field]: "",
+    }));
   };
-
   const removeSkillBadge = (field: SkillField, index: number) => {
     setSkillList(field, (prev) => prev.filter((_, i) => i !== index));
   };
-
   const addListItem = (field: Exclude<ListField, SkillField>) => {
     if (field === "certifications") {
       setCertificationsInput((prev) => [...prev, ""]);
       return;
     }
-
     setAchievementsInput((prev) => [...prev, ""]);
   };
-
   const updateListItem = (field: Exclude<ListField, SkillField>, index: number, value: string) => {
     if (field === "certifications") {
       setCertificationsInput((prev) => {
@@ -184,23 +191,19 @@ export function useCandidateProfileForm() {
       });
       return;
     }
-
     setAchievementsInput((prev) => {
       const next = [...prev];
       next[index] = value;
       return next;
     });
   };
-
   const removeListItem = (field: Exclude<ListField, SkillField>, index: number) => {
     if (field === "certifications") {
       setCertificationsInput((prev) => prev.filter((_, i) => i !== index));
       return;
     }
-
     setAchievementsInput((prev) => prev.filter((_, i) => i !== index));
   };
-
   const addProject = () => {
     setFormData((prev) => ({
       ...prev,
@@ -217,7 +220,6 @@ export function useCandidateProfileForm() {
       ],
     }));
   };
-
   const updateProject = (
     index: number,
     field: keyof ProjectDetail,
@@ -225,18 +227,22 @@ export function useCandidateProfileForm() {
   ) => {
     setFormData((prev) => {
       const projects = [...(prev.projects ?? [])];
-      projects[index] = { ...projects[index], [field]: value };
-      return { ...prev, projects };
+      projects[index] = {
+        ...projects[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        projects,
+      };
     });
   };
-
   const removeProject = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       projects: (prev.projects ?? []).filter((_, i) => i !== index),
     }));
   };
-
   const addWorkExperience = () => {
     setFormData((prev) => ({
       ...prev,
@@ -252,22 +258,25 @@ export function useCandidateProfileForm() {
       ],
     }));
   };
-
   const updateWorkExperience = (index: number, field: keyof WorkExperience, value: string) => {
     setFormData((prev) => {
       const workExperiences = [...(prev.workExperiences ?? [])];
-      workExperiences[index] = { ...workExperiences[index], [field]: value };
-      return { ...prev, workExperiences };
+      workExperiences[index] = {
+        ...workExperiences[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        workExperiences,
+      };
     });
   };
-
   const removeWorkExperience = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       workExperiences: (prev.workExperiences ?? []).filter((_, i) => i !== index),
     }));
   };
-
   const addEducation = () => {
     setFormData((prev) => ({
       ...prev,
@@ -284,22 +293,25 @@ export function useCandidateProfileForm() {
       ],
     }));
   };
-
   const updateEducation = (index: number, field: keyof EducationEntry, value: string) => {
     setFormData((prev) => {
       const educations = [...(prev.educations ?? [])];
-      educations[index] = { ...educations[index], [field]: value };
-      return { ...prev, educations };
+      educations[index] = {
+        ...educations[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        educations,
+      };
     });
   };
-
   const removeEducation = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       educations: (prev.educations ?? []).filter((_, i) => i !== index),
     }));
   };
-
   return {
     profile,
     isLoading,

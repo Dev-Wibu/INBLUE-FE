@@ -1,5 +1,7 @@
+import i18n from "@/lib/i18n";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+const t = i18n.t.bind(i18n);
 
 import { useUserCameraPreview } from "./useUserCameraPreview";
 
@@ -113,11 +115,7 @@ describe("useUserCameraPreview", () => {
       },
       audio: false,
     });
-    expect(result.current.message).toBe(
-      "Không mở được camera đã chọn, hệ thống đã chuyển sang camera mặc định."
-    );
-    expect(warningMock).toHaveBeenCalledWith(
-      "Không mở được camera đã chọn, hệ thống đã chuyển sang camera mặc định."
-    );
+    expect(result.current.message).toBe(t("userAiinterview.unableToOpenTheSelected"));
+    expect(warningMock).toHaveBeenCalledWith(t("userAiinterview.unableToOpenTheSelected"));
   });
 });

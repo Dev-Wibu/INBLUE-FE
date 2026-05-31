@@ -1,3 +1,11 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AlertCircle,
   BookOpen,
@@ -11,19 +19,10 @@ import {
   Upload,
   X,
 } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
-
+import { useTranslation } from "react-i18next";
 import type { AIInterviewSetupHook } from "./useAIInterviewSetup";
-
 export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
+  const { t } = useTranslation();
   const {
     isEditingProfile,
     setIsEditingProfile,
@@ -69,24 +68,22 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
     profileLoading,
     hasExistingProfile,
   } = hook;
-
   const profile = existingProfile as Record<string, unknown> | undefined;
   const canSave =
     candidateForm.targetRole.trim() !== "" && candidateForm.introduction.trim() !== "";
-
   return (
     <Card>
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-blue-600" />
-          <CardTitle className="text-lg">Hồ sơ ứng viên</CardTitle>
+          <CardTitle className="text-lg">{t("common.candidateProfile")}</CardTitle>
         </div>
         <CardDescription>
           {hasExistingProfile && !isEditingProfile
-            ? "Hồ sơ của bạn đã sẵn sàng. Bạn có thể chỉnh sửa nếu cần."
+            ? t("userAiinterview.yourProfileIsReadyYou")
             : isEditingProfile
-              ? "Điền thông tin hồ sơ rồi nhấn Lưu để tiếp tục."
-              : "Tải CV lên để tự động điền hoặc nhập thông tin thủ công."}
+              ? t("userAiinterview.fillInProfileInformationThen")
+              : t("userAiinterview.uploadYourCvToAuto")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -121,7 +118,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300">
-                  Hồ sơ hiện tại
+                  {t("userAiinterview.currentProfile")}
                 </h4>
               </div>
               <Button
@@ -130,20 +127,20 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 onClick={handleStartEditing}
                 className="gap-1.5 text-xs">
                 <Pencil className="h-3.5 w-3.5" />
-                Chỉnh sửa
+                {t("general.edit")}
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="text-muted-foreground">Vị trí mục tiêu: </span>
+                <span className="text-muted-foreground">{t("general.targetPosition")} </span>
                 <span className="font-medium">
-                  {(profile?.targetRole as string) || "Chưa cập nhật"}
+                  {(profile?.targetRole as string) || t("common.notUpdatedYet")}
                 </span>
               </div>
               <div>
-                <span className="text-muted-foreground">Cấp độ: </span>
+                <span className="text-muted-foreground">{t("mentorStudents.level")} </span>
                 <span className="font-medium">
-                  {(profile?.targetLevel as string) || "Chưa cập nhật"}
+                  {(profile?.targetLevel as string) || t("common.notUpdatedYet")}
                 </span>
               </div>
             </div>
@@ -155,7 +152,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
             {Array.isArray(profile?.technicalSkills) &&
               (profile.technicalSkills as string[]).length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-muted-foreground text-xs">Kỹ năng kỹ thuật:</span>
+                  <span className="text-muted-foreground text-xs">
+                    {t("mentorStudents.technicalSkills")}
+                  </span>
                   <div className="flex flex-wrap gap-1.5">
                     {(profile.technicalSkills as string[]).map((s) => (
                       <Badge key={s} variant="secondary" className="text-xs">
@@ -167,7 +166,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               )}
             {Array.isArray(profile?.softSkills) && (profile.softSkills as string[]).length > 0 && (
               <div className="space-y-1">
-                <span className="text-muted-foreground text-xs">Kỹ năng mềm:</span>
+                <span className="text-muted-foreground text-xs">
+                  {t("mentorStudents.softSkills")}
+                </span>
                 <div className="flex flex-wrap gap-1.5">
                   {(profile.softSkills as string[]).map((s) => (
                     <Badge key={s} variant="outline" className="text-xs">
@@ -179,7 +180,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
             )}
             {Array.isArray(profile?.tools) && (profile.tools as string[]).length > 0 && (
               <div className="space-y-1">
-                <span className="text-muted-foreground text-xs">Công cụ:</span>
+                <span className="text-muted-foreground text-xs">{t("mentorStudents.tools")}</span>
                 <div className="flex flex-wrap gap-1.5">
                   {(profile.tools as string[]).map((t) => (
                     <Badge key={t} variant="secondary" className="text-xs">
@@ -192,7 +193,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
             {Array.isArray(profile?.certifications) &&
               (profile.certifications as string[]).length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-muted-foreground text-xs">Chứng chỉ:</span>
+                  <span className="text-muted-foreground text-xs">
+                    {t("general.certifications")}
+                  </span>
                   <div className="flex flex-wrap gap-1.5">
                     {(profile.certifications as string[]).map((c) => (
                       <Badge key={c} variant="outline" className="text-xs">
@@ -205,7 +208,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
             {Array.isArray(profile?.achievements) &&
               (profile.achievements as string[]).length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-muted-foreground text-xs">Thành tích:</span>
+                  <span className="text-muted-foreground text-xs">{t("general.achievements")}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {(profile.achievements as string[]).map((a) => (
                       <Badge key={a} variant="outline" className="text-xs">
@@ -221,7 +224,8 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 <div className="space-y-1.5 border-t pt-2">
                   <span className="flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-300">
                     <BookOpen className="h-3.5 w-3.5" />
-                    Dự án ({(profile.projects as unknown[]).length})
+                    {t("general.projects")}
+                    {(profile.projects as unknown[]).length})
                   </span>
                   <div className="space-y-1.5">
                     {(profile.projects as Record<string, unknown>[]).map((p, i) => (
@@ -233,7 +237,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                         </p>
                         {p.role != null && (
                           <p className="text-zinc-500 dark:text-zinc-400">
-                            Vai trò: {String(p.role)}
+                            {t("general.role")} {String(p.role)}
                           </p>
                         )}
                         {p.description != null && (
@@ -243,7 +247,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                         )}
                         {p.outcome != null && (
                           <p className="text-zinc-500 dark:text-zinc-400">
-                            Kết quả: {String(p.outcome)}
+                            {t("common.result1")} {String(p.outcome)}
                           </p>
                         )}
                       </div>
@@ -257,7 +261,8 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 <div className="space-y-1.5 border-t pt-2">
                   <span className="flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-300">
                     <BriefcaseBusiness className="h-3.5 w-3.5" />
-                    Kinh nghiệm ({(profile.workExperiences as unknown[]).length})
+                    {t("general.experience")}
+                    {(profile.workExperiences as unknown[]).length})
                   </span>
                   <div className="space-y-1.5">
                     {(profile.workExperiences as Record<string, unknown>[]).map((e, i) => (
@@ -290,7 +295,8 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 <div className="space-y-1.5 border-t pt-2">
                   <span className="flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-300">
                     <GraduationCap className="h-3.5 w-3.5" />
-                    Học vấn ({(profile.educations as unknown[]).length})
+                    {t("general.education")}
+                    {(profile.educations as unknown[]).length})
                   </span>
                   <div className="space-y-1.5">
                     {(profile.educations as Record<string, unknown>[]).map((edu, i) => (
@@ -328,7 +334,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               <div className="flex flex-col items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-800 dark:bg-emerald-950/30">
                 <Spinner size="lg" tone="success" />
                 <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                  Đang phân tích CV...
+                  {t("userAiinterview.analyzingCv")}
                 </p>
               </div>
             ) : (
@@ -338,10 +344,10 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-6 transition-all hover:border-emerald-400 hover:bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/20">
                   <Upload className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                    Tải CV lên
+                    {t("userAiinterview.uploadYourCv")}
                   </span>
                   <span className="text-muted-foreground text-center text-xs">
-                    Tự động điền từ CV
+                    {t("userAiinterview.autofillFromCv")}
                   </span>
                 </button>
                 <button
@@ -349,10 +355,10 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-violet-300 bg-violet-50/50 p-6 transition-all hover:border-violet-400 hover:bg-violet-50 dark:border-violet-700 dark:bg-violet-950/20">
                   <Pencil className="h-7 w-7 text-violet-600 dark:text-violet-400" />
                   <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">
-                    Nhập thủ công
+                    {t("userAiinterview.enterManually")}
                   </span>
                   <span className="text-muted-foreground text-center text-xs">
-                    Tự điền thông tin
+                    {t("userAiinterview.fillInInformationYourself")}
                   </span>
                 </button>
               </div>
@@ -360,8 +366,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
             <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
               <p className="text-xs text-amber-700 dark:text-amber-300">
-                Bạn chưa có hồ sơ ứng viên. Tải CV lên hoặc nhập thủ công, sau đó nhấn{" "}
-                <strong>Lưu hồ sơ</strong> để tiếp tục.
+                {t("userAiinterview.youDoNotHaveA")}{" "}
+                <strong>{t("userAiinterview.saveProfile")}</strong>{" "}
+                {t("userAiinterview.toContinue")}
               </p>
             </div>
           </div>
@@ -372,7 +379,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
           <div className="space-y-4">
             {/* Upload shortcut — always shown in edit mode */}
             <div className="flex items-center justify-between rounded-lg border border-dashed border-emerald-300 bg-emerald-50/30 px-4 py-2.5 dark:border-emerald-700 dark:bg-emerald-950/10">
-              <span className="text-muted-foreground text-xs">Muốn tự động điền từ CV?</span>
+              <span className="text-muted-foreground text-xs">
+                {t("userAiinterview.wantToAutofillFromCv")}
+              </span>
               {isUploading ? (
                 <Spinner size="sm" tone="success" />
               ) : (
@@ -382,7 +391,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   className="h-7 gap-1.5 text-xs text-emerald-700 dark:text-emerald-300"
                   onClick={() => fileInputRef.current?.click()}>
                   <Upload className="h-3.5 w-3.5" />
-                  Tải CV lên
+                  {t("userAiinterview.uploadYourCv")}
                 </Button>
               )}
             </div>
@@ -390,17 +399,17 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="targetRole">
-                  Vị trí mục tiêu <span className="text-red-500">*</span>
+                  {t("userAiinterview.targetLocation")} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="targetRole"
-                  placeholder="VD: Lập trình viên Backend"
+                  placeholder={t("userAiinterview.exampleBackendProgrammer")}
                   value={candidateForm.targetRole}
                   onChange={(e) => updateCandidateForm("targetRole", e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="targetLevel">Cấp độ</Label>
+                <Label htmlFor="targetLevel">{t("common.level")}</Label>
                 <Input
                   id="targetLevel"
                   placeholder="VD: Intern, Fresher, Junior, Middle"
@@ -412,11 +421,11 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
 
             <div className="space-y-1.5">
               <Label htmlFor="introduction">
-                Giới thiệu bản thân <span className="text-red-500">*</span>
+                {t("common.introduceYourself")} <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="introduction"
-                placeholder="Mô tả ngắn về bản thân, kinh nghiệm..."
+                placeholder={t("userAiinterview.shortDescriptionAboutYourselfExperience")}
                 value={candidateForm.introduction}
                 onChange={(e) => updateCandidateForm("introduction", e.target.value)}
                 rows={3}
@@ -424,7 +433,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Kỹ năng kỹ thuật</Label>
+              <Label>{t("common.technicalSkills")}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {candidateForm.technicalSkills.map((skill, i) => (
                   <Badge
@@ -436,7 +445,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       type="button"
                       className="rounded-full p-0.5 hover:bg-black/10"
                       onClick={() => removeTechSkill(i)}
-                      aria-label={`Xóa ${skill}`}>
+                      aria-label={t("common.deleteVar0", {
+                        var_0: skill,
+                      })}>
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -444,7 +455,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               </div>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Nhập kỹ năng kỹ thuật và nhấn Thêm"
+                  placeholder={t("userAiinterview.enterTechnicalSkillsAndPress")}
                   value={techSkillInput}
                   onChange={(e) => setTechSkillInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -456,13 +467,13 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addTechSkill}>
                   <Plus className="mr-1 h-4 w-4" />
-                  Thêm
+                  {t("common.more")}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label>Kỹ năng mềm</Label>
+              <Label>{t("common.softSkills")}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {candidateForm.softSkills.map((skill, i) => (
                   <Badge
@@ -474,7 +485,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       type="button"
                       className="rounded-full p-0.5 hover:bg-black/10"
                       onClick={() => removeSoftSkill(i)}
-                      aria-label={`Xóa ${skill}`}>
+                      aria-label={t("common.deleteVar0", {
+                        var_0: skill,
+                      })}>
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -482,7 +495,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               </div>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Nhập kỹ năng mềm và nhấn Thêm"
+                  placeholder={t("userAiinterview.enterSoftSkillsAndTap")}
                   value={softSkillInput}
                   onChange={(e) => setSoftSkillInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -494,13 +507,13 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addSoftSkill}>
                   <Plus className="mr-1 h-4 w-4" />
-                  Thêm
+                  {t("common.more")}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label>Công cụ</Label>
+              <Label>{t("common.tools")}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {candidateForm.tools.map((tool, i) => (
                   <Badge
@@ -512,7 +525,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       type="button"
                       className="rounded-full p-0.5 hover:bg-black/10"
                       onClick={() => removeTool(i)}
-                      aria-label={`Xóa ${tool}`}>
+                      aria-label={t("common.deleteVar0", {
+                        var_0: tool,
+                      })}>
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -520,7 +535,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               </div>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Nhập công cụ và nhấn Thêm"
+                  placeholder={t("userAiinterview.enterToolsAndPressAdd")}
                   value={toolInput}
                   onChange={(e) => setToolInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -532,13 +547,13 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addTool}>
                   <Plus className="mr-1 h-4 w-4" />
-                  Thêm
+                  {t("common.more")}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label>Chứng chỉ</Label>
+              <Label>{t("common.certificate")}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {candidateForm.certifications.map((cert, i) => (
                   <Badge
@@ -550,7 +565,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       type="button"
                       className="rounded-full p-0.5 hover:bg-black/10"
                       onClick={() => removeCertification(i)}
-                      aria-label={`Xóa ${cert}`}>
+                      aria-label={t("common.deleteVar0", {
+                        var_0: cert,
+                      })}>
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -570,13 +587,13 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addCertification}>
                   <Plus className="mr-1 h-4 w-4" />
-                  Thêm
+                  {t("common.more")}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label>Thành tích</Label>
+              <Label>{t("common.achievements")}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {candidateForm.achievements.map((ach, i) => (
                   <Badge
@@ -588,7 +605,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       type="button"
                       className="rounded-full p-0.5 hover:bg-black/10"
                       onClick={() => removeAchievement(i)}
-                      aria-label={`Xóa ${ach}`}>
+                      aria-label={t("common.deleteVar0", {
+                        var_0: ach,
+                      })}>
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -596,7 +615,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               </div>
               <div className="flex gap-2">
                 <Input
-                  placeholder="VD: Học sinh xuất sắc, Top 1 hackathon..."
+                  placeholder={t("userAiinterview.exampleExcellentStudentTop1")}
                   value={achievementInput}
                   onChange={(e) => setAchievementInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -608,7 +627,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addAchievement}>
                   <Plus className="mr-1 h-4 w-4" />
-                  Thêm
+                  {t("common.more")}
                 </Button>
               </div>
             </div>
@@ -618,16 +637,16 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-1.5">
                   <BookOpen className="h-4 w-4" />
-                  Dự án
+                  {t("common.project")}
                 </Label>
                 <Button type="button" variant="outline" size="sm" onClick={addProject}>
                   <Plus className="mr-1 h-4 w-4" />
-                  Thêm dự án
+                  {t("common.addProject")}
                 </Button>
               </div>
               {candidateForm.projects.length === 0 && (
                 <p className="text-muted-foreground text-xs">
-                  Chưa có dự án nào. Nhấn Thêm dự án để thêm.
+                  {t("userAiinterview.thereAreNoProjectsYet")}
                 </p>
               )}
               {candidateForm.projects.map((project, index) => (
@@ -635,7 +654,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   key={index}
                   className="space-y-3 rounded-lg border border-dashed p-4 dark:border-zinc-700">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Dự án {index + 1}</span>
+                    <span className="text-sm font-medium">
+                      {t("common.project")} {index + 1}
+                    </span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -643,20 +664,20 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       className="h-7 text-xs text-red-500 hover:text-red-600"
                       onClick={() => removeProject(index)}>
                       <X className="mr-1 h-3.5 w-3.5" />
-                      Xóa
+                      {t("general.delete")}
                     </Button>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Tên dự án</Label>
+                      <Label className="text-xs">{t("common.projectName")}</Label>
                       <Input
-                        placeholder="VD: Hệ thống quản lý..."
+                        placeholder={t("userAiinterview.exampleManagementSystem")}
                         value={project.name ?? ""}
                         onChange={(e) => updateProject(index, "name", e.target.value)}
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Vai trò</Label>
+                      <Label className="text-xs">{t("common.role")}</Label>
                       <Input
                         placeholder="VD: Backend Developer"
                         value={project.role ?? ""}
@@ -665,9 +686,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Mô tả</Label>
+                    <Label className="text-xs">{t("common.describe")}</Label>
                     <Textarea
-                      placeholder="Mô tả dự án..."
+                      placeholder={t("userAiinterview.projectDescription")}
                       value={project.description ?? ""}
                       onChange={(e) => updateProject(index, "description", e.target.value)}
                       rows={2}
@@ -675,7 +696,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Quy mô đội (người)</Label>
+                      <Label className="text-xs">{t("userAiinterview.teamSizePeople")}</Label>
                       <Input
                         type="number"
                         min={1}
@@ -684,9 +705,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Kết quả đạt được</Label>
+                      <Label className="text-xs">{t("userAiinterview.resultsAchieved")}</Label>
                       <Input
-                        placeholder="VD: Giảm thời gian xử lý 30%"
+                        placeholder={t("userAiinterview.exampleReduceProcessingTimeBy")}
                         value={project.outcome ?? ""}
                         onChange={(e) => updateProject(index, "outcome", e.target.value)}
                       />
@@ -701,16 +722,16 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-1.5">
                   <BriefcaseBusiness className="h-4 w-4" />
-                  Kinh nghiệm làm việc
+                  {t("common.workExperience")}
                 </Label>
                 <Button type="button" variant="outline" size="sm" onClick={addWorkExperience}>
                   <Plus className="mr-1 h-4 w-4" />
-                  Thêm kinh nghiệm
+                  {t("common.moreExperience")}
                 </Button>
               </div>
               {candidateForm.workExperiences.length === 0 && (
                 <p className="text-muted-foreground text-xs">
-                  Chưa có kinh nghiệm nào. Nhấn Thêm kinh nghiệm để thêm.
+                  {t("userAiinterview.noExperienceYetClickAdd")}
                 </p>
               )}
               {candidateForm.workExperiences.map((exp, index) => (
@@ -718,7 +739,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   key={index}
                   className="space-y-3 rounded-lg border border-dashed p-4 dark:border-zinc-700">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Kinh nghiệm {index + 1}</span>
+                    <span className="text-sm font-medium">
+                      {t("common.experience")} {index + 1}
+                    </span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -726,12 +749,12 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       className="h-7 text-xs text-red-500 hover:text-red-600"
                       onClick={() => removeWorkExperience(index)}>
                       <X className="mr-1 h-3.5 w-3.5" />
-                      Xóa
+                      {t("general.delete")}
                     </Button>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Công ty</Label>
+                      <Label className="text-xs">{t("common.company")}</Label>
                       <Input
                         placeholder="VD: FPT Software"
                         value={exp.company ?? ""}
@@ -739,7 +762,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Vị trí</Label>
+                      <Label className="text-xs">{t("common.location1")}</Label>
                       <Input
                         placeholder="VD: .NET Developer"
                         value={exp.position ?? ""}
@@ -748,9 +771,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Mô tả công việc</Label>
+                    <Label className="text-xs">{t("common.jobDescription")}</Label>
                     <Textarea
-                      placeholder="Mô tả công việc..."
+                      placeholder={t("general.jobDescription")}
                       value={exp.description ?? ""}
                       onChange={(e) => updateWorkExperience(index, "description", e.target.value)}
                       rows={2}
@@ -758,7 +781,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Ngày bắt đầu</Label>
+                      <Label className="text-xs">{t("common.startDate")}</Label>
                       <Input
                         type="date"
                         value={exp.start_date ?? ""}
@@ -766,7 +789,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Ngày kết thúc</Label>
+                      <Label className="text-xs">{t("common.endDate")}</Label>
                       <Input
                         type="date"
                         value={exp.end_date ?? ""}
@@ -783,16 +806,16 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-1.5">
                   <GraduationCap className="h-4 w-4" />
-                  Học vấn
+                  {t("common.education")}
                 </Label>
                 <Button type="button" variant="outline" size="sm" onClick={addEducation}>
                   <Plus className="mr-1 h-4 w-4" />
-                  Thêm học vấn
+                  {t("common.moreEducation")}
                 </Button>
               </div>
               {candidateForm.educations.length === 0 && (
                 <p className="text-muted-foreground text-xs">
-                  Chưa có học vấn nào. Nhấn Thêm học vấn để thêm.
+                  {t("userAiinterview.noEducationYetClickAdd")}
                 </p>
               )}
               {candidateForm.educations.map((edu, index) => (
@@ -800,7 +823,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   key={index}
                   className="space-y-3 rounded-lg border border-dashed p-4 dark:border-zinc-700">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Học vấn {index + 1}</span>
+                    <span className="text-sm font-medium">
+                      {t("common.education")} {index + 1}
+                    </span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -808,22 +833,22 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       className="h-7 text-xs text-red-500 hover:text-red-600"
                       onClick={() => removeEducation(index)}>
                       <X className="mr-1 h-3.5 w-3.5" />
-                      Xóa
+                      {t("general.delete")}
                     </Button>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Trường</Label>
+                      <Label className="text-xs">{t("common.school")}</Label>
                       <Input
-                        placeholder="VD: Đại học FPT"
+                        placeholder={t("userAiinterview.exampleFptUniversity")}
                         value={edu.school ?? ""}
                         onChange={(e) => updateEducation(index, "school", e.target.value)}
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Chuyên ngành</Label>
+                      <Label className="text-xs">{t("common.specialized")}</Label>
                       <Input
-                        placeholder="VD: Kỹ thuật phần mềm"
+                        placeholder={t("userAiinterview.exampleSoftwareEngineering")}
                         value={edu.major ?? ""}
                         onChange={(e) => updateEducation(index, "major", e.target.value)}
                       />
@@ -831,9 +856,9 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div className="space-y-1">
-                      <Label className="text-xs">Bằng cấp</Label>
+                      <Label className="text-xs">{t("common.degree")}</Label>
                       <Input
-                        placeholder="VD: Cử nhân"
+                        placeholder={t("userAiinterview.exampleBachelor")}
                         value={edu.degree ?? ""}
                         onChange={(e) => updateEducation(index, "degree", e.target.value)}
                       />
@@ -849,7 +874,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Ngày bắt đầu</Label>
+                      <Label className="text-xs">{t("common.startDate")}</Label>
                       <Input
                         type="date"
                         value={edu.start_date ?? ""}
@@ -857,7 +882,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Ngày kết thúc</Label>
+                      <Label className="text-xs">{t("common.endDate")}</Label>
                       <Input
                         type="date"
                         value={edu.end_date ?? ""}
@@ -877,7 +902,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                   size="sm"
                   onClick={handleCancelEditing}
                   disabled={isSavingProfile}>
-                  Hủy
+                  {t("general.cancel")}
                 </Button>
               )}
               <Button
@@ -890,7 +915,7 @@ export function CandidateProfileStep({ hook }: { hook: AIInterviewSetupHook }) {
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
-                Lưu hồ sơ
+                {t("userAiinterview.saveProfile")}
               </Button>
             </div>
           </div>

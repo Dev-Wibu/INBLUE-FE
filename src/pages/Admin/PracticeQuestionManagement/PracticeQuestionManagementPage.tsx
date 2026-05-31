@@ -1,7 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Plus, Search, Trash2, Upload } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,22 +28,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import i18n from "@/lib/i18n";
 import { questionManager } from "@/services";
 import {
   questionCategoryManager,
   type QuestionCategory,
 } from "@/services/question-category.manager";
 import type { PracticeQuestion } from "@/services/question.manager";
+import { Plus, Search, Trash2, Upload } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
+const t = i18n.t.bind(i18n);
 const levelBadgeMap: Record<string, string> = {
   EASY: "bg-green-100 text-green-700 hover:bg-green-100",
   MEDIUM: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
   HARD: "bg-red-100 text-red-700 hover:bg-red-100",
 };
-
 interface QuestionFormData {
   title: string;
   content: string;
@@ -56,7 +55,6 @@ interface QuestionFormData {
   hint: string;
   categoryId: string;
 }
-
 const emptyFormData: QuestionFormData = {
   title: "",
   content: "",
@@ -65,8 +63,8 @@ const emptyFormData: QuestionFormData = {
   hint: "",
   categoryId: "",
 };
-
 export function PracticeQuestionManagementPage() {
+  const { t } = useTranslation();
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -78,43 +76,43 @@ export function PracticeQuestionManagementPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<PracticeQuestion | null>(null);
   const [formData, setFormData] = useState<QuestionFormData>(emptyFormData);
-
-  const loadData = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const [questionsRes, categoriesRes] = await Promise.all([
-        questionManager.getAll(),
-        questionCategoryManager.getAll(),
-      ]);
-      if (questionsRes.success && questionsRes.data) {
-        const raw = questionsRes.data;
-        const arr = Array.isArray(raw) ? raw : "data" in raw ? raw.data : [];
-        setQuestions(arr as unknown as PracticeQuestion[]);
-      } else {
-        toast.error(questionsRes.error || "Không thể tải danh sách câu hỏi");
-      }
-      if (categoriesRes.success && categoriesRes.data) {
-        const raw = categoriesRes.data;
-        const arr = Array.isArray(raw) ? raw : "data" in raw ? raw.data : [];
-        setCategories(arr as QuestionCategory[]);
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast.error("Không thể tải dữ liệu");
-    } finally {
+  const loadData = useCallback(
+    async (showReloading = false) => {
       if (showReloading) {
-        setIsReloading(false);
+        setIsReloading(true);
       } else {
-        setIsInitialLoading(false);
+        setIsInitialLoading(true);
       }
-    }
-  }, []);
-
+      try {
+        const [questionsRes, categoriesRes] = await Promise.all([
+          questionManager.getAll(),
+          questionCategoryManager.getAll(),
+        ]);
+        if (questionsRes.success && questionsRes.data) {
+          const raw = questionsRes.data;
+          const arr = Array.isArray(raw) ? raw : "data" in raw ? raw.data : [];
+          setQuestions(arr as unknown as PracticeQuestion[]);
+        } else {
+          toast.error(questionsRes.error || t("common.unableToLoadQuestionList"));
+        }
+        if (categoriesRes.success && categoriesRes.data) {
+          const raw = categoriesRes.data;
+          const arr = Array.isArray(raw) ? raw : "data" in raw ? raw.data : [];
+          setCategories(arr as QuestionCategory[]);
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        toast.error(t("common.unableToDownloadData"));
+      } finally {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
+          setIsInitialLoading(false);
+        }
+      }
+    },
+    [t]
+  );
   useEffect(() => {
     void loadData();
   }, [loadData]);
@@ -150,16 +148,13 @@ export function PracticeQuestionManagementPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(() => {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
-
   const handleCreate = () => {
     setFormData(emptyFormData);
     setIsCreateDialogOpen(true);
   };
-
   const handleEdit = (question: PracticeQuestion) => {
     setSelectedQuestion(question);
     setFormData({
@@ -172,12 +167,10 @@ export function PracticeQuestionManagementPage() {
     });
     setIsEditDialogOpen(true);
   };
-
   const handleDelete = (question: PracticeQuestion) => {
     setSelectedQuestion(question);
     setIsDeleteDialogOpen(true);
   };
-
   const handleSubmitCreate = async () => {
     try {
       const selectedCategory = formData.categoryId
@@ -190,23 +183,25 @@ export function PracticeQuestionManagementPage() {
         answer: formData.answer,
         hint: formData.hint,
         ...(selectedCategory && {
-          lesson: { id: selectedCategory.id, lessonName: selectedCategory.categoryName },
+          lesson: {
+            id: selectedCategory.id,
+            lessonName: selectedCategory.categoryName,
+          },
         }),
       };
       const response = await questionManager.create(createData as never);
       if (response.success) {
-        toast.success("Đã tạo câu hỏi thành công");
+        toast.success(t("adminPracticequestionmanagement.questionCreatedSuccessfully"));
         setIsCreateDialogOpen(false);
         void loadData();
       } else {
-        toast.error(response.error || "Không thể tạo câu hỏi");
+        toast.error(response.error || t("common.cannotCreateQuestion"));
       }
     } catch (error) {
       console.error("Error creating question:", error);
-      toast.error("Không thể tạo câu hỏi");
+      toast.error(t("common.cannotCreateQuestion"));
     }
   };
-
   const handleSubmitEdit = async () => {
     if (!selectedQuestion?.questionId) return;
     try {
@@ -220,7 +215,10 @@ export function PracticeQuestionManagementPage() {
         answer: formData.answer,
         hint: formData.hint,
         ...(selectedCategory && {
-          lesson: { id: selectedCategory.id, lessonName: selectedCategory.categoryName },
+          lesson: {
+            id: selectedCategory.id,
+            lessonName: selectedCategory.categoryName,
+          },
         }),
       };
       const response = await questionManager.update(
@@ -228,49 +226,46 @@ export function PracticeQuestionManagementPage() {
         updateData as never
       );
       if (response.success) {
-        toast.success("Đã cập nhật câu hỏi thành công");
+        toast.success(t("adminPracticequestionmanagement.questionUpdatedSuccessfully"));
         setIsEditDialogOpen(false);
         void loadData();
       } else {
-        toast.error(response.error || "Không thể cập nhật câu hỏi");
+        toast.error(response.error || t("common.unableToUpdateQuestion"));
       }
     } catch (error) {
       console.error("Error updating question:", error);
-      toast.error("Không thể cập nhật câu hỏi");
+      toast.error(t("common.unableToUpdateQuestion"));
     }
   };
-
   const handleConfirmDelete = async () => {
     if (!selectedQuestion?.questionId) return;
     try {
       const response = await questionManager.delete(selectedQuestion.questionId);
       if (response.success) {
-        toast.success("Đã xóa câu hỏi thành công");
+        toast.success(t("adminPracticequestionmanagement.questionDeletedSuccessfully"));
         setIsDeleteDialogOpen(false);
         void loadData();
       } else {
-        toast.error(response.error || "Không thể xóa câu hỏi");
+        toast.error(response.error || t("common.questionCannotBeDeleted"));
       }
     } catch (error) {
       console.error("Error deleting question:", error);
-      toast.error("Không thể xóa câu hỏi");
+      toast.error(t("common.questionCannotBeDeleted"));
     }
   };
-
   const handleBulkImport = async () => {
     // Placeholder for bulk import - would typically open a file picker
-    toast.info("Chức năng nhập hàng loạt đang được phát triển");
+    toast.info(t("adminPracticequestionmanagement.bulkImportFunctionalityIsUnder"));
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản Lý Câu Hỏi Luyện Tập
+          {t("adminPracticequestionmanagement.managingPracticeQuestions")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Quản lý ngân hàng câu hỏi luyện tập cho các cấp độ khác nhau
+          {t("adminPracticequestionmanagement.manageBanksOfPracticeQuestions")}
         </p>
       </div>
 
@@ -281,7 +276,7 @@ export function PracticeQuestionManagementPage() {
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo tiêu đề hoặc nội dung..."
+              placeholder={t("adminPracticequestionmanagement.searchByTitleOrContent")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -298,10 +293,10 @@ export function PracticeQuestionManagementPage() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="Lọc theo cấp độ" />
+              <SelectValue placeholder={t("common.filterByLevel")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả cấp độ</SelectItem>
+              <SelectItem value="all">{t("common.allLevels")}</SelectItem>
               <SelectItem value="EASY">Easy</SelectItem>
               <SelectItem value="MEDIUM">Medium</SelectItem>
               <SelectItem value="HARD">Hard</SelectItem>
@@ -318,23 +313,23 @@ export function PracticeQuestionManagementPage() {
                 setLevelFilter("all");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
           <ReloadButton
             onReload={() => loadData(true)}
             isLoading={isReloading}
-            tooltip="Tải lại danh sách câu hỏi"
+            tooltip={t("common.reloadQuestionList")}
             showLabel
             hideTooltip
           />
           <Button variant="outline" onClick={handleBulkImport} className="gap-2">
             <Upload className="h-4 w-4" />
-            Nhập hàng loạt
+            {t("adminPracticequestionmanagement.batchImport")}
           </Button>
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Thêm Câu Hỏi
+            {t("adminPracticequestionmanagement.moreQuestions")}
           </Button>
         </div>
       </div>
@@ -342,7 +337,10 @@ export function PracticeQuestionManagementPage() {
       {/* Table */}
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {isInitialLoading ? (
-          <SpinnerBlock size="lg" label="Đang tải danh sách câu hỏi..." />
+          <SpinnerBlock
+            size="lg"
+            label={t("adminPracticequestionmanagement.loadingListOfQuestions")}
+          />
         ) : (
           <>
             <Table>
@@ -351,22 +349,24 @@ export function PracticeQuestionManagementPage() {
                   <TableHead
                     className="cursor-pointer"
                     onClick={() => toggleSort("title" as keyof PracticeQuestion)}>
-                    Tiêu đề
+                    {t("common.title")}
                   </TableHead>
                   <TableHead
                     className="cursor-pointer"
                     onClick={() => toggleSort("level" as keyof PracticeQuestion)}>
-                    Cấp độ
+                    {t("common.level")}
                   </TableHead>
-                  <TableHead>Bài học</TableHead>
-                  <TableHead className="text-right">Hành động</TableHead>
+                  <TableHead>{t("common.lesson")}</TableHead>
+                  <TableHead className="text-right">{t("common.act")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {pageData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="py-8 text-center">
-                      <p className="text-gray-500 dark:text-slate-400">Không có câu hỏi nào</p>
+                      <p className="text-gray-500 dark:text-slate-400">
+                        {t("common.noQuestionsAsked")}
+                      </p>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -385,7 +385,7 @@ export function PracticeQuestionManagementPage() {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="sm" onClick={() => handleEdit(question)}>
-                            Sửa
+                            {t("adminPracticequestionmanagement.fix")}
                           </Button>
                           <Button
                             variant="outline"
@@ -421,7 +421,7 @@ export function PracticeQuestionManagementPage() {
                     setLevelFilter("all");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -436,9 +436,9 @@ export function PracticeQuestionManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitCreate}
-        title="Thêm Câu Hỏi Mới"
-        description="Điền thông tin để tạo câu hỏi luyện tập mới."
-        submitLabel="Tạo câu hỏi"
+        title={t("adminPracticequestionmanagement.addNewQuestion")}
+        description={t("adminPracticequestionmanagement.fillInTheInformationTo")}
+        submitLabel={t("adminPracticequestionmanagement.createQuestions")}
         categories={categories}
       />
 
@@ -449,9 +449,9 @@ export function PracticeQuestionManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitEdit}
-        title="Chỉnh Sửa Câu Hỏi"
-        description="Cập nhật thông tin câu hỏi."
-        submitLabel="Lưu thay đổi"
+        title={t("adminPracticequestionmanagement.editQuestion")}
+        description={t("adminPracticequestionmanagement.updateQuestionInformation")}
+        submitLabel={t("common.saveChanges")}
         categories={categories}
       />
 
@@ -459,18 +459,19 @@ export function PracticeQuestionManagementPage() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác nhận xóa</DialogTitle>
+            <DialogTitle>{t("common.confirmDeletion1")}</DialogTitle>
             <DialogDescription>
-              Bạn có chắc chắn muốn xóa câu hỏi &quot;{selectedQuestion?.title}&quot;? Hành động này
-              không thể hoàn tác.
+              {t("adminPracticequestionmanagement.areYouSureYouWant")}
+              {selectedQuestion?.title}
+              {t("common.quotThisActionCannotBeUndone")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Hủy
+              {t("general.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleConfirmDelete}>
-              Xóa
+              {t("general.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -491,7 +492,6 @@ interface QuestionFormDialogProps {
   submitLabel: string;
   categories: QuestionCategory[];
 }
-
 function QuestionFormDialog({
   isOpen,
   onOpenChange,
@@ -512,31 +512,44 @@ function QuestionFormDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="title">Tiêu đề</Label>
+            <Label htmlFor="title">{t("common.title")}</Label>
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => onFormChange({ ...formData, title: e.target.value })}
-              placeholder="Nhập tiêu đề câu hỏi"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  title: e.target.value,
+                })
+              }
+              placeholder={t("adminPracticequestionmanagement.enterQuestionTitle")}
             />
           </div>
           <div>
-            <Label htmlFor="content">Nội dung</Label>
+            <Label htmlFor="content">{t("common.content")}</Label>
             <Textarea
               id="content"
               value={formData.content}
-              onChange={(e) => onFormChange({ ...formData, content: e.target.value })}
-              placeholder="Nhập nội dung câu hỏi"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  content: e.target.value,
+                })
+              }
+              placeholder={t("adminPracticequestionmanagement.enterQuestionContent")}
               rows={3}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="level">Cấp độ</Label>
+              <Label htmlFor="level">{t("common.level")}</Label>
               <Select
                 value={formData.level}
                 onValueChange={(value) =>
-                  onFormChange({ ...formData, level: value as "EASY" | "MEDIUM" | "HARD" })
+                  onFormChange({
+                    ...formData,
+                    level: value as "EASY" | "MEDIUM" | "HARD",
+                  })
                 }>
                 <SelectTrigger>
                   <SelectValue />
@@ -549,12 +562,17 @@ function QuestionFormDialog({
               </Select>
             </div>
             <div>
-              <Label htmlFor="categoryId">Danh mục</Label>
+              <Label htmlFor="categoryId">{t("common.category")}</Label>
               <Select
                 value={formData.categoryId}
-                onValueChange={(value) => onFormChange({ ...formData, categoryId: value })}>
+                onValueChange={(value) =>
+                  onFormChange({
+                    ...formData,
+                    categoryId: value,
+                  })
+                }>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn danh mục" />
+                  <SelectValue placeholder={t("adminPracticequestionmanagement.selectCategory")} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -567,28 +585,38 @@ function QuestionFormDialog({
             </div>
           </div>
           <div>
-            <Label htmlFor="answer">Đáp án</Label>
+            <Label htmlFor="answer">{t("adminPracticequestionmanagement.answer")}</Label>
             <Textarea
               id="answer"
               value={formData.answer}
-              onChange={(e) => onFormChange({ ...formData, answer: e.target.value })}
-              placeholder="Nhập đáp án"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  answer: e.target.value,
+                })
+              }
+              placeholder={t("adminPracticequestionmanagement.enterTheAnswer")}
               rows={2}
             />
           </div>
           <div>
-            <Label htmlFor="hint">Gợi ý</Label>
+            <Label htmlFor="hint">{t("adminPracticequestionmanagement.suggest")}</Label>
             <Input
               id="hint"
               value={formData.hint}
-              onChange={(e) => onFormChange({ ...formData, hint: e.target.value })}
-              placeholder="Nhập gợi ý (tùy chọn)"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  hint: e.target.value,
+                })
+              }
+              placeholder={t("adminPracticequestionmanagement.enterASuggestionOptional")}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t("general.cancel")}
           </Button>
           <Button onClick={onSubmit}>{submitLabel}</Button>
         </DialogFooter>

@@ -1,8 +1,3 @@
-import { BookOpen, Calendar, ExternalLink, Filter, Plus, Search, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,25 +14,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate, toTimestamp } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { practiceSetManager } from "@/services";
 import type { PracticeSetResponse } from "@/services/practice-set.manager";
 import { useAuthStore } from "@/stores";
-
+import { BookOpen, Calendar, ExternalLink, Filter, Plus, Search, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+const t = i18n.t.bind(i18n);
 const levelBadgeMap: Record<string, string> = {
   INTERN: "bg-blue-100 text-blue-700",
   FRESHER: "bg-green-100 text-green-700",
   JUNIOR: "bg-yellow-100 text-yellow-700",
   MIDDLE: "bg-red-100 text-red-700",
 };
-
 const levelSortMap: Record<string, number> = {
   INTERN: 1,
   FRESHER: 2,
   JUNIOR: 3,
   MIDDLE: 4,
 };
-
 type SortableSessionGroup = {
   idSortValue: number;
   sessionIdSortValue: number;
@@ -46,14 +45,12 @@ type SortableSessionGroup = {
   levelSortValue: number;
   sets: PracticeSetResponse[];
 };
-
 type SortableStandaloneSet = PracticeSetResponse & {
   idSortValue: number;
   nameSortValue: string;
   levelSortValue: number;
   startDateSortValue: number;
 };
-
 function PracticeSetCard({
   ps,
   index,
@@ -70,10 +67,11 @@ function PracticeSetCard({
     // does NOT need to re-fetch from the API (requirement #9).
     const sessionSets = allSets.filter((s) => s.interviewSessionId === ps.interviewSessionId);
     navigate(`/user/practice/session/${ps.interviewSessionId}`, {
-      state: { sessionSets },
+      state: {
+        sessionSets,
+      },
     });
   };
-
   return (
     <Card
       className="hover:border-primary/50 cursor-pointer transition-all hover:shadow-md"
@@ -87,7 +85,7 @@ function PracticeSetCard({
         {/* Info */}
         <div className="min-w-0 flex-1">
           <CardTitle className="text-foreground line-clamp-1 text-base">
-            {ps.practiceSetName ?? "Bộ luyện tập"}
+            {ps.practiceSetName ?? t("common.trainingSet")}
           </CardTitle>
           {ps.objective && (
             <CardDescription className="mt-0.5 line-clamp-2 text-sm">
@@ -119,13 +117,12 @@ function PracticeSetCard({
             e.stopPropagation();
             goToDetail();
           }}>
-          Xem chi tiết
+          {t("common.seeDetails")}
         </Button>
       </CardContent>
     </Card>
   );
 }
-
 function SessionGroupCard({
   index,
   sets,
@@ -138,12 +135,14 @@ function SessionGroupCard({
   const first = sets[0];
   const sessionId = first.interviewSessionId;
   const dayCount = sets.length;
-
   const goToSession = () => {
     // Pass the sets for this session via location state (requirement #9)
-    navigate(`/user/practice/session/${sessionId}`, { state: { sessionSets: sets } });
+    navigate(`/user/practice/session/${sessionId}`, {
+      state: {
+        sessionSets: sets,
+      },
+    });
   };
-
   return (
     <Card
       className="hover:border-primary/50 cursor-pointer transition-all hover:shadow-md"
@@ -157,7 +156,8 @@ function SessionGroupCard({
         {/* Info */}
         <div className="min-w-0 flex-1">
           <CardTitle className="text-foreground line-clamp-1 text-base">
-            Lộ trình {dayCount} ngày — Phiên phỏng vấn #{sessionId}
+            {t("common.route")} {dayCount} {t("userPractice.dateInterviewSession")}
+            {sessionId}
           </CardTitle>
           {first.objective && (
             <CardDescription className="mt-0.5 line-clamp-2 text-sm">
@@ -167,7 +167,7 @@ function SessionGroupCard({
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge className="bg-amber-100 text-xs text-amber-700 hover:bg-amber-100">
               <Sparkles className="mr-1 h-3 w-3" />
-              {dayCount} ngày
+              {dayCount} {t("userPractice.day")}
             </Badge>
             {first.level && (
               <Badge
@@ -196,14 +196,14 @@ function SessionGroupCard({
             e.stopPropagation();
             goToSession();
           }}>
-          Xem lộ trình
+          {t("userPractice.viewRoute")}
         </Button>
       </CardContent>
     </Card>
   );
 }
-
 export function PracticeSetsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [practiceSets, setPracticeSets] = useState<PracticeSetResponse[]>([]);
@@ -220,7 +220,6 @@ export function PracticeSetsPage() {
     defaultPageSize: 8,
   });
   const hasLoadedRef = useRef(false);
-
   const loadData = useCallback(
     async (isReload = false) => {
       if (!user?.id) return;
@@ -230,29 +229,27 @@ export function PracticeSetsPage() {
       } else {
         setIsReloading(true);
       }
-
       try {
         const response = await practiceSetManager.getByUser(user.id);
         if (response.success) {
           setPracticeSets(response.data ?? []);
         } else {
-          toast.error(response.error ?? "Không thể tải danh sách bộ luyện tập");
+          toast.error(response.error ?? t("common.unableToLoadPracticeSetList"));
         }
       } catch {
-        toast.error("Không thể tải dữ liệu");
+        toast.error(t("common.unableToDownloadData"));
       } finally {
         hasLoadedRef.current = true;
         setIsInitialLoading(false);
         setIsReloading(false);
       }
     },
-    [user?.id]
-  );
 
+    [user?.id, t]
+  );
   useEffect(() => {
     void loadData();
   }, [loadData]);
-
   const filteredSets = useMemo(() => {
     return practiceSets.filter((ps) => {
       if (searchQuery) {
@@ -289,7 +286,6 @@ export function PracticeSetsPage() {
     }
     return Array.from(map.values());
   }, [aiLinkedSets]);
-
   const sortableSessionGroups = useMemo<SortableSessionGroup[]>(() => {
     return sessionGroups.map((sets) => {
       const first = sets[0];
@@ -297,7 +293,6 @@ export function PracticeSetsPage() {
       const startDateValues = sets
         .map((set) => toTimestamp(set.startDate))
         .filter((value): value is number => typeof value === "number");
-
       return {
         idSortValue: sessionId,
         sessionIdSortValue: sessionId,
@@ -307,8 +302,7 @@ export function PracticeSetsPage() {
         sets,
       };
     });
-  }, [sessionGroups]);
-
+  }, [sessionGroups, t]);
   const sortableStandaloneSets = useMemo<SortableStandaloneSet[]>(() => {
     return standaloneSets.map((set) => ({
       ...set,
@@ -318,7 +312,6 @@ export function PracticeSetsPage() {
       startDateSortValue: toTimestamp(set.startDate) ?? 0,
     }));
   }, [standaloneSets]);
-
   const { sortedData: sortedSessionGroups, getSortProps: getSessionGroupSortProps } = useSortable(
     sortableSessionGroups,
     {
@@ -333,7 +326,6 @@ export function PracticeSetsPage() {
       },
     }
   );
-
   const { sortedData: sortedStandaloneSets, getSortProps: getStandaloneSortProps } = useSortable(
     sortableStandaloneSets,
     {
@@ -348,17 +340,14 @@ export function PracticeSetsPage() {
       },
     }
   );
-
   const sessionGroupPagination = usePagination({
     totalCount: sortedSessionGroups.length,
     pageSize: sessionGroupPageSize,
   });
-
   const standalonePagination = usePagination({
     totalCount: sortedStandaloneSets.length,
     pageSize: standalonePageSize,
   });
-
   const sessionGroupPageData = useMemo(
     () =>
       sortedSessionGroups.slice(
@@ -367,7 +356,6 @@ export function PracticeSetsPage() {
       ),
     [sortedSessionGroups, sessionGroupPagination.startIndex, sessionGroupPagination.endIndex]
   );
-
   const standalonePageData = useMemo(
     () =>
       sortedStandaloneSets.slice(
@@ -376,7 +364,6 @@ export function PracticeSetsPage() {
       ),
     [sortedStandaloneSets, standalonePagination.startIndex, standalonePagination.endIndex]
   );
-
   return (
     <div className="bg-background min-h-screen p-8">
       {/* Top Banner */}
@@ -385,10 +372,10 @@ export function PracticeSetsPage() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <BookOpen className="h-6 w-6 text-white" />
-              <h1 className="text-3xl font-bold text-white">Bộ Luyện Tập</h1>
+              <h1 className="text-3xl font-bold text-white">{t("common.practiceSet")}</h1>
             </div>
             <p className="max-w-lg text-lg text-white/90">
-              Luyện tập theo lộ trình được AI tạo ra từ kết quả phỏng vấn của bạn.
+              {t("userPractice.practiceAlongAnAiGenerated")}
             </p>
             <Button
               variant="secondary"
@@ -396,7 +383,7 @@ export function PracticeSetsPage() {
               className="mt-2 w-fit"
               onClick={() => navigate("/user/ai-interview/setup")}>
               <Plus className="mr-2 h-5 w-5" />
-              Bắt đầu phỏng vấn AI
+              {t("common.startInterviewingAi")}
             </Button>
           </div>
           <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
@@ -411,7 +398,7 @@ export function PracticeSetsPage() {
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             type="text"
-            placeholder="Tìm kiếm theo tên hoặc mục tiêu..."
+            placeholder={t("common.searchByNameOrTarget")}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -423,7 +410,7 @@ export function PracticeSetsPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground text-sm font-medium whitespace-nowrap">
-            Cấp độ:
+            {t("mentorStudents.level")}
           </span>
           <Select
             value={levelFilter}
@@ -436,7 +423,7 @@ export function PracticeSetsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="all">{t("general.all")}</SelectItem>
               <SelectItem value="INTERN">Intern</SelectItem>
               <SelectItem value="FRESHER">Fresher</SelectItem>
               <SelectItem value="JUNIOR">Junior</SelectItem>
@@ -450,7 +437,7 @@ export function PracticeSetsPage() {
               standalonePagination.goToFirstPage();
             }}
             isLoading={isReloading}
-            tooltip="Tải lại bộ luyện tập"
+            tooltip={t("userPractice.reloadThePracticeSet")}
           />
         </div>
       </div>
@@ -481,19 +468,23 @@ export function PracticeSetsPage() {
             <section>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-foreground text-2xl font-bold">Lộ trình từ AI</h2>
+                  <h2 className="text-foreground text-2xl font-bold">
+                    {t("userPractice.roadmapFromAi")}
+                  </h2>
                   <p className="text-muted-foreground text-sm">
-                    Các lộ trình được tạo tự động từ kết quả phỏng vấn AI
+                    {t("userPractice.roadmapsAreAutomaticallyGeneratedFrom")}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <SortButton {...getSessionGroupSortProps("startDateSortValue")}>
-                    Mới nhất
+                    {t("common.latest")}
                   </SortButton>
                   <SortButton {...getSessionGroupSortProps("dayCountSortValue")}>
-                    Số ngày
+                    {t("userPractice.numberOfDays")}
                   </SortButton>
-                  <SortButton {...getSessionGroupSortProps("levelSortValue")}>Cấp độ</SortButton>
+                  <SortButton {...getSessionGroupSortProps("levelSortValue")}>
+                    {t("common.level")}
+                  </SortButton>
                 </div>
               </div>
               <div className="space-y-4">
@@ -527,17 +518,25 @@ export function PracticeSetsPage() {
             <section>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-foreground text-2xl font-bold">Bộ luyện tập tự học</h2>
+                  <h2 className="text-foreground text-2xl font-bold">
+                    {t("userPractice.selfStudyPracticeSet")}
+                  </h2>
                   <p className="text-muted-foreground text-sm">
-                    Các bộ luyện tập được tạo thủ công
+                    {t("userPractice.thePracticeSetsAreCreated")}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <SortButton {...getStandaloneSortProps("idSortValue")}>Mới nhất</SortButton>
-                  <SortButton {...getStandaloneSortProps("nameSortValue")}>Tên bộ</SortButton>
-                  <SortButton {...getStandaloneSortProps("levelSortValue")}>Cấp độ</SortButton>
+                  <SortButton {...getStandaloneSortProps("idSortValue")}>
+                    {t("common.latest")}
+                  </SortButton>
+                  <SortButton {...getStandaloneSortProps("nameSortValue")}>
+                    {t("userPractice.setName")}
+                  </SortButton>
+                  <SortButton {...getStandaloneSortProps("levelSortValue")}>
+                    {t("common.level")}
+                  </SortButton>
                   <SortButton {...getStandaloneSortProps("startDateSortValue")}>
-                    Ngày bắt đầu
+                    {t("common.startDate")}
                   </SortButton>
                 </div>
               </div>
@@ -576,10 +575,10 @@ export function PracticeSetsPage() {
               </div>
               <div className="text-center">
                 <p className="text-foreground font-medium">
-                  Không tìm thấy bộ luyện tập nào phù hợp
+                  {t("userPractice.noSuitableTrainingSetsWere")}
                 </p>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  Hãy thử điều chỉnh bộ lọc để tìm kết quả khác
+                  {t("userPractice.tryAdjustingTheFilterTo")}
                 </p>
               </div>
               <Button
@@ -591,7 +590,7 @@ export function PracticeSetsPage() {
                   standalonePagination.goToFirstPage();
                 }}>
                 <Filter className="mr-2 h-4 w-4" />
-                Xóa bộ lọc
+                {t("common.clearFilter")}
               </Button>
             </Card>
           )}
@@ -603,15 +602,17 @@ export function PracticeSetsPage() {
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
                   <ExternalLink className="h-10 w-10 text-white" />
                 </div>
-                <CardTitle className="text-2xl text-white">Chưa có bộ luyện tập nào</CardTitle>
+                <CardTitle className="text-2xl text-white">
+                  {t("userPractice.thereAreNoPracticeSets")}
+                </CardTitle>
                 <CardDescription className="text-white/90">
-                  Hoàn thành buổi phỏng vấn AI để nhận lộ trình luyện tập cá nhân hóa
+                  {t("userPractice.completeTheAiInterviewTo")}
                 </CardDescription>
                 <Button
                   variant="secondary"
                   size="lg"
                   onClick={() => navigate("/user/ai-interview/setup")}>
-                  Bắt đầu phỏng vấn AI
+                  {t("common.startInterviewingAi")}
                 </Button>
               </CardContent>
             </Card>

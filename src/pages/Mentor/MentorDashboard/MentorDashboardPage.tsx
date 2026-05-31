@@ -1,18 +1,4 @@
-import { cn } from "@/lib/utils";
-import {
-  Calendar,
-  LayoutDashboard,
-  MessageSquare,
-  Newspaper,
-  Star,
-  User,
-  Users,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useOutlet } from "react-router-dom";
-
 import icon2 from "@/assets/icon2.svg";
-
 import { NotificationBell } from "@/components/notification";
 import type { SidebarMenuGroup } from "@/components/shared";
 import {
@@ -27,8 +13,21 @@ import { useDashboardBreadcrumb } from "@/hooks/useDashboardBreadcrumb";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
+import i18n from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
-
+import {
+  Calendar,
+  LayoutDashboard,
+  MessageSquare,
+  Newspaper,
+  Star,
+  User,
+  Users,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { MentorAccountPage } from "../Account";
 import { GivenFeedbackListPage } from "../Feedback";
 import { MentorHomeFeedPage } from "../HomeFeed";
@@ -38,7 +37,7 @@ import { MentorOverviewPage } from "../Overview";
 import { MentorReviewsPage } from "../Reviews";
 import { MentorSessionsPage } from "../Sessions";
 import { StudentsListPage } from "../Students";
-
+const t = i18n.t.bind(i18n);
 type TabType =
   | "homeFeed"
   | "overview"
@@ -49,69 +48,132 @@ type TabType =
   | "notifications"
   | "messenger"
   | "account";
-
-const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
-  { type: "homeFeed", label: "Trang chủ" },
-  { type: "overview", label: "Tổng quan" },
-  { type: "sessions", label: "Phiên phỏng vấn" },
-  { type: "students", label: "Học viên" },
-  { type: "reviews", label: "Đánh giá đã gửi" },
-  { type: "feedback", label: "Phản hồi nhận được" },
-  { type: "notifications", label: "Thông báo" },
-  { type: "messenger", label: "Tin nhắn" },
-  { type: "account", label: "Tài khoản" },
+const AVAILABLE_TABS: Array<{
+  type: TabType;
+  label: string;
+}> = [
+  {
+    type: "homeFeed",
+    label: t("common.home"),
+  },
+  {
+    type: "overview",
+    label: t("common.overview"),
+  },
+  {
+    type: "sessions",
+    label: t("common.interviewSession"),
+  },
+  {
+    type: "students",
+    label: t("common.students"),
+  },
+  {
+    type: "reviews",
+    label: t("mentorMentordashboard.reviewSent"),
+  },
+  {
+    type: "feedback",
+    label: t("common.responseReceived"),
+  },
+  {
+    type: "notifications",
+    label: t("common.notification"),
+  },
+  {
+    type: "messenger",
+    label: t("common.messages"),
+  },
+  {
+    type: "account",
+    label: t("common.account"),
+  },
 ];
-
 const isValidTabType = (value: string): value is TabType => {
   return AVAILABLE_TABS.some((tab) => tab.type === value);
 };
-
 const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
   {
-    label: "Trang chủ",
-    items: [{ type: "homeFeed", icon: Newspaper, label: "Trang chủ", color: "text-orange-600" }],
+    label: t("common.home"),
+    items: [
+      {
+        type: "homeFeed",
+        icon: Newspaper,
+        label: t("common.home"),
+        color: "text-orange-600",
+      },
+    ],
   },
   {
-    label: "Nghiệp vụ",
+    label: t("common.profession"),
     items: [
-      { type: "overview", icon: LayoutDashboard, label: "Tổng quan", color: "text-emerald-600" },
-      { type: "sessions", icon: Calendar, label: "Phiên phỏng vấn", color: "text-blue-600" },
-      { type: "students", icon: Users, label: "Học viên", color: "text-purple-600" },
-      { type: "reviews", icon: Star, label: "Đánh giá đã gửi", color: "text-yellow-600" },
+      {
+        type: "overview",
+        icon: LayoutDashboard,
+        label: t("common.overview"),
+        color: "text-emerald-600",
+      },
+      {
+        type: "sessions",
+        icon: Calendar,
+        label: t("common.interviewSession"),
+        color: "text-blue-600",
+      },
+      {
+        type: "students",
+        icon: Users,
+        label: t("common.students"),
+        color: "text-purple-600",
+      },
+      {
+        type: "reviews",
+        icon: Star,
+        label: t("mentorMentordashboard.reviewSent"),
+        color: "text-yellow-600",
+      },
       {
         type: "feedback",
         icon: MessageSquare,
-        label: "Phản hồi nhận được",
+        label: t("common.responseReceived"),
         color: "text-cyan-600",
       },
     ],
   },
   {
-    label: "Cá nhân",
+    label: t("common.individual"),
     items: [
-      { type: "messenger", icon: MessageSquare, label: "Tin nhắn", color: "text-emerald-500" },
-      { type: "account", icon: User, label: "Tài khoản", color: "text-gray-600" },
+      {
+        type: "messenger",
+        icon: MessageSquare,
+        label: t("common.messages"),
+        color: "text-emerald-500",
+      },
+      {
+        type: "account",
+        icon: User,
+        label: t("common.account"),
+        color: "text-gray-600",
+      },
     ],
   },
 ];
-
 const MENTOR_SIDEBAR_LOGO = (
   <>
     <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
     <div className="flex flex-col">
       <span className="text-lg font-bold text-emerald-700 dark:text-white">INBLUE AI</span>
-      <span className="text-xs text-emerald-600 dark:text-emerald-400">Cổng Mentor</span>
+      <span className="text-xs text-emerald-600 dark:text-emerald-400">
+        {t("mentorMentordashboard.mentorGate")}
+      </span>
     </div>
   </>
 );
-
 const MENTOR_SIDEBAR_LOGO_COLLAPSED = (
   <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
 );
-
 const DEFAULT_TAB: TabType = "overview";
-
 export function MentorDashboardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
@@ -130,9 +192,7 @@ export function MentorDashboardPage() {
     defaultTab: DEFAULT_TAB,
     availableTabs: AVAILABLE_TABS,
   });
-
   const outlet = useOutlet();
-
   const routedTab = getDashboardTabFromPath({
     role: "mentor",
     pathname: location.pathname,
@@ -147,25 +207,20 @@ export function MentorDashboardPage() {
     : isValidTabType(activeTab)
       ? activeTab
       : DEFAULT_TAB;
-
   const { items: breadcrumbItems } = useDashboardBreadcrumb({
     role: "mentor",
     pathname: location.pathname,
     activeTab: typedActiveTab,
     availableTabs: AVAILABLE_TABS,
   });
-
   const shouldHideScrollButton = location.pathname.startsWith("/mentor/sessions/room/");
-
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
     setScrollTarget(node);
   }, []);
-
   useDashboardScrollRestoration(contentRef, {
     enabled: typedActiveTab !== "messenger",
   });
-
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");
   }, [sidebarBehavior]);
@@ -181,7 +236,6 @@ export function MentorDashboardPage() {
     },
     [outlet, openTab, navigate]
   );
-
   const renderContent = () => {
     switch (typedActiveTab) {
       case "homeFeed":
@@ -203,10 +257,9 @@ export function MentorDashboardPage() {
       case "account":
         return <MentorAccountPage />;
       default:
-        return <div>Loại tab không hợp lệ</div>;
+        return <div>{t("common.invalidTabType")}</div>;
     }
   };
-
   return (
     <div className="isolate flex h-screen bg-white dark:bg-slate-950">
       <DashboardSidebar
@@ -220,7 +273,7 @@ export function MentorDashboardPage() {
         logo={MENTOR_SIDEBAR_LOGO}
         collapsedLogo={MENTOR_SIDEBAR_LOGO_COLLAPSED}
         showSettings
-        settingsLabel="Cài đặt"
+        settingsLabel={t("common.setting")}
         onSettingsClick={() => setIsSettingsOpen(true)}
         theme={{
           wrapper: "h-screen border-r border-emerald-200 bg-emerald-50/50",
@@ -249,7 +302,7 @@ export function MentorDashboardPage() {
           logoutCollapsedBtn:
             "flex items-center justify-center rounded-lg p-2.5 text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
           logoutIcon: "text-slate-500 dark:text-slate-400",
-          logoutLabel: "Đăng xuất",
+          logoutLabel: t("common.logout"),
         }}
       />
 

@@ -1,17 +1,3 @@
-import {
-  AlertTriangle,
-  Bot,
-  Calendar,
-  Clock,
-  History,
-  Search,
-  Star,
-  User,
-  Video,
-} from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 import { PaymentMethodDialog, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,46 +20,114 @@ import type { Session } from "@/interfaces";
 import { upsertPendingSessionPaidStatusSync } from "@/lib";
 import { $api } from "@/lib/api";
 import { formatCurrency, formatDateTime } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { sessionManager, transactionManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  AlertTriangle,
+  Bot,
+  Calendar,
+  Clock,
+  History,
+  Search,
+  Star,
+  User,
+  Video,
+} from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+const t = i18n.t.bind(i18n);
 
 // ============================================================
 // Constants
 // ============================================================
 
 type InterviewType = "all" | "ai" | "mock";
-
-const INTERVIEW_TYPE_TABS: Array<{ value: InterviewType; label: string }> = [
-  { value: "all", label: "Tất cả" },
-  { value: "ai", label: "AI" },
-  { value: "mock", label: "Mentor" },
+const INTERVIEW_TYPE_TABS: Array<{
+  value: InterviewType;
+  label: string;
+}> = [
+  {
+    value: "all",
+    label: t("general.all"),
+  },
+  {
+    value: "ai",
+    label: "AI",
+  },
+  {
+    value: "mock",
+    label: "Mentor",
+  },
 ];
-
 const AI_MODE_LABELS: Record<string, string> = {
-  STANDARD_MOCK: "Phỏng vấn thử",
-  THEORY_CHECK: "Kiểm tra lý thuyết",
-  PROJECT_DEFENSE: "Bảo vệ dự án",
+  STANDARD_MOCK: t("common.trialInterview"),
+  THEORY_CHECK: t("common.testTheTheory"),
+  PROJECT_DEFENSE: t("common.projectProtection"),
 };
-
-const AI_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  CREATED: { label: "Đã tạo", className: "bg-blue-100 text-blue-700" },
-  IN_PROGRESS: { label: "Đang diễn ra", className: "bg-amber-100 text-amber-700" },
-  COMPLETED: { label: "Hoàn thành", className: "bg-emerald-100 text-emerald-700" },
-  CANCELLED: { label: "Đã hủy", className: "bg-red-100 text-red-700" },
+const AI_STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    className: string;
+  }
+> = {
+  CREATED: {
+    label: t("common.created"),
+    className: "bg-blue-100 text-blue-700",
+  },
+  IN_PROGRESS: {
+    label: t("common.ongoing"),
+    className: "bg-amber-100 text-amber-700",
+  },
+  COMPLETED: {
+    label: t("general.completed"),
+    className: "bg-emerald-100 text-emerald-700",
+  },
+  CANCELLED: {
+    label: t("common.canceled"),
+    className: "bg-red-100 text-red-700",
+  },
 };
-
-const MOCK_STATUS_MAP: Record<string, { label: string; color: string }> = {
-  DRAFT: { label: "Chờ duyệt", color: "bg-amber-100 text-amber-700" },
-  SCHEDULED: { label: "Sắp diễn ra", color: "bg-blue-100 text-blue-700" },
-  PAID: { label: "Đã thanh toán", color: "bg-emerald-100 text-emerald-700" },
-  ONGOING: { label: "Đang diễn ra", color: "bg-green-100 text-green-700" },
-  COMPLETED: { label: "Hoàn thành", color: "bg-slate-100 text-slate-600" },
-  REJECTED: { label: "Bị từ chối", color: "bg-red-100 text-red-600" },
-  CANCELED: { label: "Đã hủy", color: "bg-red-100 text-red-600" },
+const MOCK_STATUS_MAP: Record<
+  string,
+  {
+    label: string;
+    color: string;
+  }
+> = {
+  DRAFT: {
+    label: t("common.waitingForApproval"),
+    color: "bg-amber-100 text-amber-700",
+  },
+  SCHEDULED: {
+    label: t("common.comingSoon"),
+    color: "bg-blue-100 text-blue-700",
+  },
+  PAID: {
+    label: t("common.paid"),
+    color: "bg-emerald-100 text-emerald-700",
+  },
+  ONGOING: {
+    label: t("common.ongoing"),
+    color: "bg-green-100 text-green-700",
+  },
+  COMPLETED: {
+    label: t("general.completed"),
+    color: "bg-slate-100 text-slate-600",
+  },
+  REJECTED: {
+    label: t("common.rejected"),
+    color: "bg-red-100 text-red-600",
+  },
+  CANCELED: {
+    label: t("common.canceled"),
+    color: "bg-red-100 text-red-600",
+  },
 };
-
 type HistoryItem = {
   id: number;
   type: "ai" | "mock";
@@ -81,16 +135,23 @@ type HistoryItem = {
   status: string;
   mode?: string;
   overallScore?: number;
-  candidateProfile?: { targetRole?: string; targetLevel?: string };
-  sessionConfig?: { duration_minutes?: number; language?: string };
-  jobRequirement?: { basic_info?: Record<string, string> };
+  candidateProfile?: {
+    targetRole?: string;
+    targetLevel?: string;
+  };
+  sessionConfig?: {
+    duration_minutes?: number;
+    language?: string;
+  };
+  jobRequirement?: {
+    basic_info?: Record<string, string>;
+  };
   roomName?: string;
   joinTime?: string;
   startTime1?: string;
   totalPrice?: number;
   userId2?: number;
 };
-
 type AIStatusFilter = "all" | "CREATED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 type MockStatusFilter =
   | "all"
@@ -110,9 +171,13 @@ function ProgressRing({ score, size = 48 }: { score: number; size?: number }) {
   const radius = (size - 6) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = `${(score / 10) * circumference} ${circumference}`;
-
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div
+      className="relative"
+      style={{
+        width: size,
+        height: size,
+      }}>
       <svg className="h-full w-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
         <circle
           className="fill-none stroke-[2.5px]"
@@ -120,7 +185,9 @@ function ProgressRing({ score, size = 48 }: { score: number; size?: number }) {
           cy={size / 2}
           r={radius}
           stroke="currentColor"
-          style={{ color: "rgb(220, 233, 255)" }}
+          style={{
+            color: "rgb(220, 233, 255)",
+          }}
         />
         <circle
           className="fill-none stroke-[2.5px] transition-all duration-500"
@@ -144,15 +211,14 @@ function ProgressRing({ score, size = 48 }: { score: number; size?: number }) {
 // ============================================================
 
 export function InterviewHistoryTab() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const userId = user?.id;
-
   const [interviewType, setInterviewType] = useState<InterviewType>("all");
   const [aiStatusFilter, setAiStatusFilter] = useState<AIStatusFilter>("all");
   const [mockStatusFilter, setMockStatusFilter] = useState<MockStatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
-
   const [payingSessionId, setPayingSessionId] = useState<number | null>(null);
   const [isPreparingPaymentDialog, setIsPreparingPaymentDialog] = useState(false);
   const [targetSessionForPayment, setTargetSessionForPayment] = useState<Session | null>(null);
@@ -169,8 +235,16 @@ export function InterviewHistoryTab() {
   } = $api.useQuery(
     "get",
     "/api/interview-sessions/user/{userId}",
-    { params: { path: { userId: userId ?? 0 } } },
-    { enabled: !!userId }
+    {
+      params: {
+        path: {
+          userId: userId ?? 0,
+        },
+      },
+    },
+    {
+      enabled: !!userId,
+    }
   );
 
   // Fetch Mock Interview sessions
@@ -187,10 +261,8 @@ export function InterviewHistoryTab() {
     isRefetching: feedbacksRefetching,
     refetch: refetchFeedbacks,
   } = useMentorFeedbacksByUser(userId ?? 0);
-
   const { mutateAsync: makeSessionPayment } = useMakeSessionPayment();
   const { refreshWalletBalance } = useWalletBalanceReconciliation();
-
   const isLoading = aiLoading || mockLoading;
   const isRefetching = aiRefetching || mockRefetching || feedbacksRefetching;
 
@@ -199,7 +271,13 @@ export function InterviewHistoryTab() {
     () =>
       new Set(
         feedbacks
-          .map((f: { session?: { id?: number } }) => f.session?.id)
+          .map(
+            (f: {
+              session?: {
+                id?: number;
+              };
+            }) => f.session?.id
+          )
           .filter((id): id is number => typeof id === "number")
       ),
     [feedbacks]
@@ -219,7 +297,6 @@ export function InterviewHistoryTab() {
       jobRequirement: s.jobRequirement,
     }));
   }, [aiSessions]);
-
   const mockHistoryItems = useMemo<HistoryItem[]>(() => {
     return mockSessions.map((s) => ({
       id: s.id as number,
@@ -237,7 +314,6 @@ export function InterviewHistoryTab() {
   // Combine and filter
   const filteredHistory = useMemo(() => {
     let items: HistoryItem[] = [];
-
     if (interviewType === "all" || interviewType === "ai") {
       let filtered = [...aiHistoryItems];
       if (aiStatusFilter !== "all") {
@@ -245,7 +321,6 @@ export function InterviewHistoryTab() {
       }
       items = [...items, ...filtered];
     }
-
     if (interviewType === "all" || interviewType === "mock") {
       let filtered = [...mockHistoryItems];
       if (mockStatusFilter !== "all") {
@@ -253,7 +328,6 @@ export function InterviewHistoryTab() {
       }
       items = [...items, ...filtered];
     }
-
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       items = items.filter((item) => {
@@ -267,13 +341,11 @@ export function InterviewHistoryTab() {
         }
       });
     }
-
     items.sort((a, b) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA;
     });
-
     return items;
   }, [
     interviewType,
@@ -283,12 +355,14 @@ export function InterviewHistoryTab() {
     aiHistoryItems,
     mockHistoryItems,
   ]);
-
   const [pageSize] = useHybridPageSize({
     key: "src_pages_user_account_interviewhistorytab_tsx_pagesize",
     defaultPageSize: 5,
   });
-  const pagination = usePagination({ totalCount: filteredHistory.length, pageSize });
+  const pagination = usePagination({
+    totalCount: filteredHistory.length,
+    pageSize,
+  });
   const pageData = useMemo(
     () => filteredHistory.slice(pagination.startIndex, pagination.endIndex + 1),
     [filteredHistory, pagination.startIndex, pagination.endIndex]
@@ -302,15 +376,15 @@ export function InterviewHistoryTab() {
       try {
         await refreshWalletBalance(Number(user.id));
       } catch {
-        toast.info("Không thể đồng bộ số dư ví. Bạn vẫn có thể chọn PayOS để thanh toán.");
+        toast.info(t("common.unableToSyncWalletBalanceYouCanS"));
       } finally {
         setIsPreparingPaymentDialog(false);
       }
       setTargetSessionForPayment(session);
     },
-    [refreshWalletBalance, user?.id]
-  );
 
+    [refreshWalletBalance, user?.id, t]
+  );
   const handlePaySessionWithPayOS = useCallback(
     async (session: Session) => {
       if (!session.id || payosPaymentInFlightRef.current) return;
@@ -328,13 +402,12 @@ export function InterviewHistoryTab() {
     },
     [makeSessionPayment]
   );
-
   const handlePaySessionWithWallet = useCallback(
     async (session: Session) => {
       if (!session.id || !user?.id) return;
       const paymentAmount = session.totalPrice ?? 0;
       if (paymentAmount <= 0) {
-        toast.error("Phiên phỏng vấn chưa có tổng tiền hợp lệ.");
+        toast.error(t("userAccount.theInterviewSessionDoesNot"));
         return;
       }
       if (walletPaymentInFlightRef.current) return;
@@ -343,7 +416,7 @@ export function InterviewHistoryTab() {
       try {
         const walletRefresh = await refreshWalletBalance(Number(user.id));
         if ((walletRefresh.walletBalance as number) < paymentAmount) {
-          toast.error("Số dư ví không đủ.");
+          toast.error(t("userAccount.walletBalanceIsNotEnough"));
           return;
         }
         const result = await transactionManager.transferOut(
@@ -352,7 +425,7 @@ export function InterviewHistoryTab() {
           "MENTOR_INTERVIEW"
         );
         if (!result.success || !result.data) {
-          toast.error(result.error || "Không thể thanh toán bằng ví.");
+          toast.error(result.error || t("userAccount.cannotPayWithWallet"));
           return;
         }
         if (result.data.redirectUrl) {
@@ -371,24 +444,24 @@ export function InterviewHistoryTab() {
             3
           );
           if (syncResult.success) {
-            toast.success("Thanh toán bằng ví thành công.");
+            toast.success(t("common.paymentByWalletSuccessful"));
             void refetchMockSessions();
           } else {
-            toast.info("Đã trừ ví. Hệ thống đang đồng bộ trạng thái.");
+            toast.info(t("userAccount.walletDeductedTheSystemIs"));
           }
           navigate(`/user/mock-interview/history/${session.id}?payment=success`);
         }
       } catch {
-        toast.error("Không thể thanh toán bằng ví lúc này.");
+        toast.error(t("common.paymentByWalletIsNotPossibleAtThi"));
       } finally {
         walletPaymentInFlightRef.current = false;
         setPayingSessionId(null);
         setTargetSessionForPayment(null);
       }
     },
-    [refreshWalletBalance, user?.id, refetchMockSessions, navigate]
-  );
 
+    [refreshWalletBalance, user?.id, refetchMockSessions, navigate, t]
+  );
   const handleConfirmPaymentMethod = useCallback(
     async (method: "payos" | "wallet") => {
       if (!targetSessionForPayment) return;
@@ -401,7 +474,6 @@ export function InterviewHistoryTab() {
     },
     [targetSessionForPayment, handlePaySessionWithWallet, handlePaySessionWithPayOS]
   );
-
   const handleViewDetails = useCallback(
     (item: HistoryItem) => {
       if (item.type === "ai") {
@@ -412,14 +484,12 @@ export function InterviewHistoryTab() {
     },
     [navigate]
   );
-
   const handleWriteFeedback = useCallback(
     (item: HistoryItem) => {
       navigate(`/user/mock-interview/history/${item.id}/feedback`);
     },
     [navigate]
   );
-
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -427,7 +497,7 @@ export function InterviewHistoryTab() {
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-[#0047AB]" />
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            Lịch sử phỏng vấn
+            {t("common.interviewHistory")}
           </h2>
         </div>
         <ReloadButton
@@ -435,7 +505,7 @@ export function InterviewHistoryTab() {
             await Promise.all([refetchAISessions(), refetchMockSessions(), refetchFeedbacks()]);
           }}
           isLoading={isRefetching}
-          tooltip="Tải lại"
+          tooltip={t("common.reload")}
         />
       </div>
 
@@ -469,7 +539,7 @@ export function InterviewHistoryTab() {
               pagination.goToFirstPage();
             }}
             className="h-9 pl-8 text-sm"
-            placeholder="Tìm kiếm..."
+            placeholder={t("userAccount.search")}
           />
         </div>
         {interviewType === "ai" ? (
@@ -480,14 +550,14 @@ export function InterviewHistoryTab() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="h-9 w-[160px] text-sm">
-              <SelectValue placeholder="Trạng thái" />
+              <SelectValue placeholder={t("common.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
-              <SelectItem value="IN_PROGRESS">Đang diễn ra</SelectItem>
-              <SelectItem value="CREATED">Đã tạo</SelectItem>
-              <SelectItem value="CANCELLED">Đã hủy</SelectItem>
+              <SelectItem value="all">{t("general.all")}</SelectItem>
+              <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+              <SelectItem value="IN_PROGRESS">{t("common.ongoing")}</SelectItem>
+              <SelectItem value="CREATED">{t("common.created")}</SelectItem>
+              <SelectItem value="CANCELLED">{t("common.canceled")}</SelectItem>
             </SelectContent>
           </Select>
         ) : interviewType === "mock" ? (
@@ -498,15 +568,15 @@ export function InterviewHistoryTab() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="h-9 w-[160px] text-sm">
-              <SelectValue placeholder="Trạng thái" />
+              <SelectValue placeholder={t("common.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="COMPLETED">Hoàn thành</SelectItem>
-              <SelectItem value="SCHEDULED">Sắp diễn ra</SelectItem>
-              <SelectItem value="PAID">Đã thanh toán</SelectItem>
-              <SelectItem value="DRAFT">Chờ duyệt</SelectItem>
-              <SelectItem value="CANCELED">Đã hủy</SelectItem>
+              <SelectItem value="all">{t("general.all")}</SelectItem>
+              <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+              <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
+              <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+              <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+              <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
             </SelectContent>
           </Select>
         ) : null}
@@ -518,23 +588,23 @@ export function InterviewHistoryTab() {
       ) : aiError ? (
         <Card className="flex h-32 flex-col items-center justify-center gap-3">
           <AlertTriangle className="h-6 w-6 text-red-500" />
-          <p className="text-destructive text-sm">Không thể tải lịch sử</p>
+          <p className="text-destructive text-sm">{t("userAccount.unableToLoadHistory")}</p>
           <Button size="sm" variant="outline" onClick={() => void refetchAISessions()}>
-            Thử lại
+            {t("common.retry")}
           </Button>
         </Card>
       ) : filteredHistory.length === 0 ? (
         <EmptyState
           icon={History}
-          title="Chưa có lịch sử phỏng vấn"
-          description="Bạn chưa tham gia buổi phỏng vấn nào."
+          title={t("common.noInterviewHistoryYet")}
+          description={t("userAccount.youHaveNotParticipatedIn")}
           action={
             <Button
               size="sm"
               onClick={() => navigate("/user/ai-interview/setup")}
               className="gap-1.5 bg-[#0047AB] hover:bg-[#003d91]">
               <Bot className="h-3.5 w-3.5" />
-              Phỏng vấn AI
+              {t("common.aiInterview")}
             </Button>
           }
         />
@@ -549,7 +619,6 @@ export function InterviewHistoryTab() {
               const isCompleted = item.status === "COMPLETED";
               const isScheduled = item.status === "SCHEDULED";
               const isPaid = item.status === "PAID";
-
               return (
                 <Card key={`${item.type}-${item.id}`} className="transition-all hover:shadow-sm">
                   <CardContent className="flex items-center gap-3 p-3">
@@ -573,8 +642,11 @@ export function InterviewHistoryTab() {
                       <div className="flex items-center gap-2">
                         <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                           {isAi
-                            ? (AI_MODE_LABELS[item.mode ?? ""] ?? "Phỏng vấn AI")
-                            : item.roomName || `Phiên #${item.id}`}
+                            ? (AI_MODE_LABELS[item.mode ?? ""] ?? t("common.aiInterview"))
+                            : item.roomName ||
+                              t("common.sessionVar0", {
+                                var_0: item.id,
+                              })}
                         </p>
                         {isAi ? (
                           <Badge
@@ -602,7 +674,7 @@ export function InterviewHistoryTab() {
                             {item.sessionConfig?.duration_minutes && (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {item.sessionConfig.duration_minutes} phút
+                                {item.sessionConfig.duration_minutes} {t("common.minute")}
                               </span>
                             )}
                           </>
@@ -635,7 +707,7 @@ export function InterviewHistoryTab() {
                           variant="outline"
                           onClick={() => handleWriteFeedback(item)}>
                           <Star className="mr-1 h-3 w-3" />
-                          Phản hồi
+                          {t("common.feedback1")}
                         </Button>
                       )}
                       {!isAi && isScheduled && (
@@ -649,16 +721,16 @@ export function InterviewHistoryTab() {
                               | undefined;
                             if (session) void handleOpenPaymentMethodDialog(session);
                           }}>
-                          {isPaying ? "..." : "Thanh toán"}
+                          {isPaying ? "..." : t("common.pay")}
                         </Button>
                       )}
                       {!isAi && isPaid && (
                         <Button size="sm" variant="secondary" disabled>
-                          Đã TT
+                          {t("userAccount.alreadyTt")}
                         </Button>
                       )}
                       <Button size="sm" variant="ghost" onClick={() => handleViewDetails(item)}>
-                        Chi tiết
+                        {t("common.detail")}
                       </Button>
                     </div>
                   </CardContent>
@@ -675,7 +747,7 @@ export function InterviewHistoryTab() {
                 size="sm"
                 onClick={() => pagination.prevPage()}
                 disabled={pagination.currentPage <= 1}>
-                Trước
+                {t("common.before")}
               </Button>
               <span className="px-2 text-xs text-slate-500">
                 {pagination.currentPage} / {pagination.totalPages}
@@ -698,8 +770,8 @@ export function InterviewHistoryTab() {
         onOpenChange={(open) => {
           if (!open) setTargetSessionForPayment(null);
         }}
-        title="Chọn phương thức thanh toán"
-        description="Bạn có thể thanh toán qua PayOS hoặc sử dụng số dư ví."
+        title={t("common.choosePaymentMethod")}
+        description={t("userAccount.youCanPayViaPayos")}
         amount={
           typeof targetSessionForPayment?.totalPrice === "number" &&
           targetSessionForPayment.totalPrice > 0

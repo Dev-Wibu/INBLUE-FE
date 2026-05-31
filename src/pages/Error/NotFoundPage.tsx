@@ -1,9 +1,11 @@
 import { ArrowLeft, Home, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 
 export function NotFoundPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -23,29 +25,28 @@ export function NotFoundPage() {
 
         {/* Title & Description */}
         <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
-          Trang không tìm thấy
+          {t("error_notfoundpage.tsx.trang_khong_tim_thay")}
         </h1>
         <p className="mb-8 max-w-md text-gray-600 dark:text-slate-400">
-          Xin lỗi, trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển. Vui lòng kiểm tra
-          lại đường dẫn hoặc quay về trang chủ.
+          {t("error_notfoundpage.tsx.xin_loi_trang_ban_ang_tim_kiem_khong_ton")}
         </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button variant="outline" onClick={() => navigate(-1)} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Quay lại
+            {t("general.back")}
           </Button>
           <Button onClick={() => navigate("/")} className="gap-2 bg-blue-600 hover:bg-blue-700">
             <Home className="h-4 w-4" />
-            Về trang chủ
+            {t("error_unauthorizedpage.tsx.ve_trang_chu")}
           </Button>
         </div>
       </div>
 
       {/* Footer */}
       <div className="mt-16 text-sm text-gray-500 dark:text-slate-500">
-        Mã lỗi: 404 - Không tìm thấy trang
+        {t("error_notfoundpage.tsx.ma_loi_404_khong_tim_thay_trang")}
       </div>
     </div>
   );

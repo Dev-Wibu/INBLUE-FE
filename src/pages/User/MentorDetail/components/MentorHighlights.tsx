@@ -10,7 +10,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 interface MentorHighlightsProps {
   highlights: string[];
   slaEstimate: string;
@@ -20,7 +20,6 @@ interface MentorHighlightsProps {
   verificationTags: string[];
   expertiseTags: string[];
 }
-
 export function MentorHighlights({
   highlights,
   slaEstimate,
@@ -30,10 +29,13 @@ export function MentorHighlights({
   verificationTags,
   expertiseTags,
 }: MentorHighlightsProps) {
+  const { t } = useTranslation();
   return (
     <Card className="space-y-4 border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Điểm mạnh nổi bật</h2>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          {t("userMentordetail.outstandingStrengths")}
+        </h2>
         <Badge className="rounded-full border border-emerald-300/40 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-400/10 dark:text-emerald-200">
           <GaugeCircle className="mr-1 h-3.5 w-3.5" />
           {slaEstimate}
@@ -44,7 +46,7 @@ export function MentorHighlights({
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
           <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
             <Wallet className="mr-1.5 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-300" />
-            Giá tư vấn
+            {t("userMentordetail.consultingPrice")}
           </p>
           <p className="mt-2 text-sm font-bold text-slate-900 dark:text-white">{priceText}</p>
         </div>
@@ -52,7 +54,7 @@ export function MentorHighlights({
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
           <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
             <Star className="mr-1.5 h-3.5 w-3.5 text-amber-500 dark:text-amber-300" />
-            Đánh giá
+            {t("common.evaluate")}
           </p>
           <p className="mt-2 text-sm font-bold text-slate-900 dark:text-white">{ratingText}/5.0</p>
         </div>
@@ -60,10 +62,10 @@ export function MentorHighlights({
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
           <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
             <Users className="mr-1.5 h-3.5 w-3.5 text-blue-600 dark:text-cyan-300" />
-            Phiên đã đồng hành
+            {t("userMentordetail.sessionHasAccompanied")}
           </p>
           <p className="mt-2 text-sm font-bold text-slate-900 dark:text-white">
-            {totalSessions} phiên
+            {totalSessions} {t("common.session1")}
           </p>
         </div>
       </div>
@@ -83,7 +85,7 @@ export function MentorHighlights({
         <div className="space-y-2">
           <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
             <Tag className="mr-1.5 h-3.5 w-3.5 text-indigo-500 dark:text-indigo-300" />
-            Nhóm chuyên môn
+            {t("userMentordetail.professionalGroup")}
           </p>
           <div className="flex flex-wrap gap-2">
             {expertiseTags.map((tag) => (
@@ -100,7 +102,7 @@ export function MentorHighlights({
       <div className="space-y-2">
         <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
           <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-cyan-600 dark:text-cyan-200" />
-          Trạng thái xác minh
+          {t("userMentordetail.verificationStatus")}
         </p>
         <div className="flex flex-wrap gap-2">
           {verificationTags.map((tag) => (
@@ -116,7 +118,7 @@ export function MentorHighlights({
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
         <p className="flex items-center text-xs font-medium text-slate-600 dark:text-slate-300">
           <Sparkles className="mr-1.5 h-3.5 w-3.5 text-violet-500 dark:text-violet-300" />
-          Thông tin SLA là ước lượng dựa trên dữ liệu hoạt động gần nhất.
+          {t("userMentordetail.slaInformationIsAnEstimate")}
         </p>
       </div>
     </Card>

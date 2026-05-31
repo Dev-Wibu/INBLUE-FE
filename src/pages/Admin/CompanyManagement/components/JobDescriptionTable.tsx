@@ -1,5 +1,3 @@
-import { Edit, Eye, Power, Search } from "lucide-react";
-
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +10,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { getJobDescriptionLevelBadge, getJobDescriptionStatusBadge } from "@/lib/status-utils";
 import { cn } from "@/lib/utils";
-
+import { Edit, Eye, Power, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
-
+const t = i18n.t.bind(i18n);
 type JobDescriptionSortKey =
   | "idSortValue"
   | "titleSortValue"
@@ -25,12 +25,10 @@ type JobDescriptionSortKey =
   | "salaryMinSortValue"
   | "deadlineSortValue"
   | "updatedAtSortValue";
-
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
-
 interface JobDescriptionTableProps {
   jobDescriptions: JobDescription[];
   onEdit: (job: JobDescription) => void;
@@ -38,21 +36,27 @@ interface JobDescriptionTableProps {
   onView?: (job: JobDescription) => void;
   getSortProps?: (key: JobDescriptionSortKey) => SortProps;
 }
-
 const formatSalaryRange = (
   salaryMin?: number | null,
   salaryMax?: number | null,
   currency?: string | null
 ): string => {
-  if (salaryMin == null && salaryMax == null) return "Thỏa thuận";
+  if (salaryMin == null && salaryMax == null)
+    return t("enterprise_jobdescriptiondetailpage.tsx.thoa_thuan");
   const currencyNote = currency && currency.toUpperCase() !== "VND" ? ` (${currency})` : "";
   if (salaryMin != null && salaryMax != null) {
     return `${formatCurrency(salaryMin)} - ${formatCurrency(salaryMax)}${currencyNote}`;
   }
-  if (salaryMin != null) return `Từ ${formatCurrency(salaryMin)}${currencyNote}`;
-  return `Đến ${formatCurrency(salaryMax ?? 0)}${currencyNote}`;
+  if (salaryMin != null)
+    return t("general.from2", {
+      var_0: formatCurrency(salaryMin),
+      var_1: currencyNote,
+    });
+  return t("general.to2", {
+    var_0: formatCurrency(salaryMax ?? 0),
+    var_1: currencyNote,
+  });
 };
-
 export function JobDescriptionTable({
   jobDescriptions,
   onEdit,
@@ -60,15 +64,15 @@ export function JobDescriptionTable({
   onView,
   getSortProps,
 }: JobDescriptionTableProps) {
+  const { t } = useTranslation();
   if (jobDescriptions.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
         <Search className="text-muted-foreground/40 h-12 w-12" />
-        <p className="text-muted-foreground text-lg">Chưa có JD nào</p>
+        <p className="text-muted-foreground text-lg">{t("adminCompanymanagement.noJdYet")}</p>
       </div>
     );
   }
-
   return (
     <Table className="min-w-[980px] table-fixed">
       <TableHeader>
@@ -78,47 +82,51 @@ export function JobDescriptionTable({
           </TableHead>
           <TableHead>
             {getSortProps ? (
-              <SortButton {...getSortProps("titleSortValue")}>Tiêu đề</SortButton>
+              <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
             ) : (
-              "Tiêu đề"
+              t("common.title")
             )}
           </TableHead>
           <TableHead className="w-24">
             {getSortProps ? (
-              <SortButton {...getSortProps("levelSortValue")}>Cấp độ</SortButton>
+              <SortButton {...getSortProps("levelSortValue")}>{t("common.level")}</SortButton>
             ) : (
-              "Cấp độ"
+              t("common.level")
             )}
           </TableHead>
           <TableHead className="w-28">
             {getSortProps ? (
-              <SortButton {...getSortProps("statusSortValue")}>Trạng thái</SortButton>
+              <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
             ) : (
-              "Trạng thái"
+              t("common.status")
             )}
           </TableHead>
           <TableHead className="w-52">
             {getSortProps ? (
-              <SortButton {...getSortProps("salaryMinSortValue")}>Lương</SortButton>
+              <SortButton {...getSortProps("salaryMinSortValue")}>
+                {t("adminCompanymanagement.wage")}
+              </SortButton>
             ) : (
-              "Lương"
+              t("adminCompanymanagement.wage")
             )}
           </TableHead>
           <TableHead className="w-28">
             {getSortProps ? (
-              <SortButton {...getSortProps("deadlineSortValue")}>Hạn nộp</SortButton>
+              <SortButton {...getSortProps("deadlineSortValue")}>
+                {t("enterprise_jobdescriptiondetailpage.tsx.han_nop")}
+              </SortButton>
             ) : (
-              "Hạn nộp"
+              t("enterprise_jobdescriptiondetailpage.tsx.han_nop")
             )}
           </TableHead>
           <TableHead className="w-28">
             {getSortProps ? (
-              <SortButton {...getSortProps("updatedAtSortValue")}>Cập nhật</SortButton>
+              <SortButton {...getSortProps("updatedAtSortValue")}>{t("general.update")}</SortButton>
             ) : (
-              "Cập nhật"
+              t("general.update")
             )}
           </TableHead>
-          <TableHead className="w-28 text-right">Thao tác</TableHead>
+          <TableHead className="w-28 text-right">{t("common.operation")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -154,7 +162,7 @@ export function JobDescriptionTable({
                     size="sm"
                     onClick={() => onView(job)}
                     className="h-8 w-8 p-0 hover:bg-sky-50 dark:hover:bg-sky-950"
-                    title="Xem chi tiết">
+                    title={t("common.seeDetails")}>
                     <Eye className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                   </Button>
                 )}
@@ -163,7 +171,7 @@ export function JobDescriptionTable({
                   size="sm"
                   onClick={() => onEdit(job)}
                   className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-950"
-                  title="Chỉnh sửa">
+                  title={t("general.edit")}>
                   <Edit className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </Button>
                 <Button
@@ -171,7 +179,7 @@ export function JobDescriptionTable({
                   size="sm"
                   onClick={() => onDelete(job)}
                   className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-950"
-                  title="Đóng JD">
+                  title={t("adminCompanymanagement.closeJd")}>
                   <Power className="h-4 w-4 text-red-600 dark:text-red-400" />
                 </Button>
               </div>

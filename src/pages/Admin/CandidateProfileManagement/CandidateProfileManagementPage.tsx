@@ -1,11 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * Candidate Profile Management Page (Admin)
  * For managing, organizing, and reviewing submitted applications
  */
-
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Eye, Search } from "lucide-react";
-import { useMemo, useState } from "react";
 
 import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
@@ -29,34 +26,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
 import { useCandidateProfiles } from "@/services/candidate-profile.manager";
-
+import { Eye, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 import { CandidateProfileModal } from "../UserManagement/components/CandidateProfileModal";
-
 type SortableCandidateProfile = CandidateProfile & {
   nameSortValue: string;
   emailSortValue: string;
   createdAtSortValue: number;
 };
-
 export function CandidateProfileManagementPage() {
+  const { t } = useTranslation();
   const { data: profilesData, isLoading, isRefetching, refetch } = useCandidateProfiles();
   const profiles = useMemo(() => {
     return ((profilesData as unknown as CandidateProfile[]) ?? []).sort(
       (a, b) => (a.id ?? 0) - (b.id ?? 0)
     );
   }, [profilesData]);
-
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
-
   const [selectedProfile, setSelectedProfile] = useState<CandidateProfile | null>(null);
-
   const roleOptions = useMemo(
     () =>
       Array.from(
@@ -68,7 +62,6 @@ export function CandidateProfileManagementPage() {
       ),
     [profiles]
   );
-
   const levelOptions = useMemo(
     () =>
       Array.from(
@@ -80,7 +73,6 @@ export function CandidateProfileManagementPage() {
       ),
     [profiles]
   );
-
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
       const q = search.toLowerCase();
@@ -90,23 +82,18 @@ export function CandidateProfileManagementPage() {
         p.user?.email?.toLowerCase().includes(q) ||
         p.targetRole?.toLowerCase().includes(q) ||
         p.targetLevel?.toLowerCase().includes(q);
-
       if (!matchesSearch) {
         return false;
       }
-
       if (roleFilter !== "all" && p.targetRole !== roleFilter) {
         return false;
       }
-
       if (levelFilter !== "all" && p.targetLevel !== levelFilter) {
         return false;
       }
-
       return true;
     });
   }, [levelFilter, profiles, roleFilter, search]);
-
   const sortableProfiles = useMemo<SortableCandidateProfile[]>(
     () =>
       filteredProfiles.map((profile) => ({
@@ -117,7 +104,6 @@ export function CandidateProfileManagementPage() {
       })),
     [filteredProfiles]
   );
-
   const { sortedData, getSortProps } = useSortable(sortableProfiles);
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_admin_candidateprofilemanagement_candidateprofilemanagementpage_tsx_pagesize",
@@ -127,20 +113,18 @@ export function CandidateProfileManagementPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
     [pagination.endIndex, pagination.startIndex, sortedData]
   );
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Quản lý hồ sơ ứng viên
+          {t("adminCandidateprofilemanagement.manageCandidateProfiles")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Xem và quản lý tất cả hồ sơ ứng viên trong hệ thống.
+          {t("adminCandidateprofilemanagement.viewAndManageAllCandidate")}
         </p>
       </div>
 
@@ -150,7 +134,7 @@ export function CandidateProfileManagementPage() {
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             className="pl-10"
-            placeholder="Tìm kiếm theo tên, email, vai trò..."
+            placeholder={t("adminCandidateprofilemanagement.searchByNameEmailRole")}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -166,10 +150,10 @@ export function CandidateProfileManagementPage() {
             pagination.goToFirstPage();
           }}>
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Lọc theo vai trò" />
+            <SelectValue placeholder={t("adminCandidateprofilemanagement.filterByRole")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả vai trò</SelectItem>
+            <SelectItem value="all">{t("adminCandidateprofilemanagement.allRoles")}</SelectItem>
             {roleOptions.map((role) => (
               <SelectItem key={role} value={role}>
                 {role}
@@ -185,10 +169,10 @@ export function CandidateProfileManagementPage() {
             pagination.goToFirstPage();
           }}>
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Lọc theo cấp độ" />
+            <SelectValue placeholder={t("common.filterByLevel")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả cấp độ</SelectItem>
+            <SelectItem value="all">{t("common.allLevels")}</SelectItem>
             {levelOptions.map((level) => (
               <SelectItem key={level} value={level}>
                 {level}
@@ -207,7 +191,7 @@ export function CandidateProfileManagementPage() {
                 setLevelFilter("all");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           )}
 
@@ -216,7 +200,7 @@ export function CandidateProfileManagementPage() {
               await refetch();
             }}
             isLoading={isRefetching}
-            tooltip="Tải lại danh sách hồ sơ"
+            tooltip={t("adminCandidateprofilemanagement.reloadProfileList")}
             showLabel
             hideTooltip
           />
@@ -227,15 +211,21 @@ export function CandidateProfileManagementPage() {
       <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="border-b px-6 py-4 dark:border-slate-800">
           <h2 className="font-['Inter'] text-lg font-semibold text-zinc-800 dark:text-white">
-            Danh sách hồ sơ ({sortedData.length})
+            {t("adminCandidateprofilemanagement.listOfRecords")}
+            {sortedData.length})
           </h2>
         </div>
 
         {isLoading ? (
-          <SpinnerBlock size="lg" label="Đang tải danh sách hồ sơ ứng viên..." />
+          <SpinnerBlock
+            size="lg"
+            label={t("adminCandidateprofilemanagement.loadingListOfCandidateProfiles")}
+          />
         ) : sortedData.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-gray-500 dark:text-slate-400">Không tìm thấy hồ sơ nào.</p>
+            <p className="text-gray-500 dark:text-slate-400">
+              {t("adminCandidateprofilemanagement.noRecordsFound")}
+            </p>
           </div>
         ) : (
           <>
@@ -243,21 +233,23 @@ export function CandidateProfileManagementPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>
-                    <SortButton {...getSortProps("nameSortValue")}>Tên</SortButton>
+                    <SortButton {...getSortProps("nameSortValue")}>{t("common.name")}</SortButton>
                   </TableHead>
                   <TableHead>
                     <SortButton {...getSortProps("emailSortValue")}>Email</SortButton>
                   </TableHead>
                   <TableHead>
-                    <SortButton {...getSortProps("targetRole")}>Vai trò</SortButton>
+                    <SortButton {...getSortProps("targetRole")}>{t("common.role")}</SortButton>
                   </TableHead>
                   <TableHead>
-                    <SortButton {...getSortProps("targetLevel")}>Cấp độ</SortButton>
+                    <SortButton {...getSortProps("targetLevel")}>{t("common.level")}</SortButton>
                   </TableHead>
                   <TableHead>
-                    <SortButton {...getSortProps("createdAtSortValue")}>Ngày tạo</SortButton>
+                    <SortButton {...getSortProps("createdAtSortValue")}>
+                      {t("common.creationDate")}
+                    </SortButton>
                   </TableHead>
-                  <TableHead className="text-right">Hành động</TableHead>
+                  <TableHead className="text-right">{t("common.act")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

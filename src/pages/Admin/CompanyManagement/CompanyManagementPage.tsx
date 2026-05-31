@@ -1,25 +1,22 @@
+import { extractDataArray } from "@/lib/utils";
+import { companyManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-
-import { extractDataArray } from "@/lib/utils";
-import { companyManager } from "@/services";
-
 import { CompanyDetailView } from "./CompanyDetailView";
 import { CompanyFormDialog } from "./components";
 import { CompanyListSidebar } from "./components/CompanyListSidebar";
 import type { Company, CompanyFormData } from "./types";
-
 export function CompanyManagementPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { companyId } = useParams();
   const detailCompanyId = companyId ? Number(companyId) : null;
-
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [formData, setFormData] = useState<CompanyFormData>({});
-
   const { data: companies = [], refetch: refetchCompanies } = useQuery({
     queryKey: ["admin", "companies"],
     queryFn: async () => {
@@ -27,16 +24,16 @@ export function CompanyManagementPage() {
       if (response.success) {
         return extractDataArray<Company>(response);
       }
-      toast.error(response.error || "Không thể tải danh sách công ty");
+      toast.error(response.error || t("common.unableToLoadCompanyList"));
       return [];
     },
   });
-
   const handleCreate = () => {
-    setFormData({ status: "ACTIVE" });
+    setFormData({
+      status: "ACTIVE",
+    });
     setIsCreateDialogOpen(true);
   };
-
   const handleSubmitCreate = async () => {
     try {
       const response = await companyManager.create({
@@ -49,23 +46,21 @@ export function CompanyManagementPage() {
         banner: formData.banner,
       });
       if (response.success) {
-        toast.success("Đã tạo công ty thành công");
+        toast.success(t("adminCompanymanagement.successfullyCreatedCompany"));
         setIsCreateDialogOpen(false);
         void refetchCompanies();
         if (response.data?.id) {
           navigate(`/admin/companies/${response.data.id}?tab=companies`);
         }
       } else {
-        toast.error(response.error || "Không thể tạo công ty");
+        toast.error(response.error || t("common.cannotCreateCompany"));
       }
     } catch (error) {
       console.error("Error creating company:", error);
-      toast.error("Không thể tạo công ty");
+      toast.error(t("common.cannotCreateCompany"));
     }
   };
-
   const hasDetail = !!detailCompanyId;
-
   return (
     <div className="border-border/50 bg-background/50 flex h-[calc(100vh-6rem)] min-h-0 w-full overflow-hidden rounded-2xl border shadow-sm">
       {/*
@@ -82,9 +77,7 @@ export function CompanyManagementPage() {
       />
 
       <main
-        className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${
-          hasDetail ? "flex" : "hidden md:flex"
-        }`}>
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${hasDetail ? "flex" : "hidden md:flex"}`}>
         {detailCompanyId ? (
           <CompanyDetailView
             companyId={detailCompanyId}
@@ -95,10 +88,11 @@ export function CompanyManagementPage() {
             <div className="bg-primary/10 mb-4 flex h-20 w-20 items-center justify-center rounded-full">
               <Building2 className="text-primary h-10 w-10" />
             </div>
-            <h2 className="text-foreground mb-2 text-2xl font-bold">Quản lý Công ty & JD</h2>
+            <h2 className="text-foreground mb-2 text-2xl font-bold">
+              {t("adminCompanymanagement.companyManagementJd")}
+            </h2>
             <p className="text-muted-foreground max-w-md">
-              Vui lòng chọn một đối tác từ danh sách bên trái để xem chi tiết thông tin và các mô tả
-              công việc (JD) đang tuyển.
+              {t("adminCompanymanagement.pleaseSelectAPartnerFrom")}
             </p>
           </div>
         )}
@@ -110,9 +104,9 @@ export function CompanyManagementPage() {
         formData={formData}
         onFormChange={setFormData}
         onSubmit={handleSubmitCreate}
-        title="Thêm đối tác mới"
-        description="Điền thông tin cơ bản để tạo đối tác mới"
-        submitLabel="Tạo đối tác"
+        title={t("adminCompanymanagement.addNewPartners")}
+        description={t("adminCompanymanagement.fillInBasicInformationTo")}
+        submitLabel={t("adminCompanymanagement.createPartners")}
       />
     </div>
   );

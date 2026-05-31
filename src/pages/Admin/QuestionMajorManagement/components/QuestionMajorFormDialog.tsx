@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
 
 import type { MajorFormData } from "../types";
 
@@ -34,6 +35,7 @@ export function QuestionMajorFormDialog({
   description,
   submitLabel,
 }: QuestionMajorFormDialogProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -44,29 +46,32 @@ export function QuestionMajorFormDialog({
         <div className="grid gap-4 py-4">
           <div className="space-y-1.5">
             <Label htmlFor="majorName">
-              Tên Chuyên Ngành <span className="text-red-500">*</span>
+              {t("adminQuestionmajormanagement.nameOfSpecialization")}{" "}
+              <span className="text-red-500">*</span>
             </Label>
             <Input
               id="majorName"
               value={formData.majorName || ""}
               onChange={(e) => onFormChange({ ...formData, majorName: e.target.value })}
-              placeholder="VD: Công nghệ thông tin, Kinh tế, Marketing..."
+              placeholder={t(
+                "adminQuestionmajormanagement.forExampleInformationTechnologyEconomics"
+              )}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="description">Mô Tả</Label>
+            <Label htmlFor="description">{t("adminQuestionmajormanagement.describe")}</Label>
             <Textarea
               id="description"
               value={formData.description || ""}
               onChange={(e) => onFormChange({ ...formData, description: e.target.value })}
-              placeholder="Mô tả ngắn về chuyên ngành này..."
+              placeholder={t("adminQuestionmajormanagement.shortDescriptionOfThisMajor")}
               rows={3}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t("general.cancel")}
           </Button>
           <Button onClick={onSubmit}>{submitLabel}</Button>
         </DialogFooter>

@@ -1,9 +1,3 @@
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { CheckCircle, Eye, MessageSquare, Search, Trash2, XCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { formatDate, toTimestamp } from "@/lib/formatting";
-
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Badge } from "@/components/ui/badge";
@@ -34,13 +28,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { Post, PostCommentResponse } from "@/interfaces";
+import { formatDate, toTimestamp } from "@/lib/formatting";
 import { getPostStatusBadge } from "@/lib/status-utils";
 import { postManager } from "@/services/post.manager";
+import { CheckCircle, Eye, MessageSquare, Search, Trash2, XCircle } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 type ModerationFilter = "all" | "DRAFT" | "PUBLISHED" | "ARCHIVED";
 type SortablePost = Post & {
   idSortValue: number;
@@ -49,8 +46,8 @@ type SortablePost = Post & {
   createdAtSortValue: number;
   statusSortValue: string;
 };
-
 export function PostModerationPage() {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +61,6 @@ export function PostModerationPage() {
   // Delete comment confirmation
   const [commentToDelete, setCommentToDelete] = useState<PostCommentResponse | null>(null);
   const [isDeleteCommentOpen, setIsDeleteCommentOpen] = useState(false);
-
   const loadPosts = useCallback(async () => {
     setLoading(true);
     try {
@@ -72,23 +68,25 @@ export function PostModerationPage() {
       if (response.success && response.data) {
         const postData = Array.isArray(response.data)
           ? response.data
-          : ((response.data as { data?: Post[] }).data ?? []);
+          : ((
+              response.data as {
+                data?: Post[];
+              }
+            ).data ?? []);
         setPosts(postData as Post[]);
       } else {
-        toast.error(response.error || "Không thể tải danh sách bài viết");
+        toast.error(response.error || t("common.unableToLoadArticleList"));
       }
     } catch (error) {
       console.error("Error loading posts:", error);
-      toast.error("Không thể tải danh sách bài viết");
+      toast.error(t("common.unableToLoadArticleList"));
     } finally {
       setLoading(false);
     }
-  }, []);
-
+  }, [t]);
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
-
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
       if (statusFilter !== "all" && post.status !== statusFilter) return false;
@@ -99,7 +97,6 @@ export function PostModerationPage() {
       return true;
     });
   }, [posts, statusFilter, searchQuery]);
-
   const sortablePosts = useMemo<SortablePost[]>(() => {
     return filteredPosts.map((post) => ({
       ...post,
@@ -110,7 +107,6 @@ export function PostModerationPage() {
       statusSortValue: post.status || "",
     }));
   }, [filteredPosts]);
-
   const { sortedData, getSortProps } = useSortable(sortablePosts, {
     defaultSort: {
       key: "createdAtSortValue",
@@ -130,12 +126,10 @@ export function PostModerationPage() {
     totalCount: sortedData.length,
     pageSize,
   });
-
   const pageData = useMemo(
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
     [pagination.endIndex, pagination.startIndex, sortedData]
   );
-
   const statusCounts = useMemo(() => {
     return {
       DRAFT: posts.filter((p) => p.status === "DRAFT").length,
@@ -143,7 +137,6 @@ export function PostModerationPage() {
       ARCHIVED: posts.filter((p) => p.status === "ARCHIVED").length,
     };
   }, [posts]);
-
   const handleViewDetail = async (post: Post) => {
     setSelectedPost(post);
     setIsDetailOpen(true);
@@ -154,62 +147,57 @@ export function PostModerationPage() {
       }
     }
   };
-
   const handleApprove = async (post: Post) => {
     if (!post.postId) return;
     try {
       const response = await postManager.changeStatus(post.postId, "PUBLISHED");
       if (response.success) {
-        toast.success("Đã duyệt bài viết thành công");
+        toast.success(t("staffPostmoderation.theArticleHasBeenApproved"));
         loadPosts();
       } else {
-        toast.error(response.error || "Không thể duyệt bài viết");
+        toast.error(response.error || t("staffPostmoderation.cannotBrowsePosts"));
       }
     } catch (error) {
       console.error("Error approving post:", error);
-      toast.error("Không thể duyệt bài viết");
+      toast.error(t("staffPostmoderation.cannotBrowsePosts"));
     }
   };
-
   const handleReject = async (post: Post) => {
     if (!post.postId) return;
     try {
       const response = await postManager.changeStatus(post.postId, "ARCHIVED");
       if (response.success) {
-        toast.success("Đã từ chối bài viết");
+        toast.success(t("common.postRejected"));
         loadPosts();
       } else {
-        toast.error(response.error || "Không thể từ chối bài viết");
+        toast.error(response.error || t("staffPostmoderation.postsCannotBeRejected"));
       }
     } catch (error) {
       console.error("Error rejecting post:", error);
-      toast.error("Không thể từ chối bài viết");
+      toast.error(t("staffPostmoderation.postsCannotBeRejected"));
     }
   };
-
   const handleDeleteComment = (comment: PostCommentResponse) => {
     setCommentToDelete(comment);
     setIsDeleteCommentOpen(true);
   };
-
   const handleConfirmDeleteComment = async () => {
     if (!commentToDelete?.id) return;
     try {
       const response = await postManager.deleteComment(commentToDelete.id);
       if (response.success) {
-        toast.success("Đã xóa bình luận thành công");
+        toast.success(t("common.commentSuccessfullyDeleted"));
         setPostComments((prev) => prev.filter((c) => c.id !== commentToDelete.id));
         setIsDeleteCommentOpen(false);
         setCommentToDelete(null);
       } else {
-        toast.error(response.error || "Không thể xóa bình luận");
+        toast.error(response.error || t("common.commentsCannotBeDeleted"));
       }
     } catch (error) {
       console.error("Error deleting comment:", error);
-      toast.error("Không thể xóa bình luận");
+      toast.error(t("common.commentsCannotBeDeleted"));
     }
   };
-
   if (loading) {
     return (
       <div className="bg-white dark:bg-slate-950">
@@ -217,16 +205,15 @@ export function PostModerationPage() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          Kiểm Duyệt Bài Viết
+          {t("staffPostmoderation.articleModeration")}
         </h1>
         <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          Xem xét và phê duyệt bài viết trước khi xuất bản
+          {t("staffPostmoderation.reviewAndApproveArticlesBefore")}
         </p>
       </div>
 
@@ -234,7 +221,9 @@ export function PostModerationPage() {
       <div className="mb-6 grid grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Chờ duyệt</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              {t("common.waitingForApproval")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{statusCounts.DRAFT}</div>
@@ -242,7 +231,9 @@ export function PostModerationPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Đã duyệt</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              {t("common.approved")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{statusCounts.PUBLISHED}</div>
@@ -250,7 +241,9 @@ export function PostModerationPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Đã từ chối</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">
+              {t("staffPostmoderation.refused")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{statusCounts.ARCHIVED}</div>
@@ -266,7 +259,7 @@ export function PostModerationPage() {
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
               type="text"
-              placeholder="Tìm kiếm theo tiêu đề..."
+              placeholder={t("staffPostmoderation.searchByTitle")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -284,13 +277,13 @@ export function PostModerationPage() {
               pagination.goToFirstPage();
             }}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Lọc theo trạng thái" />
+              <SelectValue placeholder={t("common.filterByStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="DRAFT">Chờ duyệt</SelectItem>
-              <SelectItem value="PUBLISHED">Đã duyệt</SelectItem>
-              <SelectItem value="ARCHIVED">Đã từ chối</SelectItem>
-              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+              <SelectItem value="PUBLISHED">{t("common.approved")}</SelectItem>
+              <SelectItem value="ARCHIVED">{t("staffPostmoderation.refused")}</SelectItem>
+              <SelectItem value="all">{t("general.all")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -299,11 +292,11 @@ export function PostModerationPage() {
           <ReloadButton
             onReload={loadPosts}
             isLoading={loading}
-            tooltip="Tải lại danh sách bài viết"
+            tooltip={t("common.reloadArticleList")}
           />
           <div className="flex items-center gap-2 rounded-lg bg-yellow-100 px-4 py-2 dark:bg-yellow-900/30">
             <span className="text-sm font-medium text-yellow-800 dark:text-yellow-400">
-              {statusCounts.DRAFT} bài viết chờ duyệt
+              {statusCounts.DRAFT} {t("staffPostmoderation.postsAwaitingApproval")}
             </span>
           </div>
         </div>
@@ -315,19 +308,23 @@ export function PostModerationPage() {
           <TableHeader>
             <TableRow>
               <TableHead>
-                <SortButton {...getSortProps("titleSortValue")}>Tiêu đề</SortButton>
+                <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
               </TableHead>
               <TableHead>
-                <SortButton {...getSortProps("authorSortValue")}>Tác giả</SortButton>
+                <SortButton {...getSortProps("authorSortValue")}>
+                  {t("adminPostmanagement.author")}
+                </SortButton>
               </TableHead>
-              <TableHead>Chuyên ngành</TableHead>
+              <TableHead>{t("common.specialized")}</TableHead>
               <TableHead>
-                <SortButton {...getSortProps("createdAtSortValue")}>Ngày tạo</SortButton>
+                <SortButton {...getSortProps("createdAtSortValue")}>
+                  {t("common.creationDate")}
+                </SortButton>
               </TableHead>
               <TableHead>
-                <SortButton {...getSortProps("statusSortValue")}>Trạng thái</SortButton>
+                <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
               </TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+              <TableHead className="text-right">{t("common.operation")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -372,7 +369,7 @@ export function PostModerationPage() {
             {pageData.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-gray-500">
-                  Không có bài viết nào
+                  {t("staffPostmoderation.thereAreNoPosts")}
                 </TableCell>
               </TableRow>
             )}
@@ -398,7 +395,7 @@ export function PostModerationPage() {
                 setStatusFilter("DRAFT");
                 pagination.goToFirstPage();
               }}>
-              Xóa bộ lọc
+              {t("common.clearFilter")}
             </Button>
           </div>
         )}
@@ -409,7 +406,7 @@ export function PostModerationPage() {
         <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedPost?.title}</DialogTitle>
-            <DialogDescription>Xem chi tiết bài viết</DialogDescription>
+            <DialogDescription>{t("staffPostmoderation.seeArticleDetails")}</DialogDescription>
           </DialogHeader>
 
           {selectedPost && (
@@ -440,7 +437,8 @@ export function PostModerationPage() {
 
               {/* Author */}
               <div className="text-sm text-gray-600 dark:text-slate-400">
-                <span className="font-medium">Tác giả:</span> {selectedPost.author?.name || "—"}
+                <span className="font-medium">{t("staffPostmoderation.author")}</span>{" "}
+                {selectedPost.author?.name || "—"}
               </div>
 
               {/* Content */}
@@ -458,7 +456,7 @@ export function PostModerationPage() {
                       setIsDetailOpen(false);
                     }}>
                     <CheckCircle className="mr-2 h-4 w-4" />
-                    Duyệt
+                    {t("common.browse")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -467,7 +465,7 @@ export function PostModerationPage() {
                       setIsDetailOpen(false);
                     }}>
                     <XCircle className="mr-2 h-4 w-4" />
-                    Từ chối
+                    {t("common.refuse")}
                   </Button>
                 </div>
               )}
@@ -476,10 +474,13 @@ export function PostModerationPage() {
               <div>
                 <h3 className="mb-2 flex items-center gap-2 font-medium">
                   <MessageSquare className="h-4 w-4" />
-                  Bình luận ({postComments.length})
+                  {t("staffPostmoderation.comment")}
+                  {postComments.length})
                 </h3>
                 {postComments.length === 0 ? (
-                  <p className="text-sm text-gray-500">Chưa có bình luận nào</p>
+                  <p className="text-sm text-gray-500">
+                    {t("staffPostmoderation.thereAreNoCommentsYet")}
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {postComments.map((comment) => (
@@ -487,7 +488,9 @@ export function PostModerationPage() {
                         key={comment.id}
                         className="flex items-start justify-between rounded-lg border p-3 dark:border-slate-700">
                         <div>
-                          <p className="text-sm font-medium">{comment.userName || "Ẩn danh"}</p>
+                          <p className="text-sm font-medium">
+                            {comment.userName || t("common.anonymous")}
+                          </p>
                           <p className="text-sm text-gray-600 dark:text-slate-400">
                             {comment.content}
                           </p>
@@ -516,17 +519,15 @@ export function PostModerationPage() {
       <Dialog open={isDeleteCommentOpen} onOpenChange={setIsDeleteCommentOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác nhận xóa bình luận</DialogTitle>
-            <DialogDescription>
-              Bạn có chắc chắn muốn xóa bình luận này? Hành động này không thể hoàn tác.
-            </DialogDescription>
+            <DialogTitle>{t("common.confirmCommentDeletion")}</DialogTitle>
+            <DialogDescription>{t("staffPostmoderation.areYouSureYouWant")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteCommentOpen(false)}>
-              Hủy
+              {t("general.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleConfirmDeleteComment}>
-              Xóa
+              {t("general.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

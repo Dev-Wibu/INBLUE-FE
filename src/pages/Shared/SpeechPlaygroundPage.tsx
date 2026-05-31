@@ -1,6 +1,3 @@
-import { AlertTriangle, LoaderCircle, Square, Volume2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import { HomepageHeader } from "@/components/homepage-redesign";
 import { Footer } from "@/components/layouts";
 import { Badge } from "@/components/ui/badge";
@@ -9,47 +6,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { selectBestSpeechVoice } from "@/hooks/speech-synthesis.utils";
+import i18n from "@/lib/i18n";
 import {
   loadResponsiveVoice,
   resolveResponsiveVoiceName,
   stopResponsiveVoicePlayback,
 } from "@/lib/tts-playground";
-
+import { AlertTriangle, LoaderCircle, Square, Volume2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 type PlaygroundLanguage = "vi-VN" | "en-US";
 type SpeechEngine = "web-speech" | "responsive-voice";
-
 const ENGINE_LABELS: Record<SpeechEngine, string> = {
   "web-speech": "Web Speech API",
   "responsive-voice": "ResponsiveVoice.js",
 };
-
 const TEST_PHRASE_BY_LANG: Record<PlaygroundLanguage, string> = {
-  "vi-VN": "Xin chào, đây là bài kiểm tra giọng nói tiếng Việt trong AI Interview.",
+  "vi-VN": t("shared_speechplaygroundpage.tsx.xin_chao_ay_la_bai_kiem_tra_giong_noi_ti"),
   "en-US": "Hello, this is a speech synthesis test for AI Interview.",
 };
-
 function formatDateTime(date: Date | null): string {
   if (!date) {
-    return "Chưa có";
+    return t("shared_speechplaygroundpage.tsx.chua_co");
   }
-
   return `${date.toLocaleDateString("vi-VN")} ${date.toLocaleTimeString("vi-VN")}`;
 }
-
 function detectBrowserLabel(): string {
   if (typeof navigator === "undefined") {
-    return "Không xác định";
+    return t("shared_speechplaygroundpage.tsx.khong_xac_inh");
   }
-
   const ua = navigator.userAgent.toLowerCase();
   if (ua.includes("edg/")) return "Microsoft Edge";
   if (ua.includes("chrome/")) return "Google Chrome";
   if (ua.includes("firefox/")) return "Mozilla Firefox";
   if (ua.includes("safari/") && !ua.includes("chrome/")) return "Safari";
-  return "Trình duyệt khác";
+  return t("shared_speechplaygroundpage.tsx.trinh_duyet_khac");
 }
-
 export function SpeechPlaygroundPage() {
+  const { t } = useTranslation();
   const [language, setLanguage] = useState<PlaygroundLanguage>("vi-VN");
   const [engine, setEngine] = useState<SpeechEngine>("web-speech");
   const [text, setText] = useState(TEST_PHRASE_BY_LANG["vi-VN"]);
@@ -63,47 +58,41 @@ export function SpeechPlaygroundPage() {
   const [error, setError] = useState<string | null>(null);
   const [voicesLoadedAt, setVoicesLoadedAt] = useState<Date | null>(null);
   const [voicesChangedCount, setVoicesChangedCount] = useState(0);
-  const [lastSelectedVoice, setLastSelectedVoice] = useState<string>("Chưa phát");
+  const [lastSelectedVoice, setLastSelectedVoice] = useState<string>(
+    t("shared_speechplaygroundpage.tsx.chua_phat")
+  );
   const [lastSpeakAt, setLastSpeakAt] = useState<Date | null>(null);
-  const [lastEngineUsed, setLastEngineUsed] = useState<string>("Chưa phát");
+  const [lastEngineUsed, setLastEngineUsed] = useState<string>(
+    t("shared_speechplaygroundpage.tsx.chua_phat")
+  );
   const [lastSpeakLatencyMs, setLastSpeakLatencyMs] = useState<number | null>(null);
-
   const speakRequestIdRef = useRef(0);
-
   const isWebSpeechSupported =
     typeof window !== "undefined" && "speechSynthesis" in window && !!window.speechSynthesis;
-
   useEffect(() => {
     if (!isWebSpeechSupported) {
       return;
     }
-
     let disposed = false;
     const synth = window.speechSynthesis;
-
     const syncVoices = () => {
       const nextVoices = synth.getVoices();
       if (disposed || nextVoices.length === 0) {
         return;
       }
-
       setVoices(nextVoices);
       setVoicesLoadedAt((previous) => previous ?? new Date());
     };
-
     const handleVoicesChanged = () => {
       setVoicesChangedCount((previous) => previous + 1);
       syncVoices();
     };
-
     syncVoices();
     synth.addEventListener("voiceschanged", handleVoicesChanged);
-
     const pollIntervalId = window.setInterval(syncVoices, 300);
     const stopPollingTimeoutId = window.setTimeout(() => {
       window.clearInterval(pollIntervalId);
     }, 7000);
-
     return () => {
       disposed = true;
       synth.cancel();
@@ -112,23 +101,19 @@ export function SpeechPlaygroundPage() {
       window.clearTimeout(stopPollingTimeoutId);
     };
   }, [isWebSpeechSupported]);
-
   const stopAllPlayback = useCallback(() => {
     if (isWebSpeechSupported) {
       window.speechSynthesis.cancel();
     }
     stopResponsiveVoicePlayback();
   }, [isWebSpeechSupported]);
-
   useEffect(() => {
     return () => {
       speakRequestIdRef.current += 1;
       stopAllPlayback();
     };
   }, [stopAllPlayback]);
-
   const languagePrefix = language.split("-")[0];
-
   const filteredVoices = useMemo(() => {
     return voices.filter((voice) => {
       const normalizedVoiceLang = voice.lang.toLowerCase();
@@ -139,117 +124,95 @@ export function SpeechPlaygroundPage() {
       );
     });
   }, [language, languagePrefix, voices]);
-
   const hasVietnameseVoice = useMemo(() => {
     return voices.some((voice) => {
       const normalizedVoiceLang = voice.lang.toLowerCase();
       return normalizedVoiceLang === "vi-vn" || normalizedVoiceLang === "vi";
     });
   }, [voices]);
-
   const handleUsePreset = () => {
     setText(TEST_PHRASE_BY_LANG[language]);
   };
-
   const handleStop = useCallback(() => {
     speakRequestIdRef.current += 1;
     stopAllPlayback();
     setIsEngineLoading(false);
     setIsSpeaking(false);
   }, [stopAllPlayback]);
-
   const handleSpeak = useCallback(async () => {
     const trimmedText = text.trim();
     if (!trimmedText) {
-      setError("Vui lòng nhập nội dung để thử đọc.");
+      setError(t("shared_speechplaygroundpage.tsx.vui_long_nhap_noi_dung_e_thu_oc"));
       return;
     }
-
     const requestId = ++speakRequestIdRef.current;
     const startedAt = performance.now();
-
     setError(null);
     setIsSpeaking(false);
     setIsEngineLoading(engine === "responsive-voice");
     stopAllPlayback();
-
     const markStarted = (engineLabel: string, voiceLabel: string) => {
       if (requestId !== speakRequestIdRef.current) {
         return;
       }
-
       setIsSpeaking(true);
       setLastSpeakAt(new Date());
       setLastEngineUsed(engineLabel);
       setLastSelectedVoice(voiceLabel);
       setLastSpeakLatencyMs(Math.max(0, Math.round(performance.now() - startedAt)));
     };
-
     const markEnded = () => {
       if (requestId !== speakRequestIdRef.current) {
         return;
       }
-
       setIsEngineLoading(false);
       setIsSpeaking(false);
     };
-
     if (engine === "web-speech") {
       if (!isWebSpeechSupported) {
         setIsEngineLoading(false);
-        setError("Trình duyệt hiện tại không hỗ trợ Web Speech API.");
+        setError(t("shared_speechplaygroundpage.tsx.trinh_duyet_hien_tai_khong_ho_tro_web_sp"));
         return;
       }
-
       const synth = window.speechSynthesis;
       const utterance = new SpeechSynthesisUtterance(trimmedText);
       utterance.lang = language;
       utterance.rate = rate;
       utterance.pitch = pitch;
       utterance.volume = volume;
-
       const selectedVoice =
         voices.find((voice) => voice.voiceURI === selectedVoiceUri) ??
         selectBestSpeechVoice(voices, language);
-
       const selectedVoiceLabel = selectedVoice
         ? `${selectedVoice.name} (${selectedVoice.lang})`
-        : "Mặc định hệ thống";
-
+        : t("shared_speechplaygroundpage.tsx.mac_inh_he_thong");
       if (selectedVoice) {
         utterance.voice = selectedVoice;
       }
-
       utterance.onstart = () => {
         markStarted(ENGINE_LABELS["web-speech"], selectedVoiceLabel);
       };
-
       utterance.onend = () => {
         markEnded();
       };
-
       utterance.onerror = () => {
         if (requestId !== speakRequestIdRef.current) {
           return;
         }
         markEnded();
-        setError("Có lỗi khi phát âm Web Speech. Vui lòng thử lại với voice khác.");
+        setError(t("shared_speechplaygroundpage.tsx.co_loi_khi_phat_am_web_speech_vui_long_t"));
       };
-
       setIsEngineLoading(false);
       synth.speak(utterance);
       return;
     }
-
     if (engine === "responsive-voice") {
       try {
         const responsiveVoice = await loadResponsiveVoice();
         if (requestId !== speakRequestIdRef.current) {
           return;
         }
-
         const responsiveVoiceName = resolveResponsiveVoiceName(language);
-
         responsiveVoice.speak(trimmedText, responsiveVoiceName, {
           rate,
           pitch,
@@ -265,10 +228,9 @@ export function SpeechPlaygroundPage() {
               return;
             }
             markEnded();
-            setError("ResponsiveVoice lỗi trong quá trình phát. Vui lòng thử lại.");
+            setError(t("shared_speechplaygroundpage.tsx.responsivevoice_loi_trong_qua_trinh_phat"));
           },
         });
-
         setIsEngineLoading(false);
       } catch {
         if (requestId !== speakRequestIdRef.current) {
@@ -276,7 +238,7 @@ export function SpeechPlaygroundPage() {
         }
         setIsEngineLoading(false);
         setIsSpeaking(false);
-        setError("Không thể tải ResponsiveVoice.js. Vui lòng thử lại sau.");
+        setError(t("shared_speechplaygroundpage.tsx.khong_the_tai_responsivevoice_js_vui_lon"));
       }
     }
   }, [
@@ -290,11 +252,10 @@ export function SpeechPlaygroundPage() {
     text,
     voices,
     volume,
+    t,
   ]);
-
   const browserLabel = detectBrowserLabel();
   const isPlayDisabled = isEngineLoading || (engine === "web-speech" && !isWebSpeechSupported);
-
   return (
     <div className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950">
       <HomepageHeader />
@@ -305,17 +266,25 @@ export function SpeechPlaygroundPage() {
             <CardHeader>
               <CardTitle className="text-2xl">Speech Playground (DEV)</CardTitle>
               <CardDescription>
-                Khu thử nghiệm giọng nói cho AI Interview để benchmark Web Speech và
-                ResponsiveVoice.
+                {t("shared_speechplaygroundpage.tsx.khu_thu_nghiem_giong_noi_cho_ai_intervie")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">Trình duyệt: {browserLabel}</Badge>
-                <Badge variant="outline">Tổng số voice: {voices.length}</Badge>
-                <Badge variant="outline">Voices loaded lúc: {formatDateTime(voicesLoadedAt)}</Badge>
+                <Badge variant="outline">
+                  {t("shared_speechplaygroundpage.tsx.trinh_duyet")} {browserLabel}
+                </Badge>
+                <Badge variant="outline">
+                  {t("shared_speechplaygroundpage.tsx.tong_so_voice")} {voices.length}
+                </Badge>
+                <Badge variant="outline">
+                  {t("shared_speechplaygroundpage.tsx.voices_loaded_luc")}{" "}
+                  {formatDateTime(voicesLoadedAt)}
+                </Badge>
                 <Badge variant="outline">voiceschanged: {voicesChangedCount}</Badge>
-                <Badge variant="outline">Engine đang chọn: {ENGINE_LABELS[engine]}</Badge>
+                <Badge variant="outline">
+                  {t("shared_speechplaygroundpage.tsx.engine_ang_chon")} {ENGINE_LABELS[engine]}
+                </Badge>
               </div>
 
               {!hasVietnameseVoice && (
@@ -323,8 +292,9 @@ export function SpeechPlaygroundPage() {
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                     <p>
-                      Thiết bị hiện tại chưa tìm thấy voice tiếng Việt trong Web Speech. Bạn có thể
-                      đổi sang ResponsiveVoice để so sánh.
+                      {t(
+                        "shared_speechplaygroundpage.tsx.thiet_bi_hien_tai_chua_tim_thay_voice_ti"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -334,9 +304,9 @@ export function SpeechPlaygroundPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Bảng điều khiển test TTS</CardTitle>
+              <CardTitle>{t("shared_speechplaygroundpage.tsx.bang_ieu_khien_test_tts")}</CardTitle>
               <CardDescription>
-                Chọn engine, ngôn ngữ và thông số phát âm. Có thể lặp lại nhiều lần để so sánh.
+                {t("shared_speechplaygroundpage.tsx.chon_engine_ngon_ngu_va_thong_so_phat_am")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -354,7 +324,7 @@ export function SpeechPlaygroundPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="speech-language">Ngôn ngữ</Label>
+                  <Label htmlFor="speech-language">{t("common.language")}</Label>
                   <select
                     id="speech-language"
                     value={language}
@@ -364,7 +334,9 @@ export function SpeechPlaygroundPage() {
                       setSelectedVoiceUri("");
                     }}
                     className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900">
-                    <option value="vi-VN">Tiếng Việt (vi-VN)</option>
+                    <option value="vi-VN">
+                      {t("shared_speechplaygroundpage.tsx.tieng_viet_vi_vn")}
+                    </option>
                     <option value="en-US">English (en-US)</option>
                   </select>
                 </div>
@@ -372,20 +344,23 @@ export function SpeechPlaygroundPage() {
 
               {engine === "responsive-voice" && (
                 <div className="rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-sm text-sky-700 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-300">
-                  ResponsiveVoice được bật để fallback benchmark. Đây là công cụ test, cần review
-                  license và quota trước khi đưa vào production.
+                  {t("shared_speechplaygroundpage.tsx.responsivevoice_uoc_bat_e_fallback_bench")}
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <Label htmlFor="speech-voice">Voice (chỉ áp dụng cho Web Speech)</Label>
+                <Label htmlFor="speech-voice">
+                  {t("shared_speechplaygroundpage.tsx.voice_chi_ap_dung_cho_web_speech")}
+                </Label>
                 <select
                   id="speech-voice"
                   disabled={engine !== "web-speech"}
                   value={selectedVoiceUri}
                   onChange={(event) => setSelectedVoiceUri(event.target.value)}
                   className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm disabled:cursor-not-allowed disabled:opacity-70 dark:border-slate-700 dark:bg-slate-900">
-                  <option value="">Tự động chọn voice tốt nhất</option>
+                  <option value="">
+                    {t("shared_speechplaygroundpage.tsx.tu_ong_chon_voice_tot_nhat")}
+                  </option>
                   {filteredVoices.map((voice) => (
                     <option key={voice.voiceURI} value={voice.voiceURI}>
                       {voice.name} ({voice.lang}) {voice.localService ? "- local" : "- cloud"}
@@ -396,7 +371,9 @@ export function SpeechPlaygroundPage() {
 
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="speech-rate">Tốc độ: {rate.toFixed(2)}</Label>
+                  <Label htmlFor="speech-rate">
+                    {t("shared_speechplaygroundpage.tsx.toc_o")} {rate.toFixed(2)}
+                  </Label>
                   <Input
                     id="speech-rate"
                     type="range"
@@ -409,7 +386,9 @@ export function SpeechPlaygroundPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="speech-pitch">Độ cao: {pitch.toFixed(2)}</Label>
+                  <Label htmlFor="speech-pitch">
+                    {t("shared_speechplaygroundpage.tsx.o_cao")} {pitch.toFixed(2)}
+                  </Label>
                   <Input
                     id="speech-pitch"
                     type="range"
@@ -422,7 +401,9 @@ export function SpeechPlaygroundPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="speech-volume">Âm lượng: {volume.toFixed(2)}</Label>
+                  <Label htmlFor="speech-volume">
+                    {t("shared_speechplaygroundpage.tsx.am_luong")} {volume.toFixed(2)}
+                  </Label>
                   <Input
                     id="speech-volume"
                     type="range"
@@ -436,7 +417,9 @@ export function SpeechPlaygroundPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="speech-text">Nội dung test</Label>
+                <Label htmlFor="speech-text">
+                  {t("shared_speechplaygroundpage.tsx.noi_dung_test")}
+                </Label>
                 <textarea
                   id="speech-text"
                   value={text}
@@ -444,7 +427,7 @@ export function SpeechPlaygroundPage() {
                   className="min-h-28 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                 />
                 <Button variant="outline" onClick={handleUsePreset}>
-                  Dùng câu mẫu theo ngôn ngữ đã chọn
+                  {t("shared_speechplaygroundpage.tsx.dung_cau_mau_theo_ngon_ngu_a_chon")}
                 </Button>
               </div>
 
@@ -458,11 +441,13 @@ export function SpeechPlaygroundPage() {
                   ) : (
                     <Volume2 className="h-4 w-4" />
                   )}
-                  {isEngineLoading ? "Đang tải engine..." : "Phát thử"}
+                  {isEngineLoading
+                    ? t("shared_speechplaygroundpage.tsx.ang_tai_engine")
+                    : t("shared_speechplaygroundpage.tsx.phat_thu")}
                 </Button>
                 <Button variant="outline" onClick={handleStop} className="gap-2">
                   <Square className="h-4 w-4" />
-                  Dừng phát
+                  {t("shared_speechplaygroundpage.tsx.dung_phat")}
                 </Button>
                 <Button
                   variant="outline"
@@ -471,7 +456,7 @@ export function SpeechPlaygroundPage() {
                     setPitch(1);
                     setVolume(1);
                   }}>
-                  Reset thông số
+                  {t("shared_speechplaygroundpage.tsx.reset_thong_so")}
                 </Button>
               </div>
 
@@ -483,25 +468,41 @@ export function SpeechPlaygroundPage() {
 
               <div className="grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm md:grid-cols-2 dark:border-slate-700 dark:bg-slate-900/60">
                 <p>
-                  <span className="font-semibold">Trạng thái:</span>{" "}
-                  {isSpeaking ? "Đang phát" : "Đã dừng"}
+                  <span className="font-semibold">{t("common.status1")}</span>{" "}
+                  {isSpeaking
+                    ? t("shared_speechplaygroundpage.tsx.ang_phat")
+                    : t("shared_speechplaygroundpage.tsx.a_dung")}
                 </p>
                 <p>
-                  <span className="font-semibold">Engine đã phát:</span> {lastEngineUsed}
+                  <span className="font-semibold">
+                    {t("shared_speechplaygroundpage.tsx.engine_a_phat")}
+                  </span>{" "}
+                  {lastEngineUsed}
                 </p>
                 <p>
-                  <span className="font-semibold">Voice đã chọn:</span> {lastSelectedVoice}
+                  <span className="font-semibold">
+                    {t("shared_speechplaygroundpage.tsx.voice_a_chon")}
+                  </span>{" "}
+                  {lastSelectedVoice}
                 </p>
                 <p>
-                  <span className="font-semibold">Lần phát gần nhất:</span>{" "}
+                  <span className="font-semibold">
+                    {t("shared_speechplaygroundpage.tsx.lan_phat_gan_nhat")}
+                  </span>{" "}
                   {formatDateTime(lastSpeakAt)}
                 </p>
                 <p>
-                  <span className="font-semibold">Độ trễ bắt đầu phát:</span>{" "}
-                  {lastSpeakLatencyMs === null ? "Chưa có" : `${lastSpeakLatencyMs} ms`}
+                  <span className="font-semibold">
+                    {t("shared_speechplaygroundpage.tsx.o_tre_bat_au_phat")}
+                  </span>{" "}
+                  {lastSpeakLatencyMs === null
+                    ? t("shared_speechplaygroundpage.tsx.chua_co")
+                    : `${lastSpeakLatencyMs} ms`}
                 </p>
                 <p>
-                  <span className="font-semibold">Voice phù hợp với {language}:</span>{" "}
+                  <span className="font-semibold">
+                    {t("shared_speechplaygroundpage.tsx.voice_phu_hop_voi")} {language}:
+                  </span>{" "}
                   {filteredVoices.length}
                 </p>
               </div>
@@ -510,9 +511,9 @@ export function SpeechPlaygroundPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Danh sách voice hiện có</CardTitle>
+              <CardTitle>{t("shared_speechplaygroundpage.tsx.danh_sach_voice_hien_co")}</CardTitle>
               <CardDescription>
-                Dùng bảng này để xác định xem máy có voice tiếng Việt thật hay không.
+                {t("shared_speechplaygroundpage.tsx.dung_bang_nay_e_xac_inh_xem_may_co_voice")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -520,10 +521,12 @@ export function SpeechPlaygroundPage() {
                 <table className="w-full min-w-[740px] text-left text-sm">
                   <thead className="bg-slate-100 dark:bg-slate-900">
                     <tr>
-                      <th className="px-3 py-2">Tên voice</th>
-                      <th className="px-3 py-2">Ngôn ngữ</th>
-                      <th className="px-3 py-2">Loại</th>
-                      <th className="px-3 py-2">Mặc định</th>
+                      <th className="px-3 py-2">
+                        {t("shared_speechplaygroundpage.tsx.ten_voice")}
+                      </th>
+                      <th className="px-3 py-2">{t("common.language")}</th>
+                      <th className="px-3 py-2">{t("shared_speechplaygroundpage.tsx.loai")}</th>
+                      <th className="px-3 py-2">{t("shared_speechplaygroundpage.tsx.mac_inh")}</th>
                       <th className="px-3 py-2">Voice URI</th>
                     </tr>
                   </thead>
@@ -535,14 +538,20 @@ export function SpeechPlaygroundPage() {
                         <td className="px-3 py-2 font-medium">{voice.name}</td>
                         <td className="px-3 py-2">{voice.lang}</td>
                         <td className="px-3 py-2">{voice.localService ? "Local" : "Cloud"}</td>
-                        <td className="px-3 py-2">{voice.default ? "Có" : "Không"}</td>
+                        <td className="px-3 py-2">
+                          {voice.default
+                            ? t("common.have")
+                            : t("shared_speechplaygroundpage.tsx.khong")}
+                        </td>
                         <td className="px-3 py-2 text-xs opacity-80">{voice.voiceURI}</td>
                       </tr>
                     ))}
                     {voices.length === 0 && (
                       <tr>
                         <td colSpan={5} className="px-3 py-6 text-center text-slate-500">
-                          Chưa tải được danh sách voice. Thử refresh trang hoặc chờ thêm vài giây.
+                          {t(
+                            "shared_speechplaygroundpage.tsx.chua_tai_uoc_danh_sach_voice_thu_refresh"
+                          )}
                         </td>
                       </tr>
                     )}
@@ -554,16 +563,16 @@ export function SpeechPlaygroundPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Checklist test khuyến nghị</CardTitle>
+              <CardTitle>
+                {t("shared_speechplaygroundpage.tsx.checklist_test_khuyen_nghi")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p>
-                1. Chọn Tiếng Việt, test lại cùng 1 câu với 2 engine Web Speech/ResponsiveVoice.
-              </p>
-              <p>2. Kiểm tra độ trễ bắt đầu phát và ghi lại engine đọc rõ tiếng Việt hơn.</p>
-              <p>3. Thử rate 0.9, pitch 1.05 và so sánh với rate 1.0, pitch 1.0.</p>
-              <p>4. Đổi qua EN rồi quay lại VI để kiểm tra fallback và quality.</p>
-              <p>5. Reload trang và lặp lại để kiểm tra khả năng phục hồi engine.</p>
+              <p>{t("shared_speechplaygroundpage.tsx.1_chon_tieng_viet_test_lai_cung_1_cau_vo")}</p>
+              <p>{t("shared_speechplaygroundpage.tsx.2_kiem_tra_o_tre_bat_au_phat_va_ghi_lai_")}</p>
+              <p>{t("shared_speechplaygroundpage.tsx.3_thu_rate_0_9_pitch_1_05_va_so_sanh_voi")}</p>
+              <p>{t("shared_speechplaygroundpage.tsx.4_oi_qua_en_roi_quay_lai_vi_e_kiem_tra_f")}</p>
+              <p>{t("shared_speechplaygroundpage.tsx.5_reload_trang_va_lap_lai_e_kiem_tra_kha")}</p>
             </CardContent>
           </Card>
         </div>

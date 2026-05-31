@@ -10,9 +10,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
+import { useTranslation } from "react-i18next";
 import type { QuestionCategoryFormData } from "../types";
-
 interface QuestionCategoryFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -23,7 +22,6 @@ interface QuestionCategoryFormDialogProps {
   description: string;
   submitLabel: string;
 }
-
 export function QuestionCategoryFormDialog({
   isOpen,
   onOpenChange,
@@ -34,6 +32,7 @@ export function QuestionCategoryFormDialog({
   description,
   submitLabel,
 }: QuestionCategoryFormDialogProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -43,37 +42,54 @@ export function QuestionCategoryFormDialog({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-1.5">
-            <Label htmlFor="categoryName">Tên danh mục *</Label>
+            <Label htmlFor="categoryName">{t("general.categoryName")}</Label>
             <Input
               id="categoryName"
               value={formData.categoryName || ""}
-              onChange={(e) => onFormChange({ ...formData, categoryName: e.target.value })}
-              placeholder="Nhập tên danh mục"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  categoryName: e.target.value,
+                })
+              }
+              placeholder={t("adminQuestioncategorymanagement.enterACategoryName")}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="description">Mô tả</Label>
+            <Label htmlFor="description">{t("common.describe")}</Label>
             <Textarea
               id="description"
               value={formData.description || ""}
-              onChange={(e) => onFormChange({ ...formData, description: e.target.value })}
-              placeholder="Nhập mô tả"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  description: e.target.value,
+                })
+              }
+              placeholder={t("adminQuestioncategorymanagement.enterADescription")}
               rows={3}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="urlTutorial">URL Hướng dẫn</Label>
+            <Label htmlFor="urlTutorial">
+              {t("adminQuestioncategorymanagement.instructionsUrl")}
+            </Label>
             <Input
               id="urlTutorial"
               value={formData.urlTutorial || ""}
-              onChange={(e) => onFormChange({ ...formData, urlTutorial: e.target.value })}
-              placeholder="Nhập URL bài hướng dẫn (không bắt buộc)"
+              onChange={(e) =>
+                onFormChange({
+                  ...formData,
+                  urlTutorial: e.target.value,
+                })
+              }
+              placeholder={t("adminQuestioncategorymanagement.enterTheTutorialUrlOptional")}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t("general.cancel")}
           </Button>
           <Button onClick={onSubmit}>{submitLabel}</Button>
         </DialogFooter>

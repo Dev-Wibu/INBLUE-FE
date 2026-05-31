@@ -8,38 +8,38 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
+import { useTranslation } from "react-i18next";
 import type { Major } from "../types";
-
 interface DeleteQuestionMajorDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   major: Major | null;
   onConfirm: () => void;
 }
-
 export function DeleteQuestionMajorDialog({
   isOpen,
   onOpenChange,
   major,
   onConfirm,
 }: DeleteQuestionMajorDialogProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Xóa Chuyên Ngành</AlertDialogTitle>
+          <AlertDialogTitle>{t("adminQuestionmajormanagement.deleteMajor")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Bạn có chắc chắn muốn xóa chuyên ngành &quot;{major?.majorName}&quot;? Hành động này
-            không thể hoàn tác.
+            {t("adminQuestionmajormanagement.areYouSureYouWant")}
+            {major?.majorName}
+            {t("common.quotThisActionCannotBeUndone1")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogCancel>{t("general.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600">
-            Xóa
+            {t("general.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

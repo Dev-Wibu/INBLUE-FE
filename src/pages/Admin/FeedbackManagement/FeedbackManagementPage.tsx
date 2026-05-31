@@ -1,11 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * Admin Feedback Management Page
  * Allows admin to view and moderate all candidate feedbacks for mentors
  */
-
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { Eye, MessageSquare, Search, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
 
 import { FeedbackStats } from "@/components/feedback";
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
@@ -45,14 +42,15 @@ import {
   useMentorFeedbacks,
   type MentorFeedback,
 } from "@/hooks/useMentorFeedback";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import { Eye, MessageSquare, Search, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-
 export function FeedbackManagementPage() {
+  const { t } = useTranslation();
   const { data: feedbacks = [], isLoading, isRefetching, refetch } = useMentorFeedbacks();
   const { mutate: deleteFeedback, isPending: isDeleting } = useDeleteMentorFeedback();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [selectedFeedback, setSelectedFeedback] = useState<MentorFeedback | null>(null);
@@ -80,11 +78,9 @@ export function FeedbackManagementPage() {
       if (numericRatingFilter !== null && feedback.rating !== numericRatingFilter) {
         return false;
       }
-
       return true;
     });
   }, [feedbacks, searchQuery, numericRatingFilter]);
-
   const hasActiveFilters = searchQuery.trim().length > 0 || ratingFilter !== "all";
 
   // Sorting
@@ -112,39 +108,35 @@ export function FeedbackManagementPage() {
       ? feedbacks.reduce((sum: number, f: MentorFeedback) => sum + (f.rating || 0), 0) /
         feedbacks.length
       : 0;
-
   const handleViewDetail = (feedback: MentorFeedback) => {
     setSelectedFeedback(feedback);
     setIsDetailOpen(true);
   };
-
   const handleDeleteClick = (feedback: MentorFeedback) => {
     setSelectedFeedback(feedback);
     setIsDeleteOpen(true);
   };
-
   const handleDeleteConfirm = () => {
     if (selectedFeedback?.id) {
       deleteFeedback(selectedFeedback.id, {
         onSuccess: () => {
           setIsDeleteOpen(false);
           setSelectedFeedback(null);
-          toast.success("Đã xóa phản hồi");
+          toast.success(t("common.responseRemoved"));
         },
       });
     }
   };
-
   return (
     <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
       {/* Header */}
       <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-            Phản Hồi Của Ứng Viên
+            {t("adminFeedbackmanagement.candidateResponse")}
           </h1>
           <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-            Xem danh sách phản hồi ứng viên gửi cho mentor
+            {t("adminFeedbackmanagement.seeTheListOfResponses")}
           </p>
         </div>
         <ReloadButton
@@ -152,7 +144,7 @@ export function FeedbackManagementPage() {
             await refetch();
           }}
           isLoading={isRefetching}
-          tooltip="Tải lại danh sách phản hồi"
+          tooltip={t("common.reloadTheResponseList")}
           showLabel
           hideTooltip
         />
@@ -162,13 +154,13 @@ export function FeedbackManagementPage() {
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Tổng phản hồi</CardDescription>
+            <CardDescription>{t("common.totalResponse")}</CardDescription>
             <CardTitle className="text-2xl">{feedbacks.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Điểm trung bình</CardDescription>
+            <CardDescription>{t("common.averageScore")}</CardDescription>
             <CardTitle className="text-2xl text-emerald-600">{avgRating.toFixed(1)}</CardTitle>
           </CardHeader>
         </Card>
@@ -196,14 +188,14 @@ export function FeedbackManagementPage() {
       {/* Filters */}
       <Card className="mb-6">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Bộ lọc</CardTitle>
+          <CardTitle className="text-base">{t("common.filter")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
             <div className="relative w-full min-w-0">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
-                placeholder="Tìm theo tên ứng viên, mentor, nội dung..."
+                placeholder={t("adminFeedbackmanagement.searchByCandidateNameMentor")}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -219,10 +211,10 @@ export function FeedbackManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-full lg:w-[170px]">
-                <SelectValue placeholder="Số sao" />
+                <SelectValue placeholder={t("common.numberOfStars")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="all">{t("general.all")}</SelectItem>
                 <SelectItem value="5">5 sao</SelectItem>
                 <SelectItem value="4">4 sao</SelectItem>
                 <SelectItem value="3">3 sao</SelectItem>
@@ -240,7 +232,7 @@ export function FeedbackManagementPage() {
                     setRatingFilter("all");
                     pagination.goToFirstPage();
                   }}>
-                  Xóa bộ lọc
+                  {t("common.clearFilter")}
                 </Button>
               </div>
             )}
@@ -253,10 +245,11 @@ export function FeedbackManagementPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-emerald-600" />
-            <CardTitle>Danh sách phản hồi</CardTitle>
+            <CardTitle>{t("common.responseList")}</CardTitle>
           </div>
           <CardDescription>
-            Hiển thị {filteredFeedbacks.length} / {feedbacks.length} phản hồi
+            {t("common.show")} {filteredFeedbacks.length} / {feedbacks.length}{" "}
+            {t("common.feedback")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -265,8 +258,8 @@ export function FeedbackManagementPage() {
           ) : pageData.length === 0 ? (
             <EmptyState
               icon={MessageSquare}
-              title="Không có phản hồi"
-              description="Không tìm thấy phản hồi nào phù hợp với bộ lọc."
+              title={t("common.noResponse")}
+              description={t("adminFeedbackmanagement.noResponsesFoundMatchingThe")}
             />
           ) : (
             <>
@@ -274,16 +267,16 @@ export function FeedbackManagementPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Mentor nhận</TableHead>
-                    <TableHead>Ứng viên gửi</TableHead>
-                    <TableHead>Phiên</TableHead>
+                    <TableHead>{t("common.mentorAccepted")}</TableHead>
+                    <TableHead>{t("common.candidateSubmits")}</TableHead>
+                    <TableHead>{t("common.session")}</TableHead>
                     <TableHead>
                       <SortButton {...getSortProps("rating" as keyof MentorFeedback)}>
-                        Đánh giá
+                        {t("common.evaluate")}
                       </SortButton>
                     </TableHead>
-                    <TableHead>Nhận xét</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead>{t("common.comment")}</TableHead>
+                    <TableHead className="text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -299,7 +292,7 @@ export function FeedbackManagementPage() {
                             </AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
-                            {feedback.mentor?.name || "Không có dữ liệu"}
+                            {feedback.mentor?.name || t("common.noDataAvailable")}
                           </span>
                         </div>
                       </TableCell>
@@ -309,7 +302,7 @@ export function FeedbackManagementPage() {
                             <AvatarImage src={feedback.user?.avatarUrl} />
                             <AvatarFallback>{feedback.user?.name?.charAt(0) || "U"}</AvatarFallback>
                           </Avatar>
-                          <span>{feedback.user?.name || "Không có dữ liệu"}</span>
+                          <span>{feedback.user?.name || t("common.noDataAvailable")}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -319,7 +312,7 @@ export function FeedbackManagementPage() {
                         <StarRating value={feedback.rating || 0} readOnly size="sm" />
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate">
-                        {feedback.comment || "Không có nhận xét"}
+                        {feedback.comment || t("common.noComments")}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -361,9 +354,12 @@ export function FeedbackManagementPage() {
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Chi Tiết Phản Hồi #{selectedFeedback?.id}</DialogTitle>
+            <DialogTitle>
+              {t("common.feedbackDetails")}
+              {selectedFeedback?.id}
+            </DialogTitle>
             <DialogDescription>
-              Phản hồi từ ứng viên {selectedFeedback?.user?.name}
+              {t("common.feedbackFromCandidates")} {selectedFeedback?.user?.name}
               {" -> "}
               mentor {selectedFeedback?.mentor?.name}
             </DialogDescription>
@@ -377,10 +373,12 @@ export function FeedbackManagementPage() {
 
               {/* Comment */}
               <div>
-                <h4 className="mb-2 font-medium text-slate-700 dark:text-slate-300">Nhận xét</h4>
+                <h4 className="mb-2 font-medium text-slate-700 dark:text-slate-300">
+                  {t("common.comment")}
+                </h4>
                 <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
                   <p className="whitespace-pre-wrap">
-                    {selectedFeedback.comment || "Không có nhận xét chi tiết."}
+                    {selectedFeedback.comment || t("common.thereAreNoDetailedComments")}
                   </p>
                 </div>
               </div>
@@ -388,17 +386,17 @@ export function FeedbackManagementPage() {
               {/* Session Info */}
               <div>
                 <h4 className="mb-2 font-medium text-slate-700 dark:text-slate-300">
-                  Thông tin phiên
+                  {t("common.sessionInformation")}
                 </h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-slate-500">Mã phiên:</span>{" "}
+                    <span className="text-slate-500">{t("common.sessionCode")}</span>{" "}
                     <span className="font-medium">#{selectedFeedback.session?.id}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500">Tên phòng:</span>{" "}
+                    <span className="text-slate-500">{t("common.roomName")}</span>{" "}
                     <span className="font-medium">
-                      {selectedFeedback.session?.roomName || "Không có dữ liệu"}
+                      {selectedFeedback.session?.roomName || t("common.noDataAvailable")}
                     </span>
                   </div>
                 </div>
@@ -412,18 +410,19 @@ export function FeedbackManagementPage() {
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác Nhận Xóa</DialogTitle>
+            <DialogTitle>{t("common.confirmDeletion")}</DialogTitle>
             <DialogDescription>
-              Bạn có chắc chắn muốn xóa phản hồi #{selectedFeedback?.id}? Hành động này không thể
-              hoàn tác.
+              {t("adminFeedbackmanagement.areYouSureYouWant")}
+              {selectedFeedback?.id}
+              {t("adminFeedbackmanagement.thisActionIsImpossibleUndo")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={isDeleting}>
-              Hủy
+              {t("general.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
-              {isDeleting ? "Đang xóa..." : "Xóa"}
+              {isDeleting ? t("common.deleting") : t("general.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

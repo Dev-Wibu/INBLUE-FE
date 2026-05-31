@@ -1,34 +1,30 @@
-import { Award } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { mentorManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
+import { Award } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
 import type { MentorProfileData } from "./MentorAccountTabs";
 import {
   MentorDocumentsSection,
   MentorPasswordSection,
   MentorProfileSection,
 } from "./MentorAccountTabs";
-
 export function MentorAccountPage() {
+  const { t } = useTranslation();
   const { user: authUser, setUser } = useAuthStore();
   const [mentorProfile, setMentorProfile] = useState<MentorProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
   const [formData, setFormData] = useState<Partial<MentorProfileData>>({});
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-
   const fetchMentorData = useCallback(async () => {
     if (!authUser?.id) {
       setIsLoading(false);
       return;
     }
-
     setIsLoading(true);
     try {
       const response = await mentorManager.getById(authUser.id);
@@ -102,11 +98,9 @@ export function MentorAccountPage() {
       setIsLoading(false);
     }
   }, [authUser]);
-
   useEffect(() => {
     fetchMentorData();
   }, [fetchMentorData]);
-
   useEffect(() => {
     return () => {
       if (avatarPreview?.startsWith("blob:")) {
@@ -114,12 +108,10 @@ export function MentorAccountPage() {
       }
     };
   }, [avatarPreview]);
-
   const handleRefreshData = async () => {
     await fetchMentorData();
-    toast.success("Đã cập nhật dữ liệu!");
+    toast.success(t("common.dataUpdated"));
   };
-
   const handleStartEdit = () => {
     if (!mentorProfile) return;
     setFormData({
@@ -134,13 +126,11 @@ export function MentorAccountPage() {
     });
     setIsEditing(true);
   };
-
   const handleCancelEdit = () => {
     setFormData({});
     setAvatarPreview(null);
     setIsEditing(false);
   };
-
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -151,20 +141,17 @@ export function MentorAccountPage() {
       setAvatarPreview(previewUrl);
     }
   };
-
   const handleClearAvatar = () => {
     if (avatarPreview?.startsWith("blob:")) {
       URL.revokeObjectURL(avatarPreview);
     }
     setAvatarPreview(null);
   };
-
   const handleSaveProfile = async () => {
     if (!mentorProfile?.id) {
-      toast.error("Không tìm thấy ID mentor");
+      toast.error(t("mentorAccount.mentorIdNotFound"));
       return;
     }
-
     setIsSaving(true);
     try {
       const response = await mentorManager.update(mentorProfile.id, {
@@ -175,37 +162,39 @@ export function MentorAccountPage() {
         linkedInUrl: formData.linkedInUrl,
         currentCompany: formData.currentCompany,
         pricePerMinute: formData.pricePerMinute,
-        ...(mentorProfile.public_id ? { public_id: mentorProfile.public_id } : {}),
+        ...(mentorProfile.public_id
+          ? {
+              public_id: mentorProfile.public_id,
+            }
+          : {}),
       });
-
       if (response.success) {
         await fetchMentorData();
-
         if (response.data) {
           setUser({
             ...authUser,
             ...response.data,
           });
         }
-
-        toast.success("Cập nhật thông tin thành công!");
+        toast.success(t("common.updatedInformationSuccessfully"));
         setIsEditing(false);
         setFormData({});
         setAvatarPreview(null);
       } else {
-        toast.error(response.error || "Cập nhật thất bại. Vui lòng thử lại.");
+        toast.error(response.error || t("common.updateFailedPleaseTryAgain"));
       }
     } catch {
-      toast.error("Cập nhật thất bại. Vui lòng thử lại.");
+      toast.error(t("common.updateFailedPleaseTryAgain"));
     } finally {
       setIsSaving(false);
     }
   };
-
   const handleInputChange = (field: keyof MentorProfileData, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
-
   if (isLoading) {
     return (
       <div className="py-6">
@@ -213,27 +202,25 @@ export function MentorAccountPage() {
       </div>
     );
   }
-
   if (!mentorProfile) {
     return (
       <div className="flex items-center justify-center py-12">
         <p className="font-['Inter'] text-base text-gray-500 dark:text-slate-400">
-          Không tìm thấy thông tin mentor
+          {t("mentorAccount.noMentorInformationFound")}
         </p>
       </div>
     );
   }
-
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* Top Banner */}
       <div className="flex h-56 items-center justify-between rounded-[30px] bg-linear-to-r from-emerald-100 to-teal-100 px-10 dark:from-emerald-900/20 dark:to-teal-900/20">
         <div className="flex flex-col gap-4">
           <h1 className="font-['Open_Sans'] text-3xl leading-tight font-bold text-emerald-800 dark:text-emerald-400">
-            Tài khoản Mentor
+            {t("mentorAccount.mentorAccount")}
           </h1>
           <p className="font-['Open_Sans'] text-base font-normal text-gray-700 dark:text-slate-300">
-            Quản lý thông tin cá nhân và hồ sơ mentor của bạn
+            {t("mentorAccount.manageYourPersonalInformationAnd")}
           </p>
         </div>
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/50 dark:bg-slate-800/50">

@@ -1,3 +1,20 @@
+import type {
+  ChromeTabMenuAction,
+  ChromeTabMenuGroup,
+  SidebarMenuGroup,
+} from "@/components/shared";
+import {
+  DashboardChromeTabs,
+  DashboardSidebar,
+  DashboardSidebarToggle,
+  getInitialSidebarCollapsed,
+  SettingsModal,
+} from "@/components/shared";
+import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
+import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
+import { useTabsState } from "@/hooks/useTabsState";
+import i18n from "@/lib/i18n";
+import { useSettingsStore } from "@/stores/settingsStore";
 import {
   Bell,
   BookOpen,
@@ -18,25 +35,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-
-import type {
-  ChromeTabMenuAction,
-  ChromeTabMenuGroup,
-  SidebarMenuGroup,
-} from "@/components/shared";
-import {
-  DashboardChromeTabs,
-  DashboardSidebar,
-  DashboardSidebarToggle,
-  getInitialSidebarCollapsed,
-  SettingsModal,
-} from "@/components/shared";
-import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
-import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
-import { useTabsState } from "@/hooks/useTabsState";
-import { useSettingsStore } from "@/stores/settingsStore";
-
 import { CandidateProfileManagementPage } from "../CandidateProfileManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
@@ -53,7 +53,7 @@ import { ReviewManagementPage } from "../ReviewManagement";
 import { SessionManagementPage } from "../SessionManagement";
 import { TransactionPaymentManagementPage } from "../TransactionPaymentManagement";
 import { UserManagementPage } from "../UserManagement";
-
+const t = i18n.t.bind(i18n);
 type TabType =
   | "dashboard"
   | "users"
@@ -71,30 +71,78 @@ type TabType =
   | "companies"
   | "candidateProfiles"
   | "transactionsPayments";
-
-const AVAILABLE_TABS: Array<{ type: TabType; label: string }> = [
-  { type: "dashboard", label: "Dashboard" },
-  { type: "users", label: "Quản lý người dùng" },
-  { type: "mentors", label: "Quản lý mentor" },
-  { type: "sessions", label: "Quản lý phiên phỏng vấn" },
-  { type: "reviews", label: "Quản lý đánh giá mentor gửi" },
-  { type: "feedback", label: "Quản lý phản hồi ứng viên gửi" },
-  { type: "notifications", label: "Quản lý thông báo" },
-  { type: "questionCategories", label: "Danh mục câu hỏi" },
-  { type: "questionMajors", label: "Chuyên ngành câu hỏi" },
-  { type: "practiceSets", label: "Bộ ôn tập" },
-  { type: "practiceQuestions", label: "Câu hỏi ôn tập" },
-  { type: "quizSets", label: "Bộ trắc nghiệm" },
-  { type: "posts", label: "Bài viết & Cộng đồng" },
-  { type: "companies", label: "Quản lý công ty" },
-  { type: "candidateProfiles", label: "Hồ sơ ứng viên" },
-  { type: "transactionsPayments", label: "Giao dịch & Thanh toán" },
+const AVAILABLE_TABS: Array<{
+  type: TabType;
+  label: string;
+}> = [
+  {
+    type: "dashboard",
+    label: "Dashboard",
+  },
+  {
+    type: "users",
+    label: t("common.userManagement"),
+  },
+  {
+    type: "mentors",
+    label: t("common.mentorManagement"),
+  },
+  {
+    type: "sessions",
+    label: t("common.manageInterviewSessions"),
+  },
+  {
+    type: "reviews",
+    label: t("adminAdmindashboard.manageSentMentorReviews"),
+  },
+  {
+    type: "feedback",
+    label: t("adminAdmindashboard.manageResponsesSentByCandidates"),
+  },
+  {
+    type: "notifications",
+    label: t("adminAdmindashboard.manageNotifications"),
+  },
+  {
+    type: "questionCategories",
+    label: t("common.listOfQuestions"),
+  },
+  {
+    type: "questionMajors",
+    label: t("adminAdmindashboard.specializedQuestions"),
+  },
+  {
+    type: "practiceSets",
+    label: t("adminAdmindashboard.reviewSet"),
+  },
+  {
+    type: "practiceQuestions",
+    label: t("adminAdmindashboard.reviewQuestions"),
+  },
+  {
+    type: "quizSets",
+    label: t("adminAdmindashboard.testSet"),
+  },
+  {
+    type: "posts",
+    label: t("common.articlesCommunity"),
+  },
+  {
+    type: "companies",
+    label: t("adminAdmindashboard.companyManagement"),
+  },
+  {
+    type: "candidateProfiles",
+    label: t("common.candidateProfile"),
+  },
+  {
+    type: "transactionsPayments",
+    label: t("adminAdmindashboard.transactionsPayments"),
+  },
 ];
-
 const isValidTabType = (value: string): value is TabType => {
   return AVAILABLE_TABS.some((tab) => tab.type === value);
 };
-
 const TAB_ICONS: Record<TabType, React.ElementType> = {
   dashboard: LayoutDashboard,
   users: Users,
@@ -113,7 +161,6 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   candidateProfiles: FileText,
   transactionsPayments: Wallet,
 };
-
 const TAB_COLORS: Record<TabType, string> = {
   dashboard: "text-indigo-600",
   users: "text-blue-600",
@@ -132,7 +179,6 @@ const TAB_COLORS: Record<TabType, string> = {
   candidateProfiles: "text-teal-600",
   transactionsPayments: "text-indigo-600",
 };
-
 const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
   {
     items: [
@@ -148,19 +194,19 @@ const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
     items: [
       {
         type: "users",
-        label: "Quản lý người dùng",
+        label: t("common.userManagement"),
         icon: Users,
         iconColor: "text-blue-600",
       },
       {
         type: "mentors",
-        label: "Quản lý mentor",
+        label: t("common.mentorManagement"),
         icon: UserCog,
         iconColor: "text-orange-600",
       },
       {
         type: "sessions",
-        label: "Quản lý phiên phỏng vấn",
+        label: t("common.manageInterviewSessions"),
         icon: Video,
         iconColor: "text-green-600",
       },
@@ -170,19 +216,19 @@ const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
     items: [
       {
         type: "reviews",
-        label: "Quản lý đánh giá mentor gửi",
+        label: t("adminAdmindashboard.manageSentMentorReviews"),
         icon: Star,
         iconColor: "text-yellow-600",
       },
       {
         type: "feedback",
-        label: "Quản lý phản hồi ứng viên gửi",
+        label: t("adminAdmindashboard.manageResponsesSentByCandidates"),
         icon: MessageSquare,
         iconColor: "text-cyan-600",
       },
       {
         type: "notifications",
-        label: "Quản lý thông báo",
+        label: t("adminAdmindashboard.manageNotifications"),
         icon: Bell,
         iconColor: "text-red-600",
       },
@@ -192,130 +238,183 @@ const CHROME_TABS_MENU_GROUPS: ChromeTabMenuGroup[] = [
     items: [
       {
         type: "questionCategories",
-        label: "Bài học",
+        label: t("common.lesson"),
         icon: FolderOpen,
         iconColor: "text-purple-600",
       },
       {
         type: "questionMajors",
-        label: "Chuyên ngành",
+        label: t("common.specialized"),
         icon: GraduationCap,
         iconColor: "text-pink-600",
       },
-      { type: "practiceSets", label: "Bộ ôn tập", icon: BookOpen, iconColor: "text-teal-600" },
+      {
+        type: "practiceSets",
+        label: t("adminAdmindashboard.reviewSet"),
+        icon: BookOpen,
+        iconColor: "text-teal-600",
+      },
       {
         type: "practiceQuestions",
-        label: "Câu hỏi ôn tập",
+        label: t("adminAdmindashboard.reviewQuestions"),
         icon: FileQuestion,
         iconColor: "text-emerald-600",
       },
-      { type: "quizSets", label: "Bộ trắc nghiệm", icon: Trophy, iconColor: "text-amber-600" },
+      {
+        type: "quizSets",
+        label: t("adminAdmindashboard.testSet"),
+        icon: Trophy,
+        iconColor: "text-amber-600",
+      },
     ],
   },
   {
     items: [
       {
         type: "posts",
-        label: "Bài viết & Cộng đồng",
+        label: t("common.articlesCommunity"),
         icon: Newspaper,
         iconColor: "text-purple-500",
       },
       {
         type: "companies",
-        label: "Quản lý công ty",
+        label: t("adminAdmindashboard.companyManagement"),
         icon: Building2,
         iconColor: "text-sky-600",
       },
       {
         type: "candidateProfiles",
-        label: "Hồ sơ ứng viên",
+        label: t("common.candidateProfile"),
         icon: FileText,
         iconColor: "text-teal-600",
       },
       {
         type: "transactionsPayments",
-        label: "Giao dịch & Thanh toán",
+        label: t("adminAdmindashboard.transactionsPayments"),
         icon: Wallet,
         iconColor: "text-indigo-600",
       },
     ],
   },
 ];
-
 const SIDEBAR_MENU_GROUPS: SidebarMenuGroup[] = [
   {
-    label: "Quản trị",
+    label: t("adminAdmindashboard.administration"),
     items: [
-      { type: "dashboard", icon: LayoutDashboard, label: "Dashboard", color: "text-indigo-600" },
-      { type: "users", icon: Users, label: "Người dùng", color: "text-blue-600" },
-      { type: "mentors", icon: UserCog, label: "Người hướng dẫn", color: "text-orange-600" },
-      { type: "sessions", icon: Video, label: "Phiên phỏng vấn", color: "text-green-600" },
+      {
+        type: "dashboard",
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        color: "text-indigo-600",
+      },
+      {
+        type: "users",
+        icon: Users,
+        label: t("common.user"),
+        color: "text-blue-600",
+      },
+      {
+        type: "mentors",
+        icon: UserCog,
+        label: t("adminAdmindashboard.instructor"),
+        color: "text-orange-600",
+      },
+      {
+        type: "sessions",
+        icon: Video,
+        label: t("common.interviewSession"),
+        color: "text-green-600",
+      },
     ],
   },
   {
-    label: "Đánh giá & phản hồi",
+    label: t("adminAdmindashboard.reviewsFeedback"),
     items: [
-      { type: "reviews", icon: Star, label: "Đánh giá từ mentor", color: "text-yellow-600" },
+      {
+        type: "reviews",
+        icon: Star,
+        label: t("common.reviewFromMentor"),
+        color: "text-yellow-600",
+      },
       {
         type: "feedback",
         icon: MessageSquare,
-        label: "Phản hồi từ ứng viên",
+        label: t("common.feedbackFromCandidates"),
         color: "text-cyan-600",
       },
-      { type: "notifications", icon: Bell, label: "Thông báo", color: "text-red-600" },
+      {
+        type: "notifications",
+        icon: Bell,
+        label: t("common.notification"),
+        color: "text-red-600",
+      },
     ],
   },
   {
-    label: "Ngân hàng câu hỏi",
+    label: t("common.questionBank"),
     items: [
-      { type: "questionCategories", icon: FolderOpen, label: "Bài học", color: "text-purple-600" },
+      {
+        type: "questionCategories",
+        icon: FolderOpen,
+        label: t("common.lesson"),
+        color: "text-purple-600",
+      },
       {
         type: "questionMajors",
         icon: GraduationCap,
-        label: "Chuyên ngành",
+        label: t("common.specialized"),
         color: "text-pink-600",
       },
-      { type: "practiceSets", icon: BookOpen, label: "Bộ câu hỏi ôn tập", color: "text-teal-600" },
+      {
+        type: "practiceSets",
+        icon: BookOpen,
+        label: t("adminAdmindashboard.setOfReviewQuestions"),
+        color: "text-teal-600",
+      },
       {
         type: "practiceQuestions",
         icon: FileQuestion,
-        label: "Câu hỏi ôn tập",
+        label: t("adminAdmindashboard.reviewQuestions"),
         color: "text-emerald-600",
       },
-      { type: "quizSets", icon: Trophy, label: "Bộ câu hỏi trắc nghiệm", color: "text-amber-600" },
+      {
+        type: "quizSets",
+        icon: Trophy,
+        label: t("adminAdmindashboard.setOfMultipleChoiceQuestions"),
+        color: "text-amber-600",
+      },
     ],
   },
   {
-    label: "Nội dung",
+    label: t("common.content"),
     items: [
       {
         type: "posts",
         icon: Newspaper,
-        label: "Bài viết & Cộng đồng",
+        label: t("common.articlesCommunity"),
         color: "text-purple-500",
       },
       {
         type: "companies",
         icon: Building2,
-        label: "Công ty",
+        label: t("common.company"),
         color: "text-sky-600",
       },
       {
         type: "candidateProfiles",
         icon: FileText,
-        label: "Hồ sơ ứng viên",
+        label: t("common.candidateProfile"),
         color: "text-teal-600",
       },
       {
         type: "transactionsPayments",
         icon: Wallet,
-        label: "Giao dịch & Thanh toán",
+        label: t("adminAdmindashboard.transactionsPayments"),
         color: "text-indigo-600",
       },
     ],
   },
 ];
-
 const ADMIN_SIDEBAR_LOGO = (
   <>
     <div className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
@@ -323,32 +422,33 @@ const ADMIN_SIDEBAR_LOGO = (
     </div>
     <div>
       <h1 className="font-semibold text-gray-900 dark:text-white">ADMINISTRATOR</h1>
-      <p className="text-xs text-gray-500 dark:text-slate-400">Quản trị hệ thống</p>
+      <p className="text-xs text-gray-500 dark:text-slate-400">
+        {t("adminAdmindashboard.systemAdministration")}
+      </p>
     </div>
   </>
 );
-
 const ADMIN_SIDEBAR_LOGO_COLLAPSED = (
   <div className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
     <LayoutDashboard className="h-6 w-6 text-white" />
   </div>
 );
-
 const validateChromeTabsMenuConfiguration = () => {
   const availableTabTypes = new Set(AVAILABLE_TABS.map((tab) => tab.type));
   const menuTabTypes = new Set(
     CHROME_TABS_MENU_GROUPS.flatMap((group) => group.items.map((item) => item.type as TabType))
   );
-
   const missingInMenu = AVAILABLE_TABS.filter((tab) => !menuTabTypes.has(tab.type)).map(
     (tab) => tab.type
   );
   const invalidInMenu = Array.from(menuTabTypes).filter((type) => !availableTabTypes.has(type));
-
-  return { missingInMenu, invalidInMenu };
+  return {
+    missingInMenu,
+    invalidInMenu,
+  };
 };
-
 export function AdminDashboardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { companyId } = useParams();
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
@@ -367,41 +467,34 @@ export function AdminDashboardPage() {
     )
   );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
   const typedActiveTab: TabType = isValidTabType(activeTab) ? activeTab : "dashboard";
-
   useEffect(() => {
     if (!companyId) {
       return;
     }
-
     if (activeTab !== "companies") {
       setActiveTab("companies");
     }
   }, [activeTab, companyId, setActiveTab]);
-
   useEffect(() => {
     if (!import.meta.env.DEV) {
       return;
     }
-
     const { missingInMenu, invalidInMenu } = validateChromeTabsMenuConfiguration();
     if (missingInMenu.length === 0 && invalidInMenu.length === 0) {
       return;
     }
-
-    console.warn("[AdminDashboardPage] Cấu hình menu tab dấu cộng chưa đồng bộ", {
+    console.warn(t("adminAdmindashboard.admindashboardpageThePlusTabMenu"), {
       missingInMenu,
       invalidInMenu,
     });
-  }, []);
-
-  useDashboardScrollRestoration(contentRef, { scopeKey: typedActiveTab });
-
+  }, [t]);
+  useDashboardScrollRestoration(contentRef, {
+    scopeKey: typedActiveTab,
+  });
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");
   }, [sidebarBehavior]);
-
   const chromeTabsData = useMemo(() => {
     return openTabs
       .filter((tab) => isValidTabType(tab.type))
@@ -411,22 +504,21 @@ export function AdminDashboardPage() {
         title: tab.label,
       }));
   }, [openTabs]);
-
   const activeTabId = useMemo(() => {
     const activeTabData = openTabs.find((tab) => tab.type === activeTab);
     return activeTabData?.id || "";
   }, [openTabs, activeTab]);
-
   const navigateToTab = useCallback(
     (tabType: string) => {
       if (companyId && tabType !== "companies") {
-        navigate(`/admin?tab=${tabType}`, { replace: true });
+        navigate(`/admin?tab=${tabType}`, {
+          replace: true,
+        });
       }
       setActiveTab(tabType);
     },
     [companyId, navigate, setActiveTab]
   );
-
   const handleTabSelect = useCallback(
     (tabId: string) => {
       const selectedTab = openTabs.find((tab) => tab.id === tabId);
@@ -436,44 +528,41 @@ export function AdminDashboardPage() {
     },
     [navigateToTab, openTabs]
   );
-
   const handleNewTab = useCallback(
     (type: string) => {
       navigateToTab(type);
     },
     [navigateToTab]
   );
-
   const handleSidebarNavigate = useCallback(
     (type: string) => {
       navigateToTab(type);
     },
     [navigateToTab]
   );
-
   const handleCloseAllTabs = useCallback(() => {
     if (companyId) {
-      navigate("/admin?tab=dashboard", { replace: true });
+      navigate("/admin?tab=dashboard", {
+        replace: true,
+      });
     }
     resetTabsTo("dashboard");
   }, [companyId, navigate, resetTabsTo]);
-
   const closeAllDisabled = openTabs.length === 1 && openTabs[0]?.type === "dashboard";
-
   const chromeMenuActions = useMemo<ChromeTabMenuAction[]>(
     () => [
       {
         id: "close-all-tabs",
-        label: "Đóng tất cả tab",
+        label: t("common.closeAllTabs"),
         icon: Trash2,
         destructive: true,
         disabled: closeAllDisabled,
         onSelect: handleCloseAllTabs,
       },
     ],
-    [closeAllDisabled, handleCloseAllTabs]
-  );
 
+    [closeAllDisabled, handleCloseAllTabs, t]
+  );
   const renderContent = () => {
     switch (typedActiveTab) {
       case "dashboard":
@@ -509,15 +598,13 @@ export function AdminDashboardPage() {
       case "transactionsPayments":
         return <TransactionPaymentManagementPage />;
       default:
-        return <div>Loại tab không hợp lệ</div>;
+        return <div>{t("common.invalidTabType")}</div>;
     }
   };
-
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
     setScrollTarget(node);
   }, []);
-
   return (
     <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
       <DashboardSidebar
@@ -532,7 +619,7 @@ export function AdminDashboardPage() {
         logo={ADMIN_SIDEBAR_LOGO}
         collapsedLogo={ADMIN_SIDEBAR_LOGO_COLLAPSED}
         showSettings
-        settingsLabel="Cài đặt"
+        settingsLabel={t("common.setting")}
         onSettingsClick={() => setIsSettingsOpen(true)}
         theme={{
           wrapper: "h-full border-r border-gray-200 bg-white",
@@ -559,7 +646,7 @@ export function AdminDashboardPage() {
           logoutCollapsedBtn:
             "flex items-center justify-center rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20",
           logoutIcon: "",
-          logoutLabel: "Đăng xuất",
+          logoutLabel: t("common.logout"),
         }}
       />
 

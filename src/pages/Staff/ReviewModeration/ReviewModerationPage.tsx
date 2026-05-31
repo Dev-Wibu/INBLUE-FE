@@ -1,23 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * Staff Review Moderation Page
  * Allows staff to moderate reviews (focus on low ratings)
  */
-
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  ClipboardList,
-  Eye,
-  Flag,
-  Lightbulb,
-  Search,
-  Star,
-  Target,
-  ThumbsUp,
-  Zap,
-} from "lucide-react";
-import { useMemo, useState } from "react";
 
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { ReloadButton } from "@/components/shared/ReloadButton";
@@ -53,16 +38,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
-
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardList,
+  Eye,
+  Flag,
+  Lightbulb,
+  Search,
+  Star,
+  Target,
+  ThumbsUp,
+  Zap,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 
 // Rating thresholds for moderation
 const LOW_RATING_THRESHOLD = 2;
 const HIGH_RATING_MIN = 4;
-
 export function ReviewModerationPage() {
+  const { t } = useTranslation();
   const { data: reviews = [], isLoading, isRefetching, refetch } = useMentorReviews();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("low"); // Default to low ratings
 
@@ -87,7 +85,6 @@ export function ReviewModerationPage() {
       // Rating filter
       if (ratingFilter === "low" && (review.rating || 0) > LOW_RATING_THRESHOLD) return false;
       if (ratingFilter === "high" && (review.rating || 0) < HIGH_RATING_MIN) return false;
-
       return true;
     });
   }, [reviews, searchQuery, ratingFilter]);
@@ -114,21 +111,19 @@ export function ReviewModerationPage() {
   const lowRatingReviews = reviews.filter(
     (r: MentorReview) => (r.rating || 0) <= LOW_RATING_THRESHOLD
   ).length;
-
   const handleViewDetail = (review: MentorReview) => {
     setSelectedReview(review);
     setIsDetailOpen(true);
   };
-
   return (
     <div className="container mx-auto space-y-6 py-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-          Kiểm duyệt đánh giá mentor gửi
+          {t("staffReviewmoderation.moderateTheReviewsSentBy")}
         </h1>
         <p className="text-slate-500 dark:text-slate-400">
-          Xem xét và kiểm duyệt các đánh giá mentor gửi cho ứng viên, đặc biệt là đánh giá thấp
+          {t("staffReviewmoderation.reviewAndModerateMentorReviews")}
         </p>
       </div>
 
@@ -139,11 +134,12 @@ export function ReviewModerationPage() {
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
               <CardTitle className="text-amber-700 dark:text-amber-400">
-                {lowRatingReviews} đánh giá thấp cần xem xét
+                {lowRatingReviews} {t("staffReviewmoderation.lowRatingNeedsConsideration")}
               </CardTitle>
             </div>
             <CardDescription className="text-amber-600 dark:text-amber-400">
-              Có {lowRatingReviews} đánh giá với rating 1-2 sao cần được kiểm tra
+              {t("common.have")} {lowRatingReviews}{" "}
+              {t("staffReviewmoderation.reviewsWithARatingOf")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -153,7 +149,7 @@ export function ReviewModerationPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Tổng đánh giá</CardDescription>
+            <CardDescription>{t("common.totalRating")}</CardDescription>
             <CardTitle className="text-2xl">{reviews.length}</CardTitle>
           </CardHeader>
         </Card>
@@ -188,13 +184,13 @@ export function ReviewModerationPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
-            <CardTitle>Bộ lọc</CardTitle>
+            <CardTitle>{t("common.filter")}</CardTitle>
             <ReloadButton
               onReload={async () => {
                 await refetch();
               }}
               isLoading={isRefetching}
-              tooltip="Tải lại danh sách đánh giá"
+              tooltip={t("common.reloadReviewList")}
             />
           </div>
         </CardHeader>
@@ -203,7 +199,7 @@ export function ReviewModerationPage() {
             <div className="relative min-w-[200px] flex-1">
               <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
-                placeholder="Tìm theo tên mentor, ứng viên, nội dung đánh giá..."
+                placeholder={t("staffReviewmoderation.searchByMentorNameCandidate")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -211,11 +207,13 @@ export function ReviewModerationPage() {
             </div>
             <Select value={ratingFilter} onValueChange={setRatingFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Mức đánh giá" />
+                <SelectValue placeholder={t("common.ratingLevel")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="low">1-{LOW_RATING_THRESHOLD} sao (Cần xem)</SelectItem>
+                <SelectItem value="all">{t("general.all")}</SelectItem>
+                <SelectItem value="low">
+                  1-{LOW_RATING_THRESHOLD} {t("common.starsNeedToSee")}
+                </SelectItem>
                 <SelectItem value="high">{HIGH_RATING_MIN}-5 sao</SelectItem>
               </SelectContent>
             </Select>
@@ -228,10 +226,10 @@ export function ReviewModerationPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Star className="h-5 w-5 text-amber-500" />
-            <CardTitle>Danh Sách Kiểm Duyệt</CardTitle>
+            <CardTitle>{t("common.censorshipList")}</CardTitle>
           </div>
           <CardDescription>
-            Hiển thị {sortedData.length} / {reviews.length} đánh giá
+            {t("common.show")} {sortedData.length} / {reviews.length} {t("compReview.evaluate")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -240,8 +238,8 @@ export function ReviewModerationPage() {
           ) : pageData.length === 0 ? (
             <EmptyState
               icon={Star}
-              title="Không có đánh giá"
-              description="Không tìm thấy đánh giá nào cần kiểm duyệt."
+              title={t("common.thereAreNoReviews")}
+              description={t("staffReviewmoderation.noReviewsFoundThatNeeded")}
             />
           ) : (
             <>
@@ -251,13 +249,13 @@ export function ReviewModerationPage() {
                     <TableHead>
                       <SortButton {...getSortProps("id")}>ID</SortButton>
                     </TableHead>
-                    <TableHead>Mentor gửi</TableHead>
-                    <TableHead>Ứng viên được đánh giá</TableHead>
+                    <TableHead>{t("common.mentorSent")}</TableHead>
+                    <TableHead>{t("common.candidatesAreEvaluated")}</TableHead>
                     <TableHead>
-                      <SortButton {...getSortProps("rating")}>Đánh giá</SortButton>
+                      <SortButton {...getSortProps("rating")}>{t("common.evaluate")}</SortButton>
                     </TableHead>
-                    <TableHead>Điểm yếu được nêu</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead>{t("staffReviewmoderation.weaknessesAreStated")}</TableHead>
+                    <TableHead className="text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -277,17 +275,17 @@ export function ReviewModerationPage() {
                             <AvatarFallback>{review.mentor?.name?.charAt(0) || "M"}</AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
-                            {review.mentor?.name || "Không có dữ liệu"}
+                            {review.mentor?.name || t("common.noDataAvailable")}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>{review.user?.name || "Không có dữ liệu"}</TableCell>
+                      <TableCell>{review.user?.name || t("common.noDataAvailable")}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <StarRating value={review.rating || 0} readOnly size="sm" />
                           {(review.rating || 0) <= LOW_RATING_THRESHOLD && (
                             <Badge variant="destructive" className="text-xs">
-                              Thấp
+                              {t("common.short")}
                             </Badge>
                           )}
                         </div>
@@ -326,12 +324,13 @@ export function ReviewModerationPage() {
               {(selectedReview?.rating || 0) <= LOW_RATING_THRESHOLD && (
                 <AlertTriangle className="h-5 w-5 text-red-500" />
               )}
-              Chi Tiết Đánh Giá #{selectedReview?.id}
+              {t("common.reviewDetails")}
+              {selectedReview?.id}
             </DialogTitle>
             <DialogDescription>
-              Đánh giá từ mentor {selectedReview?.mentor?.name}
+              {t("common.reviewFromMentor")} {selectedReview?.mentor?.name}
               {" -> "}
-              ứng viên {selectedReview?.user?.name}
+              {t("common.candidate")} {selectedReview?.user?.name}
             </DialogDescription>
           </DialogHeader>
           {selectedReview && (
@@ -345,7 +344,7 @@ export function ReviewModerationPage() {
               {selectedReview.situationNote && (
                 <div>
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-emerald-600">
-                    <Target className="h-4 w-4" /> Tình huống
+                    <Target className="h-4 w-4" /> {t("common.situation")}
                   </h4>
                   <p className="rounded bg-emerald-50 p-3 text-sm dark:bg-emerald-900/20">
                     {selectedReview.situationNote}
@@ -356,7 +355,7 @@ export function ReviewModerationPage() {
               {selectedReview.taskNote && (
                 <div>
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-blue-600">
-                    <ClipboardList className="h-4 w-4" /> Nhiệm vụ
+                    <ClipboardList className="h-4 w-4" /> {t("common.mission")}
                   </h4>
                   <p className="rounded bg-blue-50 p-3 text-sm dark:bg-blue-900/20">
                     {selectedReview.taskNote}
@@ -367,7 +366,7 @@ export function ReviewModerationPage() {
               {selectedReview.actionNote && (
                 <div>
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-purple-600">
-                    <Zap className="h-4 w-4" /> Hành động
+                    <Zap className="h-4 w-4" /> {t("common.act")}
                   </h4>
                   <p className="rounded bg-purple-50 p-3 text-sm dark:bg-purple-900/20">
                     {selectedReview.actionNote}
@@ -378,7 +377,7 @@ export function ReviewModerationPage() {
               {selectedReview.resultNote && (
                 <div>
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-amber-600">
-                    <CheckCircle2 className="h-4 w-4" /> Kết quả
+                    <CheckCircle2 className="h-4 w-4" /> {t("common.result")}
                   </h4>
                   <p className="rounded bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
                     {selectedReview.resultNote}
@@ -390,7 +389,7 @@ export function ReviewModerationPage() {
               {selectedReview.strength && (
                 <div>
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-green-600">
-                    <ThumbsUp className="h-4 w-4" /> Điểm mạnh
+                    <ThumbsUp className="h-4 w-4" /> {t("common.strengths")}
                   </h4>
                   <p className="rounded bg-green-50 p-3 text-sm dark:bg-green-900/20">
                     {selectedReview.strength}
@@ -401,7 +400,8 @@ export function ReviewModerationPage() {
               {selectedReview.weakness && (
                 <div>
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-red-600">
-                    <AlertTriangle className="h-4 w-4" /> Điểm yếu (Cần xem xét)
+                    <AlertTriangle className="h-4 w-4" />{" "}
+                    {t("staffReviewmoderation.weaknessesNeedToConsider")}
                   </h4>
                   <p className="rounded border border-red-200 bg-red-50 p-3 text-sm dark:border-red-800 dark:bg-red-900/20">
                     {selectedReview.weakness}
@@ -412,7 +412,7 @@ export function ReviewModerationPage() {
               {selectedReview.improve && (
                 <div>
                   <h4 className="mb-1 flex items-center gap-1.5 font-medium text-indigo-600">
-                    <Lightbulb className="h-4 w-4" /> Đề xuất cải tiến
+                    <Lightbulb className="h-4 w-4" /> {t("common.suggestedImprovements")}
                   </h4>
                   <p className="rounded bg-indigo-50 p-3 text-sm dark:bg-indigo-900/20">
                     {selectedReview.improve}

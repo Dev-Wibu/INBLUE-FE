@@ -1,11 +1,10 @@
-import { Home, KeyRound, LogIn } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
 import { Button } from "@/components/ui/button";
-
+import { Home, KeyRound, LogIn } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 export function UnauthorizedPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4 dark:from-slate-950 dark:to-slate-900">
       <div className="text-center">
@@ -22,9 +21,11 @@ export function UnauthorizedPage() {
         </div>
 
         {/* Title & Description */}
-        <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">Chưa xác thực</h1>
+        <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+          {t("error_unauthorizedpage.tsx.chua_xac_thuc")}
+        </h1>
         <p className="mb-8 max-w-md text-gray-600 dark:text-slate-400">
-          Bạn cần đăng nhập để truy cập trang này. Vui lòng đăng nhập và thử lại.
+          {t("error_unauthorizedpage.tsx.ban_can_ang_nhap_e_truy_cap_trang_nay_vu")}
         </p>
 
         {/* Action Buttons */}
@@ -33,18 +34,18 @@ export function UnauthorizedPage() {
             onClick={() => navigate("/login")}
             className="gap-2 bg-blue-600 hover:bg-blue-700">
             <LogIn className="h-4 w-4" />
-            Đăng nhập
+            {t("common.logIn")}
           </Button>
           <Button variant="outline" onClick={() => navigate("/")} className="gap-2">
             <Home className="h-4 w-4" />
-            Về trang chủ
+            {t("error_unauthorizedpage.tsx.ve_trang_chu")}
           </Button>
         </div>
       </div>
 
       {/* Footer */}
       <div className="mt-16 text-sm text-gray-500 dark:text-slate-500">
-        Mã lỗi: 401 - Chưa xác thực
+        {t("error_unauthorizedpage.tsx.ma_loi_401_chua_xac_thuc")}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Filter, Search, X } from "lucide-react";
-
+import { useTranslation } from "react-i18next";
 interface MentorFiltersProps {
   searchQuery: string;
   onSearchChange: (_value: string) => void;
@@ -12,7 +12,6 @@ interface MentorFiltersProps {
   onReset: () => void;
   matchedCount: number;
 }
-
 export function MentorFilters({
   searchQuery,
   onSearchChange,
@@ -22,8 +21,8 @@ export function MentorFilters({
   onReset,
   matchedCount,
 }: MentorFiltersProps) {
+  const { t } = useTranslation();
   const hasActiveFilters = searchQuery.trim().length > 0 || selectedExpertise !== "all";
-
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/85">
       <div className="flex flex-col gap-3">
@@ -31,7 +30,7 @@ export function MentorFilters({
           <div className="relative flex-1">
             <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
-              placeholder="Tìm theo tên, kỹ năng hoặc công ty..."
+              placeholder={t("userMentorlist.searchByNameSkillOr")}
               className="h-11 border-slate-200 bg-white pr-10 pl-11 text-sm focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900"
               value={searchQuery}
               onChange={(event) => onSearchChange(event.target.value)}
@@ -50,7 +49,7 @@ export function MentorFilters({
             <Badge
               variant="secondary"
               className="h-9 rounded-full border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-              {matchedCount} kết quả
+              {matchedCount} {t("common.result2")}
             </Badge>
 
             {hasActiveFilters && (
@@ -60,7 +59,7 @@ export function MentorFilters({
                 size="sm"
                 className="h-9 rounded-full border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                 onClick={onReset}>
-                Đặt lại
+                {t("userMentorlist.reset")}
               </Button>
             )}
           </div>
@@ -78,7 +77,7 @@ export function MentorFilters({
             }
             onClick={() => onSelectExpertise("all")}>
             <Filter className="mr-1 h-3.5 w-3.5" />
-            Tất cả
+            {t("general.all")}
           </Button>
 
           {expertiseOptions.map((expertise) => (

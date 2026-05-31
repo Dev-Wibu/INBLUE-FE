@@ -1,7 +1,3 @@
-import { CheckCircle2, ShieldAlert } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-
 import { Spinner } from "@/components/ui/spinner";
 import type { PaymentPurpose, UserSubscriptionResponse } from "@/interfaces";
 import {
@@ -20,47 +16,46 @@ import {
   type PaymentRecoveryLookupSource,
   upsertPaymentRecoveryContext,
 } from "@/lib";
+import i18n from "@/lib/i18n";
 import { userManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
+import { CheckCircle2, ShieldAlert } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
-
+const t = i18n.t.bind(i18n);
 type ResolveState = "checking" | "ready" | "unmapped" | "subscribing" | "subscribed";
 const ACTIVATED_ORDERS_STORAGE_KEY = "inblue.payment.activated-orders";
-
 const isPaidStatus = (status: string): boolean => {
   const normalized = status.trim().toUpperCase();
   return normalized === "PAID" || normalized === "SUCCESS" || normalized === "COMPLETED";
 };
-
 const isAlreadySubscribedError = (error?: string): boolean => {
   if (!error) {
     return false;
   }
-
   const normalized = error.toLowerCase();
   return (
     normalized.includes("409") ||
     normalized.includes("conflict") ||
     normalized.includes("already") ||
-    normalized.includes("đã kích hoạt") ||
+    normalized.includes(t("payment_paymentsuccesspage.tsx.a_kich_hoat")) ||
     normalized.includes("da kich hoat") ||
     normalized.includes("already active") ||
     normalized.includes("already subscribed")
   );
 };
-
 const getActivatedOrderCodes = (): Set<string> => {
   try {
     const raw = localStorage.getItem(ACTIVATED_ORDERS_STORAGE_KEY);
     if (!raw) {
       return new Set();
     }
-
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) {
       return new Set();
     }
-
     return new Set(
       parsed
         .map((item) => (typeof item === "string" ? item.trim() : ""))
@@ -70,47 +65,57 @@ const getActivatedOrderCodes = (): Set<string> => {
     return new Set();
   }
 };
-
 const markOrderAsActivated = (orderCode: string): void => {
   const normalized = orderCode.trim();
   if (!normalized) {
     return;
   }
-
   const next = getActivatedOrderCodes();
   next.add(normalized);
   localStorage.setItem(ACTIVATED_ORDERS_STORAGE_KEY, JSON.stringify([...next]));
 };
-
 const getSuccessSubtitle = (purpose?: PaymentPurpose): string => {
   switch (purpose) {
     case "BUY_MEMBERSHIP":
-      return "Hệ thống đang xác nhận và tự động kích hoạt gói thành viên cho bạn.";
+      return t("payment_paymentsuccesspage.tsx.he_thong_ang_xac_nhan_va_tu_ong_kich_hoa");
     case "MENTOR_INTERVIEW":
-      return "Hệ thống đang cập nhật trạng thái phiên phỏng vấn của bạn.";
+      return t("payment_paymentsuccesspage.tsx.he_thong_ang_cap_nhat_trang_thai_phien_p");
     case "TOP_UP_WALLET":
-      return "Hệ thống đang cập nhật số dư ví của bạn.";
+      return t("payment_paymentsuccesspage.tsx.he_thong_ang_cap_nhat_so_du_vi_cua_ban");
     case "WITHDRAW_FROM_WALLET":
-      return "Yêu cầu giao dịch ví đã được xác nhận thành công.";
+      return t("payment_paymentsuccesspage.tsx.yeu_cau_giao_dich_vi_a_uoc_xac_nhan_than");
     default:
-      return "Hệ thống đang xác nhận giao dịch của bạn.";
+      return t("payment_paymentsuccesspage.tsx.he_thong_ang_xac_nhan_giao_dich_cua_ban");
   }
 };
-
-const getPrimaryRedirect = (purpose?: PaymentPurpose): { to: string; label: string } => {
+const getPrimaryRedirect = (
+  purpose?: PaymentPurpose
+): {
+  to: string;
+  label: string;
+} => {
   switch (purpose) {
     case "MENTOR_INTERVIEW":
-      return { to: "/user?tab=interviewHistory", label: "Xem lịch sử phỏng vấn" };
+      return {
+        to: "/user?tab=interviewHistory",
+        label: t("common.viewInterviewHistory"),
+      };
     case "TOP_UP_WALLET":
     case "WITHDRAW_FROM_WALLET":
-      return { to: "/user?tab=account&subtab=wallet", label: "Đến ví của tôi" };
+      return {
+        to: "/user?tab=account&subtab=wallet",
+        label: t("payment_paymentsuccesspage.tsx.en_vi_cua_toi"),
+      };
     case "BUY_MEMBERSHIP":
     default:
-      return { to: "/user?tab=account", label: "Quay lại tài khoản" };
+      return {
+        to: "/user?tab=account",
+        label: t("payment_paymentsuccesspage.tsx.quay_lai_tai_khoan"),
+      };
   }
 };
-
 export function PaymentSuccessPage() {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
   const orderCode = query.get("orderCode")?.trim() || "";
@@ -129,7 +134,6 @@ export function PaymentSuccessPage() {
     () => getPendingSessionPaymentContext(currentUserId || undefined),
     [currentUserId]
   );
-
   const [resolveState, setResolveState] = useState<ResolveState>("checking");
   const [resolveError, setResolveError] = useState<string>("");
   const [subscribeError, setSubscribeError] = useState<string>("");
@@ -139,7 +143,6 @@ export function PaymentSuccessPage() {
   const [autoSubscribeKey, setAutoSubscribeKey] = useState<string>("");
   const autoResolveKeyRef = useRef("");
   const resolveInFlightRef = useRef(false);
-
   const resolveExecutionKey = useMemo(
     () =>
       [
@@ -165,7 +168,6 @@ export function PaymentSuccessPage() {
       status,
     ]
   );
-
   const loadActiveSubscription = useCallback(
     async (userId: number): Promise<UserSubscriptionResponse | null> => {
       const subscriptionResult = await userManager.getActiveSubscription(userId);
@@ -174,36 +176,32 @@ export function PaymentSuccessPage() {
         setSubscribeError("");
         return subscriptionResult.data;
       }
-
       setSubscribeError(
         subscriptionResult.error ||
-          "Gói đã được kích hoạt, nhưng không thể tải thông tin gói mới nhất."
+          t("payment_paymentsuccesspage.tsx.goi_a_uoc_kich_hoat_nhung_khong_the_tai_")
       );
       return null;
     },
-    []
-  );
 
+    [t]
+  );
   const handleResolveOrder = useCallback(async () => {
     if (resolveInFlightRef.current) {
       return;
     }
-
     resolveInFlightRef.current = true;
-
     try {
       setSubscribeError("");
       setSubscription(null);
       setResolveError("");
       setRecoveryContext(null);
-
       if (!currentUserId) {
         addPaymentSupportLog({
           orderCode,
           transactionCode: queryTransactionCode || undefined,
           checkoutToken: callbackCheckoutToken || undefined,
           status: "UNMAPPED_ORDER",
-          message: "Không tìm thấy user session khi vào callback success.",
+          message: t("payment_paymentsuccesspage.tsx.khong_tim_thay_user_session_khi_vao_call"),
           payload: {
             source,
             status,
@@ -211,10 +209,11 @@ export function PaymentSuccessPage() {
           },
         });
         setResolveState("unmapped");
-        setResolveError("Không tìm thấy phiên đăng nhập. Vui lòng đăng nhập lại.");
+        setResolveError(
+          t("payment_paymentsuccesspage.tsx.khong_tim_thay_phien_ang_nhap_vui_long_a")
+        );
         return;
       }
-
       const hasAnyIdentifier = Boolean(
         orderCode ||
         queryTransactionCode ||
@@ -223,12 +222,11 @@ export function PaymentSuccessPage() {
         pendingSessionPayment?.transactionCode ||
         pendingSessionPayment?.sessionId
       );
-
       if (!hasAnyIdentifier) {
         addPaymentSupportLog({
           userId: currentUserId,
           status: "UNMAPPED_ORDER",
-          message: "Callback success không có đủ định danh để map giao dịch.",
+          message: t("payment_paymentsuccesspage.tsx.callback_success_khong_co_u_inh_danh_e_m"),
           payload: {
             source,
             status,
@@ -236,36 +234,32 @@ export function PaymentSuccessPage() {
           },
         });
         setResolveState("unmapped");
-        setResolveError("Không nhận được thông tin thanh toán hợp lệ. Vui lòng thanh toán lại.");
+        setResolveError(
+          t("payment_paymentsuccesspage.tsx.khong_nhan_uoc_thong_tin_thanh_toan_hop_")
+        );
         return;
       }
-
       setResolveState("checking");
-
       let nextContext: PaymentRecoveryContext | null = null;
       let recoverySource: PaymentRecoveryLookupSource = "none";
-
       if (orderCode) {
         nextContext = getRecoveryByOrderCode(orderCode, currentUserId);
         if (nextContext) {
           recoverySource = "order-code";
         }
       }
-
       if (!nextContext && queryTransactionCode) {
         nextContext = getRecoveryByTransactionCode(queryTransactionCode, currentUserId);
         if (nextContext) {
           recoverySource = "query-transaction-code";
         }
       }
-
       if (!nextContext && callbackCheckoutToken) {
         nextContext = getRecoveryByCheckoutToken(callbackCheckoutToken, currentUserId);
         if (nextContext) {
           recoverySource = "callback-checkout-token";
         }
       }
-
       if (!nextContext && pendingSessionPayment?.checkoutToken) {
         nextContext = getRecoveryByCheckoutToken(
           pendingSessionPayment.checkoutToken,
@@ -275,7 +269,6 @@ export function PaymentSuccessPage() {
           recoverySource = "pending-checkout-token";
         }
       }
-
       if (!nextContext && pendingSessionPayment?.transactionCode) {
         nextContext = getRecoveryByTransactionCode(
           pendingSessionPayment.transactionCode,
@@ -285,7 +278,6 @@ export function PaymentSuccessPage() {
           recoverySource = "pending-transaction-code";
         }
       }
-
       if (!nextContext && pendingSessionPayment?.sessionId) {
         nextContext = getLatestRecoveryForSessionPayment(
           pendingSessionPayment.sessionId,
@@ -295,21 +287,18 @@ export function PaymentSuccessPage() {
           recoverySource = "session-recovery";
         }
       }
-
       if (!nextContext && pendingSessionPayment?.paymentPurpose === "MENTOR_INTERVIEW") {
         nextContext = getLatestRecoveryForUserByPurpose(currentUserId, "MENTOR_INTERVIEW");
         if (nextContext) {
           recoverySource = "purpose-recovery";
         }
       }
-
       if (!nextContext) {
         nextContext = getLatestRecoveryForUser(currentUserId);
         if (nextContext) {
           recoverySource = "latest-user-recovery";
         }
       }
-
       if (!nextContext) {
         addPaymentSupportLog({
           orderCode,
@@ -317,7 +306,7 @@ export function PaymentSuccessPage() {
           checkoutToken: callbackCheckoutToken || undefined,
           userId: currentUserId,
           status: "UNMAPPED_ORDER",
-          message: "Không tìm thấy recovery context cho callback success.",
+          message: t("payment_paymentsuccesspage.tsx.khong_tim_thay_recovery_context_cho_call"),
           payload: {
             source,
             status,
@@ -326,10 +315,11 @@ export function PaymentSuccessPage() {
           },
         });
         setResolveState("unmapped");
-        setResolveError("Không tìm thấy thông tin giao dịch phù hợp. Vui lòng thanh toán lại.");
+        setResolveError(
+          t("payment_paymentsuccesspage.tsx.khong_tim_thay_thong_tin_giao_dich_phu_h")
+        );
         return;
       }
-
       const identifierMismatch = getCallbackIdentifierMismatch(
         {
           orderCode,
@@ -338,7 +328,6 @@ export function PaymentSuccessPage() {
         },
         nextContext
       );
-
       if (identifierMismatch.hasMismatch) {
         addPaymentSupportLog({
           supportCode: nextContext.supportCode,
@@ -349,7 +338,7 @@ export function PaymentSuccessPage() {
           paymentPurpose: nextContext.paymentPurpose,
           sessionId: nextContext.sessionId,
           status: "UNMAPPED_ORDER",
-          message: "Định danh callback success không khớp recovery context.",
+          message: t("payment_paymentsuccesspage.tsx.inh_danh_callback_success_khong_khop_rec"),
           payload: {
             recoverySource,
             mismatchedKeys: identifierMismatch.mismatchedKeys,
@@ -359,15 +348,13 @@ export function PaymentSuccessPage() {
         });
         setResolveState("unmapped");
         setResolveError(
-          "Không thể đối chiếu chính xác thông tin thanh toán. Vui lòng thử xác nhận lại."
+          t("payment_paymentsuccesspage.tsx.khong_the_oi_chieu_chinh_xac_thong_tin_t")
         );
         return;
       }
-
       const hasStrongCallbackIdentifier = Boolean(
         orderCode || queryTransactionCode || callbackCheckoutToken
       );
-
       if (hasStrongCallbackIdentifier && isLowConfidenceRecoverySource(recoverySource)) {
         addPaymentSupportLog({
           supportCode: nextContext.supportCode,
@@ -378,8 +365,7 @@ export function PaymentSuccessPage() {
           paymentPurpose: nextContext.paymentPurpose,
           sessionId: nextContext.sessionId,
           status: "UNMAPPED_ORDER",
-          message:
-            "Callback success chỉ map được qua latest-user fallback, tạm dừng để tránh map sai.",
+          message: t("payment_paymentsuccesspage.tsx.callback_success_chi_map_uoc_qua_latest_"),
           payload: {
             recoverySource,
             source,
@@ -388,11 +374,10 @@ export function PaymentSuccessPage() {
         });
         setResolveState("unmapped");
         setResolveError(
-          "Không thể đối chiếu đủ tin cậy cho giao dịch này. Vui lòng thử xác nhận lại."
+          t("payment_paymentsuccesspage.tsx.khong_the_oi_chieu_u_tin_cay_cho_giao_di")
         );
         return;
       }
-
       if (nextContext.userId !== currentUserId) {
         addPaymentSupportLog({
           supportCode: nextContext.supportCode,
@@ -403,7 +388,7 @@ export function PaymentSuccessPage() {
           paymentPurpose: nextContext.paymentPurpose,
           sessionId: nextContext.sessionId,
           status: "UNMAPPED_ORDER",
-          message: "Giao dịch callback không thuộc user hiện tại.",
+          message: t("payment_paymentsuccesspage.tsx.giao_dich_callback_khong_thuoc_user_hien"),
           payload: {
             expectedUserId: nextContext.userId,
             actualUserId: currentUserId,
@@ -413,10 +398,11 @@ export function PaymentSuccessPage() {
           },
         });
         setResolveState("unmapped");
-        setResolveError("Thông tin thanh toán không thuộc tài khoản hiện tại.");
+        setResolveError(
+          t("payment_paymentsuccesspage.tsx.thong_tin_thanh_toan_khong_thuoc_tai_kho")
+        );
         return;
       }
-
       const resolvedOrderCode = orderCode || nextContext.orderCode;
       const resolvedTransactionCode =
         queryTransactionCode ||
@@ -428,14 +414,12 @@ export function PaymentSuccessPage() {
         nextContext.paymentPurpose ||
         (pendingSessionPayment?.paymentPurpose as PaymentPurpose | undefined);
       const resolvedSessionId = nextContext.sessionId || pendingSessionPayment?.sessionId;
-
       const callbackStatus =
         paid && nextContext.status === "SUBSCRIBE_SUCCESS"
           ? "SUBSCRIBE_SUCCESS"
           : paid
             ? "CALLBACK_SUCCESS"
             : "UNMAPPED_ORDER";
-
       const updatedContext = upsertPaymentRecoveryContext({
         supportCode: nextContext.supportCode,
         orderCode: resolvedOrderCode,
@@ -449,9 +433,10 @@ export function PaymentSuccessPage() {
         sessionId: resolvedSessionId,
         checkoutUrl: nextContext.checkoutUrl,
         status: callbackStatus,
-        note: paid ? "Callback success hợp lệ." : "Callback trả về status thanh toán không hợp lệ.",
+        note: paid
+          ? t("payment_paymentsuccesspage.tsx.callback_success_hop_le")
+          : t("payment_paymentsuccesspage.tsx.callback_tra_ve_status_thanh_toan_khong_"),
       });
-
       addPaymentSupportLog({
         supportCode: updatedContext.supportCode,
         orderCode: updatedContext.orderCode,
@@ -465,8 +450,8 @@ export function PaymentSuccessPage() {
         sessionId: updatedContext.sessionId,
         status: callbackStatus,
         message: paid
-          ? "Đã xác nhận callback thành công."
-          : "Callback có dữ liệu giao dịch nhưng status thanh toán không hợp lệ.",
+          ? t("payment_paymentsuccesspage.tsx.a_xac_nhan_callback_thanh_cong")
+          : t("payment_paymentsuccesspage.tsx.callback_co_du_lieu_giao_dich_nhung_stat"),
         payload: {
           source,
           status,
@@ -474,49 +459,41 @@ export function PaymentSuccessPage() {
           recoverySource,
         },
       });
-
       setRecoveryContext(updatedContext);
       const normalizedOrderCode = (updatedContext.orderCode || "").trim();
       setIsKnownActivatedOrder(
         updatedContext.status === "SUBSCRIBE_SUCCESS" ||
           (normalizedOrderCode.length > 0 && getActivatedOrderCodes().has(normalizedOrderCode))
       );
-
       if (!paid) {
         setResolveState("unmapped");
-        setResolveError("Thanh toán chưa được xác nhận thành công. Vui lòng thử lại sau.");
+        setResolveError(t("general.paymentHasnTBeenConfirmed"));
         return;
       }
-
       if (updatedContext.paymentPurpose === "MENTOR_INTERVIEW") {
         const targetSessionId = updatedContext.sessionId || pendingSessionPayment?.sessionId;
-
         if (targetSessionId) {
           const params = new URLSearchParams();
           params.set("payment", "success");
           if (updatedContext.orderCode) {
             params.set("orderCode", updatedContext.orderCode);
           }
-
           clearPendingSessionPaymentContext();
           window.location.replace(
             `/user/mock-interview/history/${targetSessionId}?${params.toString()}`
           );
           return;
         }
-
         setResolveError(
-          "Đã xác nhận thanh toán nhưng chưa tìm thấy phiên phỏng vấn để chuyển hướng."
+          t("payment_paymentsuccesspage.tsx.a_xac_nhan_thanh_toan_nhung_chua_tim_tha")
         );
       }
-
       if (
         pendingSessionPayment?.sessionId &&
         updatedContext.paymentPurpose !== "MENTOR_INTERVIEW"
       ) {
         clearPendingSessionPaymentContext();
       }
-
       setResolveState("ready");
     } finally {
       resolveInFlightRef.current = false;
@@ -530,65 +507,64 @@ export function PaymentSuccessPage() {
     queryTransactionCode,
     source,
     status,
+    t,
   ]);
-
   useEffect(() => {
     if (autoResolveKeyRef.current === resolveExecutionKey) {
       return;
     }
-
     autoResolveKeyRef.current = resolveExecutionKey;
     const timerId = window.setTimeout(() => {
       void handleResolveOrder();
     }, 0);
-
     return () => {
       window.clearTimeout(timerId);
     };
   }, [handleResolveOrder, resolveExecutionKey]);
-
   const handleConfirmSubscribe = useCallback(async () => {
     if (!recoveryContext || resolveState === "subscribing") {
       return;
     }
-
     if (!currentUserId) {
-      setSubscribeError("Bạn cần đăng nhập lại trước khi kích hoạt gói.");
+      setSubscribeError(
+        t("payment_paymentsuccesspage.tsx.ban_can_ang_nhap_lai_truoc_khi_kich_hoat")
+      );
       return;
     }
-
     if (recoveryContext.userId !== currentUserId) {
-      setSubscribeError("Không thể kích hoạt gói cho tài khoản hiện tại.");
+      setSubscribeError(
+        t("payment_paymentsuccesspage.tsx.khong_the_kich_hoat_goi_cho_tai_khoan_hi")
+      );
       return;
     }
-
     if (recoveryContext.paymentPurpose !== "BUY_MEMBERSHIP") {
-      setSubscribeError("Giao dịch này không áp dụng cho gói thành viên.");
+      setSubscribeError(
+        t("payment_paymentsuccesspage.tsx.giao_dich_nay_khong_ap_dung_cho_goi_than")
+      );
       return;
     }
-
     if (!recoveryContext.planId) {
-      setSubscribeError("Không tìm thấy gói thành viên cần kích hoạt.");
+      setSubscribeError(
+        t("payment_paymentsuccesspage.tsx.khong_tim_thay_goi_thanh_vien_can_kich_h")
+      );
       return;
     }
-
     if (!paid) {
-      setSubscribeError("Thanh toán chưa được xác nhận thành công.");
+      setSubscribeError(
+        t("payment_paymentsuccesspage.tsx.thanh_toan_chua_uoc_xac_nhan_thanh_cong")
+      );
       return;
     }
-
     const activationOrderCode = (recoveryContext.orderCode || "").trim();
     if (resolveState === "subscribed" || (activationOrderCode && isKnownActivatedOrder)) {
       setResolveState("subscribed");
       setSubscribeError("");
-      toast.info("Gói này đã được kích hoạt trước đó.");
+      toast.info(t("payment_paymentsuccesspage.tsx.goi_nay_a_uoc_kich_hoat_truoc_o"));
       await loadActiveSubscription(recoveryContext.userId);
       return;
     }
-
     setResolveState("subscribing");
     setSubscribeError("");
-
     const subscribeResult = await userManager.subscribePlan(
       recoveryContext.userId,
       recoveryContext.planId
@@ -609,9 +585,8 @@ export function PaymentSuccessPage() {
           sessionId: recoveryContext.sessionId,
           checkoutUrl: recoveryContext.checkoutUrl,
           status: "SUBSCRIBE_SUCCESS",
-          note: "Gói đã được kích hoạt trước đó.",
+          note: t("payment_paymentsuccesspage.tsx.goi_a_uoc_kich_hoat_truoc_o"),
         });
-
         addPaymentSupportLog({
           supportCode: updatedContext.supportCode,
           orderCode: updatedContext.orderCode,
@@ -624,14 +599,13 @@ export function PaymentSuccessPage() {
           paymentPurpose: updatedContext.paymentPurpose,
           sessionId: updatedContext.sessionId,
           status: "SUBSCRIBE_SUCCESS",
-          message: "Backend báo gói đã kích hoạt trước đó.",
+          message: t("payment_paymentsuccesspage.tsx.backend_bao_goi_a_kich_hoat_truoc_o"),
           payload: {
             duplicateSubscribe: true,
             error: subscribeResult.error || null,
             subscriptionSnapshot: latestSubscription,
           },
         });
-
         setRecoveryContext(updatedContext);
         if (activationOrderCode) {
           markOrderAsActivated(activationOrderCode);
@@ -639,10 +613,9 @@ export function PaymentSuccessPage() {
         }
         setResolveState("subscribed");
         setSubscribeError("");
-        toast.info("Gói này đã được kích hoạt trước đó.");
+        toast.info(t("payment_paymentsuccesspage.tsx.goi_nay_a_uoc_kich_hoat_truoc_o"));
         return;
       }
-
       const updatedContext = upsertPaymentRecoveryContext({
         supportCode: recoveryContext.supportCode,
         orderCode: recoveryContext.orderCode,
@@ -656,9 +629,8 @@ export function PaymentSuccessPage() {
         sessionId: recoveryContext.sessionId,
         checkoutUrl: recoveryContext.checkoutUrl,
         status: "SUBSCRIBE_FAILED",
-        note: subscribeResult.error || "Subscribe thất bại.",
+        note: subscribeResult.error || t("payment_paymentsuccesspage.tsx.subscribe_that_bai"),
       });
-
       addPaymentSupportLog({
         supportCode: updatedContext.supportCode,
         orderCode: updatedContext.orderCode,
@@ -671,21 +643,23 @@ export function PaymentSuccessPage() {
         paymentPurpose: updatedContext.paymentPurpose,
         sessionId: updatedContext.sessionId,
         status: "SUBSCRIBE_FAILED",
-        message: "Hệ thống kích hoạt gói tự động thất bại do backend trả về lỗi.",
+        message: t("payment_paymentsuccesspage.tsx.he_thong_kich_hoat_goi_tu_ong_that_bai_d"),
         payload: {
           error: subscribeResult.error || null,
         },
       });
-
       setRecoveryContext(updatedContext);
       setResolveState("ready");
-      setSubscribeError(subscribeResult.error || "Kích hoạt gói thất bại. Vui lòng thử lại.");
-      toast.error(subscribeResult.error || "Kích hoạt gói thất bại.");
+      setSubscribeError(
+        subscribeResult.error ||
+          t("payment_paymentsuccesspage.tsx.kich_hoat_goi_that_bai_vui_long_thu_lai")
+      );
+      toast.error(
+        subscribeResult.error || t("payment_paymentsuccesspage.tsx.kich_hoat_goi_that_bai")
+      );
       return;
     }
-
     const latestSubscription = await loadActiveSubscription(recoveryContext.userId);
-
     const updatedContext = upsertPaymentRecoveryContext({
       supportCode: recoveryContext.supportCode,
       orderCode: recoveryContext.orderCode,
@@ -701,7 +675,6 @@ export function PaymentSuccessPage() {
       status: "SUBSCRIBE_SUCCESS",
       note: "Subscribe thanh cong tu callback success page.",
     });
-
     addPaymentSupportLog({
       supportCode: updatedContext.supportCode,
       orderCode: updatedContext.orderCode,
@@ -714,19 +687,18 @@ export function PaymentSuccessPage() {
       paymentPurpose: updatedContext.paymentPurpose,
       sessionId: updatedContext.sessionId,
       status: "SUBSCRIBE_SUCCESS",
-      message: "Hệ thống đã kích hoạt gói thành công sau callback.",
+      message: t("payment_paymentsuccesspage.tsx.he_thong_a_kich_hoat_goi_thanh_cong_sau_"),
       payload: {
         subscriptionSnapshot: latestSubscription,
       },
     });
-
     setRecoveryContext(updatedContext);
     if (activationOrderCode) {
       markOrderAsActivated(activationOrderCode);
       setIsKnownActivatedOrder(true);
     }
     setResolveState("subscribed");
-    toast.success("Đã kích hoạt gói thành công.");
+    toast.success(t("general.successfullyActivatedPlan"));
   }, [
     currentUserId,
     isKnownActivatedOrder,
@@ -734,8 +706,8 @@ export function PaymentSuccessPage() {
     paid,
     recoveryContext,
     resolveState,
+    t,
   ]);
-
   useEffect(() => {
     if (
       resolveState !== "ready" ||
@@ -745,27 +717,22 @@ export function PaymentSuccessPage() {
     ) {
       return;
     }
-
     if (recoveryContext.status === "SUBSCRIBE_SUCCESS") {
       setResolveState("subscribed");
       return;
     }
-
     const key = (recoveryContext.orderCode || recoveryContext.supportCode || "").trim();
     if (!key || autoSubscribeKey === key) {
       return;
     }
-
     const timerId = window.setTimeout(() => {
       setAutoSubscribeKey(key);
       void handleConfirmSubscribe();
     }, 0);
-
     return () => {
       window.clearTimeout(timerId);
     };
   }, [autoSubscribeKey, handleConfirmSubscribe, paid, recoveryContext, resolveState]);
-
   const resolvedPurpose = recoveryContext?.paymentPurpose;
   const successSubtitle = getSuccessSubtitle(resolvedPurpose);
   const primaryRedirect = getPrimaryRedirect(resolvedPurpose);
@@ -776,7 +743,6 @@ export function PaymentSuccessPage() {
     !!recoveryContext &&
     subscribeKey.length > 0 &&
     autoSubscribeKey === subscribeKey;
-
   return (
     <div className="min-h-screen bg-linear-to-br from-emerald-50 to-blue-50 px-4 py-10 dark:from-slate-950 dark:to-slate-900">
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 rounded-2xl border border-emerald-200 bg-white p-8 shadow-sm dark:border-emerald-900/40 dark:bg-slate-900">
@@ -786,7 +752,7 @@ export function PaymentSuccessPage() {
           </div>
           <div>
             <h1 className="font-['Poppins'] text-2xl font-bold text-emerald-700 dark:text-emerald-400">
-              Thanh toán thành công
+              {t("payment_paymentsuccesspage.tsx.thanh_toan_thanh_cong")}
             </h1>
             <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
               {successSubtitle}
@@ -796,14 +762,14 @@ export function PaymentSuccessPage() {
 
         {!paid && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 font-['Inter'] text-sm text-amber-700 dark:border-amber-800/40 dark:bg-amber-900/10 dark:text-amber-300">
-            Thanh toán chưa được xác nhận thành công. Vui lòng thử lại sau ít phút.
+            {t("payment_paymentsuccesspage.tsx.thanh_toan_chua_uoc_xac_nhan_thanh_cong_")}
           </div>
         )}
 
         {resolveState === "checking" && (
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 font-['Inter'] text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
             <Spinner size="sm" tone="muted" />
-            Đang xác nhận thanh toán...
+            {t("payment_paymentsuccesspage.tsx.ang_xac_nhan_thanh_toan")}
           </div>
         )}
 
@@ -811,10 +777,11 @@ export function PaymentSuccessPage() {
           <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/40 dark:bg-rose-950/20">
             <div className="mb-2 flex items-center gap-2 font-['Inter'] text-sm font-semibold text-rose-700 dark:text-rose-300">
               <ShieldAlert className="h-4 w-4" />
-              Không thể xác nhận thanh toán
+              {t("payment_paymentsuccesspage.tsx.khong_the_xac_nhan_thanh_toan")}
             </div>
             <p className="font-['Inter'] text-sm text-rose-700/90 dark:text-rose-300/90">
-              {resolveError || "Không tìm thấy thông tin thanh toán hợp lệ."}
+              {resolveError ||
+                t("payment_paymentsuccesspage.tsx.khong_tim_thay_thong_tin_thanh_toan_hop_")}
             </p>
           </div>
         )}
@@ -838,7 +805,7 @@ export function PaymentSuccessPage() {
         {resolvedPurpose === "BUY_MEMBERSHIP" && isKnownActivatedOrder && (
           <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 dark:border-violet-800/40 dark:bg-violet-900/10">
             <p className="font-['Inter'] text-sm text-violet-700 dark:text-violet-300">
-              Gói này đã được kích hoạt trước đó.
+              {t("payment_paymentsuccesspage.tsx.goi_nay_a_uoc_kich_hoat_truoc_o")}
             </p>
           </div>
         )}
@@ -854,7 +821,7 @@ export function PaymentSuccessPage() {
             <button
               onClick={() => void handleResolveOrder()}
               className="rounded-xl border border-slate-300 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-              Thử xác nhận lại
+              {t("payment_paymentsuccesspage.tsx.thu_xac_nhan_lai")}
             </button>
           )}
 
@@ -862,7 +829,7 @@ export function PaymentSuccessPage() {
             <button
               onClick={() => void handleConfirmSubscribe()}
               className="rounded-xl bg-emerald-600 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-emerald-700">
-              Thử kích hoạt lại
+              {t("payment_paymentsuccesspage.tsx.thu_kich_hoat_lai")}
             </button>
           )}
 
@@ -871,7 +838,7 @@ export function PaymentSuccessPage() {
               disabled
               className="flex items-center gap-2 rounded-xl bg-emerald-500/80 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white">
               <Spinner size="sm" tone="white" />
-              Đang kích hoạt gói...
+              {t("payment_paymentsuccesspage.tsx.ang_kich_hoat_goi")}
             </button>
           )}
 
@@ -879,7 +846,7 @@ export function PaymentSuccessPage() {
             <Link
               to="/user?tab=account"
               className="rounded-xl border border-slate-300 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-              Chọn gói thành viên khác
+              {t("payment_paymentsuccesspage.tsx.chon_goi_thanh_vien_khac")}
             </Link>
           )}
         </div>
@@ -887,18 +854,27 @@ export function PaymentSuccessPage() {
         {resolvedPurpose === "BUY_MEMBERSHIP" && resolveState === "subscribed" && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
             <p className="mb-2 font-['Inter'] text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-              Đã kích hoạt gói thành công
+              {t("payment_paymentsuccesspage.tsx.a_kich_hoat_goi_thanh_cong")}
             </p>
             {subscription ? (
               <div className="grid grid-cols-1 gap-2 font-['Inter'] text-xs text-emerald-700/90 md:grid-cols-2 dark:text-emerald-300/90">
                 <p>Plan: {subscription.planName || "-"}</p>
-                <p>AI Interview còn lại: {subscription.aiInterviewRemaining ?? "-"}</p>
-                <p>Practice Set còn lại: {subscription.practiceSetRemaining ?? "-"}</p>
-                <p>Quiz Set còn lại: {subscription.quizSetRemaining ?? "-"}</p>
+                <p>
+                  {t("payment_paymentsuccesspage.tsx.ai_interview_con_lai")}{" "}
+                  {subscription.aiInterviewRemaining ?? "-"}
+                </p>
+                <p>
+                  {t("payment_paymentsuccesspage.tsx.practice_set_con_lai")}{" "}
+                  {subscription.practiceSetRemaining ?? "-"}
+                </p>
+                <p>
+                  {t("payment_paymentsuccesspage.tsx.quiz_set_con_lai")}{" "}
+                  {subscription.quizSetRemaining ?? "-"}
+                </p>
               </div>
             ) : (
               <p className="font-['Inter'] text-xs text-emerald-700/90 dark:text-emerald-300/90">
-                Gói đã được kích hoạt, nhưng chưa tải được thông tin chi tiết.
+                {t("payment_paymentsuccesspage.tsx.goi_a_uoc_kich_hoat_nhung_chua_tai_uoc_t")}
               </p>
             )}
           </div>

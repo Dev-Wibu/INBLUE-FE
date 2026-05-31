@@ -1,7 +1,3 @@
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,9 +5,13 @@ import { SpinnerBlock } from "@/components/ui/spinner";
 import { buildPracticeSessionPath, toPositiveIntegerParam } from "@/lib/practice-quiz-route";
 import { quizSetManager } from "@/services";
 import type { QuizItem, QuizSet } from "@/services/quiz-set.manager";
+import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-
 export function QuizResultPage() {
+  const { t } = useTranslation();
   const { sessionId, practiceSetId, quizId } = useParams<{
     sessionId: string;
     practiceSetId: string;
@@ -28,7 +28,11 @@ export function QuizResultPage() {
   // Persist backUrl in sessionStorage so it survives F5 refresh
   const storageKey = `quiz_backUrl_${sessionId ?? "unknown"}_${practiceSetId ?? "unknown"}_${quizId ?? "unknown"}`;
   const [backUrl, setBackUrl] = useState<string>(() => {
-    const stateUrl = (location.state as { backUrl?: string } | null)?.backUrl;
+    const stateUrl = (
+      location.state as {
+        backUrl?: string;
+      } | null
+    )?.backUrl;
     if (stateUrl) {
       try {
         sessionStorage.setItem(storageKey, stateUrl);
@@ -46,14 +50,14 @@ export function QuizResultPage() {
   const [quizSet, setQuizSet] = useState<QuizSet | null>(null);
   const [quizItems, setQuizItems] = useState<QuizItem[]>([]);
   const [loading, setLoading] = useState(true);
-
   const loadData = useCallback(async () => {
     if (!numericQuizId || !numericSessionId || !numericPracticeSetId) {
-      toast.error("Đường dẫn kết quả bài kiểm tra không hợp lệ.");
-      navigate("/user?tab=practice", { replace: true });
+      toast.error(t("userPractice.theTestResultPathIs"));
+      navigate("/user?tab=practice", {
+        replace: true,
+      });
       return;
     }
-
     setLoading(true);
     try {
       // GET /api/quiz-sets/{quizId} returns QuizSet with embedded questions[]
@@ -68,27 +72,34 @@ export function QuizResultPage() {
           /* ignore */
         }
       } else {
-        toast.error("Không thể tải kết quả bài trắc nghiệm");
+        toast.error(t("userPractice.unableToDownloadQuizResults"));
       }
     } catch {
-      toast.error("Không thể tải kết quả bài trắc nghiệm");
+      toast.error(t("userPractice.unableToDownloadQuizResults"));
     } finally {
       setLoading(false);
     }
-  }, [defaultBackUrl, navigate, numericPracticeSetId, numericQuizId, numericSessionId, storageKey]);
-
+  }, [
+    defaultBackUrl,
+    navigate,
+    numericPracticeSetId,
+    numericQuizId,
+    numericSessionId,
+    storageKey,
+    t,
+  ]);
   useEffect(() => {
     loadData();
   }, [loadData]);
-
   const totalQuestions = quizItems.length;
   const correctCount = quizItems.filter(
     (item) => item.userResponse && item.userResponse === item.correctAnswer
   ).length;
   const fallbackScore = totalQuestions > 0 ? (correctCount / totalQuestions) * 10 : 0;
   const displayScore = quizSet?.score !== undefined ? quizSet.score : fallbackScore;
-  const displayScoreText = `${displayScore.toFixed(2)} điểm`;
-
+  const displayScoreText = t("general.points", {
+    var_0: displayScore.toFixed(2),
+  });
   if (loading) {
     return (
       <div className="bg-background">
@@ -96,19 +107,19 @@ export function QuizResultPage() {
       </div>
     );
   }
-
   return (
     <div className="bg-background min-h-screen p-8">
       <div className="mx-auto max-w-3xl">
         {/* Score Card */}
         <Card className="mb-8 overflow-hidden border-0 bg-linear-to-r from-[#0047AB] to-[#007BFF] py-0">
           <CardContent className="flex flex-col items-center p-8 text-center">
-            <h1 className="mb-4 text-2xl font-bold text-white">Kết Quả Quiz</h1>
+            <h1 className="mb-4 text-2xl font-bold text-white">{t("userPractice.quizResults")}</h1>
             <div className="mb-4 flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
               <span className="text-3xl font-bold text-white">{displayScoreText}</span>
             </div>
             <p className="text-lg text-white/90">
-              Bạn trả lời đúng {correctCount} / {totalQuestions} câu hỏi
+              {t("userPractice.youAnsweredCorrectly")} {correctCount} / {totalQuestions}{" "}
+              {t("common.question1")}
             </p>
           </CardContent>
         </Card>
@@ -117,15 +128,15 @@ export function QuizResultPage() {
         <div className="mb-8 flex items-center justify-center">
           <Button variant="outline" className="gap-2" onClick={() => navigate(backUrl)}>
             <ArrowLeft className="h-4 w-4" />
-            Quay lại lộ trình luyện tập
+            {t("userPractice.returnToTheTrainingRoute")}
           </Button>
         </div>
 
         {/* Question Results */}
         <Card>
           <CardHeader>
-            <CardTitle>Chi tiết đáp án</CardTitle>
-            <CardDescription>Xem lại câu trả lời của bạn</CardDescription>
+            <CardTitle>{t("userPractice.answerDetails")}</CardTitle>
+            <CardDescription>{t("userPractice.reviewYourAnswers")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -141,20 +152,24 @@ export function QuizResultPage() {
                       )}
                       <div className="flex-1">
                         <p className="text-foreground font-medium">
-                          Câu {index + 1}: {item.question}
+                          {t("common.sentence")} {index + 1}: {item.question}
                         </p>
                         <div className="mt-2 space-y-1 text-sm">
                           <p>
-                            <span className="text-muted-foreground">Câu trả lời của bạn: </span>
+                            <span className="text-muted-foreground">
+                              {t("userPractice.yourAnswer")}{" "}
+                            </span>
                             <Badge
                               variant={isCorrect ? "default" : "destructive"}
                               className="text-xs">
-                              {item.userResponse || "Chưa trả lời"}
+                              {item.userResponse || t("userPractice.noReplyYet")}
                             </Badge>
                           </p>
                           {!isCorrect && (
                             <p>
-                              <span className="text-muted-foreground">Đáp án đúng: </span>
+                              <span className="text-muted-foreground">
+                                {t("userPractice.correctAnswer")}{" "}
+                              </span>
                               <Badge className="bg-green-100 text-xs text-green-700 hover:bg-green-100">
                                 {item.correctAnswer}
                               </Badge>
@@ -162,7 +177,9 @@ export function QuizResultPage() {
                           )}
                           {item.explanation && (
                             <div className="mt-2 rounded-md bg-[#F0F8FF] p-3">
-                              <p className="text-sm font-medium text-[#0047AB]">Giải thích:</p>
+                              <p className="text-sm font-medium text-[#0047AB]">
+                                {t("userPractice.explain")}
+                              </p>
                               <p className="text-muted-foreground text-sm">{item.explanation}</p>
                             </div>
                           )}

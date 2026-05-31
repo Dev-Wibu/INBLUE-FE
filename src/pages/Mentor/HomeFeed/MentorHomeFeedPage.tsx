@@ -1,10 +1,11 @@
 import { CommunityFeedPage } from "@/components/post";
-
+import { useTranslation } from "react-i18next";
 export function MentorHomeFeedPage() {
+  const { t } = useTranslation();
   return (
     <CommunityFeedPage
-      title="Trang chủ"
-      description="Cập nhật bài viết mới nhất từ cộng đồng mentor"
+      title={t("common.home")}
+      description={t("mentorHomefeed.updateTheLatestArticlesFrom")}
     />
   );
 }
