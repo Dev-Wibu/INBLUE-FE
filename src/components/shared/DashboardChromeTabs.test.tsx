@@ -1,8 +1,8 @@
+import i18n from "@/lib/i18n";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-
 import { DashboardChromeTabs } from "./DashboardChromeTabs";
-
+const t = i18n.t.bind(i18n);
 const baseTheme = {
   bg: "bg-gray-100",
   tabActiveBorder: "border-gray-300",
@@ -14,93 +14,118 @@ const baseTheme = {
   addBtnHover: "hover:bg-gray-300",
   menuHover: "hover:bg-gray-100",
 };
-
 const baseProps = {
-  tabs: [{ id: "dashboard-1", type: "dashboard", title: "Dashboard" }],
+  tabs: [
+    {
+      id: "dashboard-1",
+      type: "dashboard",
+      title: "Dashboard",
+    },
+  ],
   activeTabId: "dashboard-1",
   onTabSelect: vi.fn(),
   onTabClose: vi.fn(),
   onNewTab: vi.fn(),
   menuGroups: [
     {
-      items: [{ type: "users", label: "Quản lý người dùng" }],
+      items: [
+        {
+          type: "users",
+          label: t("common.userManagement"),
+        },
+      ],
     },
   ],
   theme: baseTheme,
 };
-
 describe("DashboardChromeTabs", () => {
-  it("gọi menu action khi chọn từ menu dấu cộng", () => {
+  it(t("compShared.callMenuActionWhenSelecting"), () => {
     const onCloseAllTabs = vi.fn();
-
     render(
       <DashboardChromeTabs
         {...baseProps}
         menuActions={[
           {
             id: "close-all-tabs",
-            label: "Đóng tất cả tab",
+            label: t("common.closeAllTabs"),
             onSelect: onCloseAllTabs,
           },
         ]}
       />
     );
-
-    fireEvent.click(screen.getByRole("button", { name: "Mở menu tab" }));
-    fireEvent.click(screen.getByRole("button", { name: "Đóng tất cả tab" }));
-
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: t("compShared.openTheTabMenu"),
+      })
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: t("common.closeAllTabs"),
+      })
+    );
     expect(onCloseAllTabs).toHaveBeenCalledTimes(1);
   });
-
-  it("không gọi menu action khi action bị disable", () => {
+  it(t("compShared.doNotCallTheAction"), () => {
     const onCloseAllTabs = vi.fn();
-
     render(
       <DashboardChromeTabs
         {...baseProps}
         menuActions={[
           {
             id: "close-all-tabs",
-            label: "Đóng tất cả tab",
+            label: t("common.closeAllTabs"),
             onSelect: onCloseAllTabs,
             disabled: true,
           },
         ]}
       />
     );
-
-    fireEvent.click(screen.getByRole("button", { name: "Mở menu tab" }));
-    fireEvent.click(screen.getByRole("button", { name: "Đóng tất cả tab" }));
-
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: t("compShared.openTheTabMenu"),
+      })
+    );
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: t("common.closeAllTabs"),
+      })
+    );
     expect(onCloseAllTabs).not.toHaveBeenCalled();
   });
-
-  it("giữ nút dấu cộng sticky ở mép phải trong full mode", () => {
+  it(t("compShared.holdTheStickyPlusButton"), () => {
     render(
       <DashboardChromeTabs
         {...baseProps}
         tabs={[
-          { id: "dashboard-1", type: "dashboard", title: "Dashboard" },
-          { id: "users-1", type: "users", title: "Quản lý người dùng" },
+          {
+            id: "dashboard-1",
+            type: "dashboard",
+            title: "Dashboard",
+          },
+          {
+            id: "users-1",
+            type: "users",
+            title: t("common.userManagement"),
+          },
         ]}
         activeTabId="dashboard-1"
       />
     );
-
     const strip = screen.getByTestId("chrome-tabs-full-strip");
-    const plusButton = within(strip).getByRole("button", { name: "Mở menu tab" });
+    const plusButton = within(strip).getByRole("button", {
+      name: t("compShared.openTheTabMenu"),
+    });
     expect(plusButton).toBeTruthy();
-
     const plusWrapper = screen.getByTestId("chrome-tabs-new-tab");
     expect(plusWrapper.className).toContain("sticky");
     expect(plusWrapper.className).toContain("right-0");
-
     fireEvent.click(plusButton);
     const menuContainer = screen
-      .getByRole("button", { name: "Quản lý người dùng" })
+      .getByRole("button", {
+        name: t("common.userManagement"),
+      })
       .closest(".fixed");
     expect(menuContainer).toBeTruthy();
-
     const dashboardTab = screen.getByText("Dashboard").closest("div");
     expect(dashboardTab?.getAttribute("style") || "").toContain("clamp(");
   });

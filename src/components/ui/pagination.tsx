@@ -1,9 +1,9 @@
+import { Button, buttonVariants } from "@/components/ui/button";
+import i18n from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import * as React from "react";
-
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
+const t = i18n.t.bind(i18n);
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
@@ -15,7 +15,6 @@ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
     />
   );
 }
-
 function PaginationContent({ className, ...props }: React.ComponentProps<"ul">) {
   return (
     <ul
@@ -25,16 +24,13 @@ function PaginationContent({ className, ...props }: React.ComponentProps<"ul">) 
     />
   );
 }
-
 function PaginationItem({ ...props }: React.ComponentProps<"li">) {
   return <li data-slot="pagination-item" {...props} />;
 }
-
 type PaginationLinkProps = {
   isActive?: boolean;
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
   React.ComponentProps<"a">;
-
 function PaginationLink({ className, isActive, size = "icon", ...props }: PaginationLinkProps) {
   return (
     <a
@@ -52,24 +48,22 @@ function PaginationLink({ className, isActive, size = "icon", ...props }: Pagina
     />
   );
 }
-
 function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Đi đến trang trước"
+      aria-label={t("compUi.goToThePreviousPage")}
       size="default"
       className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
       {...props}>
       <ChevronLeftIcon />
-      <span className="hidden sm:block">Trước</span>
+      <span className="hidden sm:block">{t("common.before")}</span>
     </PaginationLink>
   );
 }
-
 function PaginationNext({ className, ...props }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Đi đến trang sau"
+      aria-label={t("compUi.goToTheNextPage")}
       size="default"
       className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
       {...props}>
@@ -78,7 +72,6 @@ function PaginationNext({ className, ...props }: React.ComponentProps<typeof Pag
     </PaginationLink>
   );
 }
-
 function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
@@ -87,11 +80,10 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
       className={cn("flex size-9 items-center justify-center", className)}
       {...props}>
       <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">Các trang khác</span>
+      <span className="sr-only">{t("compUi.otherPages")}</span>
     </span>
   );
 }
-
 export {
   Pagination,
   PaginationContent,

@@ -1,58 +1,53 @@
+import { useTranslation } from "react-i18next";
 /**
  * NotificationItem Component
  * Displays a single notification with icon, title, message, and time
  */
 
-import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
-
 import { getNotificationTypeConfigFromTitle } from "@/constants/notification-types";
-
 import { formatDateTime, parseBackendDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/services/notification.manager";
-
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 interface NotificationItemProps {
   notification: Notification;
   onClick?: () => void;
   onMarkRead?: () => void;
   compact?: boolean;
 }
-
 export function NotificationItem({
   notification,
   onClick,
   onMarkRead,
   compact = false,
 }: NotificationItemProps) {
+  const { t } = useTranslation();
   const notificationType = getNotificationTypeConfigFromTitle(notification.title);
   const isUnread = !notification.isRead;
   const parsedCreatedAt = parseBackendDate(notification.createAt);
-  const notificationTitle = notification.title || "Thông báo";
-
+  const notificationTitle = notification.title || t("common.notification");
   const handleClick = () => {
     if (onMarkRead && isUnread) {
       onMarkRead();
     }
     onClick?.();
   };
-
   const timeAgo = parsedCreatedAt
     ? formatDistanceToNow(parsedCreatedAt, {
         addSuffix: true,
         locale: vi,
       })
     : "";
-
   const absoluteTime = parsedCreatedAt ? formatDateTime(parsedCreatedAt) : "";
-
   const IconComponent = notificationType.icon;
-
   return (
     <button
       type="button"
       onClick={handleClick}
-      aria-label={`Mở thông báo: ${notificationTitle}`}
+      aria-label={t("general.openNotification", {
+        var_0: notificationTitle,
+      })}
       className={cn(
         "flex w-full cursor-pointer items-start gap-3 rounded-lg p-3 text-left transition-colors",
         isUnread

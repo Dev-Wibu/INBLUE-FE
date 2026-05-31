@@ -1,7 +1,3 @@
-import { Heart, MessageCircle, Send } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-
 import { MediaLightboxDialog } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,33 +10,33 @@ import { formatDateTime } from "@/lib/formatting";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
+import { Heart, MessageCircle, Send } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
-
 import { CommentSection } from "../CommentSection";
 import { LikeButton } from "../LikeButton";
 import { ExpandableText } from "./ExpandableText";
-
 type PostResponse = components["schemas"]["PostResponse"];
 type PostLikeResponse = components["schemas"]["PostLikeResponse"];
 type PostCommentResponse = components["schemas"]["PostCommentResponse"];
-
 interface PostFeedModalProps {
   item: PostResponse;
   open: boolean;
   onOpenChange: (_open: boolean) => void;
   onCommentCountChange?: (_count: number) => void;
 }
-
 export function PostFeedModal({
   item,
   open,
   onOpenChange,
   onCommentCountChange,
 }: PostFeedModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const post = item.post;
   const postId = post?.postId ?? 0;
-
   const [likesOpen, setLikesOpen] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
@@ -53,66 +49,70 @@ export function PostFeedModal({
 
   // Only check liked status when user is logged in
   const { data: likedData } = useCheckLiked(postId, user?.id ?? 0, !!user?.id);
-
   const handlePostModalOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && imageViewerOpen) {
       return;
     }
     onOpenChange(nextOpen);
   };
-
   const invalidateLivePost = () => {
     invalidatePostFeedQueries(postId);
   };
-
   const handleCommentSubmit = () => {
     const content = newComment.trim();
     if (!content || !user?.id) return;
-    createComment.mutate({ body: { postId, userId: user.id, content } } as never, {
-      onSuccess: () => {
-        setNewComment("");
-        invalidateLivePost();
-        onCommentCountChange?.((liveCommentCount ?? 0) + 1);
-      },
-      onError: () => toast.error("Không thể gửi bình luận"),
-    });
+    createComment.mutate(
+      {
+        body: {
+          postId,
+          userId: user.id,
+          content,
+        },
+      } as never,
+      {
+        onSuccess: () => {
+          setNewComment("");
+          invalidateLivePost();
+          onCommentCountChange?.((liveCommentCount ?? 0) + 1);
+        },
+        onError: () => toast.error(t("compPost.cannotPostComments")),
+      }
+    );
   };
-
   const isLiked =
     Object.values((likedData ?? {}) as unknown as Record<string, boolean>)[0] ?? false;
   const likeCount = live?.likeCount ?? item.likeCount ?? 0;
   const likers = (live?.postLikes ?? item.postLikes ?? []) as PostLikeResponse[];
   const liveCommentCount = live?.commentCount ?? item.commentCount ?? 0;
   const postComments = (live?.postComments ?? item.postComments ?? []) as PostCommentResponse[];
-
-  const authorName = post?.author?.name ?? "Ẩn danh";
+  const authorName = post?.author?.name ?? t("common.anonymous");
   const authorInitials = authorName
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   const likeLabel = (() => {
     if (likeCount === 0) return null;
-    if (isLiked && likeCount === 1) return "Bạn";
-    if (isLiked) return `Bạn và ${likeCount - 1} người khác`;
+    if (isLiked && likeCount === 1) return t("common.friend");
+    if (isLiked)
+      return t("general.youAndOthers", {
+        var_0: likeCount - 1,
+      });
     return `${likeCount}`;
   })();
-
   const coverMediaItems = post?.coverImgUrl
     ? [
         {
           id: `post-cover-${postId}`,
-          name: post.title ?? "Ảnh bài viết",
+          name: post.title ?? t("compPost.articlePhoto"),
           src: post.coverImgUrl,
-          alt: post.title ?? "Ảnh bài viết",
+          alt: post.title ?? t("compPost.articlePhoto"),
           kind: "image" as const,
           requireAuth: false,
         },
       ]
     : [];
-
   return (
     <>
       <Dialog open={open} onOpenChange={handlePostModalOpenChange}>
@@ -129,7 +129,9 @@ export function PostFeedModal({
             }
           }}>
           <DialogHeader className="border-b px-6 py-4">
-            <DialogTitle className="text-center">Bài viết của {authorName}</DialogTitle>
+            <DialogTitle className="text-center">
+              {t("compPost.articleBy")} {authorName}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="flex-1 overflow-x-hidden overflow-y-auto">
@@ -215,9 +217,9 @@ export function PostFeedModal({
                       className="max-h-64 w-56 overflow-y-auto p-2"
                       side="top"
                       align="start">
-                      <p className="mb-2 text-xs font-semibold">Người đã thích</p>
+                      <p className="mb-2 text-xs font-semibold">{t("compPost.peopleLikedIt")}</p>
                       {likers.length === 0 ? (
-                        <p className="text-muted-foreground text-xs">Chưa có ai</p>
+                        <p className="text-muted-foreground text-xs">{t("compPost.noOneYet")}</p>
                       ) : (
                         likers.map((l, i) => (
                           <div key={i} className="flex items-center gap-2 py-1">
@@ -227,7 +229,7 @@ export function PostFeedModal({
                                 {l.userName?.[0]?.toUpperCase() ?? "?"}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-xs">{l.userName ?? "Ẩn danh"}</span>
+                            <span className="text-xs">{l.userName ?? t("common.anonymous")}</span>
                           </div>
                         ))
                       )}
@@ -236,7 +238,7 @@ export function PostFeedModal({
                 )}
                 {liveCommentCount > 0 && (
                   <span className="text-muted-foreground ml-auto text-xs">
-                    {liveCommentCount} bình luận
+                    {liveCommentCount} {t("general.comments")}
                   </span>
                 )}
               </div>
@@ -254,7 +256,9 @@ export function PostFeedModal({
                   onLikeChange={invalidateLivePost}
                 />
               ) : (
-                <span className="text-muted-foreground flex-1 text-center text-sm">Thích</span>
+                <span className="text-muted-foreground flex-1 text-center text-sm">
+                  {t("compPost.prefer")}
+                </span>
               )}
               <Button
                 variant="ghost"
@@ -262,7 +266,7 @@ export function PostFeedModal({
                 className="flex-1 justify-center gap-1.5"
                 onClick={() => document.getElementById(`comment-input-${postId}`)?.focus()}>
                 <MessageCircle className="h-4 w-4" />
-                <span>Bình luận</span>
+                <span>{t("common.comment1")}</span>
               </Button>
             </div>
 
@@ -291,7 +295,7 @@ export function PostFeedModal({
               </Avatar>
               <Textarea
                 id={`comment-input-${postId}`}
-                placeholder="Viết bình luận... (Ctrl+Enter để gửi)"
+                placeholder={t("compPost.writeACommentCtrlEnter")}
                 value={newComment}
                 rows={1}
                 className="max-h-28 flex-1 resize-none overflow-auto"

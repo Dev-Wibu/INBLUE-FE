@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ export function ImageCarousel({
   showControls = true,
   showIndicators = true,
 }: ImageCarouselProps) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -76,13 +78,13 @@ export function ImageCarousel({
           <button
             onClick={prevSlide}
             className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-lg transition-all hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-800"
-            aria-label="Ảnh trước">
+            aria-label={t("compUi.previousPhoto")}>
             <ChevronLeft className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
           </button>
           <button
             onClick={nextSlide}
             className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-lg transition-all hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-800"
-            aria-label="Ảnh sau">
+            aria-label={t("compUi.nextPhoto")}>
             <ChevronRight className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
           </button>
         </>
@@ -99,7 +101,7 @@ export function ImageCarousel({
                 "h-2 rounded-full transition-all",
                 index === currentIndex ? "w-8 bg-white" : "w-2 bg-white/50 hover:bg-white/75"
               )}
-              aria-label={`Đi đến ảnh ${index + 1}`}
+              aria-label={t("general.goToImage", { var_0: index + 1 })}
             />
           ))}
         </div>

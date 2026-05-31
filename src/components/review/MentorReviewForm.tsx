@@ -1,11 +1,10 @@
+import i18n from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 /**
  * MentorReviewForm Component
  * Form for creating/editing mentor reviews with STAR method
  */
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +20,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
 import type { MentorReview } from "@/services/mentor-review.manager";
-
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 const reviewSchema = z
   .object({
     rating: z.number().min(0).max(5),
@@ -44,18 +45,15 @@ const reviewSchema = z
       value.weakness,
       value.improve,
     ].some((note) => Boolean(note?.trim()));
-
     if (!hasRating && !hasAnyNote) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Vui lòng nhập ít nhất một nội dung đánh giá",
+        message: t("compReview.pleaseEnterAtLeastOne"),
         path: ["rating"],
       });
     }
   });
-
 type ReviewFormData = z.infer<typeof reviewSchema>;
-
 interface MentorReviewFormProps {
   sessionId: number;
   mentorId: number;
@@ -77,7 +75,6 @@ interface MentorReviewFormProps {
   onCancel?: () => void;
   isLoading?: boolean;
 }
-
 export function MentorReviewForm({
   sessionId,
   mentorId,
@@ -87,6 +84,7 @@ export function MentorReviewForm({
   onCancel,
   isLoading = false,
 }: MentorReviewFormProps) {
+  const { t } = useTranslation();
   const form = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
@@ -100,15 +98,12 @@ export function MentorReviewForm({
       improve: existingReview?.improve || "",
     },
   });
-
   const normalizeOptionalText = (value?: string) => {
     const normalized = value?.trim();
     return normalized ? normalized : undefined;
   };
-
   const handleSubmit = (data: ReviewFormData) => {
     const normalizedRating = data.rating > 0 ? data.rating : undefined;
-
     onSubmit({
       sessionId,
       mentorId,
@@ -123,9 +118,7 @@ export function MentorReviewForm({
       improve: normalizeOptionalText(data.improve),
     });
   };
-
   const isEdit = !!existingReview;
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -135,13 +128,11 @@ export function MentorReviewForm({
           name="rating"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Đánh giá tổng thể (tùy chọn)</FormLabel>
+              <FormLabel>{t("compReview.overallRatingOptional")}</FormLabel>
               <FormControl>
                 <StarRating value={field.value} onChange={field.onChange} size="lg" />
               </FormControl>
-              <FormDescription>
-                Có thể chọn số sao hoặc điền ghi chú chi tiết, cần ít nhất một thông tin
-              </FormDescription>
+              <FormDescription>{t("compReview.youCanChooseTheNumber")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -150,21 +141,19 @@ export function MentorReviewForm({
         {/* STAR Method Section */}
         <div className="space-y-4 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            Phương pháp STAR (Tùy chọn)
+            {t("compReview.starMethodOptional")}
           </h3>
-          <p className="text-sm text-slate-500">
-            Mô tả chi tiết đánh giá học viên của bạn theo phương pháp STAR
-          </p>
+          <p className="text-sm text-slate-500">{t("compReview.describeInDetailYourStudent")}</p>
 
           <FormField
             control={form.control}
             name="situationNote"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tình huống (Situation)</FormLabel>
+                <FormLabel>{t("compReview.situation")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Mô tả bối cảnh của phiên phỏng vấn..."
+                    placeholder={t("compReview.describeTheContextOfThe")}
                     className="min-h-20"
                     {...field}
                     value={field.value ?? ""}
@@ -180,10 +169,10 @@ export function MentorReviewForm({
             name="taskNote"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nhiệm vụ (Task)</FormLabel>
+                <FormLabel>{t("compReview.task")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Nhiệm vụ học viên cần hoàn thành..."
+                    placeholder={t("compReview.tasksStudentsNeedToComplete")}
                     className="min-h-20"
                     {...field}
                     value={field.value ?? ""}
@@ -199,10 +188,10 @@ export function MentorReviewForm({
             name="actionNote"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Hành động (Action)</FormLabel>
+                <FormLabel>{t("compReview.action")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Các hành động học viên đã thực hiện trong phiên..."
+                    placeholder={t("compReview.theActionsStudentsTookDuring")}
                     className="min-h-20"
                     {...field}
                     value={field.value ?? ""}
@@ -218,10 +207,10 @@ export function MentorReviewForm({
             name="resultNote"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Kết quả (Result)</FormLabel>
+                <FormLabel>{t("compReview.result")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Kết quả học viên đạt được sau phiên phỏng vấn..."
+                    placeholder={t("compReview.theResultsStudentsAchievedAfter")}
                     className="min-h-20"
                     {...field}
                     value={field.value ?? ""}
@@ -236,7 +225,7 @@ export function MentorReviewForm({
         {/* Additional Notes Section */}
         <div className="space-y-4 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            Nhận xét thêm (Tùy chọn)
+            {t("compReview.additionalCommentsOptional")}
           </h3>
 
           <FormField
@@ -244,10 +233,10 @@ export function MentorReviewForm({
             name="strength"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Điểm mạnh của học viên</FormLabel>
+                <FormLabel>{t("compReview.studentStrengths")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Những điểm mạnh bạn nhận thấy ở học viên..."
+                    placeholder={t("compReview.theStrengthsYouSeeIn")}
                     className="min-h-[60px]"
                     {...field}
                     value={field.value ?? ""}
@@ -263,10 +252,10 @@ export function MentorReviewForm({
             name="weakness"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Điểm cần cải thiện</FormLabel>
+                <FormLabel>{t("common.pointsForImprovement")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Những điểm học viên có thể cải thiện..."
+                    placeholder={t("compReview.pointsStudentsCanImprove")}
                     className="min-h-[60px]"
                     {...field}
                     value={field.value ?? ""}
@@ -282,10 +271,10 @@ export function MentorReviewForm({
             name="improve"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Đề xuất cải thiện</FormLabel>
+                <FormLabel>{t("common.suggestedImprovements1")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Đề xuất cụ thể của bạn để học viên cải thiện..."
+                    placeholder={t("compReview.yourSpecificSuggestionsForStudents")}
                     className="min-h-[60px]"
                     {...field}
                     value={field.value ?? ""}
@@ -301,12 +290,12 @@ export function MentorReviewForm({
         <div className="flex justify-end gap-3">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel}>
-              Hủy
+              {t("general.cancel")}
             </Button>
           )}
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Spinner size="sm" tone="white" className="mr-2" />}
-            {isEdit ? "Cập nhật đánh giá" : "Gửi đánh giá"}
+            {isEdit ? t("compReview.updatedReview") : t("compReview.submitAReview")}
           </Button>
         </div>
       </form>

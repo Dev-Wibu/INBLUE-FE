@@ -1,7 +1,8 @@
+import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
+import i18n from "@/lib/i18n";
 import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
+const t = i18n.t.bind(i18n);
 
 /**
  * Hook to handle mutations with automatic toast notifications
@@ -42,12 +43,12 @@ export function useMutationHandler<TData = unknown, TVariables = unknown, TError
         message =
           (response.message as string) ||
           (response.msg as string) ||
-          "Thao tác đã hoàn tất thành công";
+          t("general.theOperationHasCompletedSuccessfully");
       }
 
       // Show success toast
       if (showSuccessToast && message) {
-        toast.success("Thành công", {
+        toast.success(t("general.success"), {
           description: message,
         });
       }
@@ -60,12 +61,12 @@ export function useMutationHandler<TData = unknown, TVariables = unknown, TError
     onError: (error: TError, variables) => {
       const message = getNormalizedErrorMessage(
         error,
-        errorMessage || "Đã xảy ra lỗi. Vui lòng thử lại."
+        errorMessage || t("general.anErrorHasOccurredPlease")
       );
 
       // Show error toast
       if (showErrorToast) {
-        toast.error("Lỗi", {
+        toast.error(t("common.error"), {
           description: message,
         });
       }

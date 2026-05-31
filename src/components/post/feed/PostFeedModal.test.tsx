@@ -1,6 +1,8 @@
+import i18n from "@/lib/i18n";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+const t = i18n.t.bind(i18n);
 
 import type { components } from "../../../../schema-from-be";
 
@@ -34,11 +36,11 @@ type PostResponse = components["schemas"]["PostResponse"];
 const MOCK_ITEM = {
   post: {
     postId: 101,
-    title: "Bài test ảnh",
+    title: t("compPost.photoTest"),
     creationDate: "2026-01-21T08:00:00.000Z",
     coverImgUrl: "https://example.com/post-cover.png",
     author: {
-      name: "Tác giả test",
+      name: t("compPost.authorTest"),
       avatar: "",
     },
     tags: [],
@@ -61,8 +63,8 @@ function PostFeedModalHarness() {
 }
 
 const openImageViewer = () => {
-  fireEvent.click(screen.getByRole("img", { name: "Bài test ảnh" }));
-  expect(screen.getByRole("button", { name: "Đóng ảnh" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("img", { name: t("compPost.photoTest") }));
+  expect(screen.getByRole("button", { name: t("compPost.closePhoto") })).toBeInTheDocument();
 };
 
 describe("PostFeedModal image viewer", () => {
@@ -70,7 +72,7 @@ describe("PostFeedModal image viewer", () => {
     useAuthStoreMock.mockReturnValue({
       user: {
         id: 12,
-        name: "Người dùng test",
+        name: t("compPost.userTest"),
         avatarUrl: "",
       },
     });
@@ -82,20 +84,22 @@ describe("PostFeedModal image viewer", () => {
     usePostByIdMock.mockReturnValue({ data: undefined });
   });
 
-  it("đóng bằng nút X chỉ tắt ảnh phóng to", async () => {
+  it(t("compPost.closeWithTheXButton"), async () => {
     render(<PostFeedModalHarness />);
 
     openImageViewer();
-    fireEvent.click(screen.getByRole("button", { name: "Đóng ảnh" }));
+    fireEvent.click(screen.getByRole("button", { name: t("compPost.closePhoto") }));
 
     await waitFor(() => {
-      expect(screen.queryByRole("button", { name: "Đóng ảnh" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: t("compPost.closePhoto") })
+      ).not.toBeInTheDocument();
     });
-    expect(screen.getByText("Bài viết của Tác giả test")).toBeInTheDocument();
+    expect(screen.getByText(t("compPost.articleByAuthorTest"))).toBeInTheDocument();
     expect(screen.getByTestId("post-modal-state")).toHaveTextContent("open");
   });
 
-  it("đóng bằng click nền chỉ tắt ảnh phóng to", async () => {
+  it(t("compPost.closeByBackgroundClickTurns"), async () => {
     render(<PostFeedModalHarness />);
 
     openImageViewer();
@@ -103,13 +107,15 @@ describe("PostFeedModal image viewer", () => {
     fireEvent.click(screen.getByTestId("image-viewer-overlay"));
 
     await waitFor(() => {
-      expect(screen.queryByRole("button", { name: "Đóng ảnh" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: t("compPost.closePhoto") })
+      ).not.toBeInTheDocument();
     });
-    expect(screen.getByText("Bài viết của Tác giả test")).toBeInTheDocument();
+    expect(screen.getByText(t("compPost.articleByAuthorTest"))).toBeInTheDocument();
     expect(screen.getByTestId("post-modal-state")).toHaveTextContent("open");
   });
 
-  it("nhấn Escape lần 1 tắt ảnh, lần 2 mới tắt PostFeedModal", async () => {
+  it(t("compPost.pressEscapeTheFirstTime"), async () => {
     render(<PostFeedModalHarness />);
 
     openImageViewer();
@@ -117,7 +123,9 @@ describe("PostFeedModal image viewer", () => {
     fireEvent.keyDown(document, { key: "Escape" });
 
     await waitFor(() => {
-      expect(screen.queryByRole("button", { name: "Đóng ảnh" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: t("compPost.closePhoto") })
+      ).not.toBeInTheDocument();
     });
     expect(screen.getByTestId("post-modal-state")).toHaveTextContent("open");
 
@@ -128,7 +136,7 @@ describe("PostFeedModal image viewer", () => {
     });
   });
 
-  it("modal ảnh render ở lớp overlay độc lập phía trước", () => {
+  it(t("compPost.modalImageRendersInA"), () => {
     render(<PostFeedModalHarness />);
 
     openImageViewer();

@@ -1,5 +1,6 @@
 import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ export function ScrollToTopButton({
   hidden = false,
   className,
 }: ScrollToTopButtonProps) {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -79,7 +81,7 @@ export function ScrollToTopButton({
   return (
     <button
       type="button"
-      aria-label="Cuộn lên đầu trang"
+      aria-label={t("compShared.scrollToTheTopOf")}
       onClick={handleClick}
       className={cn(
         "fixed right-4 bottom-4 z-50 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg transition-opacity duration-300 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:outline-none md:right-6 md:bottom-6 md:h-12 md:w-12 dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-200 dark:focus-visible:ring-offset-slate-950",

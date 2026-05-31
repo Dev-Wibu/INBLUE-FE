@@ -1,33 +1,28 @@
-import { MessageCircle } from "lucide-react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import type { Post } from "@/interfaces/schema.types";
 import { formatDateTime } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
-
+import { MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { LikeButton } from "./LikeButton";
-
 interface PostCardProps {
   post: Post;
   onClick?: () => void;
 }
-
 export function PostCard({ post, onClick }: PostCardProps) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const commentCount = post.commentCount ?? 0;
-
   const authorInitials = post.author?.name
     ?.split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   const summary =
     post.summary && post.summary.length > 120 ? `${post.summary.slice(0, 120)}...` : post.summary;
-
   return (
     <Card className="cursor-pointer transition-shadow hover:shadow-md" onClick={onClick}>
       {post.coverImgUrl && (
@@ -41,7 +36,9 @@ export function PostCard({ post, onClick }: PostCardProps) {
             <AvatarImage src={post.author?.avatarUrl} alt={post.author?.name} />
             <AvatarFallback className="text-xs">{authorInitials || "?"}</AvatarFallback>
           </Avatar>
-          <span className="text-muted-foreground text-sm">{post.author?.name ?? "Ẩn danh"}</span>
+          <span className="text-muted-foreground text-sm">
+            {post.author?.name ?? t("common.anonymous")}
+          </span>
           <span className="text-muted-foreground text-xs">
             · {formatDateTime(post.creationDate)}
           </span>

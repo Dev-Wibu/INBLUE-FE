@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * ReviewStats Component
  * Displays review statistics (average rating, count, distribution)
@@ -25,6 +26,7 @@ export function ReviewStats({
   compact = false,
   className,
 }: ReviewStatsProps) {
+  const { t } = useTranslation();
   const totalReviews = reviews.length;
   const averageRating = calculateAverageRating(reviews);
 
@@ -45,7 +47,9 @@ export function ReviewStats({
           <Star className="h-5 w-5 fill-[#FFD700] text-[#FFD700]" />
           <span className="text-lg font-bold">{averageRating.toFixed(1)}</span>
         </div>
-        <span className="text-sm text-slate-500">({totalReviews} đánh giá)</span>
+        <span className="text-sm text-slate-500">
+          ({totalReviews} {t("general.ratings")}
+        </span>
       </div>
     );
   }
@@ -55,7 +59,7 @@ export function ReviewStats({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <TrendingUp className="h-5 w-5 text-[#0047AB]" />
-          Thống Kê Đánh Giá
+          {t("compReview.evaluationStatistics")}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -64,7 +68,9 @@ export function ReviewStats({
           <div className="flex flex-col items-center justify-center rounded-lg bg-slate-50 p-4 sm:min-w-[150px] dark:bg-slate-800">
             <span className="text-4xl font-bold text-[#0047AB]">{averageRating.toFixed(1)}</span>
             <StarRating value={averageRating} readOnly size="sm" className="mt-2" />
-            <span className="mt-1 text-sm text-slate-500">{totalReviews} đánh giá</span>
+            <span className="mt-1 text-sm text-slate-500">
+              {totalReviews} {t("compReview.evaluate")}
+            </span>
           </div>
 
           {/* Distribution */}

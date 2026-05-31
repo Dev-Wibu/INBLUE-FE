@@ -1,7 +1,9 @@
 import { Facebook, Globe, Mail } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 export function HomepageFooter() {
+  const { t } = useTranslation();
   return (
     <footer className="border-t border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
@@ -9,7 +11,7 @@ export function HomepageFooter() {
         <div className="flex flex-col items-center gap-2 md:items-start">
           <span className="text-lg font-bold text-[#0047AB] dark:text-[#66B2FF]">INBLUE AI</span>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            © 2025 INBLUE AI - Nền tảng luyện phỏng vấn thông minh
+            {t("compHomepageRedesign.2025InblueAiSmartInterview")}
           </p>
         </div>
 
@@ -18,22 +20,22 @@ export function HomepageFooter() {
           <Link
             to="#"
             className="text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-400 dark:hover:text-[#66B2FF]">
-            Quy định
+            {t("compHomepageRedesign.regulations")}
           </Link>
           <Link
             to="#"
             className="text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-400 dark:hover:text-[#66B2FF]">
-            Bảo mật
+            {t("compHomepageRedesign.security")}
           </Link>
           <Link
             to="#"
             className="text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-400 dark:hover:text-[#66B2FF]">
-            Hỗ trợ kỹ thuật
+            {t("compHomepageRedesign.technicalSupport")}
           </Link>
           <Link
             to="#"
             className="text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-400 dark:hover:text-[#66B2FF]">
-            Liên hệ
+            {t("compHomepageRedesign.contact")}
           </Link>
         </div>
 

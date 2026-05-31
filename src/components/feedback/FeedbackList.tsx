@@ -1,16 +1,16 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * FeedbackList Component
  * Displays a list of mentor feedbacks
  */
 
-import { MessageSquare } from "lucide-react";
-
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingCardList } from "@/components/ui/loading-card";
 import { cn } from "@/lib/utils";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
+import { MessageSquare } from "lucide-react";
 import { FeedbackCard } from "./FeedbackCard";
-
 interface FeedbackListProps {
   feedbacks: MentorFeedback[];
   isLoading?: boolean;
@@ -24,7 +24,6 @@ interface FeedbackListProps {
   emptyDescription?: string;
   className?: string;
 }
-
 export function FeedbackList({
   feedbacks,
   isLoading,
@@ -34,8 +33,8 @@ export function FeedbackList({
   showActions = false,
   onEdit,
   onDelete,
-  emptyTitle = "Chưa có phản hồi",
-  emptyDescription = "Chưa có phản hồi nào được gửi",
+  emptyTitle = t("common.noResponseYet"),
+  emptyDescription = t("compFeedback.noResponsesHaveBeenSent"),
   className,
 }: FeedbackListProps) {
   // Loading state
@@ -54,7 +53,6 @@ export function FeedbackList({
       />
     );
   }
-
   return (
     <div className={cn("space-y-4", className)}>
       {feedbacks.map((feedback) => (

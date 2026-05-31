@@ -1,19 +1,21 @@
+import i18n from "@/lib/i18n";
 import { BadgeCheck, Users, Zap } from "lucide-react";
+const t = i18n.t.bind(i18n);
 
 const statsData = [
   {
     value: "15,000+",
-    label: "Sinh viên đã tham gia",
+    label: t("compHomepageRedesign.studentsParticipated"),
     icon: Users,
   },
   {
     value: "450+",
-    label: "Kịch bản phỏng vấn",
+    label: t("compHomepageRedesign.interviewScript"),
     icon: BadgeCheck,
   },
   {
     value: "98%",
-    label: "Tỉ lệ phản hồi tích cực",
+    label: t("compHomepageRedesign.positiveResponseRate"),
     icon: Zap,
   },
 ];

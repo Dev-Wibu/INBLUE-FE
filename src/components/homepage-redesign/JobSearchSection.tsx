@@ -1,7 +1,3 @@
-import { Briefcase, Building2, DollarSign, MapPin, Search } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,8 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { companyManager, type JobDescription } from "@/services/company.manager";
-
+import { Briefcase, Building2, DollarSign, MapPin, Search } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 export function JobSearchSection() {
+  const { t } = useTranslation();
   const [keyword, setKeyword] = useState("");
   const [level, setLevel] = useState<string>("all");
   const [salaryMin, setSalaryMin] = useState("");
@@ -23,11 +23,9 @@ export function JobSearchSection() {
   const [isSearching, setIsSearching] = useState(false);
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
-
   const handleSearch = async () => {
     setIsSearching(true);
     setHasSearched(true);
-
     try {
       const params: {
         titleKeyword?: string;
@@ -38,27 +36,21 @@ export function JobSearchSection() {
       } = {
         status: "OPEN",
       };
-
       if (keyword.trim()) {
         params.titleKeyword = keyword.trim();
       }
-
       if (level !== "all") {
         params.level = level.toUpperCase() as "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
       }
-
       const parsedMin = parseInt(salaryMin.replace(/[^\d]/g, ""), 10);
       const parsedMax = parseInt(salaryMax.replace(/[^\d]/g, ""), 10);
-
       if (!isNaN(parsedMin) && parsedMin > 0) {
         params.salaryMin = parsedMin * 1000000;
       }
       if (!isNaN(parsedMax) && parsedMax > 0) {
         params.salaryMax = parsedMax * 1000000;
       }
-
       const result = await companyManager.searchJobs(params);
-
       if (result.success && result.data) {
         setJobs(result.data);
       } else {
@@ -72,13 +64,11 @@ export function JobSearchSection() {
       setIsSearching(false);
     }
   };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
-
   const formatSalary = (min?: number, max?: number, currency?: string) => {
     const format = (num: number) => {
       if (num >= 1000000) {
@@ -86,19 +76,23 @@ export function JobSearchSection() {
       }
       return `${(num / 1000).toFixed(0)}K`;
     };
-
     if (min && max) {
       return `${format(min)} - ${format(max)} ${currency || "VND"}`;
     }
     if (min) {
-      return `Từ ${format(min)} ${currency || "VND"}`;
+      return t("common.fromVar0Var1", {
+        var_0: format(min),
+        var_1: currency || "VND",
+      });
     }
     if (max) {
-      return `Đến ${format(max)} ${currency || "VND"}`;
+      return t("common.toVar0Var1", {
+        var_0: format(max),
+        var_1: currency || "VND",
+      });
     }
-    return "Thỏa thuận";
+    return t("enterprise_jobdescriptiondetailpage.tsx.thoa_thuan");
   };
-
   const getLevelBadgeColor = (level?: string) => {
     switch (level?.toUpperCase()) {
       case "INTERN":
@@ -109,22 +103,20 @@ export function JobSearchSection() {
         return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
       case "MIDDLE":
         return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
-
       default:
         return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
     }
   };
-
   return (
     <section className="mx-auto max-w-7xl px-6 py-12">
       {/* Search Card */}
       <div className="rounded-2xl border border-slate-200/50 bg-white/70 p-6 shadow-lg backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-900/70">
         <div className="mb-6">
           <h2 className="mb-1 text-2xl font-bold text-slate-900 dark:text-white">
-            Tìm kiếm cơ hội nghề nghiệp
+            {t("compHomepageRedesign.searchForCareerOpportunities")}
           </h2>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Khám phá các vị trí tuyển dụng phù hợp với lộ trình phát triển của bạn
+            {t("compHomepageRedesign.exploreVacanciesThatFitYour")}
           </p>
         </div>
 
@@ -134,7 +126,7 @@ export function JobSearchSection() {
             <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm vị trí, kỹ năng hoặc công ty..."
+              placeholder={t("compHomepageRedesign.searchForPositionsSkillsOr")}
               className="h-12 w-full rounded-xl border border-slate-200/50 bg-slate-50/50 pr-4 pl-12 text-sm text-slate-700 transition-all placeholder:text-slate-400 focus:border-[#0047AB]/50 focus:ring-2 focus:ring-[#0047AB]/20 focus:outline-none dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-slate-200"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
@@ -147,14 +139,14 @@ export function JobSearchSection() {
             {/* Level Filter */}
             <div className="min-w-[140px] flex-1 sm:max-w-[200px] sm:min-w-[160px]">
               <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                Cấp bậc
+                {t("enterprise_jobdescriptiondetailpage.tsx.cap_bac")}
               </label>
               <Select value={level} onValueChange={setLevel}>
                 <SelectTrigger className="h-10 w-full">
-                  <SelectValue placeholder="Tất cả" />
+                  <SelectValue placeholder={t("general.all")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="all">{t("general.all")}</SelectItem>
                   <SelectItem value="intern">Intern</SelectItem>
                   <SelectItem value="fresher">Fresher</SelectItem>
                   <SelectItem value="junior">Junior</SelectItem>
@@ -166,7 +158,7 @@ export function JobSearchSection() {
             {/* Salary Min Input */}
             <div className="min-w-[120px] flex-1 sm:max-w-[160px] sm:min-w-[120px]">
               <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                Lương tối thiểu
+                {t("adminCompanymanagement.minimumWage")}
               </label>
               <div className="relative">
                 <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -182,7 +174,7 @@ export function JobSearchSection() {
                   className="h-10 w-full pr-12 pl-9 text-sm"
                 />
                 <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">
-                  triệu
+                  {t("general.million")}
                 </span>
               </div>
             </div>
@@ -190,7 +182,7 @@ export function JobSearchSection() {
             {/* Salary Max Input */}
             <div className="min-w-[120px] flex-1 sm:max-w-[160px] sm:min-w-[120px]">
               <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                Lương tối đa
+                {t("adminCompanymanagement.maximumSalary")}
               </label>
               <div className="relative">
                 <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -206,7 +198,7 @@ export function JobSearchSection() {
                   className="h-10 w-full pr-12 pl-9 text-sm"
                 />
                 <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">
-                  triệu
+                  {t("general.million")}
                 </span>
               </div>
             </div>
@@ -219,12 +211,12 @@ export function JobSearchSection() {
               {isSearching ? (
                 <>
                   <Search className="h-4 w-4 animate-spin" />
-                  Đang tìm...
+                  {t("compHomepageRedesign.lookingFor")}
                 </>
               ) : (
                 <>
                   <Search className="h-4 w-4" />
-                  Tìm kiếm
+                  {t("general.search")}
                 </>
               )}
             </Button>
@@ -239,14 +231,14 @@ export function JobSearchSection() {
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {isSearching ? (
-                "Đang tìm kiếm..."
+                t("enterprise_companysearchpage.tsx.ang_tim_kiem")
               ) : (
                 <>
-                  Tìm thấy{" "}
+                  {t("enterprise_companysearchpage.tsx.tim_thay")}{" "}
                   <span className="font-semibold text-slate-900 dark:text-white">
                     {jobs.length}
                   </span>{" "}
-                  vị trí
+                  {t("enterprise_companysearchpage.tsx.vi_tri")}
                   {keyword && (
                     <span className="ml-1">
                       cho "<span className="font-medium">{keyword}</span>"
@@ -274,7 +266,7 @@ export function JobSearchSection() {
                               {job.title}
                             </h3>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
-                              {job.companyName || "Công ty"}
+                              {job.companyName || t("common.company")}
                             </p>
                           </div>
                         </div>
@@ -287,17 +279,20 @@ export function JobSearchSection() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                           <MapPin className="h-4 w-4 shrink-0" />
-                          <span>{job.location || "Hồ Chí Minh"}</span>
+                          <span>
+                            {job.location ||
+                              t("enterprise_jobdescriptiondetailpage.tsx.ho_chi_minh")}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                           <Building2 className="h-4 w-4 shrink-0" />
-                          <span>{job.workType || "Toàn thời gian"}</span>
+                          <span>{job.workType || t("compHomepageRedesign.fullTime")}</span>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         <Badge className={`text-xs ${getLevelBadgeColor(job.level)}`}>
-                          {job.level || "Không xác định"}
+                          {job.level || t("shared_speechplaygroundpage.tsx.khong_xac_inh")}
                         </Badge>
                         {job.skills?.slice(0, 2).map((skill, idx) => (
                           <Badge
@@ -324,10 +319,10 @@ export function JobSearchSection() {
                 </div>
               </div>
               <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
-                Không tìm thấy vị trí nào
+                {t("compHomepageRedesign.noLocationsFound")}
               </h3>
               <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-                Thử điều chỉnh từ khóa tìm kiếm hoặc bỏ bớt bộ lọc
+                {t("compHomepageRedesign.tryAdjustingYourSearchKeywords")}
               </p>
             </div>
           )}

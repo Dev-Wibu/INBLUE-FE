@@ -1,16 +1,16 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * ReviewList Component
  * Displays a list of mentor reviews
  */
 
-import { Star } from "lucide-react";
-
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingCardList } from "@/components/ui/loading-card";
 import { cn } from "@/lib/utils";
 import type { MentorReview } from "@/services/mentor-review.manager";
+import { Star } from "lucide-react";
 import { ReviewCard } from "./ReviewCard";
-
 interface ReviewListProps {
   reviews: MentorReview[];
   isLoading?: boolean;
@@ -24,7 +24,6 @@ interface ReviewListProps {
   emptyDescription?: string;
   className?: string;
 }
-
 export function ReviewList({
   reviews,
   isLoading,
@@ -34,8 +33,8 @@ export function ReviewList({
   onSelect,
   onEdit,
   onDelete,
-  emptyTitle = "Chưa có đánh giá",
-  emptyDescription = "Chưa có đánh giá nào được gửi",
+  emptyTitle = t("common.thereAreNoReviewsYet"),
+  emptyDescription = t("compReview.noReviewsHaveBeenSubmitted"),
   className,
 }: ReviewListProps) {
   // Loading state
@@ -54,7 +53,6 @@ export function ReviewList({
       />
     );
   }
-
   return (
     <div className={cn("space-y-4", className)}>
       {reviews.map((review) => (

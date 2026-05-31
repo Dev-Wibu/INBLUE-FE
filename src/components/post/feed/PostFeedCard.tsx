@@ -1,6 +1,3 @@
-import { Heart, MessageCircle } from "lucide-react";
-import { useState } from "react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,49 +6,45 @@ import { Separator } from "@/components/ui/separator";
 import { formatDateTime } from "@/lib/formatting";
 import { useCheckLiked } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
+import { Heart, MessageCircle } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { components } from "../../../../schema-from-be";
-
 import { LikeButton } from "../LikeButton";
 import { PostFeedModal } from "./PostFeedModal";
-
 type PostResponse = components["schemas"]["PostResponse"];
-
 interface PostFeedCardProps {
   item: PostResponse;
 }
-
 export function PostFeedCard({ item }: PostFeedCardProps) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const post = item.post;
   const postId = post?.postId ?? 0;
-
   const commentCount = item.commentCount ?? 0;
-
   const { data: likedData } = useCheckLiked(postId, user?.id ?? 0, !!user?.id && postId > 0);
   const [localLikeAdjust, setLocalLikeAdjust] = useState(0);
-
   const isLiked =
     Object.values((likedData ?? {}) as unknown as Record<string, boolean>)[0] ?? false;
   const likeCount = (item.likeCount ?? 0) + localLikeAdjust;
-
   const [modalOpen, setModalOpen] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState(commentCount);
-
-  const authorName = post?.author?.name ?? "Ẩn danh";
+  const authorName = post?.author?.name ?? t("common.anonymous");
   const authorInitials = authorName
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   const likeLabel = (() => {
     if (likeCount === 0) return null;
-    if (isLiked && likeCount === 1) return "Bạn";
-    if (isLiked) return `Bạn và ${likeCount - 1} người khác`;
+    if (isLiked && likeCount === 1) return t("common.friend");
+    if (isLiked)
+      return t("general.youAndOthers", {
+        var_0: likeCount - 1,
+      });
     return `${likeCount}`;
   })();
-
   return (
     <>
       <Card className="overflow-hidden rounded-xl border-slate-200/70 py-0 shadow-sm hover:shadow-md dark:border-slate-800">
@@ -142,7 +135,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
                 type="button"
                 className="text-muted-foreground ml-auto text-xs hover:underline"
                 onClick={() => setModalOpen(true)}>
-                {localCommentCount} bình luận
+                {localCommentCount} {t("general.comments")}
               </button>
             )}
           </div>
@@ -160,7 +153,9 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
               onLikeChange={(liked) => setLocalLikeAdjust(liked ? 1 : -1)}
             />
           ) : (
-            <span className="text-muted-foreground flex-1 text-center text-sm">Thích</span>
+            <span className="text-muted-foreground flex-1 text-center text-sm">
+              {t("compPost.prefer")}
+            </span>
           )}
           <Button
             variant="ghost"
@@ -168,7 +163,7 @@ export function PostFeedCard({ item }: PostFeedCardProps) {
             className="flex-1 justify-center gap-1.5"
             onClick={() => setModalOpen(true)}>
             <MessageCircle className="h-4 w-4" />
-            <span>Bình luận</span>
+            <span>{t("common.comment1")}</span>
           </Button>
         </CardFooter>
       </Card>

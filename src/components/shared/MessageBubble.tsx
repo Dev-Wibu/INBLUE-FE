@@ -4,7 +4,10 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatDateTime, parseBackendDate } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -19,12 +22,9 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
-
-import { Spinner } from "@/components/ui/spinner";
-import { formatDateTime, parseBackendDate } from "@/lib/formatting";
-
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 export type MessageDeliveryStatus = "queued" | "sending" | "retrying" | "sent" | "failed";
-
 interface MessageBubbleProps {
   id: string;
   sender: "ai" | "user";
@@ -40,18 +40,14 @@ interface MessageBubbleProps {
   onForward?: (_content: string) => void;
   onTogglePin?: (_messageId: string) => void;
 }
-
 const escapeForRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 const highlightContent = (content: string, searchQuery: string): ReactNode => {
   const keyword = searchQuery.trim();
   if (!keyword) {
     return content;
   }
-
   const matcher = new RegExp(`(${escapeForRegex(keyword)})`, "gi");
   const parts = content.split(matcher);
-
   return parts.map((part, index) => {
     if (part.toLowerCase() === keyword.toLowerCase()) {
       return (
@@ -62,37 +58,33 @@ const highlightContent = (content: string, searchQuery: string): ReactNode => {
         </mark>
       );
     }
-
     return <Fragment key={`${part}-${index}`}>{part}</Fragment>;
   });
 };
-
 const getRelativeTime = (timestamp: string): string => {
   const parsed = parseBackendDate(timestamp);
   if (!parsed) {
-    return "Vừa xong";
+    return t("common.justFinished");
   }
-
-  return formatDistanceToNow(parsed, { addSuffix: true, locale: vi });
+  return formatDistanceToNow(parsed, {
+    addSuffix: true,
+    locale: vi,
+  });
 };
-
 const getReadableTimestamp = (timestamp: string): string => {
   const parsed = parseBackendDate(timestamp);
   if (!parsed) {
     return timestamp;
   }
-
   return formatDateTime(parsed, timestamp);
 };
-
 const STATUS_LABELS: Record<MessageDeliveryStatus, string> = {
-  queued: "Đang chờ kết nối",
-  sending: "Đang gửi",
-  retrying: "Đang thử gửi lại",
-  sent: "Đã gửi",
-  failed: "Gửi lỗi",
+  queued: t("compShared.waitingForConnection"),
+  sending: t("compShared.sending"),
+  retrying: t("compShared.tryingToSendAgain"),
+  sent: t("compShared.sent"),
+  failed: t("compShared.submitError"),
 };
-
 export function MessageBubble({
   id,
   sender,
@@ -108,10 +100,10 @@ export function MessageBubble({
   onForward,
   onTogglePin,
 }: MessageBubbleProps) {
+  const { t } = useTranslation();
   const relativeTime = getRelativeTime(timestamp);
   const fullTime = getReadableTimestamp(timestamp);
   const showStatus = sender === "user" && !!status;
-
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -146,7 +138,7 @@ export function MessageBubble({
             {isPinned && (
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
                 <Pin className="h-3 w-3" />
-                Đã ghim
+                {t("compShared.pinned")}
               </span>
             )}
 
@@ -182,7 +174,7 @@ export function MessageBubble({
             {onCopy && (
               <button
                 type="button"
-                title="Sao chép nội dung"
+                title={t("compShared.copyContent")}
                 onClick={() => onCopy(content)}
                 className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
                 <Copy className="h-3.5 w-3.5" />
@@ -192,7 +184,7 @@ export function MessageBubble({
             {onTogglePin && (
               <button
                 type="button"
-                title={isPinned ? "Bỏ ghim tin nhắn" : "Ghim tin nhắn"}
+                title={isPinned ? t("compShared.unpinTheMessage") : t("compShared.pinMessages")}
                 onClick={() => onTogglePin(id)}
                 className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
                 {isPinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
@@ -202,7 +194,7 @@ export function MessageBubble({
             {status === "failed" && onRetry && (
               <button
                 type="button"
-                title="Gửi lại tin nhắn"
+                title={t("compShared.resendTheMessage")}
                 onClick={() => onRetry(id)}
                 className="rounded-md p-1 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-300">
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -215,27 +207,27 @@ export function MessageBubble({
       <ContextMenuContent className="w-52">
         <ContextMenuItem onSelect={() => onCopy?.(content)}>
           <Copy className="h-4 w-4" />
-          Sao chép nội dung
+          {t("compShared.copyContent")}
         </ContextMenuItem>
 
         {onForward && (
           <ContextMenuItem onSelect={() => onForward(content)}>
             <CornerUpRight className="h-4 w-4" />
-            Chuyển tiếp vào ô soạn
+            {t("compShared.moveForwardToTheEdit")}
           </ContextMenuItem>
         )}
 
         {onTogglePin && (
           <ContextMenuItem onSelect={() => onTogglePin(id)}>
             {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-            {isPinned ? "Bỏ ghim tin nhắn" : "Ghim tin nhắn"}
+            {isPinned ? t("compShared.unpinTheMessage") : t("compShared.pinMessages")}
           </ContextMenuItem>
         )}
 
         {status === "failed" && onRetry && (
           <ContextMenuItem onSelect={() => onRetry(id)}>
             <RotateCcw className="h-4 w-4" />
-            Gửi lại tin nhắn
+            {t("compShared.resendTheMessage")}
           </ContextMenuItem>
         )}
       </ContextMenuContent>

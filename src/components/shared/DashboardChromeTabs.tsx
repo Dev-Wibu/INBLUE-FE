@@ -1,5 +1,6 @@
 import { Plus, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -70,6 +71,7 @@ export function DashboardChromeTabs({
   compact = false,
   theme,
 }: DashboardChromeTabsProps) {
+  const { t } = useTranslation();
   const [showNewTabMenu, setShowNewTabMenu] = useState(false);
   const [newTabMenuPosition, setNewTabMenuPosition] = useState<{
     top: number;
@@ -176,7 +178,7 @@ export function DashboardChromeTabs({
           }
           setShowNewTabMenu(true);
         }}
-        aria-label="Mở menu tab"
+        aria-label={t("compShared.openTheTabMenu")}
         className={cn(
           "flex h-8 w-8 items-center justify-center rounded-xl border border-transparent transition-colors dark:bg-slate-700 dark:hover:bg-slate-600",
           theme.addBtnBg,

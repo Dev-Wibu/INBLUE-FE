@@ -10,20 +10,20 @@ import {
 import type { UsePaginationReturn } from "@/hooks/usePagination";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-
+import { useTranslation } from "react-i18next";
 interface PaginationControlProps {
   pagination: UsePaginationReturn;
   pageSizeOptions?: number[];
   showPageSizeSelector?: boolean;
   onPageSizeChange?: (size: number) => void;
 }
-
 export function PaginationControl({
   pagination,
   pageSizeOptions = [10, 20, 50, 100],
   showPageSizeSelector = true,
   onPageSizeChange,
 }: PaginationControlProps) {
+  const { t } = useTranslation();
   const {
     currentPage,
     totalPages,
@@ -40,40 +40,31 @@ export function PaginationControl({
     totalCount,
     pageSize,
   } = pagination;
-
   const [jumpToPageInput, setJumpToPageInput] = useState(String(currentPage));
-
   useEffect(() => {
     setJumpToPageInput(String(currentPage));
   }, [currentPage]);
-
   const parsedJumpPage = useMemo(() => {
     const parsed = Number.parseInt(jumpToPageInput, 10);
     return Number.isInteger(parsed) ? parsed : null;
   }, [jumpToPageInput]);
-
   const isJumpTargetValid =
     parsedJumpPage !== null && parsedJumpPage >= 1 && parsedJumpPage <= totalPages;
-
   const handlePageSizeSelection = (value: string) => {
     if (!onPageSizeChange) {
       return;
     }
-
     const nextPageSize = Number(value);
     if (!Number.isInteger(nextPageSize) || nextPageSize <= 0 || nextPageSize === pageSize) {
       return;
     }
-
     onPageSizeChange(nextPageSize);
     goToFirstPage();
   };
-
   const handleJumpToPage = () => {
     if (!isJumpTargetValid || parsedJumpPage === null) {
       return;
     }
-
     setPage(parsedJumpPage);
   };
 
@@ -81,11 +72,11 @@ export function PaginationControl({
   if (totalCount === 0) {
     return null;
   }
-
   return (
     <div className="flex items-center justify-between px-2 py-4">
       <div className="text-muted-foreground text-sm">
-        Hiển thị {startIndex + 1}-{Math.min(endIndex + 1, totalCount)} của {totalCount} kết quả
+        {t("common.show")} {startIndex + 1}-{Math.min(endIndex + 1, totalCount)}{" "}
+        {t("compShared.belongTo")} {totalCount} {t("common.result2")}
       </div>
 
       <div className="flex items-center gap-2">
@@ -110,7 +101,7 @@ export function PaginationControl({
             size="icon"
             onClick={goToFirstPage}
             disabled={!hasPrevPage}
-            title="Trang đầu">
+            title={t("compShared.frontPage")}>
             <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -118,7 +109,7 @@ export function PaginationControl({
             size="icon"
             onClick={prevPage}
             disabled={!hasPrevPage}
-            title="Trang trước">
+            title={t("compShared.previousPage")}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
@@ -151,7 +142,7 @@ export function PaginationControl({
             size="icon"
             onClick={goToLastPage}
             disabled={!hasNextPage}
-            title="Trang cuối">
+            title={t("compShared.lastPage")}>
             <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
@@ -164,7 +155,7 @@ export function PaginationControl({
 
         {totalPages > 1 && (
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">Đến trang</span>
+            <span className="text-muted-foreground text-sm">{t("compShared.goToPage")}</span>
             <Input
               value={jumpToPageInput}
               onChange={(event) => setJumpToPageInput(event.target.value.replace(/[^0-9]/g, ""))}
@@ -175,8 +166,8 @@ export function PaginationControl({
                 }
               }}
               inputMode="numeric"
-              aria-label="Nhập số trang"
-              placeholder="Số"
+              aria-label={t("compShared.enterThePageNumber")}
+              placeholder={t("compShared.number")}
               className="h-9 w-16 text-center"
             />
             <Button
@@ -185,7 +176,7 @@ export function PaginationControl({
               size="sm"
               onClick={handleJumpToPage}
               disabled={!isJumpTargetValid || parsedJumpPage === currentPage}>
-              Đi
+              {t("compShared.go")}
             </Button>
           </div>
         )}

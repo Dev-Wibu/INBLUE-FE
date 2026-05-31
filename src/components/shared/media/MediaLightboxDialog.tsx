@@ -10,6 +10,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,7 @@ export function MediaLightboxDialog({
   items,
   initialIndex = 0,
 }: MediaLightboxDialogProps) {
+  const { t } = useTranslation();
   const [manualIndex, setManualIndex] = useState<number | null>(null);
   const [documentViewerProvider, setDocumentViewerProvider] =
     useState<ExternalDocumentViewerProvider>("office");
@@ -253,7 +255,8 @@ export function MediaLightboxDialog({
             <div>
               <DialogTitle className="text-base">{currentItem?.name ?? "Xem media"}</DialogTitle>
               <DialogDescription className="text-xs">
-                Trình xem toàn màn hình cho ảnh, PDF và tài liệu ({currentPositionLabel})
+                {t("compShared.fullScreenViewerForPhotos")}
+                {currentPositionLabel})
               </DialogDescription>
             </div>
 
@@ -280,7 +283,7 @@ export function MediaLightboxDialog({
                       });
                     }}
                     disabled={!imageUrl}
-                    aria-label="Thu nhỏ ảnh">
+                    aria-label={t("compShared.zoomOutThePhoto")}>
                     <ZoomOut className="h-4 w-4" />
                   </Button>
                   <Button
@@ -303,7 +306,7 @@ export function MediaLightboxDialog({
                       });
                     }}
                     disabled={!imageUrl}
-                    aria-label="Phóng to ảnh">
+                    aria-label={t("compShared.enlargeThePhoto")}>
                     <ZoomIn className="h-4 w-4" />
                   </Button>
                   <Button
@@ -323,7 +326,7 @@ export function MediaLightboxDialog({
                       });
                     }}
                     disabled={!imageUrl}
-                    aria-label="Xoay trái ảnh">
+                    aria-label={t("compShared.rotatePhotoLeft")}>
                     <RotateCcw className="h-4 w-4" />
                   </Button>
                   <Button
@@ -343,7 +346,7 @@ export function MediaLightboxDialog({
                       });
                     }}
                     disabled={!imageUrl}
-                    aria-label="Xoay phải ảnh">
+                    aria-label={t("compShared.rotatePhotoRight")}>
                     <RotateCw className="h-4 w-4" />
                   </Button>
                   <Button
@@ -352,7 +355,7 @@ export function MediaLightboxDialog({
                     variant="ghost"
                     onClick={handleOpenCurrentImage}
                     disabled={!imageUrl}
-                    aria-label="Mở ảnh ở tab mới">
+                    aria-label={t("compShared.openTheImageInA")}>
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                   <Button
@@ -361,7 +364,7 @@ export function MediaLightboxDialog({
                     variant="ghost"
                     onClick={handleDownloadCurrentImage}
                     disabled={!imageUrl}
-                    aria-label="Tải ảnh xuống">
+                    aria-label={t("compShared.downloadPhotos")}>
                     <Download className="h-4 w-4" />
                   </Button>
                 </>
@@ -375,7 +378,7 @@ export function MediaLightboxDialog({
                     variant={documentViewerProvider === "office" ? "default" : "ghost"}
                     onClick={() => setDocumentViewerProvider("office")}
                     disabled={!canEmbedDocument}
-                    aria-label="Xem tài liệu bằng Office Viewer">
+                    aria-label={t("compShared.viewDocumentsUsingOfficeViewer")}>
                     Office
                   </Button>
                   <Button
@@ -384,7 +387,7 @@ export function MediaLightboxDialog({
                     variant={documentViewerProvider === "google" ? "default" : "ghost"}
                     onClick={() => setDocumentViewerProvider("google")}
                     disabled={!canEmbedDocument}
-                    aria-label="Xem tài liệu bằng Google Viewer">
+                    aria-label={t("compShared.viewDocumentsUsingGoogleViewer")}>
                     Google
                   </Button>
                   <Button
@@ -393,7 +396,7 @@ export function MediaLightboxDialog({
                     variant="ghost"
                     onClick={handleOpenCurrentDocument}
                     disabled={!documentUrl}
-                    aria-label="Mở tài liệu ở tab mới">
+                    aria-label={t("compShared.openTheDocumentInA")}>
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                   <Button
@@ -402,7 +405,7 @@ export function MediaLightboxDialog({
                     variant="ghost"
                     onClick={handleDownloadCurrentDocument}
                     disabled={!documentUrl}
-                    aria-label="Tải tài liệu xuống">
+                    aria-label={t("compShared.downloadDocuments")}>
                     <Download className="h-4 w-4" />
                   </Button>
                 </>
@@ -414,7 +417,7 @@ export function MediaLightboxDialog({
                 variant="ghost"
                 onClick={goPrevious}
                 disabled={!canNavigate}
-                aria-label="Media trước">
+                aria-label={t("compShared.mediaFirst")}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
@@ -431,7 +434,7 @@ export function MediaLightboxDialog({
                 size="icon"
                 variant="ghost"
                 onClick={() => handleDialogOpenChange(false)}
-                aria-label="Đóng trình xem media">
+                aria-label={t("compShared.closeTheMediaViewer")}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -441,7 +444,7 @@ export function MediaLightboxDialog({
         <div className="min-h-0 flex-1 overflow-hidden bg-black/90 p-3">
           {!currentItem ? (
             <div className="flex h-full items-center justify-center text-sm text-slate-200">
-              Không có media để hiển thị.
+              {t("compShared.thereIsNoMediaTo")}
             </div>
           ) : currentKind === "image" ? (
             imageUrl ? (
@@ -457,7 +460,7 @@ export function MediaLightboxDialog({
               </div>
             ) : (
               <div className="flex h-full items-center justify-center">
-                <SpinnerInline label="Đang tải ảnh..." />
+                <SpinnerInline label={t("compShared.loadingPhotos")} />
               </div>
             )
           ) : currentKind === "pdf" ? (
@@ -474,31 +477,29 @@ export function MediaLightboxDialog({
                 <iframe
                   key={`${currentItem.id}-${documentViewerProvider}`}
                   src={documentViewerUrl}
-                  title={`Xem tài liệu ${currentItem.name}`}
+                  title={t("general.viewDocument", { var_0: currentItem.name })}
                   className="h-full w-full rounded-lg border border-slate-700 bg-white"
                 />
                 <p className="text-center text-xs text-slate-300">
-                  Nếu không xem được, dùng nút Mở ở tab mới hoặc Tải xuống.
+                  {t("compShared.ifYouCanTView")}
                 </p>
               </div>
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-slate-200">
-                <p className="max-w-lg text-sm">
-                  Tài liệu này chưa thể nhúng trực tiếp do giới hạn quyền truy cập hoặc định dạng.
-                </p>
+                <p className="max-w-lg text-sm">{t("compShared.thisDocumentCannotBeDirectly")}</p>
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   <Button type="button" variant="outline" onClick={handleOpenCurrentDocument}>
-                    Mở ở tab mới
+                    {t("compShared.openInNewTab")}
                   </Button>
                   <Button type="button" variant="outline" onClick={handleDownloadCurrentDocument}>
-                    Tải xuống
+                    {t("compShared.download")}
                   </Button>
                 </div>
               </div>
             )
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-slate-200">
-              Định dạng này chưa hỗ trợ xem trực tiếp.
+              {t("compShared.thisFormatDoesNotSupport")}
             </div>
           )}
         </div>

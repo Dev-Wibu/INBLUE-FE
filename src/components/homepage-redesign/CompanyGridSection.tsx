@@ -1,9 +1,9 @@
-import { ChevronRight, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-
 import { Button } from "@/components/ui/button";
 import { companyManager, type Company } from "@/services/company.manager";
+import { ChevronRight, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 // Icon mapping for industries
 const industryIcons: Record<string, React.ReactNode> = {
@@ -53,11 +53,9 @@ const industryIcons: Record<string, React.ReactNode> = {
     </svg>
   ),
 };
-
 function getIconForDescription(description?: string): React.ReactNode {
   if (!description) return industryIcons.default;
   const desc = description.toLowerCase();
-
   if (desc.includes("ai") || desc.includes("machine learning") || desc.includes("generative")) {
     return industryIcons.smart_toy;
   }
@@ -73,61 +71,83 @@ function getIconForDescription(description?: string): React.ReactNode {
   if (desc.includes("data") || desc.includes("science")) {
     return industryIcons.memory;
   }
-
   return industryIcons.default;
 }
-
 function getColorScheme(index: number) {
   const schemes = [
-    { bg: "bg-[#0047AB]/10", border: "border-[#0047AB]/20", text: "text-[#0047AB]" },
-    { bg: "bg-red-500/10", border: "border-red-500/20", text: "text-red-500" },
-    { bg: "bg-sky-500/10", border: "border-sky-500/20", text: "text-sky-500" },
-    { bg: "bg-indigo-500/10", border: "border-indigo-500/20", text: "text-indigo-500" },
-    { bg: "bg-[#007BFF]/10", border: "border-[#007BFF]/20", text: "text-[#007BFF]" },
-    { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-500" },
+    {
+      bg: "bg-[#0047AB]/10",
+      border: "border-[#0047AB]/20",
+      text: "text-[#0047AB]",
+    },
+    {
+      bg: "bg-red-500/10",
+      border: "border-red-500/20",
+      text: "text-red-500",
+    },
+    {
+      bg: "bg-sky-500/10",
+      border: "border-sky-500/20",
+      text: "text-sky-500",
+    },
+    {
+      bg: "bg-indigo-500/10",
+      border: "border-indigo-500/20",
+      text: "text-indigo-500",
+    },
+    {
+      bg: "bg-[#007BFF]/10",
+      border: "border-[#007BFF]/20",
+      text: "text-[#007BFF]",
+    },
+    {
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+      text: "text-emerald-500",
+    },
   ];
   return schemes[index % schemes.length];
 }
-
 export function CompanyGridSection() {
+  const { t } = useTranslation();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
   useEffect(() => {
     const fetchCompanies = async () => {
       setIsLoading(true);
-
       try {
         const result = await companyManager.getAll();
-
         if (result.success && result.data) {
           const data = result.data;
           if (Array.isArray(data)) {
             setCompanies(data);
           } else if (data && "content" in data) {
-            setCompanies((data as { content: Company[] }).content);
+            setCompanies(
+              (
+                data as {
+                  content: Company[];
+                }
+              ).content
+            );
           }
         }
       } catch (err) {
         console.error("[CompanyGridSection] Fetch error:", err);
       }
-
       setIsLoading(false);
     };
-
     fetchCompanies();
   }, []);
-
   return (
     <section className="mx-auto max-w-7xl px-6 py-12">
       {/* Section Header */}
       <div className="mb-8 flex items-end justify-between">
         <div>
           <h2 className="mb-1 text-2xl font-bold text-slate-900 dark:text-white">
-            Hệ sinh thái công ty giả lập
+            {t("compHomepageRedesign.simulatedCompanyEcosystem")}
           </h2>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Tham gia ứng tuyển vào các môi trường giả lập chuyên nghiệp
+            {t("compHomepageRedesign.participateInApplyingForProfessional")}
           </p>
         </div>
         <Button
@@ -135,7 +155,7 @@ export function CompanyGridSection() {
           variant="ghost"
           className="group gap-1 text-[#0047AB] hover:text-[#0047AB] dark:text-[#66B2FF] dark:hover:text-[#66B2FF]">
           <Link to="/enterprise/companies">
-            Xem tất cả {companies.length} đối tác
+            {t("common.seeAll")} {companies.length} {t("compHomepageRedesign.partner")}
             <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </Button>
@@ -152,7 +172,7 @@ export function CompanyGridSection() {
       {!isLoading && companies.length === 0 && (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center dark:border-slate-700 dark:bg-slate-800/20">
           <p className="text-slate-600 dark:text-slate-400">
-            Chưa có công ty nào. Vui lòng quay lại sau.
+            {t("compHomepageRedesign.thereAreNoCompaniesYet")}
           </p>
         </div>
       )}
@@ -185,7 +205,8 @@ export function CompanyGridSection() {
                   </div>
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-medium ${colorScheme.bg} ${colorScheme.text}`}>
-                    {company.jobDescriptions?.length || 0} vị trí
+                    {company.jobDescriptions?.length || 0}{" "}
+                    {t("enterprise_companysearchpage.tsx.vi_tri")}
                   </span>
                 </div>
 
@@ -204,7 +225,7 @@ export function CompanyGridSection() {
                     <div className="h-6 w-6 rounded-full border-2 border-white bg-[#66B2FF] dark:border-slate-800 dark:bg-[#007BFF]/30" />
                   </div>
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    Nhiều người đã tham gia
+                    {t("enterprise_companysearchpage.tsx.nhieu_nguoi_a_tham_gia")}
                   </span>
                 </div>
               </Link>

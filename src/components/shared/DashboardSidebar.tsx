@@ -1,18 +1,17 @@
-import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { useAuthStore } from "@/stores/authStore";
+import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
 import { getInitialSidebarCollapsed } from "./sidebar-collapse";
-
+const t = i18n.t.bind(i18n);
 export interface SidebarMenuItem {
   type: string;
   icon: React.ElementType;
@@ -21,12 +20,10 @@ export interface SidebarMenuItem {
   description?: string;
   children?: SidebarMenuItem[];
 }
-
 export interface SidebarMenuGroup {
   label?: string;
   items: SidebarMenuItem[];
 }
-
 export interface DashboardSidebarTheme {
   // Container
   wrapper: string;
@@ -64,7 +61,6 @@ export interface DashboardSidebarTheme {
   logoutIcon: string;
   logoutLabel: string;
 }
-
 export interface DashboardSidebarProps {
   menuGroups: SidebarMenuGroup[];
   activeTab: string;
@@ -84,7 +80,6 @@ export interface DashboardSidebarProps {
   onSettingsClick?: () => void;
   theme: DashboardSidebarTheme;
 }
-
 export interface DashboardSidebarToggleProps {
   isCollapsed: boolean;
   onToggle: () => void;
@@ -92,16 +87,14 @@ export interface DashboardSidebarToggleProps {
   collapsedAriaLabel?: string;
   expandedAriaLabel?: string;
 }
-
 const DEFAULT_DESKTOP_TOGGLE_BUTTON_CLASS =
   "absolute top-14 -right-3 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700";
-
 export function DashboardSidebarToggle({
   isCollapsed,
   onToggle,
   className,
-  collapsedAriaLabel = "Mở rộng thanh điều hướng",
-  expandedAriaLabel = "Thu gọn thanh điều hướng",
+  collapsedAriaLabel = t("compShared.expandTheNavigationBar"),
+  expandedAriaLabel = t("compShared.collapseTheNavigationBar"),
 }: DashboardSidebarToggleProps) {
   return (
     <button
@@ -116,7 +109,6 @@ export function DashboardSidebarToggle({
     </button>
   );
 }
-
 export function DashboardSidebar({
   menuGroups,
   activeTab,
@@ -129,7 +121,7 @@ export function DashboardSidebar({
   logo,
   collapsedLogo,
   showSettings = false,
-  settingsLabel = "Cài đặt",
+  settingsLabel = t("common.setting"),
   settingsExpandedClass = "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
   settingsCollapsedClass = "flex items-center justify-center rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
   onSettingsClick,
@@ -139,15 +131,12 @@ export function DashboardSidebar({
   const navigate = useNavigate();
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const isMobile = useIsMobile();
-
   const [internalCollapsed, setInternalCollapsed] = useState(() =>
     getInitialSidebarCollapsed(storageKey, legacyStorageKey)
   );
   const isControlled = controlledCollapsed !== undefined;
   const isCollapsed = isControlled ? controlledCollapsed : internalCollapsed;
-
   const desktopSidebarRef = useRef<HTMLElement | null>(null);
-
   const [hoveredDesktopParent, setHoveredDesktopParent] = useState<string | null>(null);
   const [pinnedDesktopParent, setPinnedDesktopParent] = useState<string | null>(null);
   const [collapsedDropdownParent, setCollapsedDropdownParent] = useState<string | null>(null);
@@ -156,87 +145,70 @@ export function DashboardSidebar({
     const saved = localStorage.getItem(`${storageKey}_mobile_expanded`);
     return saved || null;
   });
-
   const setCollapsed = (nextCollapsed: boolean | ((_prev: boolean) => boolean)) => {
     const resolved =
       typeof nextCollapsed === "function" ? nextCollapsed(isCollapsed) : nextCollapsed;
-
     if (!isControlled) {
       setInternalCollapsed(resolved);
     }
-
     onCollapsedChange?.(resolved);
   };
-
   useEffect(() => {
     localStorage.setItem(storageKey, String(isCollapsed));
   }, [isCollapsed, storageKey]);
-
   useEffect(() => {
     if (expandedMobileItem) {
       localStorage.setItem(`${storageKey}_mobile_expanded`, expandedMobileItem);
       return;
     }
-
     localStorage.removeItem(`${storageKey}_mobile_expanded`);
   }, [expandedMobileItem, storageKey]);
-
   useEffect(() => {
     if (!isCollapsed || !collapsedDropdownParent) {
       return;
     }
-
     const handleOutsideClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) {
         return;
       }
-
       if (!desktopSidebarRef.current?.contains(target)) {
         setCollapsedDropdownParent(null);
       }
     };
-
     document.addEventListener("mousedown", handleOutsideClick);
-
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [collapsedDropdownParent, isCollapsed]);
-
   const toggleCollapse = () => {
     setHoveredDesktopParent(null);
     setCollapsedDropdownParent(null);
     setPinnedDesktopParent(null);
     setCollapsed((prev) => !prev);
   };
-
   const handleSettingsClick = () => {
     setIsMobileOpen(false);
-
     if (isMobile) {
       window.setTimeout(() => {
         onSettingsClick?.();
       }, 0);
       return;
     }
-
     onSettingsClick?.();
   };
-
   const handleNavigate = (type: string) => {
     onNavigate(type);
     setCollapsedDropdownParent(null);
     setHoveredDesktopParent(null);
     setIsMobileOpen(false);
   };
-
   const handleLogout = async () => {
     try {
       await authManager.logout();
       clearAuth();
       setIsMobileOpen(false);
-      toast.success(t("common.logout_success"));
+      toast.success(t("common.loggedOutSuccessfully"));
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
@@ -245,13 +217,11 @@ export function DashboardSidebar({
       navigate("/login");
     }
   };
-
   const renderMenuItem = (item: SidebarMenuItem) => {
     // Items with children get flyout submenu handling
     if (item.children && item.children.length > 0) {
       return renderFlyoutItem(item);
     }
-
     const isActive = activeTab === item.type;
     const buttonContent = (
       <button
@@ -271,7 +241,6 @@ export function DashboardSidebar({
         {!isCollapsed && item.label}
       </button>
     );
-
     if (isCollapsed) {
       return (
         <Tooltip key={item.type}>
@@ -289,10 +258,8 @@ export function DashboardSidebar({
         </Tooltip>
       );
     }
-
     return buttonContent;
   };
-
   const renderFlyoutItem = (item: SidebarMenuItem) => {
     const isAnyChildActive = item.children!.some((c) => activeTab === c.type);
     const isActive = activeTab === item.type || isAnyChildActive;
@@ -301,7 +268,6 @@ export function DashboardSidebar({
       !isCollapsed &&
       (hoveredDesktopParent === item.type ||
         (!hoveredDesktopParent && (pinnedDesktopParent === item.type || isAnyChildActive)));
-
     return (
       <div
         key={item.type}
@@ -378,7 +344,9 @@ export function DashboardSidebar({
               "absolute top-0 left-[calc(100%+0.5rem)] z-70 min-w-52 rounded-xl border bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900",
               theme.flyoutBorder
             )}
-            style={{ willChange: "opacity, transform" }}>
+            style={{
+              willChange: "opacity, transform",
+            }}>
             <p className="px-2.5 pt-1 pb-1.5 text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400">
               {item.label}
             </p>
@@ -413,7 +381,9 @@ export function DashboardSidebar({
         {!isCollapsed && isExpandedDropdownOpen && item.children && (
           <div
             className="mt-1 ml-6 space-y-1 border-l border-slate-200 pl-3 dark:border-slate-700/80"
-            style={{ willChange: "opacity, transform" }}>
+            style={{
+              willChange: "opacity, transform",
+            }}>
             {item.children.map((child) => {
               const isChildActive = activeTab === child.type;
               return (
@@ -443,7 +413,6 @@ export function DashboardSidebar({
       </div>
     );
   };
-
   const renderMobileMenuItem = (item: SidebarMenuItem) => {
     if (!item.children || item.children.length === 0) {
       const isActive = activeTab === item.type;
@@ -470,10 +439,8 @@ export function DashboardSidebar({
         </button>
       );
     }
-
     const isAnyChildActive = item.children.some((child) => activeTab === child.type);
     const isExpanded = expandedMobileItem === item.type || isAnyChildActive;
-
     return (
       <div key={item.type} className="space-y-1">
         <button
@@ -541,7 +508,6 @@ export function DashboardSidebar({
       </div>
     );
   };
-
   return (
     <TooltipProvider delayDuration={0}>
       <>
@@ -551,7 +517,7 @@ export function DashboardSidebar({
               <SheetTrigger asChild>
                 <button
                   type="button"
-                  aria-label="Mở menu điều hướng"
+                  aria-label={t("compShared.openTheNavigationMenu")}
                   className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-300/90 bg-white/95 shadow-md shadow-slate-300/50 transition-all hover:-translate-y-0.5 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 dark:hover:bg-slate-800">
                   <PanelLeftOpen className="h-5 w-5 text-slate-700 dark:text-slate-200" />
                 </button>
@@ -653,12 +619,18 @@ export function DashboardSidebar({
             isCollapsed ? theme.collapsedWidth || "w-16" : theme.expandedWidth,
             theme.wrapper
           )}
-          style={{ contain: "layout style" }}>
+          style={{
+            contain: "layout style",
+          }}>
           {showDesktopToggle && (
             <button
               type="button"
               onClick={toggleCollapse}
-              aria-label={isCollapsed ? "Mở rộng thanh điều hướng" : "Thu gọn thanh điều hướng"}
+              aria-label={
+                isCollapsed
+                  ? t("compShared.expandTheNavigationBar")
+                  : t("compShared.collapseTheNavigationBar")
+              }
               className={theme.toggleBtn || DEFAULT_DESKTOP_TOGGLE_BUTTON_CLASS}>
               {isCollapsed ? (
                 <PanelLeftOpen

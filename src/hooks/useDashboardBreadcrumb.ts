@@ -1,6 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
-
 import {
   buildDashboardBreadcrumbItems,
   formatBreadcrumbLabelWithPrefix,
@@ -12,51 +9,48 @@ import {
   type DashboardRouteMatch,
   type DashboardTabDefinition,
 } from "@/lib/dashboard-breadcrumb";
+import i18n from "@/lib/i18n";
 import { chatManager } from "@/services/chat.manager";
 import { mentorReviewManager } from "@/services/mentor-review.manager";
 import { mentorManager } from "@/services/mentor.manager";
 import { practiceSetManager } from "@/services/practice-set.manager";
 import { quizSetManager } from "@/services/quiz-set.manager";
-
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+const t = i18n.t.bind(i18n);
 const DYNAMIC_BREADCRUMB_QUERY_KEY = "dashboard-breadcrumb-dynamic-label";
-
 interface DynamicLabelRequest {
   resource: NonNullable<DashboardRouteMatch["dynamic"]>["resource"];
   id: number;
   prefix?: string;
 }
-
 interface PracticeQuizDetailRequest {
   sessionId: number;
   practiceSetId: number;
   quizId: number;
   includeResult: boolean;
 }
-
 const asNonEmptyString = (value: unknown): string | null => {
   if (typeof value !== "string") {
     return null;
   }
-
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
-
 const toPositiveInteger = (value: string | undefined): number | undefined => {
   if (!value) {
     return undefined;
   }
-
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) {
     return undefined;
   }
-
   return parsed;
 };
-
-const getSessionBreadcrumbLabel = (sessionId: number): string => `Phiên #${sessionId}`;
-
+const getSessionBreadcrumbLabel = (sessionId: number): string =>
+  t("common.sessionVar0", {
+    var_0: sessionId,
+  });
 function resolveRoleSpecificDetailChain({
   role,
   pathname,
@@ -68,11 +62,9 @@ function resolveRoleSpecificDetailChain({
 }): DashboardBreadcrumbDetailItem[] | null {
   const normalizedPath = normalizeDashboardPath(pathname);
   const sessionId = toPositiveInteger(routeParams?.sessionId);
-
   if (!sessionId) {
     return null;
   }
-
   if (
     role === "user" &&
     /^\/user\/mock-interview\/history\/[^/]+\/feedback$/.test(normalizedPath)
@@ -82,23 +74,24 @@ function resolveRoleSpecificDetailChain({
         label: getSessionBreadcrumbLabel(sessionId),
         href: `/user/mock-interview/history/${sessionId}`,
       },
-      { label: "Viết đánh giá" },
+      {
+        label: t("common.writeAReview"),
+      },
     ];
   }
-
   if (role === "mentor" && /^\/mentor\/sessions\/[^/]+\/review$/.test(normalizedPath)) {
     return [
       {
         label: getSessionBreadcrumbLabel(sessionId),
         href: `/mentor/sessions/${sessionId}`,
       },
-      { label: "Viết phản hồi" },
+      {
+        label: t("common.writeFeedback"),
+      },
     ];
   }
-
   return null;
 }
-
 async function resolvePracticeQuizDetailLabels(
   request: PracticeQuizDetailRequest
 ): Promise<DashboardBreadcrumbDetailItem[] | null> {
@@ -107,103 +100,108 @@ async function resolvePracticeQuizDetailLabels(
   if (!quizResponse.success || !quizResponse.data) {
     return null;
   }
-
   const quizSet = quizResponse.data;
-
   const detailLabels: DashboardBreadcrumbDetailItem[] = [
     {
-      label: formatBreadcrumbLabelWithPrefix("Lộ trình", getSessionBreadcrumbLabel(sessionId)),
+      label: formatBreadcrumbLabelWithPrefix(
+        t("common.route"),
+        getSessionBreadcrumbLabel(sessionId)
+      ),
       href: `/user/practice/session/${sessionId}`,
     },
   ];
-
-  const quizName = asNonEmptyString(quizSet.quizName) ?? `Bài kiểm tra #${quizId}`;
+  const quizName =
+    asNonEmptyString(quizSet.quizName) ??
+    t("common.testVar0", {
+      var_0: quizId,
+    });
   detailLabels.push({
-    label: formatBreadcrumbLabelWithPrefix("Bài kiểm tra", quizName),
+    label: formatBreadcrumbLabelWithPrefix(t("general.test"), quizName),
   });
-
   if (includeResult) {
-    detailLabels.push({ label: "Kết quả" });
+    detailLabels.push({
+      label: t("common.result"),
+    });
   }
-
   return detailLabels;
 }
-
 async function resolveDynamicRouteLabel(request: DynamicLabelRequest): Promise<string | null> {
   const { id, prefix, resource } = request;
-
   switch (resource) {
     case "session": {
       const label = getSessionBreadcrumbLabel(id);
       return formatBreadcrumbLabelWithPrefix(prefix, label);
     }
-
     case "mentor": {
       const response = await mentorManager.getById(id);
       if (!response.success || !response.data) {
         return null;
       }
-
       const mentorName = asNonEmptyString(response.data.name) ?? `Mentor #${id}`;
       return formatBreadcrumbLabelWithPrefix(prefix, mentorName);
     }
-
     case "practiceSet": {
       const response = await practiceSetManager.getById(id);
       if (!response.success || !response.data) {
         return null;
       }
-
-      const practiceSetName = asNonEmptyString(response.data.practiceSetName) ?? `Bộ #${id}`;
+      const practiceSetName =
+        asNonEmptyString(response.data.practiceSetName) ??
+        t("general.set1", {
+          var_0: id,
+        });
       return formatBreadcrumbLabelWithPrefix(prefix, practiceSetName);
     }
-
     case "quizSet": {
       const response = await quizSetManager.getById(id);
       if (!response.success || !response.data) {
         return null;
       }
-
-      const quizName = asNonEmptyString(response.data.quizName) ?? `Bài kiểm tra #${id}`;
+      const quizName =
+        asNonEmptyString(response.data.quizName) ??
+        t("common.testVar0", {
+          var_0: id,
+        });
       return formatBreadcrumbLabelWithPrefix(prefix, quizName);
     }
-
     case "mentorReview": {
       const response = await mentorReviewManager.getById(id);
       if (!response.success || !response.data) {
         return null;
       }
-
       const reviewedUserName = asNonEmptyString(response.data.user?.name);
       const reviewedSessionId = response.data.session?.id;
       const fallbackLabel =
         typeof reviewedSessionId === "number" && reviewedSessionId > 0
-          ? `Phiên #${reviewedSessionId}`
-          : `Đánh giá #${id}`;
-
+          ? t("common.sessionVar0", {
+              var_0: reviewedSessionId,
+            })
+          : t("general.review", {
+              var_0: id,
+            });
       return formatBreadcrumbLabelWithPrefix(prefix, reviewedUserName ?? fallbackLabel);
     }
-
     case "user": {
       const response = await chatManager.getUserDetail(id);
       if (!response.success || !response.data) {
         return null;
       }
-
-      const userRecord = response.data as { name?: string; fullName?: string };
+      const userRecord = response.data as {
+        name?: string;
+        fullName?: string;
+      };
       const userName =
         asNonEmptyString(userRecord.name) ??
         asNonEmptyString(userRecord.fullName) ??
-        `Học viên #${id}`;
-
+        t("common.studentVar0", {
+          var_0: id,
+        });
       return formatBreadcrumbLabelWithPrefix(prefix, userName);
     }
-
     default:
       return null;
   }
 }
-
 export function useDashboardBreadcrumb({
   role,
   pathname,
@@ -224,19 +222,16 @@ export function useDashboardBreadcrumb({
     if (variant !== "practiceQuiz" && variant !== "practiceQuizResult") {
       return null;
     }
-
     const routeParams = routeMatch?.routeParams;
     if (!routeParams) {
       return null;
     }
-
     const quizId = toPositiveInteger(routeParams.quizId);
     const practiceSetId = toPositiveInteger(routeParams.practiceSetId);
     const sessionId = toPositiveInteger(routeParams.sessionId);
     if (!quizId || !practiceSetId || !sessionId) {
       return null;
     }
-
     return {
       sessionId,
       quizId,
@@ -244,7 +239,6 @@ export function useDashboardBreadcrumb({
       includeResult: variant === "practiceQuizResult",
     };
   }, [routeMatch]);
-
   const roleSpecificDetailChain = useMemo(
     () =>
       resolveRoleSpecificDetailChain({
@@ -254,20 +248,17 @@ export function useDashboardBreadcrumb({
       }),
     [pathname, role, routeMatch?.routeParams]
   );
-
   const dynamicLabelRequest = useMemo((): DynamicLabelRequest | null => {
     const dynamic = routeMatch?.dynamic;
     if (!dynamic?.id) {
       return null;
     }
-
     return {
       resource: dynamic.resource,
       id: dynamic.id,
       prefix: dynamic.prefix,
     };
   }, [routeMatch?.dynamic]);
-
   const { data: practiceQuizDetailLabels, isFetching: isResolvingPracticeQuizDetailLabels } =
     useQuery({
       queryKey: [
@@ -281,7 +272,6 @@ export function useDashboardBreadcrumb({
         if (!practiceQuizDetailRequest) {
           return null;
         }
-
         try {
           return await resolvePracticeQuizDetailLabels(practiceQuizDetailRequest);
         } catch {
@@ -292,7 +282,6 @@ export function useDashboardBreadcrumb({
       staleTime: 5 * 60 * 1000,
       retry: 1,
     });
-
   const { data: dynamicLabel, isFetching: isResolvingDynamicLabel } = useQuery({
     queryKey: [
       DYNAMIC_BREADCRUMB_QUERY_KEY,
@@ -305,7 +294,6 @@ export function useDashboardBreadcrumb({
       if (!dynamicLabelRequest) {
         return null;
       }
-
       try {
         return await resolveDynamicRouteLabel(dynamicLabelRequest);
       } catch {
@@ -316,7 +304,6 @@ export function useDashboardBreadcrumb({
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
-
   const breadcrumbItems = useMemo(
     () =>
       buildDashboardBreadcrumbItems({
@@ -338,7 +325,6 @@ export function useDashboardBreadcrumb({
       routeMatch?.label,
     ]
   );
-
   return {
     items: breadcrumbItems,
     isResolvingDynamicLabel: isResolvingDynamicLabel || isResolvingPracticeQuizDetailLabels,

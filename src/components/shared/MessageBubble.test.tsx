@@ -1,5 +1,7 @@
+import i18n from "@/lib/i18n";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+const t = i18n.t.bind(i18n);
 
 import { MessageBubble } from "./MessageBubble";
 
@@ -16,7 +18,7 @@ describe("MessageBubble", () => {
       />
     );
 
-    expect(screen.getByText("Gửi lỗi")).toBeInTheDocument();
+    expect(screen.getByText(t("compShared.submitError"))).toBeInTheDocument();
     expect(screen.getByText("mentor").tagName).toBe("MARK");
   });
 
@@ -34,7 +36,7 @@ describe("MessageBubble", () => {
     );
 
     fireEvent.contextMenu(screen.getByText("Noi dung can sao chep"));
-    fireEvent.click(screen.getByText("Sao chép nội dung"));
+    fireEvent.click(screen.getByText(t("compShared.copyContent")));
 
     expect(onCopy).toHaveBeenCalledWith("Noi dung can sao chep");
   });
@@ -54,7 +56,7 @@ describe("MessageBubble", () => {
     );
 
     fireEvent.contextMenu(screen.getByText("Thu lai"));
-    fireEvent.click(screen.getByText("Gửi lại tin nhắn"));
+    fireEvent.click(screen.getByText(t("compShared.resendTheMessage")));
 
     expect(onRetry).toHaveBeenCalledWith("temp-3");
   });
@@ -75,11 +77,11 @@ describe("MessageBubble", () => {
     );
 
     fireEvent.contextMenu(screen.getByText("Noi dung de chuyen tiep"));
-    fireEvent.click(screen.getByText("Chuyển tiếp vào ô soạn"));
+    fireEvent.click(screen.getByText(t("compShared.moveForwardToTheEdit")));
     expect(onForward).toHaveBeenCalledWith("Noi dung de chuyen tiep");
 
     fireEvent.contextMenu(screen.getByText("Noi dung de chuyen tiep"));
-    fireEvent.click(screen.getByText("Ghim tin nhắn"));
+    fireEvent.click(screen.getByText(t("compShared.pinMessages")));
     expect(onTogglePin).toHaveBeenCalledWith("temp-4");
   });
 
@@ -94,7 +96,7 @@ describe("MessageBubble", () => {
       />
     );
 
-    expect(screen.getByText("Đã ghim")).toBeInTheDocument();
+    expect(screen.getByText(t("compShared.pinned"))).toBeInTheDocument();
   });
 
   it("renders queued and retrying statuses", () => {
@@ -108,7 +110,7 @@ describe("MessageBubble", () => {
       />
     );
 
-    expect(screen.getByText("Đang chờ kết nối")).toBeInTheDocument();
+    expect(screen.getByText(t("compShared.waitingForConnection"))).toBeInTheDocument();
 
     rerender(
       <MessageBubble
@@ -120,6 +122,6 @@ describe("MessageBubble", () => {
       />
     );
 
-    expect(screen.getByText("Đang thử gửi lại")).toBeInTheDocument();
+    expect(screen.getByText(t("compShared.tryingToSendAgain"))).toBeInTheDocument();
   });
 });

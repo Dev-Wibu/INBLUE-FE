@@ -1,6 +1,3 @@
-import { PenSquare, Search } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-
 import { ReloadButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,21 +14,21 @@ import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { usePostFeed } from "@/hooks/usePostFeed";
 import { toTimestamp } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { useAuthStore } from "@/stores/authStore";
-
+import { PenSquare, Search } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CreatePostModal } from "./CreatePostModal";
 import { PostFeedCard } from "./PostFeedCard";
-
+const t = i18n.t.bind(i18n);
 type SortBy = "newest" | "popular" | "recent_activity";
-
 interface CommunityFeedPageProps {
   title?: string;
   description?: string;
 }
-
 export function CommunityFeedPage({
-  title = "Trang chủ",
-  description = "Cập nhật bài viết mới nhất từ cộng đồng",
+  title = t("common.home"),
+  description = t("common.updateTheLatestPostsFromTheCommuni"),
 }: CommunityFeedPageProps) {
   const { user } = useAuthStore();
   const { posts, hasMore, isLoading, isReloading, isFetchingMore, loadMore, refresh } =
@@ -41,19 +38,16 @@ export function CommunityFeedPage({
   const [sortBy, setSortBy] = useState<SortBy>("newest");
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-
-  const authorName = user?.name ?? "Bạn";
+  const authorName = user?.name ?? t("common.friend");
   const authorInitials = authorName
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   const allMajors = useMemo(() => {
     return [...new Set(posts.map((p) => p.post?.majorName).filter(Boolean))] as string[];
   }, [posts]);
-
   const filtered = useMemo(() => {
     const lower = search.toLowerCase();
     return posts
@@ -90,24 +84,22 @@ export function CommunityFeedPage({
         return 0;
       });
   }, [posts, search, majorFilter, sortBy]);
-
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !isFetchingMore) {
           loadMore();
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0.1,
+      }
     );
-
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasMore, isFetchingMore, loadMore]);
-
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <div>
@@ -127,7 +119,7 @@ export function CommunityFeedPage({
             type="button"
             className="text-muted-foreground hover:bg-muted flex-1 rounded-full border px-4 py-2 text-left text-sm transition-colors"
             onClick={() => setCreateModalOpen(true)}>
-            Bạn đang nghĩ gì, {user?.name?.split(" ").pop() ?? "bạn"}?
+            {t("compPost.whatAreYouThinking")} {user?.name?.split(" ").pop() ?? t("general.you")}?
           </button>
           <Button
             variant="ghost"
@@ -135,9 +127,13 @@ export function CommunityFeedPage({
             className="gap-1.5 text-[#0047AB]"
             onClick={() => setCreateModalOpen(true)}>
             <PenSquare className="h-4 w-4" />
-            <span className="text-xs font-medium">Viết bài</span>
+            <span className="text-xs font-medium">{t("compPost.writeArticles")}</span>
           </Button>
-          <ReloadButton onReload={refresh} isLoading={isReloading} tooltip="Tải lại bảng tin" />
+          <ReloadButton
+            onReload={refresh}
+            isLoading={isReloading}
+            tooltip={t("compPost.reloadMessageBoard")}
+          />
         </div>
       </Card>
 
@@ -145,7 +141,7 @@ export function CommunityFeedPage({
         <div className="relative min-w-[180px] flex-1">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
-            placeholder="Tìm kiếm bài viết, tag..."
+            placeholder={t("compPost.searchForArticlesTags")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -154,10 +150,10 @@ export function CommunityFeedPage({
 
         <Select value={majorFilter} onValueChange={setMajorFilter}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="Chuyên ngành" />
+            <SelectValue placeholder={t("common.specialized")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả chuyên ngành</SelectItem>
+            <SelectItem value="all">{t("common.allMajors")}</SelectItem>
             {allMajors.map((m) => (
               <SelectItem key={m} value={m}>
                 {m}
@@ -171,9 +167,9 @@ export function CommunityFeedPage({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="newest">Bài mới nhất</SelectItem>
-            <SelectItem value="popular">Phổ biến nhất</SelectItem>
-            <SelectItem value="recent_activity">Hoạt động gần đây</SelectItem>
+            <SelectItem value="newest">{t("compPost.latestPost")}</SelectItem>
+            <SelectItem value="popular">{t("compPost.mostPopular")}</SelectItem>
+            <SelectItem value="recent_activity">{t("compPost.recentActivity")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -190,7 +186,7 @@ export function CommunityFeedPage({
 
       {!isLoading && filtered.length === 0 && (
         <div className="py-16 text-center text-slate-500 dark:text-slate-400">
-          Không tìm thấy bài viết nào phù hợp.
+          {t("compPost.noSuitableArticlesWereFound")}
         </div>
       )}
 
@@ -212,7 +208,7 @@ export function CommunityFeedPage({
 
       {!hasMore && posts.length > 0 && (
         <p className="text-muted-foreground py-4 text-center text-xs">
-          Bạn đã xem hết bài viết rồi.
+          {t("compPost.youHaveReadTheEntire")}
         </p>
       )}
 

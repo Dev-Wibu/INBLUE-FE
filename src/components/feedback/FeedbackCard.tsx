@@ -1,9 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * FeedbackCard Component
  * Displays a single mentor feedback
  */
-
-import { Calendar, Edit, MessageSquare, Trash2, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
 import { cn } from "@/lib/utils";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
-
+import { Calendar, Edit, MessageSquare, Trash2, User } from "lucide-react";
 interface FeedbackCardProps {
   feedback: MentorFeedback;
   showMentor?: boolean;
@@ -24,7 +23,6 @@ interface FeedbackCardProps {
   onDelete?: () => void;
   className?: string;
 }
-
 export function FeedbackCard({
   feedback,
   showMentor = true,
@@ -36,9 +34,12 @@ export function FeedbackCard({
   onDelete,
   className,
 }: FeedbackCardProps) {
+  const { t } = useTranslation();
   const fallbackUserName = feedback.session?.userId
-    ? `Học viên #${feedback.session.userId}`
-    : "Học viên";
+    ? t("common.studentVar0", {
+        var_0: feedback.session.userId,
+      })
+    : t("common.students");
   const fallbackMentorName = feedback.session?.userId2
     ? `Mentor #${feedback.session.userId2}`
     : "Mentor";
@@ -46,9 +47,8 @@ export function FeedbackCard({
     ? feedback.mentor?.name || fallbackMentorName
     : showUser
       ? feedback.user?.name || fallbackUserName
-      : "Ẩn danh";
+      : t("common.anonymous");
   const occurredAt = feedback.session?.endTime1 || feedback.session?.startTime1;
-
   return (
     <Card
       onClick={onClick}
@@ -112,7 +112,7 @@ export function FeedbackCard({
         ) : (
           <p className="flex items-center gap-2 text-sm text-slate-500 italic">
             <MessageSquare className="h-4 w-4" />
-            Không có nhận xét
+            {t("common.noComments")}
           </p>
         )}
 
@@ -128,7 +128,7 @@ export function FeedbackCard({
                   onEdit();
                 }}>
                 <Edit className="mr-1 h-4 w-4" />
-                Chỉnh sửa
+                {t("general.edit")}
               </Button>
             )}
             {onDelete && (
@@ -141,7 +141,7 @@ export function FeedbackCard({
                 }}
                 className="text-red-600 hover:bg-red-50 hover:text-red-700">
                 <Trash2 className="mr-1 h-4 w-4" />
-                Xóa
+                {t("general.delete")}
               </Button>
             )}
           </div>

@@ -1,16 +1,17 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * Custom hooks for Session operations
  * Uses React Query for server state
  */
-
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import type { Session } from "@/interfaces";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type { JoinSessionRequest, SessionCreationRequest } from "@/services/session.manager";
 import { sessionManager } from "@/services/session.manager";
 import { useAuthStore } from "@/stores/authStore";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 // Query Keys
 export const SESSION_QUERY_KEYS = {
@@ -52,7 +53,7 @@ export const useSessionById = (id: number) => {
       if (response.success && response.data) {
         return response.data;
       }
-      throw new Error(response.error || "Không tìm thấy phiên phỏng vấn");
+      throw new Error(response.error || t("common.noInterviewSessionsFound"));
     },
     enabled: !!id,
   });
@@ -63,7 +64,6 @@ export const useSessionById = (id: number) => {
  */
 export const useUserSessions = () => {
   const user = useAuthStore((state) => state.user);
-
   return useQuery({
     queryKey: SESSION_QUERY_KEYS.byUser(user?.id || 0),
     queryFn: async () => {
@@ -104,7 +104,6 @@ export const useCompletedUserSessions = () => {
 
   // Filter completed sessions
   const completedSessions = sessions.filter((session) => session.status === "COMPLETED");
-
   return {
     data: completedSessions,
     ...rest,
@@ -116,21 +115,22 @@ export const useCompletedUserSessions = () => {
  */
 export const useCreateSession = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (data: SessionCreationRequest) => {
       const response = await sessionManager.create(data);
       if (!response.success) {
-        throw new Error(response.error || "Không thể tạo phiên phỏng vấn");
+        throw new Error(response.error || t("general.unableToCreateInterviewSession"));
       }
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
-      toast.success("Đã gửi yêu cầu đặt lịch. Chờ mentor hoặc Staff/Admin xét duyệt.");
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.all,
+      });
+      toast.success(t("general.scheduleRequestSentWaitFor"));
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể tạo phiên phỏng vấn"));
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToCreateInterviewSession")));
     },
   });
 };
@@ -140,24 +140,25 @@ export const useCreateSession = () => {
  */
 export const useUpdateSession = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Session> }) => {
       const response = await sessionManager.update(id, data);
       if (!response.success) {
-        throw new Error(response.error || "Không thể cập nhật phiên phỏng vấn");
+        throw new Error(response.error || t("general.unableToUpdateInterviewSession"));
       }
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.all,
+      });
       queryClient.invalidateQueries({
         queryKey: SESSION_QUERY_KEYS.byId(variables.id),
       });
-      toast.success("Đã cập nhật phiên phỏng vấn");
+      toast.success(t("general.updatedInterviewSession"));
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể cập nhật phiên phỏng vấn"));
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToUpdateInterviewSession")));
     },
   });
 };
@@ -167,21 +168,22 @@ export const useUpdateSession = () => {
  */
 export const useCancelSession = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (id: number) => {
       const response = await sessionManager.delete(id);
       if (!response.success) {
-        throw new Error(response.error || "Không thể hủy phiên phỏng vấn");
+        throw new Error(response.error || t("general.interviewSessionsCannotBeCanceled"));
       }
       return true;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
-      toast.success("Đã hủy phiên phỏng vấn");
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.all,
+      });
+      toast.success(t("general.interviewSessionCanceled"));
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể hủy phiên phỏng vấn"));
+      toast.error(getNormalizedErrorMessage(error, t("general.interviewSessionsCannotBeCanceled")));
     },
   });
 };
@@ -191,21 +193,22 @@ export const useCancelSession = () => {
  */
 export const useJoinSession = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (data: JoinSessionRequest) => {
       const response = await sessionManager.joinSession(data);
       if (!response.success) {
-        throw new Error(response.error || "Không thể tham gia phiên phỏng vấn");
+        throw new Error(response.error || t("general.unableToAttendInterviewSession"));
       }
       return true;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
-      toast.success("Đã tham gia phiên phỏng vấn");
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.all,
+      });
+      toast.success(t("general.participatedInTheInterviewSession"));
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể tham gia phiên phỏng vấn"));
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToAttendInterviewSession")));
     },
   });
 };
@@ -219,25 +222,26 @@ export type { JoinSessionRequest, Session, SessionCreationRequest };
  */
 export const useUpdateSessionStatus = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async ({ sessionId, isApproved }: { sessionId: number; isApproved: boolean }) => {
       const response = await sessionManager.updateStatus(sessionId, isApproved);
       if (!response.success) {
-        throw new Error(response.error || "Không thể cập nhật trạng thái phiên phỏng vấn");
+        throw new Error(response.error || t("general.unableToUpdateInterviewSession1"));
       }
       return true;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.all,
+      });
       toast.success(
-        variables.isApproved ? "Đã duyệt phiên phỏng vấn thành công" : "Đã từ chối phiên phỏng vấn"
+        variables.isApproved
+          ? t("general.interviewSessionApprovedSuccessfully")
+          : t("common.refusedTheInterviewSession")
       );
     },
     onError: (error: Error) => {
-      toast.error(
-        getNormalizedErrorMessage(error, "Không thể cập nhật trạng thái phiên phỏng vấn")
-      );
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToUpdateInterviewSession1")));
     },
   });
 };
@@ -248,24 +252,25 @@ export const useUpdateSessionStatus = () => {
  */
 export const useMakeSessionPayment = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (sessionId: number) => {
       const response = await sessionManager.makePayment(sessionId);
       if (!response.success || !response.data) {
-        throw new Error(response.error || "Không thể tạo link thanh toán cho phiên phỏng vấn");
+        throw new Error(response.error || t("general.unableToCreatePaymentLink"));
       }
       return response.data;
     },
     onSuccess: (_checkoutUrl, sessionId) => {
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.byId(sessionId) });
-      toast.success("Đã tạo link thanh toán cho phiên phỏng vấn");
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.byId(sessionId),
+      });
+      toast.success(t("general.createdAPaymentLinkFor"));
     },
     onError: (error: Error) => {
-      toast.error(
-        getNormalizedErrorMessage(error, "Không thể tạo link thanh toán cho phiên phỏng vấn")
-      );
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToCreatePaymentLink")));
     },
   });
 };

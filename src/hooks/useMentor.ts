@@ -1,12 +1,13 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * Custom hooks for Mentor operations
  * Uses React Query for server state
  */
 
-import { useQuery } from "@tanstack/react-query";
-
 import type { Mentor } from "@/interfaces";
 import { mentorManager } from "@/services/mentor.manager";
+import { useQuery } from "@tanstack/react-query";
 
 // Query Keys
 export const MENTOR_QUERY_KEYS = {
@@ -46,7 +47,7 @@ export const useMentorById = (id: number) => {
       if (response.success && response.data) {
         return response.data;
       }
-      throw new Error(response.error || "Không tìm thấy mentor");
+      throw new Error(response.error || t("common.noMentorFound"));
     },
     enabled: !!id,
   });

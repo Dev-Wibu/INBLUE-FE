@@ -1,28 +1,30 @@
-import { ChevronDown, ChevronUp, Send, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { toTimestamp } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { queryClient } from "@/lib/queryClient";
 import { useCreateComment, usePostComments } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-
+import { ChevronDown, ChevronUp, Send, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { CommentItem } from "./CommentItem";
-
+const t = i18n.t.bind(i18n);
 type CommentNode = {
   comment: PostCommentResponse;
   children: CommentNode[];
 };
-
 function buildCommentTree(comments: PostCommentResponse[]): CommentNode[] {
   const nodeMap = new Map<number, CommentNode>();
   comments.forEach((c) => {
-    if (c.id != null) nodeMap.set(c.id, { comment: c, children: [] });
+    if (c.id != null)
+      nodeMap.set(c.id, {
+        comment: c,
+        children: [],
+      });
   });
-
   const roots: CommentNode[] = [];
   comments.forEach((c) => {
     const node = c.id != null ? nodeMap.get(c.id) : undefined;
@@ -39,10 +41,8 @@ function buildCommentTree(comments: PostCommentResponse[]): CommentNode[] {
       }
     }
   });
-
   return roots;
 }
-
 function flattenDescendants(node: CommentNode): PostCommentResponse[] {
   const result: PostCommentResponse[] = [];
   function dfs(children: CommentNode[]) {
@@ -58,7 +58,6 @@ function flattenDescendants(node: CommentNode): PostCommentResponse[] {
   });
   return result;
 }
-
 function countAllDescendants(node: CommentNode): number {
   let count = 0;
   for (const child of node.children) {
@@ -66,7 +65,6 @@ function countAllDescendants(node: CommentNode): number {
   }
   return count;
 }
-
 function findRootCommentId(
   commentId: number,
   commentById: Map<number, PostCommentResponse>,
@@ -77,7 +75,6 @@ function findRootCommentId(
   if (!c?.parentCommentId) return commentId;
   return findRootCommentId(c.parentCommentId, commentById, rootIds);
 }
-
 interface ReplyInputProps {
   userName: string;
   value: string;
@@ -85,12 +82,11 @@ interface ReplyInputProps {
   onSubmit: () => void;
   onCancel: () => void;
 }
-
 function ReplyInput({ userName, value, onChange, onSubmit, onCancel }: ReplyInputProps) {
   return (
     <div className="mt-2 flex flex-col gap-1.5 pl-11">
       <div className="flex items-center gap-1.5">
-        <span className="text-muted-foreground text-xs">Đang trả lời</span>
+        <span className="text-muted-foreground text-xs">{t("compPost.replying")}</span>
         <span className="rounded bg-[#007BFF]/10 px-1.5 py-0.5 text-xs font-semibold text-[#007BFF]">
           @{userName}
         </span>
@@ -98,7 +94,7 @@ function ReplyInput({ userName, value, onChange, onSubmit, onCancel }: ReplyInpu
       <div className="flex gap-2">
         <Textarea
           autoFocus
-          placeholder="Trả lời... (Ctrl+Enter để gửi)"
+          placeholder={t("compPost.replyCtrlEnterToSend")}
           value={value}
           rows={2}
           className="max-h-32 flex-1 resize-none overflow-auto"
@@ -110,17 +106,16 @@ function ReplyInput({ userName, value, onChange, onSubmit, onCancel }: ReplyInpu
         <div className="flex flex-col gap-1">
           <Button size="sm" onClick={onSubmit} disabled={!value.trim()}>
             <Send className="mr-1 h-4 w-4" />
-            Gửi
+            {t("compPost.send")}
           </Button>
           <Button size="sm" variant="ghost" onClick={onCancel}>
-            Hủy
+            {t("general.cancel")}
           </Button>
         </div>
       </div>
     </div>
   );
 }
-
 interface CommentThreadProps {
   node: CommentNode;
   currentUserId?: number;
@@ -136,7 +131,6 @@ interface CommentThreadProps {
   onMentionClick: (_parentCommentId: number) => void;
   depth?: number;
 }
-
 function CommentThread({
   node,
   currentUserId,
@@ -155,7 +149,6 @@ function CommentThread({
   const { comment } = node;
   const isExpanded = comment.id != null && expandedIds.has(comment.id);
   const isReplyingToThis = replyingToId === comment.id;
-
   const maxDepth = 2;
   const atMaxDepth = depth >= maxDepth;
   const flatChildren = useMemo(
@@ -164,7 +157,6 @@ function CommentThread({
   );
   const directChildren = atMaxDepth ? [] : node.children;
   const totalReplies = atMaxDepth ? flatChildren.length : countAllDescendants(node);
-
   return (
     <div>
       <CommentItem
@@ -211,7 +203,7 @@ function CommentThread({
               className="text-muted-foreground gap-1 text-xs"
               onClick={() => comment.id != null && onToggleExpand(comment.id)}>
               <ChevronDown className="h-3.5 w-3.5" />
-              Xem {totalReplies} phản hồi
+              Xem {totalReplies} {t("common.feedback")}
             </Button>
           ) : (
             <>
@@ -275,7 +267,7 @@ function CommentThread({
                 className="text-muted-foreground gap-1 text-xs"
                 onClick={() => comment.id != null && onToggleExpand(comment.id)}>
                 <ChevronUp className="h-3.5 w-3.5" />
-                Thu gọn
+                {t("common.collapse")}
               </Button>
             </>
           )}
@@ -284,7 +276,6 @@ function CommentThread({
     </div>
   );
 }
-
 interface CommentSectionProps {
   postId: number;
   externalComments?: PostCommentResponse[];
@@ -293,7 +284,6 @@ interface CommentSectionProps {
   allowDelete?: boolean;
   onDeleteComment?: (_commentId: number) => void;
 }
-
 export function CommentSection({
   postId,
   externalComments,
@@ -302,12 +292,11 @@ export function CommentSection({
   allowDelete = false,
   onDeleteComment,
 }: CommentSectionProps) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const currentUserId = user?.id;
-
   const { data: commentsData } = usePostComments(postId, !externalComments);
   const createComment = useCreateComment();
-
   const commentTree = useMemo(() => {
     const comments: PostCommentResponse[] =
       externalComments ??
@@ -317,7 +306,6 @@ export function CommentSection({
       [];
     return buildCommentTree(comments);
   }, [externalComments, commentsData]);
-
   const commentById = useMemo(() => {
     const map = new Map<number, PostCommentResponse>();
     function addToMap(nodes: CommentNode[]) {
@@ -329,48 +317,53 @@ export function CommentSection({
     addToMap(commentTree);
     return map;
   }, [commentTree]);
-
   const rootIds = useMemo(
     () => new Set(commentTree.map((n) => n.comment.id).filter((id): id is number => id != null)),
     [commentTree]
   );
-
   const [newContent, setNewContent] = useState("");
   const [replyingToId, setReplyingToId] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [sortOrder, setSortOrder] = useState<"oldest" | "newest">("oldest");
   const [highlightedCommentId, setHighlightedCommentId] = useState<number | null>(null);
-
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["postComments", postId] });
-    queryClient.invalidateQueries({ queryKey: ["postCommentsCount", postId] });
+    queryClient.invalidateQueries({
+      queryKey: ["postComments", postId],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["postCommentsCount", postId],
+    });
   };
-
   const handleCommentSubmit = () => {
     const content = newContent.trim();
     if (!content || !currentUserId) return;
-
-    createComment.mutate({ body: { postId, userId: currentUserId, content } } as never, {
-      onSuccess: () => {
-        setNewContent("");
-        if (onExternalInvalidate) {
-          onExternalInvalidate();
-        } else {
-          invalidate();
-        }
-      },
-      onError: () => toast.error("Không thể gửi bình luận"),
-    });
+    createComment.mutate(
+      {
+        body: {
+          postId,
+          userId: currentUserId,
+          content,
+        },
+      } as never,
+      {
+        onSuccess: () => {
+          setNewContent("");
+          if (onExternalInvalidate) {
+            onExternalInvalidate();
+          } else {
+            invalidate();
+          }
+        },
+        onError: () => toast.error(t("compPost.cannotPostComments")),
+      }
+    );
   };
-
   const handleReplySubmit = (parentCommentId: number) => {
     const content = replyContent.trim();
     if (!content || !currentUserId) return;
-
     const parentUser = commentById.get(parentCommentId)?.userName;
     const contentWithMention = parentUser ? `@${parentUser} ${content}` : content;
-
     createComment.mutate(
       {
         body: {
@@ -384,21 +377,18 @@ export function CommentSection({
         onSuccess: () => {
           setReplyingToId(null);
           setReplyContent("");
-
           const rootId = findRootCommentId(parentCommentId, commentById, rootIds);
           setExpandedIds((prev) => new Set(prev).add(rootId));
-
           if (onExternalInvalidate) {
             onExternalInvalidate();
           } else {
             invalidate();
           }
         },
-        onError: () => toast.error("Không thể gửi phản hồi"),
+        onError: () => toast.error(t("compPost.unableToSendResponse")),
       }
     );
   };
-
   const toggleExpand = (id: number) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
@@ -407,11 +397,13 @@ export function CommentSection({
       return next;
     });
   };
-
   const handleMentionClick = (parentCommentId: number) => {
     const el = document.querySelector(`[data-comment-id="${parentCommentId}"]`);
     if (el) {
-      (el as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" });
+      (el as HTMLElement).scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
       setHighlightedCommentId(parentCommentId);
       window.setTimeout(
         () => setHighlightedCommentId((prev) => (prev === parentCommentId ? null : prev)),
@@ -419,7 +411,6 @@ export function CommentSection({
       );
     }
   };
-
   const sortedRoots = useMemo(() => {
     const arr = [...commentTree];
     arr.sort((a, b) => {
@@ -429,7 +420,6 @@ export function CommentSection({
     });
     return arr;
   }, [commentTree, sortOrder]);
-
   const flatComments = useMemo(() => {
     const values = Array.from(commentById.values());
     values.sort((a, b) => {
@@ -439,13 +429,12 @@ export function CommentSection({
     });
     return values;
   }, [commentById]);
-
   return (
     <div className="space-y-3">
       {!hideInput && (
         <div className="flex gap-2">
           <Textarea
-            placeholder="Viết bình luận... (Ctrl+Enter để gửi)"
+            placeholder={t("compPost.writeACommentCtrlEnter")}
             value={newContent}
             rows={2}
             className="max-h-32 flex-1 resize-none overflow-auto"
@@ -459,31 +448,36 @@ export function CommentSection({
             onClick={handleCommentSubmit}
             disabled={!newContent.trim() || createComment.isPending}>
             <Send className="mr-1 h-4 w-4" />
-            Gửi
+            {t("compPost.send")}
           </Button>
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">Bình luận ({flatComments.length})</p>
+        <p className="text-sm font-medium">
+          {t("staffPostmoderation.comment")}
+          {flatComments.length})
+        </p>
         <div className="flex items-center gap-2">
           <Button
             variant={sortOrder === "oldest" ? "default" : "outline"}
             size="sm"
             onClick={() => setSortOrder("oldest")}>
-            Cũ nhất
+            {t("common.oldest")}
           </Button>
           <Button
             variant={sortOrder === "newest" ? "default" : "outline"}
             size="sm"
             onClick={() => setSortOrder("newest")}>
-            Mới nhất
+            {t("common.latest")}
           </Button>
         </div>
       </div>
 
       {sortedRoots.length === 0 ? (
-        <p className="text-muted-foreground py-4 text-center text-sm">Chưa có bình luận</p>
+        <p className="text-muted-foreground py-4 text-center text-sm">
+          {t("compPost.noCommentsYet")}
+        </p>
       ) : (
         <div className="space-y-1">
           {sortedRoots.map((node) => (
@@ -508,13 +502,13 @@ export function CommentSection({
 
       {allowDelete && onDeleteComment && flatComments.length > 0 && (
         <div className="space-y-2 border-t pt-4">
-          <p className="text-sm font-medium">Quản trị bình luận</p>
+          <p className="text-sm font-medium">{t("compPost.commentManagement")}</p>
           {flatComments.map((comment) => (
             <div
               key={comment.id}
               className="flex items-start justify-between rounded-lg border p-3 dark:border-slate-700">
               <div>
-                <p className="text-sm font-medium">{comment.userName || "Ẩn danh"}</p>
+                <p className="text-sm font-medium">{comment.userName || t("common.anonymous")}</p>
                 <p className="text-sm text-gray-600 dark:text-slate-400">{comment.content}</p>
               </div>
               <Button

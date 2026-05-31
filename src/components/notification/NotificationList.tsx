@@ -1,15 +1,15 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * NotificationList Component
  * Displays a list of notifications with loading and empty states
  */
 
-import { Bell } from "lucide-react";
-
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/services/notification.manager";
+import { Bell } from "lucide-react";
 import { NotificationItem } from "./NotificationItem";
-
 interface NotificationListProps {
   notifications: Notification[];
   isLoading?: boolean;
@@ -22,7 +22,6 @@ interface NotificationListProps {
   emptyMessage?: string;
   className?: string;
 }
-
 export function NotificationList({
   notifications,
   isLoading,
@@ -32,7 +31,7 @@ export function NotificationList({
   onLoadMore,
   compact = false,
   maxItems,
-  emptyMessage = "Không có thông báo nào",
+  emptyMessage = t("compNotification.thereAreNoAnnouncements"),
   className,
 }: NotificationListProps) {
   // Apply maxItems limit if specified
@@ -58,7 +57,6 @@ export function NotificationList({
       </div>
     );
   }
-
   return (
     <div className={cn("flex flex-col", className)}>
       {/* Notification items */}
@@ -81,7 +79,11 @@ export function NotificationList({
           onClick={onLoadMore}
           disabled={isLoading}
           className="mt-2 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium text-[#0047AB] transition-colors hover:bg-[#0047AB]/5 disabled:opacity-50 dark:text-[#66B2FF] dark:hover:bg-[#0047AB]/10">
-          {isLoading ? <Spinner size="sm" aria-label="Đang tải thêm thông báo" /> : "Xem thêm"}
+          {isLoading ? (
+            <Spinner size="sm" aria-label={t("compNotification.loadingMoreNotifications")} />
+          ) : (
+            t("common.seeMore")
+          )}
         </button>
       )}
 

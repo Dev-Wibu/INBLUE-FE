@@ -1,5 +1,6 @@
 import { ExternalLink, FileText, ImageIcon, Upload, X } from "lucide-react";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ export function FileUploadInput({
   error,
   helpText,
 }: FileUploadInputProps) {
+  const { t } = useTranslation();
   const [preview, setPreview] = React.useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -182,7 +184,7 @@ export function FileUploadInput({
             <div className="flex h-32 flex-col items-center justify-center">
               <FileText className="h-12 w-12 text-red-500" />
               <span className="mt-2 max-w-full truncate px-2 text-xs text-gray-500">
-                {displayFileName || "Tài liệu PDF"}
+                {displayFileName || t("compUi.pdfDocuments")}
               </span>
             </div>
           )}
@@ -192,7 +194,7 @@ export function FileUploadInput({
             <div className="flex h-32 flex-col items-center justify-center">
               <FileText className="h-12 w-12 text-blue-500" />
               <span className="mt-2 max-w-full truncate px-2 text-xs text-gray-500">
-                {displayFileName || "Tệp"}
+                {displayFileName || t("compUi.file")}
               </span>
             </div>
           )}
@@ -209,7 +211,7 @@ export function FileUploadInput({
                   className="h-6 w-6 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
                   onClick={handleClear}
                   disabled={disabled}
-                  title="Xóa file đã chọn">
+                  title={t("compUi.deleteSelectedFile")}>
                   <X className="h-4 w-4" />
                 </Button>
               </>

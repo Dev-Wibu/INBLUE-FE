@@ -1,42 +1,39 @@
+import i18n from "@/lib/i18n";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-
 import { PaymentMethodDialog } from "./PaymentMethodDialog";
-
+const t = i18n.t.bind(i18n);
 describe("PaymentMethodDialog", () => {
   const baseProps = {
     open: true,
     onOpenChange: vi.fn(),
-    title: "Chọn phương thức thanh toán",
+    title: t("common.choosePaymentMethod"),
     amount: 35000,
     onConfirm: vi.fn(),
   };
-
-  it("hiển thị trạng thái đang đồng bộ khi chưa có số dư ví", () => {
+  it(t("compShared.showsSynchronizationStatusWhenThere"), () => {
     render(<PaymentMethodDialog {...baseProps} walletBalance={undefined} />);
-
-    expect(screen.getByText("Số dư hiện tại: Đang đồng bộ...")).toBeInTheDocument();
-    expect(
-      screen.getByText("Chưa đồng bộ được số dư ví. Vui lòng thử lại hoặc chọn PayOS.")
-    ).toBeInTheDocument();
-
-    const walletRadio = screen.getByRole("radio", { name: /Thanh toán bằng ví/i });
+    expect(screen.getByText(t("compShared.currentBalanceSyncing"))).toBeInTheDocument();
+    expect(screen.getByText(t("compShared.unableToSynchronizeWalletBalance"))).toBeInTheDocument();
+    const walletRadio = screen.getByRole("radio", {
+      name: /Thanh toán bằng ví/i,
+    });
     expect(walletRadio).toBeDisabled();
   });
-
-  it("cho phép chọn ví khi số dư đủ", () => {
+  it(t("compShared.allowsYouToChooseA"), () => {
     render(<PaymentMethodDialog {...baseProps} walletBalance={150000} defaultMethod="wallet" />);
-
-    const walletRadio = screen.getByRole("radio", { name: /Thanh toán bằng ví/i });
+    const walletRadio = screen.getByRole("radio", {
+      name: /Thanh toán bằng ví/i,
+    });
     expect(walletRadio).toBeEnabled();
-    expect(screen.queryByText("Số dư ví không đủ cho giao dịch này.")).not.toBeInTheDocument();
+    expect(screen.queryByText(t("compShared.walletBalanceIsNotEnough"))).not.toBeInTheDocument();
   });
-
-  it("chặn phương thức ví khi số dư không đủ", () => {
+  it(t("compShared.blockWalletMethodWhenBalance"), () => {
     render(<PaymentMethodDialog {...baseProps} walletBalance={10000} defaultMethod="wallet" />);
-
-    const walletRadio = screen.getByRole("radio", { name: /Thanh toán bằng ví/i });
+    const walletRadio = screen.getByRole("radio", {
+      name: /Thanh toán bằng ví/i,
+    });
     expect(walletRadio).toBeDisabled();
-    expect(screen.getByText("Số dư ví không đủ cho giao dịch này.")).toBeInTheDocument();
+    expect(screen.getByText(t("compShared.walletBalanceIsNotEnough"))).toBeInTheDocument();
   });
 });

@@ -1,5 +1,7 @@
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, WifiOff } from "lucide-react";
+const t = i18n.t.bind(i18n);
 
 import { Spinner } from "@/components/ui/spinner";
 
@@ -18,16 +20,16 @@ const STATE_CONFIG: Record<
   }
 > = {
   connecting: {
-    label: "Đang kết nối",
+    label: t("compShared.connecting"),
     className: "text-amber-600 dark:text-amber-400",
   },
   connected: {
-    label: "Kết nối ổn định",
+    label: t("compShared.stableConnection"),
     className: "text-emerald-600 dark:text-emerald-400",
     Icon: CheckCircle2,
   },
   disconnected: {
-    label: "Mất kết nối",
+    label: t("compShared.lostConnection"),
     className: "text-red-600 dark:text-red-400",
     Icon: WifiOff,
   },

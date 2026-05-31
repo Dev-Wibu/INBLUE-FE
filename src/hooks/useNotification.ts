@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * Custom hooks for Notification operations
  * Uses React Query for server state and NotificationStore for client state
@@ -98,7 +100,7 @@ export const useMarkAsRead = () => {
     mutationFn: async (notificationId: number) => {
       const response = await notificationManager.markAsRead(notificationId);
       if (!response.success) {
-        throw new Error(response.error || "Không thể đánh dấu đã đọc");
+        throw new Error(response.error || t("general.cannotMarkAsRead"));
       }
       return response.data;
     },
@@ -132,7 +134,7 @@ export const useMarkAllAsRead = () => {
         notificationIds.map(async (notificationId) => {
           const response = await notificationManager.markAsRead(notificationId);
           if (!response.success) {
-            throw new Error(response.error || "Không thể đánh dấu đã đọc");
+            throw new Error(response.error || t("general.cannotMarkAsRead"));
           }
 
           return notificationId;
@@ -156,11 +158,13 @@ export const useMarkAllAsRead = () => {
       }
 
       if (failedCount > 0) {
-        toast.warning(`Đã đánh dấu ${totalCount - failedCount}/${totalCount} thông báo.`);
+        toast.warning(
+          t("general.markedNotifications", { var_0: totalCount - failedCount, var_1: totalCount })
+        );
       }
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể đánh dấu tất cả thông báo đã đọc"));
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToMarkAllNotifications")));
 
       if (user?.id) {
         queryClient.invalidateQueries({ queryKey: NOTIFICATION_QUERY_KEYS.byUser(user.id) });
@@ -184,7 +188,7 @@ export const useCreateNotification = () => {
         message: data.message,
       });
       if (!response.success) {
-        throw new Error(response.error || "Không thể tạo thông báo");
+        throw new Error(response.error || t("general.unableToCreateNotification"));
       }
       return response.data;
     },
@@ -194,10 +198,10 @@ export const useCreateNotification = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_QUERY_KEYS.all });
-      toast.success("Đã gửi thông báo thành công");
+      toast.success(t("general.notificationSentSuccessfully"));
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể tạo thông báo"));
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToCreateNotification")));
     },
   });
 };
@@ -213,7 +217,7 @@ export const useNotificationById = (id: number) => {
       if (response.success && response.data) {
         return response.data;
       }
-      throw new Error(response.error || "Không tìm thấy thông báo");
+      throw new Error(response.error || t("general.notificationFound"));
     },
     enabled: !!id,
   });

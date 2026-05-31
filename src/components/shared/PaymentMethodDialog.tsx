@@ -1,8 +1,7 @@
+import { formatCurrency } from "@/lib/formatting";
 import { CreditCard, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
-
-import { formatCurrency } from "@/lib/formatting";
-
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -14,17 +13,13 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-
 export type PaymentMethod = "payos" | "wallet";
-
 const parsePaymentMethod = (value: string): PaymentMethod | null => {
   if (value === "wallet" || value === "payos") {
     return value;
   }
-
   return null;
 };
-
 interface PaymentMethodDialogProps {
   open: boolean;
   onOpenChange: (_open: boolean) => void;
@@ -36,7 +31,6 @@ interface PaymentMethodDialogProps {
   isSubmitting?: boolean;
   onConfirm: (_method: PaymentMethod) => void | Promise<void>;
 }
-
 export function PaymentMethodDialog({
   open,
   onOpenChange,
@@ -48,62 +42,55 @@ export function PaymentMethodDialog({
   isSubmitting = false,
   onConfirm,
 }: PaymentMethodDialogProps) {
+  const { t } = useTranslation();
   const hasWalletBalance = typeof walletBalance === "number" && Number.isFinite(walletBalance);
   const normalizedWalletBalance = hasWalletBalance ? Math.max(walletBalance || 0, 0) : undefined;
   const isWalletAvailable = hasWalletBalance && (normalizedWalletBalance || 0) >= amount;
-
   const resolvedDefaultMethod = useMemo<PaymentMethod>(() => {
     if (defaultMethod === "wallet" && isWalletAvailable) {
       return "wallet";
     }
-
     if (defaultMethod === "payos") {
       return "payos";
     }
-
     return isWalletAvailable ? "wallet" : "payos";
   }, [defaultMethod, isWalletAvailable]);
-
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(resolvedDefaultMethod);
   const effectiveSelectedMethod =
     selectedMethod === "wallet" && !isWalletAvailable ? "payos" : selectedMethod;
-
   const handleDialogOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setSelectedMethod(resolvedDefaultMethod);
     }
-
     onOpenChange(nextOpen);
   };
-
   const handleMethodChange = (value: string) => {
     const parsedValue = parsePaymentMethod(value);
     if (!parsedValue) {
       return;
     }
-
     setSelectedMethod(parsedValue === "wallet" && !isWalletAvailable ? "payos" : parsedValue);
   };
-
   const handleConfirm = () => {
     const methodToConfirm = effectiveSelectedMethod;
     setSelectedMethod(resolvedDefaultMethod);
     void onConfirm(methodToConfirm);
   };
-
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {description || "Chọn một phương thức thanh toán phù hợp trước khi tiếp tục."}
+            {description || t("compShared.chooseASuitablePaymentMethod")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/60">
-            <p className="text-xs text-slate-500 dark:text-slate-400">Số tiền cần thanh toán</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {t("compShared.amountToBePaid")}
+            </p>
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               {formatCurrency(amount)}
             </p>
@@ -118,22 +105,22 @@ export function PaymentMethodDialog({
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-slate-100">
                   <Wallet className="h-4 w-4" />
-                  Thanh toán bằng ví
+                  {t("compShared.payWithWallet")}
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Số dư hiện tại:{" "}
+                  {t("compShared.currentBalance")}{" "}
                   {hasWalletBalance
                     ? formatCurrency(normalizedWalletBalance || 0)
-                    : "Đang đồng bộ..."}
+                    : t("compShared.syncing")}
                 </p>
                 {hasWalletBalance && !isWalletAvailable && (
                   <p className="text-xs text-rose-600 dark:text-rose-400">
-                    Số dư ví không đủ cho giao dịch này.
+                    {t("compShared.walletBalanceIsNotEnough")}
                   </p>
                 )}
                 {!hasWalletBalance && (
                   <p className="text-xs text-amber-600 dark:text-amber-400">
-                    Chưa đồng bộ được số dư ví. Vui lòng thử lại hoặc chọn PayOS.
+                    {t("compShared.unableToSynchronizeWalletBalance")}
                   </p>
                 )}
               </div>
@@ -144,10 +131,10 @@ export function PaymentMethodDialog({
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-slate-100">
                   <CreditCard className="h-4 w-4" />
-                  Thanh toán qua PayOS
+                  {t("compShared.payViaPayos")}
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Chuyển sang cổng thanh toán bảo mật để hoàn tất giao dịch.
+                  {t("compShared.switchToASecurePayment")}
                 </p>
               </div>
             </Label>
@@ -159,10 +146,10 @@ export function PaymentMethodDialog({
             variant="outline"
             onClick={() => handleDialogOpenChange(false)}
             disabled={isSubmitting}>
-            Hủy
+            {t("general.cancel")}
           </Button>
           <Button onClick={handleConfirm} disabled={isSubmitting}>
-            {isSubmitting ? "Đang xử lý..." : "Xác nhận thanh toán"}
+            {isSubmitting ? t("common.processing") : t("compShared.paymentConfirmation")}
           </Button>
         </DialogFooter>
       </DialogContent>

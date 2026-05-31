@@ -5,9 +5,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Send, SmilePlus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 
 interface ChatComposerProps {
   value: string;
@@ -50,23 +53,23 @@ const QUICK_EMOJIS = [
 const QUICK_COMMANDS = [
   {
     command: "/camon",
-    label: "Gửi lời cảm ơn nhanh",
-    template: "Cảm ơn bạn, mình đã nhận được thông tin rồi nhé.",
+    label: t("compShared.sendAQuickThankYou"),
+    template: t("compShared.thankYouIHaveReceived"),
   },
   {
     command: "/xacnhan",
-    label: "Xác nhận đã đọc",
-    template: "Mình đã đọc và xác nhận thông tin này.",
+    label: t("compShared.confirmRead"),
+    template: t("compShared.iHaveReadAndConfirmed"),
   },
   {
     command: "/hen",
-    label: "Đặt lịch trao đổi tiếp",
-    template: "Mình đề xuất chúng ta trao đổi thêm vào khung giờ phù hợp tiếp theo.",
+    label: t("compShared.scheduleAFollowUpDiscussion"),
+    template: t("compShared.iSuggestWeDiscussFurther"),
   },
   {
     command: "/tongket",
-    label: "Tóm tắt ngắn hội thoại",
-    template: "Tóm tắt nhanh: mình đã ghi nhận các ý chính và sẽ cập nhật bước tiếp theo sớm.",
+    label: t("compShared.shortSummaryOfTheConversation"),
+    template: t("compShared.quickSummaryIHaveNoted"),
   },
 ];
 
@@ -82,6 +85,7 @@ export function ChatComposer({
   disabled = false,
   onApplyQuickCommand,
 }: ChatComposerProps) {
+  const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [recentEmojis, setRecentEmojis] = useState<string[]>(() => {
     try {
@@ -170,8 +174,8 @@ export function ChatComposer({
             variant="outline"
             size="icon"
             className="h-11 w-11 shrink-0 rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            title="Chèn emoji"
-            aria-label="Chèn emoji"
+            title={t("compShared.insertEmojis")}
+            aria-label={t("compShared.insertEmojis")}
             disabled={disabled}>
             <SmilePlus className="h-4.5 w-4.5" />
           </Button>
@@ -180,7 +184,9 @@ export function ChatComposer({
         <DropdownMenuContent align="start" className="w-56 p-2">
           {recentEmojis.length > 0 && (
             <>
-              <p className="px-2 pb-1 text-xs font-semibold text-slate-500">Dùng gần đây</p>
+              <p className="px-2 pb-1 text-xs font-semibold text-slate-500">
+                {t("compShared.usedRecently")}
+              </p>
               <div className="mb-2 grid grid-cols-4 gap-1">
                 {recentEmojis.map((emoji) => (
                   <DropdownMenuItem
@@ -212,7 +218,7 @@ export function ChatComposer({
         {visibleCommands.length > 0 && (
           <div className="mb-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <p className="px-1 pb-1 text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
-              Lệnh nhanh
+              {t("compShared.quickCommand")}
             </p>
             <div className="space-y-1">
               {visibleCommands.map((command) => (
@@ -252,8 +258,8 @@ export function ChatComposer({
         size="icon"
         className="h-11 w-11 shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700"
         disabled={!canSend}
-        title="Gửi tin nhắn"
-        aria-label="Gửi tin nhắn">
+        title={t("compShared.sendAMessage")}
+        aria-label={t("compShared.sendAMessage")}>
         <Send className="h-4.5 w-4.5" />
       </Button>
     </div>

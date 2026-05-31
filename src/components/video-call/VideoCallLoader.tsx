@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * VideoCallLoader.tsx
  * Loading state while joining call
@@ -13,7 +15,7 @@ interface VideoCallLoaderProps {
 }
 
 export function VideoCallLoader({
-  message = "Đang kết nối cuộc gọi...",
+  message = t("compVideoCall.callConnecting"),
   className,
 }: VideoCallLoaderProps) {
   return (

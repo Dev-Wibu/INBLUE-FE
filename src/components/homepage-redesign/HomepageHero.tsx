@@ -1,5 +1,6 @@
 import { ArrowRight, Building2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { HeroBackground } from "@/components/homepage-redesign";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/authStore";
 
 export function HomepageHero() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   useAuthStore();
 
@@ -39,12 +41,12 @@ export function HomepageHero() {
       <div className="relative z-20 mx-auto max-w-7xl px-6 py-12 md:py-24">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl lg:text-6xl dark:text-white">
-            Mô phỏng quy trình tuyển dụng <span className="text-[#0058be]">Kỹ sư Phần mềm</span> thế
-            hệ mới
+            {t("compHomepageRedesign.simulateTheRecruitmentProcess")}{" "}
+            <span className="text-[#0058be]">{t("compHomepageRedesign.softwareEngineer")}</span>{" "}
+            {t("compHomepageRedesign.soNewSystem")}
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
-            Luyện tập kỹ năng phỏng vấn, thử thách thuật toán và khám phá môi trường làm việc tại
-            các tập đoàn công nghệ hàng đầu thông qua AI.
+            {t("compHomepageRedesign.practiceInterviewSkillsChallengeAlgorithms")}
           </p>
         </div>
 
@@ -61,7 +63,7 @@ export function HomepageHero() {
               </div>
               <input
                 type="text"
-                placeholder="Tìm kiếm công ty nổi bật (AI, Fintech, E-commerce...)"
+                placeholder={t("compHomepageRedesign.searchForOutstandingCompaniesAi")}
                 className="flex-1 border-none bg-transparent py-4 pr-4 pl-0 text-base text-slate-700 placeholder:text-slate-400 focus:ring-0 focus:outline-none dark:text-slate-200"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -70,7 +72,7 @@ export function HomepageHero() {
               <Button
                 onClick={handleSearch}
                 className="mr-1 flex items-center gap-2 bg-[#0058be] px-6 py-3 font-medium hover:bg-[#004395]">
-                <span>Khám phá</span>
+                <span>{t("compHomepageRedesign.discover")}</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>

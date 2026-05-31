@@ -1,11 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * NotificationDropdown Component
  * Dropdown showing recent notifications with quick actions
  */
-
-import { CheckCheck } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenuContent, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -14,17 +11,18 @@ import { Spinner } from "@/components/ui/spinner";
 import { useMarkAllAsRead, useMarkAsRead, useNotifications } from "@/hooks/useNotification";
 import type { Notification } from "@/services/notification.manager";
 import { useNotificationStore } from "@/stores/notificationStore";
-
+import { CheckCheck } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { NotificationDetailModal } from "./NotificationDetailModal";
 import { NotificationList } from "./NotificationList";
-
 interface NotificationDropdownProps {
   notificationsPath?: string;
 }
-
 export function NotificationDropdown({
   notificationsPath = "/dashboard/notifications",
 }: NotificationDropdownProps) {
+  const { t } = useTranslation();
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const { data: notifications = [], isLoading } = useNotifications();
   const closeDropdown = useNotificationStore((state) => state.closeDropdown);
@@ -37,24 +35,26 @@ export function NotificationDropdown({
   const unreadNotificationIds = notifications
     .filter((n) => !n.isRead && typeof n.id === "number")
     .map((n) => n.id as number);
-
   const handleMarkAllRead = () => {
     if (!unreadNotificationIds.length) {
       return;
     }
-
     markAllAsRead(unreadNotificationIds);
   };
-
   const handleItemClick = (notification: Notification) => {
-    setSelectedNotification(notification.isRead ? notification : { ...notification, isRead: true });
+    setSelectedNotification(
+      notification.isRead
+        ? notification
+        : {
+            ...notification,
+            isRead: true,
+          }
+    );
     closeDropdown();
   };
-
   const handleMarkRead = (notificationId: number) => {
     markAsRead(notificationId);
   };
-
   return (
     <>
       <DropdownMenuContent
@@ -62,7 +62,9 @@ export function NotificationDropdown({
         className="flex max-h-[calc(100vh-2rem)] w-80 max-w-[calc(100vw-1rem)] flex-col overflow-hidden p-0 sm:w-96">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Thông báo</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
+            {t("common.notification")}
+          </h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -71,11 +73,15 @@ export function NotificationDropdown({
               disabled={isMarkingAllAsRead}
               className="h-auto px-2 py-1 text-xs text-[#0047AB] hover:text-[#0047AB] dark:text-[#66B2FF]">
               {isMarkingAllAsRead ? (
-                <Spinner size="sm" className="mr-1" aria-label="Đang đánh dấu thông báo" />
+                <Spinner
+                  size="sm"
+                  className="mr-1"
+                  aria-label={t("compNotification.markingNotification")}
+                />
               ) : (
                 <CheckCheck className="mr-1 h-3 w-3" />
               )}
-              Đánh dấu đã đọc
+              {t("compNotification.markAsRead")}
             </Button>
           )}
         </div>
@@ -88,7 +94,7 @@ export function NotificationDropdown({
             onItemClick={handleItemClick}
             onMarkRead={handleMarkRead}
             compact
-            emptyMessage="Không có thông báo mới"
+            emptyMessage={t("compNotification.thereAreNoNewNotifications")}
           />
         </ScrollArea>
 
@@ -99,7 +105,7 @@ export function NotificationDropdown({
             to={notificationsPath}
             onClick={closeDropdown}
             className="flex w-full items-center justify-center rounded-md py-2 text-sm font-medium text-[#0047AB] transition-colors hover:bg-[#0047AB]/5 dark:text-[#66B2FF] dark:hover:bg-[#0047AB]/10">
-            Xem tất cả thông báo
+            {t("compNotification.seeAllAnnouncements")}
           </Link>
         </div>
       </DropdownMenuContent>
