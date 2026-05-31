@@ -1,10 +1,11 @@
-import React from "react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { formatDateTime, toTimestamp } from "@/lib/formatting";
-
+import i18n from "@/lib/i18n";
+import React from "react";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 interface CommentItemProps {
   comment: PostCommentResponse;
   currentUserId?: number;
@@ -14,24 +15,32 @@ interface CommentItemProps {
   onMentionClick?: (_parentCommentId: number) => void;
   isHighlighted?: boolean;
 }
-
 function getRelativeTime(dateStr?: string): string {
   if (!dateStr) return "";
   const timestamp = toTimestamp(dateStr);
   if (!timestamp) return "";
-
   const diffMs = Date.now() - timestamp;
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "Vừa xong";
-  if (diffMins < 60) return `${diffMins} phút trước`;
+  if (diffMins < 1) return t("common.justFinished");
+  if (diffMins < 60)
+    return t("general.minutesAgo", {
+      var_0: diffMins,
+    });
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} giờ trước`;
+  if (diffHours < 24)
+    return t("general.hoursAgo", {
+      var_0: diffHours,
+    });
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 30) return `${diffDays} ngày trước`;
+  if (diffDays < 30)
+    return t("general.daysAgo", {
+      var_0: diffDays,
+    });
   const diffMonths = Math.floor(diffDays / 30);
-  return `${diffMonths} tháng trước`;
+  return t("general.monthsAgo", {
+    var_0: diffMonths,
+  });
 }
-
 function renderContent(
   text: string | undefined,
   mentionedUserName: string | undefined,
@@ -39,7 +48,6 @@ function renderContent(
   onMentionClick: ((pid: number) => void) | undefined
 ): (string | React.ReactElement)[] {
   if (!text) return [];
-
   if (mentionedUserName) {
     const mention = `@${mentionedUserName}`;
     if (text.startsWith(mention)) {
@@ -63,7 +71,6 @@ function renderContent(
       return [mentionEl, ...renderContent(rest, undefined, undefined, undefined)];
     }
   }
-
   const parts = text.split(/(@\S+)/g);
   return parts.map((part, i) =>
     /^@\S+$/.test(part) ? (
@@ -77,7 +84,6 @@ function renderContent(
     )
   );
 }
-
 export function CommentItem({
   comment,
   onReply,
@@ -86,16 +92,15 @@ export function CommentItem({
   onMentionClick,
   isHighlighted,
 }: CommentItemProps) {
+  const { t } = useTranslation();
   const relativeTime = getRelativeTime(comment.createdAt);
   const absoluteTime = formatDateTime(comment.createdAt, "");
-
   const initials = comment.userName
     ?.split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   return (
     <div
       data-comment-id={comment.id}
@@ -106,7 +111,7 @@ export function CommentItem({
       </Avatar>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{comment.userName ?? "Ẩn danh"}</span>
+          <span className="text-sm font-medium">{comment.userName ?? t("common.anonymous")}</span>
           {relativeTime && (
             <span title={absoluteTime || undefined} className="text-muted-foreground text-xs">
               {relativeTime}
@@ -122,7 +127,7 @@ export function CommentItem({
             size="sm"
             className="mt-1 h-6 px-2 text-xs"
             onClick={() => onReply(comment)}>
-            Trả lời
+            {t("compPost.reply")}
           </Button>
         )}
       </div>

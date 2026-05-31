@@ -1,17 +1,3 @@
-import {
-  Bell,
-  BookOpen,
-  Bot,
-  ChevronRight,
-  HelpCircle,
-  Lightbulb,
-  LogOut,
-  Newspaper,
-  Settings,
-  Users,
-} from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-
 import icon2 from "@/assets/icon2.svg";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -35,9 +21,21 @@ import {
 } from "@/components/ui/navigation-menu";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
+import {
+  Bell,
+  BookOpen,
+  Bot,
+  ChevronRight,
+  HelpCircle,
+  Lightbulb,
+  LogOut,
+  Newspaper,
+  Settings,
+  Users,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
 function getInitials(name?: string): string {
   if (!name) return "U";
   return name
@@ -55,7 +53,6 @@ interface MenuItemProps {
   title: string;
   description: string;
 }
-
 function MenuItem({ to, icon, title, description }: MenuItemProps) {
   return (
     <li>
@@ -76,21 +73,17 @@ function MenuItem({ to, icon, title, description }: MenuItemProps) {
     </li>
   );
 }
-
 export function HomepageHeader() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isLoggedIn, user, clearAuth } = useAuthStore();
-
   const handleLogout = async () => {
     await authManager.logout();
     clearAuth();
-    toast.success(t("common.logout_success"));
+    toast.success(t("common.loggedOutSuccessfully"));
     navigate("/login");
   };
-
   const dashboardPath = getDashboardPath(user?.role);
-
   return (
     <header className="fixed top-0 right-0 left-0 isolate z-50 h-16 border-b border-white/10 bg-white/70 shadow-sm backdrop-blur-lg dark:border-slate-800/50 dark:bg-slate-900/70">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
@@ -109,7 +102,7 @@ export function HomepageHeader() {
             variant="ghost"
             asChild
             className="text-sm font-medium text-slate-600 hover:text-[#0058be] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-            <Link to="/enterprise/companies">{t("navigation.companies")}</Link>
+            <Link to="/enterprise/companies">{t("common.company")}</Link>
           </Button>
 
           {/* Blog - Simple Link */}
@@ -117,7 +110,7 @@ export function HomepageHeader() {
             variant="ghost"
             asChild
             className="text-sm font-medium text-slate-600 hover:text-[#0058be] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-            <Link to="/resources/blog">{t("navigation.blog")}</Link>
+            <Link to="/resources/blog">{t("common.article")}</Link>
           </Button>
 
           {/* Tính năng - Dropdown */}
@@ -125,21 +118,21 @@ export function HomepageHeader() {
             <NavigationMenuList className="gap-1">
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="bg-transparent text-sm font-medium text-slate-600 hover:bg-transparent hover:text-[#0058be] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-                  {t("navigation.features")}
+                  {t("common.features")}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="!left-0">
                   <ul className="grid w-[480px] grid-cols-2 gap-2 p-3">
                     <MenuItem
                       to="/features/ai-interview"
                       icon={<Bot className="h-4 w-4" />}
-                      title={t("navigation.ai_interview")}
-                      description={t("navigation.ai_interview_desc")}
+                      title={t("common.virtualInterviewRoom")}
+                      description={t("common.experienceInterviewingWithAi")}
                     />
                     <MenuItem
                       to="/features/mentor-interview"
                       icon={<Users className="h-4 w-4" />}
-                      title={t("navigation.mentor_interview")}
-                      description={t("navigation.mentor_interview_desc")}
+                      title={t("common.mentorInterview")}
+                      description={t("common.connectWithRealMentors")}
                     />
                   </ul>
                 </NavigationMenuContent>
@@ -153,21 +146,21 @@ export function HomepageHeader() {
               {/* Câu hỏi - Dropdown */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="bg-transparent text-sm font-medium text-slate-600 hover:bg-transparent hover:text-[#0058be] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-                  {t("navigation.questions")}
+                  {t("common.question")}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="!left-0">
                   <ul className="grid w-[480px] grid-cols-2 gap-2 p-3">
                     <MenuItem
                       to="/questions/bank"
                       icon={<BookOpen className="h-4 w-4" />}
-                      title={t("navigation.question_bank")}
-                      description={t("navigation.question_bank_desc")}
+                      title={t("common.questionBank")}
+                      description={t("common.over1500RealInterviewQuestions")}
                     />
                     <MenuItem
                       to="/questions/tips"
                       icon={<Lightbulb className="h-4 w-4" />}
-                      title={t("navigation.interview_tips")}
-                      description={t("navigation.interview_tips_desc")}
+                      title={t("common.interviewTips")}
+                      description={t("common.interviewTipsFromExperts")}
                     />
                   </ul>
                 </NavigationMenuContent>
@@ -176,21 +169,21 @@ export function HomepageHeader() {
               {/* Tài nguyên - Dropdown */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="bg-transparent text-sm font-medium text-slate-600 hover:bg-transparent hover:text-[#0058be] dark:text-slate-300 dark:hover:text-[#66B2FF]">
-                  {t("navigation.resources")}
+                  {t("common.resources")}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="!left-0">
                   <ul className="grid w-[480px] grid-cols-2 gap-2 p-3">
                     <MenuItem
                       to="/resources/faq"
                       icon={<HelpCircle className="h-4 w-4" />}
-                      title={t("navigation.faq")}
-                      description={t("navigation.faq_desc")}
+                      title={t("common.frequentlyAskedQuestions")}
+                      description={t("common.answerQuestions")}
                     />
                     <MenuItem
                       to="/resources/blog"
                       icon={<Newspaper className="h-4 w-4" />}
-                      title={t("navigation.blog")}
-                      description={t("navigation.blog_desc")}
+                      title={t("common.article")}
+                      description={t("common.interviewKnowledge")}
                     />
                   </ul>
                 </NavigationMenuContent>
@@ -257,12 +250,12 @@ export function HomepageHeader() {
           ) : (
             <>
               <Button variant="ghost" className="text-slate-600 dark:text-slate-300" asChild>
-                <Link to="/login">{t("common.login")}</Link>
+                <Link to="/login">{t("common.logIn")}</Link>
               </Button>
               <Button
                 className="rounded-lg bg-[#0058be] px-5 py-2 font-medium shadow-sm hover:bg-[#004395] dark:bg-[#0058be] dark:hover:bg-[#004395]"
                 asChild>
-                <Link to="/select-role">{t("common.get_started")}</Link>
+                <Link to="/select-role">{t("common.getStarted")}</Link>
               </Button>
             </>
           )}

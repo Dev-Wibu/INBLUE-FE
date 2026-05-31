@@ -1,6 +1,3 @@
-import { FileText, Upload, X } from "lucide-react";
-import * as React from "react";
-
 import { MediaLightboxDialog, PdfPreviewViewer, type MediaViewerItem } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import i18n from "@/lib/i18n";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
 import { cn } from "@/lib/utils";
-
+import { FileText, Upload, X } from "lucide-react";
+import * as React from "react";
+const t = i18n.t.bind(i18n);
 export interface CVUploadModalProps {
   /** Whether the modal is open */
   isOpen: boolean;
@@ -56,7 +56,7 @@ export function CVUploadModal({
   onViewCurrent,
   isUploading = false,
   title = "Upload CV",
-  description = "Chọn file CV của bạn (chỉ chấp nhận file PDF)",
+  description = t("compUi.selectYourCvFileOnly"),
 }: CVUploadModalProps) {
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -84,19 +84,18 @@ export function CVUploadModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setError(null);
-
     if (!file) return;
 
     // Validate file type - only PDF allowed
     if (!file.type.includes("pdf") && !file.name.toLowerCase().endsWith(".pdf")) {
-      setError("Chỉ chấp nhận file PDF. Vui lòng chọn file khác.");
+      setError(t("compUi.onlyAcceptPdfFilesPlease"));
       return;
     }
 
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      setError("File quá lớn. Kích thước tối đa là 10MB.");
+      setError(t("compUi.fileIsTooLargeMaximum"));
       return;
     }
     setSelectedFile(file);
@@ -110,13 +109,12 @@ export function CVUploadModal({
   // Handle upload
   const handleUpload = async () => {
     if (!selectedFile) return;
-
     try {
       await onUpload(selectedFile);
       clearState();
       onOpenChange(false);
     } catch {
-      setError("Có lỗi xảy ra khi upload. Vui lòng thử lại.");
+      setError(t("compUi.anErrorOccurredWhileUploading"));
     }
   };
 
@@ -125,18 +123,18 @@ export function CVUploadModal({
     if (!currentCvUrl) {
       return;
     }
-
-    const currentKind = inferFileKind({ fileName: currentCvUrl });
+    const currentKind = inferFileKind({
+      fileName: currentCvUrl,
+    });
     if (currentKind === "other") {
       openUrlInNewTab(currentCvUrl);
       onViewCurrent?.();
       return;
     }
-
     setViewerItems([
       {
         id: "current-cv-preview",
-        name: currentCvName || "CV hiện tại",
+        name: currentCvName || t("common.currentCv"),
         src: currentCvUrl,
         kind: currentKind,
         requireAuth: true,
@@ -145,7 +143,6 @@ export function CVUploadModal({
     setViewerOpen(true);
     onViewCurrent?.();
   };
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -159,7 +156,7 @@ export function CVUploadModal({
           {currentCvUrl && !selectedFile && (
             <div className="rounded-lg border bg-slate-50 p-4 dark:bg-slate-800">
               <div className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                CV hiện tại
+                {t("common.currentCv")}
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -168,7 +165,7 @@ export function CVUploadModal({
                     <p className="max-w-[200px] truncate text-sm font-medium">
                       {currentCvName || "CV.pdf"}
                     </p>
-                    <p className="text-xs text-gray-500">Tài liệu PDF</p>
+                    <p className="text-xs text-gray-500">{t("compUi.pdfDocuments")}</p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm" onClick={handleViewCurrent}>
@@ -183,7 +180,7 @@ export function CVUploadModal({
             <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-medium text-green-700 dark:text-green-400">
-                  File đã chọn
+                  {t("compUi.selectedFile")}
                 </span>
                 <Button
                   type="button"
@@ -233,9 +230,13 @@ export function CVUploadModal({
                 )}
               />
               <p className="text-sm font-medium">
-                {selectedFile ? "Nhấn để chọn file khác" : "Nhấn để chọn file PDF"}
+                {selectedFile
+                  ? t("compUi.clickToSelectAnotherFile")
+                  : t("compUi.clickToSelectThePdf")}
               </p>
-              <p className="mt-1 text-xs text-gray-500">Chỉ chấp nhận file PDF, tối đa 10MB</p>
+              <p className="mt-1 text-xs text-gray-500">
+                {t("common.onlyAcceptPdfFilesMaximum10mb")}
+              </p>
             </div>
             <Input
               ref={inputRef}
@@ -257,13 +258,13 @@ export function CVUploadModal({
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUploading}>
-            Hủy
+            {t("general.cancel")}
           </Button>
           <Button onClick={handleUpload} disabled={!selectedFile || isUploading}>
             {isUploading ? (
               <>
                 <Spinner size="sm" tone="white" className="mr-2" />
-                Đang Upload...
+                {t("compUi.uploading")}
               </>
             ) : (
               <>
@@ -284,5 +285,4 @@ export function CVUploadModal({
     </Dialog>
   );
 }
-
 export default CVUploadModal;

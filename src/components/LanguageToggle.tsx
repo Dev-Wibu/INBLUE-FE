@@ -9,9 +9,8 @@ import { type Language, useSettingsStore } from "@/stores/settingsStore";
 import { Globe } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-
 export function LanguageToggle() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { language, setLanguage } = useSettingsStore();
 
   // Sync i18n language with store language on mount or change
@@ -20,12 +19,10 @@ export function LanguageToggle() {
       i18n.changeLanguage(language);
     }
   }, [language, i18n]);
-
   const handleLanguageChange = (newLang: Language) => {
     setLanguage(newLang);
     i18n.changeLanguage(newLang);
   };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,7 +36,7 @@ export function LanguageToggle() {
         <DropdownMenuItem
           onClick={() => handleLanguageChange("vi")}
           className={language === "vi" ? "bg-accent" : ""}>
-          Tiếng Việt (VI)
+          {t("common.vietnameseVi")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleLanguageChange("en")}

@@ -1,5 +1,7 @@
+import i18n from "@/lib/i18n";
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+const t = i18n.t.bind(i18n);
 
 import { loadResponsiveVoice, stopResponsiveVoicePlayback } from "@/lib/tts-playground";
 
@@ -56,7 +58,7 @@ describe("useSpeechSynthesis", () => {
     vi.clearAllMocks();
   });
 
-  it("uu tien ResponsiveVoice voi giọng nam tiếng Việt khi available", async () => {
+  it(t("general.useResponsivevoiceWithMaleVietnamese"), async () => {
     const responsiveSpeak = vi.fn(
       (
         _text: string,

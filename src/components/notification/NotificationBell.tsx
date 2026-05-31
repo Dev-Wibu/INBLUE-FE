@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 /**
  * NotificationBell Component
  * Bell icon with unread badge in header
@@ -20,6 +21,7 @@ interface NotificationBellProps {
 }
 
 export function NotificationBell({ notificationsPath, className }: NotificationBellProps) {
+  const { t } = useTranslation();
   const { isDropdownOpen, toggleDropdown, closeDropdown } = useNotificationStore();
   const { data: notifications = [], isLoading } = useNotifications();
   const localUnreadCount = useNotificationStore((state) => state.unreadCount);
@@ -55,7 +57,9 @@ export function NotificationBell({ notificationsPath, className }: NotificationB
             </span>
           )}
           <span className="sr-only" aria-live="polite" aria-atomic="true">
-            {unreadCount > 0 ? `${unreadCount} thông báo chưa đọc` : "Không có thông báo mới"}
+            {unreadCount > 0
+              ? t("general.unreadNotifications", { var_0: unreadCount })
+              : t("compNotification.thereAreNoNewNotifications")}
           </span>
         </Button>
       </DropdownMenuTrigger>

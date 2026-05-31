@@ -1,4 +1,6 @@
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+const t = i18n.t.bind(i18n);
 
 type SpinnerSize = "xs" | "sm" | "md" | "lg" | "xl";
 type SpinnerTone = "primary" | "muted" | "success" | "danger" | "white";
@@ -30,7 +32,7 @@ function Spinner({
   size = "md",
   tone = "primary",
   role = "status",
-  "aria-label": ariaLabel = "Đang tải",
+  "aria-label": ariaLabel = t("compUi.loading"),
   ...props
 }: SpinnerProps) {
   return (
@@ -75,7 +77,7 @@ function SpinnerInline({
         size={size}
         tone={tone}
         className={className}
-        aria-label={ariaLabel ?? label ?? "Đang tải"}
+        aria-label={ariaLabel ?? label ?? t("compUi.loading")}
         {...props}
       />
       {label ? <span className={labelClassName}>{label}</span> : null}
@@ -107,7 +109,7 @@ function SpinnerBlock({
         size={size}
         tone={tone}
         className={className}
-        aria-label={ariaLabel ?? label ?? "Đang tải"}
+        aria-label={ariaLabel ?? label ?? t("compUi.loading")}
         {...props}
       />
       {label ? (
@@ -139,7 +141,7 @@ function SpinnerButton({
       label={label}
       labelClassName={cn("text-current", labelClassName)}
       gapClassName={cn("gap-2", containerClassName)}
-      aria-label={ariaLabel ?? label ?? "Đang tải"}
+      aria-label={ariaLabel ?? label ?? t("compUi.loading")}
       {...props}
     />
   );

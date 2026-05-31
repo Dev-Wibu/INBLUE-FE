@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ export function ImageZoomPreview({
   imageClassName,
   requireAuth = false,
 }: ImageZoomPreviewProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   return (
@@ -41,7 +43,7 @@ export function ImageZoomPreview({
           )}
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/75 to-transparent px-3 py-2 text-sm text-white">
-          {title ?? "Nhấn để xem ảnh phóng to"}
+          {title ?? t("compShared.clickToViewEnlargedPhoto")}
         </div>
       </button>
 

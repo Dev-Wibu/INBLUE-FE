@@ -13,11 +13,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { CalendarIcon, Filter as FilterIcon, X } from "lucide-react";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 
 // ==================== Interfaces ====================
 
@@ -25,7 +28,10 @@ export interface FilterOption {
   value: string;
   label: string;
   type: "select" | "dateRange" | "numberRange";
-  selectOptions?: { value: string; label: string }[];
+  selectOptions?: {
+    value: string;
+    label: string;
+  }[];
   placeholder?: string;
   numberRangeConfig?: {
     fromPlaceholder?: string;
@@ -36,23 +42,26 @@ export interface FilterOption {
     suffix?: string;
   };
 }
-
 export interface FilterCriteria {
   field: string;
   value:
     | string
-    | { from: Date | undefined; to: Date | undefined }
-    | { from: number | undefined; to: number | undefined };
+    | {
+        from: Date | undefined;
+        to: Date | undefined;
+      }
+    | {
+        from: number | undefined;
+        to: number | undefined;
+      };
   label: string;
   type: "select" | "dateRange" | "numberRange";
 }
-
 export interface FilterGroup {
   name: string;
   label: string;
   options: FilterOption[];
 }
-
 export interface FilterProps {
   filterOptions: FilterOption[] | FilterGroup[];
   onFilterChange: (criteria: FilterCriteria[]) => void;
@@ -68,13 +77,12 @@ interface SelectFilterProps {
   value: string;
   onValueChange: (value: string) => void;
 }
-
 const SelectFilter = ({ option, value, onValueChange }: SelectFilterProps) => (
   <div className="space-y-2">
     <label className="text-sm font-medium">{option.label}</label>
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger>
-        <SelectValue placeholder={option.placeholder || "Chọn..."} />
+        <SelectValue placeholder={option.placeholder || t("compShared.select")} />
       </SelectTrigger>
       <SelectContent>
         {option.selectOptions?.map((opt) => (
@@ -86,13 +94,14 @@ const SelectFilter = ({ option, value, onValueChange }: SelectFilterProps) => (
     </Select>
   </div>
 );
-
 interface DateRangeFilterProps {
   option: FilterOption;
-  value: { from: Date | undefined; to: Date | undefined };
+  value: {
+    from: Date | undefined;
+    to: Date | undefined;
+  };
   onValueChange: (value: { from: Date | undefined; to: Date | undefined }) => void;
 }
-
 const DateRangeFilter = ({ option, value, onValueChange }: DateRangeFilterProps) => (
   <div className="space-y-2">
     <label className="text-sm font-medium">{option.label}</label>
@@ -106,14 +115,23 @@ const DateRangeFilter = ({ option, value, onValueChange }: DateRangeFilterProps)
               !value.from && "text-muted-foreground"
             )}>
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {value.from ? format(value.from, "dd/MM/yyyy", { locale: vi }) : "Từ ngày"}
+            {value.from
+              ? format(value.from, "dd/MM/yyyy", {
+                  locale: vi,
+                })
+              : t("common.fromDate")}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
           <Calendar
             mode="single"
             selected={value.from}
-            onSelect={(date) => onValueChange({ ...value, from: date })}
+            onSelect={(date) =>
+              onValueChange({
+                ...value,
+                from: date,
+              })
+            }
             locale={vi}
           />
         </PopoverContent>
@@ -127,14 +145,23 @@ const DateRangeFilter = ({ option, value, onValueChange }: DateRangeFilterProps)
               !value.to && "text-muted-foreground"
             )}>
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {value.to ? format(value.to, "dd/MM/yyyy", { locale: vi }) : "Đến ngày"}
+            {value.to
+              ? format(value.to, "dd/MM/yyyy", {
+                  locale: vi,
+                })
+              : t("common.comeDay")}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
           <Calendar
             mode="single"
             selected={value.to}
-            onSelect={(date) => onValueChange({ ...value, to: date })}
+            onSelect={(date) =>
+              onValueChange({
+                ...value,
+                to: date,
+              })
+            }
             locale={vi}
           />
         </PopoverContent>
@@ -142,40 +169,46 @@ const DateRangeFilter = ({ option, value, onValueChange }: DateRangeFilterProps)
     </div>
   </div>
 );
-
 interface NumberRangeFilterProps {
   option: FilterOption;
-  value: { from: number | undefined; to: number | undefined };
+  value: {
+    from: number | undefined;
+    to: number | undefined;
+  };
   onValueChange: (value: { from: number | undefined; to: number | undefined }) => void;
 }
-
 const NumberRangeFilter = ({ option, value, onValueChange }: NumberRangeFilterProps) => {
   const config = option.numberRangeConfig || {};
-
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">{option.label}</label>
       <div className="flex gap-2">
         <Input
           type="number"
-          placeholder={config.fromPlaceholder || "Từ"}
+          placeholder={config.fromPlaceholder || t("compShared.from")}
           min={config.min}
           max={config.max}
           step={config.step}
           value={value.from ?? ""}
           onChange={(e) =>
-            onValueChange({ ...value, from: e.target.value ? Number(e.target.value) : undefined })
+            onValueChange({
+              ...value,
+              from: e.target.value ? Number(e.target.value) : undefined,
+            })
           }
         />
         <Input
           type="number"
-          placeholder={config.toPlaceholder || "Đến"}
+          placeholder={config.toPlaceholder || t("compShared.arrive")}
           min={config.min}
           max={config.max}
           step={config.step}
           value={value.to ?? ""}
           onChange={(e) =>
-            onValueChange({ ...value, to: e.target.value ? Number(e.target.value) : undefined })
+            onValueChange({
+              ...value,
+              to: e.target.value ? Number(e.target.value) : undefined,
+            })
           }
         />
         {config.suffix && (
@@ -192,25 +225,29 @@ interface ActiveFilterBadgeProps {
   filter: FilterCriteria;
   onRemove: () => void;
 }
-
 const ActiveFilterBadge = ({ filter, onRemove }: ActiveFilterBadgeProps) => {
   const getDisplayValue = () => {
     if (filter.type === "select") {
       return String(filter.value);
     }
     if (filter.type === "dateRange") {
-      const dateValue = filter.value as { from: Date | undefined; to: Date | undefined };
+      const dateValue = filter.value as {
+        from: Date | undefined;
+        to: Date | undefined;
+      };
       const fromStr = dateValue.from ? format(dateValue.from, "dd/MM/yyyy") : "";
       const toStr = dateValue.to ? format(dateValue.to, "dd/MM/yyyy") : "";
       return `${fromStr} - ${toStr}`;
     }
     if (filter.type === "numberRange") {
-      const numValue = filter.value as { from: number | undefined; to: number | undefined };
+      const numValue = filter.value as {
+        from: number | undefined;
+        to: number | undefined;
+      };
       return `${numValue.from ?? ""} - ${numValue.to ?? ""}`;
     }
     return "";
   };
-
   return (
     <Badge variant="secondary" className="gap-1 pr-1">
       {filter.label}: {getDisplayValue()}
@@ -226,14 +263,18 @@ const ActiveFilterBadge = ({ filter, onRemove }: ActiveFilterBadgeProps) => {
 type FilterValues = Record<
   string,
   | string
-  | { from: Date | undefined; to: Date | undefined }
-  | { from: number | undefined; to: number | undefined }
+  | {
+      from: Date | undefined;
+      to: Date | undefined;
+    }
+  | {
+      from: number | undefined;
+      to: number | undefined;
+    }
 >;
-
 function isFilterGroup(options: FilterOption[] | FilterGroup[]): options is FilterGroup[] {
   return options.length > 0 && "options" in options[0];
 }
-
 export function Filter({
   filterOptions,
   onFilterChange,
@@ -241,6 +282,7 @@ export function Filter({
   showActiveFilters = true,
   groupMode = false,
 }: FilterProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = React.useState(false);
   const [tempValues, setTempValues] = React.useState<FilterValues>({});
   const [activeFilters, setActiveFilters] = React.useState<FilterCriteria[]>([]);
@@ -267,17 +309,25 @@ export function Filter({
     field: string,
     value:
       | string
-      | { from: Date | undefined; to: Date | undefined }
-      | { from: number | undefined; to: number | undefined }
+      | {
+          from: Date | undefined;
+          to: Date | undefined;
+        }
+      | {
+          from: number | undefined;
+          to: number | undefined;
+        }
   ) => {
-    setTempValues((prev) => ({ ...prev, [field]: value }));
+    setTempValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   // Apply filters
   const handleApply = () => {
     const options = getAllOptions();
     const newFilters: FilterCriteria[] = [];
-
     Object.entries(tempValues).forEach(([field, value]) => {
       const option = options.find((opt) => opt.value === field);
       if (!option) return;
@@ -287,7 +337,6 @@ export function Filter({
         value === "" ||
         value === undefined ||
         (typeof value === "object" && "from" in value && !value.from && !value.to);
-
       if (!isEmpty) {
         newFilters.push({
           field,
@@ -297,7 +346,6 @@ export function Filter({
         });
       }
     });
-
     setActiveFilters(newFilters);
     onFilterChange(newFilters);
     setIsOpen(false);
@@ -316,7 +364,9 @@ export function Filter({
     setActiveFilters(newFilters);
     onFilterChange(newFilters);
     setTempValues((prev) => {
-      const copy = { ...prev };
+      const copy = {
+        ...prev,
+      };
       delete copy[field];
       return copy;
     });
@@ -325,7 +375,6 @@ export function Filter({
   // Render filter input based on type
   const renderFilterInput = (option: FilterOption) => {
     const value = tempValues[option.value];
-
     switch (option.type) {
       case "select":
         return (
@@ -342,7 +391,10 @@ export function Filter({
             key={option.value}
             option={option}
             value={
-              (value as { from: Date | undefined; to: Date | undefined }) || {
+              (value as {
+                from: Date | undefined;
+                to: Date | undefined;
+              }) || {
                 from: undefined,
                 to: undefined,
               }
@@ -356,7 +408,10 @@ export function Filter({
             key={option.value}
             option={option}
             value={
-              (value as { from: number | undefined; to: number | undefined }) || {
+              (value as {
+                from: number | undefined;
+                to: number | undefined;
+              }) || {
                 from: undefined,
                 to: undefined,
               }
@@ -389,11 +444,9 @@ export function Filter({
         </Tabs>
       );
     }
-
     const options = getAllOptions();
     return <div className="space-y-4">{options.map(renderFilterInput)}</div>;
   };
-
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex items-center gap-2">
@@ -401,7 +454,7 @@ export function Filter({
           <PopoverTrigger asChild>
             <Button variant="outline" className="gap-2">
               <FilterIcon className="h-4 w-4" />
-              Bộ lọc
+              {t("common.filter")}
               {activeFilters.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {activeFilters.length}
@@ -411,14 +464,14 @@ export function Filter({
           </PopoverTrigger>
           <PopoverContent className="w-80" align="start">
             <div className="space-y-4">
-              <h4 className="font-medium">Bộ lọc</h4>
+              <h4 className="font-medium">{t("common.filter")}</h4>
               {renderFilterContent()}
               <div className="flex justify-end gap-2">
                 <Button variant="outline" size="sm" onClick={() => setIsOpen(false)}>
-                  Hủy
+                  {t("general.cancel")}
                 </Button>
                 <Button size="sm" onClick={handleApply}>
-                  Áp dụng
+                  {t("compShared.apply")}
                 </Button>
               </div>
             </div>
@@ -427,7 +480,7 @@ export function Filter({
 
         {activeFilters.length > 0 && (
           <Button variant="ghost" size="sm" onClick={handleClearAll}>
-            Xóa tất cả
+            {t("common.deleteAll")}
           </Button>
         )}
       </div>

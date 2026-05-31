@@ -1,3 +1,6 @@
+import i18n from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 /**
  * Demo Login Button Component
  *
@@ -31,19 +34,19 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     role: "USER",
     email: "binhan@gmail.com",
     password: "123",
-    description: "Tài khoản người dùng để trải nghiệm các tính năng học viên",
+    description: t("compDemologinbutton.userAccountToExperienceStudent"),
   },
   {
     role: "ADMIN",
     email: "thuson@gmail.com",
     password: "12345",
-    description: "Tài khoản quản trị viên để quản lý hệ thống",
+    description: t("compDemologinbutton.administratorAccountToManageThe"),
   },
   {
     role: "MENTOR",
     email: "b@fpt.com",
     password: "12345",
-    description: "Tài khoản mentor để quản lý phiên phỏng vấn và hỗ trợ học viên",
+    description: t("compDemologinbutton.mentorAccountToManageInterview"),
   },
 ];
 
@@ -52,6 +55,7 @@ interface DemoLoginButtonProps {
 }
 
 export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -91,7 +95,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
             clipRule="evenodd"
           />
         </svg>
-        Xem tài khoản demo để thử nghiệm
+        {t("compDemologinbutton.seeDemoAccountForTesting")}
       </button>
 
       {/* Modal Overlay */}
@@ -105,7 +109,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
             {/* Header */}
             <div className="mb-6 flex items-center justify-between">
               <h2 className="font-['Markazi_Text'] text-3xl font-semibold text-indigo-600">
-                Tài khoản Demo
+                {t("compDemologinbutton.demoAccount")}
               </h2>
               <button
                 type="button"
@@ -130,12 +134,11 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
             {/* Notice */}
             <div className="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
               <p>
-                <strong>Lưu ý:</strong> Đây là tài khoản ảo dùng để thử nghiệm chức năng. Click vào
-                thẻ để tự động điền thông tin.
+                <strong>{t("compDemologinbutton.note")}</strong>{" "}
+                {t("compDemologinbutton.thisIsAVirtualAccount")}
               </p>
               <p className="mt-1 text-xs text-amber-700">
-                Hệ thống đang chạy API-only nên danh sách demo chỉ giữ các tài khoản backend đang hỗ
-                trợ.
+                {t("compDemologinbutton.theSystemIsRunningApi")}
               </p>
             </div>
 
@@ -177,7 +180,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
                             handleCopy(account.email, `email-${index}`);
                           }}
                           className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                          title="Sao chép email">
+                          title={t("compDemologinbutton.copyEmail")}>
                           {copiedField === `email-${index}` ? (
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +208,9 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Mật khẩu:</span>
+                      <span className="text-sm text-gray-500">
+                        {t("compDemologinbutton.password")}
+                      </span>
                       <div className="flex items-center gap-2">
                         <code className="rounded bg-gray-100 px-2 py-1 text-sm font-medium text-gray-800">
                           {account.password}
@@ -217,7 +222,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
                             handleCopy(account.password, `password-${index}`);
                           }}
                           className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                          title="Sao chép mật khẩu">
+                          title={t("compDemologinbutton.copyPassword")}>
                           {copiedField === `password-${index}` ? (
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -261,7 +266,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
                         clipRule="evenodd"
                       />
                     </svg>
-                    Click để tự động điền
+                    {t("compDemologinbutton.clickToAutofill")}
                   </div>
                 </div>
               ))}
@@ -270,7 +275,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
             {/* Footer */}
             <div className="mt-6 border-t border-gray-200 pt-4">
               <p className="text-center text-xs text-gray-400">
-                Nút này chỉ dùng cho mục đích phát triển và sẽ được xóa khi có tài khoản thật.
+                {t("compDemologinbutton.thisButtonIsForDevelopment")}
               </p>
             </div>
           </div>

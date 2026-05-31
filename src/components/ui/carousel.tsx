@@ -1,6 +1,8 @@
+import i18n from "@/lib/i18n";
 import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import * as React from "react";
+const t = i18n.t.bind(i18n);
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -180,7 +182,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}>
       <ArrowLeft />
-      <span className="sr-only">Ảnh trước</span>
+      <span className="sr-only">{t("compUi.previousPhoto")}</span>
     </Button>
   );
 }
@@ -209,7 +211,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}>
       <ArrowRight />
-      <span className="sr-only">Ảnh sau</span>
+      <span className="sr-only">{t("compUi.nextPhoto")}</span>
     </Button>
   );
 }

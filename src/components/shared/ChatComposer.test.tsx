@@ -1,10 +1,12 @@
+import i18n from "@/lib/i18n";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+const t = i18n.t.bind(i18n);
 
 import { ChatComposer } from "./ChatComposer";
 
 describe("ChatComposer", () => {
-  it("gửi tin khi nhấn Enter trên desktop", () => {
+  it(t("compShared.sendMessageWhenPressingEnter"), () => {
     const onSend = vi.fn();
 
     render(
@@ -70,7 +72,7 @@ describe("ChatComposer", () => {
     fireEvent.click(screen.getByRole("button", { name: /\/camon/i }));
 
     expect(onChange).toHaveBeenCalledWith(
-      expect.stringContaining("Cảm ơn bạn, mình đã nhận được thông tin rồi nhé.")
+      expect.stringContaining(t("compShared.thankYouIHaveReceived"))
     );
     expect(onApplyQuickCommand).toHaveBeenCalledWith("/camon");
   });

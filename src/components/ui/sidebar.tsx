@@ -1,4 +1,6 @@
 "use client";
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -255,7 +257,7 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       }}
       {...props}>
       <PanelLeftIcon />
-      <span className="sr-only">Bật/tắt thanh bên</span>
+      <span className="sr-only">{t("compUi.enableDisableSidebar")}</span>
     </Button>
   );
 }
@@ -267,10 +269,10 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
     <button
       data-sidebar="rail"
       data-slot="sidebar-rail"
-      aria-label="Bật/tắt thanh bên"
+      aria-label={t("compUi.enableDisableSidebar")}
       tabIndex={-1}
       onClick={toggleSidebar}
-      title="Bật/tắt thanh bên"
+      title={t("compUi.enableDisableSidebar")}
       className={cn(
         "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] sm:flex",
         "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",

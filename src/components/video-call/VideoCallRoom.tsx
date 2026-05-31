@@ -1,19 +1,17 @@
+import { useTranslation } from "react-i18next";
 /**
  * VideoCallRoom.tsx
  * Main video call room component using Daily.co iframe (createFrame)
  * Matches VideoCall-Fe: full Daily.co UI with pre-call lobby, device settings, call controls
  */
 
-import { AlertCircle, RefreshCw, XCircle } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
+import { AlertCircle, RefreshCw, XCircle } from "lucide-react";
+import { useCallback, useEffect, useRef } from "react";
 import { useVideoCall } from "./useVideoCall";
-
 interface VideoCallRoomProps {
   roomUrl: string;
   userName: string;
@@ -22,7 +20,6 @@ interface VideoCallRoomProps {
   onJoined?: (_participantId: string) => void;
   className?: string;
 }
-
 export function VideoCallRoom({
   roomUrl,
   userName,
@@ -31,6 +28,7 @@ export function VideoCallRoom({
   onJoined,
   className,
 }: VideoCallRoomProps) {
+  const { t } = useTranslation();
   const { joinRoom, roomState, error, callObject } = useVideoCall();
   const containerRef = useRef<HTMLDivElement>(null);
   const hasCalledOnJoined = useRef(false);
@@ -78,12 +76,11 @@ export function VideoCallRoom({
   const handleLeave = useCallback(() => {
     onLeave?.();
   }, [onLeave]);
-
   const normalizedError = (error || "").toLowerCase();
   const isRoomUnavailableError =
     normalizedError.includes("room is no longer available") ||
-    normalizedError.includes("không còn khả dụng") ||
-    normalizedError.includes("hết hạn") ||
+    normalizedError.includes(t("compVideoCall.noLongerAvailable")) ||
+    normalizedError.includes(t("compVideoCall.expired")) ||
     normalizedError.includes("exp-room");
 
   // Trigger leave callback when room state becomes "left"
@@ -102,46 +99,48 @@ export function VideoCallRoom({
             <div className="bg-destructive/10 mb-5 rounded-full p-4">
               <XCircle className="text-destructive h-10 w-10" />
             </div>
-            <h3 className="text-foreground text-xl font-semibold">Phòng họp không còn khả dụng</h3>
+            <h3 className="text-foreground text-xl font-semibold">
+              {t("compVideoCall.meetingRoomsAreNoLonger")}
+            </h3>
             <p className="text-muted-foreground mt-2 max-w-xl text-sm leading-relaxed">
-              Liên kết phòng này đã hết hạn hoặc phòng đã bị đóng từ phía hệ thống. Bạn không thể
-              tham gia bằng link hiện tại.
+              {t("compVideoCall.thisRoomLinkHasExpired")}
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Button variant="default" onClick={() => window.location.reload()}>
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Tải lại phòng
+                {t("compVideoCall.reloadTheRoom")}
               </Button>
               <Button variant="outline" onClick={handleLeave}>
-                Quay lại danh sách phiên
+                {t("common.returnToTheSessionList")}
               </Button>
             </div>
 
             <p className="text-muted-foreground mt-4 text-xs">
-              Nếu lỗi vẫn tiếp diễn, vui lòng tạo phiên mới hoặc liên hệ quản trị viên.
+              {t("compVideoCall.ifTheErrorPersistsPlease")}
             </p>
           </CardContent>
         </Card>
       );
     }
-
     return (
       <Card className={cn("w-full", className)}>
         <CardContent className="flex flex-col items-center justify-center p-8">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Lỗi kết nối</AlertTitle>
-            <AlertDescription>{error || "Đã xảy ra lỗi khi kết nối cuộc gọi."}</AlertDescription>
+            <AlertTitle>{t("compVideoCall.connectionError")}</AlertTitle>
+            <AlertDescription>
+              {error || t("compVideoCall.anErrorOccurredWhileConnecting")}
+            </AlertDescription>
           </Alert>
 
           <div className="mt-4 flex gap-2">
             <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              Thử lại
+              {t("common.retry")}
             </Button>
             <Button variant="ghost" size="sm" onClick={handleLeave}>
-              Quay lại
+              {t("general.back")}
             </Button>
           </div>
         </CardContent>
@@ -154,12 +153,13 @@ export function VideoCallRoom({
     return (
       <Card className={cn("w-full", className)}>
         <CardContent className="flex flex-col items-center justify-center gap-4 p-8">
-          <p className="text-muted-foreground text-lg">Bạn đã rời khỏi phòng họp.</p>
+          <p className="text-muted-foreground text-lg">
+            {t("compVideoCall.youHaveLeftTheMeeting")}
+          </p>
         </CardContent>
       </Card>
     );
   }
-
   return (
     <Card className={cn("flex h-full w-full flex-col overflow-hidden", className)}>
       <CardContent className="relative flex-1 p-0">

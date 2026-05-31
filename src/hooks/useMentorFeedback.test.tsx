@@ -1,7 +1,9 @@
+import i18n from "@/lib/i18n";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+const t = i18n.t.bind(i18n);
 
 import { useMentorFeedbacksByMentor, useMentorFeedbacksByUser } from "./useMentorFeedback";
 
@@ -46,13 +48,13 @@ describe("useMentorFeedback hooks", () => {
           id: 20,
           session: { id: 20, userId: 5, userId2: 4 },
           rating: 4,
-          comment: "Rất hữu ích",
+          comment: t("general.veryHelpful"),
         },
         {
           id: 21,
           session: { id: 21, userId: 8, userId2: 4 },
           rating: 5,
-          comment: "Tuyệt vời",
+          comment: t("general.great"),
         },
       ],
     });
@@ -75,7 +77,7 @@ describe("useMentorFeedback hooks", () => {
           id: 30,
           session: { id: 30, userId: 5, userId2: 4 },
           rating: 5,
-          comment: "Đúng mentor",
+          comment: t("general.theRightMentor"),
         },
         {
           id: 31,

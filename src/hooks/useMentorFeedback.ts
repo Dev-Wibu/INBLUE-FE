@@ -1,10 +1,9 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * Custom hooks for Mentor Feedback operations
  * Uses React Query for server state
  */
-
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type {
@@ -13,6 +12,8 @@ import type {
   UpdateMentorFeedbackRequest,
 } from "@/services/mentor-feedback.manager";
 import { mentorFeedbackManager } from "@/services/mentor-feedback.manager";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 // Query Keys
 export const FEEDBACK_QUERY_KEYS = {
@@ -22,20 +23,16 @@ export const FEEDBACK_QUERY_KEYS = {
   byUser: (userId: number) => ["mentor-feedbacks", "user", userId] as const,
   bySession: (sessionId: number) => ["mentor-feedbacks", "session", sessionId] as const,
 };
-
 const getFeedbackMentorId = (feedback: MentorFeedback): number | undefined => {
   if (typeof feedback.mentor?.id === "number") {
     return feedback.mentor.id;
   }
-
   return feedback.session?.userId2;
 };
-
 const getFeedbackUserId = (feedback: MentorFeedback): number | undefined => {
   if (typeof feedback.user?.id === "number") {
     return feedback.user.id;
   }
-
   return feedback.session?.userId;
 };
 
@@ -73,7 +70,7 @@ export const useMentorFeedbackById = (id: number) => {
       if (response.success && response.data) {
         return response.data;
       }
-      throw new Error(response.error || "Không tìm thấy phản hồi");
+      throw new Error(response.error || t("general.noResponsesFound"));
     },
     enabled: !!id,
   });
@@ -103,7 +100,6 @@ export const useMentorFeedbacksByMentor = (mentorId: number) => {
  */
 export const useMentorFeedbacksByUser = (userId: number) => {
   const { data: allFeedbacks = [], ...rest } = useMentorFeedbacks();
-
   if (!userId) {
     return {
       data: [] as MentorFeedback[],
@@ -115,7 +111,6 @@ export const useMentorFeedbacksByUser = (userId: number) => {
   const userFeedbacks = allFeedbacks.filter(
     (feedback: MentorFeedback) => getFeedbackUserId(feedback) === userId
   );
-
   return {
     data: userFeedbacks,
     ...rest,
@@ -127,7 +122,6 @@ export const useMentorFeedbacksByUser = (userId: number) => {
  */
 export const useMentorFeedbackBySession = (sessionId: number) => {
   const { data: allFeedbacks = [], ...rest } = useMentorFeedbacks();
-
   if (!sessionId) {
     return {
       data: undefined,
@@ -139,7 +133,6 @@ export const useMentorFeedbackBySession = (sessionId: number) => {
   const sessionFeedback = allFeedbacks.find(
     (feedback: MentorFeedback) => feedback.session?.id === sessionId
   );
-
   return {
     data: sessionFeedback,
     ...rest,
@@ -151,21 +144,22 @@ export const useMentorFeedbackBySession = (sessionId: number) => {
  */
 export const useCreateMentorFeedback = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (data: CreateMentorFeedbackRequest) => {
       const response = await mentorFeedbackManager.create(data);
       if (!response.success) {
-        throw new Error(response.error || "Không thể tạo phản hồi");
+        throw new Error(response.error || t("general.unableToCreateResponse"));
       }
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: FEEDBACK_QUERY_KEYS.all });
-      toast.success("Đã gửi phản hồi thành công");
+      queryClient.invalidateQueries({
+        queryKey: FEEDBACK_QUERY_KEYS.all,
+      });
+      toast.success(t("general.responseSentSuccessfully"));
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể tạo phản hồi"));
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToCreateResponse")));
     },
   });
 };
@@ -175,24 +169,25 @@ export const useCreateMentorFeedback = () => {
  */
 export const useUpdateMentorFeedback = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: UpdateMentorFeedbackRequest }) => {
       const response = await mentorFeedbackManager.update(id, data);
       if (!response.success) {
-        throw new Error(response.error || "Không thể cập nhật phản hồi");
+        throw new Error(response.error || t("general.unableToUpdateResponse"));
       }
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: FEEDBACK_QUERY_KEYS.all });
+      queryClient.invalidateQueries({
+        queryKey: FEEDBACK_QUERY_KEYS.all,
+      });
       queryClient.invalidateQueries({
         queryKey: FEEDBACK_QUERY_KEYS.byId(variables.id),
       });
-      toast.success("Đã cập nhật phản hồi thành công");
+      toast.success(t("general.responseUpdatedSuccessfully"));
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể cập nhật phản hồi"));
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToUpdateResponse")));
     },
   });
 };
@@ -202,21 +197,22 @@ export const useUpdateMentorFeedback = () => {
  */
 export const useDeleteMentorFeedback = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (id: number) => {
       const response = await mentorFeedbackManager.delete(id);
       if (!response.success) {
-        throw new Error(response.error || "Không thể xóa phản hồi");
+        throw new Error(response.error || t("general.responseCannotBeDeleted"));
       }
       return true;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: FEEDBACK_QUERY_KEYS.all });
-      toast.success("Đã xóa phản hồi");
+      queryClient.invalidateQueries({
+        queryKey: FEEDBACK_QUERY_KEYS.all,
+      });
+      toast.success(t("common.responseRemoved"));
     },
     onError: (error: Error) => {
-      toast.error(getNormalizedErrorMessage(error, "Không thể xóa phản hồi"));
+      toast.error(getNormalizedErrorMessage(error, t("general.responseCannotBeDeleted")));
     },
   });
 };

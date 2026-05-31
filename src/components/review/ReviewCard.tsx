@@ -1,9 +1,8 @@
+import { useTranslation } from "react-i18next";
 /**
  * ReviewCard Component
  * Displays a single mentor review with STAR method details
  */
-
-import { Calendar, Edit, Trash2, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
 import { cn } from "@/lib/utils";
 import type { MentorReview } from "@/services/mentor-review.manager";
-
+import { Calendar, Edit, Trash2, User } from "lucide-react";
 interface ReviewCardProps {
   review: MentorReview;
   showMentor?: boolean;
@@ -23,7 +22,6 @@ interface ReviewCardProps {
   onDelete?: () => void;
   className?: string;
 }
-
 export function ReviewCard({
   review,
   showMentor = true,
@@ -34,13 +32,15 @@ export function ReviewCard({
   onDelete,
   className,
 }: ReviewCardProps) {
+  const { t } = useTranslation();
   const hasStarNotes =
     review.situationNote || review.taskNote || review.actionNote || review.resultNote;
-
   const hasAdditionalNotes = review.strength || review.weakness || review.improve;
   const fallbackUserName = review.session?.userId
-    ? `Học viên #${review.session.userId}`
-    : "Học viên";
+    ? t("common.studentVar0", {
+        var_0: review.session.userId,
+      })
+    : t("common.students");
   const fallbackMentorName = review.session?.userId2
     ? `Mentor #${review.session.userId2}`
     : "Mentor";
@@ -48,9 +48,8 @@ export function ReviewCard({
     ? review.user?.name || fallbackUserName
     : showMentor
       ? review.mentor?.name || fallbackMentorName
-      : "Ẩn danh";
+      : t("common.anonymous");
   const occurredAt = review.session?.endTime1 || review.session?.startTime1;
-
   return (
     <Card
       onClick={onClick}
@@ -104,7 +103,7 @@ export function ReviewCard({
             {review.situationNote && (
               <div>
                 <p className="text-xs font-semibold tracking-wider text-[#0047AB] uppercase">
-                  Tình huống (S)
+                  {t("compReview.situationS")}
                 </p>
                 <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                   {review.situationNote}
@@ -114,7 +113,7 @@ export function ReviewCard({
             {review.taskNote && (
               <div>
                 <p className="text-xs font-semibold tracking-wider text-[#0047AB] uppercase">
-                  Nhiệm vụ (T)
+                  {t("compReview.missionT")}
                 </p>
                 <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{review.taskNote}</p>
               </div>
@@ -122,7 +121,7 @@ export function ReviewCard({
             {review.actionNote && (
               <div>
                 <p className="text-xs font-semibold tracking-wider text-[#0047AB] uppercase">
-                  Hành động (A)
+                  {t("compReview.actionA")}
                 </p>
                 <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                   {review.actionNote}
@@ -132,7 +131,7 @@ export function ReviewCard({
             {review.resultNote && (
               <div>
                 <p className="text-xs font-semibold tracking-wider text-[#0047AB] uppercase">
-                  Kết quả (R)
+                  {t("compReview.resultsR")}
                 </p>
                 <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                   {review.resultNote}
@@ -153,7 +152,7 @@ export function ReviewCard({
             {review.strength && (
               <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                 <p className="text-xs font-semibold text-green-700 dark:text-green-400">
-                  Điểm mạnh
+                  {t("common.strengths")}
                 </p>
                 <p className="mt-1 text-sm text-green-800 dark:text-green-300">{review.strength}</p>
               </div>
@@ -161,7 +160,7 @@ export function ReviewCard({
             {review.weakness && (
               <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
                 <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-                  Điểm cần cải thiện
+                  {t("common.pointsForImprovement")}
                 </p>
                 <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">{review.weakness}</p>
               </div>
@@ -169,7 +168,7 @@ export function ReviewCard({
             {review.improve && (
               <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
                 <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
-                  Đề xuất cải thiện
+                  {t("common.suggestedImprovements1")}
                 </p>
                 <p className="mt-1 text-sm text-blue-800 dark:text-blue-300">{review.improve}</p>
               </div>
@@ -179,7 +178,7 @@ export function ReviewCard({
 
         {/* No content fallback */}
         {!hasStarNotes && !hasAdditionalNotes && (
-          <p className="text-sm text-slate-500 italic">Không có nội dung đánh giá chi tiết</p>
+          <p className="text-sm text-slate-500 italic">{t("compReview.thereIsNoDetailedReview")}</p>
         )}
 
         {/* Actions */}
@@ -194,7 +193,7 @@ export function ReviewCard({
                   onEdit();
                 }}>
                 <Edit className="mr-1 h-4 w-4" />
-                Chỉnh sửa
+                {t("general.edit")}
               </Button>
             )}
             {onDelete && (
@@ -207,7 +206,7 @@ export function ReviewCard({
                 }}
                 className="text-red-600 hover:bg-red-50 hover:text-red-700">
                 <Trash2 className="mr-1 h-4 w-4" />
-                Xóa
+                {t("general.delete")}
               </Button>
             )}
           </div>

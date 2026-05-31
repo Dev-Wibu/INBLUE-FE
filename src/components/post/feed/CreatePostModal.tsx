@@ -1,7 +1,3 @@
-import { ImagePlus, Send, Tag, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,16 +17,18 @@ import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { postManager } from "@/services/post.manager";
 import { type Major, questionMajorManager } from "@/services/question-major.manager";
 import { useAuthStore } from "@/stores/authStore";
-
+import { ImagePlus, Send, Tag, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 interface CreatePostModalProps {
   open: boolean;
   onOpenChange: (_open: boolean) => void;
   onCreated?: () => void;
 }
-
 export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
-
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
@@ -42,13 +40,11 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   const [majorId, setMajorId] = useState<number | undefined>(undefined);
   const [majors, setMajors] = useState<Major[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     // Only fetch majors when modal is open and user is logged in
     if (!open || !user) {
       return;
     }
-
     const fetchMajors = async () => {
       const result = await questionMajorManager.getAll();
       if (result.success && result.data) {
@@ -58,15 +54,13 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
     };
     void fetchMajors();
   }, [open, user]);
-
-  const authorName = user?.name ?? "Bạn";
+  const authorName = user?.name ?? t("common.friend");
   const authorInitials = authorName
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   const resetForm = () => {
     setTitle("");
     setContent("");
@@ -77,7 +71,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
     setCoverPreview(null);
     setMajorId(undefined);
   };
-
   const handleAddTag = () => {
     const tag = tagInput.trim();
     if (tag && !tags.includes(tag)) {
@@ -85,11 +78,9 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
       setTagInput("");
     }
   };
-
   const handleRemoveTag = (tag: string) => {
     setTags((prev) => prev.filter((t) => t !== tag));
   };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -98,10 +89,8 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
     reader.onload = () => setCoverPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
-
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim() || !user?.id) return;
-
     setSubmitting(true);
     try {
       const response = await postManager.createPost({
@@ -114,28 +103,26 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
         coverImg: coverFile ?? undefined,
         status: "DRAFT",
       });
-
       if (response.success) {
-        toast.success("Đăng bài thành công.");
+        toast.success(t("compPost.postedSuccessfully"));
         invalidatePostFeedQueries();
         resetForm();
         onOpenChange(false);
         onCreated?.();
       } else {
-        toast.error(response.error ?? "Không thể đăng bài");
+        toast.error(response.error ?? t("compPost.cannotPost"));
       }
     } catch {
-      toast.error("Không thể đăng bài");
+      toast.error(t("compPost.cannotPost"));
     } finally {
       setSubmitting(false);
     }
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-hidden p-0">
         <DialogHeader className="border-b px-6 pt-5 pb-4">
-          <DialogTitle className="text-center text-lg">Tạo bài viết</DialogTitle>
+          <DialogTitle className="text-center text-lg">{t("common.createArticles")}</DialogTitle>
         </DialogHeader>
 
         <div className="max-h-[calc(90vh-73px)] space-y-4 overflow-y-auto px-6 pt-2 pb-4">
@@ -149,15 +136,15 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             <div>
               <p className="text-sm font-semibold">{authorName}</p>
               <Badge variant="secondary" className="mt-0.5 text-[10px]">
-                Đã đăng
+                {t("compPost.posted")}
               </Badge>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">Tiêu đề *</Label>
+            <Label className="text-xs font-medium text-slate-500">{t("common.title1")}</Label>
             <Input
-              placeholder="Đặt tiêu đề cho bài viết của bạn..."
+              placeholder={t("compPost.titleYourPost")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="font-medium"
@@ -165,9 +152,11 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">Nội dung *</Label>
+            <Label className="text-xs font-medium text-slate-500">{t("common.content1")}</Label>
             <Textarea
-              placeholder={`${user?.name?.split(" ").pop() ?? "Bạn"} ơi, bạn đang nghĩ gì?`}
+              placeholder={t("general.heyWhatSOnYour", {
+                var_0: user?.name?.split(" ").pop() ?? t("common.friend"),
+              })}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={5}
@@ -176,9 +165,9 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">Tóm tắt</Label>
+            <Label className="text-xs font-medium text-slate-500">{t("common.summary")}</Label>
             <Textarea
-              placeholder="Viết tóm tắt ngắn gọn (tùy chọn)..."
+              placeholder={t("compPost.writeABriefSummaryOptional")}
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               rows={2}
@@ -187,12 +176,12 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">Chuyên ngành</Label>
+            <Label className="text-xs font-medium text-slate-500">{t("common.specialized")}</Label>
             <Select
               value={majorId !== undefined ? String(majorId) : ""}
               onValueChange={(val) => setMajorId(val ? Number(val) : undefined)}>
               <SelectTrigger>
-                <SelectValue placeholder="Chọn chuyên ngành (tùy chọn)" />
+                <SelectValue placeholder={t("compPost.chooseAMajorOptional")} />
               </SelectTrigger>
               <SelectContent>
                 {majors.map((m) => (
@@ -216,7 +205,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
               <div className="relative overflow-hidden rounded-lg">
                 <img
                   src={coverPreview}
-                  alt="Ảnh bìa"
+                  alt={t("common.coverPhoto")}
                   className="h-44 w-full rounded-lg object-cover"
                 />
                 <button
@@ -235,7 +224,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
                 className="border-muted hover:bg-muted/50 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors"
                 onClick={() => fileInputRef.current?.click()}>
                 <ImagePlus className="h-6 w-6 text-slate-400" />
-                <span className="text-muted-foreground text-sm">Thêm ảnh bìa</span>
+                <span className="text-muted-foreground text-sm">{t("compPost.addCoverPhoto")}</span>
               </button>
             )}
           </div>
@@ -247,7 +236,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             </Label>
             <div className="flex gap-2">
               <Input
-                placeholder="Nhập tag rồi nhấn Enter..."
+                placeholder={t("compPost.enterTagThenPressEnter")}
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -264,7 +253,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
                 size="sm"
                 onClick={handleAddTag}
                 disabled={!tagInput.trim()}>
-                Thêm
+                {t("common.more")}
               </Button>
             </div>
             {tags.length > 0 && (
@@ -293,7 +282,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
               onClick={handleSubmit}
               disabled={!title.trim() || !content.trim() || submitting}>
               {submitting ? <Spinner size="sm" tone="white" /> : <Send className="h-4 w-4" />}
-              Đăng bài
+              {t("compPost.post")}
             </Button>
           </div>
         </div>

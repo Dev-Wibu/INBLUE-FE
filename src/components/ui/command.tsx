@@ -1,6 +1,8 @@
+import i18n from "@/lib/i18n";
 import { Command as CommandPrimitive } from "cmdk";
 import { SearchIcon } from "lucide-react";
 import * as React from "react";
+const t = i18n.t.bind(i18n);
 
 import {
   Dialog,
@@ -25,8 +27,8 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
 }
 
 function CommandDialog({
-  title = "Bảng lệnh",
-  description = "Tìm lệnh để chạy...",
+  title = t("compUi.commandTable"),
+  description = t("compUi.findCommandsToRun"),
   children,
   className,
   showCloseButton = true,

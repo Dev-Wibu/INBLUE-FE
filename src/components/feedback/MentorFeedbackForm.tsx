@@ -1,3 +1,6 @@
+import i18n from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
+const t = i18n.t.bind(i18n);
 /**
  * MentorFeedbackForm Component
  * Form for creating/editing mentor feedback
@@ -34,7 +37,7 @@ const feedbackSchema = z
     if (!hasRating && !hasComment) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Vui lòng chọn số sao hoặc nhập nhận xét",
+        message: t("compFeedback.pleaseSelectNumberOfStars"),
         path: ["rating"],
       });
     }
@@ -67,6 +70,7 @@ export function MentorFeedbackForm({
   onCancel,
   isLoading = false,
 }: MentorFeedbackFormProps) {
+  const { t } = useTranslation();
   const form = useForm<FeedbackFormData>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
@@ -99,13 +103,11 @@ export function MentorFeedbackForm({
           name="rating"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Đánh giá mentor (tùy chọn)</FormLabel>
+              <FormLabel>{t("compFeedback.mentorEvaluationOptional")}</FormLabel>
               <FormControl>
                 <StarRating value={field.value} onChange={field.onChange} size="lg" />
               </FormControl>
-              <FormDescription>
-                Bạn có thể chọn số sao hoặc viết nhận xét, cần ít nhất một thông tin
-              </FormDescription>
+              <FormDescription>{t("compFeedback.youCanChooseTheNumber")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -117,16 +119,16 @@ export function MentorFeedbackForm({
           name="comment"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nhận xét chi tiết (tùy chọn)</FormLabel>
+              <FormLabel>{t("compFeedback.detailedCommentsOptional")}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Chia sẻ nhận xét của bạn về buổi phỏng vấn: mentor có nhiều năm kinh nghiệm, chuyên nghiệm, cơ bản,..."
+                  placeholder={t("compFeedback.shareYourCommentsAboutThe")}
                   className="min-h-[150px]"
                   {...field}
                   value={field.value ?? ""}
                 />
               </FormControl>
-              <FormDescription>Bạn có thể để trống nếu đã đánh giá sao</FormDescription>
+              <FormDescription>{t("compFeedback.youCanLeaveItBlank")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -136,7 +138,7 @@ export function MentorFeedbackForm({
         <div className="flex justify-end gap-3">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel}>
-              Hủy
+              {t("general.cancel")}
             </Button>
           )}
           <Button
@@ -144,7 +146,7 @@ export function MentorFeedbackForm({
             disabled={isLoading}
             className="bg-emerald-600 hover:bg-emerald-700">
             {isLoading && <Spinner size="sm" tone="white" className="mr-2" />}
-            {isEdit ? "Cập nhật phản hồi" : "Gửi phản hồi"}
+            {isEdit ? t("compFeedback.updatedResponse") : t("compFeedback.sendFeedback")}
           </Button>
         </div>
       </form>
