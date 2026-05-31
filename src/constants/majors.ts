@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * Major (Chuyên ngành) constants for the application
  * Used across the entire project to ensure consistency
@@ -18,13 +20,13 @@ export type MajorValue = "CNTT" | "Marketing";
 export const MAJOR_OPTIONS: MajorOption[] = [
   {
     value: "CNTT",
-    label: "Công nghệ thông tin",
-    description: "Khoa học máy tính, phần mềm, hệ thống thông tin",
+    label: t("general.informationTechnology"),
+    description: t("general.computerScienceSoftwareInformationSystems"),
   },
   {
     value: "Marketing",
     label: "Marketing",
-    description: "Tiếp thị, quảng cáo, truyền thông",
+    description: t("general.marketingAdvertisingCommunications"),
   },
 ];
 

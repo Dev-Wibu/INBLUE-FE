@@ -1,4 +1,6 @@
+import i18n from "@/lib/i18n";
 import { describe, expect, it } from "vitest";
+const t = i18n.t.bind(i18n);
 
 import {
   getNormalizedErrorMessage,
@@ -21,7 +23,7 @@ describe("error-normalizer", () => {
       "Fallback"
     );
 
-    expect(normalized.message).toBe("Email đã tồn tại.");
+    expect(normalized.message).toBe(t("general.emailAlreadyExists"));
     expect(normalized.status).toBe(400);
     expect(normalized.traceId).toBe("69e505c6e57c956afb9022db28c866a3");
   });
@@ -55,7 +57,7 @@ describe("error-normalizer", () => {
       "Fallback"
     );
 
-    expect(normalized.message).toBe("Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại.");
+    expect(normalized.message).toBe(t("general.theDataSubmittedIsInvalid"));
   });
 
   it("uses HTTP status mapping when backend returns generic messages", () => {
@@ -72,7 +74,7 @@ describe("error-normalizer", () => {
       "Fallback"
     );
 
-    expect(normalized.message).toBe("Hệ thống đang gặp sự cố. Vui lòng thử lại sau.");
+    expect(normalized.message).toBe(t("general.theSystemIsExperiencingProblems"));
     expect(normalized.rawMessage).toBe("Internal Server Error");
   });
 
@@ -99,7 +101,7 @@ describe("error-normalizer", () => {
       "Fallback"
     );
 
-    expect(appError.message).toBe("Không tìm thấy phiên phỏng vấn.");
+    expect(appError.message).toBe(t("general.noInterviewSessionsFound"));
     expect(appError.status).toBe(404);
     expect(appError.traceId).toBe("trace-404");
   });

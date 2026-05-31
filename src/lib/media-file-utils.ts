@@ -1,3 +1,6 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
+
 export type MediaFileKind = "image" | "pdf" | "document" | "other";
 export type ExternalDocumentViewerProvider = "office" | "google";
 
@@ -285,7 +288,7 @@ export async function resolveSourceToBlobUrl(
   });
 
   if (!response.ok) {
-    throw new Error(`Không thể tải tệp (${response.status})`);
+    throw new Error(t("general.cannotLoadFile", { var_0: response.status }));
   }
 
   const blob = await response.blob();

@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * API Configuration and Constants
  * Based on schema-from-be.d.ts API specification
@@ -426,17 +428,17 @@ export function buildEndpoint(endpoint: string, params?: Record<string, string |
 // import { ERROR_MESSAGES } from '@/constants/api.config';
 // const message = ERROR_MESSAGES[response.status] || 'Đã xảy ra lỗi';
 export const ERROR_MESSAGES: Record<number, string> = {
-  400: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.",
-  401: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
-  403: "Bạn không có quyền thực hiện thao tác này.",
-  404: "Không tìm thấy dữ liệu yêu cầu.",
-  413: "Tập tin quá lớn. Vui lòng chọn file nhỏ hơn.",
-  415: "Định dạng file không được hỗ trợ.",
-  429: "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
-  500: "Hệ thống đang gặp sự cố. Vui lòng thử lại sau.",
-  502: "Máy chủ tạm thời không khả dụng.",
-  503: "Dịch vụ đang bảo trì. Vui lòng thử lại sau.",
-  504: "Máy chủ phản hồi quá chậm. Vui lòng thử lại.",
+  400: t("general.invalidDataPleaseCheckAgain"),
+  401: t("general.loginSessionExpiredPleaseLog"),
+  403: t("general.youDoNotHavePermission"),
+  404: t("general.requestedDataNotFound"),
+  413: t("general.fileIsTooLargePlease"),
+  415: t("general.fileFormatNotSupported"),
+  429: t("general.tooManyRequestsPleaseTry"),
+  500: t("general.theSystemIsExperiencingProblems"),
+  502: t("general.theServerIsTemporarilyUnavailable"),
+  503: t("general.serviceIsUnderMaintenancePlease"),
+  504: t("general.theServerRespondsTooSlowly"),
 };
 
 const PUBLIC_AUTH_POST_ENDPOINTS = new Set<string>([
@@ -725,7 +727,7 @@ export const createApiInstance = (): AxiosInstance => {
       return response;
     },
     async (error) => {
-      const normalizedError = normalizeApiError(error, "Đã xảy ra lỗi khi gọi API.");
+      const normalizedError = normalizeApiError(error, t("general.anErrorOccurredWhileCalling"));
       const status = normalizedError.status;
 
       // ALWAYS log failed API requests with traceId in all environments
@@ -742,9 +744,7 @@ export const createApiInstance = (): AxiosInstance => {
 
       // Handle network errors (no response) - log but don't toast
       if (!error.response) {
-        return Promise.reject(
-          toAppApiError(error, "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.")
-        );
+        return Promise.reject(toAppApiError(error, t("general.unableToConnectToThe")));
       }
 
       // Handle HTTP errors

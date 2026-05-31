@@ -1,21 +1,23 @@
 import type { ApiError } from "@/interfaces";
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 
-const DEFAULT_FALLBACK_MESSAGE = "Đã xảy ra lỗi. Vui lòng thử lại.";
+const DEFAULT_FALLBACK_MESSAGE = t("general.anErrorHasOccurredPlease");
 
 const HTTP_STATUS_MESSAGES: Record<number, string> = {
-  400: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.",
-  401: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
-  403: "Bạn không có quyền thực hiện thao tác này.",
-  404: "Không tìm thấy dữ liệu yêu cầu.",
-  409: "Dữ liệu bị xung đột. Vui lòng thử lại.",
-  413: "Tập tin quá lớn. Vui lòng chọn file nhỏ hơn.",
-  415: "Định dạng dữ liệu không được hỗ trợ.",
-  422: "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.",
-  429: "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
-  500: "Hệ thống đang gặp sự cố. Vui lòng thử lại sau.",
-  502: "Máy chủ tạm thời không khả dụng.",
-  503: "Dịch vụ đang bảo trì. Vui lòng thử lại sau.",
-  504: "Máy chủ phản hồi quá chậm. Vui lòng thử lại.",
+  400: t("general.invalidDataPleaseCheckAgain"),
+  401: t("general.loginSessionExpiredPleaseLog"),
+  403: t("general.youDoNotHavePermission"),
+  404: t("general.requestedDataNotFound"),
+  409: t("general.conflictingDataPleaseTryAgain"),
+  413: t("general.fileIsTooLargePlease"),
+  415: t("general.dataFormatNotSupported"),
+  422: t("general.invalidDataPleaseCheckAgain"),
+  429: t("general.tooManyRequestsPleaseTry"),
+  500: t("general.theSystemIsExperiencingProblems"),
+  502: t("general.theServerIsTemporarilyUnavailable"),
+  503: t("general.serviceIsUnderMaintenancePlease"),
+  504: t("general.theServerRespondsTooSlowly"),
 };
 
 const GENERIC_MESSAGES = new Set([
@@ -39,7 +41,7 @@ const GENERIC_MESSAGES = new Set([
 const KNOWN_ERROR_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
   {
     pattern: /(bad credentials|invalid password|wrong password)/i,
-    message: "Sai mật khẩu.",
+    message: t("general.wrongPassword1"),
   },
   {
     pattern: /(user not found|not found with email|email không tồn tại|email khong ton tai)/i,
@@ -47,27 +49,27 @@ const KNOWN_ERROR_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
   },
   {
     pattern: /(email đã tồn tại|email da ton tai|email already exists|email exists)/i,
-    message: "Email đã tồn tại.",
+    message: t("general.emailAlreadyExists"),
   },
   {
     pattern: /(insufficient balance|số dư.*không đủ|so du.*khong du)/i,
-    message: "Số dư ví không đủ. Vui lòng nạp thêm tiền hoặc chọn phương thức khác.",
+    message: t("general.walletBalanceIsNotEnough"),
   },
   {
     pattern: /(no enum constant|json parse error|cannot deserialize|cannot map `null`)/i,
-    message: "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại.",
+    message: t("general.theDataSubmittedIsInvalid"),
   },
   {
     pattern: /(content-type .* is not supported|unsupported media type)/i,
-    message: "Định dạng dữ liệu gửi lên không được hỗ trợ.",
+    message: t("general.theSubmittedDataFormatIs"),
   },
   {
     pattern: /(session not found)/i,
-    message: "Không tìm thấy phiên phỏng vấn.",
+    message: t("general.noInterviewSessionsFound"),
   },
   {
     pattern: /(timed out|timeout)/i,
-    message: "Yêu cầu quá thời gian chờ. Vui lòng thử lại.",
+    message: t("general.requestTimeoutExceededPleaseTry"),
   },
 ];
 

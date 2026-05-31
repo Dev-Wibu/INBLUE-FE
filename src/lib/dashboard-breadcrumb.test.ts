@@ -1,5 +1,5 @@
+import i18n from "@/lib/i18n";
 import { describe, expect, it } from "vitest";
-
 import {
   buildDashboardBreadcrumbItems,
   formatBreadcrumbLabelWithPrefix,
@@ -7,52 +7,62 @@ import {
   getDashboardRouteMatch,
   getDashboardTabFromPath,
 } from "./dashboard-breadcrumb";
-
+const t = i18n.t.bind(i18n);
 describe("dashboard-breadcrumb", () => {
-  it("tạo breadcrumb cơ bản cho trang gốc theo role", () => {
+  it(t("general.createABasicBreadcrumbFor"), () => {
     const items = buildDashboardBreadcrumbItems({
       role: "user",
       pathname: "/user",
       activeTab: "homeFeed",
-      availableTabs: [{ type: "homeFeed", label: "Trang chủ" }],
+      availableTabs: [
+        {
+          type: "homeFeed",
+          label: t("common.home"),
+        },
+      ],
     });
-
     expect(items).toEqual([
-      { label: "Người dùng", href: "/user?tab=homeFeed", kind: "root" },
-      { label: "Trang chủ", kind: "tab" },
+      {
+        label: t("common.user"),
+        href: "/user?tab=homeFeed",
+        kind: "root",
+      },
+      {
+        label: t("common.home"),
+        kind: "tab",
+      },
     ]);
   });
-
-  it("suy ra đúng tab từ nested route", () => {
+  it(t("general.inferTheCorrectTabFrom"), () => {
     const tab = getDashboardTabFromPath({
       role: "mentor",
       pathname: "/mentor/sessions/123/review",
       defaultTab: "overview",
     });
-
     expect(tab).toBe("sessions");
   });
-
-  it("ưu tiên nested label override khi có dữ liệu động", () => {
+  it(t("general.nestedLabelOverrideIsPreferred"), () => {
     const items = buildDashboardBreadcrumbItems({
       role: "mentor",
       pathname: "/mentor/sessions/123",
       activeTab: "sessions",
-      availableTabs: [{ type: "sessions", label: "Phiên phỏng vấn" }],
-      nestedLabelOverride: "Phiên: session-1776232524937",
+      availableTabs: [
+        {
+          type: "sessions",
+          label: t("common.interviewSession"),
+        },
+      ],
+      nestedLabelOverride: t("general.sessionSession1776232524937"),
     });
-
     expect(items.at(-1)).toEqual({
-      label: "Phiên: session-1776232524937",
+      label: t("general.sessionSession1776232524937"),
       kind: "detail",
     });
   });
-
-  it("trả metadata route có dynamic resolver cho đường dẫn chi tiết", () => {
+  it(t("general.returnsRouteMetadataWithDynamic"), () => {
     const routeMatch = getDashboardRouteMatch("user", "/user/mentors/42");
-
     expect(routeMatch).toEqual({
-      label: "Hồ sơ mentor",
+      label: t("general.mentorProfile"),
       tabType: "mentors",
       variant: undefined,
       routeParams: {
@@ -66,12 +76,10 @@ describe("dashboard-breadcrumb", () => {
       },
     });
   });
-
-  it("trả route variant và params cho đường dẫn quiz result", () => {
+  it(t("general.returnsTheRouteVariantAnd"), () => {
     const routeMatch = getDashboardRouteMatch("user", "/user/practice/session/9/1/quiz/11/result");
-
     expect(routeMatch).toEqual({
-      label: "Kết quả bài kiểm tra",
+      label: t("general.testResults"),
       tabType: "practice",
       variant: "practiceQuizResult",
       routeParams: {
@@ -83,48 +91,70 @@ describe("dashboard-breadcrumb", () => {
         resource: "quizSet",
         id: 11,
         rawId: "11",
-        prefix: "Kết quả",
+        prefix: t("common.result"),
       },
     });
   });
-
-  it("ưu tiên chuỗi detail labels khi được cung cấp", () => {
+  it(t("general.prefersTheDetailLabelsString"), () => {
     const items = buildDashboardBreadcrumbItems({
       role: "user",
       pathname: "/user/practice/session/9/1/quiz/11/result",
       activeTab: "practice",
-      availableTabs: [{ type: "practice", label: "Bộ luyện tập" }],
+      availableTabs: [
+        {
+          type: "practice",
+          label: t("common.trainingSet"),
+        },
+      ],
       detailLabelsOverride: [
         {
-          label: "Lộ trình: Phiên #9",
+          label: t("general.roadmapSession9"),
           href: "/user/practice/session/9",
         },
-        { label: "Bài kiểm tra: Ngày 3" },
-        { label: "Kết quả" },
+        {
+          label: t("general.testDay3"),
+        },
+        {
+          label: t("common.result"),
+        },
       ],
     });
-
     expect(items).toEqual([
-      { label: "Người dùng", href: "/user?tab=homeFeed", kind: "root" },
-      { label: "Bộ luyện tập", href: "/user?tab=practice", kind: "tab" },
-      { label: "Lộ trình: Phiên #9", href: "/user/practice/session/9", kind: "detail" },
-      { label: "Bài kiểm tra: Ngày 3", kind: "detail" },
-      { label: "Kết quả", kind: "detail" },
+      {
+        label: t("common.user"),
+        href: "/user?tab=homeFeed",
+        kind: "root",
+      },
+      {
+        label: t("common.trainingSet"),
+        href: "/user?tab=practice",
+        kind: "tab",
+      },
+      {
+        label: t("general.roadmapSession9"),
+        href: "/user/practice/session/9",
+        kind: "detail",
+      },
+      {
+        label: t("general.testDay3"),
+        kind: "detail",
+      },
+      {
+        label: t("common.result"),
+        kind: "detail",
+      },
     ]);
   });
-
-  it("khử trùng tiền tố khi value đã có sẵn prefix", () => {
-    expect(formatBreadcrumbLabelWithPrefix("Bài kiểm tra", "Bài kiểm tra: Ngày 3")).toBe(
-      "Bài kiểm tra: Ngày 3"
+  it(t("general.sanitizeThePrefixWhenValue"), () => {
+    expect(formatBreadcrumbLabelWithPrefix(t("general.test"), t("general.testDay3"))).toBe(
+      t("general.testDay3")
     );
-    expect(formatBreadcrumbLabelWithPrefix("Lộ trình", "session-1776220472420")).toBe(
-      "Lộ trình: session-1776220472420"
+    expect(formatBreadcrumbLabelWithPrefix(t("common.route"), "session-1776220472420")).toBe(
+      t("general.routeSession1776220472420")
     );
   });
-
-  it("fallback label thân thiện khi route chưa khai báo", () => {
+  it(t("general.friendlyFallbackLabelWhenRoute"), () => {
     const nestedLabel = getDashboardNestedRouteLabel("user", "/user/custom-route-name");
-
     expect(nestedLabel).toBe("Custom Route Name");
   });
 });

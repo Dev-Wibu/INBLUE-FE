@@ -1,6 +1,7 @@
+import i18n from "@/lib/i18n";
 import type { LucideIcon } from "lucide-react";
 import { Bell, Calendar, CheckCircle, MessageSquare, Star, User, XCircle } from "lucide-react";
-
+const t = i18n.t.bind(i18n);
 export type NotificationType =
   | "INTERVIEW"
   | "FEEDBACK"
@@ -9,7 +10,6 @@ export type NotificationType =
   | "SUCCESS"
   | "ERROR"
   | "SYSTEM";
-
 interface NotificationTypeConfig {
   type: NotificationType;
   label: string;
@@ -17,61 +17,58 @@ interface NotificationTypeConfig {
   iconColorClassName: string;
   keywords: string[];
 }
-
 const NOTIFICATION_TYPE_CONFIGS: NotificationTypeConfig[] = [
   {
     type: "INTERVIEW",
-    label: "Phỏng vấn",
+    label: t("common.interview"),
     icon: Calendar,
     iconColorClassName: "text-[#0047AB]",
-    keywords: ["phỏng vấn", "session", "interview"],
+    keywords: [t("general.interview"), "session", "interview"],
   },
   {
     type: "FEEDBACK",
-    label: "Phản hồi",
+    label: t("common.feedback1"),
     icon: MessageSquare,
     iconColorClassName: "text-cyan-500",
-    keywords: ["phản hồi", "feedback"],
+    keywords: [t("common.feedback"), "feedback"],
   },
   {
     type: "REVIEW",
-    label: "Đánh giá",
+    label: t("common.evaluate"),
     icon: Star,
     iconColorClassName: "text-yellow-500",
-    keywords: ["đánh giá", "review"],
+    keywords: [t("compReview.evaluate"), "review"],
   },
   {
     type: "MENTOR",
     label: "Mentor",
     icon: User,
     iconColorClassName: "text-emerald-600",
-    keywords: ["mentor", "duyệt mentor", "học viên"],
+    keywords: ["mentor", t("general.browseMentors"), t("general.student")],
   },
   {
     type: "SUCCESS",
-    label: "Thành công",
+    label: t("general.success"),
     icon: CheckCircle,
     iconColorClassName: "text-green-500",
-    keywords: ["thành công", "success"],
+    keywords: [t("general.success1"), "success"],
   },
   {
     type: "ERROR",
-    label: "Lỗi",
+    label: t("common.error"),
     icon: XCircle,
     iconColorClassName: "text-red-500",
-    keywords: ["thất bại", "từ chối", "error", "lỗi"],
+    keywords: [t("general.failed"), t("general.reject"), "error", t("general.error1")],
   },
   {
     type: "SYSTEM",
-    label: "Hệ thống",
+    label: t("common.system"),
     icon: Bell,
     iconColorClassName: "text-slate-500",
     keywords: [],
   },
 ];
-
 const DEFAULT_NOTIFICATION_TYPE: NotificationType = "SYSTEM";
-
 export const NOTIFICATION_GROUP_ORDER: NotificationType[] = [
   "INTERVIEW",
   "FEEDBACK",
@@ -81,29 +78,24 @@ export const NOTIFICATION_GROUP_ORDER: NotificationType[] = [
   "ERROR",
   "SYSTEM",
 ];
-
 export function inferNotificationType(title?: string): NotificationType {
   const normalizedTitle = title?.trim().toLowerCase() ?? "";
   if (!normalizedTitle) {
     return DEFAULT_NOTIFICATION_TYPE;
   }
-
   for (const config of NOTIFICATION_TYPE_CONFIGS) {
     if (config.keywords.some((keyword) => normalizedTitle.includes(keyword))) {
       return config.type;
     }
   }
-
   return DEFAULT_NOTIFICATION_TYPE;
 }
-
 export function getNotificationTypeConfig(type: NotificationType): NotificationTypeConfig {
   return (
     NOTIFICATION_TYPE_CONFIGS.find((config) => config.type === type) ??
     NOTIFICATION_TYPE_CONFIGS.find((config) => config.type === DEFAULT_NOTIFICATION_TYPE)!
   );
 }
-
 export function getNotificationTypeConfigFromTitle(title?: string): NotificationTypeConfig {
   return getNotificationTypeConfig(inferNotificationType(title));
 }

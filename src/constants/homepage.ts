@@ -1,89 +1,105 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 export const homepageStats = {
   offers: "3,000+",
   costSaving: "70%",
   accuracy: "90%",
   availability: "24/7",
 };
-
 export const homepageJobRoles = [
-  { id: 1, name: "Kỹ sư phần mềm", icon: "code" },
-  { id: 2, name: "Nhà khoa học dữ liệu", icon: "database" },
-  { id: 3, name: "Marketing", icon: "megaphone" },
-  { id: 4, name: "Giám đốc sản phẩm", icon: "briefcase" },
-  { id: 5, name: "Thiết kế UI/UX", icon: "palette" },
-  { id: 6, name: "Phân tích Tài chính", icon: "chart" },
-];
-
-export const homepageFeatures = [
   {
     id: 1,
-    title: "Phỏng vấn mô phỏng AI",
-    headline: "Trải nghiệm cá nhân hóa",
-    description:
-      "Điều chỉnh buổi phỏng vấn sao cho phù hợp với hoàn cảnh và nhu cầu của bạn. Mô phỏng với hình đại diện AI tiên tiến để có một buổi phỏng vấn chân thực như thật.",
-    cta: "Bắt đầu một cuộc phỏng vấn thử",
+    name: t("general.softwareEngineer"),
+    icon: "code",
   },
   {
     id: 2,
-    title: "Câu hỏi xu hướng",
-    headline: "Làm chủ các câu hỏi thực tế",
-    description:
-      "Khám phá những câu hỏi phỏng vấn thực tế mà các công ty hàng đầu thường hỏi. Nhận câu trả lời do AI tạo ra, phù hợp với thành công của bạn.",
-    cta: "Bắt đầu luyện tập ngay",
+    name: t("general.dataScientist"),
+    icon: "database",
   },
   {
     id: 3,
-    title: "Mô tả công việc thông minh",
-    headline: "Thực hành từ mô tả công việc",
-    description:
-      "Bắt đầu buổi phỏng vấn thử của bạn từ bất kỳ mô tả công việc nào. AI phân tích yêu cầu công việc và tạo ra các câu hỏi phù hợp với vị trí bạn đang ứng tuyển.",
-    cta: "Thử ngay",
+    name: "Marketing",
+    icon: "megaphone",
+  },
+  {
+    id: 4,
+    name: t("general.productManager"),
+    icon: "briefcase",
+  },
+  {
+    id: 5,
+    name: t("common.uiuxDesign"),
+    icon: "palette",
+  },
+  {
+    id: 6,
+    name: t("general.financialAnalysis"),
+    icon: "chart",
   },
 ];
-
+export const homepageFeatures = [
+  {
+    id: 1,
+    title: t("general.aiSimulationInterview"),
+    headline: t("general.personalizedExperience"),
+    description: t("general.tailorTheInterviewToSuit"),
+    cta: t("general.startAMockInterview"),
+  },
+  {
+    id: 2,
+    title: t("general.trendingQuestions"),
+    headline: t("general.masterPracticeQuestions"),
+    description: t("general.discoverRealInterviewQuestionsThat"),
+    cta: t("general.startPracticingNow"),
+  },
+  {
+    id: 3,
+    title: t("general.smartJobDescriptions"),
+    headline: t("general.practiceFromTheJobDescription"),
+    description: t("general.startYourMockInterviewFrom"),
+    cta: t("general.tryItNow"),
+  },
+];
 export const homepageInterviewModes = [
   {
     id: 1,
-    title: "Chế độ văn bản",
-    description:
-      "Hoàn hảo để tạo ra những câu trả lời chu đáo và có cấu trúc tốt. Hãy dành thời gian để phát triển những câu trả lời hấp dẫn bằng cách sử dụng các khuôn khổ đã được chứng minh.",
+    title: t("common.textMode"),
+    description: t("general.perfectForCreatingThoughtfulAnd"),
     benefits: [
-      "Tạo ra những câu trả lời hoàn hảo",
-      "Làm chủ các khuôn khổ đã được chứng minh",
-      "Xây dựng niềm tin có hệ thống",
+      t("general.createPerfectAnswers"),
+      t("general.masterProvenFrameworks"),
+      t("general.buildTrustSystematically"),
     ],
     icon: "text",
   },
   {
     id: 2,
-    title: "Chế độ giọng nói",
-    description:
-      "Luyện tập nói to câu trả lời để nắm vững cách truyền đạt, giọng điệu và nhịp độ. Vượt qua nỗi lo lắng khi nói và tự tin hơn.",
+    title: t("common.voiceMode"),
+    description: t("general.practiceSayingYourAnswersOut"),
     benefits: [
-      "Hoàn thiện cách truyền đạt và giọng điệu của bạn",
-      "Vượt qua nỗi lo lắng khi nói",
-      "Luyện tập thời gian thực tế",
+      t("general.perfectYourDeliveryAndTone"),
+      t("general.overcomeAnxietyWhenSpeaking"),
+      t("general.practiceInRealTime"),
     ],
     icon: "mic",
   },
   {
     id: 3,
-    title: "Chế độ cuộc hội thoại",
-    description:
-      "Trải nghiệm phỏng vấn chân thực nhất hiện có. Tham gia vào các cuộc trò chuyện năng động, tương tác với AI, có khả năng thích ứng như người phỏng vấn thực sự.",
+    title: t("general.conversationMode"),
+    description: t("general.theMostAuthenticInterviewExperience"),
     benefits: [
-      "Trải nghiệm thực tế nhất",
-      "Xử lý các câu hỏi bất ngờ",
-      "Xây dựng kỹ năng tư duy nhanh",
+      t("general.theMostRealisticExperience"),
+      t("general.handleUnexpectedQuestions"),
+      t("general.buildQuickThinkingSkills"),
     ],
     icon: "video",
   },
 ];
-
 export const homepageTestimonials = [
   {
     id: 1,
-    name: "Nguyễn Phạm Thu Hà",
+    name: t("homepage_homepage.tsx.nguyen_pham_thu_ha"),
     role: "Software Engineering",
     content:
       "I always felt confident about coding, but behavioral questions were a different story. AMA Interview helped me practice clear, impactful answers using the STAR method. It gave me the confidence to handle even the toughest behavioral rounds.",
@@ -92,7 +108,7 @@ export const homepageTestimonials = [
   },
   {
     id: 2,
-    name: "Trần Minh Đức",
+    name: t("homepage_homepage.tsx.tran_minh_uc"),
     role: "Data Science",
     content:
       "The AI interview practice sessions were incredibly helpful. I could practice anytime, anywhere, and the feedback was detailed and actionable. After two weeks of practice, I landed my dream job at a top tech company.",
@@ -101,7 +117,7 @@ export const homepageTestimonials = [
   },
   {
     id: 3,
-    name: "Lê Thị Mai Anh",
+    name: t("homepage_homepage.tsx.le_thi_mai_anh"),
     role: "Product Management",
     content:
       "As a PM transitioning from engineering, I needed help with product sense questions. InBlue Interview's curated questions and AI feedback helped me understand what interviewers look for. Highly recommend!",
@@ -110,28 +126,25 @@ export const homepageTestimonials = [
   },
   {
     id: 4,
-    name: "Phạm Văn Hùng",
+    name: t("homepage_homepage.tsx.pham_van_hung"),
     role: "Frontend Developer",
-    content:
-      "Tôi đã chuẩn bị rất nhiều cho các buổi phỏng vấn kỹ thuật nhưng vẫn thất bại. InBlue AI đã giúp tôi thực hành với các câu hỏi thực tế và nhận feedback chi tiết. Sau 1 tháng, tôi đã nhận được offer từ công ty mơ ước!",
+    content: t("homepage_homepage.tsx.toi_a_chuan_bi_rat_nhieu_cho_cac_buoi_ph"),
     avatar: null,
     rating: 5,
   },
   {
     id: 5,
-    name: "Hoàng Thị Linh",
+    name: t("homepage_homepage.tsx.hoang_thi_linh"),
     role: "UX Designer",
-    content:
-      "Các câu hỏi phỏng vấn thiết kế rất khó tìm trên mạng. InBlue AI cung cấp những câu hỏi thực tế từ các công ty lớn và hướng dẫn cách trả lời hiệu quả. Tuyệt vời!",
+    content: t("homepage_homepage.tsx.cac_cau_hoi_phong_van_thiet_ke_rat_kho_t"),
     avatar: null,
     rating: 4,
   },
   {
     id: 6,
-    name: "Ngô Đình Khoa",
+    name: t("homepage_homepage.tsx.ngo_inh_khoa"),
     role: "Backend Engineer",
-    content:
-      "AI Interview giúp tôi tự tin hơn rất nhiều khi trả lời các câu hỏi behavioral. Feedback chi tiết và gợi ý cải thiện rất hữu ích. Đã recommend cho tất cả bạn bè!",
+    content: t("homepage_homepage.tsx.ai_interview_giup_toi_tu_tin_hon_rat_nhi"),
     avatar: null,
     rating: 5,
   },
