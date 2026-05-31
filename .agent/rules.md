@@ -1,6 +1,6 @@
 # EXE_FE — AI Agent Rules
 
-> **@LAST_SYNCED: 2026-05-30**
+> **@LAST_SYNCED: 2026-05-31**
 > Canonical source of truth for all AI agents working on this codebase.
 > Mirrored to `.github/copilot-instructions.md` for GitHub Copilot compatibility.
 
@@ -10,7 +10,7 @@
 
 These rules are **non-negotiable**. Violating any of them is a blocking error.
 
-- **Vietnamese UI**: All user-facing strings (labels, buttons, toasts, placeholders, validation messages) **must** be in Vietnamese.
+- **Internationalization (i18n)**: All user-facing strings (labels, buttons, toasts, placeholders, validation messages) **must** use `t()` from `react-i18next`. Do not use hardcoded strings in `.tsx` files.
 - **Never edit `schema-from-be.d.ts`**: This file is auto-generated from the backend OpenAPI spec. Regenerate it with `pnpm generate-schema`.
 - **Quality gate**: Run `pnpm validate` before finishing any task. This chains `format:check → lint → typecheck → build`. All steps **must** pass.
 - **Path alias**: `@/` maps to `src/` (configured in `vite.config.ts` and `tsconfig.json`). Always use `@/` imports, never relative `../../`.
@@ -53,6 +53,7 @@ const isLoggedIn = !!token; // check login ← unnecessary
 **Active libraries**:
 | Purpose | Library |
 |---|---|
+| Internationalization (i18n) | `i18next` + `react-i18next` |
 | Dates | `date-fns` |
 | Charts | `recharts` |
 | Video calls | `@daily-co/daily-js` |
@@ -306,6 +307,12 @@ All hooks are barrel-exported from `hooks/index.ts`.
 ### Data Transforms
 
 `lib/transforms.ts` contains FE↔BE conversion functions (`transformUserCreateRequest`, `transformSessionCreateRequest`, etc.). Use these when form data shape differs from API schema.
+
+### Internationalization (i18n)
+
+All text is translated using `i18next`. The instance is configured in `src/lib/i18n.ts`.
+Translation files are stored in `src/locales/en.json` and `src/locales/vi.json`.
+Use the `useTranslation` hook inside React components, and `i18n.t()` directly for non-component utilities. Language toggle is handled via `LanguageToggle` component.
 
 ### Video Call Architecture
 
@@ -625,4 +632,5 @@ When a trigger is detected:
 
 | Date       | Change                                                                                                                                                                                                                                                                                                                                                                        |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-05-31 | Migrated the application to full dynamic i18n using `react-i18next`. Extracted all hardcoded Vietnamese text into JSON locales (`en.json`, `vi.json`). Updated Hard Rules to require `t()` translations for all new user-facing strings. Added `i18next` to active stack and defined new i18n architecture under §5.                                                          |
 | 2026-05-30 | Initial creation. Distilled from legacy `.github/copilot-instructions.md` and `docs/error.md`. Corrected inaccurate documentation about Axios JWT handling. Removed dead Homepage Redesign section. Added Auto-Evolution Protocol, Operational Playbook, comprehensive Anti-Patterns, and strict Naming Conventions. Flagged `formik` and `react-icons` as dead dependencies. |
