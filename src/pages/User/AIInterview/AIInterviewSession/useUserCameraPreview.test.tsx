@@ -5,7 +5,9 @@ const t = i18n.t.bind(i18n);
 
 import { useUserCameraPreview } from "./useUserCameraPreview";
 
-const warningMock = vi.fn();
+const { warningMock } = vi.hoisted(() => ({
+  warningMock: vi.fn(),
+}));
 
 vi.mock("sonner", () => ({
   toast: {

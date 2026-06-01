@@ -16,14 +16,14 @@ describe("PaymentMethodDialog", () => {
     expect(screen.getByText(t("compShared.currentBalanceSyncing"))).toBeInTheDocument();
     expect(screen.getByText(t("compShared.unableToSynchronizeWalletBalance"))).toBeInTheDocument();
     const walletRadio = screen.getByRole("radio", {
-      name: /Thanh toán bằng ví/i,
+      name: new RegExp(t("compShared.payWithWallet"), "i"),
     });
     expect(walletRadio).toBeDisabled();
   });
   it(t("compShared.allowsYouToChooseA"), () => {
     render(<PaymentMethodDialog {...baseProps} walletBalance={150000} defaultMethod="wallet" />);
     const walletRadio = screen.getByRole("radio", {
-      name: /Thanh toán bằng ví/i,
+      name: new RegExp(t("compShared.payWithWallet"), "i"),
     });
     expect(walletRadio).toBeEnabled();
     expect(screen.queryByText(t("compShared.walletBalanceIsNotEnough"))).not.toBeInTheDocument();
@@ -31,7 +31,7 @@ describe("PaymentMethodDialog", () => {
   it(t("compShared.blockWalletMethodWhenBalance"), () => {
     render(<PaymentMethodDialog {...baseProps} walletBalance={10000} defaultMethod="wallet" />);
     const walletRadio = screen.getByRole("radio", {
-      name: /Thanh toán bằng ví/i,
+      name: new RegExp(t("compShared.payWithWallet"), "i"),
     });
     expect(walletRadio).toBeDisabled();
     expect(screen.getByText(t("compShared.walletBalanceIsNotEnough"))).toBeInTheDocument();
