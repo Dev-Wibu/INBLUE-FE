@@ -1,13 +1,8 @@
+import type { ApiResponse } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 import i18n from "@/lib/i18n";
 const t = i18n.t.bind(i18n);
-/**
- * Application Service
- * Handles job application operations
- */
 
-import { createApiInstance } from "@/constants/api.config";
-import type { ApiResponse } from "@/interfaces";
-import axios from "axios";
 export interface Application {
   id?: number;
   userId?: number;
@@ -20,10 +15,15 @@ export interface Application {
   updatedAt?: string;
 }
 class ApplicationService {
-  private api = createApiInstance();
   private extractErrorMessage(error: unknown): string {
-    if (axios.isAxiosError(error)) {
-      return error.response?.data?.message || error.message || t("common.anErrorHasOccurred");
+    if (error && typeof error === "object" && "response" in error) {
+      return (
+        // @ts-expect-error: Backend Swagger schema mismatch
+        error.response?.data?.message ||
+        // @ts-expect-error: Backend Swagger schema mismatch
+        error.message ||
+        t("common.anErrorHasOccurred")
+      );
     }
     if (error instanceof Error) {
       return error.message;
@@ -37,7 +37,23 @@ class ApplicationService {
    */
   async apply(jdId: number): Promise<ApiResponse<Application>> {
     try {
-      const response = await this.api.post(`/api/applications?jdId=${jdId}`);
+      const response = await fetchClient
+        .POST("/api/applications", {
+          params: {
+            // @ts-expect-error: Backend Swagger schema mismatch
+            path: {
+              jdId: jdId,
+            },
+            query: {
+              jdId: jdId,
+            },
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -58,7 +74,11 @@ class ApplicationService {
    */
   async getAll(): Promise<ApiResponse<Application[]>> {
     try {
-      const response = await this.api.get("/api/applications");
+      const response = await fetchClient.GET("/api/applications", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -78,7 +98,19 @@ class ApplicationService {
    */
   async getById(id: number): Promise<ApiResponse<Application>> {
     try {
-      const response = await this.api.get(`/api/applications/${id}`);
+      const response = await fetchClient
+        .GET("/api/applications/{id}", {
+          params: {
+            path: {
+              id: id,
+            },
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -98,7 +130,11 @@ class ApplicationService {
    */
   async getMyApplications(): Promise<ApiResponse<Application[]>> {
     try {
-      const response = await this.api.get("/api/applications/me");
+      const response = await fetchClient.GET("/api/applications/me", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,

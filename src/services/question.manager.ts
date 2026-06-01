@@ -5,8 +5,10 @@ const t = i18n.t.bind(i18n);
  * Handles question bank operations
  */
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
+
 export interface PracticeQuestion {
   questionId?: number;
   title?: string;
@@ -22,8 +24,6 @@ export interface PracticeQuestion {
   hint?: string;
 }
 export class QuestionManager implements BaseManager<PracticeQuestion> {
-  private api = createApiInstance();
-
   /**
    * Get all question sets
    */
@@ -31,9 +31,16 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
     params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<PracticeQuestion> | PracticeQuestion[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.QUESTION.LIST, {
-        params,
-      });
+      const response = await fetchClient
+        .GET("/api/practice-questions", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -54,9 +61,15 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
       const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION.DETAIL, {
         id,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -79,7 +92,13 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
         questionId: 0,
         ...data,
       };
-      const response = await this.api.post(API_ENDPOINTS.QUESTION.CREATE, questionPayload);
+      const response = await fetchClient
+        .POST("/api/practice-questions", { body: questionPayload })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -108,7 +127,13 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
         ...data,
       };
       // Use POST for updates (backend treats questionId > 0 as update)
-      const response = await this.api.post(API_ENDPOINTS.QUESTION.UPDATE, questionPayload);
+      const response = await fetchClient
+        .POST("/api/practice-questions", { body: questionPayload })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -130,7 +155,12 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
       const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION.DELETE, {
         id,
       });
-      await this.api.delete(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      await fetchClient.DELETE(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
       };
@@ -150,12 +180,19 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
     params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<PracticeQuestion> | PracticeQuestion[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.QUESTION.LIST, {
-        params: {
-          ...params,
-          search: searchText,
-        },
-      });
+      const response = await fetchClient
+        .GET("/api/practice-questions", {
+          params: {
+            ...params,
+            // @ts-expect-error: Backend Swagger schema mismatch
+            search: searchText,
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -173,12 +210,19 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
    */
   async getRandomByLevel(level: string, count: number): Promise<ApiResponse<PracticeQuestion[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.QUESTION.RANDOM_BY_LEVEL, {
-        params: {
-          level,
-          count,
-        },
-      });
+      const response = await fetchClient
+        .GET("/api/practice-questions/random-by-level", {
+          params: {
+            // @ts-expect-error: Backend Swagger schema mismatch
+            level,
+            count,
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -200,12 +244,19 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
     level: string
   ): Promise<ApiResponse<PracticeQuestion[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.QUESTION.BY_CATEGORY_LEVEL, {
-        params: {
-          categoryId,
-          level,
-        },
-      });
+      const response = await fetchClient
+        .GET("/api/practice-questions/by-category-level", {
+          params: {
+            // @ts-expect-error: Backend Swagger schema mismatch
+            categoryId,
+            level,
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -225,7 +276,13 @@ export class QuestionManager implements BaseManager<PracticeQuestion> {
    */
   async saveAll(questions: PracticeQuestion[]): Promise<ApiResponse<PracticeQuestion[]>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.QUESTION.SAVE_ALL, questions);
+      const response = await fetchClient
+        .POST("/api/practice-questions/save-all", { body: questions })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,

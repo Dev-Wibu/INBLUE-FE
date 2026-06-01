@@ -5,10 +5,12 @@ const t = i18n.t.bind(i18n);
  * Handles AI chat session and message operations
  */
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type { ApiResponse, PaginatedResponse, PaginationParams } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 import { formatTime } from "@/lib/formatting";
 import type { components } from "../../schema-from-be";
+
 export interface ChatSession {
   id: number;
   title: string;
@@ -44,7 +46,6 @@ const formatTimeForUi = (timestamp?: string): string => {
   return formatTime(timestamp, timestamp);
 };
 export class ChatManager {
-  private api = createApiInstance();
   private mapBackendMessageToUi(raw: BackendChatMessage | Record<string, unknown>): ChatMessage {
     const idValue = raw.id;
     const id =
@@ -79,11 +80,22 @@ export class ChatManager {
     params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<ChatSession> | ChatSession[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.CHAT.SESSIONS, {
-        params,
-      });
+      const response = await fetchClient
+        .GET(
+          // @ts-expect-error: Backend Swagger schema mismatch
+          "/api/chat/sessions",
+          {
+            params,
+          }
+        )
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -102,9 +114,15 @@ export class ChatManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.CHAT.SESSION_DETAIL, {
         id: sessionId,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -126,9 +144,19 @@ export class ChatManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.CHAT.MESSAGES, {
         id: sessionId,
       });
-      const response = await this.api.get(endpoint, {
-        params,
-      });
+      const response = await fetchClient
+        .GET(
+          // @ts-expect-error: Backend Swagger schema mismatch
+          endpoint,
+          {
+            params,
+          }
+        )
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       const normalizedMessages = this.normalizeMessagesFromApi(response.data);
       if (normalizedMessages.length > 0) {
         return {
@@ -138,6 +166,7 @@ export class ChatManager {
       }
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -161,9 +190,15 @@ export class ChatManager {
         currentFullId,
         recipientFullId: recipientFullId,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data, // Trả về data thô để MessengerPage tự xử lý logic Me/Other
       };
     } catch (error) {
@@ -180,12 +215,19 @@ export class ChatManager {
    */
   async getContacts(myId: number, role: string): Promise<ApiResponse<number[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.MESSAGES.CONTACTS, {
-        params: {
-          myId,
-          role: role.toUpperCase(),
-        },
-      });
+      const response = await fetchClient
+        .GET("/api/messages/contacts", {
+          params: {
+            // @ts-expect-error: Backend Swagger schema mismatch
+            myId,
+            role: role.toUpperCase(),
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -204,7 +246,11 @@ export class ChatManager {
    */
   async getAllMentors(): Promise<ApiResponse<BackendMentor[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.MENTOR.LIST);
+      const response = await fetchClient.GET("/api/mentors", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -226,9 +272,15 @@ export class ChatManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR.DETAIL, {
         id,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -249,9 +301,15 @@ export class ChatManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.USER.FIND_BY_ID, {
         userId,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -270,11 +328,24 @@ export class ChatManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.CHAT.SEND_MESSAGE, {
         id: sessionId,
       });
-      const response = await this.api.post(endpoint, {
-        content,
-      });
+      const response = await fetchClient
+        .POST(
+          // @ts-expect-error: Backend Swagger schema mismatch
+          endpoint,
+          {
+            body: {
+              content,
+            },
+          }
+        )
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -293,9 +364,15 @@ export class ChatManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.CHAT.AI_RESPONSE, {
         id: sessionId,
       });
-      const response = await this.api.post(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.POST(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -311,11 +388,24 @@ export class ChatManager {
    */
   async createChatSession(title: string): Promise<ApiResponse<ChatSession>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.CHAT.CREATE_SESSION, {
-        title,
-      });
+      const response = await fetchClient
+        .POST(
+          // @ts-expect-error: Backend Swagger schema mismatch
+          "/api/chat/sessions",
+          {
+            body: {
+              title,
+            },
+          }
+        )
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -334,7 +424,12 @@ export class ChatManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.CHAT.SESSION_DETAIL, {
         id: sessionId,
       });
-      await this.api.post(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      await fetchClient.POST(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
       };

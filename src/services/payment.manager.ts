@@ -2,7 +2,8 @@ import type { ApiResponse, PaymentEntity, PaymentPurpose } from "@/interfaces";
 import i18n from "@/lib/i18n";
 const t = i18n.t.bind(i18n);
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 
 const normalizeAmount = (value: number): number => {
@@ -38,8 +39,6 @@ export interface PaymentCreateOptions {
 const DEFAULT_PAYMENT_PURPOSE: PaymentPurpose = "BUY_MEMBERSHIP";
 
 export class PaymentManager {
-  private api = createApiInstance();
-
   private extractCheckoutUrl(payload: unknown): string | undefined {
     if (typeof payload === "string") {
       return asNonEmptyString(payload);
@@ -69,7 +68,11 @@ export class PaymentManager {
 
   async getAll(): Promise<ApiResponse<PaymentEntity[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.PAYMENTS.LIST);
+      const response = await fetchClient.GET("/api/payments", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -85,9 +88,15 @@ export class PaymentManager {
   async getById(id: number): Promise<ApiResponse<PaymentEntity>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.PAYMENTS.DETAIL, { id });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -100,7 +109,11 @@ export class PaymentManager {
 
   async getByTransactionCode(transactionCode: string): Promise<ApiResponse<PaymentEntity>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.PAYMENTS.LIST);
+      const response = await fetchClient.GET("/api/payments", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       const list = Array.isArray(response.data) ? (response.data as PaymentEntity[]) : [];
       const item = list.find((payment) => payment.transactionCode === transactionCode);
 
@@ -139,13 +152,20 @@ export class PaymentManager {
     }
 
     try {
-      const response = await this.api.post(API_ENDPOINTS.PAYMENTS.PAY, null, {
-        params: {
-          amount: normalizedAmount,
-          userId: Number(userId),
-          paymentPurpose,
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/payments/pay", {
+          params: {
+            // @ts-expect-error: Backend Swagger schema mismatch
+            amount: normalizedAmount,
+            userId: Number(userId),
+            paymentPurpose,
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
 
       const checkoutUrl = this.extractCheckoutUrl(response.data);
       if (checkoutUrl) {
@@ -169,11 +189,18 @@ export class PaymentManager {
 
   async cancel(transactionCode: string): Promise<ApiResponse<PaymentEntity>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.PAYMENTS.CANCEL, {
-        params: {
-          transactionCode,
-        },
-      });
+      const response = await fetchClient
+        .GET("/api/payments/cancel", {
+          params: {
+            // @ts-expect-error: Backend Swagger schema mismatch
+            transactionCode,
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
 
       return {
         success: true,

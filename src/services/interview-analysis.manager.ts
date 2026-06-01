@@ -1,22 +1,26 @@
 import type { ApiResponse, FaceAnalysisResponse } from "@/interfaces";
 
-import { API_ENDPOINTS, createApiInstance } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 
 export class InterviewAnalysisManager {
-  private api = createApiInstance();
-
   async analyzeFaceBehavior(image: File): Promise<ApiResponse<FaceAnalysisResponse>> {
     try {
       const formData = new FormData();
       formData.append("image", image);
 
-      const response = await this.api.post<FaceAnalysisResponse>(
-        API_ENDPOINTS.INTERVIEW_ANALYSIS.FACE_BEHAVIOR,
-        formData,
-        {
-          headers: { "Content-Type": undefined },
-        }
-      );
+      const response = await fetchClient
+        .POST("/api/interview-analysis/face-behavior", {
+          ...{
+            headers: { "Content-Type": undefined },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {

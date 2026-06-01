@@ -7,7 +7,8 @@ const t = i18n.t.bind(i18n);
 
 import type { ApiResponse, User, UserSubscriptionResponse } from "@/interfaces";
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 
 type UserProfile = Record<string, unknown>;
 type UserSettings = Record<string, unknown>;
@@ -15,14 +16,19 @@ type Wallet = Record<string, unknown>;
 type Transaction = Record<string, unknown>;
 
 export class UserManager {
-  private api = createApiInstance();
-
   /**
    * Get user profile
    */
   async getProfile(): Promise<ApiResponse<UserProfile>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.USER.PROFILE);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .GET("/api/users/me", {})
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -40,7 +46,14 @@ export class UserManager {
    */
   async updateProfile(data: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.USER.UPDATE_PROFILE, data);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .POST("/api/users/me", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -61,12 +74,25 @@ export class UserManager {
     newPassword: string
   ): Promise<ApiResponse<{ message: string }>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.USER.UPDATE_PASSWORD, {
-        currentPassword,
-        newPassword,
-      });
+      const response = await fetchClient
+        .POST(
+          // @ts-expect-error: Backend Swagger schema mismatch
+          "/api/users/password",
+          {
+            body: {
+              currentPassword,
+              newPassword,
+            },
+          }
+        )
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -82,7 +108,14 @@ export class UserManager {
    */
   async getSettings(): Promise<ApiResponse<UserSettings>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.USER.SETTINGS);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .GET("/api/users/settings", {})
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -100,7 +133,14 @@ export class UserManager {
    */
   async updateSettings(settings: Partial<UserSettings>): Promise<ApiResponse<UserSettings>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.USER.SETTINGS, settings);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .POST("/api/users/settings", { body: settings })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -118,7 +158,14 @@ export class UserManager {
    */
   async getWallet(): Promise<ApiResponse<Wallet>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.USER.WALLET);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .GET("/api/users/wallet", {})
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -136,7 +183,14 @@ export class UserManager {
    */
   async depositToWallet(amount: number): Promise<ApiResponse<Transaction>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.USER.DEPOSIT, { amount });
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .POST("/api/users/wallet/deposit", { body: { amount } })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -158,15 +212,26 @@ export class UserManager {
     planId: number | string
   ): Promise<ApiResponse<User>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.USER.SUBSCRIBE, null, {
-        params: {
-          userId: Number(userId),
-          planId: Number(planId),
-        },
-      });
+      const response = await fetchClient
+        .POST(
+          // @ts-expect-error: Backend Swagger schema mismatch
+          "/api/users/subscribe",
+          {
+            params: {
+              userId: Number(userId),
+              planId: Number(planId),
+            },
+          }
+        )
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
 
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -188,9 +253,15 @@ export class UserManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.USER.ACTIVE_SUBSCRIPTION, {
         userId: Number(userId),
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {

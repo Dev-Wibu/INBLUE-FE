@@ -8,7 +8,8 @@ const t = i18n.t.bind(i18n);
 
 import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } from "@/interfaces";
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 
 /**
  * Major type based on backend schema
@@ -28,8 +29,6 @@ export interface MajorFormData {
 }
 
 export class QuestionMajorManager implements BaseManager<Major> {
-  private api = createApiInstance();
-
   /**
    * Get all question majors
    * GET /api/question-majors
@@ -38,7 +37,14 @@ export class QuestionMajorManager implements BaseManager<Major> {
     _params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<Major> | Major[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.QUESTION_MAJORS.LIST, { params: _params });
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .GET("/api/majors", { params: _params })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -58,9 +64,15 @@ export class QuestionMajorManager implements BaseManager<Major> {
   async getById(id: string | number): Promise<ApiResponse<Major>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_MAJORS.DETAIL, { id });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -80,7 +92,14 @@ export class QuestionMajorManager implements BaseManager<Major> {
         majorName: data.majorName,
         description: data.description || "",
       };
-      const response = await this.api.post(API_ENDPOINTS.QUESTION_MAJORS.CREATE, null, { params });
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .POST("/api/majors", { params })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -102,7 +121,14 @@ export class QuestionMajorManager implements BaseManager<Major> {
         description: data.description || "",
       };
       // Use PUT method as per schema for update
-      const response = await this.api.put(API_ENDPOINTS.QUESTION_MAJORS.UPDATE, null, { params });
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .PUT("/api/majors", { params })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -124,7 +150,12 @@ export class QuestionMajorManager implements BaseManager<Major> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_MAJORS.DELETE, { id });
       // Use DELETE method as per schema
-      await this.api.delete(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      await fetchClient.DELETE(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
       };

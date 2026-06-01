@@ -7,7 +7,8 @@ import type {
   UpdateJobDescriptionRequest,
 } from "@/interfaces";
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 
 export interface JobDescriptionSearchParams {
   keyword?: string;
@@ -18,11 +19,13 @@ export interface JobDescriptionSearchParams {
 }
 
 export class JobDescriptionManager {
-  private api = createApiInstance();
-
   async getAll(): Promise<ApiResponse<JobDescription[]>> {
     try {
-      const response = await this.api.get<JobDescription[]>(API_ENDPOINTS.JOB_DESCRIPTIONS.LIST);
+      const response = await fetchClient.GET("/api/job-descriptions", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -35,7 +38,13 @@ export class JobDescriptionManager {
   async getById(id: number | string): Promise<ApiResponse<JobDescription>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.JOB_DESCRIPTIONS.DETAIL, { id });
-      const response = await this.api.get<JobDescription>(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -47,9 +56,16 @@ export class JobDescriptionManager {
 
   async search(params?: JobDescriptionSearchParams): Promise<ApiResponse<JobDescription[]>> {
     try {
-      const response = await this.api.get<JobDescription[]>(API_ENDPOINTS.JOB_DESCRIPTIONS.SEARCH, {
-        params,
-      });
+      const response = await fetchClient
+        .GET("/api/job-descriptions/search", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -62,7 +78,13 @@ export class JobDescriptionManager {
   async getByCompanyId(companyId: number | string): Promise<ApiResponse<JobDescription[]>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.JOB_DESCRIPTIONS.BY_COMPANY, { companyId });
-      const response = await this.api.get<JobDescription[]>(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -75,10 +97,13 @@ export class JobDescriptionManager {
 
   async create(data: CreateJobDescriptionRequest): Promise<ApiResponse<JobDescription>> {
     try {
-      const response = await this.api.post<JobDescription>(
-        API_ENDPOINTS.JOB_DESCRIPTIONS.CREATE,
-        data
-      );
+      const response = await fetchClient
+        .POST("/api/job-descriptions", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -90,10 +115,13 @@ export class JobDescriptionManager {
 
   async update(data: UpdateJobDescriptionRequest): Promise<ApiResponse<JobDescription>> {
     try {
-      const response = await this.api.put<JobDescription>(
-        API_ENDPOINTS.JOB_DESCRIPTIONS.UPDATE,
-        data
-      );
+      const response = await fetchClient
+        .PUT("/api/job-descriptions", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -106,7 +134,13 @@ export class JobDescriptionManager {
   async softDelete(id: number | string): Promise<ApiResponse<Record<string, string>>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.JOB_DESCRIPTIONS.SOFT_DELETE, { id });
-      const response = await this.api.delete<Record<string, string>>(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.DELETE(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {

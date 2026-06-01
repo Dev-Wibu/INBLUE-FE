@@ -2,7 +2,8 @@ import type { ApiResponse, PaymentPurpose, TransactionEntity } from "@/interface
 import i18n from "@/lib/i18n";
 const t = i18n.t.bind(i18n);
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 
 const normalizeAmount = (value: number): number => {
@@ -69,8 +70,6 @@ export interface TransferOutResult {
 }
 
 export class TransactionManager {
-  private api = createApiInstance();
-
   private extractRedirectUrl(payload: unknown): string | undefined {
     if (typeof payload === "string") {
       return asNonEmptyString(payload);
@@ -170,7 +169,11 @@ export class TransactionManager {
 
   async getAll(): Promise<ApiResponse<TransactionEntity[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.TRANSACTIONS.LIST);
+      const response = await fetchClient.GET("/api/transactions", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -188,9 +191,15 @@ export class TransactionManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.TRANSACTIONS.DETAIL, {
         transactionCode,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -206,9 +215,15 @@ export class TransactionManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.TRANSACTIONS.BY_USER, {
         userId: Number(userId),
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -229,12 +244,19 @@ export class TransactionManager {
     }
 
     try {
-      const response = await this.api.post(API_ENDPOINTS.TRANSACTIONS.TRANSFER_IN, null, {
-        params: {
-          amount: normalizedAmount,
-          userId: Number(userId),
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/transactions/transfer-in", {
+          params: {
+            // @ts-expect-error: Backend Swagger schema mismatch
+            amount: normalizedAmount,
+            userId: Number(userId),
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
 
       const redirectUrl = this.extractRedirectUrl(response.data);
       if (!redirectUrl) {
@@ -270,13 +292,20 @@ export class TransactionManager {
     }
 
     try {
-      const response = await this.api.post(API_ENDPOINTS.TRANSACTIONS.TRANSFER_OUT, null, {
-        params: {
-          amount: normalizedAmount,
-          userId: Number(userId),
-          paymentPurpose,
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/transactions/transfer-out", {
+          params: {
+            // @ts-expect-error: Backend Swagger schema mismatch
+            amount: normalizedAmount,
+            userId: Number(userId),
+            paymentPurpose,
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
 
       const transferOutResult = this.extractTransferOutResult(response.data);
       if (!transferOutResult) {
@@ -303,7 +332,12 @@ export class TransactionManager {
       const endpoint = buildEndpoint(API_ENDPOINTS.TRANSACTIONS.DELETE, {
         transactionCode,
       });
-      await this.api.delete(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      await fetchClient.DELETE(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
       };

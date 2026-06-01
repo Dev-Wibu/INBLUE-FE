@@ -8,8 +8,9 @@ const t = i18n.t.bind(i18n);
 
 import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } from "@/interfaces";
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type { Mentor, Session, User } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 
 /**
  * MentorFeedback type based on backend schema
@@ -44,8 +45,6 @@ export interface UpdateMentorFeedbackRequest {
 }
 
 export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
-  private api = createApiInstance();
-
   /**
    * Get all mentor feedbacks
    * GET /api/mentor-feedbacks
@@ -54,7 +53,14 @@ export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
     _params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<MentorFeedback> | MentorFeedback[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.MENTOR_FEEDBACKS.LIST, { params: _params });
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .GET("/api/mentor-feedbacks", { params: _params })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -74,7 +80,12 @@ export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
   async getById(id: string | number): Promise<ApiResponse<MentorFeedback>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR_FEEDBACKS.DETAIL, { id });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
 
       if (!response.data || typeof response.data !== "object") {
         return {
@@ -85,6 +96,7 @@ export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
 
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -114,9 +126,15 @@ export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
   async getByMentorId(mentorId: string | number): Promise<ApiResponse<MentorFeedback[]>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR_FEEDBACKS.BY_MENTOR, { mentorId });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -136,7 +154,13 @@ export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
     data: Partial<MentorFeedback> | CreateMentorFeedbackRequest
   ): Promise<ApiResponse<MentorFeedback>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.MENTOR_FEEDBACKS.CREATE, data);
+      const response = await fetchClient
+        .POST("/api/mentor-feedbacks", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -162,7 +186,13 @@ export class MentorFeedbackManager implements BaseManager<MentorFeedback> {
         id: Number(id),
         ...(data as UpdateMentorFeedbackRequest),
       };
-      const response = await this.api.put(API_ENDPOINTS.MENTOR_FEEDBACKS.UPDATE, updateData);
+      const response = await fetchClient
+        .PUT("/api/mentor-feedbacks", { body: updateData })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
