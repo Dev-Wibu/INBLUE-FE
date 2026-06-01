@@ -21,7 +21,7 @@ describe("TransactionHistoryTab", () => {
       />
     );
     expect(screen.getByText(t("common.buyPackages"))).toBeInTheDocument();
-    expect(screen.getByText("Hoàn thành")).toBeInTheDocument();
+    expect(screen.getByText(t("general.completed"))).toBeInTheDocument();
   });
   it("does not show purpose badge when purpose is unknown", () => {
     render(
