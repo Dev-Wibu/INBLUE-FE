@@ -4,3 +4,7 @@
  */
 
 import "@testing-library/jest-dom";
+
+if (typeof globalThis.DOMMatrix === "undefined") {
+  (globalThis as unknown as { DOMMatrix: unknown }).DOMMatrix = class DOMMatrix {} as unknown;
+}

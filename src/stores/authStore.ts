@@ -45,6 +45,14 @@ export const useAuthStore = create<AuthState>()(
       clearAuth: () => {
         // Remove current user ID from localStorage on logout
         localStorage.removeItem("current-user-id");
+
+        // Disconnect socket using dynamic import to avoid circular dependency
+        import("@/services/socket.manager")
+          .then(({ socketService }) => {
+            socketService.disconnect();
+          })
+          .catch(console.error);
+
         set({
           isLoggedIn: false,
           user: null,
