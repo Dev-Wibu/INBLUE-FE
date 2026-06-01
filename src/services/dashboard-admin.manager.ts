@@ -5,18 +5,20 @@ const t = i18n.t.bind(i18n);
  * Handles dashboard-specific API operations for administrators
  */
 
-import { API_ENDPOINTS, createApiInstance } from "@/constants/api.config";
 import type { ApiResponse, PaymentEntity, TransactionEntity } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 
 export class DashboardAdminManager {
-  private api = createApiInstance();
-
   /**
    * Get total number of users
    */
   async getTotalUsers(): Promise<ApiResponse<number>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.DASHBOARD.TOTAL_USER);
+      const response = await fetchClient.GET("/api/dashboard/total-user", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -34,7 +36,11 @@ export class DashboardAdminManager {
    */
   async getTotalMentors(): Promise<ApiResponse<number>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.DASHBOARD.TOTAL_MENTOR);
+      const response = await fetchClient.GET("/api/dashboard/total-mentor", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -52,7 +58,11 @@ export class DashboardAdminManager {
    */
   async getTotalIncome(): Promise<ApiResponse<PaymentEntity[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.DASHBOARD.TOTAL_INCOME);
+      const response = await fetchClient.GET("/api/dashboard/total-income", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -70,7 +80,11 @@ export class DashboardAdminManager {
    */
   async getTotalSessions(): Promise<ApiResponse<number>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.DASHBOARD.TOTAL_SESSION);
+      const response = await fetchClient.GET("/api/dashboard/total-session", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -88,7 +102,13 @@ export class DashboardAdminManager {
    */
   async getTotalTransactions(): Promise<ApiResponse<TransactionEntity[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.DASHBOARD.TOTAL_TRANSACTION);
+      const response = await fetchClient
+        .GET("/api/dashboard/total-transaction", {})
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,

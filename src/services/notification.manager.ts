@@ -6,9 +6,10 @@ const t = i18n.t.bind(i18n);
  * Based on schema-from-be.d.ts API specification
  */
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } from "@/interfaces";
 import type { User } from "@/interfaces/schema.types";
+import { fetchClient } from "@/lib/api";
 
 /**
  * Notification type based on backend schema
@@ -32,8 +33,6 @@ export interface NotificationFormData {
 }
 
 export class NotificationManager implements BaseManager<Notification> {
-  private api = createApiInstance();
-
   /**
    * Get all notifications for a user
    * GET /api/notifications/{id}
@@ -58,9 +57,15 @@ export class NotificationManager implements BaseManager<Notification> {
   async getByUserId(userId: string | number): Promise<ApiResponse<Notification[]>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.NOTIFICATIONS.LIST, { id: userId });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -101,7 +106,13 @@ export class NotificationManager implements BaseManager<Notification> {
         isRead: data.isRead ?? false,
         createAt: data.createAt ?? new Date().toISOString(),
       };
-      const response = await this.api.post(API_ENDPOINTS.NOTIFICATIONS.CREATE, notificationPayload);
+      const response = await fetchClient
+        .POST("/api/notifications", { body: notificationPayload })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -121,9 +132,15 @@ export class NotificationManager implements BaseManager<Notification> {
   async markAsRead(notificationId: string | number): Promise<ApiResponse<boolean>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.NOTIFICATIONS.CHECK_READ, { notificationId });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {

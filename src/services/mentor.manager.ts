@@ -6,7 +6,7 @@ const t = i18n.t.bind(i18n);
  * Based on schema-from-be.d.ts API specification
  */
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type {
   ApiResponse,
   BaseManager,
@@ -14,8 +14,8 @@ import type {
   PaginatedResponse,
   PaginationParams,
   SchemaMentorInfo,
-  SchemaMentorResponse,
 } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 
 // Re-export Mentor type for convenience
 export type { Mentor } from "@/interfaces";
@@ -43,8 +43,6 @@ function createEmptyFilePlaceholder(): File {
   });
 }
 export class MentorManager implements BaseManager<Mentor> {
-  private api = createApiInstance();
-
   /**
    * Get all mentors
    * GET /api/mentors
@@ -53,11 +51,16 @@ export class MentorManager implements BaseManager<Mentor> {
     _params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<Mentor> | Mentor[]>> {
     try {
-      const response = await this.api.get<
-        SchemaMentorResponse[] | PaginatedResponse<SchemaMentorResponse>
-      >(API_ENDPOINTS.MENTOR.LIST, {
-        params: _params,
-      });
+      const response = await fetchClient
+        .GET("/api/mentors", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params: _params,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data as PaginatedResponse<Mentor> | Mentor[],
@@ -79,7 +82,12 @@ export class MentorManager implements BaseManager<Mentor> {
       const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR.DETAIL, {
         id,
       });
-      const response = await this.api.get<SchemaMentorResponse>(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data as Mentor,
@@ -181,11 +189,21 @@ export class MentorManager implements BaseManager<Mentor> {
       }
 
       // Remove default Content-Type header to let axios set multipart boundary automatically
-      const response = await this.api.post(API_ENDPOINTS.MENTOR.CREATE, formData, {
-        headers: {
-          "Content-Type": undefined,
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/mentors", {
+          ...{
+            headers: {
+              "Content-Type": undefined,
+            },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -278,11 +296,21 @@ export class MentorManager implements BaseManager<Mentor> {
       // Backend schema comment: "dùng chung cho create và update mentor"
       // The difference: create has no id, update includes id in the JSON data
       // Remove Content-Type to let axios set multipart boundary automatically
-      const response = await this.api.post(API_ENDPOINTS.MENTOR.CREATE, formData, {
-        headers: {
-          "Content-Type": undefined,
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/mentors", {
+          ...{
+            headers: {
+              "Content-Type": undefined,
+            },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -315,9 +343,15 @@ export class MentorManager implements BaseManager<Mentor> {
       const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR.TOGGLE, {
         id: _id,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {

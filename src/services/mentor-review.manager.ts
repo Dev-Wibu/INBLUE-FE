@@ -6,7 +6,7 @@ const t = i18n.t.bind(i18n);
  * Based on schema-from-be.d.ts API specification
  */
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type {
   ApiResponse,
   BaseManager,
@@ -16,6 +16,7 @@ import type {
   Session,
   User,
 } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 
 /**
  * MentorReview type based on backend schema
@@ -67,8 +68,6 @@ export interface UpdateMentorReviewRequest {
   improve?: string;
 }
 export class MentorReviewManager implements BaseManager<MentorReview> {
-  private api = createApiInstance();
-
   /**
    * Get all mentor reviews
    * GET /api/mentor-reviews
@@ -77,9 +76,16 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
     _params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<MentorReview> | MentorReview[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.MENTOR_REVIEWS.LIST, {
-        params: _params,
-      });
+      const response = await fetchClient
+        .GET("/api/mentor-reviews", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params: _params,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -101,7 +107,12 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
       const endpoint = buildEndpoint(API_ENDPOINTS.MENTOR_REVIEWS.DETAIL, {
         id,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       if (!response.data || typeof response.data !== "object") {
         return {
           success: false,
@@ -110,6 +121,7 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
       }
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -147,7 +159,13 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
     data: Partial<MentorReview> | CreateMentorReviewRequest
   ): Promise<ApiResponse<MentorReview>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.MENTOR_REVIEWS.CREATE, data);
+      const response = await fetchClient
+        .POST("/api/mentor-reviews", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -173,7 +191,13 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
         id: Number(id),
         ...(data as UpdateMentorReviewRequest),
       };
-      const response = await this.api.put(API_ENDPOINTS.MENTOR_REVIEWS.UPDATE, updateData);
+      const response = await fetchClient
+        .PUT("/api/mentor-reviews", { body: updateData })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,

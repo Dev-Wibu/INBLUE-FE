@@ -14,7 +14,8 @@ import type {
   Session,
 } from "@/interfaces";
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import { formatToVietnamISOString } from "@/lib/utils";
 
@@ -158,8 +159,6 @@ export interface JoinSessionRequest {
 }
 
 export class SessionManager implements BaseManager<Session> {
-  private api = createApiInstance();
-
   private buildPaidUpdatePayload(sessionData: Session, transactionCode?: string): Session | null {
     const userId = toPositiveInteger(sessionData.userId);
     const mentorId = toPositiveInteger(sessionData.userId2);
@@ -191,7 +190,14 @@ export class SessionManager implements BaseManager<Session> {
     _params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<Session> | Session[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.SESSIONS.LIST, { params: _params });
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .GET("/api/sessions", { params: _params })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -211,9 +217,15 @@ export class SessionManager implements BaseManager<Session> {
   async getById(id: string | number): Promise<ApiResponse<Session>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.SESSIONS.DETAIL, { id });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -231,9 +243,15 @@ export class SessionManager implements BaseManager<Session> {
   async getByUserId(userId: string | number): Promise<ApiResponse<Session[]>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.SESSIONS.BY_USER, { userId });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -336,9 +354,16 @@ export class SessionManager implements BaseManager<Session> {
         };
       }
 
-      const response = await this.api.post(API_ENDPOINTS.SESSIONS.CREATE, requestData);
+      const response = await fetchClient
+        .POST("/api/sessions/create-session", { body: requestData })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -356,7 +381,13 @@ export class SessionManager implements BaseManager<Session> {
   async update(_id: string | number, _data: Partial<Session>): Promise<ApiResponse<Session>> {
     try {
       const sessionData: Session = { ..._data, id: Number(_id) };
-      const response = await this.api.put(API_ENDPOINTS.SESSIONS.UPDATE, sessionData);
+      const response = await fetchClient
+        .PUT("/api/sessions", { body: sessionData })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -375,7 +406,11 @@ export class SessionManager implements BaseManager<Session> {
   async delete(_id: string | number): Promise<ApiResponse<void>> {
     try {
       const sessionData: Session = { id: Number(_id), status: "CANCELED" };
-      await this.api.put(API_ENDPOINTS.SESSIONS.UPDATE, sessionData);
+      await fetchClient.PUT("/api/sessions", { body: sessionData }).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
       };
@@ -393,7 +428,11 @@ export class SessionManager implements BaseManager<Session> {
    */
   async joinSession(data: JoinSessionRequest): Promise<ApiResponse<void>> {
     try {
-      await this.api.post(API_ENDPOINTS.SESSIONS.JOIN, data);
+      await fetchClient.POST("/api/sessions/join-session", { body: data }).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
       };
@@ -411,9 +450,16 @@ export class SessionManager implements BaseManager<Session> {
    */
   async updateStatus(sessionId: number, isApproved: boolean): Promise<ApiResponse<void>> {
     try {
-      await this.api.get(API_ENDPOINTS.SESSIONS.UPDATE_STATUS, {
-        params: { sessionId, isApproved },
-      });
+      await fetchClient
+        .GET("/api/sessions/update-status", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params: { sessionId, isApproved },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
       };
@@ -431,9 +477,16 @@ export class SessionManager implements BaseManager<Session> {
    */
   async makePayment(sessionId: number): Promise<ApiResponse<string>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.SESSIONS.MAKE_PAYMENT, {
-        params: { sessionId },
-      });
+      const response = await fetchClient
+        .GET("/api/sessions/make-payment", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params: { sessionId },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
 
       const checkoutUrl = extractCheckoutUrl(response.data);
       if (!checkoutUrl || !isLikelyHttpUrl(checkoutUrl)) {
@@ -490,7 +543,11 @@ export class SessionManager implements BaseManager<Session> {
     }
 
     try {
-      const response = await this.api.put(API_ENDPOINTS.SESSIONS.UPDATE, payload);
+      const response = await fetchClient.PUT("/api/sessions", { body: payload }).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,

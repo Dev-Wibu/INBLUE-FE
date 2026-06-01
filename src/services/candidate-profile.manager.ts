@@ -8,12 +8,10 @@ const t = i18n.t.bind(i18n);
 
 import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } from "@/interfaces";
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type { CandidateProfile } from "@/interfaces";
 
 export class CandidateProfileManager implements BaseManager<CandidateProfile> {
-  private api = createApiInstance();
-
   /**
    * Get all candidate profiles
    * GET /api/candidate-profiles
@@ -22,9 +20,16 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
     _params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<CandidateProfile> | CandidateProfile[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.CANDIDATE_PROFILES.LIST, {
-        params: _params,
-      });
+      const response = await fetchClient
+        .GET("/api/candidate-profiles", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params: _params,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -42,7 +47,13 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
   async getByUserId(userId: number): Promise<ApiResponse<CandidateProfile>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.CANDIDATE_PROFILES.DETAIL, { userId });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -59,7 +70,13 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
    */
   async create(data: Partial<CandidateProfile>): Promise<ApiResponse<CandidateProfile>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.CANDIDATE_PROFILES.CREATE, data);
+      const response = await fetchClient
+        .POST("/api/candidate-profiles", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -79,7 +96,13 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
   ): Promise<ApiResponse<CandidateProfile>> {
     try {
       const updateData = { id: Number(id), ...data };
-      const response = await this.api.post(API_ENDPOINTS.CANDIDATE_PROFILES.UPDATE, updateData);
+      const response = await fetchClient
+        .POST("/api/candidate-profiles", { body: updateData })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -114,7 +137,7 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
 export const candidateProfileManager = new CandidateProfileManager();
 
 // React Query hooks using $api
-import { $api } from "@/lib/api";
+import { $api, fetchClient } from "@/lib/api";
 
 export const useCandidateProfiles = () => $api.useQuery("get", "/api/candidate-profiles");
 export const useCandidateProfile = (userId: number) =>

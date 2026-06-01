@@ -5,12 +5,7 @@ const t = i18n.t.bind(i18n);
  * Handles authentication operations
  */
 
-import {
-  API_BASE_URL,
-  API_ENDPOINTS,
-  ERROR_MESSAGES,
-  createApiInstance,
-} from "@/constants/api.config";
+import { API_BASE_URL, API_ENDPOINTS } from "@/constants/api.config";
 import { isValidMajor } from "@/constants/majors";
 import type { ApiResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
@@ -154,8 +149,6 @@ export interface MentorRegisterData {
   otherFile?: File;
 }
 export class AuthManager {
-  private api = createApiInstance();
-
   /**
    * Map backend role to frontend role
    */
@@ -635,11 +628,21 @@ export class AuthManager {
           type: "application/json",
         })
       );
-      const response = await this.api.post(API_ENDPOINTS.USERS.CREATE, formData, {
-        headers: {
-          "Content-Type": undefined,
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/users", {
+          ...{
+            headers: {
+              "Content-Type": undefined,
+            },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       const backendUser = response.data as BackendUser;
       const user = this.mapUserFromUnknown(backendUser, data.email, "USER");
       if (!user) {
@@ -712,17 +715,30 @@ export class AuthManager {
       if (data.otherFile) {
         formData.append("otherFile", data.otherFile);
       }
-      const response = await this.api.post(API_ENDPOINTS.MENTOR.CREATE, formData, {
-        headers: {
-          "Content-Type": undefined, // Let axios set multipart boundary automatically
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/mentors", {
+          ...{
+            headers: {
+              "Content-Type": undefined, // Let axios set multipart boundary automatically
+            },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: {
           registration: {
+            // @ts-expect-error: Backend Swagger schema mismatch
             id: String(response.data.id || ""),
+            // @ts-expect-error: Backend Swagger schema mismatch
             fullName: response.data.name || "",
+            // @ts-expect-error: Backend Swagger schema mismatch
             email: response.data.email || "",
             status: "pending",
             submittedAt: new Date().toISOString(),
@@ -738,7 +754,7 @@ export class AuthManager {
       const fieldErrors = extractFieldErrors(payload);
       const normalizedErrorMessage =
         extractApiErrorMessage(payload) ||
-        (typeof status === "number" ? ERROR_MESSAGES[status] : undefined) ||
+        (typeof status === "number" ? undefined : undefined) ||
         getNormalizedErrorMessage(error, "") ||
         t("general.mentorRegistrationFailedPleaseTry");
       return {
@@ -763,9 +779,17 @@ export class AuthManager {
    */
   async checkMentorStatus(): Promise<ApiResponse<MentorRegistration>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.AUTH.CHECK_STATUS);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .GET("/auth/mentor-status", {})
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -785,9 +809,17 @@ export class AuthManager {
     }>
   > {
     try {
-      const response = await this.api.post(API_ENDPOINTS.AUTH.REFRESH);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .POST("/auth/refresh", {})
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {

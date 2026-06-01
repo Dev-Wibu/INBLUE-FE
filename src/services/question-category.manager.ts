@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import i18n from "@/lib/i18n";
 const t = i18n.t.bind(i18n);
 /**
@@ -6,8 +7,9 @@ const t = i18n.t.bind(i18n);
  * Based on schema-from-be.d.ts API specification
  */
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 
 /**
  * QuestionCategory type based on backend schema (QuestionLesson)
@@ -29,12 +31,10 @@ export interface QuestionCategoryFormData {
   urlTutorial?: string;
 }
 export class QuestionCategoryManager implements BaseManager<QuestionCategory> {
-  private api = createApiInstance();
-
   /**
    * Map backend QuestionLesson (lessonName) to frontend QuestionCategory (categoryName)
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   private mapFromBackend(data: any): QuestionCategory {
     return {
       id: data.id,
@@ -44,7 +44,6 @@ export class QuestionCategoryManager implements BaseManager<QuestionCategory> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private mapArrayFromBackend(data: any[]): QuestionCategory[] {
     return data.map((item) => this.mapFromBackend(item));
   }
@@ -57,9 +56,16 @@ export class QuestionCategoryManager implements BaseManager<QuestionCategory> {
     _params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<QuestionCategory> | QuestionCategory[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.QUESTION_CATEGORIES.LIST, {
-        params: _params,
-      });
+      const response = await fetchClient
+        .GET("/api/question-categories", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params: _params,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       const raw = response.data;
       const mapped = Array.isArray(raw) ? this.mapArrayFromBackend(raw) : raw;
       return {
@@ -83,7 +89,12 @@ export class QuestionCategoryManager implements BaseManager<QuestionCategory> {
       const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_CATEGORIES.DETAIL, {
         id,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: this.mapFromBackend(response.data),
@@ -113,10 +124,13 @@ export class QuestionCategoryManager implements BaseManager<QuestionCategory> {
         description: data.description,
         urlTutorial: data.urlTutorial ?? "",
       };
-      const response = await this.api.post(
-        API_ENDPOINTS.QUESTION_CATEGORIES.CREATE,
-        categoryPayload
-      );
+      const response = await fetchClient
+        .POST("/api/question-categories", { body: categoryPayload })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: this.mapFromBackend(response.data),
@@ -145,7 +159,13 @@ export class QuestionCategoryManager implements BaseManager<QuestionCategory> {
         description: data.description,
         urlTutorial: data.urlTutorial,
       };
-      const response = await this.api.put(API_ENDPOINTS.QUESTION_CATEGORIES.UPDATE, categoryData);
+      const response = await fetchClient
+        .PUT("/api/question-categories", { body: categoryData })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: this.mapFromBackend(response.data),
@@ -169,7 +189,12 @@ export class QuestionCategoryManager implements BaseManager<QuestionCategory> {
         id,
       });
       // Use DELETE method as per schema
-      await this.api.delete(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      await fetchClient.DELETE(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
       };

@@ -6,7 +6,7 @@ const t = i18n.t.bind(i18n);
  * Based on schema-from-be.d.ts API specification
  */
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { normalizeMajor } from "@/constants/majors";
 import type {
   ApiResponse,
@@ -17,6 +17,7 @@ import type {
   SchemaUserInfo,
   User,
 } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 
 // Re-export User type for convenience
 export type { User } from "@/interfaces";
@@ -66,17 +67,22 @@ function createEmptyFilePlaceholder(): File {
   });
 }
 export class UsersAdminManager implements BaseManager<User> {
-  private api = createApiInstance();
-
   /**
    * Get all users
    * GET /api/users
    */
   async getAll(_params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<User> | User[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.USERS.LIST, {
-        params: _params,
-      });
+      const response = await fetchClient
+        .GET("/api/users", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params: _params,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -98,9 +104,15 @@ export class UsersAdminManager implements BaseManager<User> {
       const endpoint = buildEndpoint(API_ENDPOINTS.USERS.DETAIL, {
         id,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -189,11 +201,21 @@ export class UsersAdminManager implements BaseManager<User> {
       }
 
       // Remove default Content-Type header to let axios set multipart boundary automatically
-      const response = await this.api.post(API_ENDPOINTS.USERS.CREATE, formData, {
-        headers: {
-          "Content-Type": undefined,
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/users", {
+          ...{
+            headers: {
+              "Content-Type": undefined,
+            },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -288,11 +310,21 @@ export class UsersAdminManager implements BaseManager<User> {
       }
 
       // Remove default Content-Type header to let axios set multipart boundary automatically
-      const response = await this.api.post(API_ENDPOINTS.USERS.UPDATE, formData, {
-        headers: {
-          "Content-Type": undefined,
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/users", {
+          ...{
+            headers: {
+              "Content-Type": undefined,
+            },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,
@@ -373,11 +405,21 @@ export class UsersAdminManager implements BaseManager<User> {
       // Send placeholder files to avoid backend NullPointerException
       formData.append("avatar", createEmptyFilePlaceholder());
       formData.append("cvFile", createEmptyFilePlaceholder());
-      await this.api.post(API_ENDPOINTS.USERS.UPDATE, formData, {
-        headers: {
-          "Content-Type": undefined,
-        },
-      });
+      await fetchClient
+        .POST("/api/users", {
+          ...{
+            headers: {
+              "Content-Type": undefined,
+            },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
       };
@@ -456,11 +498,21 @@ export class UsersAdminManager implements BaseManager<User> {
         })
       );
       formData.append("cvFile", cvFile);
-      const response = await this.api.post(API_ENDPOINTS.USERS.UPLOAD_CV, formData, {
-        headers: {
-          "Content-Type": undefined,
-        },
-      });
+      const response = await fetchClient
+        .POST("/api/users/upload-cv", {
+          ...{
+            headers: {
+              "Content-Type": undefined,
+            },
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: formData,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
         data: response.data,

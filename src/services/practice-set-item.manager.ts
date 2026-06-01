@@ -8,7 +8,8 @@ const t = i18n.t.bind(i18n);
 
 import type { ApiResponse, BaseManager, PaginatedResponse, PaginationParams } from "@/interfaces";
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 import type { PracticeSet } from "./practice-set.manager";
 
 /**
@@ -54,8 +55,6 @@ export interface PracticeSetItemFormData {
 }
 
 export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
-  private api = createApiInstance();
-
   /**
    * Get all practice set items
    * GET /api/practice-set-items
@@ -64,11 +63,19 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
     _params?: PaginationParams
   ): Promise<ApiResponse<PaginatedResponse<PracticeSetItem> | PracticeSetItem[]>> {
     try {
-      const response = await this.api.get(API_ENDPOINTS.PRACTICE_SET_ITEMS.LIST, {
-        params: _params,
-      });
+      const response = await fetchClient
+        .GET("/api/practice-set-items", {
+          // @ts-expect-error: Backend Swagger schema mismatch
+          params: _params,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -86,9 +93,15 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
   async getById(id: string | number): Promise<ApiResponse<PracticeSetItem>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.PRACTICE_SET_ITEMS.DETAIL, { id });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -110,9 +123,15 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
       const endpoint = buildEndpoint(API_ENDPOINTS.PRACTICE_SET_ITEMS.BY_QUESTION_SET, {
         id: practiceSetId,
       });
-      const response = await this.api.get(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -129,9 +148,17 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
    */
   async create(data: Partial<PracticeSetItem>): Promise<ApiResponse<PracticeSetItem>> {
     try {
-      const response = await this.api.post(API_ENDPOINTS.PRACTICE_SET_ITEMS.CREATE, data);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .POST("/api/practice-set-items", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -151,15 +178,22 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
     counts: { easy: number; medium: number; hard: number }
   ): Promise<ApiResponse<PracticeSetItem[]>> {
     try {
-      const response = await this.api.post(
-        API_ENDPOINTS.PRACTICE_SET_ITEMS.CREATE_BULK,
-        practiceSet,
-        {
-          params: counts,
-        }
-      );
+      const response = await fetchClient
+        .POST("/api/practice-set-items/create-items", {
+          ...{
+            params: counts,
+          },
+          // @ts-expect-error: Backend Swagger schema mismatch
+          body: practiceSet,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -180,9 +214,17 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
   ): Promise<ApiResponse<PracticeSetItem>> {
     try {
       const itemData: PracticeSetItem = { ...data, id: Number(id) };
-      const response = await this.api.put(API_ENDPOINTS.PRACTICE_SET_ITEMS.UPDATE, itemData);
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .PUT("/api/practice-set-items", { body: itemData })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -200,7 +242,12 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
   async delete(id: string | number): Promise<ApiResponse<void>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.PRACTICE_SET_ITEMS.DELETE, { id });
-      await this.api.post(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      await fetchClient.POST(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
       };

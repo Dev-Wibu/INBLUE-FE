@@ -7,16 +7,20 @@ import type {
   JobRequirementData,
 } from "@/interfaces";
 
-import { API_ENDPOINTS, buildEndpoint, createApiInstance } from "@/constants/api.config";
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
+import { fetchClient } from "@/lib/api";
 
 export class InterviewSessionManager {
-  private api = createApiInstance();
-
   async getConfigOptions(): Promise<ApiResponse<InterviewConfigOptions>> {
     try {
-      const response = await this.api.get<InterviewConfigOptions>(
-        API_ENDPOINTS.INTERVIEW_SESSIONS.CONFIG_OPTIONS
-      );
+      const response = await fetchClient
+        .GET("/api/interview-sessions/config-options", {})
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -28,10 +32,13 @@ export class InterviewSessionManager {
 
   async generateJobRequirement(jobDescription: string): Promise<ApiResponse<JobRequirementData>> {
     try {
-      const response = await this.api.post<JobRequirementData>(
-        API_ENDPOINTS.INTERVIEW_SESSIONS.GENERATE_JOB_REQUIREMENT,
-        jobDescription
-      );
+      const response = await fetchClient
+        .POST("/api/interview-sessions/generate-job-requirement", { body: jobDescription })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -43,7 +50,13 @@ export class InterviewSessionManager {
 
   async createSession(data: InterviewSetupRequest): Promise<ApiResponse<string>> {
     try {
-      const response = await this.api.post<string>(API_ENDPOINTS.INTERVIEW_SESSIONS.CREATE, data);
+      const response = await fetchClient
+        .POST("/api/interview-sessions/create-session", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -56,7 +69,13 @@ export class InterviewSessionManager {
   async getById(sessionId: number | string): Promise<ApiResponse<InterviewSession>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.INTERVIEW_SESSIONS.DETAIL, { sessionId });
-      const response = await this.api.get<InterviewSession>(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -69,7 +88,13 @@ export class InterviewSessionManager {
   async getByUserId(userId: number | string): Promise<ApiResponse<InterviewSession[]>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.INTERVIEW_SESSIONS.USER_SESSIONS, { userId });
-      const response = await this.api.get<InterviewSession[]>(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -82,7 +107,13 @@ export class InterviewSessionManager {
   async getFromCache(sessionKey: string): Promise<ApiResponse<InterviewSessionRedis>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.INTERVIEW_SESSIONS.CACHE, { sessionKey });
-      const response = await this.api.get<InterviewSessionRedis>(endpoint);
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {
