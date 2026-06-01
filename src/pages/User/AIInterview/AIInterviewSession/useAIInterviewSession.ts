@@ -541,14 +541,10 @@ export function useAIInterviewSession(isSessionActivated = false) {
           queryKey: ["get", "/api/interview-sessions/cache/{sessionKey}"],
         });
       } catch (err) {
-        const errMsg =
-          (
-            err as {
-              message?: string;
-            }
-          )?.message?.toLowerCase() ?? "";
-        const isExpiry =
-          errMsg.includes("not found") || errMsg.includes("expired") || errMsg.includes("404");
+        // Use HTTP status code instead of fragile string matching.
+        // AppApiError (thrown by the unified openapi-fetch middleware) carries .status.
+        const errStatus = (err as { status?: number })?.status;
+        const isExpiry = errStatus === 404 || errStatus === 410;
         if (isExpiry) {
           setSessionExpiredMidway(true);
           setInterviewFinished(true);
