@@ -44,7 +44,6 @@ import {
   Eye,
   LayoutGrid,
   MessageSquare,
-  PenSquare,
   Search,
   ThumbsUp,
   XCircle,
@@ -357,6 +356,7 @@ export function PostManagementPage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
+                {/* Edit functionality temporarily disabled on BE
                 {detailPost.postId && (
                   <Button
                     variant="outline"
@@ -369,7 +369,7 @@ export function PostManagementPage() {
                     <PenSquare className="mr-1 h-4 w-4" />
                     {t("general.edit")}
                   </Button>
-                )}
+                )} */}
                 {detailPost.postId && detailPost.status === "DRAFT" && (
                   <>
                     <Button
@@ -747,6 +747,7 @@ export function PostManagementPage() {
                               <Eye className="h-4 w-4" />
                             </Button>
                           )}
+                          {/* Edit functionality temporarily disabled on BE
                           {post.postId && (
                             <Button
                               size="sm"
@@ -759,7 +760,7 @@ export function PostManagementPage() {
                               }>
                               <PenSquare className="h-4 w-4" />
                             </Button>
-                          )}
+                          )} */}
                           {post.postId && post.status === "DRAFT" && (
                             <>
                               <Button
@@ -863,20 +864,6 @@ export function PostManagementPage() {
                           }>
                           <Eye className="mr-1 h-4 w-4" />
                           {t("common.detail")}
-                        </Button>
-                      )}
-                      {post.postId && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            setView({
-                              mode: "edit",
-                              postId: post.postId!,
-                            })
-                          }>
-                          <PenSquare className="mr-1 h-4 w-4" />
-                          {t("general.edit")}
                         </Button>
                       )}
                       {post.postId && post.status === "DRAFT" && (

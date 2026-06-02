@@ -135,7 +135,7 @@ export function UserManagementPage() {
     setFormData({
       name: user.name || "",
       email: user.email || "",
-      password: "",
+      password: user.password || "",
       university: user.university,
       major: user.major,
       isActive: user.isActive,

@@ -14,6 +14,7 @@ import { SpinnerBlock } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
+import { type Major, questionMajorManager } from "@/services/question-major.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -37,7 +38,23 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [majorId, setMajorId] = useState<number | undefined>(undefined);
+  const [majors, setMajors] = useState<Major[]>([]);
   const tagInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const fetchMajors = async () => {
+      const result = await questionMajorManager.getAll();
+      if (result.success && result.data) {
+        const list = (
+          Array.isArray(result.data)
+            ? result.data
+            : ((result.data as unknown as { data?: Major[] }).data ?? [])
+        ) as Major[];
+        setMajors(list);
+      }
+    };
+    void fetchMajors();
+  }, []);
   useEffect(() => {
     const fetchPost = async () => {
       setLoading(true);
@@ -49,6 +66,9 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
         setSummary(post.summary ?? "");
         setTags(post.tags ?? []);
         setStatus((post.status as PostStatus) ?? "DRAFT");
+        if (post.major?.id) {
+          setMajorId(post.major.id);
+        }
         if (post.coverImgUrl) {
           setCoverPreview(post.coverImgUrl);
         }
@@ -102,6 +122,7 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
         content: content.trim() || undefined,
         summary: summary.trim() || undefined,
         authorId: user?.id,
+        majorId,
         tags: finalTags.length > 0 ? finalTags : undefined,
         status,
         coverImg: coverFile ?? undefined,
@@ -172,6 +193,24 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
                   className="mt-2 max-h-48 rounded-md object-cover"
                 />
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t("common.specialized")}</Label>
+              <Select
+                value={majorId?.toString()}
+                onValueChange={(v) => setMajorId(v ? Number(v) : undefined)}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("common.chooseAMajor")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {majors.map((m) => (
+                    <SelectItem key={m.id} value={String(m.id)}>
+                      {m.majorName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
