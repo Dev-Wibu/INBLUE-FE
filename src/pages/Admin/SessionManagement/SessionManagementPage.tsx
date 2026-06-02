@@ -228,13 +228,14 @@ export function SessionManagementPage() {
       toast.error(t("adminSessionmanagement.unableToUpdateLesson"));
     }
   };
+
   const handleConfirmCancel = async () => {
     if (!selectedSession?.id) return;
     try {
       // Use update with full session data + CANCELED status to prevent PUT from nulling fields
-      const response = await sessionManager.update(selectedSession.id, {
+      const response = await sessionManager.update(selectedSession.id.toString(), {
         ...selectedSession,
-        status: "CANCELED",
+        status: "REJECTED",
       });
       if (response.success) {
         toast.success(t("adminSessionmanagement.lessonCanceledSuccessfully"));

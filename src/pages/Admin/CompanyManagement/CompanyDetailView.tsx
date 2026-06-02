@@ -212,6 +212,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
   const handleSubmitCreateJob = async () => {
     try {
       const response = await jobDescriptionManager.create({
+        companyId: Number(companyId),
         title: jobFormData.title?.trim() || undefined,
         description: jobFormData.description?.trim() || undefined,
         requirements: jobFormData.requirements?.trim() || undefined,
