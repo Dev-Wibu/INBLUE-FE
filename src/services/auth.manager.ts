@@ -418,7 +418,7 @@ export class AuthManager {
       normalizedMessage.includes("user not found") ||
       normalizedMessage.includes("not found with email")
     ) {
-      return "Sai email";
+      return t("general.wrongEmail");
     }
     if (
       httpStatus === 403 ||
