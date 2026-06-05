@@ -161,7 +161,7 @@ export function MentorSessionRoomPage() {
           <VideoCallProvider>
             <VideoCallRoom
               roomUrl={session.roomUrl!}
-              userName={displayName.trim() || user?.name || "Mentor"}
+              userName={displayName.trim() || user?.name || t("common.mentor")}
               onLeave={handleLeave}
               onError={handleError}
               onJoined={handleJoined}

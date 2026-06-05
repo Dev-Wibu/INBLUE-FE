@@ -268,7 +268,9 @@ export function StudentDetailPage() {
                               var_0: session.id,
                             })}
                         </p>
-                        <p className="text-sm text-slate-500">ID: {session.id}</p>
+                        <p className="text-sm text-slate-500">
+                          {t("common.id")}: {session.id}
+                        </p>
                       </div>
                       <Badge
                         variant={
@@ -499,7 +501,11 @@ export function StudentDetailPage() {
                             <p className="text-gray-600 dark:text-slate-300">
                               {e.major} — {e.degree}
                             </p>
-                            {e.gpa && <p>GPA: {e.gpa}</p>}
+                            {e.gpa && (
+                              <p>
+                                {t("common.gpa")}: {e.gpa}
+                              </p>
+                            )}
                             <p className="text-xs text-gray-400">
                               {e.start_date} — {e.end_date || t("common.present")}
                             </p>

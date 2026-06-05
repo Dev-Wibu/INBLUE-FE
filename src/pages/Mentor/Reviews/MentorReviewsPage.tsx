@@ -211,9 +211,9 @@ export function MentorReviewsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("common.allPoints")}</SelectItem>
-                <SelectItem value="high">5 sao</SelectItem>
-                <SelectItem value="medium">3-4 sao</SelectItem>
-                <SelectItem value="low">1-2 sao</SelectItem>
+                <SelectItem value="high">{t("common.fiveStars")}</SelectItem>
+                <SelectItem value="medium">{t("common.threeToFourStars")}</SelectItem>
+                <SelectItem value="low">{t("common.oneToTwoStars")}</SelectItem>
               </SelectContent>
             </Select>
           </div>

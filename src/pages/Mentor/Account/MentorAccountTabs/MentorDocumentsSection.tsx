@@ -45,13 +45,15 @@ export function MentorDocumentsSection({ mentorProfile }: MentorDocumentsSection
               <FileText className="h-5 w-5 text-rose-500" />
             </div>
             <div className="flex-1">
-              <Label className="text-sm text-gray-500 dark:text-slate-400">CCCD/CMND</Label>
+              <Label className="text-sm text-gray-500 dark:text-slate-400">
+                {t("common.identityCard")}
+              </Label>
               {mentorProfile.identityImg ? (
                 <button
                   type="button"
                   onClick={() => handleOpenDocument("CCCD/CMND", mentorProfile.identityImg || "")}
                   className="flex items-center gap-2 bg-transparent p-0 font-['Inter'] text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
-                  Xem file
+                  {t("common.viewFile")}
                   <ExternalLink className="h-3 w-3" />
                 </button>
               ) : (
@@ -78,7 +80,7 @@ export function MentorDocumentsSection({ mentorProfile }: MentorDocumentsSection
                     handleOpenDocument(t("common.degreecertificate"), mentorProfile.degreeImg || "")
                   }
                   className="flex items-center gap-2 bg-transparent p-0 font-['Inter'] text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
-                  Xem file
+                  {t("common.viewFile")}
                   <ExternalLink className="h-3 w-3" />
                 </button>
               ) : (
@@ -105,7 +107,7 @@ export function MentorDocumentsSection({ mentorProfile }: MentorDocumentsSection
                     handleOpenDocument(t("common.otherDocuments"), mentorProfile.otherFile || "")
                   }
                   className="flex items-center gap-2 bg-transparent p-0 font-['Inter'] text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">
-                  Xem file
+                  {t("common.viewFile")}
                   <ExternalLink className="h-3 w-3" />
                 </button>
               ) : (

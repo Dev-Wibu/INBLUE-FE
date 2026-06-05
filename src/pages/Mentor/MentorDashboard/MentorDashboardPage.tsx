@@ -13,7 +13,6 @@ import { useDashboardBreadcrumb } from "@/hooks/useDashboardBreadcrumb";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
@@ -37,7 +36,6 @@ import { MentorOverviewPage } from "../Overview";
 import { MentorReviewsPage } from "../Reviews";
 import { MentorSessionsPage } from "../Sessions";
 import { StudentsListPage } from "../Students";
-const t = i18n.t.bind(i18n);
 type TabType =
   | "homeFeed"
   | "overview"
@@ -172,23 +170,26 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
     ],
   },
 ];
-const MENTOR_SIDEBAR_LOGO = (
-  <>
-    <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
-    <div className="flex flex-col">
-      <span className="text-lg font-bold text-emerald-700 dark:text-white">INBLUE AI</span>
-      <span className="text-xs text-emerald-600 dark:text-emerald-400">
-        {t("mentorMentordashboard.mentorGate")}
-      </span>
-    </div>
-  </>
-);
 const MENTOR_SIDEBAR_LOGO_COLLAPSED = (
   <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
 );
 const DEFAULT_TAB: TabType = "overview";
 export function MentorDashboardPage() {
   const { t } = useTranslation();
+  const MENTOR_SIDEBAR_LOGO = useMemo(
+    () => (
+      <>
+        <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
+        <div className="flex flex-col">
+          <span className="text-lg font-bold text-emerald-700 dark:text-white">INBLUE AI</span>
+          <span className="text-xs text-emerald-600 dark:text-emerald-400">
+            {t("mentorMentordashboard.mentorGate")}
+          </span>
+        </div>
+      </>
+    ),
+    [t]
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
@@ -214,6 +215,7 @@ export function MentorDashboardPage() {
     role: "mentor",
     pathname: location.pathname,
     defaultTab: DEFAULT_TAB,
+    t,
   });
 
   // When on a nested outlet route, derive active tab from the pathname
