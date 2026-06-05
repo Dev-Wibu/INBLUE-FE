@@ -1,3 +1,4 @@
+import i18n from "@/lib/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -372,7 +373,7 @@ export const useHybridPageSize = ({
 
 // Utility function for generating page info text
 export const getPageInfo = (state: PaginationState): string => {
-  if (state.totalCount === 0) return "No items";
+  if (state.totalCount === 0) return i18n.t("common.noItems");
   const start = state.startIndex + 1;
   const end = state.endIndex + 1;
   return `${start}-${end} / ${state.totalCount}`;

@@ -36,7 +36,7 @@ export interface PaymentCreateOptions {
   paymentPurpose?: PaymentPurpose;
 }
 
-const DEFAULT_PAYMENT_PURPOSE: PaymentPurpose = "BUY_MEMBERSHIP";
+const DEFAULT_PAYMENT_PURPOSE: PaymentPurpose = "FULLY_PAID";
 
 export class PaymentManager {
   private extractCheckoutUrl(payload: unknown): string | undefined {

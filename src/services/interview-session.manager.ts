@@ -9,6 +9,7 @@ import type {
 
 import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { fetchClient } from "@/lib/api";
+import i18n from "@/lib/i18n";
 
 export class InterviewSessionManager {
   async getConfigOptions(): Promise<ApiResponse<InterviewConfigOptions>> {
@@ -25,7 +26,7 @@ export class InterviewSessionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tai cau hinh phong van",
+        error: error instanceof Error ? error.message : i18n.t("errors.cannotLoadInterviewConfig"),
       };
     }
   }
@@ -43,7 +44,8 @@ export class InterviewSessionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tao yeu cau cong viec",
+        error:
+          error instanceof Error ? error.message : i18n.t("errors.cannotGenerateJobRequirement"),
       };
     }
   }
@@ -61,7 +63,8 @@ export class InterviewSessionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tao phien phong van",
+        error:
+          error instanceof Error ? error.message : i18n.t("errors.cannotCreateInterviewSession"),
       };
     }
   }
@@ -80,7 +83,7 @@ export class InterviewSessionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tai phien phong van",
+        error: error instanceof Error ? error.message : i18n.t("errors.cannotLoadInterviewSession"),
       };
     }
   }
@@ -99,7 +102,8 @@ export class InterviewSessionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tai danh sach phong van",
+        error:
+          error instanceof Error ? error.message : i18n.t("errors.cannotLoadInterviewSessionList"),
       };
     }
   }
@@ -118,7 +122,10 @@ export class InterviewSessionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tai trang thai phong van",
+        error:
+          error instanceof Error
+            ? error.message
+            : i18n.t("errors.cannotLoadInterviewSessionStatus"),
       };
     }
   }

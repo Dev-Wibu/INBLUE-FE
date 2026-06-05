@@ -1,7 +1,6 @@
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, WifiOff } from "lucide-react";
-const t = i18n.t.bind(i18n);
+import { useTranslation } from "react-i18next";
 
 import { Spinner } from "@/components/ui/spinner";
 
@@ -11,31 +10,33 @@ interface SocketStatusBadgeProps {
   state: SocketConnectionState;
 }
 
-const STATE_CONFIG: Record<
-  SocketConnectionState,
-  {
-    label: string;
-    className: string;
-    Icon?: typeof CheckCircle2;
-  }
-> = {
-  connecting: {
-    label: t("compShared.connecting"),
-    className: "text-amber-600 dark:text-amber-400",
-  },
-  connected: {
-    label: t("compShared.stableConnection"),
-    className: "text-emerald-600 dark:text-emerald-400",
-    Icon: CheckCircle2,
-  },
-  disconnected: {
-    label: t("compShared.lostConnection"),
-    className: "text-red-600 dark:text-red-400",
-    Icon: WifiOff,
-  },
-};
-
 export function SocketStatusBadge({ state }: SocketStatusBadgeProps) {
+  const { t } = useTranslation();
+
+  const STATE_CONFIG: Record<
+    SocketConnectionState,
+    {
+      label: string;
+      className: string;
+      Icon?: typeof CheckCircle2;
+    }
+  > = {
+    connecting: {
+      label: t("compShared.connecting"),
+      className: "text-amber-600 dark:text-amber-400",
+    },
+    connected: {
+      label: t("compShared.stableConnection"),
+      className: "text-emerald-600 dark:text-emerald-400",
+      Icon: CheckCircle2,
+    },
+    disconnected: {
+      label: t("compShared.lostConnection"),
+      className: "text-red-600 dark:text-red-400",
+      Icon: WifiOff,
+    },
+  };
+
   const { label, className, Icon } = STATE_CONFIG[state];
 
   return (

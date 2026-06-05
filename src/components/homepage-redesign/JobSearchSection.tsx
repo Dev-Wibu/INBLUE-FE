@@ -147,10 +147,10 @@ export function JobSearchSection() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("general.all")}</SelectItem>
-                  <SelectItem value="intern">Intern</SelectItem>
-                  <SelectItem value="fresher">Fresher</SelectItem>
-                  <SelectItem value="junior">Junior</SelectItem>
-                  <SelectItem value="middle">Middle</SelectItem>
+                  <SelectItem value="intern">{t("common.intern")}</SelectItem>
+                  <SelectItem value="fresher">{t("common.fresher")}</SelectItem>
+                  <SelectItem value="junior">{t("common.junior")}</SelectItem>
+                  <SelectItem value="middle">{t("common.middle")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -231,7 +231,7 @@ export function JobSearchSection() {
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {isSearching ? (
-                t("adminUsermanagement.hide")
+                t("common.searching")
               ) : (
                 <>
                   {t("common.find")}{" "}
@@ -241,7 +241,7 @@ export function JobSearchSection() {
                   {t("common.location")}
                   {keyword && (
                     <span className="ml-1">
-                      cho "<span className="font-medium">{keyword}</span>"
+                      {t("common.for")} "<span className="font-medium">{keyword}</span>"
                     </span>
                   )}
                 </>
@@ -289,7 +289,7 @@ export function JobSearchSection() {
 
                       <div className="flex flex-wrap gap-2">
                         <Badge className={`text-xs ${getLevelBadgeColor(job.level)}`}>
-                          {job.level || t("sharedSpeechplaygroundpage.areNot")}
+                          {job.level || t("common.notDetermined")}
                         </Badge>
                         {job.skills?.slice(0, 2).map((skill, idx) => (
                           <Badge

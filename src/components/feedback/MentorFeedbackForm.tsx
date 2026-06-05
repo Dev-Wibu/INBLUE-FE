@@ -1,6 +1,4 @@
-import i18n from "@/lib/i18n";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 /**
  * MentorFeedbackForm Component
  * Form for creating/editing mentor feedback
@@ -24,26 +22,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
-
-const feedbackSchema = z
-  .object({
-    rating: z.number().min(0).max(5),
-    comment: z.string().optional(),
-  })
-  .superRefine((value, ctx) => {
-    const hasRating = (value.rating || 0) > 0;
-    const hasComment = Boolean(value.comment?.trim());
-
-    if (!hasRating && !hasComment) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: t("compFeedback.pleaseSelectNumberOfStars"),
-        path: ["rating"],
-      });
-    }
-  });
-
-type FeedbackFormData = z.infer<typeof feedbackSchema>;
 
 interface MentorFeedbackFormProps {
   sessionId: number;
@@ -71,6 +49,27 @@ export function MentorFeedbackForm({
   isLoading = false,
 }: MentorFeedbackFormProps) {
   const { t } = useTranslation();
+
+  const feedbackSchema = z
+    .object({
+      rating: z.number().min(0).max(5),
+      comment: z.string().optional(),
+    })
+    .superRefine((value, ctx) => {
+      const hasRating = (value.rating || 0) > 0;
+      const hasComment = Boolean(value.comment?.trim());
+
+      if (!hasRating && !hasComment) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t("compFeedback.pleaseSelectNumberOfStars"),
+          path: ["rating"],
+        });
+      }
+    });
+
+  type FeedbackFormData = z.infer<typeof feedbackSchema>;
+
   const form = useForm<FeedbackFormData>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {

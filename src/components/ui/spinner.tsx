@@ -1,6 +1,5 @@
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-const t = i18n.t.bind(i18n);
+import { useTranslation } from "react-i18next";
 
 type SpinnerSize = "xs" | "sm" | "md" | "lg" | "xl";
 type SpinnerTone = "primary" | "muted" | "success" | "danger" | "white";
@@ -32,13 +31,15 @@ function Spinner({
   size = "md",
   tone = "primary",
   role = "status",
-  "aria-label": ariaLabel = t("compUi.loading"),
+  "aria-label": ariaLabel,
   ...props
 }: SpinnerProps) {
+  const { t } = useTranslation();
+  const resolvedAriaLabel = ariaLabel ?? t("compUi.loading");
   return (
     <span
       role={role}
-      aria-label={ariaLabel}
+      aria-label={resolvedAriaLabel}
       className={cn(
         "orbit-spinner relative inline-flex shrink-0 align-middle",
         SPINNER_SIZE_CLASS[size],
@@ -77,7 +78,7 @@ function SpinnerInline({
         size={size}
         tone={tone}
         className={className}
-        aria-label={ariaLabel ?? label ?? t("compUi.loading")}
+        aria-label={ariaLabel ?? label ?? undefined}
         {...props}
       />
       {label ? <span className={labelClassName}>{label}</span> : null}
@@ -99,6 +100,7 @@ function SpinnerBlock({
   "aria-label": ariaLabel,
   ...props
 }: SpinnerBlockProps) {
+  const { t } = useTranslation();
   return (
     <div
       className={cn(
@@ -133,6 +135,7 @@ function SpinnerButton({
   "aria-label": ariaLabel,
   ...props
 }: SpinnerButtonProps) {
+  const { t } = useTranslation();
   return (
     <SpinnerInline
       size={size}

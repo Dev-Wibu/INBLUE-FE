@@ -48,7 +48,9 @@ export function PdfPreviewViewer({
   const token = useAuthStore((state) => state.token);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const [resolvedSourceKey, setResolvedSourceKey] = useState<string | null>(null);
-  const [resolvedFileName, setResolvedFileName] = useState(fileName ?? "tai-lieu.pdf");
+  const [resolvedFileName, setResolvedFileName] = useState(
+    fileName ?? `${t("mediaFileUtils.document")}.pdf`
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -140,10 +142,10 @@ export function PdfPreviewViewer({
   const canGoNext = totalPages > 0 && currentPage < totalPages;
   const pageStatusLabel = useMemo(() => {
     if (!totalPages) {
-      return "Trang -- / --";
+      return t("mediaFileUtils.pageStatus", { page: "--", total: "--" });
     }
-    return `Trang ${currentPage} / ${totalPages}`;
-  }, [currentPage, totalPages]);
+    return t("mediaFileUtils.pageStatus", { page: currentPage, total: totalPages });
+  }, [currentPage, totalPages, t]);
   const handleZoomIn = () => {
     setScale((currentScale) => Math.min(MAX_SCALE, +(currentScale + SCALE_STEP).toFixed(2)));
   };
@@ -188,7 +190,7 @@ export function PdfPreviewViewer({
                 size="icon"
                 onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                 disabled={!canGoNext}
-                aria-label="Trang sau">
+                aria-label={t("compShared.nextPageTitle")}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -221,7 +223,7 @@ export function PdfPreviewViewer({
                 variant="ghost"
                 size="icon"
                 onClick={() => setRotation((currentRotation) => (currentRotation + 90) % 360)}
-                aria-label="Xoay PDF">
+                aria-label={t("compShared.rotatePdf")}>
                 <RotateCw className="h-4 w-4" />
               </Button>
               <Button

@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { $api } from "@/lib/api";
+import i18n from "@/lib/i18n";
 import type { CreateCompanyPayload, UpdateCompanyPayload } from "@/services/company.manager";
 import { companyManager } from "@/services/company.manager";
 
@@ -19,7 +20,7 @@ export const useCreateCompany = () =>
     mutationFn: async (payload: CreateCompanyPayload) => {
       const response = await companyManager.create(payload);
       if (!response.success) {
-        throw new Error(response.error || "Khong the tao cong ty");
+        throw new Error(response.error || i18n.t("errors.cannotCreateCompany"));
       }
       return response.data;
     },
@@ -30,7 +31,7 @@ export const useUpdateCompany = () =>
     mutationFn: async (payload: UpdateCompanyPayload) => {
       const response = await companyManager.update(payload);
       if (!response.success) {
-        throw new Error(response.error || "Khong the cap nhat cong ty");
+        throw new Error(response.error || i18n.t("errors.cannotUpdateCompany"));
       }
       return response.data;
     },
@@ -41,7 +42,7 @@ export const useDeleteCompany = () =>
     mutationFn: async (id: number) => {
       const response = await companyManager.delete(id);
       if (!response.success) {
-        throw new Error(response.error || "Khong the xoa cong ty");
+        throw new Error(response.error || i18n.t("errors.cannotDeleteCompany"));
       }
       return true;
     },

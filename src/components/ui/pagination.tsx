@@ -1,9 +1,8 @@
 import { Button, buttonVariants } from "@/components/ui/button";
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import * as React from "react";
-const t = i18n.t.bind(i18n);
+import { useTranslation } from "react-i18next";
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
@@ -49,6 +48,7 @@ function PaginationLink({ className, isActive, size = "icon", ...props }: Pagina
   );
 }
 function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof PaginationLink>) {
+  const { t } = useTranslation();
   return (
     <PaginationLink
       aria-label={t("compUi.goToThePreviousPage")}
@@ -61,18 +61,20 @@ function PaginationPrevious({ className, ...props }: React.ComponentProps<typeof
   );
 }
 function PaginationNext({ className, ...props }: React.ComponentProps<typeof PaginationLink>) {
+  const { t } = useTranslation();
   return (
     <PaginationLink
       aria-label={t("compUi.goToTheNextPage")}
       size="default"
       className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
       {...props}>
-      <span className="hidden sm:block">Sau</span>
+      <span className="hidden sm:block">{t("common.next")}</span>
       <ChevronRightIcon />
     </PaginationLink>
   );
 }
 function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span">) {
+  const { t } = useTranslation();
   return (
     <span
       aria-hidden

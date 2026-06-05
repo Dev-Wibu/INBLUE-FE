@@ -9,6 +9,7 @@ import type {
 
 import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { fetchClient } from "@/lib/api";
+import i18n from "@/lib/i18n";
 
 export interface JobDescriptionSearchParams {
   keyword?: string;
@@ -30,7 +31,8 @@ export class JobDescriptionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tai danh sach mo ta cong viec",
+        error:
+          error instanceof Error ? error.message : i18n.t("errors.cannotLoadJobDescriptionList"),
       };
     }
   }
@@ -49,7 +51,7 @@ export class JobDescriptionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tai mo ta cong viec",
+        error: error instanceof Error ? error.message : i18n.t("errors.cannotLoadJobDescription"),
       };
     }
   }
@@ -70,7 +72,8 @@ export class JobDescriptionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tim kiem mo ta cong viec",
+        error:
+          error instanceof Error ? error.message : i18n.t("errors.cannotSearchJobDescriptions"),
       };
     }
   }
@@ -90,7 +93,9 @@ export class JobDescriptionManager {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "Khong the tai mo ta cong viec theo cong ty",
+          error instanceof Error
+            ? error.message
+            : i18n.t("errors.cannotLoadJobDescriptionsByCompany"),
       };
     }
   }
@@ -108,7 +113,7 @@ export class JobDescriptionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the tao mo ta cong viec",
+        error: error instanceof Error ? error.message : i18n.t("errors.cannotCreateJobDescription"),
       };
     }
   }
@@ -126,7 +131,7 @@ export class JobDescriptionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the cap nhat mo ta cong viec",
+        error: error instanceof Error ? error.message : i18n.t("errors.cannotUpdateJobDescription"),
       };
     }
   }
@@ -145,7 +150,7 @@ export class JobDescriptionManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the xoa mo ta cong viec",
+        error: error instanceof Error ? error.message : i18n.t("errors.cannotDeleteJobDescription"),
       };
     }
   }

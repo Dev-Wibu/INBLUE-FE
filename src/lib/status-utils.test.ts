@@ -7,8 +7,8 @@ describe("getSessionStatusBadge", () => {
     const badge = getSessionStatusBadge("completed");
     expect(badge.variant).toBe("default");
   });
-  it("returns fallback badge for unknown status", () => {
-    const badge = getSessionStatusBadge("unknown");
+  it("returns fallback badge for empty status", () => {
+    const badge = getSessionStatusBadge("");
     expect(badge.label).toBe(t("general.hollow"));
     expect(badge.variant).toBe("outline");
   });

@@ -1,5 +1,3 @@
-import i18n from "@/lib/i18n";
-const t = i18n.t.bind(i18n);
 /**
  * FeedbackList Component
  * Displays a list of mentor feedbacks
@@ -10,6 +8,7 @@ import { LoadingCardList } from "@/components/ui/loading-card";
 import { cn } from "@/lib/utils";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { MessageSquare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { FeedbackCard } from "./FeedbackCard";
 interface FeedbackListProps {
   feedbacks: MentorFeedback[];
@@ -33,10 +32,13 @@ export function FeedbackList({
   showActions = false,
   onEdit,
   onDelete,
-  emptyTitle = t("common.noResponseYet"),
-  emptyDescription = t("compFeedback.noResponsesHaveBeenSent"),
+  emptyTitle,
+  emptyDescription,
   className,
 }: FeedbackListProps) {
+  const { t } = useTranslation();
+  const resolvedEmptyTitle = emptyTitle ?? t("common.noResponseYet");
+  const resolvedEmptyDescription = emptyDescription ?? t("compFeedback.noResponsesHaveBeenSent");
   // Loading state
   if (isLoading) {
     return <LoadingCardList count={3} className={className} />;
@@ -47,8 +49,8 @@ export function FeedbackList({
     return (
       <EmptyState
         icon={MessageSquare}
-        title={emptyTitle}
-        description={emptyDescription}
+        title={resolvedEmptyTitle}
+        description={resolvedEmptyDescription}
         className={className}
       />
     );

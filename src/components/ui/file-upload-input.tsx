@@ -170,7 +170,7 @@ export function FileUploadInput({
             <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-lg">
               <img
                 src={displayUrl}
-                alt="Preview"
+                alt={t("common.preview")}
                 className="h-full w-full object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = "none";
@@ -224,7 +224,7 @@ export function FileUploadInput({
                   openUrlInNewTab(currentFileUrl);
                 }}
                 className="flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400">
-                <span>Xem file</span>
+                <span>{t("common.viewFile")}</span>
                 <ExternalLink className="h-3 w-3" />
               </a>
             ) : null}

@@ -14,22 +14,21 @@ import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { usePublishedFeed } from "@/hooks/usePublishedFeed";
 import { toTimestamp } from "@/lib/formatting";
-import i18n from "@/lib/i18n";
 import { useAuthStore } from "@/stores/authStore";
 import { PenSquare, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CreatePostModal } from "./CreatePostModal";
 import { PostFeedCard } from "./PostFeedCard";
-const t = i18n.t.bind(i18n);
 type SortBy = "newest" | "popular" | "recent_activity";
 interface BlogFeedPageProps {
   title?: string;
   description?: string;
 }
-export function BlogFeedPage({
-  title = t("common.home"),
-  description = t("common.updateTheLatestPostsFromTheCommuni"),
-}: BlogFeedPageProps) {
+export function BlogFeedPage({ title, description }: BlogFeedPageProps) {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t("common.home");
+  const resolvedDescription = description ?? t("common.updateTheLatestPostsFromTheCommuni");
   const { user } = useAuthStore();
   const { posts, hasMore, isLoading, isReloading, isFetchingMore, loadMore, refresh } =
     usePublishedFeed();
@@ -106,8 +105,8 @@ export function BlogFeedPage({
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <div>
-        <h1 className="text-xl font-bold">{title}</h1>
-        <p className="text-muted-foreground text-sm">{description}</p>
+        <h1 className="text-xl font-bold">{resolvedTitle}</h1>
+        <p className="text-muted-foreground text-sm">{resolvedDescription}</p>
       </div>
 
       {user ? (

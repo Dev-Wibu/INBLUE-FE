@@ -319,7 +319,7 @@ export function DeviceCheckDialog({
           {/* Device selection */}
           {videoDevices.length > 1 && (
             <div className="space-y-1">
-              <p className="text-xs text-slate-500">Camera:</p>
+              <p className="text-xs text-slate-500">{t("compVideoCall.camera")}:</p>
               <Select
                 value={selectedVideoId}
                 onValueChange={(v) => {
@@ -344,7 +344,7 @@ export function DeviceCheckDialog({
 
           {audioDevices.length > 1 && (
             <div className="space-y-1">
-              <p className="text-xs text-slate-500">Microphone:</p>
+              <p className="text-xs text-slate-500">{t("compVideoCall.microphone")}:</p>
               <Select
                 value={selectedAudioId}
                 onValueChange={(v) => {

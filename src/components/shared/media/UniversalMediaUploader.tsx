@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import i18n from "@/lib/i18n";
 import { useAuthStore } from "@/stores/authStore";
 import Uppy, { type UploadResult, type UppyFile } from "@uppy/core";
 import "@uppy/core/css/style.min.css";
@@ -9,9 +8,9 @@ import "@uppy/image-editor/css/style.min.css";
 import Dashboard from "@uppy/react/dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 import { useEffect, useId, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { UploadTransportMode, UploadedMediaFile } from "./types";
-const t = i18n.t.bind(i18n);
 type UploadMeta = Record<string, never>;
 type UploadBody = Record<string, unknown>;
 export interface UniversalMediaUploaderProps {
@@ -34,48 +33,6 @@ export interface UniversalMediaUploaderProps {
   onUploadComplete?: (_files: UploadedMediaFile[]) => void;
   onUploadError?: (_message: string) => void;
 }
-const UPLOADER_STRINGS = {
-  closeModal: t("compShared.closeTheFileDownloadWindow"),
-  addMoreFiles: t("compShared.addFiles"),
-  addingMoreFiles: t("compShared.addingFiles"),
-  dashboardWindowTitle: t("compShared.fileDownloadTable"),
-  dashboardTitle: t("compShared.fileDownloadTable"),
-  copyLinkToClipboardSuccess: t("compShared.linkCopied"),
-  copyLinkToClipboardFallback: t("compShared.copyTheLinkBelow"),
-  copyLink: t("compShared.copyLink"),
-  back: t("general.back"),
-  removeFile: t("compShared.deleteFiles"),
-  editFile: t("compShared.editFiles"),
-  saveChanges: t("common.saveChanges"),
-  myDevice: t("compShared.myDevice"),
-  dropHint: t("compShared.dropFilesHere"),
-  uploadComplete: t("compShared.uploadComplete"),
-  uploadPaused: t("compShared.paused"),
-  resumeUpload: t("general.continue"),
-  pauseUpload: t("compShared.pause"),
-  retryUpload: t("common.retry"),
-  cancelUpload: t("compShared.cancelUpload"),
-  xFilesSelected: {
-    0: t("compShared.smartCountSelectedFiles"),
-    1: t("compShared.smartCountSelectedFiles"),
-  },
-  uploadingXFiles: {
-    0: t("compShared.loadingSmartCountFile"),
-    1: t("compShared.loadingSmartCountFile"),
-  },
-  processingXFiles: {
-    0: t("compShared.processingSmartCountFile"),
-    1: t("compShared.processingSmartCountFile"),
-  },
-  addMore: t("common.more"),
-  save: t("general.save"),
-  cancel: t("general.cancel"),
-  dropPasteFiles: t("compShared.dropFilesOrBrowsefiles"),
-  dropPasteBoth: t("compShared.dropFilesOrBrowsefiles"),
-  browseFiles: t("compShared.selectFile"),
-  browseFolders: t("compShared.selectFolder"),
-  done: t("common.completed"),
-} as const;
 function mapUploadedFile(file: UppyFile<UploadMeta, UploadBody>): UploadedMediaFile {
   return {
     id: file.id,
@@ -132,8 +89,8 @@ async function runMockSingleUpload(
 }
 export function UniversalMediaUploader({
   id,
-  title = t("compShared.downloadPhotosAndDocuments"),
-  description = t("compShared.dragAndDropCopyPaste"),
+  title: titleProp,
+  description: descriptionProp,
   transportMode = "mock",
   endpoint,
   headers,
@@ -145,12 +102,60 @@ export function UniversalMediaUploader({
   sequentialUpload = true,
   bundleUpload = false,
   height = 460,
-  note = t("compShared.supportsPhotosAndPdfsYou"),
+  note: noteProp,
   onFilesChange,
   onUploadComplete,
   onUploadError,
 }: UniversalMediaUploaderProps) {
+  const { t } = useTranslation();
   const token = useAuthStore((state) => state.token);
+
+  const title = titleProp ?? t("compShared.downloadPhotosAndDocuments");
+  const description = descriptionProp ?? t("compShared.dragAndDropCopyPaste");
+  const note = noteProp ?? t("compShared.supportsPhotosAndPdfsYou");
+
+  const UPLOADER_STRINGS = {
+    closeModal: t("compShared.closeTheFileDownloadWindow"),
+    addMoreFiles: t("compShared.addFiles"),
+    addingMoreFiles: t("compShared.addingFiles"),
+    dashboardWindowTitle: t("compShared.fileDownloadTable"),
+    dashboardTitle: t("compShared.fileDownloadTable"),
+    copyLinkToClipboardSuccess: t("compShared.linkCopied"),
+    copyLinkToClipboardFallback: t("compShared.copyTheLinkBelow"),
+    copyLink: t("compShared.copyLink"),
+    back: t("general.back"),
+    removeFile: t("compShared.deleteFiles"),
+    editFile: t("compShared.editFiles"),
+    saveChanges: t("common.saveChanges"),
+    myDevice: t("compShared.myDevice"),
+    dropHint: t("compShared.dropFilesHere"),
+    uploadComplete: t("compShared.uploadComplete"),
+    uploadPaused: t("compShared.paused"),
+    resumeUpload: t("general.continue"),
+    pauseUpload: t("compShared.pause"),
+    retryUpload: t("common.retry"),
+    cancelUpload: t("compShared.cancelUpload"),
+    xFilesSelected: {
+      0: t("compShared.smartCountSelectedFiles"),
+      1: t("compShared.smartCountSelectedFiles"),
+    },
+    uploadingXFiles: {
+      0: t("compShared.loadingSmartCountFile"),
+      1: t("compShared.loadingSmartCountFile"),
+    },
+    processingXFiles: {
+      0: t("compShared.processingSmartCountFile"),
+      1: t("compShared.processingSmartCountFile"),
+    },
+    addMore: t("common.more"),
+    save: t("general.save"),
+    cancel: t("general.cancel"),
+    dropPasteFiles: t("compShared.dropFilesOrBrowsefiles"),
+    dropPasteBoth: t("compShared.dropFilesOrBrowsefiles"),
+    browseFiles: t("compShared.selectFile"),
+    browseFolders: t("compShared.selectFolder"),
+    done: t("common.completed"),
+  } as const;
   const reactId = useId();
   const uploaderId = id ?? `universal-media-uploader-${reactId.replace(/:/g, "")}`;
   const uppy = useMemo(() => {
@@ -214,6 +219,7 @@ export function UniversalMediaUploader({
     maxNumberOfFiles,
     multipartFieldName,
     sequentialUpload,
+    t,
     token,
     transportMode,
     uploaderId,

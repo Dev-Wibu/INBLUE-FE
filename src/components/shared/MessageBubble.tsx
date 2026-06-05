@@ -7,7 +7,6 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDateTime, parseBackendDate } from "@/lib/formatting";
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -23,7 +22,6 @@ import {
 } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 export type MessageDeliveryStatus = "queued" | "sending" | "retrying" | "sent" | "failed";
 interface MessageBubbleProps {
   id: string;
@@ -61,29 +59,12 @@ const highlightContent = (content: string, searchQuery: string): ReactNode => {
     return <Fragment key={`${part}-${index}`}>{part}</Fragment>;
   });
 };
-const getRelativeTime = (timestamp: string): string => {
-  const parsed = parseBackendDate(timestamp);
-  if (!parsed) {
-    return t("common.justFinished");
-  }
-  return formatDistanceToNow(parsed, {
-    addSuffix: true,
-    locale: vi,
-  });
-};
 const getReadableTimestamp = (timestamp: string): string => {
   const parsed = parseBackendDate(timestamp);
   if (!parsed) {
     return timestamp;
   }
   return formatDateTime(parsed, timestamp);
-};
-const STATUS_LABELS: Record<MessageDeliveryStatus, string> = {
-  queued: t("compShared.waitingForConnection"),
-  sending: t("compShared.sending"),
-  retrying: t("compShared.tryingToSendAgain"),
-  sent: t("compShared.sent"),
-  failed: t("compShared.submitError"),
 };
 export function MessageBubble({
   id,
@@ -101,6 +82,26 @@ export function MessageBubble({
   onTogglePin,
 }: MessageBubbleProps) {
   const { t } = useTranslation();
+
+  const getRelativeTime = (ts: string): string => {
+    const parsed = parseBackendDate(ts);
+    if (!parsed) {
+      return t("common.justFinished");
+    }
+    return formatDistanceToNow(parsed, {
+      addSuffix: true,
+      locale: vi,
+    });
+  };
+
+  const STATUS_LABELS: Record<MessageDeliveryStatus, string> = {
+    queued: t("compShared.waitingForConnection"),
+    sending: t("compShared.sending"),
+    retrying: t("compShared.tryingToSendAgain"),
+    sent: t("compShared.sent"),
+    failed: t("compShared.submitError"),
+  };
+
   const relativeTime = getRelativeTime(timestamp);
   const fullTime = getReadableTimestamp(timestamp);
   const showStatus = sender === "user" && !!status;

@@ -1,5 +1,3 @@
-import i18n from "@/lib/i18n";
-const t = i18n.t.bind(i18n);
 /**
  * NotificationList Component
  * Displays a list of notifications with loading and empty states
@@ -9,6 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/services/notification.manager";
 import { Bell } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { NotificationItem } from "./NotificationItem";
 interface NotificationListProps {
   notifications: Notification[];
@@ -31,9 +30,11 @@ export function NotificationList({
   onLoadMore,
   compact = false,
   maxItems,
-  emptyMessage = t("compNotification.thereAreNoAnnouncements"),
+  emptyMessage,
   className,
 }: NotificationListProps) {
+  const { t } = useTranslation();
+  const resolvedEmptyMessage = emptyMessage ?? t("compNotification.thereAreNoAnnouncements");
   // Apply maxItems limit if specified
   const displayedNotifications = maxItems ? notifications.slice(0, maxItems) : notifications;
 
@@ -53,7 +54,7 @@ export function NotificationList({
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
           <Bell className="h-8 w-8 text-slate-400" />
         </div>
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{emptyMessage}</p>
+        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{resolvedEmptyMessage}</p>
       </div>
     );
   }

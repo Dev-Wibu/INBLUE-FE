@@ -58,7 +58,7 @@ describe("PaymentManager API mode", () => {
         params: expect.objectContaining({
           amount: 120000,
           userId: 101,
-          paymentPurpose: "BUY_MEMBERSHIP",
+          paymentPurpose: "FULLY_PAID",
         }),
       })
     );

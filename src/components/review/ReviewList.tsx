@@ -1,5 +1,3 @@
-import i18n from "@/lib/i18n";
-const t = i18n.t.bind(i18n);
 /**
  * ReviewList Component
  * Displays a list of mentor reviews
@@ -10,6 +8,7 @@ import { LoadingCardList } from "@/components/ui/loading-card";
 import { cn } from "@/lib/utils";
 import type { MentorReview } from "@/services/mentor-review.manager";
 import { Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ReviewCard } from "./ReviewCard";
 interface ReviewListProps {
   reviews: MentorReview[];
@@ -33,10 +32,13 @@ export function ReviewList({
   onSelect,
   onEdit,
   onDelete,
-  emptyTitle = t("common.thereAreNoReviewsYet"),
-  emptyDescription = t("compReview.noReviewsHaveBeenSubmitted"),
+  emptyTitle,
+  emptyDescription,
   className,
 }: ReviewListProps) {
+  const { t } = useTranslation();
+  const resolvedEmptyTitle = emptyTitle ?? t("common.thereAreNoReviewsYet");
+  const resolvedEmptyDescription = emptyDescription ?? t("compReview.noReviewsHaveBeenSubmitted");
   // Loading state
   if (isLoading) {
     return <LoadingCardList count={3} className={className} />;
@@ -47,8 +49,8 @@ export function ReviewList({
     return (
       <EmptyState
         icon={Star}
-        title={emptyTitle}
-        description={emptyDescription}
+        title={resolvedEmptyTitle}
+        description={resolvedEmptyDescription}
         className={className}
       />
     );

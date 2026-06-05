@@ -23,7 +23,7 @@ export function NotificationItem({
   compact = false,
 }: NotificationItemProps) {
   const { t } = useTranslation();
-  const notificationType = getNotificationTypeConfigFromTitle(notification.title);
+  const notificationType = getNotificationTypeConfigFromTitle(notification.title, t);
   const isUnread = !notification.isRead;
   const parsedCreatedAt = parseBackendDate(notification.createAt);
   const notificationTitle = notification.title || t("common.notification");

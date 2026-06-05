@@ -1,26 +1,27 @@
-import i18n from "@/lib/i18n";
 import { BadgeCheck, Users, Zap } from "lucide-react";
-const t = i18n.t.bind(i18n);
-
-const statsData = [
-  {
-    value: "15,000+",
-    label: t("compHomepageRedesign.studentsParticipated"),
-    icon: Users,
-  },
-  {
-    value: "450+",
-    label: t("compHomepageRedesign.interviewScript"),
-    icon: BadgeCheck,
-  },
-  {
-    value: "98%",
-    label: t("compHomepageRedesign.positiveResponseRate"),
-    icon: Zap,
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export function EnhancedStatsSection() {
+  const { t } = useTranslation();
+
+  const statsData = [
+    {
+      value: "15,000+",
+      label: t("compHomepageRedesign.studentsParticipated"),
+      icon: Users,
+    },
+    {
+      value: "450+",
+      label: t("compHomepageRedesign.interviewScript"),
+      icon: BadgeCheck,
+    },
+    {
+      value: "98%",
+      label: t("compHomepageRedesign.positiveResponseRate"),
+      icon: Zap,
+    },
+  ];
+
   return (
     <section className="mx-auto max-w-7xl px-6 py-16">
       <div className="relative overflow-hidden rounded-3xl border border-slate-200/50 bg-white/70 p-8 shadow-xl backdrop-blur-xl md:flex-row dark:border-slate-700/50 dark:bg-slate-900/70">

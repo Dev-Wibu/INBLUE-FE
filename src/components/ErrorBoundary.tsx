@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button";
-import i18n from "@/lib/i18n";
 import { Component, type ErrorInfo, type ReactNode } from "react";
-const t = i18n.t.bind(i18n);
+import { withTranslation, type WithTranslation } from "react-i18next";
+
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
 }
+
 interface State {
   hasError: boolean;
   error?: Error;
 }
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+
+class ErrorBoundaryInner extends Component<Props & WithTranslation, State> {
+  constructor(props: Props & WithTranslation) {
     super(props);
     this.state = {
       hasError: false,
@@ -29,6 +31,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
   render() {
     if (this.state.hasError) {
+      const { t } = this.props;
       return (
         this.props.fallback || (
           <div className="flex min-h-screen flex-col items-center justify-center p-4">
@@ -44,3 +47,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryInner);

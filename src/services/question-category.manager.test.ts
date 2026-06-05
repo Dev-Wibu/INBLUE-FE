@@ -72,7 +72,7 @@ describe("QuestionCategoryManager", () => {
       categoryName: "Behavioral",
       description: "Questions about behavior",
     });
-    expect(mockApi.GET).toHaveBeenCalledWith("/api/question-categories/1");
+    expect(mockApi.GET).toHaveBeenCalledWith("/api/question-categories/1", {});
   });
 
   it("sends backend-aligned payload when creating category", async () => {
@@ -133,7 +133,7 @@ describe("QuestionCategoryManager", () => {
     const result = await manager.delete(1);
 
     expect(result.success).toBe(true);
-    expect(mockApi.DELETE).toHaveBeenCalledWith("/api/question-categories/1");
+    expect(mockApi.DELETE).toHaveBeenCalledWith("/api/question-categories/1", {});
   });
 
   it("returns error response when request fails", async () => {

@@ -5,12 +5,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Send, SmilePlus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 
 interface ChatComposerProps {
   value: string;
@@ -50,29 +48,6 @@ const QUICK_EMOJIS = [
   "💀",
 ];
 
-const QUICK_COMMANDS = [
-  {
-    command: "/camon",
-    label: t("compShared.sendAQuickThankYou"),
-    template: t("compShared.thankYouIHaveReceived"),
-  },
-  {
-    command: "/xacnhan",
-    label: t("compShared.confirmRead"),
-    template: t("compShared.iHaveReadAndConfirmed"),
-  },
-  {
-    command: "/hen",
-    label: t("compShared.scheduleAFollowUpDiscussion"),
-    template: t("compShared.iSuggestWeDiscussFurther"),
-  },
-  {
-    command: "/tongket",
-    label: t("compShared.shortSummaryOfTheConversation"),
-    template: t("compShared.quickSummaryIHaveNoted"),
-  },
-];
-
 const RECENT_EMOJI_STORAGE_KEY = "messenger_recent_emojis";
 const MAX_RECENT_EMOJIS = 8;
 
@@ -86,6 +61,33 @@ export function ChatComposer({
   onApplyQuickCommand,
 }: ChatComposerProps) {
   const { t } = useTranslation();
+
+  const QUICK_COMMANDS = useMemo(
+    () => [
+      {
+        command: "/camon",
+        label: t("compShared.sendAQuickThankYou"),
+        template: t("compShared.thankYouIHaveReceived"),
+      },
+      {
+        command: "/xacnhan",
+        label: t("compShared.confirmRead"),
+        template: t("compShared.iHaveReadAndConfirmed"),
+      },
+      {
+        command: "/hen",
+        label: t("compShared.scheduleAFollowUpDiscussion"),
+        template: t("compShared.iSuggestWeDiscussFurther"),
+      },
+      {
+        command: "/tongket",
+        label: t("compShared.shortSummaryOfTheConversation"),
+        template: t("compShared.quickSummaryIHaveNoted"),
+      },
+    ],
+    [t]
+  );
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [recentEmojis, setRecentEmojis] = useState<string[]>(() => {
     try {
@@ -105,16 +107,9 @@ export function ChatComposer({
   const commandQuery = value.trimStart();
   const isCommandMode = commandQuery.startsWith("/");
 
-  const visibleCommands = useMemo(() => {
-    if (!isCommandMode) {
-      return [];
-    }
-
-    return QUICK_COMMANDS.filter((item) => item.command.includes(commandQuery.toLowerCase())).slice(
-      0,
-      4
-    );
-  }, [commandQuery, isCommandMode]);
+  const visibleCommands = isCommandMode
+    ? QUICK_COMMANDS.filter((item) => item.command.includes(commandQuery.toLowerCase())).slice(0, 4)
+    : [];
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -200,7 +195,9 @@ export function ChatComposer({
             </>
           )}
 
-          <p className="px-2 pb-1 text-xs font-semibold text-slate-500">Emoji nhanh</p>
+          <p className="px-2 pb-1 text-xs font-semibold text-slate-500">
+            {t("compShared.quickEmoji")}
+          </p>
           <div className="grid grid-cols-5 gap-1">
             {QUICK_EMOJIS.map((emoji) => (
               <DropdownMenuItem

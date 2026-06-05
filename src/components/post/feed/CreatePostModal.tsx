@@ -232,7 +232,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-slate-500">
               <Tag className="mr-1 inline h-3 w-3" />
-              Tags
+              {t("common.tags")}
             </Label>
             <div className="flex gap-2">
               <Input

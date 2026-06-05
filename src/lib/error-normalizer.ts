@@ -46,7 +46,7 @@ const getKnownErrorPatterns = (): Array<{ pattern: RegExp; message: string }> =>
   },
   {
     pattern: /(user not found|not found with email|email không tồn tại|email khong ton tai)/i,
-    message: "Sai email.",
+    message: t("general.wrongEmail"),
   },
   {
     pattern: /(email đã tồn tại|email da ton tai|email already exists|email exists)/i,

@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 // Custom type definitions for recharts payload
@@ -237,7 +238,7 @@ function ChartTooltipContent({
                       </div>
                       {item.value && (
                         <span className="text-foreground font-mono font-medium tabular-nums">
-                          {item.value.toLocaleString("vi-VN")}
+                          {item.value.toLocaleString(i18n.language === "en" ? "en-US" : "vi-VN")}
                         </span>
                       )}
                     </div>
