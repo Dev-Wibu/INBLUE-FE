@@ -133,7 +133,7 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
                         className="flex items-center gap-1 hover:text-[#0047AB] dark:hover:text-[#66B2FF]"
                         onClick={(e) => e.stopPropagation()}>
                         <Globe className="h-4 w-4" />
-                        <span className="hidden sm:inline">Website</span>
+                        <span className="hidden sm:inline">{t("common.website")}</span>
                       </a>
                     )}
                     {company.foundedYear && (

@@ -138,7 +138,7 @@ export function CompanySearchPage() {
           <div className="mb-6 flex items-center justify-between">
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {isLoading ? (
-                t("adminUsermanagement.hide")
+                t("common.searching")
               ) : (
                 <>
                   {t("common.find")}{" "}
@@ -148,7 +148,7 @@ export function CompanySearchPage() {
                   {t("userMentorlist.company")}
                   {query && (
                     <span className="ml-2">
-                      cho "<span className="font-medium">{query}</span>"
+                      {t("common.for")} "<span className="font-medium">{query}</span>"
                     </span>
                   )}
                 </>

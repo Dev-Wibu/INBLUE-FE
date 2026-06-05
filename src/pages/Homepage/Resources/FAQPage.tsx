@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import i18n from "@/lib/i18n";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ChevronDown,
@@ -17,87 +16,86 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-const t = i18n.t.bind(i18n);
-const faqCategories = [
-  {
-    id: "general",
-    name: t("homepageResources.generalQuestion"),
-    icon: HelpCircle,
-  },
-  {
-    id: "ai-interview",
-    name: "AI Interview",
-    icon: MessageCircle,
-  },
-  {
-    id: "mentor",
-    name: "Mock Interview",
-    icon: GraduationCap,
-  },
-  {
-    id: "account",
-    name: t("common.account"),
-    icon: FileText,
-  },
-];
-const faqs = [
-  {
-    id: 1,
-    category: "general",
-    question: t("homepageResources.whatIsInblueAi"),
-    answer: t("homepageResources.inblueAiIsAnOnline"),
-  },
-  {
-    id: 2,
-    category: "general",
-    question: t("homepageResources.canITryItFor"),
-    answer: t("homepageResources.haveYouCanSignUp"),
-  },
-  {
-    id: 3,
-    category: "general",
-    question: t("homepageResources.whatProfessionsDoesInblueAi"),
-    answer: t("homepageResources.weSupportAVarietyOf"),
-  },
-  {
-    id: 4,
-    category: "ai-interview",
-    question: t("homepageResources.howDoesAiInterviewWork"),
-    answer: t("homepageResources.aiInterviewUsesAdvancedAi"),
-  },
-  {
-    id: 5,
-    category: "ai-interview",
-    question: t("homepageResources.canAiAnalyzeBodyLanguage"),
-    answer: t("homepageResources.haveInVideoModeAi"),
-  },
-  {
-    id: 6,
-    category: "mentor",
-    question: t("homepageResources.whoIsMentor"),
-    answer: t("homepageResources.ourMentorsAreExpertsFrom"),
-  },
-  {
-    id: 7,
-    category: "mentor",
-    question: t("homepageResources.howToScheduleAnAppointment"),
-    answer: t("homepageResources.afterLoggingInYouCan"),
-  },
-  {
-    id: 8,
-    category: "account",
-    question: t("homepageResources.howToUpgradeMyAccount"),
-    answer: t("homepageResources.youCanUpgradeYourAccount"),
-  },
-  {
-    id: 9,
-    category: "account",
-    question: t("homepageResources.isMyDataSecure"),
-    answer: t("homepageResources.sureWeUseSslEncryption"),
-  },
-];
 export function FAQPage() {
   const { t } = useTranslation();
+  const faqCategories = [
+    {
+      id: "general",
+      name: t("homepageResources.generalQuestion"),
+      icon: HelpCircle,
+    },
+    {
+      id: "ai-interview",
+      name: t("common.aiInterview"),
+      icon: MessageCircle,
+    },
+    {
+      id: "mentor",
+      name: t("common.mockInterview"),
+      icon: GraduationCap,
+    },
+    {
+      id: "account",
+      name: t("common.account"),
+      icon: FileText,
+    },
+  ];
+  const faqs = [
+    {
+      id: 1,
+      category: "general",
+      question: t("homepageResources.whatIsInblueAi"),
+      answer: t("homepageResources.inblueAiIsAnOnline"),
+    },
+    {
+      id: 2,
+      category: "general",
+      question: t("homepageResources.canITryItFor"),
+      answer: t("homepageResources.haveYouCanSignUp"),
+    },
+    {
+      id: 3,
+      category: "general",
+      question: t("homepageResources.whatProfessionsDoesInblueAi"),
+      answer: t("homepageResources.weSupportAVarietyOf"),
+    },
+    {
+      id: 4,
+      category: "ai-interview",
+      question: t("homepageResources.howDoesAiInterviewWork"),
+      answer: t("homepageResources.aiInterviewUsesAdvancedAi"),
+    },
+    {
+      id: 5,
+      category: "ai-interview",
+      question: t("homepageResources.canAiAnalyzeBodyLanguage"),
+      answer: t("homepageResources.haveInVideoModeAi"),
+    },
+    {
+      id: 6,
+      category: "mentor",
+      question: t("homepageResources.whoIsMentor"),
+      answer: t("homepageResources.ourMentorsAreExpertsFrom"),
+    },
+    {
+      id: 7,
+      category: "mentor",
+      question: t("homepageResources.howToScheduleAnAppointment"),
+      answer: t("homepageResources.afterLoggingInYouCan"),
+    },
+    {
+      id: 8,
+      category: "account",
+      question: t("homepageResources.howToUpgradeMyAccount"),
+      answer: t("homepageResources.youCanUpgradeYourAccount"),
+    },
+    {
+      id: 9,
+      category: "account",
+      question: t("homepageResources.isMyDataSecure"),
+      answer: t("homepageResources.sureWeUseSslEncryption"),
+    },
+  ];
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
   const dashboardPath = isLoggedIn ? getDashboardPath(user?.role) : "/login";

@@ -1,6 +1,3 @@
-import i18n from "@/lib/i18n";
-import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 /**
  * Job Listings Section
  * Search, filter, and display job listings for a company
@@ -13,34 +10,13 @@ import type { JobDescription } from "@/services/company.manager";
 import { motion } from "framer-motion";
 import { Bot, Filter, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { JobCard } from "./JobCard";
 interface JobListingsSectionProps {
   jobs: JobDescription[];
   companyName: string;
 }
-const LEVEL_OPTIONS = [
-  {
-    value: "ALL",
-    label: t("general.all"),
-  },
-  {
-    value: "INTERN",
-    label: t("enterpriseCompanydetail.internInternship"),
-  },
-  {
-    value: "FRESHER",
-    label: "Fresher",
-  },
-  {
-    value: "JUNIOR",
-    label: "Junior",
-  },
-  {
-    value: "MIDDLE",
-    label: "Middle",
-  },
-];
 const SKILL_OPTIONS = [
   "ReactJS",
   "TypeScript",
@@ -55,6 +31,28 @@ const SKILL_OPTIONS = [
 ];
 export function JobListingsSection({ jobs, companyName }: JobListingsSectionProps) {
   const { t } = useTranslation();
+  const LEVEL_OPTIONS = [
+    {
+      value: "ALL",
+      label: t("general.all"),
+    },
+    {
+      value: "INTERN",
+      label: t("enterpriseCompanydetail.internInternship"),
+    },
+    {
+      value: "FRESHER",
+      label: t("common.fresher"),
+    },
+    {
+      value: "JUNIOR",
+      label: t("common.junior"),
+    },
+    {
+      value: "MIDDLE",
+      label: t("common.middle"),
+    },
+  ];
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevels, setSelectedLevels] = useState<string[]>(["ALL"]);

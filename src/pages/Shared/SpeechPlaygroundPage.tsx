@@ -15,24 +15,26 @@ import {
 import { AlertTriangle, LoaderCircle, Square, Volume2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 type PlaygroundLanguage = "vi-VN" | "en-US";
 type SpeechEngine = "web-speech" | "responsive-voice";
 const ENGINE_LABELS: Record<SpeechEngine, string> = {
   "web-speech": "Web Speech API",
   "responsive-voice": "ResponsiveVoice.js",
 };
-const TEST_PHRASE_BY_LANG: Record<PlaygroundLanguage, string> = {
-  "vi-VN": t("sharedSpeechplaygroundpage.helloTestVoice"),
-  "en-US": "Hello, this is a speech synthesis test for AI Interview.",
-};
-function formatDateTime(date: Date | null): string {
+function getTestPhraseByLang(t: (key: string) => string): Record<PlaygroundLanguage, string> {
+  return {
+    "vi-VN": t("sharedSpeechplaygroundpage.helloTestVoice"),
+    "en-US": "Hello, this is a speech synthesis test for AI Interview.",
+  };
+}
+function formatDateTimeIntl(date: Date | null, t: (key: string) => string): string {
   if (!date) {
     return t("common.notYet");
   }
-  return `${date.toLocaleDateString("vi-VN")} ${date.toLocaleTimeString("vi-VN")}`;
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+  return `${date.toLocaleDateString(locale)} ${date.toLocaleTimeString(locale)}`;
 }
-function detectBrowserLabel(): string {
+function detectBrowserLabel(t: (key: string) => string): string {
   if (typeof navigator === "undefined") {
     return t("sharedSpeechplaygroundpage.areNot");
   }
@@ -45,9 +47,10 @@ function detectBrowserLabel(): string {
 }
 export function SpeechPlaygroundPage() {
   const { t } = useTranslation();
+  const testPhraseByLang = useMemo(() => getTestPhraseByLang(t), [t]);
   const [language, setLanguage] = useState<PlaygroundLanguage>("vi-VN");
   const [engine, setEngine] = useState<SpeechEngine>("web-speech");
-  const [text, setText] = useState(TEST_PHRASE_BY_LANG["vi-VN"]);
+  const [text, setText] = useState("");
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceUri, setSelectedVoiceUri] = useState("");
   const [rate, setRate] = useState(1);
@@ -58,13 +61,9 @@ export function SpeechPlaygroundPage() {
   const [error, setError] = useState<string | null>(null);
   const [voicesLoadedAt, setVoicesLoadedAt] = useState<Date | null>(null);
   const [voicesChangedCount, setVoicesChangedCount] = useState(0);
-  const [lastSelectedVoice, setLastSelectedVoice] = useState<string>(
-    t("sharedSpeechplaygroundpage.notPlayedYet")
-  );
+  const [lastSelectedVoice, setLastSelectedVoice] = useState<string>("");
   const [lastSpeakAt, setLastSpeakAt] = useState<Date | null>(null);
-  const [lastEngineUsed, setLastEngineUsed] = useState<string>(
-    t("sharedSpeechplaygroundpage.notPlayedYet")
-  );
+  const [lastEngineUsed, setLastEngineUsed] = useState<string>("");
   const [lastSpeakLatencyMs, setLastSpeakLatencyMs] = useState<number | null>(null);
   const speakRequestIdRef = useRef(0);
   const isWebSpeechSupported =
@@ -131,7 +130,7 @@ export function SpeechPlaygroundPage() {
     });
   }, [voices]);
   const handleUsePreset = () => {
-    setText(TEST_PHRASE_BY_LANG[language]);
+    setText(testPhraseByLang[language]);
   };
   const handleStop = useCallback(() => {
     speakRequestIdRef.current += 1;
@@ -254,7 +253,7 @@ export function SpeechPlaygroundPage() {
     volume,
     t,
   ]);
-  const browserLabel = detectBrowserLabel();
+  const browserLabel = detectBrowserLabel(t);
   const isPlayDisabled = isEngineLoading || (engine === "web-speech" && !isWebSpeechSupported);
   return (
     <div className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950">
@@ -278,7 +277,8 @@ export function SpeechPlaygroundPage() {
                   {t("sharedSpeechplaygroundpage.totalVoices")} {voices.length}
                 </Badge>
                 <Badge variant="outline">
-                  {t("sharedSpeechplaygroundpage.voicesLoadedAt")} {formatDateTime(voicesLoadedAt)}
+                  {t("sharedSpeechplaygroundpage.voicesLoadedAt")}{" "}
+                  {formatDateTimeIntl(voicesLoadedAt, t)}
                 </Badge>
                 <Badge variant="outline">voiceschanged: {voicesChangedCount}</Badge>
                 <Badge variant="outline">
@@ -464,19 +464,19 @@ export function SpeechPlaygroundPage() {
                   <span className="font-semibold">
                     {t("sharedSpeechplaygroundpage.enginePlayed")}
                   </span>{" "}
-                  {lastEngineUsed}
+                  {lastEngineUsed || t("sharedSpeechplaygroundpage.notPlayedYet")}
                 </p>
                 <p>
                   <span className="font-semibold">
                     {t("sharedSpeechplaygroundpage.voiceSelected")}
                   </span>{" "}
-                  {lastSelectedVoice}
+                  {lastSelectedVoice || t("sharedSpeechplaygroundpage.notPlayedYet")}
                 </p>
                 <p>
                   <span className="font-semibold">
                     {t("sharedSpeechplaygroundpage.lastBroadcast")}
                   </span>{" "}
-                  {formatDateTime(lastSpeakAt)}
+                  {formatDateTimeIntl(lastSpeakAt, t)}
                 </p>
                 <p>
                   <span className="font-semibold">

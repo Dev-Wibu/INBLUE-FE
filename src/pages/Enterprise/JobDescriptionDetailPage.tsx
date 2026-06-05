@@ -25,7 +25,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-const t = i18n.t.bind(i18n);
 function formatSalary(min?: number, max?: number, currency = "VND") {
   const format = (num: number) => {
     if (num >= 1000000) {
@@ -37,23 +36,18 @@ function formatSalary(min?: number, max?: number, currency = "VND") {
     return `${format(min)} - ${format(max)} ${currency}`;
   }
   if (min) {
-    return t("common.fromVar0Var1", {
-      var_0: format(min),
-      var_1: currency,
-    });
+    return `${i18n.t("enterpriseJobdescriptiondetailpage.salaryFrom")} ${format(min)} ${currency}`;
   }
   if (max) {
-    return t("common.toVar0Var1", {
-      var_0: format(max),
-      var_1: currency,
-    });
+    return `${i18n.t("enterpriseJobdescriptiondetailpage.salaryTo")} ${format(max)} ${currency}`;
   }
-  return t("common.agree");
+  return i18n.t("enterpriseJobdescriptiondetailpage.salaryAgreement");
 }
 function formatDate(dateStr?: string) {
-  if (!dateStr) return t("enterpriseJobdescriptiondetailpage.unlimited");
+  if (!dateStr) return i18n.t("enterpriseJobdescriptiondetailpage.unlimited");
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
   const date = new Date(dateStr);
-  return date.toLocaleDateString("vi-VN", {
+  return date.toLocaleDateString(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -241,11 +235,11 @@ export function JobDescriptionDetailPage() {
               <div className="flex-1">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <Badge className={getLevelBadgeColor(job.level)}>
-                    {job.level || t("sharedSpeechplaygroundpage.areNot")}
+                    {job.level || t("common.notDetermined")}
                   </Badge>
                   <Badge className={`border ${getStatusBadgeColor(job.status)}`}>
                     {job.status === "OPEN"
-                      ? t("adminUsermanagement.hide")
+                      ? t("enterpriseJobdescriptiondetailpage.currentlyRecruiting")
                       : job.status === "CLOSED"
                         ? t("enterpriseJobdescriptiondetailpage.closed")
                         : t("common.draft1")}
@@ -286,9 +280,9 @@ export function JobDescriptionDetailPage() {
                 ) : hasApplied ? (
                   t("enterpriseJobdescriptiondetailpage.applied")
                 ) : job.status !== "OPEN" ? (
-                  t("enterpriseJobdescriptiondetailpage.closedTuyen")
+                  t("enterpriseJobdescriptiondetailpage.recruitmentHasBeenClosed")
                 ) : !isLoggedIn ? (
-                  t("adminUsermanagement.hide")
+                  t("enterpriseJobdescriptiondetailpage.loginToApply")
                 ) : (
                   t("enterpriseJobdescriptiondetailpage.applyNow")
                 )}
@@ -389,8 +383,7 @@ export function JobDescriptionDetailPage() {
                             <Badge variant="outline" className="text-xs">
                               {getRoundTypeIcon(round.roundType)}
                               <span className="ml-1">
-                                {round.roundType?.replace("_", " ") ||
-                                  t("sharedSpeechplaygroundpage.areNot")}
+                                {round.roundType?.replace("_", " ") || t("common.notDetermined")}
                               </span>
                             </Badge>
                           </div>
@@ -442,9 +435,9 @@ export function JobDescriptionDetailPage() {
               ) : hasApplied ? (
                 t("enterpriseJobdescriptiondetailpage.applied")
               ) : job.status !== "OPEN" ? (
-                t("enterpriseJobdescriptiondetailpage.closedTuyen")
+                t("enterpriseJobdescriptiondetailpage.recruitmentHasBeenClosed")
               ) : !isLoggedIn ? (
-                t("adminUsermanagement.hide")
+                t("enterpriseJobdescriptiondetailpage.loginToApply")
               ) : (
                 t("enterpriseJobdescriptiondetailpage.applyNow")
               )}
@@ -463,7 +456,7 @@ export function JobDescriptionDetailPage() {
                     {t("common.rank")}
                   </span>
                   <Badge className={getLevelBadgeColor(job.level)}>
-                    {job.level || t("sharedSpeechplaygroundpage.areNot")}
+                    {job.level || t("common.notDetermined")}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">

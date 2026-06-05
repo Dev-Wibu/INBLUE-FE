@@ -40,7 +40,7 @@ export function SelectRolePage() {
               </span>
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-base text-slate-600 md:text-lg dark:text-slate-300">
-              {t("compShared.select")}
+              {t("authSelectrolepage.chooseTheRightRoleTo")}
             </p>
           </div>
 
@@ -62,13 +62,13 @@ export function SelectRolePage() {
                 <div className="space-y-2">
                   <BenefitItem text={t("authSelectrolepage.practiceInterviewsWithSmartAi")} />
                   <BenefitItem text={t("authSelectrolepage.receiveDetailedFeedbackFromMentor")} />
-                  <BenefitItem text={t("adminPostmanagement.card")} />
+                  <BenefitItem text={t("authSelectrolepage.trackLearningProgress")} />
                 </div>
 
                 <Button
                   className="w-full bg-[#0047AB] text-white hover:bg-[#003A8C] dark:bg-[#005FD1] dark:hover:bg-[#4A90FF]"
                   onClick={handleUserSelect}>
-                  {t("common.turnOn")}
+                  {t("authSelectrolepage.getStartedNow")}
                 </Button>
               </CardContent>
             </Card>
@@ -78,11 +78,13 @@ export function SelectRolePage() {
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 dark:bg-emerald-900/35">
                   <Users className="h-8 w-8 text-emerald-600 dark:text-emerald-300" />
                 </div>
-                <CardTitle className="mt-1 text-slate-900 dark:text-white">Mentor</CardTitle>
+                <CardTitle className="mt-1 text-slate-900 dark:text-white">
+                  {t("common.mentor")}
+                </CardTitle>
                 <CardDescription className="text-slate-600 dark:text-slate-300">
                   {isMentor
                     ? t("authSelectrolepage.quickAccessToYourMentor")
-                    : t("enterpriseCompanydetail.share")}
+                    : t("authSelectrolepage.shareExperiencesAccompanyCandidatesAnd")}
                 </CardDescription>
               </CardHeader>
 
@@ -114,7 +116,7 @@ export function SelectRolePage() {
                   onClick={handleMentorSelect}>
                   {isMentor
                     ? t("authSelectrolepage.goToMentorPage")
-                    : t("adminUsermanagement.hide")}
+                    : t("authSelectrolepage.signUpForMentor")}
                 </Button>
               </CardContent>
             </Card>

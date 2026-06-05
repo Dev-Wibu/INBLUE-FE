@@ -16,7 +16,6 @@ import {
   type PaymentRecoveryLookupSource,
   upsertPaymentRecoveryContext,
 } from "@/lib";
-import i18n from "@/lib/i18n";
 import { userManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import { CheckCircle2, ShieldAlert } from "lucide-react";
@@ -24,88 +23,98 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-const t = i18n.t.bind(i18n);
 type ResolveState = "checking" | "ready" | "unmapped" | "subscribing" | "subscribed";
 const ACTIVATED_ORDERS_STORAGE_KEY = "inblue.payment.activated-orders";
 const isPaidStatus = (status: string): boolean => {
   const normalized = status.trim().toUpperCase();
   return normalized === "PAID" || normalized === "SUCCESS" || normalized === "COMPLETED";
 };
-const isAlreadySubscribedError = (error?: string): boolean => {
-  if (!error) {
-    return false;
-  }
-  const normalized = error.toLowerCase();
-  return (
-    normalized.includes("409") ||
-    normalized.includes("conflict") ||
-    normalized.includes("already") ||
-    normalized.includes(t("paymentPaymentsuccesspage.activated")) ||
-    normalized.includes("da kich hoat") ||
-    normalized.includes("already active") ||
-    normalized.includes("already subscribed")
-  );
-};
-const getActivatedOrderCodes = (): Set<string> => {
-  try {
-    const raw = localStorage.getItem(ACTIVATED_ORDERS_STORAGE_KEY);
-    if (!raw) {
-      return new Set();
-    }
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      return new Set();
-    }
-    return new Set(
-      parsed
-        .map((item) => (typeof item === "string" ? item.trim() : ""))
-        .filter((item) => item.length > 0)
-    );
-  } catch {
-    return new Set();
-  }
-};
-const markOrderAsActivated = (orderCode: string): void => {
-  const normalized = orderCode.trim();
-  if (!normalized) {
-    return;
-  }
-  const next = getActivatedOrderCodes();
-  next.add(normalized);
-  localStorage.setItem(ACTIVATED_ORDERS_STORAGE_KEY, JSON.stringify([...next]));
-};
-const getSuccessSubtitle = (purpose?: PaymentPurpose): string => {
-  switch (purpose) {
-    case "BUY_MEMBERSHIP":
-      return t("adminDashboardoverview.system");
-    case "MENTOR_INTERVIEW":
-      return t("adminDashboardoverview.system");
-    default:
-      return t("adminDashboardoverview.system");
-  }
-};
-const getPrimaryRedirect = (
-  purpose?: PaymentPurpose
-): {
-  to: string;
-  label: string;
-} => {
-  switch (purpose) {
-    case "MENTOR_INTERVIEW":
-      return {
-        to: "/user?tab=interviewHistory",
-        label: t("common.viewInterviewHistory"),
-      };
-    case "BUY_MEMBERSHIP":
-    default:
-      return {
-        to: "/user?tab=account",
-        label: t("common.returnToAccount"),
-      };
-  }
-};
 export function PaymentSuccessPage() {
   const { t } = useTranslation();
+
+  const isAlreadySubscribedError = useCallback(
+    (error?: string): boolean => {
+      if (!error) {
+        return false;
+      }
+      const normalized = error.toLowerCase();
+      return (
+        normalized.includes("409") ||
+        normalized.includes("conflict") ||
+        normalized.includes("already") ||
+        normalized.includes(t("paymentPaymentsuccesspage.activated")) ||
+        normalized.includes("da kich hoat") ||
+        normalized.includes("already active") ||
+        normalized.includes("already subscribed")
+      );
+    },
+    [t]
+  );
+
+  const getActivatedOrderCodes = useCallback((): Set<string> => {
+    try {
+      const raw = localStorage.getItem(ACTIVATED_ORDERS_STORAGE_KEY);
+      if (!raw) {
+        return new Set();
+      }
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) {
+        return new Set();
+      }
+      return new Set(
+        parsed
+          .map((item) => (typeof item === "string" ? item.trim() : ""))
+          .filter((item) => item.length > 0)
+      );
+    } catch {
+      return new Set();
+    }
+  }, []);
+
+  const markOrderAsActivated = useCallback(
+    (orderCode: string): void => {
+      const normalized = orderCode.trim();
+      if (!normalized) {
+        return;
+      }
+      const next = getActivatedOrderCodes();
+      next.add(normalized);
+      localStorage.setItem(ACTIVATED_ORDERS_STORAGE_KEY, JSON.stringify([...next]));
+    },
+    [getActivatedOrderCodes]
+  );
+
+  const getSuccessSubtitle = (purpose?: PaymentPurpose): string => {
+    switch (purpose) {
+      case "FULLY_PAID":
+        return t("adminDashboardoverview.system");
+      case "MENTOR_INTERVIEW":
+        return t("adminDashboardoverview.system");
+      default:
+        return t("adminDashboardoverview.system");
+    }
+  };
+
+  const getPrimaryRedirect = (
+    purpose?: PaymentPurpose
+  ): {
+    to: string;
+    label: string;
+  } => {
+    switch (purpose) {
+      case "MENTOR_INTERVIEW":
+        return {
+          to: "/user?tab=interviewHistory",
+          label: t("common.viewInterviewHistory"),
+        };
+      case "FULLY_PAID":
+      default:
+        return {
+          to: "/user?tab=account",
+          label: t("common.returnToAccount"),
+        };
+    }
+  };
   const { user } = useAuthStore();
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
   const orderCode = query.get("orderCode")?.trim() || "";
@@ -198,7 +207,7 @@ export function PaymentSuccessPage() {
           },
         });
         setResolveState("unmapped");
-        setResolveError(t("sharedSpeechplaygroundpage.areNot"));
+        setResolveError(t("general.anErrorHasOccurredPlease"));
         return;
       }
       const hasAnyIdentifier = Boolean(
@@ -221,7 +230,7 @@ export function PaymentSuccessPage() {
           },
         });
         setResolveState("unmapped");
-        setResolveError(t("sharedSpeechplaygroundpage.areNot"));
+        setResolveError(t("general.anErrorHasOccurredPlease"));
         return;
       }
       setResolveState("checking");
@@ -330,7 +339,7 @@ export function PaymentSuccessPage() {
           },
         });
         setResolveState("unmapped");
-        setResolveError(t("sharedSpeechplaygroundpage.areNot"));
+        setResolveError(t("general.anErrorHasOccurredPlease"));
         return;
       }
       const hasStrongCallbackIdentifier = Boolean(
@@ -354,7 +363,7 @@ export function PaymentSuccessPage() {
           },
         });
         setResolveState("unmapped");
-        setResolveError(t("sharedSpeechplaygroundpage.areNot"));
+        setResolveError(t("general.anErrorHasOccurredPlease"));
         return;
       }
       if (nextContext.userId !== currentUserId) {
@@ -476,6 +485,7 @@ export function PaymentSuccessPage() {
   }, [
     callbackCheckoutToken,
     currentUserId,
+    getActivatedOrderCodes,
     orderCode,
     paid,
     pendingSessionPayment,
@@ -501,14 +511,14 @@ export function PaymentSuccessPage() {
       return;
     }
     if (!currentUserId) {
-      setSubscribeError(t("common.friend"));
+      setSubscribeError(t("errorUnauthorizedpage.youNeedToLogIn"));
       return;
     }
     if (recoveryContext.userId !== currentUserId) {
       setSubscribeError(t("paymentPaymentsuccesspage.unableToActivatePackageFor"));
       return;
     }
-    if (recoveryContext.paymentPurpose !== "BUY_MEMBERSHIP") {
+    if (recoveryContext.paymentPurpose !== "FULLY_PAID") {
       setSubscribeError(t("adminTransactionpaymentmanagement.transaction"));
       return;
     }
@@ -663,8 +673,10 @@ export function PaymentSuccessPage() {
     toast.success(t("general.successfullyActivatedPlan"));
   }, [
     currentUserId,
+    isAlreadySubscribedError,
     isKnownActivatedOrder,
     loadActiveSubscription,
+    markOrderAsActivated,
     paid,
     recoveryContext,
     resolveState,
@@ -675,7 +687,7 @@ export function PaymentSuccessPage() {
       resolveState !== "ready" ||
       !recoveryContext ||
       !paid ||
-      recoveryContext.paymentPurpose !== "BUY_MEMBERSHIP"
+      recoveryContext.paymentPurpose !== "FULLY_PAID"
     ) {
       return;
     }
@@ -700,7 +712,7 @@ export function PaymentSuccessPage() {
   const primaryRedirect = getPrimaryRedirect(resolvedPurpose);
   const subscribeKey = (recoveryContext?.orderCode || recoveryContext?.supportCode || "").trim();
   const canRetrySubscribe =
-    resolvedPurpose === "BUY_MEMBERSHIP" &&
+    resolvedPurpose === "FULLY_PAID" &&
     resolveState === "ready" &&
     !!recoveryContext &&
     subscribeKey.length > 0 &&
@@ -731,7 +743,7 @@ export function PaymentSuccessPage() {
         {resolveState === "checking" && (
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 font-['Inter'] text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
             <Spinner size="sm" tone="muted" />
-            {t("adminUsermanagement.hide")}
+            {t("common.checking")}
           </div>
         )}
 
@@ -755,7 +767,7 @@ export function PaymentSuccessPage() {
           </div>
         )}
 
-        {resolvedPurpose === "BUY_MEMBERSHIP" && !!subscribeError && (
+        {resolvedPurpose === "FULLY_PAID" && !!subscribeError && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/10">
             <p className="font-['Inter'] text-sm text-amber-700 dark:text-amber-300">
               {subscribeError}
@@ -763,7 +775,7 @@ export function PaymentSuccessPage() {
           </div>
         )}
 
-        {resolvedPurpose === "BUY_MEMBERSHIP" && isKnownActivatedOrder && (
+        {resolvedPurpose === "FULLY_PAID" && isKnownActivatedOrder && (
           <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 dark:border-violet-800/40 dark:bg-violet-900/10">
             <p className="font-['Inter'] text-sm text-violet-700 dark:text-violet-300">
               {t("paymentPaymentsuccesspage.packageActivatedPreviously")}
@@ -786,7 +798,7 @@ export function PaymentSuccessPage() {
             </button>
           )}
 
-          {resolvedPurpose === "BUY_MEMBERSHIP" && canRetrySubscribe && (
+          {resolvedPurpose === "FULLY_PAID" && canRetrySubscribe && (
             <button
               onClick={() => void handleConfirmSubscribe()}
               className="rounded-xl bg-emerald-600 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-emerald-700">
@@ -794,16 +806,16 @@ export function PaymentSuccessPage() {
             </button>
           )}
 
-          {resolvedPurpose === "BUY_MEMBERSHIP" && resolveState === "subscribing" && (
+          {resolvedPurpose === "FULLY_PAID" && resolveState === "subscribing" && (
             <button
               disabled
               className="flex items-center gap-2 rounded-xl bg-emerald-500/80 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white">
               <Spinner size="sm" tone="white" />
-              {t("adminUsermanagement.hide")}
+              {t("general.subscribing")}
             </button>
           )}
 
-          {resolvedPurpose === "BUY_MEMBERSHIP" && (
+          {resolvedPurpose === "FULLY_PAID" && (
             <Link
               to="/user?tab=account"
               className="rounded-xl border border-slate-300 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
@@ -812,14 +824,16 @@ export function PaymentSuccessPage() {
           )}
         </div>
 
-        {resolvedPurpose === "BUY_MEMBERSHIP" && resolveState === "subscribed" && (
+        {resolvedPurpose === "FULLY_PAID" && resolveState === "subscribed" && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
             <p className="mb-2 font-['Inter'] text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-              {t("paymentPaymentsuccesspage.activatedGoiThanhCong")}
+              {t("paymentPaymentsuccesspage.packageActivatedSuccessfully")}
             </p>
             {subscription ? (
               <div className="grid grid-cols-1 gap-2 font-['Inter'] text-xs text-emerald-700/90 md:grid-cols-2 dark:text-emerald-300/90">
-                <p>Plan: {subscription.planName || "-"}</p>
+                <p>
+                  {t("common.plan")}: {subscription.planName || "-"}
+                </p>
                 <p>
                   {t("paymentPaymentsuccesspage.aiInterviewRemaining")}{" "}
                   {subscription.aiInterviewRemaining ?? "-"}

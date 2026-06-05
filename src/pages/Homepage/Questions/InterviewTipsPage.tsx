@@ -3,7 +3,6 @@ import { Footer } from "@/components/layouts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import i18n from "@/lib/i18n";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ArrowRight,
@@ -20,67 +19,66 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-const t = i18n.t.bind(i18n);
-const interviewTips = [
-  {
-    id: 1,
-    title: t("homepageQuestions.starMethod"),
-    description: t("homepageQuestions.learnHowToAnswerBehavioral"),
-    icon: Target,
-    category: "Behavioral",
-    readTime: t("homepageQuestions.5Minutes"),
-  },
-  {
-    id: 2,
-    title: t("homepageQuestions.companyResearch"),
-    description: t("homepageQuestions.researchThoroughlyAboutTheCompany"),
-    icon: BookCheck,
-    category: t("homepageQuestions.prepare"),
-    readTime: t("homepageQuestions.8Minutes"),
-  },
-  {
-    id: 3,
-    title: t("homepageQuestions.bodyLanguage"),
-    description: t("homepageQuestions.theImportanceOfNonverbalCommunication"),
-    icon: Users,
-    category: t("common.softSkills"),
-    readTime: t("homepageQuestions.6Minutes"),
-  },
-  {
-    id: 4,
-    title: t("homepageQuestions.handlingDifficultQuestions"),
-    description: t("homepageQuestions.strategiesForDealingWithUnexpected"),
-    icon: Brain,
-    category: t("common.skill"),
-    readTime: t("homepageQuestions.7Minutes"),
-  },
-  {
-    id: 5,
-    title: t("homepageQuestions.salaryNegotiation"),
-    description: t("homepageQuestions.howToResearchMarketSalaries"),
-    icon: TrendingUp,
-    category: t("homepageQuestions.negotiate"),
-    readTime: t("homepageQuestions.10Minutes"),
-  },
-  {
-    id: 6,
-    title: t("homepageQuestions.questionsForEmployers"),
-    description: t("homepageQuestions.listOfSmartQuestionsTo"),
-    icon: MessageSquare,
-    category: t("homepageQuestions.strategy"),
-    readTime: t("homepageQuestions.5Minutes"),
-  },
-];
-const quickTips = [
-  t("homepageQuestions.arrive1015MinutesEarly"),
-  t("homepageQuestions.bringACopyOfYour"),
-  t("homepageQuestions.turnOffYourPhoneOr"),
-  t("homepageQuestions.dressProfessionallyAndInAccordance"),
-  t("homepageQuestions.prepareQuestionsToAskThe"),
-  t("homepageQuestions.sendAThankYouEmail"),
-];
 export function InterviewTipsPage() {
   const { t } = useTranslation();
+  const interviewTips = [
+    {
+      id: 1,
+      title: t("homepageQuestions.starMethod"),
+      description: t("homepageQuestions.learnHowToAnswerBehavioral"),
+      icon: Target,
+      category: "Behavioral",
+      readTime: t("homepageQuestions.5Minutes"),
+    },
+    {
+      id: 2,
+      title: t("homepageQuestions.companyResearch"),
+      description: t("homepageQuestions.researchThoroughlyAboutTheCompany"),
+      icon: BookCheck,
+      category: t("homepageQuestions.prepare"),
+      readTime: t("homepageQuestions.8Minutes"),
+    },
+    {
+      id: 3,
+      title: t("homepageQuestions.bodyLanguage"),
+      description: t("homepageQuestions.theImportanceOfNonverbalCommunication"),
+      icon: Users,
+      category: t("common.softSkills"),
+      readTime: t("homepageQuestions.6Minutes"),
+    },
+    {
+      id: 4,
+      title: t("homepageQuestions.handlingDifficultQuestions"),
+      description: t("homepageQuestions.strategiesForDealingWithUnexpected"),
+      icon: Brain,
+      category: t("common.skill"),
+      readTime: t("homepageQuestions.7Minutes"),
+    },
+    {
+      id: 5,
+      title: t("homepageQuestions.salaryNegotiation"),
+      description: t("homepageQuestions.howToResearchMarketSalaries"),
+      icon: TrendingUp,
+      category: t("homepageQuestions.negotiate"),
+      readTime: t("homepageQuestions.10Minutes"),
+    },
+    {
+      id: 6,
+      title: t("homepageQuestions.questionsForEmployers"),
+      description: t("homepageQuestions.listOfSmartQuestionsTo"),
+      icon: MessageSquare,
+      category: t("homepageQuestions.strategy"),
+      readTime: t("homepageQuestions.5Minutes"),
+    },
+  ];
+  const quickTips = [
+    t("homepageQuestions.arrive1015MinutesEarly"),
+    t("homepageQuestions.bringACopyOfYour"),
+    t("homepageQuestions.turnOffYourPhoneOr"),
+    t("homepageQuestions.dressProfessionallyAndInAccordance"),
+    t("homepageQuestions.prepareQuestionsToAskThe"),
+    t("homepageQuestions.sendAThankYouEmail"),
+  ];
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
   const dashboardPath = isLoggedIn ? getDashboardPath(user?.role) : "/login";

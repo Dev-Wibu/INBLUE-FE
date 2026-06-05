@@ -89,7 +89,9 @@ export function WaitingAcceptMentorPage() {
                   <div className="h-8 w-0.5 bg-slate-200" />
                 </div>
                 <div>
-                  <h5 className="font-medium text-slate-900">{t("adminUsermanagement.hide")}</h5>
+                  <h5 className="font-medium text-slate-900">
+                    {t("authWaitingacceptmentorpage.underReview")}
+                  </h5>
                   <p className="text-sm text-slate-500">
                     {t("authWaitingacceptmentorpage.reviewingYourProfile")}
                   </p>
@@ -105,7 +107,9 @@ export function WaitingAcceptMentorPage() {
                   <h5 className="font-medium text-slate-500">
                     {t("authWaitingacceptmentorpage.notificationOfResults")}
                   </h5>
-                  <p className="text-sm text-slate-400">{t("common.friend")}</p>
+                  <p className="text-sm text-slate-400">
+                    {t("authWaitingacceptmentorpage.youWillReceiveANotification")}
+                  </p>
                 </div>
               </div>
             </div>

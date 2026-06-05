@@ -17,7 +17,6 @@ import {
   type PaymentRecoveryContext,
   type PaymentRecoveryLookupSource,
 } from "@/lib";
-import i18n from "@/lib/i18n";
 import { paymentManager } from "@/services/payment.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { AlertCircle } from "lucide-react";
@@ -25,57 +24,61 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-const t = i18n.t.bind(i18n);
 type CancelChainResult = "idle" | "success" | "failed" | "missing";
 interface RunCancelChainOptions {
   forceCallbackFirst?: boolean;
   triggeredByRetry?: boolean;
 }
-const isIdempotentHandledError = (error?: string): boolean => {
-  if (!error) {
-    return false;
-  }
-  const normalized = error.toLowerCase();
-  return (
-    normalized.includes("not found") ||
-    normalized.includes("404") ||
-    normalized.includes("already") ||
-    normalized.includes(t("paymentPaymentcancelpage.processed")) ||
-    normalized.includes("da duoc xu ly") ||
-    normalized.includes(t("paymentPaymentcancelpage.cancelled")) ||
-    normalized.includes("da huy") ||
-    normalized.includes("processed")
-  );
-};
-const getCancelPrimaryRedirect = (
-  purpose?: PaymentPurpose,
-  sessionId?: number
-): {
-  to: string;
-  label: string;
-} => {
-  switch (purpose) {
-    case "MENTOR_INTERVIEW":
-      if (sessionId) {
-        return {
-          to: `/user/mock-interview/history/${sessionId}`,
-          label: t("paymentPaymentcancelpage.viewSessionDetails"),
-        };
-      }
-      return {
-        to: "/user?tab=interviewHistory",
-        label: t("common.viewInterviewHistory"),
-      };
-    case "BUY_MEMBERSHIP":
-    default:
-      return {
-        to: "/user?tab=account",
-        label: t("common.returnToAccount"),
-      };
-  }
-};
 export function PaymentCancelPage() {
   const { t } = useTranslation();
+
+  const isIdempotentHandledError = useCallback(
+    (error?: string): boolean => {
+      if (!error) {
+        return false;
+      }
+      const normalized = error.toLowerCase();
+      return (
+        normalized.includes("not found") ||
+        normalized.includes("404") ||
+        normalized.includes("already") ||
+        normalized.includes(t("paymentPaymentcancelpage.processed")) ||
+        normalized.includes("da duoc xu ly") ||
+        normalized.includes(t("paymentPaymentcancelpage.cancelled")) ||
+        normalized.includes("da huy") ||
+        normalized.includes("processed")
+      );
+    },
+    [t]
+  );
+
+  const getCancelPrimaryRedirect = (
+    purpose?: PaymentPurpose,
+    sessionId?: number
+  ): {
+    to: string;
+    label: string;
+  } => {
+    switch (purpose) {
+      case "MENTOR_INTERVIEW":
+        if (sessionId) {
+          return {
+            to: `/user/mock-interview/history/${sessionId}`,
+            label: t("paymentPaymentcancelpage.viewSessionDetails"),
+          };
+        }
+        return {
+          to: "/user?tab=interviewHistory",
+          label: t("common.viewInterviewHistory"),
+        };
+      case "FULLY_PAID":
+      default:
+        return {
+          to: "/user?tab=account",
+          label: t("common.returnToAccount"),
+        };
+    }
+  };
   const { user } = useAuthStore();
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
   const orderCode = query.get("orderCode")?.trim() || "";
@@ -95,7 +98,7 @@ export function PaymentCancelPage() {
   );
   const [processing, setProcessing] = useState(false);
   const [chainResult, setChainResult] = useState<CancelChainResult>("idle");
-  const [resultMessage, setResultMessage] = useState(t("adminUsermanagement.hide"));
+  const [resultMessage, setResultMessage] = useState("");
   const [recoveryContext, setRecoveryContext] = useState<PaymentRecoveryContext | null>(null);
   const recoveryContextRef = useRef<PaymentRecoveryContext | null>(null);
   const inFlightTransactionCodeRef = useRef<string | null>(null);
@@ -278,8 +281,8 @@ export function PaymentCancelPage() {
             },
           });
           setChainResult("missing");
-          setResultMessage(t("sharedSpeechplaygroundpage.areNot"));
-          toast.error(t("sharedSpeechplaygroundpage.areNot"));
+          setResultMessage(t("general.anErrorHasOccurredPlease"));
+          toast.error(t("general.anErrorHasOccurredPlease"));
           if (pendingSessionPayment?.sessionId && context?.paymentPurpose !== "MENTOR_INTERVIEW") {
             clearPendingSessionPaymentContext();
           }
@@ -386,7 +389,7 @@ export function PaymentCancelPage() {
           setRecoveryContext(failedContext);
         }
         setChainResult("missing");
-        setResultMessage(t("sharedSpeechplaygroundpage.areNot"));
+        setResultMessage(t("general.anErrorHasOccurredPlease"));
         toast.error(t("paymentPaymentcancelpage.noTransactionFoundToCancel"));
         if (pendingSessionPayment?.sessionId && resolvedPurpose !== "MENTOR_INTERVIEW") {
           clearPendingSessionPaymentContext();
@@ -518,7 +521,7 @@ export function PaymentCancelPage() {
           status: "CANCEL_CHAIN_SUCCESS",
           message:
             cancelResult.success && deleteResult.success
-              ? t("paymentPaymentcancelpage.cancelledThanhToanThanhCong")
+              ? t("paymentPaymentcancelpage.paymentCancelledSuccessfully")
               : t("adminTransactionpaymentmanagement.transaction"),
           payload:
             cancelResult.success && deleteResult.success
@@ -548,13 +551,13 @@ export function PaymentCancelPage() {
             sessionId: resolvedSessionId,
             checkoutUrl: context?.checkoutUrl,
             status: "CANCEL_CHAIN_SUCCESS",
-            note: t("paymentPaymentcancelpage.cancelledThanhToanThanhCong"),
+            note: t("paymentPaymentcancelpage.paymentCancelledSuccessfully"),
           });
           setRecoveryContext(successContext);
         }
         setChainResult("success");
         setResultMessage(t("adminCompanymanagement.request"));
-        toast.success(t("paymentPaymentcancelpage.cancelledThanhToanThanhCong"));
+        toast.success(t("paymentPaymentcancelpage.paymentCancelledSuccessfully"));
         if (pendingSessionPayment?.sessionId) {
           clearPendingSessionPaymentContext();
         }
@@ -568,6 +571,7 @@ export function PaymentCancelPage() {
       callbackCheckoutToken,
       cancelQueryFlag,
       currentUserId,
+      isIdempotentHandledError,
       orderCode,
       pendingSessionPayment,
       queryTransactionCode,
@@ -614,7 +618,7 @@ export function PaymentCancelPage() {
           {processing ? (
             <div className="flex items-center gap-2">
               <Spinner size="sm" tone="muted" />
-              {t("adminUsermanagement.hide")}
+              {t("common.processing")}
             </div>
           ) : (
             resultMessage
@@ -641,7 +645,7 @@ export function PaymentCancelPage() {
             className="rounded-xl bg-[#0047AB] px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-[#003b8d]">
             {primaryRedirect.label}
           </Link>
-          {resolvedPurpose === "BUY_MEMBERSHIP" && (
+          {resolvedPurpose === "FULLY_PAID" && (
             <Link
               to="/user?tab=account"
               className="rounded-xl border border-slate-300 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
