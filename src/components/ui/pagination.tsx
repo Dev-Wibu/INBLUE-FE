@@ -4,10 +4,11 @@ import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-re
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
+  const { t } = useTranslation();
   return (
     <nav
       role="navigation"
-      aria-label="pagination"
+      aria-label={t("compUi.pagination")}
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
       {...props}
