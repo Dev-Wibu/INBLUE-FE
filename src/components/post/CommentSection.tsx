@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { toTimestamp } from "@/lib/formatting";
-import i18n from "@/lib/i18n";
 import { queryClient } from "@/lib/queryClient";
 import { useCreateComment, usePostComments } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -11,7 +10,6 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CommentItem } from "./CommentItem";
-const t = i18n.t.bind(i18n);
 type CommentNode = {
   comment: PostCommentResponse;
   children: CommentNode[];
@@ -83,6 +81,7 @@ interface ReplyInputProps {
   onCancel: () => void;
 }
 function ReplyInput({ userName, value, onChange, onSubmit, onCancel }: ReplyInputProps) {
+  const { t } = useTranslation();
   return (
     <div className="mt-2 flex flex-col gap-1.5 pl-11">
       <div className="flex items-center gap-1.5">
@@ -146,6 +145,7 @@ function CommentThread({
   onMentionClick,
   depth = 0,
 }: CommentThreadProps) {
+  const { t } = useTranslation();
   const { comment } = node;
   const isExpanded = comment.id != null && expandedIds.has(comment.id);
   const isReplyingToThis = replyingToId === comment.id;
@@ -203,7 +203,7 @@ function CommentThread({
               className="text-muted-foreground gap-1 text-xs"
               onClick={() => comment.id != null && onToggleExpand(comment.id)}>
               <ChevronDown className="h-3.5 w-3.5" />
-              Xem {totalReplies} {t("common.feedback")}
+              {t("common.view")} {totalReplies} {t("common.feedback")}
             </Button>
           ) : (
             <>

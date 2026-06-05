@@ -1,6 +1,4 @@
-import i18n from "@/lib/i18n";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 /**
  * Demo Login Button Component
  *
@@ -29,27 +27,6 @@ interface DemoAccount {
   description: string;
 }
 
-const DEMO_ACCOUNTS: DemoAccount[] = [
-  {
-    role: "USER",
-    email: "binhan@gmail.com",
-    password: "123",
-    description: t("compDemologinbutton.userAccountToExperienceStudent"),
-  },
-  {
-    role: "ADMIN",
-    email: "thuson@gmail.com",
-    password: "12345",
-    description: t("compDemologinbutton.administratorAccountToManageThe"),
-  },
-  {
-    role: "MENTOR",
-    email: "b@fpt.com",
-    password: "12345",
-    description: t("compDemologinbutton.mentorAccountToManageInterview"),
-  },
-];
-
 interface DemoLoginButtonProps {
   onSelectAccount?: (email: string, password: string) => void;
 }
@@ -58,6 +35,27 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const DEMO_ACCOUNTS: DemoAccount[] = [
+    {
+      role: "USER",
+      email: "binhan@gmail.com",
+      password: "123",
+      description: t("compDemologinbutton.userAccountToExperienceStudent"),
+    },
+    {
+      role: "ADMIN",
+      email: "thuson@gmail.com",
+      password: "12345",
+      description: t("compDemologinbutton.administratorAccountToManageThe"),
+    },
+    {
+      role: "MENTOR",
+      email: "b@fpt.com",
+      password: "12345",
+      description: t("compDemologinbutton.mentorAccountToManageInterview"),
+    },
+  ];
 
   const handleCopy = async (text: string, fieldId: string) => {
     try {
@@ -168,7 +166,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
                   {/* Credentials */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Email:</span>
+                      <span className="text-sm text-gray-500">{t("common.email")}:</span>
                       <div className="flex items-center gap-2">
                         <code className="rounded bg-gray-100 px-2 py-1 text-sm font-medium text-gray-800">
                           {account.email}

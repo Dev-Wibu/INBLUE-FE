@@ -20,6 +20,7 @@ describe("dashboard-breadcrumb", () => {
           label: t("common.home"),
         },
       ],
+      t,
     });
     expect(items).toEqual([
       {
@@ -38,6 +39,7 @@ describe("dashboard-breadcrumb", () => {
       role: "mentor",
       pathname: "/mentor/sessions/123/review",
       defaultTab: "overview",
+      t,
     });
     expect(tab).toBe("sessions");
   });
@@ -53,6 +55,7 @@ describe("dashboard-breadcrumb", () => {
         },
       ],
       nestedLabelOverride: t("general.sessionSession1776232524937"),
+      t,
     });
     expect(items.at(-1)).toEqual({
       label: t("general.sessionSession1776232524937"),
@@ -60,7 +63,7 @@ describe("dashboard-breadcrumb", () => {
     });
   });
   it(t("general.returnsRouteMetadataWithDynamic"), () => {
-    const routeMatch = getDashboardRouteMatch("user", "/user/mentors/42");
+    const routeMatch = getDashboardRouteMatch("user", "/user/mentors/42", t);
     expect(routeMatch).toEqual({
       label: t("general.mentorProfile"),
       tabType: "mentors",
@@ -77,7 +80,11 @@ describe("dashboard-breadcrumb", () => {
     });
   });
   it(t("general.returnsTheRouteVariantAnd"), () => {
-    const routeMatch = getDashboardRouteMatch("user", "/user/practice/session/9/1/quiz/11/result");
+    const routeMatch = getDashboardRouteMatch(
+      "user",
+      "/user/practice/session/9/1/quiz/11/result",
+      t
+    );
     expect(routeMatch).toEqual({
       label: t("general.testResults"),
       tabType: "practice",
@@ -118,6 +125,7 @@ describe("dashboard-breadcrumb", () => {
           label: t("common.result"),
         },
       ],
+      t,
     });
     expect(items).toEqual([
       {
@@ -154,7 +162,7 @@ describe("dashboard-breadcrumb", () => {
     );
   });
   it(t("general.friendlyFallbackLabelWhenRoute"), () => {
-    const nestedLabel = getDashboardNestedRouteLabel("user", "/user/custom-route-name");
+    const nestedLabel = getDashboardNestedRouteLabel("user", "/user/custom-route-name", t);
     expect(nestedLabel).toBe("Custom Route Name");
   });
 });

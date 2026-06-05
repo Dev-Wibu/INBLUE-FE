@@ -11,37 +11,74 @@ const ISO_LOCAL_PATTERN =
 const US_12H_PATTERN =
   /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM))$/i;
 const US_24H_PATTERN = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
-const vietnamDateFormatter = new Intl.DateTimeFormat("vi-VN", {
-  timeZone: VIETNAM_TIME_ZONE,
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-});
-const vietnamDateTimeFormatter = new Intl.DateTimeFormat("vi-VN", {
-  timeZone: VIETNAM_TIME_ZONE,
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-});
-const vietnamDateTimeWithSecondsFormatter = new Intl.DateTimeFormat("vi-VN", {
-  timeZone: VIETNAM_TIME_ZONE,
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: false,
-});
-const vietnamTimeFormatter = new Intl.DateTimeFormat("vi-VN", {
-  timeZone: VIETNAM_TIME_ZONE,
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false,
-});
+const currentLocale = () => (i18n.language === "en" ? "en-US" : "vi-VN");
+let _dateFormatter: Intl.DateTimeFormat | null = null;
+let _dateFormatterLocale = "";
+function getDateFormatter(): Intl.DateTimeFormat {
+  const locale = currentLocale();
+  if (!_dateFormatter || _dateFormatterLocale !== locale) {
+    _dateFormatter = new Intl.DateTimeFormat(locale, {
+      timeZone: VIETNAM_TIME_ZONE,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    _dateFormatterLocale = locale;
+  }
+  return _dateFormatter;
+}
+let _dateTimeFormatter: Intl.DateTimeFormat | null = null;
+let _dateTimeFormatterLocale = "";
+function getDateTimeFormatter(): Intl.DateTimeFormat {
+  const locale = currentLocale();
+  if (!_dateTimeFormatter || _dateTimeFormatterLocale !== locale) {
+    _dateTimeFormatter = new Intl.DateTimeFormat(locale, {
+      timeZone: VIETNAM_TIME_ZONE,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    _dateTimeFormatterLocale = locale;
+  }
+  return _dateTimeFormatter;
+}
+let _dateTimeSecFormatter: Intl.DateTimeFormat | null = null;
+let _dateTimeSecFormatterLocale = "";
+function getDateTimeSecFormatter(): Intl.DateTimeFormat {
+  const locale = currentLocale();
+  if (!_dateTimeSecFormatter || _dateTimeSecFormatterLocale !== locale) {
+    _dateTimeSecFormatter = new Intl.DateTimeFormat(locale, {
+      timeZone: VIETNAM_TIME_ZONE,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+    _dateTimeSecFormatterLocale = locale;
+  }
+  return _dateTimeSecFormatter;
+}
+let _timeFormatter: Intl.DateTimeFormat | null = null;
+let _timeFormatterLocale = "";
+function getTimeFormatter(): Intl.DateTimeFormat {
+  const locale = currentLocale();
+  if (!_timeFormatter || _timeFormatterLocale !== locale) {
+    _timeFormatter = new Intl.DateTimeFormat(locale, {
+      timeZone: VIETNAM_TIME_ZONE,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    _timeFormatterLocale = locale;
+  }
+  return _timeFormatter;
+}
 const toInt = (value: string | undefined, fallback = 0): number => {
   if (!value) {
     return fallback;
@@ -251,9 +288,9 @@ export function toVietnamDateKey(value: DateInput): string | null {
   if (!parsed) {
     return null;
   }
-  const year = getDatePart(parsed, vietnamDateFormatter, "year");
-  const month = getDatePart(parsed, vietnamDateFormatter, "month");
-  const day = getDatePart(parsed, vietnamDateFormatter, "day");
+  const year = getDatePart(parsed, getDateFormatter(), "year");
+  const month = getDatePart(parsed, getDateFormatter(), "month");
+  const day = getDatePart(parsed, getDateFormatter(), "day");
   if (!year || !month || !day) {
     return null;
   }
@@ -264,28 +301,32 @@ export function formatDate(value: DateInput, fallback = EMPTY_PLACEHOLDER): stri
   if (!parsed) {
     return fallback;
   }
-  const day = getDatePart(parsed, vietnamDateFormatter, "day");
-  const month = getDatePart(parsed, vietnamDateFormatter, "month");
-  const year = getDatePart(parsed, vietnamDateFormatter, "year");
+  const df = getDateFormatter();
+  const day = getDatePart(parsed, df, "day");
+  const month = getDatePart(parsed, df, "month");
+  const year = getDatePart(parsed, df, "year");
   if (!day || !month || !year) {
     return fallback;
   }
-  return `${day}/${month}/${year}`;
+  return currentLocale() === "en-US" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
 }
 export function formatDateTime(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {
   const parsed = parseBackendDate(value);
   if (!parsed) {
     return fallback;
   }
-  const day = getDatePart(parsed, vietnamDateTimeFormatter, "day");
-  const month = getDatePart(parsed, vietnamDateTimeFormatter, "month");
-  const year = getDatePart(parsed, vietnamDateTimeFormatter, "year");
-  const hour = getDatePart(parsed, vietnamDateTimeFormatter, "hour");
-  const minute = getDatePart(parsed, vietnamDateTimeFormatter, "minute");
+  const dtf = getDateTimeFormatter();
+  const day = getDatePart(parsed, dtf, "day");
+  const month = getDatePart(parsed, dtf, "month");
+  const year = getDatePart(parsed, dtf, "year");
+  const hour = getDatePart(parsed, dtf, "hour");
+  const minute = getDatePart(parsed, dtf, "minute");
   if (!day || !month || !year || !hour || !minute) {
     return fallback;
   }
-  return `${day}/${month}/${year} ${hour}:${minute}`;
+  const dateStr =
+    currentLocale() === "en-US" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
+  return `${dateStr} ${hour}:${minute}`;
 }
 export function formatUtcNaiveDateTime(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {
   const parsed = parseUtcNaiveDate(value);
@@ -299,24 +340,27 @@ export function formatDateTimeWithSeconds(value: DateInput, fallback = EMPTY_PLA
   if (!parsed) {
     return fallback;
   }
-  const day = getDatePart(parsed, vietnamDateTimeWithSecondsFormatter, "day");
-  const month = getDatePart(parsed, vietnamDateTimeWithSecondsFormatter, "month");
-  const year = getDatePart(parsed, vietnamDateTimeWithSecondsFormatter, "year");
-  const hour = getDatePart(parsed, vietnamDateTimeWithSecondsFormatter, "hour");
-  const minute = getDatePart(parsed, vietnamDateTimeWithSecondsFormatter, "minute");
-  const second = getDatePart(parsed, vietnamDateTimeWithSecondsFormatter, "second");
+  const dtf = getDateTimeSecFormatter();
+  const day = getDatePart(parsed, dtf, "day");
+  const month = getDatePart(parsed, dtf, "month");
+  const year = getDatePart(parsed, dtf, "year");
+  const hour = getDatePart(parsed, dtf, "hour");
+  const minute = getDatePart(parsed, dtf, "minute");
+  const second = getDatePart(parsed, dtf, "second");
   if (!day || !month || !year || !hour || !minute || !second) {
     return fallback;
   }
-  return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
+  const dateStr =
+    currentLocale() === "en-US" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
+  return `${dateStr} ${hour}:${minute}:${second}`;
 }
 export function formatTime(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {
   const parsed = parseBackendDate(value);
   if (!parsed) {
     return fallback;
   }
-  const hour = getDatePart(parsed, vietnamTimeFormatter, "hour");
-  const minute = getDatePart(parsed, vietnamTimeFormatter, "minute");
+  const hour = getDatePart(parsed, getTimeFormatter(), "hour");
+  const minute = getDatePart(parsed, getTimeFormatter(), "minute");
   if (!hour || !minute) {
     return fallback;
   }
@@ -334,30 +378,35 @@ export function formatDayMonth(value: DateInput, fallback = EMPTY_PLACEHOLDER): 
   if (!parsed) {
     return fallback;
   }
-  const day = getDatePart(parsed, vietnamDateFormatter, "day");
-  const month = getDatePart(parsed, vietnamDateFormatter, "month");
+  const df = getDateFormatter();
+  const day = getDatePart(parsed, df, "day");
+  const month = getDatePart(parsed, df, "month");
   if (!day || !month) {
     return fallback;
   }
-  return `${day}/${month}`;
+  return currentLocale() === "en-US" ? `${month}/${day}` : `${day}/${month}`;
 }
 export function formatTimeDayMonth(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {
   const parsed = parseBackendDate(value);
   if (!parsed) {
     return fallback;
   }
-  const hour = getDatePart(parsed, vietnamDateTimeFormatter, "hour");
-  const minute = getDatePart(parsed, vietnamDateTimeFormatter, "minute");
-  const day = getDatePart(parsed, vietnamDateTimeFormatter, "day");
-  const month = getDatePart(parsed, vietnamDateTimeFormatter, "month");
+  const dtf = getDateTimeFormatter();
+  const hour = getDatePart(parsed, dtf, "hour");
+  const minute = getDatePart(parsed, dtf, "minute");
+  const day = getDatePart(parsed, dtf, "day");
+  const month = getDatePart(parsed, dtf, "month");
   if (!hour || !minute || !day || !month) {
     return fallback;
   }
-  return `${hour}:${minute}, ${day}/${month}`;
+  const dateStr = currentLocale() === "en-US" ? `${month}/${day}` : `${day}/${month}`;
+  return `${hour}:${minute}, ${dateStr}`;
 }
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("vi-VN").format(amount) + t("common.vnd");
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+  return new Intl.NumberFormat(locale).format(amount) + t("common.vnd");
 }
 export function formatShortCurrency(amount: number): string {
-  return new Intl.NumberFormat("vi-VN").format(Math.abs(amount)) + t("general.text");
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+  return new Intl.NumberFormat(locale).format(Math.abs(amount)) + t("general.text");
 }

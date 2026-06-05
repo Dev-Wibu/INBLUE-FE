@@ -29,7 +29,7 @@ export function LanguageToggle() {
         <Button variant="ghost" size="sm" className="flex h-9 items-center gap-1.5 px-2">
           <Globe className="text-muted-foreground h-[1.2rem] w-[1.2rem]" />
           <span className="text-muted-foreground text-xs font-semibold uppercase">{language}</span>
-          <span className="sr-only">Toggle language</span>
+          <span className="sr-only">{t("common.toggleLanguage")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

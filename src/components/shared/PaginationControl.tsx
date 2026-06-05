@@ -134,7 +134,7 @@ export function PaginationControl({
             size="icon"
             onClick={nextPage}
             disabled={!hasNextPage}
-            title="Trang sau">
+            title={t("compShared.nextPageTitle")}>
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
@@ -149,7 +149,7 @@ export function PaginationControl({
 
         {totalPages > 0 && (
           <span className="text-muted-foreground text-sm">
-            Trang {currentPage}/{totalPages}
+            {t("compShared.pageOf", { current: currentPage, total: totalPages })}
           </span>
         )}
 

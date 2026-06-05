@@ -1,6 +1,4 @@
-import i18n from "@/lib/i18n";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 /**
  * VideoCallProvider.tsx
  * Manages Daily.co callObject lifecycle using createFrame (iframe-based)
@@ -18,42 +16,6 @@ interface VideoCallProviderProps {
   children: ReactNode;
 }
 const DAILY_URL_REGEX = /^https?:\/\//i;
-function extractErrorMessage(error: unknown): string {
-  if (!error) {
-    return t("compVideoCall.anErrorOccurredWhileConnecting");
-  }
-  if (typeof error === "string") {
-    return error;
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  if (typeof error === "object") {
-    const errorLike = error as {
-      errorMsg?: string;
-      message?: string;
-      error?: {
-        msg?: string;
-      };
-    };
-    return (
-      errorLike.errorMsg ||
-      errorLike.error?.msg ||
-      errorLike.message ||
-      t("compVideoCall.anErrorOccurredWhileConnecting")
-    );
-  }
-  return t("compVideoCall.anErrorOccurredWhileConnecting");
-}
-function isRoomUnavailableError(errorMessage: string): boolean {
-  const normalized = errorMessage.toLowerCase();
-  return (
-    normalized.includes("room is no longer available") ||
-    normalized.includes(t("compVideoCall.noLongerAvailable")) ||
-    normalized.includes(t("compVideoCall.expired")) ||
-    normalized.includes("exp-room")
-  );
-}
 function normalizeRoomUrl(rawRoomUrl: string): string | null {
   const trimmed = rawRoomUrl.trim();
   if (!trimmed) return null;
@@ -71,6 +33,50 @@ function normalizeRoomUrl(rawRoomUrl: string): string | null {
 }
 export function VideoCallProvider({ children }: VideoCallProviderProps) {
   const { t } = useTranslation();
+
+  const extractErrorMessage = useCallback(
+    (error: unknown): string => {
+      if (!error) {
+        return t("compVideoCall.anErrorOccurredWhileConnecting");
+      }
+      if (typeof error === "string") {
+        return error;
+      }
+      if (error instanceof Error) {
+        return error.message;
+      }
+      if (typeof error === "object") {
+        const errorLike = error as {
+          errorMsg?: string;
+          message?: string;
+          error?: {
+            msg?: string;
+          };
+        };
+        return (
+          errorLike.errorMsg ||
+          errorLike.error?.msg ||
+          errorLike.message ||
+          t("compVideoCall.anErrorOccurredWhileConnecting")
+        );
+      }
+      return t("compVideoCall.anErrorOccurredWhileConnecting");
+    },
+    [t]
+  );
+
+  const isRoomUnavailableError = useCallback(
+    (errorMessage: string): boolean => {
+      const normalized = errorMessage.toLowerCase();
+      return (
+        normalized.includes("room is no longer available") ||
+        normalized.includes(t("compVideoCall.noLongerAvailable")) ||
+        normalized.includes(t("compVideoCall.expired")) ||
+        normalized.includes("exp-room")
+      );
+    },
+    [t]
+  );
   const [callObject, setCallObject] = useState<DailyCall | null>(null);
   const [roomState, setRoomState] = useState<RoomState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -194,7 +200,7 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
       }
     },
 
-    [t]
+    [t, extractErrorMessage, isRoomUnavailableError]
   );
 
   // Leave room handler

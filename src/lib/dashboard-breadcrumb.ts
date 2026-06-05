@@ -1,5 +1,5 @@
-import i18n from "@/lib/i18n";
-const t = i18n.t.bind(i18n);
+import type { TFunction } from "i18next";
+
 export type DashboardRole = "user" | "mentor";
 export interface DashboardTabDefinition {
   type: string;
@@ -52,201 +52,208 @@ export interface DashboardRouteMatch {
     prefix?: string;
   };
 }
-const ROLE_CONFIG: Record<DashboardRole, RoleConfig> = {
-  user: {
-    rootPath: "/user",
-    rootLabel: t("common.user"),
-    defaultTab: "homeFeed",
-  },
-  mentor: {
-    rootPath: "/mentor",
-    rootLabel: "Mentor",
-    defaultTab: "overview",
-  },
-};
-const USER_ROUTE_RULES: RouteLabelRule[] = [
-  {
-    pattern: /^\/user\/ai-interview\/setup$/,
-    label: t("general.establish"),
-    tabType: "aiInterview",
-  },
-  {
-    pattern: /^\/user\/ai-interview\/session$/,
-    label: t("general.aiInterviewSession"),
-    tabType: "aiInterview",
-  },
-  {
-    pattern: /^\/user\/ai-interview\/result\/(?<sessionId>[^/]+)$/,
-    label: t("general.aiInterviewResults"),
-    tabType: "aiInterview",
-    dynamic: {
-      resource: "session",
-      idParam: "sessionId",
-      prefix: t("common.result"),
+
+function getRoleConfig(t: TFunction): Record<DashboardRole, RoleConfig> {
+  return {
+    user: {
+      rootPath: "/user",
+      rootLabel: t("common.user"),
+      defaultTab: "homeFeed",
     },
-  },
-  {
-    pattern: /^\/user\/mock-interview\/select-mentor$/,
-    label: t("common.chooseAMentor"),
-    tabType: "mockInterview",
-  },
-  {
-    pattern: /^\/user\/mock-interview\/schedule$/,
-    label: t("general.schedule"),
-    tabType: "mockInterview",
-  },
-  {
-    pattern: /^\/user\/mock-interview\/booking-success$/,
-    label: t("general.scheduledSuccessfully"),
-    tabType: "mockInterview",
-  },
-  {
-    pattern: /^\/user\/mock-interview\/room\/(?<sessionId>[^/]+)$/,
-    label: t("common.interviewRoom"),
-    tabType: "mockInterview",
-    dynamic: {
-      resource: "session",
-      idParam: "sessionId",
-      prefix: t("general.room"),
+    mentor: {
+      rootPath: "/mentor",
+      rootLabel: t("common.mentor"),
+      defaultTab: "overview",
     },
-  },
-  {
-    pattern: /^\/user\/mock-interview\/history\/(?<sessionId>[^/]+)\/feedback$/,
-    label: t("common.writeAReview"),
-    tabType: "mockInterview",
-    dynamic: {
-      resource: "session",
-      idParam: "sessionId",
-      prefix: t("common.writeAReview"),
+  };
+}
+function getUserRouteRules(t: TFunction): RouteLabelRule[] {
+  return [
+    {
+      pattern: /^\/user\/ai-interview\/setup$/,
+      label: t("general.establish"),
+      tabType: "aiInterview",
     },
-  },
-  {
-    pattern: /^\/user\/mock-interview\/history\/(?<sessionId>[^/]+)$/,
-    label: t("general.sessionDetails"),
-    tabType: "mockInterview",
-    dynamic: {
-      resource: "session",
-      idParam: "sessionId",
-      prefix: t("common.session"),
+    {
+      pattern: /^\/user\/ai-interview\/session$/,
+      label: t("general.aiInterviewSession"),
+      tabType: "aiInterview",
     },
-  },
-  {
-    pattern:
-      /^\/user\/practice\/session\/(?<sessionId>[^/]+)\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)\/result$/,
-    label: t("general.testResults"),
-    tabType: "practice",
-    variant: "practiceQuizResult",
-    dynamic: {
-      resource: "quizSet",
-      idParam: "quizId",
-      prefix: t("common.result"),
+    {
+      pattern: /^\/user\/ai-interview\/result\/(?<sessionId>[^/]+)$/,
+      label: t("general.aiInterviewResults"),
+      tabType: "aiInterview",
+      dynamic: {
+        resource: "session",
+        idParam: "sessionId",
+        prefix: t("common.result"),
+      },
     },
-  },
-  {
-    pattern:
-      /^\/user\/practice\/session\/(?<sessionId>[^/]+)\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)$/,
-    label: t("general.test"),
-    tabType: "practice",
-    variant: "practiceQuiz",
-    dynamic: {
-      resource: "quizSet",
-      idParam: "quizId",
-      prefix: t("general.test"),
+    {
+      pattern: /^\/user\/mock-interview\/select-mentor$/,
+      label: t("common.chooseAMentor"),
+      tabType: "mockInterview",
     },
-  },
-  {
-    pattern: /^\/user\/practice\/session\/(?<sessionId>[^/]+)$/,
-    label: t("general.sessionTrainingSet"),
-    tabType: "practice",
-    dynamic: {
-      resource: "session",
-      idParam: "sessionId",
-      prefix: t("common.route"),
+    {
+      pattern: /^\/user\/mock-interview\/schedule$/,
+      label: t("general.schedule"),
+      tabType: "mockInterview",
     },
-  },
-  {
-    pattern: /^\/user\/practice\/(?<practiceSetId>[^/]+)$/,
-    label: t("common.detailsOfPracticeSet"),
-    tabType: "practice",
-    dynamic: {
-      resource: "practiceSet",
-      idParam: "practiceSetId",
-      prefix: t("general.set"),
+    {
+      pattern: /^\/user\/mock-interview\/booking-success$/,
+      label: t("general.scheduledSuccessfully"),
+      tabType: "mockInterview",
     },
-  },
-  {
-    pattern: /^\/user\/feedback\/(?<reviewId>[^/]+)$/,
-    label: t("general.reviewDetails"),
-    tabType: "feedback",
-    dynamic: {
-      resource: "mentorReview",
-      idParam: "reviewId",
-      prefix: t("common.evaluate"),
+    {
+      pattern: /^\/user\/mock-interview\/room\/(?<sessionId>[^/]+)$/,
+      label: t("common.interviewRoom"),
+      tabType: "mockInterview",
+      dynamic: {
+        resource: "session",
+        idParam: "sessionId",
+        prefix: t("general.room"),
+      },
     },
-  },
-  {
-    pattern: /^\/user\/mentors\/(?<mentorId>[^/]+)$/,
-    label: t("general.mentorProfile"),
-    tabType: "mentors",
-    dynamic: {
-      resource: "mentor",
-      idParam: "mentorId",
-      prefix: "Mentor",
+    {
+      pattern: /^\/user\/mock-interview\/history\/(?<sessionId>[^/]+)\/feedback$/,
+      label: t("common.writeAReview"),
+      tabType: "mockInterview",
+      dynamic: {
+        resource: "session",
+        idParam: "sessionId",
+        prefix: t("common.writeAReview"),
+      },
     },
-  },
-];
-const MENTOR_ROUTE_RULES: RouteLabelRule[] = [
-  {
-    pattern: /^\/mentor\/sessions\/room\/(?<sessionId>[^/]+)$/,
-    label: t("common.interviewRoom"),
-    tabType: "sessions",
-    dynamic: {
-      resource: "session",
-      idParam: "sessionId",
-      prefix: t("general.room"),
+    {
+      pattern: /^\/user\/mock-interview\/history\/(?<sessionId>[^/]+)$/,
+      label: t("general.sessionDetails"),
+      tabType: "mockInterview",
+      dynamic: {
+        resource: "session",
+        idParam: "sessionId",
+        prefix: t("common.session"),
+      },
     },
-  },
-  {
-    pattern: /^\/mentor\/sessions\/(?<sessionId>[^/]+)\/review$/,
-    label: t("common.writeFeedback"),
-    tabType: "sessions",
-    dynamic: {
-      resource: "session",
-      idParam: "sessionId",
-      prefix: t("common.writeFeedback"),
+    {
+      pattern:
+        /^\/user\/practice\/session\/(?<sessionId>[^/]+)\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)\/result$/,
+      label: t("general.testResults"),
+      tabType: "practice",
+      variant: "practiceQuizResult",
+      dynamic: {
+        resource: "quizSet",
+        idParam: "quizId",
+        prefix: t("common.result"),
+      },
     },
-  },
-  {
-    pattern: /^\/mentor\/sessions\/(?<sessionId>[^/]+)$/,
-    label: t("general.sessionDetails"),
-    tabType: "sessions",
-    dynamic: {
-      resource: "session",
-      idParam: "sessionId",
-      prefix: t("common.session"),
+    {
+      pattern:
+        /^\/user\/practice\/session\/(?<sessionId>[^/]+)\/(?<practiceSetId>[^/]+)\/quiz\/(?<quizId>[^/]+)$/,
+      label: t("general.test"),
+      tabType: "practice",
+      variant: "practiceQuiz",
+      dynamic: {
+        resource: "quizSet",
+        idParam: "quizId",
+        prefix: t("general.test"),
+      },
     },
-  },
-  {
-    pattern: /^\/mentor\/reviews\/(?<reviewId>[^/]+)$/,
-    label: t("general.reviewDetails"),
-    tabType: "reviews",
-    dynamic: {
-      resource: "mentorReview",
-      idParam: "reviewId",
-      prefix: t("common.evaluate"),
+    {
+      pattern: /^\/user\/practice\/session\/(?<sessionId>[^/]+)$/,
+      label: t("general.sessionTrainingSet"),
+      tabType: "practice",
+      dynamic: {
+        resource: "session",
+        idParam: "sessionId",
+        prefix: t("common.route"),
+      },
     },
-  },
-  {
-    pattern: /^\/mentor\/students\/(?<userId>[^/]+)$/,
-    label: t("general.studentDetails"),
-    tabType: "students",
-    dynamic: {
-      resource: "user",
-      idParam: "userId",
-      prefix: t("common.students"),
+    {
+      pattern: /^\/user\/practice\/(?<practiceSetId>[^/]+)$/,
+      label: t("common.detailsOfPracticeSet"),
+      tabType: "practice",
+      dynamic: {
+        resource: "practiceSet",
+        idParam: "practiceSetId",
+        prefix: t("general.set"),
+      },
     },
-  },
-];
+    {
+      pattern: /^\/user\/feedback\/(?<reviewId>[^/]+)$/,
+      label: t("general.reviewDetails"),
+      tabType: "feedback",
+      dynamic: {
+        resource: "mentorReview",
+        idParam: "reviewId",
+        prefix: t("common.evaluate"),
+      },
+    },
+    {
+      pattern: /^\/user\/mentors\/(?<mentorId>[^/]+)$/,
+      label: t("general.mentorProfile"),
+      tabType: "mentors",
+      dynamic: {
+        resource: "mentor",
+        idParam: "mentorId",
+        prefix: t("common.mentor"),
+      },
+    },
+  ];
+}
+function getMentorRouteRules(t: TFunction): RouteLabelRule[] {
+  return [
+    {
+      pattern: /^\/mentor\/sessions\/room\/(?<sessionId>[^/]+)$/,
+      label: t("common.interviewRoom"),
+      tabType: "sessions",
+      dynamic: {
+        resource: "session",
+        idParam: "sessionId",
+        prefix: t("general.room"),
+      },
+    },
+    {
+      pattern: /^\/mentor\/sessions\/(?<sessionId>[^/]+)\/review$/,
+      label: t("common.writeFeedback"),
+      tabType: "sessions",
+      dynamic: {
+        resource: "session",
+        idParam: "sessionId",
+        prefix: t("common.writeFeedback"),
+      },
+    },
+    {
+      pattern: /^\/mentor\/sessions\/(?<sessionId>[^/]+)$/,
+      label: t("general.sessionDetails"),
+      tabType: "sessions",
+      dynamic: {
+        resource: "session",
+        idParam: "sessionId",
+        prefix: t("common.session"),
+      },
+    },
+    {
+      pattern: /^\/mentor\/reviews\/(?<reviewId>[^/]+)$/,
+      label: t("general.reviewDetails"),
+      tabType: "reviews",
+      dynamic: {
+        resource: "mentorReview",
+        idParam: "reviewId",
+        prefix: t("common.evaluate"),
+      },
+    },
+    {
+      pattern: /^\/mentor\/students\/(?<userId>[^/]+)$/,
+      label: t("general.studentDetails"),
+      tabType: "students",
+      dynamic: {
+        resource: "user",
+        idParam: "userId",
+        prefix: t("common.students"),
+      },
+    },
+  ];
+}
 const USER_SEGMENT_TO_TAB: Record<string, string> = {
   mentors: "mentors",
   "ai-interview": "aiInterview",
@@ -305,17 +312,18 @@ export function normalizeDashboardPath(pathname: string): string {
 }
 function getTabLabel(tabType: string, availableTabs: DashboardTabDefinition[]): string {
   const matchedTab = availableTabs.find((tab) => tab.type === tabType);
-  return matchedTab?.label ?? "Trang";
+  return matchedTab?.label ?? "Page";
 }
-function getRouteRules(role: DashboardRole): RouteLabelRule[] {
-  return role === "user" ? USER_ROUTE_RULES : MENTOR_ROUTE_RULES;
+function getRouteRules(role: DashboardRole, t: TFunction): RouteLabelRule[] {
+  return role === "user" ? getUserRouteRules(t) : getMentorRouteRules(t);
 }
 export function getDashboardRouteMatch(
   role: DashboardRole,
-  pathname: string
+  pathname: string,
+  t: TFunction
 ): DashboardRouteMatch | null {
   const normalizedPath = normalizeDashboardPath(pathname);
-  const matchedRule = getRouteRules(role).find((rule) => rule.pattern.test(normalizedPath));
+  const matchedRule = getRouteRules(role, t).find((rule) => rule.pattern.test(normalizedPath));
   if (!matchedRule) {
     return null;
   }
@@ -343,14 +351,16 @@ export function getDashboardTabFromPath<T extends string>({
   role,
   pathname,
   defaultTab,
+  t,
 }: {
   role: DashboardRole;
   pathname: string;
   defaultTab: T;
+  t: TFunction;
 }): string {
   const normalizedPath = normalizeDashboardPath(pathname);
-  const roleConfig = ROLE_CONFIG[role];
-  const routeMatch = getDashboardRouteMatch(role, normalizedPath);
+  const roleConfig = getRoleConfig(t)[role];
+  const routeMatch = getDashboardRouteMatch(role, normalizedPath, t);
   if (routeMatch?.tabType) {
     return routeMatch.tabType;
   }
@@ -370,7 +380,7 @@ function isDynamicSegment(segment: string): boolean {
   }
   return /^[a-f0-9-]{8,}$/i.test(segment);
 }
-function toReadableLabel(segment: string): string {
+function toReadableLabel(segment: string, t: TFunction): string {
   if (!segment) {
     return t("common.detail");
   }
@@ -382,15 +392,19 @@ function toReadableLabel(segment: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
-export function getDashboardNestedRouteLabel(role: DashboardRole, pathname: string): string {
+export function getDashboardNestedRouteLabel(
+  role: DashboardRole,
+  pathname: string,
+  t: TFunction
+): string {
   const normalizedPath = normalizeDashboardPath(pathname);
-  const routeMatch = getDashboardRouteMatch(role, normalizedPath);
+  const routeMatch = getDashboardRouteMatch(role, normalizedPath, t);
   if (routeMatch) {
     return routeMatch.label;
   }
   const segments = normalizedPath.split("/").filter(Boolean);
   const lastSegment = segments.at(-1);
-  return toReadableLabel(lastSegment ?? "");
+  return toReadableLabel(lastSegment ?? "", t);
 }
 export function buildDashboardBreadcrumbItems({
   role,
@@ -399,6 +413,7 @@ export function buildDashboardBreadcrumbItems({
   availableTabs,
   nestedLabelOverride,
   detailLabelsOverride,
+  t,
 }: {
   role: DashboardRole;
   pathname: string;
@@ -406,8 +421,9 @@ export function buildDashboardBreadcrumbItems({
   availableTabs: DashboardTabDefinition[];
   nestedLabelOverride?: string;
   detailLabelsOverride?: Array<string | DashboardBreadcrumbDetailItem>;
+  t: TFunction;
 }): DashboardBreadcrumbItem[] {
-  const roleConfig = ROLE_CONFIG[role];
+  const roleConfig = getRoleConfig(t)[role];
   const normalizedPath = normalizeDashboardPath(pathname);
   const activeTabLabel = getTabLabel(activeTab, availableTabs);
   const rootHref = `${roleConfig.rootPath}?tab=${roleConfig.defaultTab}`;
@@ -452,7 +468,7 @@ export function buildDashboardBreadcrumbItems({
     }
     return breadcrumbs;
   }
-  const nestedLabel = nestedLabelOverride ?? getDashboardNestedRouteLabel(role, normalizedPath);
+  const nestedLabel = nestedLabelOverride ?? getDashboardNestedRouteLabel(role, normalizedPath, t);
   if (nestedLabel && nestedLabel !== activeTabLabel) {
     breadcrumbs.push({
       label: nestedLabel,

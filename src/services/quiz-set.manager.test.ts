@@ -40,13 +40,15 @@ describe("QuizSetManager createFullAi", () => {
       "/api/quiz-sets/create-full-ai",
       expect.objectContaining({
         params: {
-          practiceSetId: 10,
+          query: {
+            practiceSetId: 10,
+          },
         },
         timeout: 120000,
       })
     );
 
-    const requestConfig = mockApi.POST.mock.calls[0]?.[1] as { params?: Record<string, unknown> };
-    expect(requestConfig?.params).not.toHaveProperty("userId");
+    const requestConfig = mockApi.POST.mock.calls[0]?.[1] as { params?: { query?: Record<string, unknown> } };
+    expect(requestConfig?.params?.query).not.toHaveProperty("userId");
   });
 });

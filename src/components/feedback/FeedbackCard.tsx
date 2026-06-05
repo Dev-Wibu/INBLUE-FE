@@ -41,8 +41,8 @@ export function FeedbackCard({
       })
     : t("common.students");
   const fallbackMentorName = feedback.session?.userId2
-    ? `Mentor #${feedback.session.userId2}`
-    : "Mentor";
+    ? t("common.mentorWithId", { id: feedback.session.userId2 })
+    : t("common.mentor");
   const displayName = showMentor
     ? feedback.mentor?.name || fallbackMentorName
     : showUser

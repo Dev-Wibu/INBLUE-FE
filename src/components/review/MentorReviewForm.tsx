@@ -1,6 +1,4 @@
-import i18n from "@/lib/i18n";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 /**
  * MentorReviewForm Component
  * Form for creating/editing mentor reviews with STAR method
@@ -23,37 +21,6 @@ import type { MentorReview } from "@/services/mentor-review.manager";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-const reviewSchema = z
-  .object({
-    rating: z.number().min(0).max(5),
-    situationNote: z.string().optional(),
-    taskNote: z.string().optional(),
-    actionNote: z.string().optional(),
-    resultNote: z.string().optional(),
-    strength: z.string().optional(),
-    weakness: z.string().optional(),
-    improve: z.string().optional(),
-  })
-  .superRefine((value, ctx) => {
-    const hasRating = (value.rating || 0) > 0;
-    const hasAnyNote = [
-      value.situationNote,
-      value.taskNote,
-      value.actionNote,
-      value.resultNote,
-      value.strength,
-      value.weakness,
-      value.improve,
-    ].some((note) => Boolean(note?.trim()));
-    if (!hasRating && !hasAnyNote) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: t("compReview.pleaseEnterAtLeastOne"),
-        path: ["rating"],
-      });
-    }
-  });
-type ReviewFormData = z.infer<typeof reviewSchema>;
 interface MentorReviewFormProps {
   sessionId: number;
   mentorId: number;
@@ -85,6 +52,40 @@ export function MentorReviewForm({
   isLoading = false,
 }: MentorReviewFormProps) {
   const { t } = useTranslation();
+
+  const reviewSchema = z
+    .object({
+      rating: z.number().min(0).max(5),
+      situationNote: z.string().optional(),
+      taskNote: z.string().optional(),
+      actionNote: z.string().optional(),
+      resultNote: z.string().optional(),
+      strength: z.string().optional(),
+      weakness: z.string().optional(),
+      improve: z.string().optional(),
+    })
+    .superRefine((value, ctx) => {
+      const hasRating = (value.rating || 0) > 0;
+      const hasAnyNote = [
+        value.situationNote,
+        value.taskNote,
+        value.actionNote,
+        value.resultNote,
+        value.strength,
+        value.weakness,
+        value.improve,
+      ].some((note) => Boolean(note?.trim()));
+      if (!hasRating && !hasAnyNote) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t("compReview.pleaseEnterAtLeastOne"),
+          path: ["rating"],
+        });
+      }
+    });
+
+  type ReviewFormData = z.infer<typeof reviewSchema>;
+
   const form = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {

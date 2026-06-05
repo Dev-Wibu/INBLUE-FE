@@ -1,6 +1,7 @@
 import type { ApiResponse, FaceAnalysisResponse } from "@/interfaces";
 
 import { fetchClient } from "@/lib/api";
+import i18n from "@/lib/i18n";
 
 export class InterviewAnalysisManager {
   async analyzeFaceBehavior(image: File): Promise<ApiResponse<FaceAnalysisResponse>> {
@@ -25,7 +26,7 @@ export class InterviewAnalysisManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the phan tich hanh vi khuon mat",
+        error: error instanceof Error ? error.message : i18n.t("errors.cannotAnalyzeFaceBehavior"),
       };
     }
   }

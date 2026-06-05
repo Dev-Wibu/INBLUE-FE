@@ -42,8 +42,8 @@ export function ReviewCard({
       })
     : t("common.students");
   const fallbackMentorName = review.session?.userId2
-    ? `Mentor #${review.session.userId2}`
-    : "Mentor";
+    ? t("common.mentorWithId", { id: review.session.userId2 })
+    : t("common.mentor");
   const displayName = showUser
     ? review.user?.name || fallbackUserName
     : showMentor

@@ -1,8 +1,7 @@
-import i18n from "@/lib/i18n";
 import { Command as CommandPrimitive } from "cmdk";
 import { SearchIcon } from "lucide-react";
 import * as React from "react";
-const t = i18n.t.bind(i18n);
+import { useTranslation } from "react-i18next";
 
 import {
   Dialog,
@@ -27,8 +26,8 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
 }
 
 function CommandDialog({
-  title = t("compUi.commandTable"),
-  description = t("compUi.findCommandsToRun"),
+  title: titleProp,
+  description: descriptionProp,
   children,
   className,
   showCloseButton = true,
@@ -39,6 +38,9 @@ function CommandDialog({
   className?: string;
   showCloseButton?: boolean;
 }) {
+  const { t } = useTranslation();
+  const title = titleProp ?? t("compUi.commandTable");
+  const description = descriptionProp ?? t("compUi.findCommandsToRun");
   return (
     <Dialog {...props}>
       <DialogHeader className="sr-only">

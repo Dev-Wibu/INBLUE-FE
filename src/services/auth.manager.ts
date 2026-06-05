@@ -430,7 +430,7 @@ export class AuthManager {
     if (httpStatus === 429) {
       return t("general.youHaveEnteredIncorrectlyToo");
     }
-    return rawMessage || t("adminUsermanagement.hide");
+    return rawMessage || t("common.error");
   }
 
   /**
@@ -485,7 +485,7 @@ export class AuthManager {
       console.error("Login error:", error);
       return {
         success: false,
-        error: getNormalizedErrorMessage(error, t("adminUsermanagement.hide")),
+        error: getNormalizedErrorMessage(error, t("common.loginFailed")),
       };
     }
   }
@@ -649,7 +649,7 @@ export class AuthManager {
       console.error("Signup error:", error);
       return {
         success: false,
-        error: getNormalizedErrorMessage(error, t("adminUsermanagement.hide")),
+        error: getNormalizedErrorMessage(error, t("common.registrationFailed")),
       };
     }
   }

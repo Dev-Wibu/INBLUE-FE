@@ -2,6 +2,7 @@ import type { ApiResponse, Round, SetupJdRoundsRequest, UpdateJdRoundRequest } f
 
 import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { fetchClient } from "@/lib/api";
+import i18n from "@/lib/i18n";
 
 export class RoundManager {
   async setUpForJd(
@@ -23,7 +24,7 @@ export class RoundManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the thiet lap vong phong van",
+        error: error instanceof Error ? error.message : i18n.t("errors.cannotSetUpInterviewRounds"),
       };
     }
   }
@@ -47,7 +48,8 @@ export class RoundManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Khong the cap nhat vong phong van",
+        error:
+          error instanceof Error ? error.message : i18n.t("errors.cannotUpdateInterviewRounds"),
       };
     }
   }

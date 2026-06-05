@@ -13,14 +13,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { CalendarIcon, Filter as FilterIcon, X } from "lucide-react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 
 // ==================== Interfaces ====================
 
@@ -77,23 +75,26 @@ interface SelectFilterProps {
   value: string;
   onValueChange: (value: string) => void;
 }
-const SelectFilter = ({ option, value, onValueChange }: SelectFilterProps) => (
-  <div className="space-y-2">
-    <label className="text-sm font-medium">{option.label}</label>
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger>
-        <SelectValue placeholder={option.placeholder || t("compShared.select")} />
-      </SelectTrigger>
-      <SelectContent>
-        {option.selectOptions?.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div>
-);
+const SelectFilter = ({ option, value, onValueChange }: SelectFilterProps) => {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">{option.label}</label>
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger>
+          <SelectValue placeholder={option.placeholder || t("compShared.select")} />
+        </SelectTrigger>
+        <SelectContent>
+          {option.selectOptions?.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
 interface DateRangeFilterProps {
   option: FilterOption;
   value: {
@@ -102,73 +103,76 @@ interface DateRangeFilterProps {
   };
   onValueChange: (value: { from: Date | undefined; to: Date | undefined }) => void;
 }
-const DateRangeFilter = ({ option, value, onValueChange }: DateRangeFilterProps) => (
-  <div className="space-y-2">
-    <label className="text-sm font-medium">{option.label}</label>
-    <div className="flex gap-2">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "w-full justify-start text-left font-normal",
-              !value.from && "text-muted-foreground"
-            )}>
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {value.from
-              ? format(value.from, "dd/MM/yyyy", {
-                  locale: vi,
+const DateRangeFilter = ({ option, value, onValueChange }: DateRangeFilterProps) => {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">{option.label}</label>
+      <div className="flex gap-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !value.from && "text-muted-foreground"
+              )}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {value.from
+                ? format(value.from, "dd/MM/yyyy", {
+                    locale: vi,
+                  })
+                : t("common.fromDate")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={value.from}
+              onSelect={(date) =>
+                onValueChange({
+                  ...value,
+                  from: date,
                 })
-              : t("common.fromDate")}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={value.from}
-            onSelect={(date) =>
-              onValueChange({
-                ...value,
-                from: date,
-              })
-            }
-            locale={vi}
-          />
-        </PopoverContent>
-      </Popover>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "w-full justify-start text-left font-normal",
-              !value.to && "text-muted-foreground"
-            )}>
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {value.to
-              ? format(value.to, "dd/MM/yyyy", {
-                  locale: vi,
+              }
+              locale={vi}
+            />
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !value.to && "text-muted-foreground"
+              )}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {value.to
+                ? format(value.to, "dd/MM/yyyy", {
+                    locale: vi,
+                  })
+                : t("common.comeDay")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={value.to}
+              onSelect={(date) =>
+                onValueChange({
+                  ...value,
+                  to: date,
                 })
-              : t("common.comeDay")}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={value.to}
-            onSelect={(date) =>
-              onValueChange({
-                ...value,
-                to: date,
-              })
-            }
-            locale={vi}
-          />
-        </PopoverContent>
-      </Popover>
+              }
+              locale={vi}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 interface NumberRangeFilterProps {
   option: FilterOption;
   value: {
@@ -178,6 +182,7 @@ interface NumberRangeFilterProps {
   onValueChange: (value: { from: number | undefined; to: number | undefined }) => void;
 }
 const NumberRangeFilter = ({ option, value, onValueChange }: NumberRangeFilterProps) => {
+  const { t } = useTranslation();
   const config = option.numberRangeConfig || {};
   return (
     <div className="space-y-2">

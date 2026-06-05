@@ -2,10 +2,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { formatDateTime, toTimestamp } from "@/lib/formatting";
-import i18n from "@/lib/i18n";
 import React from "react";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 interface CommentItemProps {
   comment: PostCommentResponse;
   currentUserId?: number;
@@ -14,32 +12,6 @@ interface CommentItemProps {
   parentCommentId?: number;
   onMentionClick?: (_parentCommentId: number) => void;
   isHighlighted?: boolean;
-}
-function getRelativeTime(dateStr?: string): string {
-  if (!dateStr) return "";
-  const timestamp = toTimestamp(dateStr);
-  if (!timestamp) return "";
-  const diffMs = Date.now() - timestamp;
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return t("common.justFinished");
-  if (diffMins < 60)
-    return t("general.minutesAgo", {
-      var_0: diffMins,
-    });
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24)
-    return t("general.hoursAgo", {
-      var_0: diffHours,
-    });
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 30)
-    return t("general.daysAgo", {
-      var_0: diffDays,
-    });
-  const diffMonths = Math.floor(diffDays / 30);
-  return t("general.monthsAgo", {
-    var_0: diffMonths,
-  });
 }
 function renderContent(
   text: string | undefined,
@@ -93,7 +65,36 @@ export function CommentItem({
   isHighlighted,
 }: CommentItemProps) {
   const { t } = useTranslation();
-  const relativeTime = getRelativeTime(comment.createdAt);
+
+  const relativeTime = (() => {
+    const dateStr = comment.createdAt;
+    if (!dateStr) return "";
+    const timestamp = toTimestamp(dateStr);
+    if (!timestamp) return "";
+    // eslint-disable-next-line react-hooks/purity -- Date.now() is intentionally impure for relative time display
+    const diffMs = Date.now() - timestamp;
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return t("common.justFinished");
+    if (diffMins < 60)
+      return t("general.minutesAgo", {
+        var_0: diffMins,
+      });
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24)
+      return t("general.hoursAgo", {
+        var_0: diffHours,
+      });
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 30)
+      return t("general.daysAgo", {
+        var_0: diffDays,
+      });
+    const diffMonths = Math.floor(diffDays / 30);
+    return t("general.monthsAgo", {
+      var_0: diffMonths,
+    });
+  })();
+
   const absoluteTime = formatDateTime(comment.createdAt, "");
   const initials = comment.userName
     ?.split(" ")

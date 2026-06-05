@@ -199,7 +199,7 @@ export function extractFileNameFromUrl(url: string): string {
   const lastSegment = pathname.split("/").pop();
 
   if (!lastSegment) {
-    return "tai-lieu";
+    return t("mediaFileUtils.document");
   }
 
   try {
@@ -265,7 +265,9 @@ export async function resolveSourceToBlobUrl(
 ): Promise<ResolvedBlobSource> {
   if (source instanceof Blob) {
     const fileName =
-      source instanceof File ? source.name : options.fallbackFileName?.trim() || "tai-lieu.pdf";
+      source instanceof File
+        ? source.name
+        : options.fallbackFileName?.trim() || `${t("mediaFileUtils.document")}.pdf`;
 
     return {
       objectUrl: URL.createObjectURL(source),
@@ -312,7 +314,7 @@ export function openUrlInNewTab(url: string): void {
 }
 
 export function downloadFromUrl(url: string, fileName: string): void {
-  const normalizedFileName = fileName.trim() || "tai-xuong";
+  const normalizedFileName = fileName.trim() || t("mediaFileUtils.download");
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = normalizedFileName;

@@ -10,12 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import i18n from "@/lib/i18n";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
 import { cn } from "@/lib/utils";
 import { FileText, Upload, X } from "lucide-react";
 import * as React from "react";
-const t = i18n.t.bind(i18n);
+import { useTranslation } from "react-i18next";
 export interface CVUploadModalProps {
   /** Whether the modal is open */
   isOpen: boolean;
@@ -55,9 +54,12 @@ export function CVUploadModal({
   onUpload,
   onViewCurrent,
   isUploading = false,
-  title = "Upload CV",
-  description = t("compUi.selectYourCvFileOnly"),
+  title,
+  description,
 }: CVUploadModalProps) {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t("common.uploadCv");
+  const resolvedDescription = description ?? t("compUi.selectYourCvFileOnly");
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = React.useState(false);
@@ -147,8 +149,8 @@ export function CVUploadModal({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{resolvedTitle}</DialogTitle>
+          <DialogDescription>{resolvedDescription}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -169,7 +171,7 @@ export function CVUploadModal({
                   </div>
                 </div>
                 <Button variant="outline" size="sm" onClick={handleViewCurrent}>
-                  Xem CV
+                  {t("common.viewCv")}
                 </Button>
               </div>
             </div>
@@ -269,7 +271,7 @@ export function CVUploadModal({
             ) : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                Upload CV
+                {t("common.uploadCv")}
               </>
             )}
           </Button>

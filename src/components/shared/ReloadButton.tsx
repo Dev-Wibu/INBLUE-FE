@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import i18n from "@/lib/i18n";
 import { RefreshCw } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useCallback, useState } from "react";
-const t = i18n.t.bind(i18n);
+import { useTranslation } from "react-i18next";
 type ReloadAction = () => void | Promise<unknown>;
 export type ReloadButtonProps = Omit<ComponentProps<typeof Button>, "onClick" | "children"> & {
   onReload: ReloadAction;
@@ -18,8 +17,8 @@ export type ReloadButtonProps = Omit<ComponentProps<typeof Button>, "onClick" | 
 export function ReloadButton({
   onReload,
   isLoading,
-  tooltip = t("compShared.reloadList"),
-  label = t("common.reload"),
+  tooltip,
+  label,
   showLabel = false,
   hideTooltip = false,
   disabled,
@@ -28,6 +27,9 @@ export function ReloadButton({
   type = "button",
   ...buttonProps
 }: ReloadButtonProps) {
+  const { t } = useTranslation();
+  const resolvedTooltip = tooltip ?? t("compShared.reloadList");
+  const resolvedLabel = label ?? t("common.reload");
   const [internalLoading, setInternalLoading] = useState(false);
   const loading = isLoading ?? internalLoading;
   const computedSize = size ?? (showLabel ? "sm" : "icon-sm");
@@ -52,7 +54,7 @@ export function ReloadButton({
       variant={variant}
       size={computedSize}
       disabled={disabled || loading}
-      aria-label={showLabel ? label : tooltip}
+      aria-label={showLabel ? resolvedLabel : resolvedTooltip}
       aria-busy={loading}
       onClick={handleReload}
       {...buttonProps}>
@@ -61,7 +63,7 @@ export function ReloadButton({
       ) : (
         <RefreshCw className="size-4" />
       )}
-      {showLabel ? <span>{label}</span> : null}
+      {showLabel ? <span>{resolvedLabel}</span> : null}
     </Button>
   );
   if (hideTooltip) {
@@ -72,7 +74,7 @@ export function ReloadButton({
       <TooltipTrigger asChild>
         <span className="inline-flex">{content}</span>
       </TooltipTrigger>
-      <TooltipContent>{tooltip}</TooltipContent>
+      <TooltipContent>{resolvedTooltip}</TooltipContent>
     </Tooltip>
   );
 }

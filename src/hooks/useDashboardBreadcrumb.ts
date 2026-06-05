@@ -9,15 +9,16 @@ import {
   type DashboardRouteMatch,
   type DashboardTabDefinition,
 } from "@/lib/dashboard-breadcrumb";
-import i18n from "@/lib/i18n";
 import { chatManager } from "@/services/chat.manager";
 import { mentorReviewManager } from "@/services/mentor-review.manager";
 import { mentorManager } from "@/services/mentor.manager";
 import { practiceSetManager } from "@/services/practice-set.manager";
 import { quizSetManager } from "@/services/quiz-set.manager";
 import { useQuery } from "@tanstack/react-query";
+import type { TFunction } from "i18next";
 import { useMemo } from "react";
-const t = i18n.t.bind(i18n);
+import { useTranslation } from "react-i18next";
+
 const DYNAMIC_BREADCRUMB_QUERY_KEY = "dashboard-breadcrumb-dynamic-label";
 interface DynamicLabelRequest {
   resource: NonNullable<DashboardRouteMatch["dynamic"]>["resource"];
@@ -47,7 +48,7 @@ const toPositiveInteger = (value: string | undefined): number | undefined => {
   }
   return parsed;
 };
-const getSessionBreadcrumbLabel = (sessionId: number): string =>
+const getSessionBreadcrumbLabel = (sessionId: number, t: TFunction): string =>
   t("common.sessionVar0", {
     var_0: sessionId,
   });
@@ -55,10 +56,12 @@ function resolveRoleSpecificDetailChain({
   role,
   pathname,
   routeParams,
+  t,
 }: {
   role: DashboardRole;
   pathname: string;
   routeParams?: Record<string, string>;
+  t: TFunction;
 }): DashboardBreadcrumbDetailItem[] | null {
   const normalizedPath = normalizeDashboardPath(pathname);
   const sessionId = toPositiveInteger(routeParams?.sessionId);
@@ -71,7 +74,7 @@ function resolveRoleSpecificDetailChain({
   ) {
     return [
       {
-        label: getSessionBreadcrumbLabel(sessionId),
+        label: getSessionBreadcrumbLabel(sessionId, t),
         href: `/user/mock-interview/history/${sessionId}`,
       },
       {
@@ -82,7 +85,7 @@ function resolveRoleSpecificDetailChain({
   if (role === "mentor" && /^\/mentor\/sessions\/[^/]+\/review$/.test(normalizedPath)) {
     return [
       {
-        label: getSessionBreadcrumbLabel(sessionId),
+        label: getSessionBreadcrumbLabel(sessionId, t),
         href: `/mentor/sessions/${sessionId}`,
       },
       {
@@ -93,7 +96,8 @@ function resolveRoleSpecificDetailChain({
   return null;
 }
 async function resolvePracticeQuizDetailLabels(
-  request: PracticeQuizDetailRequest
+  request: PracticeQuizDetailRequest,
+  t: TFunction
 ): Promise<DashboardBreadcrumbDetailItem[] | null> {
   const { includeResult, quizId, sessionId } = request;
   const quizResponse = await quizSetManager.getById(quizId);
@@ -105,7 +109,7 @@ async function resolvePracticeQuizDetailLabels(
     {
       label: formatBreadcrumbLabelWithPrefix(
         t("common.route"),
-        getSessionBreadcrumbLabel(sessionId)
+        getSessionBreadcrumbLabel(sessionId, t)
       ),
       href: `/user/practice/session/${sessionId}`,
     },
@@ -125,11 +129,14 @@ async function resolvePracticeQuizDetailLabels(
   }
   return detailLabels;
 }
-async function resolveDynamicRouteLabel(request: DynamicLabelRequest): Promise<string | null> {
+async function resolveDynamicRouteLabel(
+  request: DynamicLabelRequest,
+  t: TFunction
+): Promise<string | null> {
   const { id, prefix, resource } = request;
   switch (resource) {
     case "session": {
-      const label = getSessionBreadcrumbLabel(id);
+      const label = getSessionBreadcrumbLabel(id, t);
       return formatBreadcrumbLabelWithPrefix(prefix, label);
     }
     case "mentor": {
@@ -137,7 +144,7 @@ async function resolveDynamicRouteLabel(request: DynamicLabelRequest): Promise<s
       if (!response.success || !response.data) {
         return null;
       }
-      const mentorName = asNonEmptyString(response.data.name) ?? `Mentor #${id}`;
+      const mentorName = asNonEmptyString(response.data.name) ?? t("common.mentorWithId", { id });
       return formatBreadcrumbLabelWithPrefix(prefix, mentorName);
     }
     case "practiceSet": {
@@ -216,7 +223,8 @@ export function useDashboardBreadcrumb({
   items: DashboardBreadcrumbItem[];
   isResolvingDynamicLabel: boolean;
 } {
-  const routeMatch = useMemo(() => getDashboardRouteMatch(role, pathname), [role, pathname]);
+  const { t } = useTranslation();
+  const routeMatch = useMemo(() => getDashboardRouteMatch(role, pathname, t), [role, pathname, t]);
   const practiceQuizDetailRequest = useMemo((): PracticeQuizDetailRequest | null => {
     const variant = routeMatch?.variant;
     if (variant !== "practiceQuiz" && variant !== "practiceQuizResult") {
@@ -245,8 +253,9 @@ export function useDashboardBreadcrumb({
         role,
         pathname,
         routeParams: routeMatch?.routeParams,
+        t,
       }),
-    [pathname, role, routeMatch?.routeParams]
+    [pathname, role, routeMatch?.routeParams, t]
   );
   const dynamicLabelRequest = useMemo((): DynamicLabelRequest | null => {
     const dynamic = routeMatch?.dynamic;
@@ -273,7 +282,7 @@ export function useDashboardBreadcrumb({
           return null;
         }
         try {
-          return await resolvePracticeQuizDetailLabels(practiceQuizDetailRequest);
+          return await resolvePracticeQuizDetailLabels(practiceQuizDetailRequest, t);
         } catch {
           return null;
         }
@@ -295,7 +304,7 @@ export function useDashboardBreadcrumb({
         return null;
       }
       try {
-        return await resolveDynamicRouteLabel(dynamicLabelRequest);
+        return await resolveDynamicRouteLabel(dynamicLabelRequest, t);
       } catch {
         return null;
       }
@@ -313,6 +322,7 @@ export function useDashboardBreadcrumb({
         availableTabs,
         nestedLabelOverride: dynamicLabel ?? routeMatch?.label,
         detailLabelsOverride: practiceQuizDetailLabels ?? roleSpecificDetailChain ?? undefined,
+        t,
       }),
     [
       activeTab,
@@ -323,6 +333,7 @@ export function useDashboardBreadcrumb({
       role,
       roleSpecificDetailChain,
       routeMatch?.label,
+      t,
     ]
   );
   return {

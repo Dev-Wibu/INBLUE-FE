@@ -218,7 +218,7 @@ export function MediaLightboxDialog({
       return;
     }
 
-    downloadFromUrl(imageUrl, currentItem.name || "anh-preview");
+    downloadFromUrl(imageUrl, currentItem.name || t("common.imagePreview"));
   };
 
   const handleOpenCurrentImage = () => {
@@ -234,7 +234,7 @@ export function MediaLightboxDialog({
       return;
     }
 
-    downloadFromUrl(documentUrl, currentItem.name || "tai-lieu");
+    downloadFromUrl(documentUrl, currentItem.name || t("mediaFileUtils.document"));
   };
 
   const handleOpenCurrentDocument = () => {
@@ -253,7 +253,9 @@ export function MediaLightboxDialog({
         <DialogHeader className="border-b px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <DialogTitle className="text-base">{currentItem?.name ?? "Xem media"}</DialogTitle>
+              <DialogTitle className="text-base">
+                {currentItem?.name ?? t("compShared.viewMedia")}
+              </DialogTitle>
               <DialogDescription className="text-xs">
                 {t("compShared.fullScreenViewerForPhotos")}
                 {currentPositionLabel})
@@ -426,7 +428,7 @@ export function MediaLightboxDialog({
                 variant="ghost"
                 onClick={goNext}
                 disabled={!canNavigate}
-                aria-label="Media sau">
+                aria-label={t("compShared.mediaNext")}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <Button
