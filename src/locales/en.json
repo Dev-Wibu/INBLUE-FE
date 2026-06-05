@@ -771,6 +771,7 @@
     "fullName": "Full name",
     "fullName1": "Full name *",
     "gpa": "GPA",
+    "gpaWithValue": "GPA: {{value}}",
     "generalAnnouncement": "General announcement",
     "getStarted": "Get Started",
     "googleLoginFailed": "Google login failed.",
@@ -937,6 +938,7 @@
     "outsideOfIt": "Outside of IT",
     "over1500RealInterviewQuestions": "Over 1,500+ real interview questions",
     "overview": "Overview",
+    "page": "Page",
     "paid": "Paid",
     "plan": "Plan",
     "password": "Password",
@@ -1094,7 +1096,7 @@
     "testVar0": "Test #{{var_0}}",
     "testimonialAnhContent": "As a PM transitioning from engineering, I needed help with product sense questions. InBlue Interview curated questions and AI feedback helped me understand what interviewers look for. Highly recommend!",
     "testimonialDucContent": "The AI interview practice sessions were incredibly helpful. I could practice anytime, anywhere, and the feedback was detailed and actionable. After two weeks of practice, I landed my dream job at a top tech company.",
-    "testimonialHaContent": "I always felt confident about coding, but behavioral questions were a different story. AMA Interview helped me practice clear, impactful answers using the STAR method. It gave me the confidence to handle even the toughest behavioral rounds.",
+    "testimonialHaContent": "I always felt confident about coding, but behavioral questions were a different story. InBlue helped me practice clear, impactful answers using the STAR method. It gave me the confidence to handle even the toughest behavioral rounds.",
     "textMode": "Text mode",
     "theInterviewSessionHasNotBeenAppro": "The interview session has not been approved. Please wait for mentor or Staff/Admin to review.",
     "theMeetingRoomHasNotBeenCreatedYe": "The meeting room has not been created yet.",
@@ -1487,7 +1489,18 @@
     "previousPhoto": "Previous photo",
     "selectYourCvFileOnly": "Select your CV file (only PDF files are accepted)",
     "selectedFile": "Selected file",
-    "uploading": "Uploading..."
+    "uploading": "Uploading...",
+    "breadcrumb": "breadcrumb",
+    "carousel": "carousel",
+    "close": "Close",
+    "displaysTheMobileSidebar": "Displays the mobile sidebar.",
+    "more": "More",
+    "pagination": "pagination",
+    "sidebarTitle": "Sidebar",
+    "slide": "slide",
+    "sortByColumn": "Sort by {{column}}",
+    "sortByColumnAscending": "Sort by {{column}} ascending",
+    "sortByColumnDescending": "Sort by {{column}} descending"
   },
   "compVideoCall": {
     "accountName": "Account name",
@@ -1520,6 +1533,7 @@
     "unableToJoinMeetingRoom": "Unable to join meeting room.",
     "youHaveLeftTheMeeting": "You have left the meeting room.",
     "camera": "Camera",
+    "cameraN": "Camera {{number}}",
     "microphone": "Microphone"
   },
   "enterpriseCompanydetail": {
@@ -1638,6 +1652,7 @@
     "achievements": "Achievements:",
     "add": "Add {{var_0}}",
     "addPartner": "Add partner",
+    "ai": "AI",
     "aiInterviewResults": "AI interview results",
     "aiInterviewSession": "AI interview session",
     "aiSimulationInterview": "AI simulation interview",
@@ -3299,6 +3314,7 @@
   },
   "mediaFileUtils": {
     "document": "document",
+    "documentPdf": "document.pdf",
     "download": "download",
     "pageStatus": "Page {{page}} / {{total}}"
   },
