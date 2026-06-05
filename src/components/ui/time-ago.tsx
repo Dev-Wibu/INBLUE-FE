@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
 import { formatDateTime, parseBackendDate } from "@/lib/formatting";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 interface TimeAgoProps {
@@ -24,7 +25,7 @@ export function TimeAgo({ date, className, prefix = true }: TimeAgoProps) {
 
   const timeAgo = formatDistanceToNow(parsedDate, {
     addSuffix: prefix,
-    locale: vi,
+    locale: i18n.language === "en" ? undefined : vi,
   });
   const absoluteTime = formatDateTime(parsedDate);
 
