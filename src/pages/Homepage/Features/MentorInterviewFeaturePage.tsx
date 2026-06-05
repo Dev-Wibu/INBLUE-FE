@@ -3,7 +3,6 @@ import { Footer } from "@/components/layouts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import i18n from "@/lib/i18n";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ArrowRight,
@@ -18,89 +17,100 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-const t = i18n.t.bind(i18n);
-const mentorBenefits = [
-  {
-    id: 1,
-    title: t("homepageFeatures.feedbackFromExperts"),
-    description: t("homepageFeatures.receiveDetailedAndPersonalizedFeedback"),
-    icon: MessageSquare,
-  },
-  {
-    id: 2,
-    title: t("homepageFeatures.realisticSimulation"),
-    description: t("homepageFeatures.experienceARealLifeInterview"),
-    icon: Video,
-  },
-  {
-    id: 3,
-    title: t("homepageFeatures.flexibleSchedule"),
-    description: t("homepageFeatures.scheduleYourInterviewAtA"),
-    icon: Calendar,
-  },
-  {
-    id: 4,
-    title: t("homepageFeatures.starReview"),
-    description: t("homepageFeatures.getADetailedStarMethod"),
-    icon: Award,
-  },
-];
-const featuredMentors = [
-  {
-    id: 1,
-    name: t("homepageFeatures.nguyenVanAn"),
-    title: "Senior Software Engineer",
-    company: "Google",
-    experience: t("homepageFeatures.8Years"),
-    rating: 4.9,
-    sessions: 150,
-    expertise: ["System Design", "Algorithms", "Backend"],
-  },
-  {
-    id: 2,
-    name: t("homepageFeatures.tranThiBinh"),
-    title: "Data Science Lead",
-    company: "Microsoft",
-    experience: t("homepageFeatures.6Years"),
-    rating: 4.8,
-    sessions: 120,
-    expertise: ["Machine Learning", "Data Analysis", "Python"],
-  },
-  {
-    id: 3,
-    name: t("homepageFeatures.leMinhChau"),
-    title: "Product Manager",
-    company: "Meta",
-    experience: t("homepageFeatures.7Years"),
-    rating: 4.9,
-    sessions: 180,
-    expertise: ["Product Strategy", "User Research", "Agile"],
-  },
-];
-const howItWorks = [
-  {
-    step: 1,
-    title: t("common.chooseAMentor"),
-    description: t("homepageFeatures.browseTheListOfMentors"),
-  },
-  {
-    step: 2,
-    title: t("homepageFeatures.book"),
-    description: t("homepageFeatures.chooseASuitableTimeIn"),
-  },
-  {
-    step: 3,
-    title: t("common.interview"),
-    description: t("homepageFeatures.participateInASimulatedInterview"),
-  },
-  {
-    step: 4,
-    title: t("homepageFeatures.receiveFeedback"),
-    description: t("homepageFeatures.receiveDetailedAssessmentsStrengthsWeaknesses"),
-  },
-];
 export function MentorInterviewFeaturePage() {
   const { t } = useTranslation();
+  const mentorBenefits = [
+    {
+      id: 1,
+      title: t("homepageFeatures.feedbackFromExperts"),
+      description: t("homepageFeatures.receiveDetailedAndPersonalizedFeedback"),
+      icon: MessageSquare,
+    },
+    {
+      id: 2,
+      title: t("homepageFeatures.realisticSimulation"),
+      description: t("homepageFeatures.experienceARealLifeInterview"),
+      icon: Video,
+    },
+    {
+      id: 3,
+      title: t("homepageFeatures.flexibleSchedule"),
+      description: t("homepageFeatures.scheduleYourInterviewAtA"),
+      icon: Calendar,
+    },
+    {
+      id: 4,
+      title: t("homepageFeatures.starReview"),
+      description: t("homepageFeatures.getADetailedStarMethod"),
+      icon: Award,
+    },
+  ];
+  const featuredMentors = [
+    {
+      id: 1,
+      name: t("homepageFeatures.nguyenVanAn"),
+      title: t("homepageFeatures.seniorSoftwareEngineer"),
+      company: "Google",
+      experience: t("homepageFeatures.8Years"),
+      rating: 4.9,
+      sessions: 150,
+      expertise: [
+        t("homepageFeatures.systemDesign"),
+        t("homepageFeatures.algorithms"),
+        t("homepageFeatures.backend"),
+      ],
+    },
+    {
+      id: 2,
+      name: t("homepageFeatures.tranThiBinh"),
+      title: t("homepageFeatures.dataScienceLead"),
+      company: "Microsoft",
+      experience: t("homepageFeatures.6Years"),
+      rating: 4.8,
+      sessions: 120,
+      expertise: [
+        t("homepageFeatures.machineLearning"),
+        t("homepageFeatures.dataAnalysis"),
+        t("homepageFeatures.python"),
+      ],
+    },
+    {
+      id: 3,
+      name: t("homepageFeatures.leMinhChau"),
+      title: t("homepageFeatures.productManager"),
+      company: "Meta",
+      experience: t("homepageFeatures.7Years"),
+      rating: 4.9,
+      sessions: 180,
+      expertise: [
+        t("homepageFeatures.productStrategy"),
+        t("homepageFeatures.userResearch"),
+        t("homepageFeatures.agile"),
+      ],
+    },
+  ];
+  const howItWorks = [
+    {
+      step: 1,
+      title: t("common.chooseAMentor"),
+      description: t("homepageFeatures.browseTheListOfMentors"),
+    },
+    {
+      step: 2,
+      title: t("homepageFeatures.book"),
+      description: t("homepageFeatures.chooseASuitableTimeIn"),
+    },
+    {
+      step: 3,
+      title: t("common.interview"),
+      description: t("homepageFeatures.participateInASimulatedInterview"),
+    },
+    {
+      step: 4,
+      title: t("homepageFeatures.receiveFeedback"),
+      description: t("homepageFeatures.receiveDetailedAssessmentsStrengthsWeaknesses"),
+    },
+  ];
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
   const dashboardPath = isLoggedIn ? getDashboardPath(user?.role) : "/login";
@@ -123,7 +133,7 @@ export function MentorInterviewFeaturePage() {
                 variant="secondary"
                 className="mb-4 bg-[#DCEEFF] text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
                 <Users className="mr-2 h-4 w-4" />
-                Mock Interview
+                {t("common.mockInterview")}
               </Badge>
               <h1 className="mb-4 text-4xl font-bold tracking-tight text-slate-900 lg:text-5xl dark:text-white">
                 {t("homepageFeatures.interviewWith")}{" "}

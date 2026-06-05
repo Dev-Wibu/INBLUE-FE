@@ -75,7 +75,7 @@ export function LoginPage() {
       }
       const callbackResult = authManager.consumeGoogleCallbackFromUrl(callbackUrl);
       if (!callbackResult.success || !callbackResult.data?.user || !callbackResult.data.token) {
-        setError(callbackResult.error || t("adminUsermanagement.hide"));
+        setError(callbackResult.error || t("common.googleLoginFailed"));
         return;
       }
       applyAuthState(callbackResult.data);
@@ -96,7 +96,7 @@ export function LoginPage() {
     if (result.success && result.data?.user) {
       applyAuthState(result.data);
     } else {
-      const errorMessage = result.error || t("adminUsermanagement.hide");
+      const errorMessage = result.error || t("common.loginFailed");
       setError(errorMessage);
       toast.error(errorMessage);
     }
@@ -172,7 +172,7 @@ export function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="dark:text-slate-300">
-              Email
+              {t("common.email")}
             </Label>
             <Input
               id="email"
@@ -226,7 +226,7 @@ export function LoginPage() {
           )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? t("adminUsermanagement.hide") : t("common.logIn")}
+            {isLoading ? t("authLoginpage.signingIn") : t("common.logIn")}
           </Button>
         </form>
 
@@ -240,7 +240,7 @@ export function LoginPage() {
           <Link
             to="/signup"
             className="font-medium text-[#0047AB] hover:underline dark:text-[#66B2FF]">
-            {t("adminUsermanagement.hide")}
+            {t("authLoginpage.registerNow")}
           </Link>
         </p>
       </CardContent>

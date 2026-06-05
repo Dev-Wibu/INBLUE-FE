@@ -1,8 +1,6 @@
-import i18n from "@/lib/i18n";
 import { FileText, ImageIcon, Link2, UploadCloud } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 
 import { HomepageHeader } from "@/components/homepage-redesign";
 import { Footer } from "@/components/layouts";
@@ -25,7 +23,7 @@ import type { MediaViewerItem, UploadTransportMode } from "@/components/shared";
 const TEMP_IMAGE_URL = normalizeRelativeAssetPath("temp-file/Screenshot 2026-01-21 153334.png");
 const TEMP_PDF_URL = normalizeRelativeAssetPath("temp-file/rereree.pdf");
 
-function buildTempSampleItems(): MediaViewerItem[] {
+function buildTempSampleItems(t: (key: string) => string): MediaViewerItem[] {
   return [
     {
       id: "temp-image",
@@ -47,7 +45,7 @@ function buildTempSampleItems(): MediaViewerItem[] {
 
 export function MediaToolkitPlaygroundPage() {
   const { t } = useTranslation();
-  const tempSampleItems = useMemo(() => buildTempSampleItems(), []);
+  const tempSampleItems = useMemo(() => buildTempSampleItems(t), [t]);
 
   const [transportMode, setTransportMode] = useState<UploadTransportMode>("mock");
   const [uploadEndpoint, setUploadEndpoint] = useState("");
@@ -105,7 +103,7 @@ export function MediaToolkitPlaygroundPage() {
   };
 
   const handleResetTempSamples = () => {
-    setMediaItems(buildTempSampleItems());
+    setMediaItems(buildTempSampleItems(t));
     setPdfSource(TEMP_PDF_URL);
     setPdfRequireAuth(false);
   };

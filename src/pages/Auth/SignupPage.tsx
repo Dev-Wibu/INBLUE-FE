@@ -10,14 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MAJOR_OPTIONS } from "@/constants/majors";
+import { useMajorOptions } from "@/constants/majors";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import { Eye, EyeOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 type SignupAuthPayload = {
   user: {
     id: string;
@@ -30,10 +30,9 @@ type SignupAuthPayload = {
 };
 export function SignupPage() {
   const { t } = useTranslation();
+  const majorOptions = useMajorOptions();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const role = searchParams.get("role"); // Get role from URL param
   const { setUser, setToken, setIsLoggedIn } = useAuthStore();
   const [formData, setFormData] = useState({
     fullName: "",
@@ -84,7 +83,7 @@ export function SignupPage() {
       }
       const callbackResult = authManager.consumeGoogleCallbackFromUrl(callbackUrl);
       if (!callbackResult.success || !callbackResult.data?.user || !callbackResult.data.token) {
-        setError(callbackResult.error || t("adminUsermanagement.hide"));
+        setError(callbackResult.error || t("common.googleLoginFailed"));
         return;
       }
       applyAuthState(callbackResult.data);
@@ -148,13 +147,13 @@ export function SignupPage() {
         navigate("/login", {
           replace: true,
           state: {
-            message: t("adminUsermanagement.hide"),
+            message: t("common.registrationFailed"),
             prefillEmail: result.data.user.email,
           },
         });
       }
     } else {
-      setError(result.error || t("adminUsermanagement.hide"));
+      setError(result.error || t("common.registrationFailed"));
     }
     setIsLoading(false);
   };
@@ -169,7 +168,7 @@ export function SignupPage() {
     <Card className="w-full max-w-md border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl text-[#0047AB] dark:text-[#66B2FF]">
-          {role === "user" ? t("adminUsermanagement.hide") : t("general.signUp")}
+          {t("general.signUp")}
         </CardTitle>
         <CardDescription className="text-slate-600 dark:text-slate-300">
           {t("authSignuppage.welcomeToInbluePleaseFillInfo")}
@@ -235,7 +234,7 @@ export function SignupPage() {
 
             <div className="space-y-2">
               <Label htmlFor="email" className="dark:text-slate-300">
-                Email
+                {t("common.email")}
               </Label>
               <Input
                 id="email"
@@ -243,7 +242,7 @@ export function SignupPage() {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="email@example.com"
+                placeholder={t("common.emailExample")}
                 required
                 className={inputClassName}
               />
@@ -282,7 +281,7 @@ export function SignupPage() {
                   <SelectValue placeholder={t("common.chooseAMajor")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {MAJOR_OPTIONS.map((option) => (
+                  {majorOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -347,7 +346,7 @@ export function SignupPage() {
               onCheckedChange={(checked) => setAgreeTerms(checked === true)}
             />
             <label htmlFor="agreeTerms" className="text-sm text-slate-600 dark:text-slate-400">
-              {t("common.dark")}{" "}
+              {t("authSignuppage.iAgreeWithThese")}{" "}
               <Link to="#" className="text-[#0047AB] hover:underline dark:text-[#66B2FF]">
                 {t("authSignuppage.terms")}
               </Link>{" "}
@@ -362,17 +361,19 @@ export function SignupPage() {
           )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? t("adminUsermanagement.hide") : t("general.signUp")}
+            {isLoading ? t("authSignuppage.registering") : t("general.signUp")}
           </Button>
         </form>
 
         {/* Login Link */}
         <p className="text-center text-sm">
-          <span className="text-slate-600 dark:text-slate-400">{t("common.friend")} </span>
+          <span className="text-slate-600 dark:text-slate-400">
+            {t("authSignuppage.alreadyHaveAnAccount")}{" "}
+          </span>
           <Link
             to="/login"
             className="font-medium text-[#0047AB] hover:underline dark:text-[#66B2FF]">
-            {t("adminUsermanagement.hide")}
+            {t("common.logIn")}
           </Link>
         </p>
       </CardContent>

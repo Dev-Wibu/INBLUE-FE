@@ -1,6 +1,3 @@
-import i18n from "@/lib/i18n";
-import { useTranslation } from "react-i18next";
-const t = i18n.t.bind(i18n);
 /**
  * Job Card Component
  * Individual job listing card with 3D hover effect
@@ -11,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { JobDescription } from "@/services/company.manager";
 import { Clock, DollarSign, Eye, MapPin, Users } from "lucide-react";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 interface JobCardProps {
   job: JobDescription;
@@ -21,39 +19,39 @@ const levelColors: Record<string, string> = {
   JUNIOR: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   MIDDLE: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
-const levelLabels: Record<string, string> = {
-  INTERN: t("enterpriseCompanydetail.internInternship"),
-  FRESHER: "Fresher",
-  JUNIOR: "Junior",
-  MIDDLE: "Middle",
-};
-const formatSalary = (min?: number, max?: number, currency = "VND"): string => {
-  if (!min && !max) return t("enterpriseCompanydetail.negotiate");
-  const format = (num: number) => {
-    if (num >= 1000000) {
-      return t("general.million1", {
-        var_0: (num / 1000000).toFixed(1).replace(/\.0$/, ""),
-      });
-    }
-    return num.toLocaleString("vi-VN");
-  };
-  if (min && max) {
-    return `${format(min)} - ${format(max)} ${currency}`;
-  }
-  if (min)
-    return t("common.fromVar0Var1", {
-      var_0: format(min),
-      var_1: currency,
-    });
-  if (max)
-    return t("common.toVar0Var1", {
-      var_0: format(max),
-      var_1: currency,
-    });
-  return t("enterpriseCompanydetail.negotiate");
-};
 export function JobCard({ job }: JobCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const levelLabels: Record<string, string> = {
+    INTERN: t("enterpriseCompanydetail.internInternship"),
+    FRESHER: t("common.fresher"),
+    JUNIOR: t("common.junior"),
+    MIDDLE: t("common.middle"),
+  };
+  const formatSalary = (min?: number, max?: number, currency = "VND"): string => {
+    if (!min && !max) return t("enterpriseCompanydetail.negotiate");
+    const format = (num: number) => {
+      if (num >= 1000000) {
+        return t("general.million1", {
+          var_0: (num / 1000000).toFixed(1).replace(/\.0$/, ""),
+        });
+      }
+      return num.toLocaleString(i18n.language === "en" ? "en-US" : "vi-VN");
+    };
+    if (min && max) {
+      return `${format(min)} - ${format(max)} ${currency}`;
+    }
+    if (min)
+      return t("common.fromVar0Var1", {
+        var_0: format(min),
+        var_1: currency,
+      });
+    if (max)
+      return t("common.toVar0Var1", {
+        var_0: format(max),
+        var_1: currency,
+      });
+    return t("enterpriseCompanydetail.negotiate");
+  };
   const cardRef = useRef<HTMLDivElement>(null);
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = cardRef.current;
@@ -91,7 +89,7 @@ export function JobCard({ job }: JobCardProps) {
           <div className="flex flex-wrap items-center gap-2">
             {isHot && (
               <Badge className="shrink-0 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-                HOT
+                {t("common.hot")}
               </Badge>
             )}
             {job.level && (

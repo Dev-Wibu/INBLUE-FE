@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import {
@@ -20,7 +19,6 @@ import { useCallback, useState } from "react";
 import { type FileRejection, useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-const t = i18n.t.bind(i18n);
 type MentorFormData = {
   name: string;
   email: string;
@@ -113,6 +111,7 @@ function FileUploadBox({
   errorText,
   onClearError,
 }: FileUploadProps) {
+  const { t } = useTranslation();
   const [dropError, setDropError] = useState("");
   const onDropAccepted = useCallback(
     (acceptedFiles: File[]) => {
@@ -197,7 +196,7 @@ function FileUploadBox({
             </p>
             <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#0047AB]/10 px-3 py-1 text-xs font-medium text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
               <UploadCloud className="h-3.5 w-3.5" />
-              {acceptedTypes} {t("common.dark")} {maxSize}
+              {acceptedTypes} {t("authMentorregisterpage.max")} {maxSize}
             </div>
           </>
         )}
@@ -308,7 +307,7 @@ export function MentorRegisterPage() {
       if (Object.keys(normalizedFieldErrors).length > 0) {
         setFieldErrors(normalizedFieldErrors);
       }
-      setError(result.error || t("adminUsermanagement.hide"));
+      setError(result.error || t("authMentorregisterpage.registrationFailedPleaseCheckYour"));
     } finally {
       setIsLoading(false);
     }
@@ -340,7 +339,7 @@ export function MentorRegisterPage() {
           <Card className="border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40">
             <CardHeader className="space-y-2 text-center">
               <CardTitle className="text-2xl text-slate-900 dark:text-white">
-                {t("adminUsermanagement.hide")}
+                {t("authMentorregisterpage.registerToBecomeAMentor")}
               </CardTitle>
               <CardDescription className="text-slate-600 dark:text-slate-300">
                 {t("authMentorregisterpage.provideProfessionalInformationAndVerification")}
@@ -392,7 +391,7 @@ export function MentorRegisterPage() {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="example@email.com"
+                        placeholder={t("common.emailPlaceholder")}
                         className={inputClass("email")}
                         required
                       />
@@ -500,7 +499,7 @@ export function MentorRegisterPage() {
                         type="url"
                         value={formData.linkedInUrl}
                         onChange={handleChange}
-                        placeholder="https://www.linkedin.com/in/ho-so-cua-ban"
+                        placeholder={t("common.linkedinPlaceholder")}
                         className={inputClass("linkedInUrl")}
                       />
                       {fieldErrors.linkedInUrl && (
@@ -550,7 +549,7 @@ export function MentorRegisterPage() {
                       {t("authMentorregisterpage.proofDocuments")}
                     </h3>
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      {t("homepageFeatures.in")}
+                      {t("authMentorregisterpage.uploadingDocumentsHelpsTheTeam")}
                     </p>
                   </div>
 
@@ -575,7 +574,7 @@ export function MentorRegisterPage() {
                     />
 
                     <FileUploadBox
-                      label="CCCD/CMND"
+                      label={t("common.identityCard")}
                       acceptedTypes="JPG, PNG, PDF"
                       maxSize="5MB"
                       icon={<FileText className="h-5 w-5" />}
@@ -648,7 +647,9 @@ export function MentorRegisterPage() {
                     type="submit"
                     className="flex-1 bg-[#0047AB] text-white hover:bg-[#003A8C] dark:bg-[#005FD1] dark:hover:bg-[#4A90FF]"
                     disabled={isLoading}>
-                    {isLoading ? t("adminUsermanagement.hide") : t("compPost.send")}
+                    {isLoading
+                      ? t("authMentorregisterpage.submittingRegistration")
+                      : t("authMentorregisterpage.submitRegistration")}
                   </Button>
                 </div>
               </form>

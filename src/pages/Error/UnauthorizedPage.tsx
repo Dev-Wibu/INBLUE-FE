@@ -24,7 +24,9 @@ export function UnauthorizedPage() {
         <h1 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
           {t("errorUnauthorizedpage.notAuthenticated")}
         </h1>
-        <p className="mb-8 max-w-md text-gray-600 dark:text-slate-400">{t("common.friend")}</p>
+        <p className="mb-8 max-w-md text-gray-600 dark:text-slate-400">
+          {t("errorUnauthorizedpage.youNeedToLogIn")}
+        </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col justify-center gap-4 sm:flex-row">

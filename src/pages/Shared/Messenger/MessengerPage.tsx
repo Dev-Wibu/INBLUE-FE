@@ -18,7 +18,6 @@ import {
   toTimestamp,
   toVietnamDateKey,
 } from "@/lib/formatting";
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { chatManager, type ChatHistoryMessage } from "@/services/chat.manager";
 import {
@@ -52,7 +51,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
-const t = i18n.t.bind(i18n);
 interface Contact {
   id: number;
   name: string;
@@ -106,9 +104,6 @@ const createContactFromMentor = (mentorData?: SchemaMentorResponse): Contact | n
     role: "MENTOR",
   };
 };
-const getRoleLabel = (role: Contact["role"]): string => {
-  return role === "MENTOR" ? "Mentor" : t("common.students");
-};
 const createMessageId = (prefix: "temp" | "server" = "temp", rawId?: string | number): string => {
   if (prefix === "server" && rawId !== undefined) {
     return `server-${rawId}`;
@@ -138,19 +133,6 @@ const getTimestampValue = (timestamp: string): number => {
 const getDayKey = (timestamp: string): string => {
   return toVietnamDateKey(timestamp) || "unknown";
 };
-const formatDayLabel = (timestamp: string): string => {
-  const parsed = parseBackendDate(timestamp);
-  if (!parsed) {
-    return t("common.today");
-  }
-  return parsed.toLocaleDateString("vi-VN", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    weekday: "short",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
 const formatConversationTime = (timestamp: string): string => {
   const parsed = parseBackendDate(timestamp);
   if (!parsed) {
@@ -162,7 +144,10 @@ const formatConversationTime = (timestamp: string): string => {
   }
   return formatDayMonth(parsed, "");
 };
-const buildTimelineItems = (messages: MessengerMessage[]): TimelineItem[] => {
+const buildTimelineItems = (
+  messages: MessengerMessage[],
+  dayLabelFn: (timestamp: string) => string
+): TimelineItem[] => {
   if (messages.length === 0) {
     return [];
   }
@@ -180,7 +165,7 @@ const buildTimelineItems = (messages: MessengerMessage[]): TimelineItem[] => {
       timeline.push({
         type: "day",
         key: `day-${currentDayKey}-${index}`,
-        label: formatDayLabel(message.timestamp),
+        label: dayLabelFn(message.timestamp),
       });
     }
     const isGroupedWithPrevious =
@@ -207,7 +192,24 @@ const buildTimelineItems = (messages: MessengerMessage[]): TimelineItem[] => {
   return timeline;
 };
 export function MessengerPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const getRoleLabel = (role: Contact["role"]): string => {
+    return role === "MENTOR" ? t("common.mentor") : t("common.students");
+  };
+  const formatDayLabel = (timestamp: string): string => {
+    const parsed = parseBackendDate(timestamp);
+    if (!parsed) {
+      return t("common.today");
+    }
+    const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+    return parsed.toLocaleDateString(locale, {
+      timeZone: "Asia/Ho_Chi_Minh",
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
   const location = useLocation();
   const isMobile = useIsMobile();
   const locationState = location.state as MessengerLocationState | null;
@@ -1022,7 +1024,10 @@ export function MessengerPage() {
     const startIndex = Math.max(0, filteredMessages.length - visibleMessageLimit);
     return filteredMessages.slice(startIndex);
   }, [filteredMessages, visibleMessageLimit]);
-  const timelineItems = useMemo(() => buildTimelineItems(visibleMessages), [visibleMessages]);
+  const timelineItems = useMemo(
+    () => buildTimelineItems(visibleMessages, formatDayLabel),
+    [visibleMessages, formatDayLabel]
+  );
   const hasMoreMessageHistory = filteredMessages.length > visibleMessages.length;
   const pendingOutboxCount = useMemo(
     () =>
@@ -1159,7 +1164,7 @@ export function MessengerPage() {
                           <Avatar className="h-11 w-11 rounded-xl border border-white shadow-sm dark:border-slate-700">
                             <AvatarImage
                               src={mentor.avatarUrl || ""}
-                              alt={mentor.name || "Mentor"}
+                              alt={mentor.name || t("common.mentor")}
                             />
                             <AvatarFallback className="rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                               {mentor.name?.charAt(0) ?? "M"}
@@ -1168,7 +1173,7 @@ export function MessengerPage() {
 
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                              {mentor.name || "Mentor"}
+                              {mentor.name || t("common.mentor")}
                             </p>
                             <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                               {mentor.expertise || t("common.professionalMentor")}
@@ -1535,7 +1540,7 @@ export function MessengerPage() {
                   <MessageSquare className="h-11 w-11" />
                 </div>
                 <h3 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                  Messenger
+                  {t("common.messenger")}
                 </h3>
                 <p className="mt-3 max-w-md text-sm leading-7 text-slate-500 dark:text-slate-400">
                   {t("sharedMessenger.selectAContactInThe")}

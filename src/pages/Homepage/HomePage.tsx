@@ -9,11 +9,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TestimonialCarousel } from "@/components/ui/testimonial-carousel";
-import { homepageInterviewModes } from "@/constants/homepage";
+import { useHomepageInterviewModes } from "@/constants/homepage";
 import { CheckCircle2, FileText, Mic, Video } from "lucide-react";
 import { useTranslation } from "react-i18next";
 export function HomePage() {
   const { t } = useTranslation();
+  const homepageInterviewModes = useHomepageInterviewModes();
   return (
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
       {/* Header - Homepage Redesign with 3 main menus */}
@@ -103,42 +104,39 @@ export function HomePage() {
                 {
                   id: 1,
                   name: t("common.nguyenPhamThuHa"),
-                  role: "Software Engineering",
-                  content:
-                    "I always felt confident about coding, but behavioral questions were a different story. AMA Interview helped me practice clear, impactful answers using the STAR method. It gave me the confidence to handle even the toughest behavioral rounds.",
+                  role: t("common.roleSoftwareEngineering"),
+                  content: t("common.testimonialHaContent"),
                   avatar: null,
                   rating: 5,
                 },
                 {
                   id: 2,
                   name: t("homepageHomepage.tranMinhDuc"),
-                  role: "Data Science",
-                  content:
-                    "The AI interview practice sessions were incredibly helpful. I could practice anytime, anywhere, and the feedback was detailed and actionable. After two weeks of practice, I landed my dream job at a top tech company.",
+                  role: t("common.roleDataScience"),
+                  content: t("common.testimonialDucContent"),
                   avatar: null,
                   rating: 5,
                 },
                 {
                   id: 3,
                   name: t("common.leThiMaiAnh"),
-                  role: "Product Management",
-                  content:
-                    "As a PM transitioning from engineering, I needed help with product sense questions. InBlue Interview's curated questions and AI feedback helped me understand what interviewers look for. Highly recommend!",
+                  role: t("common.roleProductManagement"),
+                  content: t("common.testimonialAnhContent"),
                   avatar: null,
                   rating: 5,
                 },
                 {
                   id: 4,
                   name: t("common.phamVanHung"),
-                  role: "Frontend Developer",
-                  content: t("common.dark"),
+                  role: t("common.roleFrontendDeveloper"),
+                  content: t("common.phamVanHungTestimonial"),
                   avatar: null,
                   rating: 5,
                 },
                 {
                   id: 5,
                   name: t("common.hoangThiLinh"),
-                  role: "UX Designer",
+                  role: t("common.roleUxDesigner"),
                   content: t("common.designInterviewQuestionsAreDifficult"),
                   avatar: null,
                   rating: 4,
@@ -146,7 +144,7 @@ export function HomePage() {
                 {
                   id: 6,
                   name: t("homepageHomepage.ngoDinhKhoa"),
-                  role: "Backend Engineer",
+                  role: t("common.roleBackendEngineer"),
                   content: t("common.aiInterviewHelpsMeBeMuchMoreConfi"),
                   avatar: null,
                   rating: 5,

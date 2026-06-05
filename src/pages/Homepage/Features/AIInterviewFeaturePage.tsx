@@ -3,7 +3,6 @@ import { Footer } from "@/components/layouts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import i18n from "@/lib/i18n";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ArrowRight,
@@ -20,70 +19,69 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-const t = i18n.t.bind(i18n);
-const aiFeatures = [
-  {
-    id: 1,
-    title: t("homepageFeatures.realTimeFeedback"),
-    description: t("homepageFeatures.getImmediateFeedbackOnYour"),
-    icon: Zap,
-  },
-  {
-    id: 2,
-    title: t("homepageFeatures.languageAnalysis"),
-    description: t("homepageFeatures.aiAnalyzesYourWordsSentence"),
-    icon: MessageSquare,
-  },
-  {
-    id: 3,
-    title: t("homepageFeatures.evaluationOfFacialExpressions"),
-    description: t("homepageFeatures.monitorExpressionsEyeContactAnd"),
-    icon: Brain,
-  },
-  {
-    id: 4,
-    title: t("homepageFeatures.detailedReport"),
-    description: t("homepageFeatures.getAFullReportWith"),
-    icon: LineChart,
-  },
-];
-const interviewModes = [
-  {
-    id: 1,
-    title: t("common.textMode"),
-    description: t("homepageFeatures.practiceWritingAnswersWithDetailed"),
-    icon: MessageSquare,
-    benefits: [
-      t("homepageFeatures.focusOnContent"),
-      t("homepageFeatures.haveTimeToThink"),
-      t("homepageFeatures.easyToEdit"),
-    ],
-  },
-  {
-    id: 2,
-    title: t("common.voiceMode"),
-    description: t("homepageFeatures.practiceSpeakingWithTheAi"),
-    icon: Mic,
-    benefits: [
-      t("homepageFeatures.improvePronunciation"),
-      t("homepageFeatures.controlYourSpeakingSpeed"),
-      t("homepageFeatures.reduceFromBuffering"),
-    ],
-  },
-  {
-    id: 3,
-    title: t("homepageFeatures.videoMode"),
-    description: t("homepageFeatures.experienceAuthenticInterviewsWithCameras"),
-    icon: Video,
-    benefits: [
-      t("homepageFeatures.mostRealistic"),
-      t("homepageFeatures.expressionAnalysis"),
-      t("homepageFeatures.comprehensivePreparation"),
-    ],
-  },
-];
 export function AIInterviewFeaturePage() {
   const { t } = useTranslation();
+  const aiFeatures = [
+    {
+      id: 1,
+      title: t("homepageFeatures.realTimeFeedback"),
+      description: t("homepageFeatures.getImmediateFeedbackOnYour"),
+      icon: Zap,
+    },
+    {
+      id: 2,
+      title: t("homepageFeatures.languageAnalysis"),
+      description: t("homepageFeatures.aiAnalyzesYourWordsSentence"),
+      icon: MessageSquare,
+    },
+    {
+      id: 3,
+      title: t("homepageFeatures.evaluationOfFacialExpressions"),
+      description: t("homepageFeatures.monitorExpressionsEyeContactAnd"),
+      icon: Brain,
+    },
+    {
+      id: 4,
+      title: t("homepageFeatures.detailedReport"),
+      description: t("homepageFeatures.getAFullReportWith"),
+      icon: LineChart,
+    },
+  ];
+  const interviewModes = [
+    {
+      id: 1,
+      title: t("common.textMode"),
+      description: t("homepageFeatures.practiceWritingAnswersWithDetailed"),
+      icon: MessageSquare,
+      benefits: [
+        t("homepageFeatures.focusOnContent"),
+        t("homepageFeatures.haveTimeToThink"),
+        t("homepageFeatures.easyToEdit"),
+      ],
+    },
+    {
+      id: 2,
+      title: t("common.voiceMode"),
+      description: t("homepageFeatures.practiceSpeakingWithTheAi"),
+      icon: Mic,
+      benefits: [
+        t("homepageFeatures.improvePronunciation"),
+        t("homepageFeatures.controlYourSpeakingSpeed"),
+        t("homepageFeatures.reduceFromBuffering"),
+      ],
+    },
+    {
+      id: 3,
+      title: t("homepageFeatures.videoMode"),
+      description: t("homepageFeatures.experienceAuthenticInterviewsWithCameras"),
+      icon: Video,
+      benefits: [
+        t("homepageFeatures.mostRealistic"),
+        t("homepageFeatures.expressionAnalysis"),
+        t("homepageFeatures.comprehensivePreparation"),
+      ],
+    },
+  ];
   const { isLoggedIn, user } = useAuthStore();
   const ctaPath = isLoggedIn ? getDashboardPath(user?.role) : "/select-role";
   return (

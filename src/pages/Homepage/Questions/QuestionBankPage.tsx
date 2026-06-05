@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import i18n from "@/lib/i18n";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   ArrowRight,
@@ -22,95 +21,103 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-const t = i18n.t.bind(i18n);
-const questionCategories = [
-  {
-    id: 1,
-    name: t("homepageQuestions.softwareEngineering"),
-    icon: Code,
-    count: 450,
-    color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
-  },
-  {
-    id: 2,
-    name: t("homepageQuestions.dataScience"),
-    icon: Database,
-    count: 280,
-    color: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
-  },
-  {
-    id: 3,
-    name: "Marketing",
-    icon: Megaphone,
-    count: 150,
-    color: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
-  },
-  {
-    id: 4,
-    name: t("homepageQuestions.productManagement"),
-    icon: Briefcase,
-    count: 200,
-    color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-  },
-  {
-    id: 5,
-    name: t("common.uiuxDesign"),
-    icon: Palette,
-    count: 180,
-    color: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
-  },
-  {
-    id: 6,
-    name: t("homepageQuestions.financialAnalysis"),
-    icon: BarChart3,
-    count: 120,
-    color: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
-  },
-];
-const trendingQuestions = [
-  {
-    id: 1,
-    question: t("homepageQuestions.pleaseIntroduceYourself"),
-    category: "Behavioral",
-    difficulty: "Easy",
-    views: 15420,
-  },
-  {
-    id: 2,
-    question: t("homepageQuestions.whatAreYourGreatestStrengths"),
-    category: "Behavioral",
-    difficulty: "Medium",
-    views: 12350,
-  },
-  {
-    id: 3,
-    question: t("homepageQuestions.whyDoYouWantTo"),
-    category: "Behavioral",
-    difficulty: "Medium",
-    views: 11280,
-  },
-  {
-    id: 4,
-    question: t("homepageQuestions.tellMeAboutAProject"),
-    category: "Behavioral",
-    difficulty: "Medium",
-    views: 9850,
-  },
-  {
-    id: 5,
-    question: t("homepageQuestions.howDoYouHandleConflict"),
-    category: "Behavioral",
-    difficulty: "Hard",
-    views: 8920,
-  },
-];
 const difficultyColors: Record<string, string> = {
   Easy: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   Medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
   Hard: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
 export function QuestionBankPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+  const difficultyLabels: Record<string, string> = {
+    Easy: t("common.easy"),
+    Medium: t("common.mediumLevel"),
+    Hard: t("common.hard"),
+  };
+  const categoryLabels: Record<string, string> = {
+    Behavioral: t("homepageQuestions.behavioral"),
+  };
+  const questionCategories = [
+    {
+      id: 1,
+      name: t("homepageQuestions.softwareEngineering"),
+      icon: Code,
+      count: 450,
+      color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+    },
+    {
+      id: 2,
+      name: t("homepageQuestions.dataScience"),
+      icon: Database,
+      count: 280,
+      color: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
+    },
+    {
+      id: 3,
+      name: t("general.marketing"),
+      icon: Megaphone,
+      count: 150,
+      color: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
+    },
+    {
+      id: 4,
+      name: t("homepageQuestions.productManagement"),
+      icon: Briefcase,
+      count: 200,
+      color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+    },
+    {
+      id: 5,
+      name: t("common.uiuxDesign"),
+      icon: Palette,
+      count: 180,
+      color: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
+    },
+    {
+      id: 6,
+      name: t("homepageQuestions.financialAnalysis"),
+      icon: BarChart3,
+      count: 120,
+      color: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+    },
+  ];
+  const trendingQuestions = [
+    {
+      id: 1,
+      question: t("homepageQuestions.pleaseIntroduceYourself"),
+      category: "Behavioral",
+      difficulty: "Easy",
+      views: 15420,
+    },
+    {
+      id: 2,
+      question: t("homepageQuestions.whatAreYourGreatestStrengths"),
+      category: "Behavioral",
+      difficulty: "Medium",
+      views: 12350,
+    },
+    {
+      id: 3,
+      question: t("homepageQuestions.whyDoYouWantTo"),
+      category: "Behavioral",
+      difficulty: "Medium",
+      views: 11280,
+    },
+    {
+      id: 4,
+      question: t("homepageQuestions.tellMeAboutAProject"),
+      category: "Behavioral",
+      difficulty: "Medium",
+      views: 9850,
+    },
+    {
+      id: 5,
+      question: t("homepageQuestions.howDoYouHandleConflict"),
+      category: "Behavioral",
+      difficulty: "Hard",
+      views: 8920,
+    },
+  ];
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
   const dashboardPath = isLoggedIn ? getDashboardPath(user?.role) : "/login";
@@ -226,16 +233,16 @@ export function QuestionBankPage() {
                     <h3 className="font-medium text-slate-900 dark:text-white">{item.question}</h3>
                     <div className="mt-1 flex items-center gap-2">
                       <Badge variant="outline" className="text-xs dark:border-slate-600">
-                        {item.category}
+                        {categoryLabels[item.category] || item.category}
                       </Badge>
                       <Badge className={`text-xs ${difficultyColors[item.difficulty]}`}>
-                        {item.difficulty}
+                        {difficultyLabels[item.difficulty] || item.difficulty}
                       </Badge>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                     <Star className="h-4 w-4" />
-                    {item.views.toLocaleString()}
+                    {item.views.toLocaleString(locale)}
                   </div>
                 </CardContent>
               </Card>
