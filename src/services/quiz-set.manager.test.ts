@@ -48,7 +48,9 @@ describe("QuizSetManager createFullAi", () => {
       })
     );
 
-    const requestConfig = mockApi.POST.mock.calls[0]?.[1] as { params?: { query?: Record<string, unknown> } };
+    const requestConfig = mockApi.POST.mock.calls[0]?.[1] as {
+      params?: { query?: Record<string, unknown> };
+    };
     expect(requestConfig?.params?.query).not.toHaveProperty("userId");
   });
 });

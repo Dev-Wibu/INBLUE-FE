@@ -188,7 +188,7 @@ describe("AuthManager", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Sai email");
+      expect(result.error).toBe(t("general.wrongEmail"));
     });
   });
 });
