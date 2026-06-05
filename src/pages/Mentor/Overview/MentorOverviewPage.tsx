@@ -9,7 +9,6 @@ import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import { formatCurrency, formatDateTime, toTimestamp, toVietnamDateKey } from "@/lib/formatting";
-import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
@@ -34,33 +33,13 @@ import {
   formatCalendarTime,
   groupMentorCalendarByDate,
 } from "./mentorSchedule.utils";
-const t = i18n.t.bind(i18n);
 const MAX_VISIBLE_SESSIONS = 2;
 const MOBILE_VIEW_AGENDA = "agenda";
 const MOBILE_VIEW_CALENDAR = "calendar";
 const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-const MONTH_NAMES = [
-  t("common.january"),
-  t("common.february"),
-  t("common.march"),
-  t("common.april"),
-  t("common.may"),
-  t("common.june"),
-  t("common.july"),
-  t("common.august"),
-  t("common.september"),
-  t("common.october"),
-  t("common.november"),
-  t("common.december"),
-];
-const statusConfig: Record<
-  string,
-  {
-    label: string;
-    dot: string;
-    badgeClass: string;
-  }
-> = {
+const getStatusConfig = (
+  t: (key: string) => string
+): Record<string, { label: string; dot: string; badgeClass: string }> => ({
   SCHEDULED: {
     label: t("common.comingSoon"),
     dot: "bg-blue-500",
@@ -81,8 +60,7 @@ const statusConfig: Record<
     dot: "bg-slate-500",
     badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
   },
-};
-const defaultStatusConfig = statusConfig.SCHEDULED;
+});
 const getDaysInMonth = (year: number, month: number): number => {
   return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 };
@@ -118,6 +96,9 @@ function AgendaSessionItem({
   onOpenRoom: (_sessionId?: number) => void;
   onOpenReview: (_sessionId?: number) => void;
 }) {
+  const { t } = useTranslation();
+  const statusConfig = useMemo(() => getStatusConfig(t), [t]);
+  const defaultStatusConfig = statusConfig.SCHEDULED;
   const status = statusConfig[item.session.status || "SCHEDULED"] || defaultStatusConfig;
   const canJoinRoom =
     (item.session.status === "PAID" || item.session.status === "ONGOING") && !!item.session.roomUrl;
@@ -180,6 +161,9 @@ function CalendarSessionEntry({
   session: Session;
   onOpen: (_sessionId?: number) => void;
 }) {
+  const { t } = useTranslation();
+  const statusConfig = useMemo(() => getStatusConfig(t), [t]);
+  const defaultStatusConfig = statusConfig.SCHEDULED;
   const cfg = statusConfig[session.status || "SCHEDULED"] || defaultStatusConfig;
   return (
     <button
@@ -199,6 +183,25 @@ function CalendarSessionEntry({
 }
 export function MentorOverviewPage() {
   const { t } = useTranslation();
+  const MONTH_NAMES = useMemo(
+    () => [
+      t("common.january"),
+      t("common.february"),
+      t("common.march"),
+      t("common.april"),
+      t("common.may"),
+      t("common.june"),
+      t("common.july"),
+      t("common.august"),
+      t("common.september"),
+      t("common.october"),
+      t("common.november"),
+      t("common.december"),
+    ],
+    [t]
+  );
+  const statusConfig = useMemo(() => getStatusConfig(t), [t]);
+  const defaultStatusConfig = statusConfig.SCHEDULED;
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const mentorId = user?.id;
@@ -740,10 +743,10 @@ export function MentorOverviewPage() {
         <CardContent className="flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-              Dashboard Mentor
+              {t("common.dashboard")} {t("common.mentor")}
             </p>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              {t("mentorOverview.welcomeBack")} {user?.name || "Mentor"}
+              {t("mentorOverview.welcomeBack")} {user?.name || t("common.mentor")}
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {t("mentorOverview.trackAppointmentsMentoringProgressAnd")}

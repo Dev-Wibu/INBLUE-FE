@@ -6,7 +6,6 @@ import { useMentorById } from "@/hooks/useMentor";
 import { useMentorReviewBySession } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
 import { formatCurrency, formatDateTime } from "@/lib/formatting";
-import i18n from "@/lib/i18n";
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
@@ -21,44 +20,6 @@ import {
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
-const t = i18n.t.bind(i18n);
-const statusMap: Record<
-  string,
-  {
-    label: string;
-    badgeClass: string;
-  }
-> = {
-  DRAFT: {
-    label: t("common.waitingForApproval"),
-    badgeClass: "bg-amber-100 text-amber-700",
-  },
-  SCHEDULED: {
-    label: t("common.comingSoon"),
-    badgeClass: "bg-blue-100 text-blue-700",
-  },
-  PAID: {
-    label: t("common.paid"),
-    badgeClass: "bg-emerald-100 text-emerald-700",
-  },
-  ONGOING: {
-    label: t("common.ongoing"),
-    badgeClass: "bg-green-100 text-green-700",
-  },
-  COMPLETED: {
-    label: t("general.completed"),
-    badgeClass: "bg-slate-100 text-slate-700",
-  },
-  REJECTED: {
-    label: t("common.rejected"),
-    badgeClass: "bg-red-100 text-red-700",
-  },
-  CANCELED: {
-    label: t("common.canceled"),
-    badgeClass: "bg-red-100 text-red-700",
-  },
-};
-const fallbackStatus = statusMap.SCHEDULED;
 export function MentorSessionDetailPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -72,6 +33,37 @@ export function MentorSessionDetailPage() {
   const { data: mentorReview, isLoading: reviewLoading } =
     useMentorReviewBySession(numericSessionId);
   const isAllowed = session && session.userId2 === user?.id;
+  const statusMap: Record<string, { label: string; badgeClass: string }> = {
+    DRAFT: {
+      label: t("common.waitingForApproval"),
+      badgeClass: "bg-amber-100 text-amber-700",
+    },
+    SCHEDULED: {
+      label: t("common.comingSoon"),
+      badgeClass: "bg-blue-100 text-blue-700",
+    },
+    PAID: {
+      label: t("common.paid"),
+      badgeClass: "bg-emerald-100 text-emerald-700",
+    },
+    ONGOING: {
+      label: t("common.ongoing"),
+      badgeClass: "bg-green-100 text-green-700",
+    },
+    COMPLETED: {
+      label: t("general.completed"),
+      badgeClass: "bg-slate-100 text-slate-700",
+    },
+    REJECTED: {
+      label: t("common.rejected"),
+      badgeClass: "bg-red-100 text-red-700",
+    },
+    CANCELED: {
+      label: t("common.canceled"),
+      badgeClass: "bg-red-100 text-red-700",
+    },
+  };
+  const fallbackStatus = statusMap.SCHEDULED;
   useEffect(() => {
     if (sessionLoading) {
       return;
@@ -150,9 +142,10 @@ export function MentorSessionDetailPage() {
             </div>
             <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">
               <User className="h-4 w-4 text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400">Mentor:</span>
+              <span className="text-slate-600 dark:text-slate-400">{t("common.mentor")}:</span>
               <span className="font-medium">
-                {mentorInfo?.name || (session.userId2 ? `Mentor #${session.userId2}` : "-")}
+                {mentorInfo?.name ||
+                  (session.userId2 ? t("common.mentorWithId", { id: session.userId2 }) : "-")}
               </span>
             </div>
             <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">

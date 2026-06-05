@@ -182,7 +182,9 @@ export function MentorProfileSection({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Label className="text-sm text-gray-500 dark:text-slate-400">Email</Label>
+                  <Label className="text-sm text-gray-500 dark:text-slate-400">
+                    {t("common.email")}
+                  </Label>
                   <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-slate-400">
                     {t("common.cannotBeChanged")}
                   </span>
@@ -356,7 +358,7 @@ export function MentorProfileSection({
                     value={formData.linkedInUrl || ""}
                     onChange={(e) => onInputChange("linkedInUrl", e.target.value)}
                     className="mt-1"
-                    placeholder="https://www.linkedin.com/in/..."
+                    placeholder={t("common.linkedinPlaceholder")}
                   />
                 ) : mentorProfile.linkedInUrl ? (
                   <a
@@ -367,7 +369,7 @@ export function MentorProfileSection({
                       openUrlInNewTab(mentorProfile.linkedInUrl || "");
                     }}
                     className="flex items-center gap-2 font-['Inter'] text-base font-medium text-blue-600 hover:underline dark:text-blue-400">
-                    Xem LinkedIn
+                    {t("common.viewLinkedin")}
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 ) : (
