@@ -1,0 +1,19 @@
+{
+  "traceId": "mock-trace-id",
+  "data": [
+    {
+      "id": 1,
+      "name": "Tech Corp",
+      "logo": null,
+      "industry": "Technology",
+      "location": "Hanoi"
+    },
+    {
+      "id": 2,
+      "name": "Data Inc",
+      "logo": null,
+      "industry": "Data Analytics",
+      "location": "Ho Chi Minh City"
+    }
+  ]
+}
