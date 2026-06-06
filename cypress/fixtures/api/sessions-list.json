@@ -1,0 +1,21 @@
+{
+  "traceId": "mock-trace-id",
+  "data": [
+    {
+      "id": 101,
+      "title": "Mock Interview Session",
+      "status": "COMPLETED",
+      "scheduledAt": "2026-06-01T14:00:00Z",
+      "mentorName": "Mentor B",
+      "menteeName": "Bình An"
+    },
+    {
+      "id": 102,
+      "title": "Practice Session",
+      "status": "PENDING",
+      "scheduledAt": "2026-06-02T10:00:00Z",
+      "mentorName": "Mentor B",
+      "menteeName": "Bình An"
+    }
+  ]
+}

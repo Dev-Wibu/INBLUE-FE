@@ -1,0 +1,19 @@
+{
+  "traceId": "mock-trace-id",
+  "data": [
+    {
+      "id": 1,
+      "title": "JavaScript Basics",
+      "description": "Fundamental JavaScript questions",
+      "questionCount": 10,
+      "difficulty": "EASY"
+    },
+    {
+      "id": 2,
+      "title": "System Design",
+      "description": "Advanced system design questions",
+      "questionCount": 5,
+      "difficulty": "HARD"
+    }
+  ]
+}

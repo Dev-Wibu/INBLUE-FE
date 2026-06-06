@@ -1,0 +1,21 @@
+{
+  "traceId": "mock-trace-id",
+  "data": [
+    {
+      "id": 1,
+      "title": "New session booked",
+      "message": "A new mock interview session has been booked.",
+      "isRead": false,
+      "createdAt": "2026-06-01T10:00:00Z",
+      "type": "SESSION_BOOKED"
+    },
+    {
+      "id": 2,
+      "title": "Feedback received",
+      "message": "You have received new feedback from your mentor.",
+      "isRead": false,
+      "createdAt": "2026-06-01T09:00:00Z",
+      "type": "FEEDBACK_RECEIVED"
+    }
+  ]
+}

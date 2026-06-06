@@ -1,0 +1,21 @@
+{
+  "traceId": "mock-trace-id",
+  "data": [
+    {
+      "id": 1,
+      "fullName": "Mentor B",
+      "email": "b@fpt.com",
+      "avatar": null,
+      "bio": "Experienced interview mentor",
+      "specialization": "Software Engineering"
+    },
+    {
+      "id": 2,
+      "fullName": "Mentor C",
+      "email": "c@fpt.com",
+      "avatar": null,
+      "bio": "Senior technical interviewer",
+      "specialization": "Data Science"
+    }
+  ]
+}
