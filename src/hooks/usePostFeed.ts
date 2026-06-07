@@ -40,6 +40,8 @@ export function usePostFeed(options?: UsePostFeedOptions): UsePostFeedReturn {
     if (prevUserId.current !== user?.id) {
       prevUserId.current = user?.id;
       appendedPages.current.clear();
+      // Resetting accumulated feed state when user identity changes is intentional
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPosts([]);
       setPage(0);
       setHasMore(true);
@@ -52,12 +54,15 @@ export function usePostFeed(options?: UsePostFeedOptions): UsePostFeedReturn {
   useEffect(() => {
     if (!data) return;
     const content = data as unknown as PagePostResponse;
-    const pageIndex = content.number ?? page;
+    // Use server-returned page index as source of truth; fall back to 0 if absent
+    const pageIndex = content.number ?? 0;
     const incoming = content.content ?? [];
 
     if (pendingRefreshRef.current && pageIndex === 0) {
       appendedPages.current.clear();
       appendedPages.current.add(0);
+      // Accumulating paginated feed data from React Query response is intentional
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPosts(incoming);
       setHasMore(!(content.last ?? true));
       pendingRefreshRef.current = false;
@@ -70,12 +75,13 @@ export function usePostFeed(options?: UsePostFeedOptions): UsePostFeedReturn {
       setPosts((prev) => [...prev, ...incoming]);
       setHasMore(!(content.last ?? true));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   useEffect(() => {
     if (!isFetching && pendingRefreshRef.current) {
       pendingRefreshRef.current = false;
+      // Clearing reload flag once React Query finishes fetching is intentional
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsReloading(false);
     }
   }, [isFetching]);

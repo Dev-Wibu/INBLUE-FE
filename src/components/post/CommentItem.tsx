@@ -2,7 +2,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import type { PostCommentResponse } from "@/interfaces/schema.types";
 import { formatDateTime, toTimestamp } from "@/lib/formatting";
-import React from "react";
+import type { TFunction } from "i18next";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 interface CommentItemProps {
   comment: PostCommentResponse;
@@ -17,7 +18,7 @@ function renderContent(
   text: string | undefined,
   mentionedUserName: string | undefined,
   parentCommentId: number | undefined,
-  onMentionClick: ((pid: number) => void) | undefined
+  onMentionClick: ((_pid: number) => void) | undefined
 ): (string | React.ReactElement)[] {
   if (!text) return [];
   if (mentionedUserName) {
@@ -56,6 +57,23 @@ function renderContent(
     )
   );
 }
+
+function computeRelativeTime(createdAt: string | undefined, nowMs: number, t: TFunction): string {
+  if (!createdAt) return "";
+  const timestamp = toTimestamp(createdAt);
+  if (!timestamp) return "";
+  const diffMs = nowMs - timestamp;
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return t("common.justFinished");
+  if (diffMins < 60) return t("general.minutesAgo", { var_0: diffMins });
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return t("general.hoursAgo", { var_0: diffHours });
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return t("general.daysAgo", { var_0: diffDays });
+  const diffMonths = Math.floor(diffDays / 30);
+  return t("general.monthsAgo", { var_0: diffMonths });
+}
+
 export function CommentItem({
   comment,
   onReply,
@@ -66,35 +84,15 @@ export function CommentItem({
 }: CommentItemProps) {
   const { t } = useTranslation();
 
-  const relativeTime = (() => {
-    const dateStr = comment.createdAt;
-    if (!dateStr) return "";
-    const timestamp = toTimestamp(dateStr);
-    if (!timestamp) return "";
-    // eslint-disable-next-line react-hooks/purity -- Date.now() is intentionally impure for relative time display
-    const diffMs = Date.now() - timestamp;
-    const diffMins = Math.floor(diffMs / 60000);
-    if (diffMins < 1) return t("common.justFinished");
-    if (diffMins < 60)
-      return t("general.minutesAgo", {
-        var_0: diffMins,
-      });
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24)
-      return t("general.hoursAgo", {
-        var_0: diffHours,
-      });
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 30)
-      return t("general.daysAgo", {
-        var_0: diffDays,
-      });
-    const diffMonths = Math.floor(diffDays / 30);
-    return t("general.monthsAgo", {
-      var_0: diffMonths,
-    });
-  })();
+  const [now, setNow] = useState(() => Date.now());
 
+  // Update relative time every 30s so display stays accurate while the feed is open
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const relativeTime = computeRelativeTime(comment.createdAt, now, t);
   const absoluteTime = formatDateTime(comment.createdAt, "");
   const initials = comment.userName
     ?.split(" ")
