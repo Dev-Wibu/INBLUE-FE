@@ -72,8 +72,7 @@ export function usePublishedFeed(): UsePublishedFeedReturn {
 
   useEffect(() => {
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [load]);
 
   const loadMore = () => {
     // published endpoint is not paginated
