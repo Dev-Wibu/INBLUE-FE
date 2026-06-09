@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 /**
@@ -85,6 +85,7 @@ function MenuItem({ to, icon, title, description }: MenuItemProps) {
 export function Header() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, user, clearAuth } = useAuthStore();
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -103,6 +104,8 @@ export function Header() {
     navigate("/login");
   };
   const dashboardPath = getDashboardPath(user?.role);
+  const isHomepage = location.pathname === "/";
+  const showScrolledStyle = isScrolled || !isHomepage;
 
   const linkColorClass =
     "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]";
@@ -112,7 +115,7 @@ export function Header() {
   return (
     <header
       className={`fixed top-0 right-0 left-0 isolate z-50 h-16 w-full border-b transition-all duration-300 ${
-        isScrolled
+        showScrolledStyle
           ? "border-slate-200 bg-white/80 shadow-sm backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/80"
           : "border-transparent bg-transparent"
       }`}>
