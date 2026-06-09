@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
 import {
-  formatDayMonth,
+  formatRelativeTime,
   formatTime,
   parseBackendDate,
   toTimestamp,
@@ -41,6 +41,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  useCallback,
   useDeferredValue,
   useEffect,
   useMemo,
@@ -133,20 +134,10 @@ const getTimestampValue = (timestamp: string): number => {
 const getDayKey = (timestamp: string): string => {
   return toVietnamDateKey(timestamp) || "unknown";
 };
-const formatConversationTime = (timestamp: string): string => {
-  const parsed = parseBackendDate(timestamp);
-  if (!parsed) {
-    return "";
-  }
-  const sameDay = toVietnamDateKey(parsed) === toVietnamDateKey(new Date());
-  if (sameDay) {
-    return formatTime(parsed, "");
-  }
-  return formatDayMonth(parsed, "");
-};
+
 const buildTimelineItems = (
   messages: MessengerMessage[],
-  dayLabelFn: (timestamp: string) => string
+  dayLabelFn: (_timestamp: string) => string
 ): TimelineItem[] => {
   if (messages.length === 0) {
     return [];
@@ -193,23 +184,29 @@ const buildTimelineItems = (
 };
 export function MessengerPage() {
   const { t, i18n } = useTranslation();
-  const getRoleLabel = (role: Contact["role"]): string => {
-    return role === "MENTOR" ? t("common.mentor") : t("common.students");
-  };
-  const formatDayLabel = (timestamp: string): string => {
-    const parsed = parseBackendDate(timestamp);
-    if (!parsed) {
-      return t("common.today");
-    }
-    const locale = i18n.language === "en" ? "en-US" : "vi-VN";
-    return parsed.toLocaleDateString(locale, {
-      timeZone: "Asia/Ho_Chi_Minh",
-      weekday: "short",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
+  const getRoleLabel = useCallback(
+    (role: Contact["role"]): string => {
+      return role === "MENTOR" ? t("common.mentor") : t("common.students");
+    },
+    [t]
+  );
+  const formatDayLabel = useCallback(
+    (timestamp: string): string => {
+      const parsed = parseBackendDate(timestamp);
+      if (!parsed) {
+        return t("common.today");
+      }
+      const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+      return parsed.toLocaleDateString(locale, {
+        timeZone: "Asia/Ho_Chi_Minh",
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    },
+    [i18n.language, t]
+  );
   const location = useLocation();
   const isMobile = useIsMobile();
   const locationState = location.state as MessengerLocationState | null;
@@ -295,52 +292,70 @@ export function MessengerPage() {
   const retryTimeoutRef = useRef<Record<string, number>>({});
   const retryAttemptRef = useRef<Record<string, number>>({});
   const destroyedRef = useRef(false);
-  useEffect(() => {
-    return () => {
-      destroyedRef.current = true;
-      Object.values(retryTimeoutRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
-      retryTimeoutRef.current = {};
-      retryAttemptRef.current = {};
-    };
-  }, []);
+  const contactsRef = useRef<Contact[]>([]);
 
-  // Sync ref with state
-  useEffect(() => {
-    selectedContactRef.current = selectedContact;
-  }, [selectedContact]);
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
+  const getStoredDraft = useCallback(
+    (contact: Contact): string => {
+      if (!currentRole || !currentUserId) {
+        return "";
+      }
+      try {
+        return (
+          localStorage.getItem(
+            getDraftStorageKey(currentRole, currentUserId, contact.role, contact.id)
+          ) || ""
+        );
+      } catch {
+        return "";
+      }
+    },
+    [currentRole, currentUserId]
+  );
 
-  // Auto scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages]);
-  const clearRetryTimer = (messageId: string) => {
+  const getStoredPinnedMessageId = useCallback(
+    (contact: Contact): string | null => {
+      if (!currentRole || !currentUserId) {
+        return null;
+      }
+      try {
+        return localStorage.getItem(
+          getPinnedStorageKey(currentRole, currentUserId, contact.role, contact.id)
+        );
+      } catch {
+        return null;
+      }
+    },
+    [currentRole, currentUserId]
+  );
+
+  const clearRetryTimer = useCallback((messageId: string) => {
     const timeoutId = retryTimeoutRef.current[messageId];
     if (timeoutId !== undefined) {
       window.clearTimeout(timeoutId);
       delete retryTimeoutRef.current[messageId];
     }
-  };
-  const updateConversationMeta = (contact: Contact, content: string, timestamp: string) => {
-    const conversationKey = getConversationKey(contact);
-    setConversationMetaMap((previous) => {
-      const existing = previous[conversationKey];
-      if (existing && getTimestampValue(existing.lastTimestamp) > getTimestampValue(timestamp)) {
-        return previous;
-      }
-      return {
-        ...previous,
-        [conversationKey]: {
-          lastMessage: content,
-          lastTimestamp: timestamp,
-        },
-      };
-    });
-  };
+  }, []);
+
+  const updateConversationMeta = useCallback(
+    (contact: Contact, content: string, timestamp: string) => {
+      const conversationKey = getConversationKey(contact);
+      setConversationMetaMap((previous) => {
+        const existing = previous[conversationKey];
+        if (existing && getTimestampValue(existing.lastTimestamp) > getTimestampValue(timestamp)) {
+          return previous;
+        }
+        return {
+          ...previous,
+          [conversationKey]: {
+            lastMessage: content,
+            lastTimestamp: timestamp,
+          },
+        };
+      });
+    },
+    []
+  );
+
   const mapHistoryMessageToUi = (
     msg: ChatHistoryMessage,
     currentFullId: string
@@ -363,51 +378,73 @@ export function MessengerPage() {
       retries: 0,
     };
   };
-  const scheduleRetry = (
-    messageId: string,
-    content: string,
-    recipientFullId: string,
-    attempt: number
-  ) => {
-    if (destroyedRef.current) {
-      return;
-    }
-    if (attempt >= MAX_RETRY_ATTEMPTS) {
-      clearRetryTimer(messageId);
-      delete retryAttemptRef.current[messageId];
+
+  const scheduleRetry = useCallback(
+    (messageId: string, content: string, recipientFullId: string, attempt: number) => {
+      if (destroyedRef.current) {
+        return;
+      }
+      if (attempt >= MAX_RETRY_ATTEMPTS) {
+        clearRetryTimer(messageId);
+        delete retryAttemptRef.current[messageId];
+        setMessages((previous) =>
+          previous.map((message) =>
+            message.id === messageId
+              ? {
+                  ...message,
+                  status: "failed",
+                  retries: attempt,
+                }
+              : message
+          )
+        );
+        toast.error(t("sharedMessenger.theMessageHasNotBeen"));
+        return;
+      }
+      const nextAttempt = attempt + 1;
+      retryAttemptRef.current[messageId] = nextAttempt;
       setMessages((previous) =>
         previous.map((message) =>
           message.id === messageId
             ? {
                 ...message,
-                status: "failed",
-                retries: attempt,
+                status: attempt === 0 ? "queued" : "retrying",
+                retries: nextAttempt,
               }
             : message
         )
       );
-      toast.error(t("sharedMessenger.theMessageHasNotBeen"));
-      return;
-    }
-    const nextAttempt = attempt + 1;
-    retryAttemptRef.current[messageId] = nextAttempt;
-    setMessages((previous) =>
-      previous.map((message) =>
-        message.id === messageId
-          ? {
-              ...message,
-              status: attempt === 0 ? "queued" : "retrying",
-              retries: nextAttempt,
-            }
-          : message
-      )
-    );
-    clearRetryTimer(messageId);
-    const retryDelay = Math.min(RETRY_BASE_DELAY_MS * 2 ** attempt, 12000);
-    retryTimeoutRef.current[messageId] = window.setTimeout(() => {
-      if (destroyedRef.current) {
-        return;
-      }
+      clearRetryTimer(messageId);
+      const retryDelay = Math.min(RETRY_BASE_DELAY_MS * 2 ** attempt, 12000);
+      retryTimeoutRef.current[messageId] = window.setTimeout(() => {
+        if (destroyedRef.current) {
+          return;
+        }
+        const isSent = socketService.sendMessage(recipientFullId, content);
+        if (isSent) {
+          clearRetryTimer(messageId);
+          delete retryAttemptRef.current[messageId];
+          setMessages((previous) =>
+            previous.map((message) =>
+              message.id === messageId
+                ? {
+                    ...message,
+                    status: "sent",
+                    retries: nextAttempt,
+                  }
+                : message
+            )
+          );
+          return;
+        }
+        scheduleRetry(messageId, content, recipientFullId, nextAttempt);
+      }, retryDelay);
+    },
+    [t, clearRetryTimer]
+  );
+
+  const attemptSendMessage = useCallback(
+    (messageId: string, content: string, recipientFullId: string, attempt: number) => {
       const isSent = socketService.sendMessage(recipientFullId, content);
       if (isSent) {
         clearRetryTimer(messageId);
@@ -418,16 +455,121 @@ export function MessengerPage() {
               ? {
                   ...message,
                   status: "sent",
-                  retries: nextAttempt,
+                  retries: attempt,
                 }
               : message
           )
         );
-        return;
+        return true;
       }
-      scheduleRetry(messageId, content, recipientFullId, nextAttempt);
-    }, retryDelay);
+      scheduleRetry(messageId, content, recipientFullId, attempt);
+      return false;
+    },
+    [clearRetryTimer, scheduleRetry]
+  );
+
+  const openConversation = useCallback(
+    (contact: Contact) => {
+      const conversationKey = getConversationKey(contact);
+      const storedPinnedId = getStoredPinnedMessageId(contact);
+      setSelectedContact(contact);
+      setMessageInput(getStoredDraft(contact));
+      setDraftLastSavedAt(null);
+      setPinnedMessageIds((prev) => {
+        const next = {
+          ...prev,
+        };
+        if (!storedPinnedId) {
+          delete next[conversationKey];
+        } else {
+          next[conversationKey] = storedPinnedId;
+        }
+        return next;
+      });
+      setVisibleMessageLimit(MESSAGE_RENDER_STEP);
+      setMessageSearchQuery("");
+      setIsMessageSearchOpen(false);
+      setIsPinnedMessageCollapsed(false);
+    },
+    [getStoredDraft, getStoredPinnedMessageId]
+  );
+
+  const closeConversation = () => {
+    setSelectedContact(null);
+    setMessageInput("");
+    setDraftLastSavedAt(null);
+    setMessageSearchQuery("");
+    setVisibleMessageLimit(MESSAGE_RENDER_STEP);
+    setIsMessageSearchOpen(false);
+    setIsPinnedMessageCollapsed(false);
   };
+
+  const filteredContacts = useMemo(() => {
+    const normalizedQuery = deferredContactSearchQuery.trim().toLowerCase();
+    const candidates = contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(normalizedQuery)
+    );
+    return [...candidates].sort((first, second) => {
+      const firstMeta = conversationMetaMap[getConversationKey(first)];
+      const secondMeta = conversationMetaMap[getConversationKey(second)];
+      const firstTimestamp = getTimestampValue(firstMeta?.lastTimestamp || "");
+      const secondTimestamp = getTimestampValue(secondMeta?.lastTimestamp || "");
+      if (firstTimestamp !== secondTimestamp) {
+        return secondTimestamp - firstTimestamp;
+      }
+      return first.name.localeCompare(second.name, "vi-VN");
+    });
+  }, [contacts, conversationMetaMap, deferredContactSearchQuery]);
+
+  const filteredMentors = useMemo(() => {
+    const normalizedQuery = deferredContactSearchQuery.trim().toLowerCase();
+    return mentors.filter((mentor) => (mentor.name || "").toLowerCase().includes(normalizedQuery));
+  }, [deferredContactSearchQuery, mentors]);
+
+  const filteredMessages = useMemo(() => {
+    const normalizedQuery = deferredMessageSearchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return messages;
+    }
+    return messages.filter((message) => message.content.toLowerCase().includes(normalizedQuery));
+  }, [deferredMessageSearchQuery, messages]);
+
+  const visibleMessages = useMemo(() => {
+    const startIndex = Math.max(0, filteredMessages.length - visibleMessageLimit);
+    return filteredMessages.slice(startIndex);
+  }, [filteredMessages, visibleMessageLimit]);
+
+  const timelineItems = useMemo(
+    () => buildTimelineItems(visibleMessages, formatDayLabel),
+    [visibleMessages, formatDayLabel]
+  );
+  useEffect(() => {
+    destroyedRef.current = false;
+    return () => {
+      destroyedRef.current = true;
+      Object.values(retryTimeoutRef.current).forEach((timeoutId) => window.clearTimeout(timeoutId));
+      retryTimeoutRef.current = {};
+      retryAttemptRef.current = {};
+    };
+  }, []);
+
+  // Sync ref with state
+  useEffect(() => {
+    selectedContactRef.current = selectedContact;
+  }, [selectedContact]);
+  useEffect(() => {
+    contactsRef.current = contacts;
+  }, [contacts]);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Auto scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages]);
 
   // Load contacts
   useEffect(() => {
@@ -471,7 +613,7 @@ export function MessengerPage() {
         );
         const contactDetails = detailResults.filter((contact): contact is Contact => !!contact);
         setContacts(contactDetails);
-        const previewTargets = contactDetails.slice(0, 6);
+        const previewTargets = contactDetails;
         if (previewTargets.length === 0) {
           return;
         }
@@ -614,7 +756,7 @@ export function MessengerPage() {
       }
     };
     fetchMessages();
-  }, [selectedContact, currentRole, currentUserId, t]);
+  }, [selectedContact, currentRole, currentUserId, t, updateConversationMeta]);
 
   // Handle incoming socket messages
   useEffect(() => {
@@ -671,7 +813,9 @@ export function MessengerPage() {
             );
           } else {
             if (!Number.isNaN(senderNumericId)) {
-              const senderContact = contacts.find((contact) => contact.id === senderNumericId);
+              const senderContact = contactsRef.current.find(
+                (contact) => contact.id === senderNumericId
+              );
               if (senderContact) {
                 updateConversationMeta(
                   senderContact,
@@ -689,7 +833,7 @@ export function MessengerPage() {
     return () => {
       socketService.disconnect();
     };
-  }, [contacts, currentRole, currentUserId, t]);
+  }, [currentRole, currentUserId, t, updateConversationMeta]);
   useEffect(() => {
     if (connectionState !== "connected" || !selectedContact) {
       return;
@@ -704,64 +848,8 @@ export function MessengerPage() {
       attemptSendMessage(message.id, message.content, recipientFullId, attempt);
     });
     // Avoid forcing retry effect to rerun when send handler identity changes between renders.
-  }, [connectionState, selectedContact]);
-  const closeConversation = () => {
-    setSelectedContact(null);
-    setMessageInput("");
-    setDraftLastSavedAt(null);
-    setMessageSearchQuery("");
-    setVisibleMessageLimit(MESSAGE_RENDER_STEP);
-    setIsMessageSearchOpen(false);
-    setIsPinnedMessageCollapsed(false);
-  };
-  const openConversation = (contact: Contact) => {
-    const conversationKey = getConversationKey(contact);
-    const storedPinnedId = getStoredPinnedMessageId(contact);
-    setSelectedContact(contact);
-    setMessageInput(getStoredDraft(contact));
-    setDraftLastSavedAt(null);
-    setPinnedMessageIds((prev) => {
-      const next = {
-        ...prev,
-      };
-      if (!storedPinnedId) {
-        delete next[conversationKey];
-      } else {
-        next[conversationKey] = storedPinnedId;
-      }
-      return next;
-    });
-    setVisibleMessageLimit(MESSAGE_RENDER_STEP);
-    setMessageSearchQuery("");
-    setIsMessageSearchOpen(false);
-    setIsPinnedMessageCollapsed(false);
-  };
-  const attemptSendMessage = (
-    messageId: string,
-    content: string,
-    recipientFullId: string,
-    attempt: number
-  ) => {
-    const isSent = socketService.sendMessage(recipientFullId, content);
-    if (isSent) {
-      clearRetryTimer(messageId);
-      delete retryAttemptRef.current[messageId];
-      setMessages((previous) =>
-        previous.map((message) =>
-          message.id === messageId
-            ? {
-                ...message,
-                status: "sent",
-                retries: attempt,
-              }
-            : message
-        )
-      );
-      return true;
-    }
-    scheduleRetry(messageId, content, recipientFullId, attempt);
-    return false;
-  };
+  }, [connectionState, selectedContact, attemptSendMessage]);
+
   const handleSendMessage = () => {
     const trimmed = messageInput.trim();
     if (!trimmed || !selectedContact) {
@@ -966,68 +1054,10 @@ export function MessengerPage() {
     isMessageSearchOpen,
     pinnedMessageIds,
     t,
+    filteredContacts,
+    openConversation,
   ]);
-  const getStoredDraft = (contact: Contact): string => {
-    if (!currentRole || !currentUserId) {
-      return "";
-    }
-    try {
-      return (
-        localStorage.getItem(
-          getDraftStorageKey(currentRole, currentUserId, contact.role, contact.id)
-        ) || ""
-      );
-    } catch {
-      return "";
-    }
-  };
-  const getStoredPinnedMessageId = (contact: Contact): string | null => {
-    if (!currentRole || !currentUserId) {
-      return null;
-    }
-    try {
-      return localStorage.getItem(
-        getPinnedStorageKey(currentRole, currentUserId, contact.role, contact.id)
-      );
-    } catch {
-      return null;
-    }
-  };
-  const filteredContacts = useMemo(() => {
-    const normalizedQuery = deferredContactSearchQuery.trim().toLowerCase();
-    const candidates = contacts.filter((contact) =>
-      contact.name.toLowerCase().includes(normalizedQuery)
-    );
-    return [...candidates].sort((first, second) => {
-      const firstMeta = conversationMetaMap[getConversationKey(first)];
-      const secondMeta = conversationMetaMap[getConversationKey(second)];
-      const firstTimestamp = getTimestampValue(firstMeta?.lastTimestamp || "");
-      const secondTimestamp = getTimestampValue(secondMeta?.lastTimestamp || "");
-      if (firstTimestamp !== secondTimestamp) {
-        return secondTimestamp - firstTimestamp;
-      }
-      return first.name.localeCompare(second.name, "vi-VN");
-    });
-  }, [contacts, conversationMetaMap, deferredContactSearchQuery]);
-  const filteredMentors = useMemo(() => {
-    const normalizedQuery = deferredContactSearchQuery.trim().toLowerCase();
-    return mentors.filter((mentor) => (mentor.name || "").toLowerCase().includes(normalizedQuery));
-  }, [deferredContactSearchQuery, mentors]);
-  const filteredMessages = useMemo(() => {
-    const normalizedQuery = deferredMessageSearchQuery.trim().toLowerCase();
-    if (!normalizedQuery) {
-      return messages;
-    }
-    return messages.filter((message) => message.content.toLowerCase().includes(normalizedQuery));
-  }, [deferredMessageSearchQuery, messages]);
-  const visibleMessages = useMemo(() => {
-    const startIndex = Math.max(0, filteredMessages.length - visibleMessageLimit);
-    return filteredMessages.slice(startIndex);
-  }, [filteredMessages, visibleMessageLimit]);
-  const timelineItems = useMemo(
-    () => buildTimelineItems(visibleMessages, formatDayLabel),
-    [visibleMessages, formatDayLabel]
-  );
+
   const hasMoreMessageHistory = filteredMessages.length > visibleMessages.length;
   const pendingOutboxCount = useMemo(
     () =>
@@ -1223,8 +1253,10 @@ export function MessengerPage() {
                         var_0: getRoleLabel(contact.role),
                       });
                     const previewTime = conversationMeta?.lastTimestamp
-                      ? formatConversationTime(conversationMeta.lastTimestamp)
-                      : contact.time;
+                      ? formatRelativeTime(conversationMeta.lastTimestamp)
+                      : contact.time
+                        ? formatRelativeTime(contact.time)
+                        : "";
                     return (
                       <button
                         key={contact.id}

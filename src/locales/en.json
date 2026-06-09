@@ -2543,6 +2543,11 @@
   },
   "sharedMessenger": {
     "chooseAMentorToStart": "Choose a mentor to start the conversation",
+    "daysAgo": "{{count}}d",
+    "hoursAgo": "{{count}}h",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m",
+    "yesterday": "Yesterday",
     "contentCannotBeCopiedPlease": "Content cannot be copied. Please try again",
     "contentHasBeenMovedTo": "Content has been moved to the edit box",
     "ctrlKSearchCtrlShift": "Ctrl+K search · Ctrl+Shift+M quick compose · /camon quick command",

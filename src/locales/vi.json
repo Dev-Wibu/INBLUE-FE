@@ -2543,6 +2543,11 @@
   },
   "sharedMessenger": {
     "chooseAMentorToStart": "Chọn mentor để bắt đầu hội thoại",
+    "daysAgo": "{{count}} ngày",
+    "hoursAgo": "{{count}} giờ",
+    "justNow": "Vừa xong",
+    "minutesAgo": "{{count}} phút",
+    "yesterday": "Hôm qua",
     "contentCannotBeCopiedPlease": "Không thể sao chép nội dung. Vui lòng thử lại",
     "contentHasBeenMovedTo": "Đã chuyển nội dung vào ô soạn",
     "ctrlKSearchCtrlShift": "Ctrl+K tìm kiếm · Ctrl+Shift+M soạn nhanh · /camon lệnh nhanh",
