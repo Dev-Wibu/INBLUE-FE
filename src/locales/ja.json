@@ -2570,6 +2570,11 @@
   },
   "sharedMessenger": {
     "chooseAMentorToStart": "メンターを選択して会話を開始",
+    "daysAgo": "{{count}}日前",
+    "hoursAgo": "{{count}}時間前",
+    "justNow": "たった今",
+    "minutesAgo": "{{count}}分前",
+    "yesterday": "昨日",
     "contentCannotBeCopiedPlease": "コンテンツをコピーできません。もう一度お試しください",
     "contentHasBeenMovedTo": "コンテンツが編集ボックスに移動されました",
     "ctrlKSearchCtrlShift": "Ctrl+K 検索 · Ctrl+Shift+M クイック作成 · /camon クイックコマンド",

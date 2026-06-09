@@ -410,3 +410,60 @@ export function formatShortCurrency(amount: number): string {
   const locale = i18n.language === "en" ? "en-US" : "vi-VN";
   return new Intl.NumberFormat(locale).format(Math.abs(amount)) + t("general.text");
 }
+
+export function formatRelativeTime(value: DateInput, fallback = EMPTY_PLACEHOLDER): string {
+  const parsed = parseBackendDate(value);
+  if (!parsed) {
+    return fallback;
+  }
+  const now = new Date();
+
+  // Calculate timezone-aware calendar difference in Vietnam time zone
+  const vnOffsetMs = VIETNAM_OFFSET_HOURS * 60 * 60 * 1000;
+  const parsedVnStart = new Date(parsed.getTime() + vnOffsetMs);
+  parsedVnStart.setUTCHours(0, 0, 0, 0);
+  const nowVnStart = new Date(now.getTime() + vnOffsetMs);
+  nowVnStart.setUTCHours(0, 0, 0, 0);
+
+  const calendarDiffDays = Math.round(
+    (nowVnStart.getTime() - parsedVnStart.getTime()) / (24 * 60 * 60 * 1000)
+  );
+
+  if (calendarDiffDays === 0) {
+    const diffMs = now.getTime() - parsed.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+
+    if (diffMin < 1) {
+      return t("sharedMessenger.justNow");
+    }
+    if (diffMin < 60) {
+      return t("sharedMessenger.minutesAgo", { count: diffMin });
+    }
+    return t("sharedMessenger.hoursAgo", { count: diffHour });
+  }
+
+  if (calendarDiffDays === 1) {
+    return t("sharedMessenger.yesterday");
+  }
+
+  if (calendarDiffDays >= 2 && calendarDiffDays <= 7) {
+    return t("sharedMessenger.daysAgo", { count: calendarDiffDays });
+  }
+
+  // Older than 7 days: return dd/MM or dd/MM/yyyy
+  const df = getDateFormatter();
+  const day = getDatePart(parsed, df, "day");
+  const month = getDatePart(parsed, df, "month");
+  const year = getDatePart(parsed, df, "year");
+  if (!day || !month || !year) {
+    return fallback;
+  }
+
+  const currentYear = now.getFullYear().toString();
+  if (year !== currentYear) {
+    return currentLocale() === "en-US" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
+  }
+  return currentLocale() === "en-US" ? `${month}/${day}` : `${day}/${month}`;
+}
