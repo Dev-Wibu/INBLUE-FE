@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 function getInitials(name?: string): string {
   if (!name) return "U";
@@ -82,6 +82,7 @@ function MenuItem({ to, icon, title, description }: MenuItemProps) {
 export function HomepageHeader() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn, user, clearAuth } = useAuthStore();
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -100,22 +101,25 @@ export function HomepageHeader() {
     navigate("/login");
   };
   const dashboardPath = getDashboardPath(user?.role);
-  const linkColorClass = isScrolled
+  const isHomepage = location.pathname === "/";
+  const showScrolledStyle = isScrolled || !isHomepage;
+
+  const linkColorClass = showScrolledStyle
     ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
     : "text-white hover:text-white dark:text-slate-200 dark:hover:text-[#66B2FF]";
 
-  const underlineColorClass = isScrolled
+  const underlineColorClass = showScrolledStyle
     ? "bg-[#0047AB] dark:bg-[#66B2FF]"
     : "bg-white dark:bg-[#66B2FF]";
 
-  const toggleColorClass = isScrolled
+  const toggleColorClass = showScrolledStyle
     ? "text-slate-700 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
     : "text-white hover:text-white dark:text-slate-300 dark:hover:text-[#66B2FF]";
 
   return (
     <header
       className={`fixed top-0 right-0 left-0 isolate z-50 h-16 border-b transition-all duration-300 ${
-        isScrolled
+        showScrolledStyle
           ? "border-white/20 bg-white/80 shadow-sm backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/80"
           : "border-transparent bg-transparent"
       }`}>
@@ -125,7 +129,9 @@ export function HomepageHeader() {
           <img src={icon2} alt="INBLUE AI" className="h-10 w-10" />
           <span
             className={`hidden text-lg font-bold transition-colors duration-300 min-[400px]:inline-block min-[400px]:text-xl ${
-              isScrolled ? "text-[#0047AB] dark:text-[#66B2FF]" : "text-white dark:text-[#66B2FF]"
+              showScrolledStyle
+                ? "text-[#0047AB] dark:text-[#66B2FF]"
+                : "text-white dark:text-[#66B2FF]"
             }`}>
             INBLUE AI
           </span>
@@ -253,7 +259,7 @@ export function HomepageHeader() {
                 variant="ghost"
                 size="icon"
                 className={`transition-colors duration-300 ${
-                  isScrolled
+                  showScrolledStyle
                     ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
                     : "text-white hover:text-white dark:text-slate-200 dark:hover:text-[#66B2FF]"
                 }`}>
@@ -309,7 +315,7 @@ export function HomepageHeader() {
               <Button
                 variant="ghost"
                 className={`px-2 transition-colors duration-300 sm:px-4 ${
-                  isScrolled
+                  showScrolledStyle
                     ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
                     : "text-white hover:text-white dark:text-slate-200 dark:hover:text-[#66B2FF]"
                 }`}
@@ -338,7 +344,7 @@ export function HomepageHeader() {
                   variant="ghost"
                   size="icon"
                   className={`ml-1 transition-colors duration-300 ${
-                    isScrolled
+                    showScrolledStyle
                       ? "text-slate-800 dark:text-slate-200"
                       : "text-white dark:text-slate-200"
                   }`}>
