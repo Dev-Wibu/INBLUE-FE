@@ -1272,6 +1272,7 @@
     "viewYourNotificationDetails": "Xem chi tiết thông báo của bạn"
   },
   "compPost": {
+    "andOthersCount": "và {{count}} người khác",
     "30MinutesAgo": "30 phút trước",
     "addCoverPhoto": "Thêm ảnh bìa",
     "articleBy": "Bài viết của",
