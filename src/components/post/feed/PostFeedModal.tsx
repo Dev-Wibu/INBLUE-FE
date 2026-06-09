@@ -3,9 +3,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDateTime } from "@/lib/formatting";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { useCheckLiked, useCreateComment, usePostById } from "@/services/post.manager";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
 import { CommentSection } from "../CommentSection";
 import { LikeButton } from "../LikeButton";
+import { LikeListModal } from "../LikeListModal";
 import { ExpandableText } from "./ExpandableText";
 type PostResponse = components["schemas"]["PostResponse"];
 type PostLikeResponse = components["schemas"]["PostLikeResponse"];
@@ -37,7 +38,7 @@ export function PostFeedModal({
   const { user } = useAuthStore();
   const post = item.post;
   const postId = post?.postId ?? 0;
-  const [likesOpen, setLikesOpen] = useState(false);
+  const [likeModalOpen, setLikeModalOpen] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
   const createComment = useCreateComment();
@@ -79,10 +80,32 @@ export function PostFeedModal({
       }
     );
   };
-  const isLiked =
-    Object.values((likedData ?? {}) as unknown as Record<string, boolean>)[0] ?? false;
+  const rawLiked = Object.values(likedData ?? {})[0] as string | boolean | undefined;
+  const isLiked = rawLiked === true || rawLiked === "true";
   const likeCount = live?.likeCount ?? item.likeCount ?? 0;
-  const likers = (live?.postLikes ?? item.postLikes ?? []) as PostLikeResponse[];
+
+  // Synchronized list of users who liked the post (excluding empty/null userNames)
+  const rawLikers = ((live?.postLikes ?? item.postLikes ?? []) as PostLikeResponse[]).filter(
+    (l): l is PostLikeResponse & { userName: string } => !!l.userName
+  );
+  const likers = [...rawLikers];
+  if (isLiked && user?.name) {
+    if (!likers.some((l) => l.userName === user.name)) {
+      likers.unshift({
+        userName: user.name,
+        userAvatar: user.avatarUrl ?? "",
+      });
+    }
+  } else if (!isLiked && user?.name) {
+    const idx = likers.findIndex((l) => l.userName === user.name);
+    if (idx !== -1) {
+      likers.splice(idx, 1);
+    }
+  }
+
+  const showSuffix = likeCount > 10;
+  const displayLikers = showSuffix ? likers.slice(0, 9) : likers.slice(0, 10);
+  const extraCount = Math.max(0, likeCount - displayLikers.length);
   const liveCommentCount = live?.commentCount ?? item.commentCount ?? 0;
   const postComments = (live?.postComments ?? item.postComments ?? []) as PostCommentResponse[];
   const authorName = post?.author?.name ?? t("common.anonymous");
@@ -206,35 +229,39 @@ export function PostFeedModal({
             {(likeLabel || liveCommentCount > 0) && (
               <div className="flex items-center gap-1 px-6 pt-3 pb-1">
                 {likeLabel && (
-                  <Popover open={likesOpen} onOpenChange={setLikesOpen}>
-                    <PopoverTrigger asChild>
-                      <button className="flex items-center gap-1 hover:underline" type="button">
-                        <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
-                        <span className="text-muted-foreground text-xs">{likeLabel}</span>
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="max-h-64 w-56 overflow-y-auto p-2"
-                      side="top"
-                      align="start">
-                      <p className="mb-2 text-xs font-semibold">{t("compPost.peopleLikedIt")}</p>
-                      {likers.length === 0 ? (
-                        <p className="text-muted-foreground text-xs">{t("compPost.noOneYet")}</p>
-                      ) : (
-                        likers.map((l, i) => (
-                          <div key={i} className="flex items-center gap-2 py-1">
-                            <Avatar className="h-6 w-6 shrink-0">
-                              <AvatarImage src={l.userAvatar} alt={l.userName} />
-                              <AvatarFallback className="text-[10px]">
-                                {l.userName?.[0]?.toUpperCase() ?? "?"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-xs">{l.userName ?? t("common.anonymous")}</span>
-                          </div>
-                        ))
-                      )}
-                    </PopoverContent>
-                  </Popover>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className="flex cursor-pointer items-center gap-1 text-left hover:underline"
+                          type="button"
+                          onClick={() => setLikeModalOpen(true)}>
+                          <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
+                          <span className="text-muted-foreground text-xs">{likeLabel}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="z-50 max-w-xs rounded-lg border-slate-800 bg-slate-900 p-2 text-slate-50 shadow-xl">
+                        <div className="space-y-1.5">
+                          {displayLikers.map((liker) => (
+                            <div key={liker.userName} className="flex items-center gap-2">
+                              <Avatar className="h-5 w-5 ring-1 ring-slate-700/50">
+                                <AvatarImage src={liker.userAvatar} alt={liker.userName} />
+                                <AvatarFallback className="bg-[#0047AB]/20 text-[10px] font-bold text-[#66B2FF]">
+                                  {(liker.userName ?? "").slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="truncate text-xs font-medium">{liker.userName}</span>
+                            </div>
+                          ))}
+                          {showSuffix && extraCount > 0 && (
+                            <div className="pl-7 text-[11px] font-medium text-slate-400">
+                              {t("compPost.andOthersCount", { count: extraCount })}
+                            </div>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 {liveCommentCount > 0 && (
                   <span className="text-muted-foreground ml-auto text-xs">
@@ -323,6 +350,8 @@ export function PostFeedModal({
           items={coverMediaItems}
         />
       )}
+
+      <LikeListModal likes={likers} open={likeModalOpen} onOpenChange={setLikeModalOpen} />
     </>
   );
 }

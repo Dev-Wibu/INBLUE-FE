@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 
-import { invalidatePostFeedQueries } from "@/lib/post-feed";
-import { useNewFeed } from "@/services/post.manager";
+import { fetchClient } from "@/lib/api";
+import { POST_FEED_QUERY_KEY } from "@/lib/post-feed";
+import { queryClient } from "@/lib/queryClient";
 import { useAuthStore } from "@/stores/authStore";
 import type { components } from "../../schema-from-be";
 
@@ -28,84 +30,57 @@ export function usePostFeed(options?: UsePostFeedOptions): UsePostFeedReturn {
   const { user } = useAuthStore();
   const pageSize = options?.pageSize ?? DEFAULT_PAGE_SIZE;
 
-  const [page, setPage] = useState(0);
-  const [posts, setPosts] = useState<PostResponse[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [isReloading, setIsReloading] = useState(false);
-  const appendedPages = useRef<Set<number>>(new Set());
-  const pendingRefreshRef = useRef(false);
-  const prevUserId = useRef(user?.id);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isRefetching } =
+    useInfiniteQuery({
+      queryKey: [...POST_FEED_QUERY_KEY, "infinite", user?.id, pageSize],
+      queryFn: async ({ pageParam = 0 }) => {
+        const response = (await fetchClient.GET("/api/posts/feed", {
+          params: {
+            query: {
+              page: pageParam,
+              size: pageSize,
+            },
+          },
+        })) as { data?: PagePostResponse; error?: unknown };
 
-  useEffect(() => {
-    if (prevUserId.current !== user?.id) {
-      prevUserId.current = user?.id;
-      appendedPages.current.clear();
-      // Resetting accumulated feed state when user identity changes is intentional
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPosts([]);
-      setPage(0);
-      setHasMore(true);
-      invalidatePostFeedQueries();
-    }
-  }, [user?.id]);
+        if (response.error) {
+          throw response.error;
+        }
 
-  const { data, isLoading, isFetching } = useNewFeed({ page, size: pageSize });
+        return response.data as PagePostResponse;
+      },
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) => {
+        if (lastPage.last ?? true) {
+          return undefined;
+        }
+        const currentPage = lastPage.number ?? 0;
+        return currentPage + 1;
+      },
+    });
 
-  useEffect(() => {
-    if (!data) return;
-    const content = data as unknown as PagePostResponse;
-    // Use server-returned page index as source of truth; fall back to 0 if absent
-    const pageIndex = content.number ?? 0;
-    const incoming = content.content ?? [];
-
-    if (pendingRefreshRef.current && pageIndex === 0) {
-      appendedPages.current.clear();
-      appendedPages.current.add(0);
-      // Accumulating paginated feed data from React Query response is intentional
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPosts(incoming);
-      setHasMore(!(content.last ?? true));
-      pendingRefreshRef.current = false;
-      setIsReloading(false);
-      return;
-    }
-
-    if (!appendedPages.current.has(pageIndex)) {
-      appendedPages.current.add(pageIndex);
-      setPosts((prev) => [...prev, ...incoming]);
-      setHasMore(!(content.last ?? true));
-    }
+  const posts = useMemo(() => {
+    return data?.pages.flatMap((page) => page.content ?? []) ?? [];
   }, [data]);
 
-  useEffect(() => {
-    if (!isFetching && pendingRefreshRef.current) {
-      pendingRefreshRef.current = false;
-      // Clearing reload flag once React Query finishes fetching is intentional
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsReloading(false);
+  const loadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
     }
-  }, [isFetching]);
-
-  const loadMore = () => {
-    if (!isFetching && hasMore) {
-      setPage((prev) => prev + 1);
-    }
-  };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const refresh = useCallback(() => {
-    pendingRefreshRef.current = true;
-    setIsReloading(true);
-    setPage(0);
-    setHasMore(true);
-    invalidatePostFeedQueries();
-  }, []);
+    void queryClient.resetQueries({
+      queryKey: [...POST_FEED_QUERY_KEY, "infinite", user?.id, pageSize],
+    });
+  }, [user?.id, pageSize]);
 
   return {
     posts,
-    hasMore,
-    isLoading: isLoading && posts.length === 0,
-    isReloading,
-    isFetchingMore: isFetching && posts.length > 0,
+    hasMore: !!hasNextPage,
+    isLoading,
+    isReloading: isRefetching && !isFetchingNextPage,
+    isFetchingMore: !!isFetchingNextPage,
     loadMore,
     refresh,
   };

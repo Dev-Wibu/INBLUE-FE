@@ -1272,6 +1272,7 @@
     "viewYourNotificationDetails": "View your notification details"
   },
   "compPost": {
+    "andOthersCount": "and {{count}} others",
     "30MinutesAgo": "30 minutes ago",
     "addCoverPhoto": "Add cover photo",
     "articleBy": "Article by",

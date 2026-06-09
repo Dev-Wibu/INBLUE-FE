@@ -1272,6 +1272,7 @@
     "viewYourNotificationDetails": "通知の詳細を表示"
   },
   "compPost": {
+    "andOthersCount": "と他{{count}}人",
     "30MinutesAgo": "30分前",
     "addCoverPhoto": "カバー写真を追加",
     "articleBy": "記事著者",
