@@ -145,7 +145,7 @@ export function Header() {
           </Button>
 
           {/* Tính năng - Dropdown */}
-          <NavigationMenu>
+          <NavigationMenu viewport={false}>
             <NavigationMenuList className="gap-1">
               <NavigationMenuItem>
                 <NavigationMenuTrigger
@@ -245,24 +245,22 @@ export function Header() {
           </div>
 
           {isLoggedIn && user /* ── Logged-in: avatar dropdown ── */ ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-slate-100 focus:outline-none dark:hover:bg-slate-800"
-                  style={{
-                    minWidth: "2.5rem",
-                  }}>
-                  <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-700">
-                    <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? "User"} />
-                    <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                      {getInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden max-w-[120px] truncate text-sm font-medium text-slate-800 md:inline dark:text-slate-200">
-                    {user.name}
-                  </span>
-                </button>
-              </DropdownMenuTrigger>
+            <div className="shrink-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 transition-colors hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? "User"} />
+                      <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
+                        {getInitials(user.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden max-w-[100px] truncate text-sm font-medium text-slate-700 md:inline dark:text-slate-200">
+                      {user.name}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="font-normal">
@@ -281,7 +279,7 @@ export function Header() {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem asChild>
-                  <Link to={`${dashboardPath}?tab=account`} className="cursor-pointer gap-2">
+                  <Link to="/user/account" className="cursor-pointer gap-2">
                     <UserCircle className="h-4 w-4" />
                     {t("common.account")}
                   </Link>
@@ -295,7 +293,8 @@ export function Header() {
                   {t("common.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu> /* ── Logged-out: login & signup buttons ── */
+            </DropdownMenu>
+            </div> /* ── Logged-out: login & signup buttons ── */
           ) : (
             <>
               <Button
@@ -310,9 +309,9 @@ export function Header() {
               <Button
                 className="rounded-full border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] px-3 text-white shadow-sm hover:text-white hover:shadow-md sm:px-6"
                 asChild>
-                <Link to="/select-role">
+                <Link to="/signup">
                   <Rocket className="h-4 w-4 text-white sm:mr-2" />
-                  <span className="hidden sm:inline">{t("common.getStarted")}</span>
+                  <span className="hidden sm:inline">{t("common.register")}</span>
                 </Link>
               </Button>
             </>
@@ -448,7 +447,7 @@ export function Header() {
                             {t("common.dashboard")}
                           </Link>
                           <Link
-                            to={`${dashboardPath}?tab=account`}
+                            to="/user/account"
                             className="flex items-center gap-3 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
                             <UserCircle className="h-3.5 w-3.5 text-slate-500" />
                             {t("common.account")}
@@ -475,9 +474,9 @@ export function Header() {
                         <Button
                           className="h-9 w-full justify-center rounded-xl border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] py-4 text-xs text-white shadow-sm hover:shadow-md"
                           asChild>
-                          <Link to="/select-role">
+                          <Link to="/signup">
                             <Rocket className="mr-1.5 h-3.5 w-3.5" />
-                            {t("common.getStarted")}
+                            {t("common.register")}
                           </Link>
                         </Button>
                       </div>

@@ -136,6 +136,10 @@
     font-size: 18px;
   }
 
+  html {
+    scrollbar-gutter: stable;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -429,6 +433,41 @@
   height: 100%;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3));
   transition: width linear;
+}
+
+/* Glass card effect for Application History */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Timeline vertical line */
+.timeline-item {
+  position: relative;
+}
+
+.timeline-line::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  bottom: -12px;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.dark .timeline-line::before {
+  background: #334155;
+}
+
+.timeline-item:last-child .timeline-line::before {
+  display: none;
 }
 
 /* Focus visibility for keyboard users */
