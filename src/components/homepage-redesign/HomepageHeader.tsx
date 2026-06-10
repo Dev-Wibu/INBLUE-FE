@@ -154,7 +154,7 @@ export function HomepageHeader() {
           </Button>
 
           {/* Tính năng - Dropdown */}
-          <NavigationMenu>
+          <NavigationMenu viewport={false}>
             <NavigationMenuList className="gap-1">
               <NavigationMenuItem>
                 <NavigationMenuTrigger
@@ -243,7 +243,7 @@ export function HomepageHeader() {
         </nav>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Theme & Language Toggles - always visible on header */}
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguageToggle className={toggleColorClass} />
@@ -265,50 +265,52 @@ export function HomepageHeader() {
                 }`}>
                 <Bell className="h-5 w-5" />
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full border border-white/20 bg-white/50 p-1 transition-colors hover:bg-white/80 focus:outline-none dark:border-slate-700/50 dark:bg-slate-800/50 dark:hover:bg-slate-700/50">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? "User"} />
-                      <AvatarFallback className="bg-[#d8e2ff] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                        {getInitials(user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </button>
-                </DropdownMenuTrigger>
+              <div className="w-11 shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex w-full items-center justify-center rounded-full border border-slate-200 bg-white p-1 transition-colors hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? "User"} />
+                        <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
+                          {getInitials(user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col gap-1">
-                      <p className="text-sm font-medium">{user.name}</p>
-                      <p className="text-muted-foreground text-xs">{user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col gap-1">
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-muted-foreground text-xs">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
 
-                  <DropdownMenuItem asChild>
-                    <Link to={dashboardPath} className="cursor-pointer gap-2">
-                      <Settings className="h-4 w-4" />
-                      {t("common.dashboard")}
-                    </Link>
-                  </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to={dashboardPath} className="cursor-pointer gap-2">
+                        <Settings className="h-4 w-4" />
+                        {t("common.dashboard")}
+                      </Link>
+                    </DropdownMenuItem>
 
-                  <DropdownMenuItem asChild>
-                    <Link to={`${dashboardPath}?tab=account`} className="cursor-pointer gap-2">
-                      <UserCircle className="h-4 w-4" />
-                      {t("common.account")}
-                    </Link>
-                  </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/account" className="cursor-pointer gap-2">
+                        <UserCircle className="h-4 w-4" />
+                        {t("common.account")}
+                      </Link>
+                    </DropdownMenuItem>
 
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                    onClick={handleLogout}>
-                    <LogOut className="h-4 w-4" />
-                    {t("common.logout")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="cursor-pointer gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                      onClick={handleLogout}>
+                      <LogOut className="h-4 w-4" />
+                      {t("common.logout")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </>
           ) : (
             <>
@@ -328,9 +330,9 @@ export function HomepageHeader() {
               <Button
                 className="rounded-full border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] px-3 text-white shadow-sm hover:text-white hover:shadow-md sm:px-6"
                 asChild>
-                <Link to="/select-role">
+                <Link to="/signup">
                   <Rocket className="h-4 w-4 text-white sm:mr-2" />
-                  <span className="hidden sm:inline">{t("common.getStarted")}</span>
+                  <span className="hidden sm:inline">{t("common.register")}</span>
                 </Link>
               </Button>
             </>
@@ -470,7 +472,7 @@ export function HomepageHeader() {
                             {t("common.dashboard")}
                           </Link>
                           <Link
-                            to={`${dashboardPath}?tab=account`}
+                            to="/user/account"
                             className="flex items-center gap-3 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
                             <UserCircle className="h-3.5 w-3.5 text-slate-500" />
                             {t("common.account")}
@@ -497,9 +499,9 @@ export function HomepageHeader() {
                         <Button
                           className="h-9 w-full justify-center rounded-xl border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] py-4 text-xs text-white shadow-sm hover:shadow-md"
                           asChild>
-                          <Link to="/select-role">
+                          <Link to="/signup">
                             <Rocket className="mr-1.5 h-3.5 w-3.5" />
-                            {t("common.getStarted")}
+                            {t("common.register")}
                           </Link>
                         </Button>
                       </div>
