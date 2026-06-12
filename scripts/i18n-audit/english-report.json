@@ -1,0 +1,506 @@
+[
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 12,
+    "character": 82,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageHeader.tsx",
+    "line": 129,
+    "character": 28,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageHeader.tsx",
+    "line": 136,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageHeader.tsx",
+    "line": 237,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "FAQ"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageHeader.tsx",
+    "line": 359,
+    "character": 38,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageHeader.tsx",
+    "line": 360,
+    "character": 84,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageHeader.tsx",
+    "line": 435,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "FAQ"
+  },
+  {
+    "file": "src/components/layouts/Header.tsx",
+    "line": 125,
+    "character": 28,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/layouts/Header.tsx",
+    "line": 127,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/layouts/Header.tsx",
+    "line": 228,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "FAQ"
+  },
+  {
+    "file": "src/components/layouts/Header.tsx",
+    "line": 337,
+    "character": 38,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/layouts/Header.tsx",
+    "line": 338,
+    "character": 84,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/layouts/Header.tsx",
+    "line": 413,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "FAQ"
+  },
+  {
+    "file": "src/components/shared/media/MediaLightboxDialog.tsx",
+    "line": 384,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Office"
+  },
+  {
+    "file": "src/components/shared/media/MediaLightboxDialog.tsx",
+    "line": 393,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Google"
+  },
+  {
+    "file": "src/components/ui/cv-upload-modal.tsx",
+    "line": 202,
+    "character": 68,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MB"
+  },
+  {
+    "file": "src/components/ui/image-carousel.tsx",
+    "line": 66,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Banner"
+  },
+  {
+    "file": "src/pages/Admin/FeedbackManagement/FeedbackManagementPage.tsx",
+    "line": 364,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "mentor"
+  },
+  {
+    "file": "src/pages/Auth/MentorRegisterPage.tsx",
+    "line": 386,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Email"
+  },
+  {
+    "file": "src/pages/Auth/SelectRolePage.tsx",
+    "line": 39,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI Interview"
+  },
+  {
+    "file": "src/pages/Homepage/Features/AIInterviewFeaturePage.tsx",
+    "line": 105,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Interview"
+  },
+  {
+    "file": "src/pages/Homepage/Features/AIInterviewFeaturePage.tsx",
+    "line": 138,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Interviewer"
+  },
+  {
+    "file": "src/pages/Homepage/Features/AIInterviewFeaturePage.tsx",
+    "line": 256,
+    "character": 62,
+    "type": "JsxText",
+    "category": "english",
+    "text": "50K+"
+  },
+  {
+    "file": "src/pages/Mentor/Account/MentorAccountTabs/MentorProfileSection.tsx",
+    "line": 98,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID:"
+  },
+  {
+    "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
+    "line": 174,
+    "character": 20,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
+    "line": 182,
+    "character": 26,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
+    "line": 184,
+    "character": 80,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 128,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Media Toolkit Playground (DEV)"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 167,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Shared DateTime Picker Playground (DEV)"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 170,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Test interactive instances of the new premium DateTimePicker component supporting\r\n                quick presets, scroll wheel time alignment, and role themes."
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 178,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "1. Standard (24h format)"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 187,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 193,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "2. 12h Format (with AM/PM)"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 198,
+    "character": 21,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "dd/mm/yyyy --:-- --"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 202,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 208,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "3. Date Only Picker"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 212,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 218,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "4. Mentor Theme (Green, Step 15)"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 227,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 233,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "5. User Theme (Blue, Limit +7 Days)"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 243,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 249,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "💡 Test Tips:"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 253,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Click the"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 253,
+    "character": 41,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Month Year"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 253,
+    "character": 61,
+    "type": "JsxText",
+    "category": "english",
+    "text": "label in the header to select directly."
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 255,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Presets on the left allow quick date selections."
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 256,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Theme variant matches User (Blue) and Mentor (Green) portals."
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 312,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Endpoint upload"
+  },
+  {
+    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
+    "line": 266,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Speech Playground (DEV)"
+  },
+  {
+    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
+    "line": 283,
+    "character": 42,
+    "type": "JsxText",
+    "category": "english",
+    "text": "voiceschanged:"
+  },
+  {
+    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
+    "line": 308,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Engine test"
+  },
+  {
+    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
+    "line": 314,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Web Speech API"
+  },
+  {
+    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
+    "line": 315,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ResponsiveVoice.js fallback"
+  },
+  {
+    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
+    "line": 331,
+    "character": 43,
+    "type": "JsxText",
+    "category": "english",
+    "text": "English (en-US)"
+  },
+  {
+    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
+    "line": 511,
+    "character": 49,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Voice URI"
+  },
+  {
+    "file": "src/pages/Staff/FeedbackModeration/FeedbackModerationPage.tsx",
+    "line": 360,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "mentor"
+  },
+  {
+    "file": "src/pages/User/AIInterview/AIInterviewSession/InterviewHeader.tsx",
+    "line": 119,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "VI"
+  },
+  {
+    "file": "src/pages/User/AIInterview/AIInterviewSession/InterviewHeader.tsx",
+    "line": 131,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "EN"
+  },
+  {
+    "file": "src/pages/User/MentorList/components/MentorListHero.tsx",
+    "line": 29,
+    "character": 26,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Mentor"
+  },
+  {
+    "file": "src/pages/User/MockInterview/MockInterviewListPage.tsx",
+    "line": 259,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "(ID:"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
+    "line": 238,
+    "character": 22,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
+    "line": 239,
+    "character": 72,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
+    "line": 243,
+    "character": 20,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  }
+]
