@@ -9,9 +9,9 @@ import {
   DashboardSidebarToggle,
   getInitialSidebarCollapsed,
   SettingsModal,
+  TabContentWrapper,
 } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
-import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
@@ -506,9 +506,6 @@ export function AdminDashboardPage() {
       invalidInMenu,
     });
   }, [t, availableTabs, chromeTabsMenuGroups]);
-  useDashboardScrollRestoration(contentRef, {
-    scopeKey: typedActiveTab,
-  });
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");
   }, [sidebarBehavior]);
@@ -601,8 +598,8 @@ export function AdminDashboardPage() {
     [closeAllDisabled, handleCloseAllTabs, t]
   );
 
-  const renderContent = () => {
-    switch (typedActiveTab) {
+  const renderTabContent = (tabType: string, isTabActive: boolean) => {
+    switch (tabType) {
       case "dashboard":
         return <DashboardOverviewPage />;
       case "users":
@@ -630,7 +627,7 @@ export function AdminDashboardPage() {
       case "posts":
         return <PostManagementPage />;
       case "companies":
-        return <CompanyManagementPage />;
+        return <CompanyManagementPage isActive={isTabActive} />;
       case "candidateProfiles":
         return <CandidateProfileManagementPage />;
       default:
@@ -639,7 +636,6 @@ export function AdminDashboardPage() {
   };
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
-    setScrollTarget(node);
   }, []);
   return (
     <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
@@ -719,8 +715,20 @@ export function AdminDashboardPage() {
           }}
         />
 
-        <div ref={handleContentRef} className="flex-1 overflow-auto">
-          {renderContent()}
+        <div ref={handleContentRef} className="relative flex-1 overflow-hidden">
+          {chromeTabsData.map((tab) => {
+            const isTabActive = tab.id === activeTabId;
+            return (
+              <TabContentWrapper
+                key={tab.id}
+                tabId={tab.id}
+                tabType={tab.type}
+                isActive={isTabActive}
+                onScrollTargetActive={setScrollTarget}>
+                {renderTabContent(tab.type, isTabActive)}
+              </TabContentWrapper>
+            );
+          })}
         </div>
         <ScrollToTopButton target={scrollTarget} threshold={600} />
       </div>
