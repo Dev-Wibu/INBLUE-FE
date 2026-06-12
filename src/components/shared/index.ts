@@ -42,3 +42,4 @@ export { SocketStatusBadge } from "./SocketStatusBadge";
 export type { SocketConnectionState } from "./SocketStatusBadge";
 export { SortButton } from "./SortButton";
 export type { SortDirection } from "./SortButton";
+export { TabContentWrapper } from "./TabContentWrapper";
