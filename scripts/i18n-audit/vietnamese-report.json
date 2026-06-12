@@ -1,0 +1,114 @@
+[
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 240,
+    "character": 59,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "+15 Phút"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 241,
+    "character": 59,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "+30 Phút"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 242,
+    "character": 57,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "+1 Giờ"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 243,
+    "character": 58,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "+2 Giờ"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 244,
+    "character": 51,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Hôm nay"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 245,
+    "character": 57,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Ngày mai"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 246,
+    "character": 64,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Cuối tuần này"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 247,
+    "character": 58,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Đầu tuần sau"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 248,
+    "character": 65,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Đầu tháng sau"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 1011,
+    "character": 38,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Xóa"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 1022,
+    "character": 38,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Hôm nay"
+  },
+  {
+    "file": "src/components/shared/DateTimePicker.tsx",
+    "line": 1105,
+    "character": 13,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Vui lòng nhập một giá trị hợp lệ. Trường không hoàn chỉnh hoặc có giá trị không hợp lệ."
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 183,
+    "character": 21,
+    "type": "JsxAttribute[placeholder]",
+    "category": "vietnamese",
+    "text": "Chọn ngày giờ"
+  },
+  {
+    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
+    "line": 183,
+    "character": 33,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Chọn ngày giờ"
+  }
+]
