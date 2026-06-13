@@ -1,7 +1,6 @@
 import { ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { LoadingCardList } from "@/components/ui/loading-card";
@@ -24,6 +23,8 @@ import {
   AlertTriangle,
   Bot,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   History,
   Search,
@@ -34,6 +35,7 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+
 type InterviewType = "all" | "ai" | "mock";
 type HistoryItem = {
   id: number;
@@ -59,6 +61,7 @@ type HistoryItem = {
   totalPrice?: number;
   userId2?: number;
 };
+
 type AIStatusFilter = "all" | "CREATED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 type MockStatusFilter =
   | "all"
@@ -93,7 +96,7 @@ function ProgressRing({ score, size = 48 }: { score: number; size?: number }) {
           r={radius}
           stroke="currentColor"
           style={{
-            color: "rgb(220, 233, 255)",
+            color: "rgb(218, 226, 253)",
           }}
         />
         <circle
@@ -101,13 +104,15 @@ function ProgressRing({ score, size = 48 }: { score: number; size?: number }) {
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#0047AB"
+          stroke="#0058be"
           strokeDasharray={strokeDasharray}
           strokeLinecap="round"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-bold text-[#0047AB]">{Math.round(score)}</span>
+        <span className="text-xs font-bold text-[#0058be] dark:text-[#66B2FF]">
+          {Math.round(score)}
+        </span>
       </div>
     </div>
   );
@@ -120,7 +125,6 @@ function ProgressRing({ score, size = 48 }: { score: number; size?: number }) {
 export function InterviewHistoryTab() {
   const { t } = useTranslation();
 
-  // Translated constants — inside component for language reactivity
   const INTERVIEW_TYPE_TABS: Array<{ value: InterviewType; label: string }> = [
     { value: "all", label: t("general.all") },
     { value: "ai", label: t("general.ai") },
@@ -128,23 +132,56 @@ export function InterviewHistoryTab() {
   ];
   const AI_MODE_LABELS: Record<string, string> = {
     STANDARD_MOCK: t("common.trialInterview"),
-    THEORY_CHECK: t("common.testTheTheory"),
+    THEORY_CHECK: t("common.testTheory"),
     PROJECT_DEFENSE: t("common.projectProtection"),
   };
   const AI_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-    CREATED: { label: t("common.created"), className: "bg-blue-100 text-blue-700" },
-    IN_PROGRESS: { label: t("common.ongoing"), className: "bg-amber-100 text-amber-700" },
-    COMPLETED: { label: t("general.completed"), className: "bg-emerald-100 text-emerald-700" },
-    CANCELLED: { label: t("common.canceled"), className: "bg-red-100 text-red-700" },
+    CREATED: {
+      label: t("common.created"),
+      className: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+    },
+    IN_PROGRESS: {
+      label: t("common.ongoing"),
+      className: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
+    },
+    COMPLETED: {
+      label: t("general.completed"),
+      className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+    },
+    CANCELLED: {
+      label: t("common.canceled"),
+      className: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
+    },
   };
   const MOCK_STATUS_MAP: Record<string, { label: string; color: string }> = {
-    DRAFT: { label: t("common.waitingForApproval"), color: "bg-amber-100 text-amber-700" },
-    SCHEDULED: { label: t("common.comingSoon"), color: "bg-blue-100 text-blue-700" },
-    PAID: { label: t("common.paid"), color: "bg-emerald-100 text-emerald-700" },
-    ONGOING: { label: t("common.ongoing"), color: "bg-green-100 text-green-700" },
-    COMPLETED: { label: t("general.completed"), color: "bg-slate-100 text-slate-600" },
-    REJECTED: { label: t("common.rejected"), color: "bg-red-100 text-red-600" },
-    CANCELED: { label: t("common.canceled"), color: "bg-red-100 text-red-600" },
+    DRAFT: {
+      label: t("common.waitingForApproval"),
+      color: "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
+    },
+    SCHEDULED: {
+      label: t("common.comingSoon"),
+      color: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+    },
+    PAID: {
+      label: t("common.paid"),
+      color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+    },
+    ONGOING: {
+      label: t("common.ongoing"),
+      color: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
+    },
+    COMPLETED: {
+      label: t("general.completed"),
+      color: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+    },
+    REJECTED: {
+      label: t("common.rejected"),
+      color: "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300",
+    },
+    CANCELED: {
+      label: t("common.canceled"),
+      color: "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300",
+    },
   };
 
   const navigate = useNavigate();
@@ -157,7 +194,6 @@ export function InterviewHistoryTab() {
   const [payingSessionId, setPayingSessionId] = useState<number | null>(null);
   const payosPaymentInFlightRef = useRef(false);
 
-  // Fetch AI Interview sessions
   const {
     data: aiSessions = [],
     isLoading: aiLoading,
@@ -179,7 +215,6 @@ export function InterviewHistoryTab() {
     }
   );
 
-  // Fetch Mock Interview sessions
   const {
     data: mockSessions = [],
     isLoading: mockLoading,
@@ -187,17 +222,16 @@ export function InterviewHistoryTab() {
     refetch: refetchMockSessions,
   } = useUserSessions();
 
-  // Fetch mentor feedbacks
   const {
     data: feedbacks = [],
     isRefetching: feedbacksRefetching,
     refetch: refetchFeedbacks,
   } = useMentorFeedbacksByUser(userId ?? 0);
+
   const { mutateAsync: makeSessionPayment } = useMakeSessionPayment();
   const isLoading = aiLoading || mockLoading;
   const isRefetching = aiRefetching || mockRefetching || feedbacksRefetching;
 
-  // Feedback session IDs
   const feedbackSessionIds = useMemo(
     () =>
       new Set(
@@ -214,7 +248,6 @@ export function InterviewHistoryTab() {
     [feedbacks]
   );
 
-  // Transform sessions to history items
   const aiHistoryItems = useMemo<HistoryItem[]>(() => {
     return (Array.isArray(aiSessions) ? aiSessions : []).map((s) => ({
       id: s.id as number,
@@ -228,6 +261,7 @@ export function InterviewHistoryTab() {
       jobRequirement: s.jobRequirement,
     }));
   }, [aiSessions]);
+
   const mockHistoryItems = useMemo<HistoryItem[]>(() => {
     return mockSessions.map((s) => ({
       id: s.id as number,
@@ -242,11 +276,10 @@ export function InterviewHistoryTab() {
     }));
   }, [mockSessions]);
 
-  // Combine and filter
   const filteredHistory = useMemo(() => {
     const aiModeLabels: Record<string, string> = {
       STANDARD_MOCK: t("common.trialInterview"),
-      THEORY_CHECK: t("common.testTheTheory"),
+      THEORY_CHECK: t("common.testTheory"),
       PROJECT_DEFENSE: t("common.projectProtection"),
     };
 
@@ -293,6 +326,7 @@ export function InterviewHistoryTab() {
     aiHistoryItems,
     mockHistoryItems,
   ]);
+
   const [pageSize] = useHybridPageSize({
     key: "src_pages_user_account_interviewhistorytab_tsx_pagesize",
     defaultPageSize: 5,
@@ -306,7 +340,6 @@ export function InterviewHistoryTab() {
     [filteredHistory, pagination.startIndex, pagination.endIndex]
   );
 
-  // Payment handlers
   const handlePaySessionWithPayOS = useCallback(
     async (session: Session) => {
       if (!session.id || payosPaymentInFlightRef.current) return;
@@ -324,6 +357,7 @@ export function InterviewHistoryTab() {
     },
     [makeSessionPayment]
   );
+
   const handleViewDetails = useCallback(
     (item: HistoryItem) => {
       if (item.type === "ai") {
@@ -334,130 +368,154 @@ export function InterviewHistoryTab() {
     },
     [navigate]
   );
+
   const handleWriteFeedback = useCallback(
     (item: HistoryItem) => {
       navigate(`/user/mock-interview/history/${item.id}/feedback`);
     },
     [navigate]
   );
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <History className="h-5 w-5 text-[#0047AB]" />
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            {t("common.interviewHistory")}
-          </h2>
-        </div>
-        <ReloadButton
-          onReload={async () => {
-            await Promise.all([refetchAISessions(), refetchMockSessions(), refetchFeedbacks()]);
-          }}
-          isLoading={isRefetching}
-          tooltip={t("common.reload")}
-        />
-      </div>
-
-      {/* Type Tabs */}
-      <div className="flex items-center gap-1">
-        {INTERVIEW_TYPE_TABS.map((tab) => (
-          <Button
-            key={tab.value}
-            variant={interviewType === tab.value ? "default" : "ghost"}
-            size="sm"
-            onClick={() => {
-              setInterviewType(tab.value);
-              pagination.goToFirstPage();
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#0058be]">
+              <History className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-[#0b1c30] dark:text-white">
+                {t("common.interviewHistory")}
+              </h2>
+              <p className="text-sm text-[#45464d] dark:text-[#8f9099]">
+                {t("userAccount.viewYourPastInterviewSessions")}
+              </p>
+            </div>
+          </div>
+          <ReloadButton
+            onReload={async () => {
+              await Promise.all([refetchAISessions(), refetchMockSessions(), refetchFeedbacks()]);
             }}
-            className={cn(interviewType === tab.value && "bg-[#0047AB] hover:bg-[#003d91]")}>
-            {tab.value === "ai" && <Bot className="mr-1 h-3.5 w-3.5" />}
-            {tab.value === "mock" && <Video className="mr-1 h-3.5 w-3.5" />}
-            {tab.label}
-          </Button>
-        ))}
-      </div>
-
-      {/* Search + Filter */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[200px] flex-1">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              pagination.goToFirstPage();
-            }}
-            className="h-9 pl-8 text-sm"
-            placeholder={t("userAccount.search")}
+            isLoading={isRefetching}
+            tooltip={t("common.reload")}
           />
         </div>
-        {interviewType === "ai" ? (
-          <Select
-            value={aiStatusFilter}
-            onValueChange={(value) => {
-              setAiStatusFilter(value as AIStatusFilter);
-              pagination.goToFirstPage();
-            }}>
-            <SelectTrigger className="h-9 w-[160px] text-sm">
-              <SelectValue placeholder={t("common.status")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("general.all")}</SelectItem>
-              <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
-              <SelectItem value="IN_PROGRESS">{t("common.ongoing")}</SelectItem>
-              <SelectItem value="CREATED">{t("common.created")}</SelectItem>
-              <SelectItem value="CANCELLED">{t("common.canceled")}</SelectItem>
-            </SelectContent>
-          </Select>
-        ) : interviewType === "mock" ? (
-          <Select
-            value={mockStatusFilter}
-            onValueChange={(value) => {
-              setMockStatusFilter(value as MockStatusFilter);
-              pagination.goToFirstPage();
-            }}>
-            <SelectTrigger className="h-9 w-[160px] text-sm">
-              <SelectValue placeholder={t("common.status")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("general.all")}</SelectItem>
-              <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
-              <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
-              <SelectItem value="PAID">{t("common.paid")}</SelectItem>
-              <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
-              <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
-            </SelectContent>
-          </Select>
-        ) : null}
+      </div>
+
+      {/* Filters */}
+      <div className="glass-card rounded-xl p-4">
+        {/* Type Tabs */}
+        <div className="mb-4 flex items-center gap-1">
+          {INTERVIEW_TYPE_TABS.map((tab) => (
+            <Button
+              key={tab.value}
+              variant={interviewType === tab.value ? "default" : "ghost"}
+              size="sm"
+              onClick={() => {
+                setInterviewType(tab.value);
+                pagination.goToFirstPage();
+              }}
+              className={cn(
+                interviewType === tab.value
+                  ? "bg-[#0058be] text-white hover:bg-[#0047a8]"
+                  : "text-[#45464d] dark:text-[#8f9099]"
+              )}>
+              {tab.value === "ai" && <Bot className="mr-1 h-3.5 w-3.5" />}
+              {tab.value === "mock" && <Video className="mr-1 h-3.5 w-3.5" />}
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Search + Filter */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative min-w-[180px] flex-1">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                pagination.goToFirstPage();
+              }}
+              className="h-9 border-[#c6c6cd] bg-white pl-8 text-sm dark:border-[#3a4558] dark:bg-[#1a2a3a] dark:text-white"
+              placeholder={t("userAccount.search")}
+            />
+          </div>
+          {interviewType === "ai" ? (
+            <Select
+              value={aiStatusFilter}
+              onValueChange={(value) => {
+                setAiStatusFilter(value as AIStatusFilter);
+                pagination.goToFirstPage();
+              }}>
+              <SelectTrigger className="h-9 w-[160px] border-[#c6c6cd] bg-white text-sm dark:border-[#3a4558] dark:bg-[#1a2a3a] dark:text-white">
+                <SelectValue placeholder={t("common.status")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("general.all")}</SelectItem>
+                <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                <SelectItem value="IN_PROGRESS">{t("common.ongoing")}</SelectItem>
+                <SelectItem value="CREATED">{t("common.created")}</SelectItem>
+                <SelectItem value="CANCELLED">{t("common.canceled")}</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : interviewType === "mock" ? (
+            <Select
+              value={mockStatusFilter}
+              onValueChange={(value) => {
+                setMockStatusFilter(value as MockStatusFilter);
+                pagination.goToFirstPage();
+              }}>
+              <SelectTrigger className="h-9 w-[160px] border-[#c6c6cd] bg-white text-sm dark:border-[#3a4558] dark:bg-[#1a2a3a] dark:text-white">
+                <SelectValue placeholder={t("common.status")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("general.all")}</SelectItem>
+                <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
+                <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+                <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+                <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : null}
+        </div>
       </div>
 
       {/* Content */}
       {isLoading ? (
         <LoadingCardList count={3} />
       ) : aiError ? (
-        <Card className="flex h-32 flex-col items-center justify-center gap-3">
-          <AlertTriangle className="h-6 w-6 text-red-500" />
-          <p className="text-destructive text-sm">{t("userAccount.unableToLoadHistory")}</p>
+        <div className="glass-card flex flex-col items-center justify-center gap-4 rounded-xl p-8">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+            <AlertTriangle className="h-7 w-7 text-red-500" />
+          </div>
+          <p className="text-center text-sm font-medium text-red-600 dark:text-red-400">
+            {t("userAccount.unableToLoadHistory")}
+          </p>
           <Button size="sm" variant="outline" onClick={() => void refetchAISessions()}>
             {t("common.retry")}
           </Button>
-        </Card>
+        </div>
       ) : filteredHistory.length === 0 ? (
-        <EmptyState
-          icon={History}
-          title={t("common.noInterviewHistoryYet")}
-          description={t("userAccount.youHaveNotParticipatedIn")}
-          action={
-            <Button
-              size="sm"
-              onClick={() => navigate("/user/ai-interview/setup")}
-              className="gap-1.5 bg-[#0047AB] hover:bg-[#003d91]">
-              <Bot className="h-3.5 w-3.5" />
-              {t("common.aiInterview")}
-            </Button>
-          }
-        />
+        <div className="glass-card rounded-xl p-8">
+          <EmptyState
+            icon={History}
+            title={t("common.noInterviewHistoryYet")}
+            description={t("userAccount.youHaveNotParticipatedIn")}
+            action={
+              <Button
+                size="sm"
+                onClick={() => navigate("/user/ai-interview/setup")}
+                className="gap-1.5 bg-[#0058be] hover:bg-[#0047a8]">
+                <Bot className="h-3.5 w-3.5" />
+                {t("common.aiInterview")}
+              </Button>
+            }
+          />
+        </div>
       ) : (
         <>
           <div className="space-y-3">
@@ -470,27 +528,31 @@ export function InterviewHistoryTab() {
               const isScheduled = item.status === "SCHEDULED";
               const isPaid = item.status === "PAID";
               return (
-                <Card key={`${item.type}-${item.id}`} className="transition-all hover:shadow-sm">
-                  <CardContent className="flex items-center gap-3 p-3">
+                <div
+                  key={`${item.type}-${item.id}`}
+                  className="glass-card rounded-xl p-4 transition-all hover:-translate-y-0.5">
+                  <div className="flex items-center gap-3">
                     {/* Icon */}
                     <div
                       className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-                        isAi ? "bg-[#0047AB]/10" : "bg-emerald-500/10"
+                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+                        isAi
+                          ? "bg-[#0058be]/10 dark:bg-[#0058be]/30"
+                          : "bg-emerald-500/10 dark:bg-emerald-500/20"
                       )}>
                       {isAi ? (
                         <Bot
-                          className={cn("h-5 w-5", isAi ? "text-[#0047AB]" : "text-emerald-600")}
+                          className={cn("h-5 w-5", isAi ? "text-[#0058be]" : "text-emerald-600")}
                         />
                       ) : (
-                        <Video className="h-5 w-5 text-emerald-600" />
+                        <Video className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       )}
                     </div>
 
                     {/* Info */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-medium text-[#0b1c30] dark:text-white">
                           {isAi
                             ? (AI_MODE_LABELS[item.mode ?? ""] ?? t("common.aiInterview"))
                             : item.roomName ||
@@ -512,7 +574,7 @@ export function InterviewHistoryTab() {
                           </Badge>
                         )}
                       </div>
-                      <div className="mt-0.5 flex items-center gap-2 text-xs text-slate-500">
+                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-[#45464d] dark:text-[#8f9099]">
                         {isAi ? (
                           <>
                             {item.candidateProfile?.targetRole && (
@@ -537,7 +599,7 @@ export function InterviewHistoryTab() {
                               </span>
                             )}
                             {typeof item.totalPrice === "number" && item.totalPrice > 0 && (
-                              <span className="font-medium text-emerald-600">
+                              <span className="font-medium text-emerald-600 dark:text-emerald-400">
                                 {formatCurrency(item.totalPrice)}
                               </span>
                             )}
@@ -555,7 +617,8 @@ export function InterviewHistoryTab() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleWriteFeedback(item)}>
+                          onClick={() => handleWriteFeedback(item)}
+                          className="border-[#c6c6cd] text-[#45464d] hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
                           <Star className="mr-1 h-3 w-3" />
                           {t("common.feedback1")}
                         </Button>
@@ -563,7 +626,7 @@ export function InterviewHistoryTab() {
                       {!isAi && isScheduled && (
                         <Button
                           size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700"
+                          className="bg-emerald-600 text-white hover:bg-emerald-700"
                           disabled={isPaying}
                           onClick={() => {
                             const session = mockSessions.find((s) => s.id === item.id) as
@@ -579,36 +642,44 @@ export function InterviewHistoryTab() {
                           {t("userAccount.alreadyTt")}
                         </Button>
                       )}
-                      <Button size="sm" variant="ghost" onClick={() => handleViewDetails(item)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleViewDetails(item)}
+                        className="text-[#45464d] hover:bg-[#eff4ff] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
                         {t("common.detail")}
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })}
           </div>
 
           {/* Pagination */}
           {filteredHistory.length > pageSize && (
-            <div className="flex items-center justify-center gap-1 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => pagination.prevPage()}
-                disabled={pagination.currentPage <= 1}>
-                {t("common.before")}
-              </Button>
-              <span className="px-2 text-xs text-slate-500">
-                {pagination.currentPage} / {pagination.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => pagination.nextPage()}
-                disabled={pagination.currentPage >= pagination.totalPages}>
-                {t("common.next")}
-              </Button>
+            <div className="glass-card rounded-xl p-3">
+              <div className="flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => pagination.prevPage()}
+                  disabled={pagination.currentPage <= 1}
+                  className="h-8 w-8 border-[#c6c6cd] text-[#45464d] hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="px-3 text-sm text-[#45464d] dark:text-[#8f9099]">
+                  {pagination.currentPage} / {pagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => pagination.nextPage()}
+                  disabled={pagination.currentPage >= pagination.totalPages}
+                  className="h-8 w-8 border-[#c6c6cd] text-[#45464d] hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </>

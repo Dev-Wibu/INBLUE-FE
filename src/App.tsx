@@ -2,7 +2,13 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthLayout } from "@/components/layouts";
-import { ProtectedRoute, PublicOnlyRoute, SessionExpiryGuard } from "@/components/shared";
+import { UserAccountLayout } from "@/components/layouts/UserAccountLayout";
+import {
+  ProtectedRoute,
+  PublicOnlyRoute,
+  ScrollToTop,
+  SessionExpiryGuard,
+} from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
@@ -52,6 +58,7 @@ import {
   StaffDashboardPage,
 } from "@/pages/Staff";
 import {
+  AccountPage,
   AIInterviewResultPage,
   AIInterviewSessionPage,
   AIInterviewSetupPage,
@@ -104,6 +111,7 @@ function App() {
         <Toaster />
         <BrowserRouter>
           <SessionExpiryGuard />
+          <ScrollToTop />
           <PublicScrollToTopButton />
           <Routes>
             {/* Public routes */}
@@ -185,6 +193,12 @@ function App() {
                 <Route path="mentors/:mentorId" element={<MentorDetailPage />} />
                 <Route path="interview-history" element={<InterviewHistoryPage />} />
                 <Route path="application-history" element={<ApplicationHistoryPage />} />
+              </Route>
+            </Route>
+            {/* Standalone account page — full page, no sidebar */}
+            <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route element={<UserAccountLayout />}>
+                <Route path="/user/account" element={<AccountPage />} />
               </Route>
             </Route>
             {/* Backward-compat redirects for old /dashboard/* URLs */}

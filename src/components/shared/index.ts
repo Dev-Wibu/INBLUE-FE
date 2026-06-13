@@ -35,6 +35,7 @@ export { ProtectedRoute } from "./ProtectedRoute";
 export { PublicOnlyRoute } from "./PublicOnlyRoute";
 export { ReloadButton } from "./ReloadButton";
 export type { ReloadButtonProps } from "./ReloadButton";
+export { ScrollToTop } from "./ScrollToTop";
 export { SessionExpiryGuard } from "./SessionExpiryGuard";
 export { SettingsModal } from "./SettingsModal";
 export { getInitialSidebarCollapsed } from "./sidebar-collapse";
