@@ -1,3 +1,4 @@
+import { DateTimePicker } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { datetimeLocalToVietnamISOString } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import type { SessionFormData, SessionStatus } from "../types";
 interface SessionFormDialogProps {
@@ -90,18 +90,15 @@ export function SessionFormDialog({
           </div>
           <div className="grid gap-2">
             <Label htmlFor="joinTime">{t("adminSessionmanagement.meetingStartTime")}</Label>
-            <Input
-              id="joinTime"
-              type="datetime-local"
-              value={formData.joinTime ? formData.joinTime.slice(0, 16) : ""}
-              onChange={(e) =>
+            <DateTimePicker
+              value={formData.joinTime ? new Date(formData.joinTime) : null}
+              onChange={(date) =>
                 onFormChange({
                   ...formData,
-                  joinTime: e.target.value
-                    ? datetimeLocalToVietnamISOString(e.target.value)
-                    : undefined,
+                  joinTime: date ? date.toISOString() : undefined,
                 })
               }
+              themeVariant="admin"
             />
           </div>
           <div className="grid gap-2">

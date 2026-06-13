@@ -9,9 +9,9 @@ import {
   DashboardSidebarToggle,
   getInitialSidebarCollapsed,
   SettingsModal,
+  TabContentWrapper,
 } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
-import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
@@ -124,11 +124,11 @@ const getAvailableTabs = (
   },
   {
     type: "questionCategories",
-    label: t("common.listOfQuestions"),
+    label: t("common.lesson"),
   },
   {
     type: "questionMajors",
-    label: t("adminAdmindashboard.specializedQuestions"),
+    label: t("common.specialized"),
   },
   {
     type: "practiceSets",
@@ -372,7 +372,7 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
       {
         type: "practiceSets",
         icon: BookOpen,
-        label: t("adminAdmindashboard.setOfReviewQuestions"),
+        label: t("adminAdmindashboard.reviewSet"),
         color: "text-teal-600",
       },
       {
@@ -384,7 +384,7 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
       {
         type: "quizSets",
         icon: Trophy,
-        label: t("adminAdmindashboard.setOfMultipleChoiceQuestions"),
+        label: t("adminAdmindashboard.testSet"),
         color: "text-amber-600",
       },
     ],
@@ -464,11 +464,13 @@ export function AdminDashboardPage() {
   const availableTabs = useMemo(() => getAvailableTabs(t), [t]);
   const sidebarMenuGroups = useMemo(() => getSidebarMenuGroups(t), [t]);
   const chromeTabsMenuGroups = useMemo(() => getChromeTabsMenuGroups(t), [t]);
-  const { activeTab, openTabs, setActiveTab, closeTab, resetTabsTo } = useTabsState({
-    storageKey: "admin",
-    defaultTab: "dashboard",
-    availableTabs: availableTabs,
-  });
+  const { activeTab, openTabs, setActiveTab, closeTab, resetTabsTo, closeOtherTabs } = useTabsState(
+    {
+      storageKey: "admin",
+      defaultTab: "dashboard",
+      availableTabs: availableTabs,
+    }
+  );
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollTarget, setScrollTarget] = useState<HTMLDivElement | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() =>
@@ -503,10 +505,7 @@ export function AdminDashboardPage() {
       missingInMenu,
       invalidInMenu,
     });
-  }, [t]);
-  useDashboardScrollRestoration(contentRef, {
-    scopeKey: typedActiveTab,
-  });
+  }, [t, availableTabs, chromeTabsMenuGroups]);
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");
   }, [sidebarBehavior]);
@@ -567,6 +566,23 @@ export function AdminDashboardPage() {
       resetTabsTo("dashboard");
     }
   }, [companyId, navigate, resetTabsTo]);
+  const handleCloseOtherTabs = useCallback(
+    (tabId: string) => {
+      const targetTab = openTabs.find((t) => t.id === tabId);
+      if (!targetTab) return;
+
+      if (companyId && targetTab.type !== "companies") {
+        navigate(`/admin?tab=${targetTab.type}`, {
+          replace: true,
+        });
+      } else if (targetTab.type !== activeTab) {
+        navigateToTab(targetTab.type);
+      }
+      closeOtherTabs(tabId);
+    },
+    [openTabs, companyId, navigate, activeTab, navigateToTab, closeOtherTabs]
+  );
+
   const closeAllDisabled = openTabs.length === 1 && openTabs[0]?.type === "dashboard";
   const chromeMenuActions = useMemo<ChromeTabMenuAction[]>(
     () => [
@@ -579,11 +595,11 @@ export function AdminDashboardPage() {
         onSelect: handleCloseAllTabs,
       },
     ],
-
     [closeAllDisabled, handleCloseAllTabs, t]
   );
-  const renderContent = () => {
-    switch (typedActiveTab) {
+
+  const renderTabContent = (tabType: string, isTabActive: boolean) => {
+    switch (tabType) {
       case "dashboard":
         return <DashboardOverviewPage />;
       case "users":
@@ -611,7 +627,7 @@ export function AdminDashboardPage() {
       case "posts":
         return <PostManagementPage />;
       case "companies":
-        return <CompanyManagementPage />;
+        return <CompanyManagementPage isActive={isTabActive} />;
       case "candidateProfiles":
         return <CandidateProfileManagementPage />;
       default:
@@ -620,7 +636,6 @@ export function AdminDashboardPage() {
   };
   const handleContentRef = useCallback((node: HTMLDivElement | null) => {
     contentRef.current = node;
-    setScrollTarget(node);
   }, []);
   return (
     <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
@@ -673,6 +688,8 @@ export function AdminDashboardPage() {
           activeTabId={activeTabId}
           onTabSelect={handleTabSelect}
           onTabClose={closeTab}
+          onCloseOtherTabs={handleCloseOtherTabs}
+          onCloseAllTabs={handleCloseAllTabs}
           onNewTab={handleNewTab}
           leftSlot={
             <DashboardSidebarToggle
@@ -698,8 +715,20 @@ export function AdminDashboardPage() {
           }}
         />
 
-        <div ref={handleContentRef} className="flex-1 overflow-auto">
-          {renderContent()}
+        <div ref={handleContentRef} className="relative flex-1 overflow-hidden">
+          {chromeTabsData.map((tab) => {
+            const isTabActive = tab.id === activeTabId;
+            return (
+              <TabContentWrapper
+                key={tab.id}
+                tabId={tab.id}
+                tabType={tab.type}
+                isActive={isTabActive}
+                onScrollTargetActive={setScrollTarget}>
+                {renderTabContent(tab.type, isTabActive)}
+              </TabContentWrapper>
+            );
+          })}
         </div>
         <ScrollToTopButton target={scrollTarget} threshold={600} />
       </div>

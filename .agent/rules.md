@@ -1,6 +1,6 @@
 # EXE_FE — AI Agent Rules
 
-> **@LAST_SYNCED: 2026-06-06**
+> **@LAST_SYNCED: 2026-06-12**
 > Canonical source of truth for all AI agents working on this codebase.
 > Mirrored to `.github/copilot-instructions.md` for GitHub Copilot compatibility.
 
@@ -272,22 +272,23 @@ All hooks are barrel-exported from `hooks/index.ts`.
 
 ### Shared Components (`src/components/shared/`)
 
-| Component                                                                                                         | Purpose                                                                           |
-| ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `DashboardChromeTabs`                                                                                             | Chrome-style tab navigation bar. Accepts `ChromeTabsTheme` for role-based theming |
-| `DashboardSidebar`                                                                                                | Collapsible sidebar navigation. Accepts `DashboardSidebarTheme`                   |
-| `ProtectedRoute` / `PublicOnlyRoute`                                                                              | Route guards for auth                                                             |
-| `SessionExpiryGuard`                                                                                              | Polls session expiry every 30s, auto-logouts on expiry                            |
-| `PaginationControl`                                                                                               | Reusable pagination UI with page size selector                                    |
-| `Filter`                                                                                                          | Generic filter with `FilterCriteria`, `FilterGroup`, `FilterOption` types         |
-| `SortButton`                                                                                                      | Toggleable sort direction button                                                  |
-| `StatusBadge`                                                                                                     | Simple label + variant badge                                                      |
-| `PaymentMethodDialog`                                                                                             | Payment method selection dialog                                                   |
-| `ChatComposer` / `MessageBubble`                                                                                  | Chat UI primitives                                                                |
-| `SocketStatusBadge`                                                                                               | WebSocket connection state indicator                                              |
-| `ScrollToTopButton`                                                                                               | Floating scroll-to-top button                                                     |
-| `SettingsModal`                                                                                                   | User settings dialog                                                              |
-| `ReloadButton`                                                                                                    | Data refresh button                                                               |
+| Component                                                                                                         | Purpose                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `DashboardChromeTabs`                                                                                             | Chrome-style tab navigation bar. Accepts `ChromeTabsTheme` for role-based theming                   |
+| `DashboardSidebar`                                                                                                | Collapsible sidebar navigation. Accepts `DashboardSidebarTheme`                                     |
+| `ProtectedRoute` / `PublicOnlyRoute`                                                                              | Route guards for auth                                                                               |
+| `SessionExpiryGuard`                                                                                              | Polls session expiry every 30s, auto-logouts on expiry                                              |
+| `PaginationControl`                                                                                               | Reusable pagination UI with page size selector                                                      |
+| `Filter`                                                                                                          | Generic filter with `FilterCriteria`, `FilterGroup`, `FilterOption` types                           |
+| `SortButton`                                                                                                      | Toggleable sort direction button                                                                    |
+| `StatusBadge`                                                                                                     | Simple label + variant badge                                                                        |
+| `PaymentMethodDialog`                                                                                             | Payment method selection dialog                                                                     |
+| `ChatComposer` / `MessageBubble`                                                                                  | Chat UI primitives                                                                                  |
+| `SocketStatusBadge`                                                                                               | WebSocket connection state indicator                                                                |
+| `ScrollToTopButton`                                                                                               | Floating scroll-to-top button                                                                       |
+| `SettingsModal`                                                                                                   | User settings dialog                                                                                |
+| `ReloadButton`                                                                                                    | Data refresh button                                                                                 |
+| `DateTimePicker`                                                                                                  | Premium date & time picker component with custom scroll wheels, i18n support, and role-based themes |
 | **Media sub-components**: `ImageZoomPreview`, `MediaLightboxDialog`, `PdfPreviewViewer`, `UniversalMediaUploader` |
 
 ### Data Transforms
@@ -433,6 +434,7 @@ Full color map in `constants/colors.ts`. CSS variables defined in `src/index.css
 - **Backend `traceId` wrapping**: API responses come wrapped as `{ traceId, data }`. Both `$api` and `createApiInstance()` auto-unwrap this — you receive raw `data`.
 - **Session expiry**: `SessionExpiryGuard` component polls every 30s + on visibility/focus change. It reads `expiresAt` from `authStore` and auto-logouts.
 - **Two base URL defaults**: `$api` defaults to `https://api.kdz.asia`; `createApiInstance()` defaults to `http://localhost:8080`. Both read from `VITE_API_BASE_URL`. Ensure `.env` is set correctly.
+- **Timezone mismatch with datetime inputs**: Backend dates are stored in UTC, whereas HTML5 inputs expect local datetime strings. Always use `utcToLocalDatetimeLocal()` and `localDatetimeLocalToUtc()` from `src/lib/formatting.ts` to convert values when loading and saving datetime values.
 
 ---
 
@@ -647,6 +649,7 @@ When a trigger is detected:
 
 | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-06-12 | Documented `DateTimePicker` in shared components and timezone mismatch gotcha under §10, and updated synced date.                                                                                                                                                                                                                                                                                                                     |
 | 2026-06-06 | Documented newly established testing conventions (Unit Testing via Vitest and E2E via Cypress with custom commands/fixtures), added Japanese (`ja.json`) to supported locales, added rules against runtime-emitted TS syntax (e.g. `enum`/`namespace` per `erasableSyntaxOnly` option), i18n key formatting conventions, and documented frozen translation anti-patterns (AP-12) and Zustand selector performance guidelines (AP-07). |
 | 2026-06-01 | Removed Axios completely from the project. Migrated all legacy Service Managers to use `fetchClient` (which wraps `openapi-fetch`). Updated API guidelines to reflect that `createApiInstance` is dead and `$api` is the only supported API client moving forward.                                                                                                                                                                    |
 | 2026-05-31 | Migrated the application to full dynamic i18n using `react-i18next`. Extracted all hardcoded Vietnamese text into JSON locales (`en.json`, `vi.json`). Updated Hard Rules to require `t()` translations for all new user-facing strings. Added `i18next` to active stack and defined new i18n architecture under §5.                                                                                                                  |

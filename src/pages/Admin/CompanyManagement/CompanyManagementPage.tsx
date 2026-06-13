@@ -2,19 +2,58 @@ import { extractDataArray } from "@/lib/utils";
 import { companyManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { CompanyDetailView } from "./CompanyDetailView";
 import { CompanyFormDialog } from "./components";
 import { CompanyListSidebar } from "./components/CompanyListSidebar";
 import type { Company, CompanyFormData } from "./types";
-export function CompanyManagementPage() {
+interface CompanyManagementPageProps {
+  isActive?: boolean;
+}
+
+export function CompanyManagementPage({ isActive: propActive }: CompanyManagementPageProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { companyId } = useParams();
-  const detailCompanyId = companyId ? Number(companyId) : null;
+  const [searchParams] = useSearchParams();
+
+  const activeTabParam = searchParams.get("tab");
+  const isActive =
+    propActive !== undefined
+      ? propActive
+      : activeTabParam === "companies" || (!activeTabParam && !companyId);
+
+  const [frozenCompanyId, setFrozenCompanyId] = useState<number | null>(
+    companyId ? Number(companyId) : null
+  );
+
+  const [prevCompanyId, setPrevCompanyId] = useState<string | undefined>(companyId);
+  const [prevIsActive, setPrevIsActive] = useState<boolean>(isActive);
+
+  if (isActive !== prevIsActive || companyId !== prevCompanyId) {
+    setPrevIsActive(isActive);
+    setPrevCompanyId(companyId);
+    if (isActive) {
+      if (companyId) {
+        setFrozenCompanyId(Number(companyId));
+      } else {
+        if (prevIsActive) {
+          setFrozenCompanyId(null);
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (isActive && frozenCompanyId && !companyId) {
+      navigate(`/admin/companies/${frozenCompanyId}?tab=companies`, { replace: true });
+    }
+  }, [isActive, frozenCompanyId, companyId, navigate]);
+
+  const detailCompanyId = frozenCompanyId;
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [formData, setFormData] = useState<CompanyFormData>({});
   const { data: companies = [], refetch: refetchCompanies } = useQuery({
