@@ -909,7 +909,6 @@
     "newFileSelected": "New file selected",
     "next": "Next",
     "hot": "HOT",
-    "nextMonth": "Next month",
     "ngoDinhKhoa": "Ngo Dinh Khoa",
     "nguyenPhamThuHa": "Nguyen Pham Thu Ha",
     "nguyenVanA": "Nguyen Van A",
@@ -1215,7 +1214,11 @@
     "youHaveNotHadAnyInterviewSessions": "You have not had any interview sessions with students.",
     "ai": "AI",
     "banner": "Banner",
-    "logo": "Logo"
+    "logo": "Logo",
+    "perPage": " / page",
+    "back": "Back",
+    "updateYourSecuritySettings": "Update your security settings",
+    "testTheory": "Theory Check"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -2794,7 +2797,11 @@
     "userAccountNotFound": "User account not found",
     "userIdNotFound": "User ID not found",
     "viewCurrentCv": "View current CV",
-    "youHaveNotParticipatedIn": "You have not participated in any interviews yet."
+    "youHaveNotParticipatedIn": "You have not participated in any interviews yet.",
+    "personalInfo": "Personal Info",
+    "memberSince": "Member since",
+    "quickSettings": "Quick Settings",
+    "viewYourPastInterviewSessions": "View your past interview sessions"
   },
   "userAiinterview": {
     "14Days": "14 Days",
@@ -3395,5 +3402,20 @@
     "cannotCreateCompany": "Cannot create company",
     "cannotUpdateCompany": "Cannot update company",
     "cannotDeleteCompany": "Cannot delete company"
+  },
+  "components": {
+    "dateTimePicker": {
+      "add15m": "+15 Minutes",
+      "add30m": "+30 Minutes",
+      "add1h": "+1 Hour",
+      "add2h": "+2 Hours",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "thisWeekend": "This Weekend",
+      "nextWeek": "Next Week",
+      "nextMonth": "Next Month",
+      "clear": "Clear",
+      "invalidDate": "Please enter a valid value. The field is incomplete or has an invalid date."
+    }
   }
 }

@@ -909,7 +909,6 @@
     "newFileSelected": "Đã chọn file mới",
     "next": "Tiếp theo",
     "hot": "HOT",
-    "nextMonth": "Tháng sau",
     "ngoDinhKhoa": "Ngô Đình Khoa",
     "nguyenPhamThuHa": "Nguyễn Phạm Thu Hà",
     "nguyenVanA": "Nguyễn Văn A",
@@ -1215,7 +1214,11 @@
     "youHaveNotHadAnyInterviewSessions": "Bạn chưa có phiên phỏng vấn nào với học viên.",
     "ai": "AI",
     "banner": "Banner",
-    "logo": "Logo"
+    "logo": "Logo",
+    "perPage": " / trang",
+    "back": "Trở lại",
+    "updateYourSecuritySettings": "Cập nhật cài đặt bảo mật của bạn",
+    "testTheory": "Kiểm tra lý thuyết"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -2794,7 +2797,11 @@
     "userAccountNotFound": "Không tìm thấy tài khoản người dùng",
     "userIdNotFound": "Không tìm thấy ID người dùng",
     "viewCurrentCv": "Xem CV hiện tại",
-    "youHaveNotParticipatedIn": "Bạn chưa tham gia buổi phỏng vấn nào."
+    "youHaveNotParticipatedIn": "Bạn chưa tham gia buổi phỏng vấn nào.",
+    "personalInfo": "Thông tin cá nhân",
+    "memberSince": "Thành viên từ",
+    "quickSettings": "Cài đặt nhanh",
+    "viewYourPastInterviewSessions": "Xem lại các phiên phỏng vấn đã qua của bạn"
   },
   "userAiinterview": {
     "14Days": "14 Ngày",
@@ -3395,5 +3402,20 @@
     "cannotCreateCompany": "Không thể tạo công ty",
     "cannotUpdateCompany": "Không thể cập nhật công ty",
     "cannotDeleteCompany": "Không thể xóa công ty"
+  },
+  "components": {
+    "dateTimePicker": {
+      "add15m": "+15 Phút",
+      "add30m": "+30 Phút",
+      "add1h": "+1 Giờ",
+      "add2h": "+2 Giờ",
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "thisWeekend": "Cuối tuần này",
+      "nextWeek": "Đầu tuần sau",
+      "nextMonth": "Đầu tháng sau",
+      "clear": "Xóa",
+      "invalidDate": "Vui lòng nhập một giá trị hợp lệ. Trường không hoàn chỉnh hoặc có giá trị không hợp lệ."
+    }
   }
 }

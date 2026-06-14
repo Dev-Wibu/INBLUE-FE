@@ -593,7 +593,7 @@
     "monthNum": "{{num}}月",
     "openCalendar": "カレンダーを開く",
     "prevMonth": "前月",
-    "nextMonth": "翌月",
+    "nextMonth": "来月",
     "shortcuts": "プリセット",
     "tomorrow": "明日",
     "nextWeek": "来週",
@@ -903,7 +903,6 @@
     "needToConsider": "要検討",
     "newFileSelected": "新しいファイルが選択されました",
     "next": "次へ",
-    "nextMonth": "来月",
     "ngoDinhKhoa": "ゴ・ディン・カ",
     "nguyenPhamThuHa": "グエン・パム・トゥ・ハ",
     "nguyenVanA": "グエン・ヴァン・ア",
@@ -1214,7 +1213,12 @@
     "writeFeedback": "フィードバックを書く",
     "year": "年",
     "youCantSeeReviewsThatDontBelong": "自分の面接セッションに属さないレビューは表示できません。",
-    "youHaveNotHadAnyInterviewSessions": "学生との面接セッションがまだありません。"
+    "youHaveNotHadAnyInterviewSessions": "学生との面接セッションがまだありません。",
+    "perPage": " / ページ",
+    "register": "登録する",
+    "back": "戻る",
+    "updateYourSecuritySettings": "セキュリティ設定を更新する",
+    "testTheory": "理論チェック"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -2820,7 +2824,11 @@
     "userAccountNotFound": "ユーザーアカウントが見つかりません",
     "userIdNotFound": "ユーザーIDが見つかりません",
     "viewCurrentCv": "現在のCVを表示",
-    "youHaveNotParticipatedIn": "まだ任何の面接に参加していません。"
+    "youHaveNotParticipatedIn": "まだ任何の面接に参加していません。",
+    "personalInfo": "個人情報",
+    "memberSince": "メンバー開始",
+    "quickSettings": "クイック設定",
+    "viewYourPastInterviewSessions": "過去の面接セッションを表示する"
   },
   "userAiinterview": {
     "14Days": "14日",
@@ -3066,7 +3074,39 @@
     "totalOrder": "注文合計",
     "totalScore": "総スコア",
     "trackTheStatusOfYour": "応募のステータスを追跡",
-    "unableToDownloadApplicationHistory": "応募履歴をダウンロードできません"
+    "unableToDownloadApplicationHistory": "応募履歴をダウンロードできません",
+    "pageTitle": "応募履歴",
+    "pageDescription": "ソフトウェアエンジニア職の進捗状況と面接結果を確認します。",
+    "reload": "再読み込み",
+    "searchPlaceholder": "勤務地、企業名で検索...",
+    "filterByStatus": "ステータスで絞り込む",
+    "allStatus": "すべて",
+    "statusInterviewing": "面接中",
+    "statusCompleted": "完了",
+    "statusRejected": "不採用",
+    "findJobsDescription": "仕事を見つけてここから応募してください。",
+    "selectApplication": "詳細を見るには応募を選択してください",
+    "noApplicationsYet": "まだ応募はありません",
+    "noTitle": "タイトルなし",
+    "company": "企業",
+    "result": "結果",
+    "status": "ステータス",
+    "round": "ラウンド",
+    "rounds": "ラウンド",
+    "current": "現在",
+    "applications": "応募",
+    "interviewPipeline": "面接パイプライン",
+    "unableToDownload": "応募履歴をダウンロードできません",
+    "retry": "再試行",
+    "overallProgress": "全体の進捗",
+    "noRoundsAvailable": "面接ラウンドはありません",
+    "nextRound": "次のラウンド",
+    "roundInfoLocked": "前のラウンドを完了すると情報が表示されます。",
+    "waiting": "待機中",
+    "noResultYet": "まだ結果はありません",
+    "pending": "保留中",
+    "enterRoom": "入室する",
+    "viewDetails": "詳細を見る"
   },
   "userFeedback": {
     "evaluationContent": "評価内容",
@@ -3365,5 +3405,20 @@
     "viewTestHistory": "テスト履歴を表示",
     "youAnsweredCorrectly": "正解しました",
     "yourAnswer": "あなたの回答："
+  },
+  "components": {
+    "dateTimePicker": {
+      "add15m": "+15分",
+      "add30m": "+30分",
+      "add1h": "+1時間",
+      "add2h": "+2時間",
+      "today": "今日",
+      "tomorrow": "明日",
+      "thisWeekend": "今週末",
+      "nextWeek": "来週",
+      "nextMonth": "来月",
+      "clear": "クリア",
+      "invalidDate": "有効な値を入力してください。フィールドが不完全か、無効な値が含まれています。"
+    }
   }
 }
