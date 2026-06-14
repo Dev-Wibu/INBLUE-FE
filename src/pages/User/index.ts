@@ -48,8 +48,5 @@ export {
 // Mentor detail exports
 export { MentorDetailPage } from "./MentorDetail";
 
-// Interview History exports
-export { InterviewHistoryPage } from "./InterviewHistory";
-
 // Application History exports
 export { ApplicationHistoryPage } from "./ApplicationHistory";

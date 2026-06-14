@@ -37,7 +37,8 @@ const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
 
 export function AccountPage() {
   const { t } = useTranslation();
-  const { user: authUser, setUser } = useAuthStore();
+  const authUser = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
   const authUserId = authUser?.id;
   const [searchParams, setSearchParams] = useSearchParams();
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
