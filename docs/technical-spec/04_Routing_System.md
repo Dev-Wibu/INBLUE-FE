@@ -59,10 +59,9 @@ The entire routing configuration lives in a single `App.tsx` file using React Ro
 
 ### 2.3 — Dev-Only Routes
 
-| Path                     | Component                    | Guard                 |
-| ------------------------ | ---------------------------- | --------------------- |
-| `/dev/media-toolkit`     | `MediaToolkitPlaygroundPage` | `import.meta.env.DEV` |
-| `/dev/speech-playground` | `SpeechPlaygroundPage`       | `import.meta.env.DEV` |
+| Path              | Component        | Guard                 |
+| ----------------- | ---------------- | --------------------- |
+| `/dev/playground` | `PlaygroundPage` | `import.meta.env.DEV` |
 
 ### 2.4 — Auth Routes (PublicOnlyRoute)
 
@@ -96,7 +95,6 @@ Shell: `UserDashboardPage` (ChromeTabs + `<Outlet />`)
 | `practice/:id`                                                   | `PracticeSetDetailPage`         |
 | `feedback/:id`                                                   | `FeedbackDetailPage`            |
 | `mentors/:mentorId`                                              | `MentorDetailPage`              |
-| `interview-history`                                              | `InterviewHistoryPage`          |
 | `application-history`                                            | `ApplicationHistoryPage`        |
 
 ### 2.6 — Mentor Dashboard Routes (`/mentor/*`)
@@ -312,8 +310,7 @@ flowchart TD
             D --> D3["practice/*"]
             D --> D4["feedback/:id"]
             D --> D5["mentors/:mentorId"]
-            D --> D6["interview-history"]
-            D --> D7["application-history"]
+            D --> D6["application-history"]
         end
 
         subgraph "Mentor Dashboard (ProtectedRoute: MENTOR)"

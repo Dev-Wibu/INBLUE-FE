@@ -560,7 +560,6 @@ All nested under `UserDashboardPage` shell with `DashboardSidebar`.
 | `/user/practice/:id`                                                   | `PracticeSetDetailPage` (direct link) |
 | `/user/feedback/:id`                                                   | `FeedbackDetailPage`                  |
 | `/user/mentors/:mentorId`                                              | `MentorDetailPage`                    |
-| `/user/interview-history`                                              | `InterviewHistoryPage`                |
 | `/user/application-history`                                            | `ApplicationHistoryPage`              |
 
 </details>
@@ -623,17 +622,16 @@ Admin uses tab-based navigation via `?tab=` query parameter. All 15 management v
 
 ### Error & Dev Routes
 
-| Path                     | Component                                 |
-| ------------------------ | ----------------------------------------- |
-| `/error/401`             | `UnauthorizedPage`                        |
-| `/error/403`             | `ForbiddenPage`                           |
-| `/error/404`             | `NotFoundPage`                            |
-| `/error/500`             | `ServerErrorPage`                         |
-| `/error/503`             | `ServiceUnavailablePage`                  |
-| `/error/504`             | `GatewayTimeoutPage`                      |
-| `*`                      | `NotFoundPage`                            |
-| `/dev/media-toolkit`     | `MediaToolkitPlaygroundPage` _(dev only)_ |
-| `/dev/speech-playground` | `SpeechPlaygroundPage` _(dev only)_       |
+| Path              | Component                     |
+| ----------------- | ----------------------------- |
+| `/error/401`      | `UnauthorizedPage`            |
+| `/error/403`      | `ForbiddenPage`               |
+| `/error/404`      | `NotFoundPage`                |
+| `/error/500`      | `ServerErrorPage`             |
+| `/error/503`      | `ServiceUnavailablePage`      |
+| `/error/504`      | `GatewayTimeoutPage`          |
+| `*`               | `NotFoundPage`                |
+| `/dev/playground` | `PlaygroundPage` _(dev only)_ |
 
 ### Backward-Compatibility Redirects
 

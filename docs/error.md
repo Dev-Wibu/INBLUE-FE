@@ -93,13 +93,9 @@
 
 - **10+ files** (nhiều thư mục):
   - Code Snippet: `i18n.language === "en" ? "en-US" : "vi-VN"`
-  - Exact Reason: Biểu thức này xuất hiện 15 lần khắp codebase, nhưng `@/lib/formatting.ts` đã có `currentLocale()` (line 14). Các file: `InterviewHistoryPage.tsx:229`, `JobDescriptionDetailPage.tsx:48`, `JobCard.tsx:38`, `MockInterviewSchedulePage.tsx:111`, `SpeechPlaygroundPage.tsx:34`, `MessengerPage.tsx:204`, `DashboardOverviewPage.tsx:290,299`, `QuestionBankPage.tsx:31`, `chart.tsx:241`, `calendar.tsx:40,168`.
+  - Exact Reason: Biểu thức này xuất hiện 15 lần khắp codebase, nhưng `@/lib/formatting.ts` đã có `currentLocale()` (line 14). Các file: `JobDescriptionDetailPage.tsx:48`, `JobCard.tsx:38`, `MockInterviewSchedulePage.tsx:111`, `MessengerPage.tsx:204`, `DashboardOverviewPage.tsx:290,299`, `QuestionBankPage.tsx:31`, `chart.tsx:241`, `calendar.tsx:40,168`.
 
 ### DRY-02: Inline `toLocaleDateString` thay vì dùng `formatDate()`
-
-- **InterviewHistoryPage.tsx** (`src/pages/User/InterviewHistory/InterviewHistoryPage.tsx:228–230`):
-  - Code Snippet: `new Date(session.createdAt).toLocaleDateString(i18n.language === "en" ? "en-US" : "vi-VN")`
-  - Exact Reason: Nên dùng `formatDate(session.createdAt)` từ `@/lib/formatting`.
 
 - **JobDescriptionDetailPage.tsx** (`src/pages/Enterprise/JobDescriptionDetailPage.tsx:44–53`):
   - Code Snippet: Local `formatDate()` function tạo `new Date(dateStr).toLocaleDateString(locale, {...})`
@@ -113,7 +109,7 @@
   - Code Snippet: `formatDayLabel()` với `parsed.toLocaleDateString(locale, {timeZone, weekday, day, month, year})`
   - Exact Reason: Nên extract vào `@/lib/formatting`.
 
-- **SpeechPlaygroundPage.tsx** (`src/pages/Shared/SpeechPlaygroundPage.tsx:33–35`):
+- **SpeechRecognitionTab.tsx** (`src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx:33–35`):
   - Code Snippet: `${date.toLocaleDateString(locale)} ${date.toLocaleTimeString(locale)}``
   - Exact Reason: Nên dùng `formatDateTime()` từ `@/lib/formatting`.
 
@@ -210,50 +206,48 @@
 - **Phát hiện:** Đếm số dòng code tự động, đếm số lượng hooks/functions được khai báo trong một component.
 - **Các file cụ thể là:**
 
-> **Tổng cộng: 33 file vượt quá 500 LOC.** Dưới đây là danh sách đầy đủ, sắp xếp theo số dòng giảm dần.
+> **Tổng cộng: 32 file vượt quá 500 LOC.** Dưới đây là danh sách đầy đủ, sắp xếp theo số dòng giảm dần.
 
 | #   | File                                                                            | LOC      | useState | useEffect | Mức độ                                   |
 | --- | ------------------------------------------------------------------------------- | -------- | -------- | --------- | ---------------------------------------- |
 | 1   | `src/pages/Shared/Messenger/MessengerPage.tsx`                                  | **1523** | 19       | 13        | 🔴 Cực kỳ nghiêm trọng                   |
 | 2   | `src/pages/User/Practice/PracticeSetDetailPage.tsx`                             | **1197** | 17       | 4         | 🔴 Cực kỳ nghiêm trọng                   |
-| 3   | `src/pages/User/InterviewHistory/InterviewHistoryPage.tsx`                      | **994**  | 7        | 2         | 🔴 Nghiêm trọng                          |
-| 4   | `src/pages/User/AIInterview/AIInterviewSetup/CandidateProfileStep.tsx`          | **913**  | 0        | 0         | 🔴 Nghiêm trọng                          |
-| 5   | `src/pages/Admin/PostManagement/PostManagementPage.tsx`                         | **895**  | 14       | 2         | 🔴 Cực kỳ nghiêm trọng                   |
-| 6   | `src/pages/Payment/PaymentSuccessPage.tsx`                                      | **842**  | 8        | 3         | 🔴 Nghiêm trọng                          |
-| 7   | `src/pages/User/Overview/OverviewPage.tsx`                                      | **839**  | 8        | 0         | 🔴 Nghiêm trọng                          |
-| 8   | `src/pages/User/AIInterview/AIInterviewResultPage.tsx`                          | **837**  | 4        | 0         | 🔴 Nghiêm trọng                          |
-| 9   | `src/pages/Mentor/Overview/MentorOverviewPage.tsx`                              | **829**  | 8        | 0         | 🔴 Nghiêm trọng                          |
-| 10  | `src/pages/User/MockInterview/MockInterviewSchedulePage.tsx`                    | **781**  | 10       | 2         | 🔴 Nghiêm trọng                          |
-| 11  | `src/components/shared/DashboardSidebar.tsx`                                    | **744**  | 7        | 4         | 🔴 Nghiêm trọng                          |
-| 12  | `src/pages/Admin/NotificationManagement/NotificationManagementPage.tsx`         | **733**  | 8        | 0         | 🔴 Nghiêm trọng                          |
-| 13  | `src/pages/Mentor/Sessions/MentorSessionsPage.tsx`                              | **718**  | 6        | 2         | 🟡 Vượt ngưỡng                           |
-| 14  | `src/pages/Admin/AdminDashboard/AdminDashboardPage.tsx`                         | **700**  | 4        | 4         | 🟡 Vượt ngưỡng                           |
-| 15  | `src/pages/User/MockInterview/SessionHistoryPage.tsx`                           | **683**  | 4        | 2         | 🟡 Vượt ngưỡng                           |
-| 16  | `src/pages/User/MockInterview/SessionDetailPage.tsx`                            | **679**  | 4        | 3         | 🟡 Vượt ngưỡng                           |
-| 17  | `src/pages/Payment/PaymentCancelPage.tsx`                                       | **653**  | 5        | 3         | 🟡 Vượt ngưỡng                           |
-| 18  | `src/pages/Auth/MentorRegisterPage.tsx`                                         | **641**  | 10       | 0         | 🟡 Vượt ngưỡng                           |
-| 19  | `src/components/ui/sidebar.tsx`                                                 | **634**  | 3        | 1         | 🟡 Vượt ngưỡng                           |
-| 20  | `src/pages/Admin/PracticeQuestionManagement/PracticeQuestionManagementPage.tsx` | **612**  | 12       | 2         | 🟡 Vượt ngưỡng                           |
-| 21  | `src/pages/User/AIInterview/AIInterviewListPage.tsx`                            | **610**  | 2        | 0         | 🟡 Vượt ngưỡng                           |
-| 22  | `src/pages/User/Practice/PracticeSetsPage.tsx`                                  | **609**  | 6        | 2         | 🟡 Vượt ngưỡng                           |
-| 23  | `src/pages/Admin/MentorManagement/components/MentorFormDialog.tsx`              | **602**  | 8        | 2         | 🟡 Vượt ngưỡng                           |
-| 24  | `src/pages/User/Account/InterviewHistoryTab.tsx`                                | **598**  | 6        | 0         | 🟡 Vượt ngưỡng                           |
-| 25  | `src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx`                  | **596**  | 3        | 0         | 🟡 Vượt ngưỡng                           |
-| 26  | `src/pages/Admin/DashboardOverview/DashboardOverviewPage.tsx`                   | **593**  | 4        | 0         | 🟡 Vượt ngưỡng                           |
-| 27  | `src/pages/Admin/CompanyManagement/CompanyDetailView.tsx`                       | **578**  | 16       | 2         | 🔴 Cực kỳ nghiêm trọng (state explosion) |
-| 28  | `src/pages/Shared/SpeechPlaygroundPage.tsx`                                     | **545**  | 18       | 3         | 🟡 Dev-only, thấp priority               |
-| 29  | `src/pages/Enterprise/JobDescriptionDetailPage.tsx`                             | **539**  | 6        | 2         | 🟡 Vượt ngưỡng                           |
-| 30  | `src/pages/Mentor/Students/StudentDetailPage.tsx`                               | **534**  | 0        | 0         | 🟡 Vượt ngưỡng                           |
-| 31  | `src/components/post/CommentSection.tsx`                                        | **522**  | 7        | 0         | 🟡 Vượt ngưỡng                           |
-| 32  | `src/pages/Staff/PostModeration/PostModerationPage.tsx`                         | **518**  | 10       | 2         | 🟡 Vượt ngưỡng                           |
-| 33  | `src/pages/Staff/SessionProcessing/SessionProcessingPage.tsx`                   | **510**  | 5        | 0         | 🟡 Vượt ngưỡng                           |
+| 3   | `src/pages/User/AIInterview/AIInterviewSetup/CandidateProfileStep.tsx`          | **913**  | 0        | 0         | 🔴 Nghiêm trọng                          |
+| 4   | `src/pages/Admin/PostManagement/PostManagementPage.tsx`                         | **895**  | 14       | 2         | 🔴 Cực kỳ nghiêm trọng                   |
+| 5   | `src/pages/Payment/PaymentSuccessPage.tsx`                                      | **842**  | 8        | 3         | 🔴 Nghiêm trọng                          |
+| 6   | `src/pages/User/Overview/OverviewPage.tsx`                                      | **839**  | 8        | 0         | 🔴 Nghiêm trọng                          |
+| 7   | `src/pages/User/AIInterview/AIInterviewResultPage.tsx`                          | **837**  | 4        | 0         | 🔴 Nghiêm trọng                          |
+| 8   | `src/pages/Mentor/Overview/MentorOverviewPage.tsx`                              | **829**  | 8        | 0         | 🔴 Nghiêm trọng                          |
+| 9   | `src/pages/User/MockInterview/MockInterviewSchedulePage.tsx`                    | **781**  | 10       | 2         | 🔴 Nghiêm trọng                          |
+| 10  | `src/components/shared/DashboardSidebar.tsx`                                    | **744**  | 7        | 4         | 🔴 Nghiêm trọng                          |
+| 11  | `src/pages/Admin/NotificationManagement/NotificationManagementPage.tsx`         | **733**  | 8        | 0         | 🔴 Nghiêm trọng                          |
+| 12  | `src/pages/Mentor/Sessions/MentorSessionsPage.tsx`                              | **718**  | 6        | 2         | 🟡 Vượt ngưỡng                           |
+| 13  | `src/pages/Admin/AdminDashboard/AdminDashboardPage.tsx`                         | **700**  | 4        | 4         | 🟡 Vượt ngưỡng                           |
+| 14  | `src/pages/User/MockInterview/SessionHistoryPage.tsx`                           | **683**  | 4        | 2         | 🟡 Vượt ngưỡng                           |
+| 15  | `src/pages/User/MockInterview/SessionDetailPage.tsx`                            | **679**  | 4        | 3         | 🟡 Vượt ngưỡng                           |
+| 16  | `src/pages/Payment/PaymentCancelPage.tsx`                                       | **653**  | 5        | 3         | 🟡 Vượt ngưỡng                           |
+| 17  | `src/pages/Auth/MentorRegisterPage.tsx`                                         | **641**  | 10       | 0         | 🟡 Vượt ngưỡng                           |
+| 18  | `src/components/ui/sidebar.tsx`                                                 | **634**  | 3        | 1         | 🟡 Vượt ngưỡng                           |
+| 19  | `src/pages/Admin/PracticeQuestionManagement/PracticeQuestionManagementPage.tsx` | **612**  | 12       | 2         | 🟡 Vượt ngưỡng                           |
+| 20  | `src/pages/User/AIInterview/AIInterviewListPage.tsx`                            | **610**  | 2        | 0         | 🟡 Vượt ngưỡng                           |
+| 21  | `src/pages/User/Practice/PracticeSetsPage.tsx`                                  | **609**  | 6        | 2         | 🟡 Vượt ngưỡng                           |
+| 22  | `src/pages/Admin/MentorManagement/components/MentorFormDialog.tsx`              | **602**  | 8        | 2         | 🟡 Vượt ngưỡng                           |
+| 24  | `src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx`                  | **596**  | 3        | 0         | 🟡 Vượt ngưỡng                           |
+| 25  | `src/pages/Admin/DashboardOverview/DashboardOverviewPage.tsx`                   | **593**  | 4        | 0         | 🟡 Vượt ngưỡng                           |
+| 26  | `src/pages/Admin/CompanyManagement/CompanyDetailView.tsx`                       | **578**  | 16       | 2         | 🔴 Cực kỳ nghiêm trọng (state explosion) |
+| 27  | `src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx`                  | **545**  | 18       | 3         | 🟡 Dev-only, thấp priority               |
+| 28  | `src/pages/Enterprise/JobDescriptionDetailPage.tsx`                             | **539**  | 6        | 2         | 🟡 Vượt ngưỡng                           |
+| 29  | `src/pages/Mentor/Students/StudentDetailPage.tsx`                               | **534**  | 0        | 0         | 🟡 Vượt ngưỡng                           |
+| 30  | `src/components/post/CommentSection.tsx`                                        | **522**  | 7        | 0         | 🟡 Vượt ngưỡng                           |
+| 31  | `src/pages/Staff/PostModeration/PostModerationPage.tsx`                         | **518**  | 10       | 2         | 🟡 Vượt ngưỡng                           |
+| 32  | `src/pages/Staff/SessionProcessing/SessionProcessingPage.tsx`                   | **510**  | 5        | 0         | 🟡 Vượt ngưỡng                           |
 
 ### Files Vi phạm Quy tắc >7 useState (AP-03)
 
 - **MessengerPage.tsx** — 19 `useState`, 13 `useEffect` 🔴
 - **PracticeSetDetailPage.tsx** — 17 `useState` 🔴
 - **CompanyDetailView.tsx** — 16 `useState` 🔴
-- **SpeechPlaygroundPage.tsx** — 18 `useState` (dev-only)
+- **SpeechRecognitionTab.tsx** — 18 `useState` (dev-only)
 - **PostManagementPage.tsx** — 14 `useState`
 - **PracticeQuestionManagementPage.tsx** — 12 `useState`
 - **MockInterviewSchedulePage.tsx** — 10 `useState`
@@ -528,3 +522,27 @@
 - **Các file/đoạn code cụ thể là:**
 
 > **Kết quả: Không phát hiện classic derived state abuse.** Codebase sử dụng `useMemo` đúng cách ở nhiều nơi (filtered lists, sorted data). Tuy nhiên, có 2 pattern cần cải thiện:
+
+## 11. Zombie Page — Trang "Mồ Côi" Có Route Nhưng Không Thể Truy Cập Qua UI (Orphaned Routes)
+
+- **Mô tả chi tiết:** Đây là các trang (page component) có đầy đủ route trong `App.tsx`, được import hợp lệ, pass tsc và lint — nhưng **không có bất kỳ UI entry point nào** (không có link, button, sidebar item, hay tab) dẫn người dùng tới. Người dùng chỉ có thể truy cập bằng cách tự gõ URL trực tiếp. Loại lỗi này nguy hiểm hơn dead code thông thường vì nó **qua mặt mọi kiểm tra tự động**.
+- **Tiêu chí để AI nhận diện:**
+  - File page component được import trong `App.tsx` và có `<Route>` hợp lệ, NHƯNG:
+    - Không có `<Link to="...">` hoặc `navigate("...")` nào trỏ tới route đó.
+    - Không có tab trong Dashboard render component đó.
+    - Không có sidebar item, button, hoặc menu dẫn tới route đó.
+  - Nội dung của trang "mồ côi" thường là bản copy-paste từ các trang khác đã có sẵn trong hệ thống.
+  - Dashboard tab có key tương tự (ví dụ: `interviewHistory`) nhưng lại render một component **khác** (ví dụ: `SessionHistoryPage` thay vì `InterviewHistoryPage`).
+- **Phát hiện:** Đối chiếu chéo giữa 3 nguồn: (1) Route definitions trong `App.tsx`, (2) Navigation/Tab/Sidebar definitions trong các Dashboard pages, (3) Tất cả `<Link>` và `navigate()` calls trong codebase.
+- **Case study thực tế:**
+
+### ZP-01: InterviewHistoryPage (Đã xóa — 2026-06-14)
+
+- **File:** `src/pages/User/InterviewHistory/InterviewHistoryPage.tsx` (1036 LOC)
+- **Route:** `/user/interview-history` trong `App.tsx`
+- **Vấn đề:**
+  1. **Không thể truy cập qua UI:** Tab "Lịch sử phỏng vấn" trên Dashboard (`?tab=interviewHistory`) render `<SessionHistoryPage />` (Mock Interview only), không phải `<InterviewHistoryPage />`.
+  2. **Copy-paste 100%:** Toàn bộ 1036 dòng code được sao chép từ `SessionHistoryPage` (Mock) + `AIInterviewListPage` (AI), bao gồm cả logic thanh toán PayOS phức tạp.
+  3. **Vi phạm Single Source of Truth:** Các map `MOCK_STATUS_MAP`, `AI_STATUS_CONFIG`, `AI_MODE_LABELS` bị khai báo lặp lại ở 3 file khác nhau.
+  4. **Qua mặt kiểm tra tự động:** File pass `tsc --noEmit` và `eslint` 100% vì nó CÓ được import và CÓ route hợp lệ.
+- **Giải pháp:** Xóa bỏ hoàn toàn file, route, và tất cả exports liên quan. Giữ nguyên `SessionHistoryPage` (Mock) và `AIInterviewListPage` (AI) làm nguồn duy nhất.
