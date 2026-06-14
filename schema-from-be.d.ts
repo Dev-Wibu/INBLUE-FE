@@ -2018,7 +2018,7 @@ export interface components {
             };
         };
         Example: {
-            input?: string;
+            input?: string[];
             output?: string;
             explanation?: string;
         };
@@ -2850,6 +2850,7 @@ export interface components {
             difficulty?: "EASY" | "MEDIUM" | "HARD";
             problemStatement?: string;
             rulesAndConstraints?: string[];
+            paramTypes?: string[];
             visibleExamples?: components["schemas"]["Example"][];
             /** Format: int32 */
             executionTimeLimitMs?: number;
@@ -2866,7 +2867,7 @@ export interface components {
             updatedAt?: string;
         };
         TestCase: {
-            input?: string;
+            input?: string[];
             expectedOutput?: string;
             /** Format: int32 */
             weightPoints?: number;
@@ -3092,37 +3093,37 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
+            first?: boolean;
+            last?: boolean;
             empty?: boolean;
         };
         PageableObject: {
+            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3377,23 +3378,23 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
             includeCodas?: string[];
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
-            trimDirectiveWhitespaces?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            isXml?: string;
-            urlPatterns?: string[];
             defaultContentType?: string;
+            urlPatterns?: string[];
+            trimDirectiveWhitespaces?: string;
             buffer?: string;
+            elIgnored?: string;
+            isXml?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -3416,22 +3417,17 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            redirectView?: boolean;
             propagateQueryProperties?: boolean;
+            redirectView?: boolean;
             attributesMap?: {
                 [key: string]: unknown;
             };
-            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
+            attributesCSV?: string;
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
@@ -3449,6 +3445,11 @@ export interface components {
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -3529,9 +3530,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
-            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
+            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
