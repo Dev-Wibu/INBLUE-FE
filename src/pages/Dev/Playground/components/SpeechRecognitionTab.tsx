@@ -45,7 +45,7 @@ function detectBrowserLabel(t: (key: string) => string): string {
   if (ua.includes("safari/") && !ua.includes("chrome/")) return "Safari";
   return t("sharedSpeechplaygroundpage.otherBrowsers");
 }
-export function SpeechPlaygroundPage() {
+export function SpeechRecognitionTab() {
   const { t } = useTranslation();
   const testPhraseByLang = useMemo(() => getTestPhraseByLang(t), [t]);
   const [language, setLanguage] = useState<PlaygroundLanguage>("vi-VN");

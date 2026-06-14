@@ -20,6 +20,7 @@ import {
   SignupPage,
   WaitingAcceptMentorPage,
 } from "@/pages/Auth";
+import { PlaygroundPage } from "@/pages/Dev/Playground/PlaygroundPage";
 import { CompanyDetailPage, CompanySearchPage, JobDescriptionDetailPage } from "@/pages/Enterprise";
 import {
   ForbiddenPage,
@@ -47,8 +48,6 @@ import {
   WriteFeedbackPage,
 } from "@/pages/Mentor";
 import { PaymentCancelPage, PaymentSuccessPage } from "@/pages/Payment";
-import { MediaToolkitPlaygroundPage } from "@/pages/Shared/MediaToolkitPlaygroundPage";
-import { SpeechPlaygroundPage } from "@/pages/Shared/SpeechPlaygroundPage.tsx";
 import {
   FeedbackModerationPage,
   MentorApplicationsPage,
@@ -65,7 +64,6 @@ import {
   ApplicationHistoryPage,
   BookingSuccessPage,
   FeedbackDetailPage,
-  InterviewHistoryPage,
   MentorDetailPage,
   MockInterviewSchedulePage,
   MockInterviewSelectMentorPage,
@@ -140,12 +138,8 @@ function App() {
             <Route path="/resources/faq" element={<FAQPage />} />
             <Route path="/resources/blog" element={<BlogPage />} />
             <Route
-              path="/dev/media-toolkit"
-              element={import.meta.env.DEV ? <MediaToolkitPlaygroundPage /> : <NotFoundPage />}
-            />
-            <Route
-              path="/dev/speech-playground"
-              element={import.meta.env.DEV ? <SpeechPlaygroundPage /> : <NotFoundPage />}
+              path="/dev/playground"
+              element={import.meta.env.DEV ? <PlaygroundPage /> : <NotFoundPage />}
             />
 
             {/* Auth routes with AuthLayout — redirect to dashboard if already logged in */}
@@ -191,7 +185,6 @@ function App() {
                 <Route path="practice/:id" element={<PracticeSetDetailPage />} />
                 <Route path="feedback/:id" element={<FeedbackDetailPage />} />
                 <Route path="mentors/:mentorId" element={<MentorDetailPage />} />
-                <Route path="interview-history" element={<InterviewHistoryPage />} />
                 <Route path="application-history" element={<ApplicationHistoryPage />} />
               </Route>
             </Route>

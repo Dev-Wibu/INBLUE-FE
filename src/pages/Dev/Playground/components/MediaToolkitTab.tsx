@@ -46,7 +46,7 @@ function buildTempSampleItems(t: (key: string) => string): MediaViewerItem[] {
   ];
 }
 
-export function MediaToolkitPlaygroundPage() {
+export function MediaToolkitTab() {
   const { t } = useTranslation();
   const tempSampleItems = useMemo(() => buildTempSampleItems(t), [t]);
 
