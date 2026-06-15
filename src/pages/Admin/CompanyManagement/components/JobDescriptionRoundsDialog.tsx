@@ -419,7 +419,7 @@ export function JobDescriptionRoundsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[95vh] max-h-[95vh] w-[98vw] max-w-[98vw] flex-row gap-0 overflow-hidden border-slate-800 bg-slate-950 p-0">
+      <DialogContent className="flex h-[95vh] max-h-[95vh] w-[98vw] max-w-[98vw] flex-row gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950">
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-slate-400">
             <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
@@ -428,12 +428,12 @@ export function JobDescriptionRoundsDialog({
         ) : (
           <>
             {/* 1. LEFT SIDEBAR: Available Rounds Toolbox (occupies full height) */}
-            <div className="flex h-full w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col border-r border-slate-800 bg-slate-900/30">
-              <div className="flex h-[72px] shrink-0 flex-col justify-center border-b border-slate-800 bg-slate-900/20 px-5">
-                <h3 className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+            <div className="flex h-full w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30">
+              <div className="flex h-[72px] shrink-0 flex-col justify-center border-b border-slate-200 bg-slate-100/30 px-5 dark:border-slate-800 dark:bg-slate-900/20">
+                <h3 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-400">
                   Mẫu vòng tuyển dụng
                 </h3>
-                <p className="mt-1 text-[11px] text-slate-500">
+                <p className="dark:text-slate-550 mt-1 text-[11px] text-slate-500">
                   Kéo các mẫu này thả vào quy trình ở giữa
                 </p>
               </div>
@@ -447,18 +447,18 @@ export function JobDescriptionRoundsDialog({
                         onDragStart={() => setActiveDragType(template.type)}
                         onDragEnd={() => setActiveDragType(null)}
                         className={cn(
-                          "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-3.5 transition-all duration-200 hover:border-slate-700 hover:bg-slate-900 hover:shadow-lg active:cursor-grabbing",
+                          "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-lg active:cursor-grabbing dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-900",
                           template.bgColor,
                           template.color
                         )}>
-                        <div className="mt-0.5 shrink-0 rounded-xl bg-black/40 p-2 shadow-inner">
+                        <div className="mt-0.5 shrink-0 rounded-xl bg-slate-100 p-2 shadow-inner dark:bg-black/40">
                           {template.icon}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-sm leading-tight font-bold text-slate-200 transition-colors group-hover:text-white">
+                          <h4 className="text-sm leading-tight font-bold text-slate-800 transition-colors group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
                             {template.title}
                           </h4>
-                          <p className="mt-1 text-xs leading-normal text-slate-400 group-hover:text-slate-300">
+                          <p className="group-hover:text-slate-650 mt-1 text-xs leading-normal text-slate-500 dark:text-slate-400 dark:group-hover:text-slate-300">
                             {template.description}
                           </p>
                         </div>
@@ -470,30 +470,32 @@ export function JobDescriptionRoundsDialog({
             </div>
 
             {/* MAIN CONTENT AREA: Header, Center Canvas & Right Config Panel, and Footer */}
-            <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
               {/* Header inside the center/main column */}
-              <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/50 px-6">
+              <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6 dark:border-slate-800 dark:bg-slate-900/50">
                 <div>
-                  <h2 className="flex items-center gap-2 text-base font-bold text-white">
+                  <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                     Thiết lập Quy trình Tuyển dụng
                   </h2>
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                     Kéo thả các vòng phỏng vấn từ danh sách bên trái để tạo pipeline cho JD:{" "}
-                    <span className="font-semibold text-blue-400">{jobDescription?.title}</span>
+                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                      {jobDescription?.title}
+                    </span>
                   </p>
                 </div>
               </div>
 
               {/* Workspace: Canvas + Right Panel */}
-              <div className="flex min-h-0 flex-1 overflow-hidden bg-slate-950">
+              <div className="flex min-h-0 flex-1 overflow-hidden bg-slate-100 dark:bg-slate-950">
                 {/* 2. CENTER PANEL: Pipeline Workflow */}
                 <div
                   className={cn(
-                    "relative flex flex-1 flex-col overflow-hidden bg-slate-950 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]"
+                    "relative flex flex-1 flex-col overflow-hidden bg-slate-100 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] dark:bg-slate-950 dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)]"
                   )}>
                   {/* Canvas controls */}
                   <div className="absolute top-4 left-6 z-10 flex items-center gap-2">
-                    <span className="rounded-full border border-slate-700 bg-slate-800 px-2.5 py-1 text-[10px] font-bold text-slate-300 uppercase shadow-lg">
+                    <span className="dark:border-slate-750 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-600 uppercase shadow-md dark:bg-slate-800 dark:text-slate-300 dark:shadow-lg">
                       Quy trình hiện tại ({rounds.length} vòng)
                     </span>
                   </div>
@@ -509,11 +511,11 @@ export function JobDescriptionRoundsDialog({
                           else if (activeDragIndex !== null) handleReorder(activeDragIndex, 0);
                         }}
                         className={cn(
-                          "flex h-40 w-12 items-center justify-center rounded-2xl border-2 border-dashed border-slate-800 transition-all duration-300",
+                          "border-slate-350 flex h-40 w-12 items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-300 dark:border-slate-800",
                           (activeDragType || activeDragIndex !== null) &&
                             "border-primary/50 bg-primary/5 w-24 scale-102"
                         )}>
-                        <Plus className="h-5 w-5 animate-pulse text-slate-600" />
+                        <Plus className="dark:text-slate-650 h-5 w-5 animate-pulse text-slate-400" />
                       </div>
 
                       {/* Flow Nodes list */}
@@ -532,42 +534,46 @@ export function JobDescriptionRoundsDialog({
                               onDragEnd={() => setActiveDragIndex(null)}
                               onClick={() => setSelectedRoundIndex(index)}
                               className={cn(
-                                "group relative w-60 shrink-0 cursor-grab rounded-2xl border bg-slate-900/80 p-4 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:cursor-grabbing",
+                                "group relative w-60 shrink-0 cursor-grab rounded-2xl border bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg active:cursor-grabbing dark:bg-slate-900/80 dark:shadow-lg dark:hover:shadow-xl",
                                 isSelected
-                                  ? "border-primary ring-primary/20 scale-[1.03] bg-slate-900 ring-1"
-                                  : "border-slate-800 hover:border-slate-700",
+                                  ? "border-primary ring-primary/20 scale-[1.03] bg-white ring-1 dark:bg-slate-900"
+                                  : "border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700",
                                 template?.bgColor
                               )}>
                               {/* Round Step bubble */}
-                              <div className="absolute -top-3 -left-3 flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-xs font-bold text-white shadow-md">
+                              <div className="dark:border-slate-750 absolute -top-3 -left-3 flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-xs font-bold text-slate-800 shadow-md dark:bg-slate-800 dark:text-white">
                                 {index + 1}
                               </div>
 
                               {/* Close/Delete button */}
                               <button
                                 onClick={(e) => handleRemoveRound(index, e)}
-                                className="absolute -top-2.5 -right-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-slate-400 opacity-0 shadow-md transition-all group-hover:opacity-100 hover:border-red-800 hover:bg-red-950 hover:text-red-400"
+                                className="dark:border-slate-750 absolute -top-2.5 -right-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 opacity-0 shadow-md transition-all group-hover:opacity-100 hover:border-red-300 hover:bg-red-50 hover:text-red-500 dark:bg-slate-800 dark:hover:border-red-800 dark:hover:bg-red-950 dark:hover:text-red-400"
                                 title="Xóa vòng">
                                 <Trash2 className="h-3 w-3" />
                               </button>
 
                               {/* Node Content */}
                               <div className="flex items-center gap-3">
-                                <div className={cn("rounded-xl bg-black/40 p-2", template?.color)}>
+                                <div
+                                  className={cn(
+                                    "rounded-xl bg-slate-100 p-2 dark:bg-black/40",
+                                    template?.color
+                                  )}>
                                   {template?.icon}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <h4 className="truncate text-sm font-bold text-slate-200">
+                                  <h4 className="truncate text-sm font-bold text-slate-800 dark:text-slate-200">
                                     {round.name}
                                   </h4>
-                                  <p className="mt-0.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                                  <p className="mt-0.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                                     {template?.title}
                                   </p>
                                 </div>
                               </div>
 
                               {/* Quick Config preview */}
-                              <div className="mt-4 flex items-center justify-between border-t border-slate-800/40 pt-3 text-[11px] text-slate-400">
+                              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] text-slate-500 dark:border-slate-800/40 dark:text-slate-400">
                                 <div className="flex items-center gap-1.5">
                                   <Clock className="h-3.5 w-3.5 opacity-60" />
                                   <span>
@@ -576,7 +582,7 @@ export function JobDescriptionRoundsDialog({
                                       : "Không giới hạn"}
                                   </span>
                                 </div>
-                                <span className="font-semibold text-slate-300">
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">
                                   Đạt: {Math.round((round.passThreshold ?? 0.8) * 100)}%
                                 </span>
                               </div>
@@ -602,21 +608,23 @@ export function JobDescriptionRoundsDialog({
                                   handleReorder(activeDragIndex, index + 1);
                               }}
                               className={cn(
-                                "flex h-40 w-12 items-center justify-center rounded-2xl border-2 border-dashed border-slate-800 transition-all duration-300",
+                                "border-slate-350 flex h-40 w-12 items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-300 dark:border-slate-800",
                                 (activeDragType || activeDragIndex !== null) &&
                                   "border-primary/50 bg-primary/5 w-24 scale-102"
                               )}>
-                              <Plus className="h-5 w-5 animate-pulse text-slate-600" />
+                              <Plus className="dark:text-slate-650 h-5 w-5 animate-pulse text-slate-400" />
                             </div>
                           </div>
                         );
                       })}
 
                       {rounds.length === 0 && (
-                        <div className="flex h-40 w-80 flex-col items-center justify-center rounded-2xl border border-slate-800/80 bg-slate-900/30 p-8 text-center">
-                          <ArrowRight className="mb-2 h-8 w-8 animate-bounce text-slate-600" />
-                          <h4 className="text-sm font-bold text-slate-400">Quy trình trống</h4>
-                          <p className="mt-1 max-w-[200px] text-xs text-slate-500">
+                        <div className="flex h-40 w-80 flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-md dark:border-slate-800/80 dark:bg-slate-900/30 dark:shadow-none">
+                          <ArrowRight className="mb-2 h-8 w-8 animate-bounce text-slate-400 dark:text-slate-600" />
+                          <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                            Quy trình trống
+                          </h4>
+                          <p className="mt-1 max-w-[200px] text-xs text-slate-400 dark:text-slate-500">
                             Hãy kéo các vòng từ bên trái thả vào đây
                           </p>
                         </div>
@@ -627,18 +635,18 @@ export function JobDescriptionRoundsDialog({
 
                 {/* 3. RIGHT PANEL: Configuration Sidebar (32% width) */}
                 {selectedRoundIndex !== null && selectedRound && (
-                  <div className="animate-in slide-in-from-right flex w-[32%] min-w-[340px] shrink-0 flex-col overflow-hidden border-l border-slate-800 bg-slate-900/40 duration-250">
-                    <div className="flex shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/30 p-4">
+                  <div className="animate-in slide-in-from-right flex w-[32%] min-w-[340px] shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white duration-250 dark:border-slate-800 dark:bg-slate-900/40">
+                    <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
                       <div className="flex items-center gap-2">
                         <Settings className="text-primary h-4 w-4" />
-                        <h3 className="text-sm font-bold text-slate-200">
+                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
                           Cấu hình: Vòng {selectedRoundIndex + 1}
                         </h3>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 text-xs text-slate-400 hover:text-white"
+                        className="h-7 text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                         onClick={() => setSelectedRoundIndex(null)}>
                         Đóng
                       </Button>
@@ -658,12 +666,12 @@ export function JobDescriptionRoundsDialog({
                                 updateRoundField(selectedRoundIndex, "name", e.target.value)
                               }
                               placeholder="Nhập tên vòng..."
-                              className="border-slate-800 bg-slate-950 text-sm text-white"
+                              className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                             />
                           </div>
 
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-300">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                               Ngưỡng điểm đạt (Pass Threshold)
                             </Label>
                             <div className="flex items-center gap-3">
@@ -680,7 +688,7 @@ export function JobDescriptionRoundsDialog({
                                     Number(e.target.value)
                                   )
                                 }
-                                className="w-24 border-slate-800 bg-slate-950 text-sm text-white"
+                                className="w-24 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                               />
                               <span className="text-xs text-slate-400">
                                 (Tương đương:{" "}
@@ -691,7 +699,7 @@ export function JobDescriptionRoundsDialog({
                           </div>
 
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-300">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                               Thời gian làm bài (Phút)
                             </Label>
                             <div className="flex items-center gap-3">
@@ -706,7 +714,7 @@ export function JobDescriptionRoundsDialog({
                                     Number(e.target.value)
                                   )
                                 }
-                                className="w-24 border-slate-800 bg-slate-950 text-sm text-white"
+                                className="w-24 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                               />
                               <span className="text-xs text-slate-400">
                                 (0 = không giới hạn thời gian)
@@ -721,7 +729,7 @@ export function JobDescriptionRoundsDialog({
                           {selectedRound.roundType === "CV_SCREENING" && (
                             <>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-300">
+                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                   Định dạng nộp hồ sơ
                                 </Label>
                                 <Select
@@ -733,10 +741,10 @@ export function JobDescriptionRoundsDialog({
                                       val
                                     )
                                   }>
-                                  <SelectTrigger className="border-slate-800 bg-slate-950 text-sm text-white">
+                                  <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
                                     <SelectValue />
                                   </SelectTrigger>
-                                  <SelectContent className="border-slate-800 bg-slate-900 text-slate-200">
+                                  <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
                                     <SelectItem value="pdf">Tệp PDF (.pdf)</SelectItem>
                                     <SelectItem value="doc">Tệp Word (.doc, .docx)</SelectItem>
                                     <SelectItem value="any">Tất cả định dạng tài liệu</SelectItem>
@@ -750,7 +758,7 @@ export function JobDescriptionRoundsDialog({
                           {selectedRound.roundType === "QUIZ" && (
                             <div className="space-y-3">
                               <div className="flex items-center justify-between">
-                                <Label className="text-xs font-semibold text-slate-300">
+                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                   Danh sách câu hỏi trắc nghiệm (
                                   {selectedRound.configData?.quizQuestions?.length || 0})
                                 </Label>
@@ -787,7 +795,7 @@ export function JobDescriptionRoundsDialog({
                                 {(selectedRound.configData?.quizQuestions || []).map((q, qIdx) => (
                                   <div
                                     key={qIdx}
-                                    className="relative space-y-3 rounded-xl border border-slate-800 bg-slate-950/40 p-3.5">
+                                    className="relative space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-950/40">
                                     <button
                                       onClick={() => {
                                         const currentQuestions = (
@@ -823,7 +831,7 @@ export function JobDescriptionRoundsDialog({
                                             currentQuestions
                                           );
                                         }}
-                                        className="border-slate-850 bg-slate-950 text-xs text-white"
+                                        className="dark:border-slate-850 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
                                       />
                                     </div>
 
@@ -856,7 +864,7 @@ export function JobDescriptionRoundsDialog({
                                                 currentQuestions
                                               );
                                             }}
-                                            className="border-slate-850 h-8 bg-slate-950 text-xs text-white"
+                                            className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
                                           />
                                         </div>
                                       ))}
@@ -883,10 +891,10 @@ export function JobDescriptionRoundsDialog({
                                               currentQuestions
                                             );
                                           }}>
-                                          <SelectTrigger className="border-slate-850 h-8 bg-slate-950 text-xs">
+                                          <SelectTrigger className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white">
                                             <SelectValue />
                                           </SelectTrigger>
-                                          <SelectContent className="border-slate-800 bg-slate-900 text-xs">
+                                          <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
                                             {(q.options || []).map((opt, oIdx) => (
                                               <SelectItem key={oIdx} value={opt}>
                                                 {String.fromCharCode(65 + oIdx)}. {opt}
@@ -918,7 +926,7 @@ export function JobDescriptionRoundsDialog({
                                               currentQuestions
                                             );
                                           }}
-                                          className="border-slate-850 h-8 bg-slate-950 text-xs text-white"
+                                          className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
                                         />
                                       </div>
                                     </div>
@@ -939,7 +947,7 @@ export function JobDescriptionRoundsDialog({
                           {selectedRound.roundType === "CODING" && (
                             <>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-300">
+                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                   Mã danh sách bài tập (Coding Problem IDs)
                                 </Label>
                                 <Input
@@ -960,7 +968,7 @@ export function JobDescriptionRoundsDialog({
                                     );
                                   }}
                                   placeholder="Nhập danh sách ID, phân tách bằng dấu phẩy (,)"
-                                  className="border-slate-800 bg-slate-950 text-sm text-white"
+                                  className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                                 />
                                 <p className="text-[10px] leading-normal text-slate-500">
                                   Ví dụ: 101, 102, 105 (các mã bài tập từ cơ sở dữ liệu hệ thống).
@@ -973,7 +981,7 @@ export function JobDescriptionRoundsDialog({
                           {selectedRound.roundType === "AI_INTERVIEW" && (
                             <>
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-300">
+                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                   AI System Prompt
                                 </Label>
                                 <Textarea
@@ -987,12 +995,12 @@ export function JobDescriptionRoundsDialog({
                                   }
                                   placeholder="Cung cấp prompt cấu hình vai trò AI..."
                                   rows={5}
-                                  className="border-slate-800 bg-slate-950 text-xs text-white"
+                                  className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                                 />
                               </div>
 
                               <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-300">
+                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                                   Tiêu chuẩn Đánh giá
                                 </Label>
                                 <Textarea
@@ -1006,7 +1014,7 @@ export function JobDescriptionRoundsDialog({
                                   }
                                   placeholder="Các tiêu chuẩn đánh giá kết quả của ứng viên..."
                                   rows={4}
-                                  className="border-slate-800 bg-slate-950 text-xs text-white"
+                                  className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                                 />
                               </div>
                             </>
@@ -1014,7 +1022,7 @@ export function JobDescriptionRoundsDialog({
 
                           {/* Instruction (Common for all) */}
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-300">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                               Lời Hướng dẫn cho ứng viên
                             </Label>
                             <Textarea
@@ -1028,7 +1036,7 @@ export function JobDescriptionRoundsDialog({
                               }
                               placeholder="Hướng dẫn ứng viên làm bài..."
                               rows={4}
-                              className="border-slate-800 bg-slate-950 text-xs text-white"
+                              className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                             />
                           </div>
                         </div>
@@ -1039,17 +1047,17 @@ export function JobDescriptionRoundsDialog({
               </div>
 
               {/* Footer inside the main column */}
-              <div className="flex shrink-0 justify-end gap-3 border-t border-slate-800 bg-slate-900/50 px-6 py-4">
+              <div className="flex shrink-0 justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
                 <Button
                   variant="outline"
-                  className="border-slate-800 bg-slate-900/30 text-slate-300 hover:text-white"
+                  className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/30 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
                   onClick={() => onOpenChange(false)}>
                   Hủy
                 </Button>
                 <Button
                   onClick={handleSave}
                   disabled={isSaving || isLoading}
-                  className="bg-primary hover:bg-primary/80 gap-2 font-bold text-white">
+                  className="bg-primary text-primary-foreground hover:bg-primary/95 gap-2 font-bold">
                   <Save className="h-4 w-4" />
                   {isSaving ? "Đang lưu..." : "Lưu thiết lập"}
                 </Button>
