@@ -441,7 +441,7 @@ export function JobDescriptionRoundsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[95vh] max-h-[95vh] w-[98vw] max-w-[98vw] flex-row gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950">
+      <DialogContent className="flex h-[95vh] max-h-[95vh] w-[98vw] max-w-[98vw] flex-row gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950 [&>button:last-child]:hidden">
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-slate-400">
             <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
@@ -612,8 +612,8 @@ export function JobDescriptionRoundsDialog({
 
                                     return (
                                       <div key={realIdx} className="flex items-center">
-                                        {/* Arrow drop-zone connector (before each card except the first of the whole pipeline) */}
-                                        {(realIdx > 0 || colIdx > 0) && (
+                                        {/* Arrow connector — only between cards in the same row (colIdx > 0) */}
+                                        {colIdx > 0 && (
                                           <div
                                             onDragOver={(e) => {
                                               e.preventDefault();
@@ -840,36 +840,45 @@ export function JobDescriptionRoundsDialog({
                                   )}
                                 </div>
 
-                                {/* Row-break connector: U-turn arrow from end of row to start of next */}
+                                {/* Row-break connector: placed inline in the flex row, right after the last card/drop-zone */}
                                 {rowIdx < Math.ceil(rounds.length / COLS) - 1 && (
-                                  <div
-                                    className={cn(
-                                      "my-0 flex h-10 items-center",
-                                      isEvenRow ? "justify-end" : "justify-start"
-                                    )}>
-                                    <svg width="48" height="40" viewBox="0 0 48 40" fill="none">
+                                  <div className="flex h-16 shrink-0 items-center px-1">
+                                    <svg width="40" height="56" viewBox="0 0 40 56" fill="none">
                                       <defs>
                                         <marker
-                                          id={`bend-arrow-${rowIdx}`}
+                                          id={`bend-${rowIdx}`}
                                           markerWidth="6"
                                           markerHeight="6"
                                           refX="3"
                                           refY="3"
                                           orient="auto">
-                                          <path d="M0,0 L0,6 L6,3 z" fill="#94a3b8" />
+                                          <path d="M0,0 L0,6 L6,3 z" fill="#64748b" />
                                         </marker>
                                       </defs>
-                                      <path
-                                        d={
-                                          isEvenRow
-                                            ? "M 4 4 C 44 4, 44 36, 4 36"
-                                            : "M 44 4 C 4 4, 4 36, 44 36"
-                                        }
-                                        stroke="#94a3b8"
-                                        strokeWidth="1.5"
-                                        strokeDasharray="4 3"
-                                        fill="none"
-                                        markerEnd={`url(#bend-arrow-${rowIdx})`}
+                                      {isEvenRow ? (
+                                        // Even row (L→R): hook right then down
+                                        <path
+                                          d="M 8 8 L 32 8 L 32 48 L 8 48"
+                                          stroke="#64748b"
+                                          strokeWidth="1.5"
+                                          strokeDasharray="4 3"
+                                          fill="none"
+                                          markerEnd="url(#bend-end-even)"
+                                        />
+                                      ) : (
+                                        // Odd row (R→L): hook left then down
+                                        <path
+                                          d="M 32 8 L 8 8 L 8 48 L 32 48"
+                                          stroke="#64748b"
+                                          strokeWidth="1.5"
+                                          strokeDasharray="4 3"
+                                          fill="none"
+                                        />
+                                      )}
+                                      {/* Down arrow tip */}
+                                      <polygon
+                                        points={isEvenRow ? "4,44 8,52 12,44" : "28,44 32,52 36,44"}
+                                        fill="#64748b"
                                       />
                                     </svg>
                                   </div>
