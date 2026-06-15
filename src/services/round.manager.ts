@@ -1,10 +1,32 @@
-import type { ApiResponse, Round, SetupJdRoundsRequest, UpdateJdRoundRequest } from "@/interfaces";
+import type {
+  ApiResponse,
+  Round,
+  RoundType,
+  SetupJdRoundsRequest,
+  UpdateJdRoundRequest,
+} from "@/interfaces";
 
 import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { fetchClient } from "@/lib/api";
 import i18n from "@/lib/i18n";
 
 export class RoundManager {
+  async getAvailableRoundTypes(): Promise<ApiResponse<RoundType[]>> {
+    try {
+      const response = await fetchClient.GET("/api/rounds", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Cannot load available round types",
+      };
+    }
+  }
+
   async setUpForJd(
     jdId: number | string,
     data: SetupJdRoundsRequest

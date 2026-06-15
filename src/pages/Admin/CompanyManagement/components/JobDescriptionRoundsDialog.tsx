@@ -198,21 +198,32 @@ export function JobDescriptionRoundsDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasExistingRounds, setHasExistingRounds] = useState(false);
+  const [availableTypes, setAvailableTypes] = useState<RoundType[]>([]);
 
   // Drag and drop states
   const [activeDragType, setActiveDragType] = useState<RoundType | null>(null);
   const [activeDragIndex, setActiveDragIndex] = useState<number | null>(null);
 
-  // Load detailed JD information (including all rounds)
+  // Load detailed JD information (including all rounds) and available round types
   useEffect(() => {
     if (isOpen && jobDescription?.id) {
       setIsLoading(true);
       setSelectedRoundIndex(null);
-      jobDescriptionManager
-        .getById(jobDescription.id)
-        .then((res) => {
-          if (res.success && res.data) {
-            const fetchedRounds = res.data.rounds ?? [];
+
+      const fetchJd = jobDescriptionManager.getById(jobDescription.id);
+      const fetchTypes = roundManager.getAvailableRoundTypes();
+
+      Promise.all([fetchJd, fetchTypes])
+        .then(([jdRes, typesRes]) => {
+          if (typesRes.success && typesRes.data) {
+            setAvailableTypes(typesRes.data);
+          } else {
+            // Fallback to all if API fails
+            setAvailableTypes(AVAILABLE_ROUNDS_TEMPLATES.map((t) => t.type));
+          }
+
+          if (jdRes.success && jdRes.data) {
+            const fetchedRounds = jdRes.data.rounds ?? [];
             // Sort by order
             const sortedRounds = [...fetchedRounds].sort(
               (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
@@ -236,7 +247,7 @@ export function JobDescriptionRoundsDialog({
           }
         })
         .catch((err) => {
-          console.error("Error loading JD rounds:", err);
+          console.error("Error loading JD rounds/types:", err);
           toast.error("Không thể tải thông tin quy trình phỏng vấn.");
         })
         .finally(() => {
@@ -444,28 +455,30 @@ export function JobDescriptionRoundsDialog({
               </div>
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-3 pb-4">
-                  {AVAILABLE_ROUNDS_TEMPLATES.map((template) => (
-                    <div
-                      key={template.type}
-                      draggable
-                      onDragStart={() => setActiveDragType(template.type)}
-                      onDragEnd={() => setActiveDragType(null)}
-                      className={cn(
-                        "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-3 transition-all hover:border-slate-700 hover:bg-slate-900 active:cursor-grabbing",
-                        template.bgColor,
-                        template.color
-                      )}>
-                      <div className="mt-0.5 rounded-lg bg-black/40 p-1.5">{template.icon}</div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-sm font-bold text-slate-200 transition-colors group-hover:text-white">
-                          {template.title}
-                        </h4>
-                        <p className="mt-0.5 text-[11px] leading-snug text-slate-400">
-                          {template.description}
-                        </p>
+                  {AVAILABLE_ROUNDS_TEMPLATES.filter((t) => availableTypes.includes(t.type)).map(
+                    (template) => (
+                      <div
+                        key={template.type}
+                        draggable
+                        onDragStart={() => setActiveDragType(template.type)}
+                        onDragEnd={() => setActiveDragType(null)}
+                        className={cn(
+                          "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-3 transition-all hover:border-slate-700 hover:bg-slate-900 active:cursor-grabbing",
+                          template.bgColor,
+                          template.color
+                        )}>
+                        <div className="mt-0.5 rounded-lg bg-black/40 p-1.5">{template.icon}</div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-sm font-bold text-slate-200 transition-colors group-hover:text-white">
+                            {template.title}
+                          </h4>
+                          <p className="mt-0.5 text-[11px] leading-snug text-slate-400">
+                            {template.description}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </ScrollArea>
             </div>
