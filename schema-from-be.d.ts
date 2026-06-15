@@ -76,7 +76,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/question-categories": {
+    "/api/question-lessons": {
         parameters: {
             query?: never;
             header?: never;
@@ -87,6 +87,38 @@ export interface paths {
         put: operations["updateQuestionCategory"];
         post: operations["createQuestionCategory"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/question-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllQuestionCategories"];
+        put: operations["updateQuestionCategory_1"];
+        post: operations["createQuestionCategory_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/question-banks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getQuestionBankById"];
+        put: operations["updateQuestionBank"];
+        post?: never;
+        delete: operations["deleteQuestionBank"];
         options?: never;
         head?: never;
         patch?: never;
@@ -551,6 +583,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["createFullQuizSetByAI"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/question-banks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getQuestionBank"];
+        put?: never;
+        post: operations["createQuestionBank"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1196,7 +1244,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/question-categories/{id}": {
+    "/api/question-lessons/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1207,6 +1255,23 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["deleteQuestionCategory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/question-categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getQuestionCategoryById"];
+        put?: never;
+        post?: never;
+        /** Delete riu */
+        delete: operations["deleteQuestionCategory_1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2125,6 +2190,16 @@ export interface components {
             severity?: string;
             description?: string;
         };
+        MentorInterviewDto: {
+            /** Format: int32 */
+            userId?: number;
+            /** Format: int32 */
+            mentorId?: number;
+            /** Format: int32 */
+            duration?: number;
+            /** Format: int32 */
+            totalPrice?: number;
+        };
         QuizQuestion: {
             questionText?: string;
             options?: string[];
@@ -2144,6 +2219,7 @@ export interface components {
             quizQuestions?: components["schemas"]["QuizQuestion"][];
             codingProblems?: components["schemas"]["CodingProblemSnapshot"][];
             codeReviewProblems?: components["schemas"]["CodeReviewProblemSnapshot"][];
+            mentorInterview?: components["schemas"]["MentorInterviewDto"];
         };
         TemplateRoundItem: {
             name: string;
@@ -2213,6 +2289,7 @@ export interface components {
             evaluationCriteria?: string;
             quizQuestions?: components["schemas"]["QuizQuestionDto"][];
             codingProblemsId?: number[];
+            mentorInterview?: components["schemas"]["MentorInterviewDto"];
         };
         RoundItemDto: {
             name: string;
@@ -2254,6 +2331,22 @@ export interface components {
             lessonName?: string;
             description?: string;
             urlTutorial?: string;
+        };
+        QuestionCategory: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+        };
+        QuestionBank: {
+            /** Format: int32 */
+            id?: number;
+            questionCategory?: components["schemas"]["QuestionCategory"];
+            /** @enum {string} */
+            questionLevel?: "EASY" | "MEDIUM" | "HARD";
+            questionText?: string;
+            options?: string[];
+            correctAnswer?: string;
+            isDeleted?: boolean;
         };
         PracticeQuestion: {
             /** Format: int32 */
@@ -3284,10 +3377,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3297,19 +3390,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3568,16 +3661,16 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
+            errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
             includeCodas?: string[];
-            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            elIgnored?: string;
+            isXml?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
@@ -3603,22 +3696,25 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
+            propagateQueryProperties?: boolean;
             attributesMap?: {
                 [key: string]: unknown;
             };
+            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
         };
         ServletContext: {
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             serverInfo?: string;
             /** Format: int32 */
             sessionTimeout?: number;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -3633,9 +3729,6 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -3727,8 +3820,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
     };
     responses: never;
@@ -3966,6 +4059,142 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["QuestionLesson"];
                 };
+            };
+        };
+    };
+    getAllQuestionCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionCategory"][];
+                };
+            };
+        };
+    };
+    updateQuestionCategory_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionCategory"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionCategory"];
+                };
+            };
+        };
+    };
+    createQuestionCategory_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionCategory"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionCategory"];
+                };
+            };
+        };
+    };
+    getQuestionBankById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionBank"];
+                };
+            };
+        };
+    };
+    updateQuestionBank: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionBank"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionBank"];
+                };
+            };
+        };
+    };
+    deleteQuestionBank: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -5103,6 +5332,50 @@ export interface operations {
             };
         };
     };
+    getQuestionBank: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionBank"][];
+                };
+            };
+        };
+    };
+    createQuestionBank: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuestionBank"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionBank"];
+                };
+            };
+        };
+    };
     createFullQuestionSet: {
         parameters: {
             query?: never;
@@ -6134,6 +6407,48 @@ export interface operations {
         };
     };
     deleteQuestionCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getQuestionCategoryById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuestionCategory"];
+                };
+            };
+        };
+    };
+    deleteQuestionCategory_1: {
         parameters: {
             query?: never;
             header?: never;
