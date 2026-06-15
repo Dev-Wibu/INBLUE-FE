@@ -428,7 +428,7 @@ export function JobDescriptionRoundsDialog({
         ) : (
           <>
             {/* 1. LEFT SIDEBAR: Available Rounds Toolbox (occupies full height) */}
-            <div className="flex h-full w-[24%] max-w-[280px] min-w-[250px] shrink-0 flex-col border-r border-slate-800 bg-slate-900/30">
+            <div className="flex h-full w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col border-r border-slate-800 bg-slate-900/30">
               <div className="shrink-0 border-b border-slate-800 bg-slate-900/20 p-4">
                 <h3 className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                   Mẫu vòng tuyển dụng
@@ -437,8 +437,8 @@ export function JobDescriptionRoundsDialog({
                   Kéo các mẫu này thả vào quy trình ở giữa
                 </p>
               </div>
-              <ScrollArea className="flex-1 p-3">
-                <div className="space-y-1.5 pb-4">
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
+                <div className="my-auto space-y-2.5 py-2">
                   {AVAILABLE_ROUNDS_TEMPLATES.filter((t) => availableTypes.includes(t.type)).map(
                     (template) => (
                       <div
@@ -447,7 +447,7 @@ export function JobDescriptionRoundsDialog({
                         onDragStart={() => setActiveDragType(template.type)}
                         onDragEnd={() => setActiveDragType(null)}
                         className={cn(
-                          "group border-slate-850 flex cursor-grab items-start gap-2.5 rounded-lg border bg-slate-900/50 p-2 transition-all hover:border-slate-700 hover:bg-slate-900 active:cursor-grabbing",
+                          "group border-slate-850 flex cursor-grab items-start gap-2.5 rounded-lg border bg-slate-900/50 p-2.5 transition-all hover:border-slate-700 hover:bg-slate-900 active:cursor-grabbing",
                           template.bgColor,
                           template.color
                         )}>
@@ -458,7 +458,7 @@ export function JobDescriptionRoundsDialog({
                           <h4 className="text-xs leading-tight font-bold text-slate-200 transition-colors group-hover:text-white">
                             {template.title}
                           </h4>
-                          <p className="mt-0.5 truncate text-[9px] leading-normal text-slate-500 group-hover:text-slate-400">
+                          <p className="mt-0.5 truncate text-[10px] leading-normal text-slate-500 group-hover:text-slate-400">
                             {template.description}
                           </p>
                         </div>
@@ -466,7 +466,7 @@ export function JobDescriptionRoundsDialog({
                     )
                   )}
                 </div>
-              </ScrollArea>
+              </div>
             </div>
 
             {/* MAIN CONTENT AREA: Header, Center Canvas & Right Config Panel, and Footer */}
