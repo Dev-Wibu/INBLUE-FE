@@ -28,7 +28,7 @@ export function ThemeToggle({ className, iconOnly = false }: ThemeToggleProps) {
   };
   if (iconOnly) {
     return (
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className={cn("h-9 w-12 shrink-0", className)}>
             <Sun className="h-5 w-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
@@ -36,7 +36,7 @@ export function ThemeToggle({ className, iconOnly = false }: ThemeToggleProps) {
             <span className="sr-only">{t("compThemetoggle.switchInterface")}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent sideOffset={8} align="end">
           <DropdownMenuItem
             onClick={() => handleThemeChange("light")}
             className={theme === "light" ? "bg-accent" : ""}>
@@ -60,7 +60,7 @@ export function ThemeToggle({ className, iconOnly = false }: ThemeToggleProps) {
     );
   }
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className={className}>
           <Sun className="mr-2 h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
@@ -68,7 +68,7 @@ export function ThemeToggle({ className, iconOnly = false }: ThemeToggleProps) {
           <span className="ml-4">{t("common.interface")}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent sideOffset={8} align="end">
         <DropdownMenuItem
           onClick={() => handleThemeChange("light")}
           className={theme === "light" ? "bg-accent" : ""}>

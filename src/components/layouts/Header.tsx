@@ -68,9 +68,9 @@ function MenuItem({ to, icon, title, description }: MenuItemProps) {
       <NavigationMenuLink asChild>
         <Link
           to={to}
-          className="group flex h-[72px] w-full flex-col justify-center rounded-md p-3 no-underline transition-colors outline-none hover:bg-[#DCEEFF] hover:text-[#0058be] dark:hover:bg-[#0047AB]/20 dark:hover:text-[#66B2FF]">
+          className="group flex h-[72px] w-full flex-col justify-center rounded-md p-3 no-underline transition-colors outline-none hover:bg-slate-100 hover:text-[#0058be] dark:hover:bg-slate-800 dark:hover:text-[#66B2FF]">
           <div className="mb-1.5 flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0058be]/10 text-[#0058be] transition-colors group-hover:bg-[#0058be] group-hover:text-white dark:bg-[#66B2FF]/20 dark:text-[#66B2FF] dark:group-hover:bg-[#66B2FF] dark:group-hover:text-slate-900">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#0058be]/10 text-[#0058be] transition-colors group-hover:bg-[#0058be] group-hover:text-white dark:bg-[#66B2FF]/20 dark:text-[#66B2FF] dark:group-hover:bg-[#66B2FF] dark:group-hover:text-slate-900">
               {icon}
             </span>
             <span className="text-sm font-medium">{title}</span>
@@ -163,8 +163,8 @@ export function Header() {
                     className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
                   />
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="!left-0">
-                  <ul className="grid w-[480px] grid-cols-2 gap-2 p-3">
+                <NavigationMenuContent className="rounded-lg border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                  <ul className="grid w-[480px] grid-cols-2 gap-2">
                     <MenuItem
                       to="/features/ai-interview"
                       icon={<Bot className="h-4 w-4" />}
@@ -191,8 +191,8 @@ export function Header() {
                     className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
                   />
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="!left-0">
-                  <ul className="grid w-[480px] grid-cols-2 gap-2 p-3">
+                <NavigationMenuContent className="rounded-lg border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                  <ul className="grid w-[480px] grid-cols-2 gap-2">
                     <MenuItem
                       to="/questions/bank"
                       icon={<BookOpen className="h-4 w-4" />}

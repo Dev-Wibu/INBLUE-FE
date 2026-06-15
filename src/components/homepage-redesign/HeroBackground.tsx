@@ -197,7 +197,7 @@ export function HeroBackground({ className }: HeroBackgroundProps) {
         for (let r = 0; r < maxRings; r++) {
           const ringSpacing = isDark ? 55 : 70;
           const ringRadius = (waveSpeed * (isDark ? 50 : 40) + r * ringSpacing) % (gr * 0.8);
-          const baseRingAlpha = isDark ? 0.2 : 0.95;
+          const baseRingAlpha = isDark ? 0.2 : 0.35;
           const ringAlpha =
             Math.max(0, baseRingAlpha - (ringRadius / (gr * 0.8)) * baseRingAlpha) * (1 - r * 0.06);
 
@@ -207,8 +207,8 @@ export function HeroBackground({ className }: HeroBackgroundProps) {
           ctx.arc(rawMx, rawMy, ringRadius, 0, Math.PI * 2);
           ctx.strokeStyle = isDark
             ? `rgba(167, 139, 250, ${ringAlpha})`
-            : `rgba(30, 55, 110, ${ringAlpha * 3})`;
-          ctx.lineWidth = isDark ? 1.5 : 2.5;
+            : `rgba(30, 55, 110, ${ringAlpha})`;
+          ctx.lineWidth = isDark ? 1.5 : 1.8;
           ctx.stroke();
         }
       }
