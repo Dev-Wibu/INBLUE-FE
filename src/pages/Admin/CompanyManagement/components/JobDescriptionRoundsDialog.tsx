@@ -419,7 +419,7 @@ export function JobDescriptionRoundsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[95vh] max-h-[95vh] w-[98vw] max-w-[98vw] flex-row overflow-hidden border-slate-800 bg-slate-950 p-0">
+      <DialogContent className="flex h-[95vh] max-h-[95vh] w-[98vw] max-w-[98vw] flex-row gap-0 overflow-hidden border-slate-800 bg-slate-950 p-0">
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-slate-400">
             <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
@@ -429,16 +429,16 @@ export function JobDescriptionRoundsDialog({
           <>
             {/* 1. LEFT SIDEBAR: Available Rounds Toolbox (occupies full height) */}
             <div className="flex h-full w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col border-r border-slate-800 bg-slate-900/30">
-              <div className="shrink-0 border-b border-slate-800 bg-slate-900/20 p-4">
+              <div className="flex h-[72px] shrink-0 flex-col justify-center border-b border-slate-800 bg-slate-900/20 px-5">
                 <h3 className="text-xs font-bold tracking-wider text-slate-400 uppercase">
                   Mẫu vòng tuyển dụng
                 </h3>
-                <p className="mt-1 text-[10px] text-slate-500">
+                <p className="mt-1 text-[11px] text-slate-500">
                   Kéo các mẫu này thả vào quy trình ở giữa
                 </p>
               </div>
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
-                <div className="my-auto space-y-2.5 py-2">
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
+                <div className="my-auto space-y-3.5 py-2">
                   {AVAILABLE_ROUNDS_TEMPLATES.filter((t) => availableTypes.includes(t.type)).map(
                     (template) => (
                       <div
@@ -447,18 +447,18 @@ export function JobDescriptionRoundsDialog({
                         onDragStart={() => setActiveDragType(template.type)}
                         onDragEnd={() => setActiveDragType(null)}
                         className={cn(
-                          "group border-slate-850 flex cursor-grab items-start gap-2.5 rounded-lg border bg-slate-900/50 p-2.5 transition-all hover:border-slate-700 hover:bg-slate-900 active:cursor-grabbing",
+                          "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-800 bg-slate-900/50 p-3.5 transition-all duration-200 hover:border-slate-700 hover:bg-slate-900 hover:shadow-lg active:cursor-grabbing",
                           template.bgColor,
                           template.color
                         )}>
-                        <div className="mt-0.5 shrink-0 rounded-lg bg-black/40 p-1.5">
+                        <div className="mt-0.5 shrink-0 rounded-xl bg-black/40 p-2 shadow-inner">
                           {template.icon}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-xs leading-tight font-bold text-slate-200 transition-colors group-hover:text-white">
+                          <h4 className="text-sm leading-tight font-bold text-slate-200 transition-colors group-hover:text-white">
                             {template.title}
                           </h4>
-                          <p className="mt-0.5 truncate text-[10px] leading-normal text-slate-500 group-hover:text-slate-400">
+                          <p className="mt-1 text-xs leading-normal text-slate-400 group-hover:text-slate-300">
                             {template.description}
                           </p>
                         </div>
@@ -472,12 +472,12 @@ export function JobDescriptionRoundsDialog({
             {/* MAIN CONTENT AREA: Header, Center Canvas & Right Config Panel, and Footer */}
             <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden">
               {/* Header inside the center/main column */}
-              <div className="flex shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/50 px-6 py-3">
+              <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/50 px-6">
                 <div>
                   <h2 className="flex items-center gap-2 text-base font-bold text-white">
                     Thiết lập Quy trình Tuyển dụng
                   </h2>
-                  <p className="mt-0.5 text-[10px] text-slate-400">
+                  <p className="mt-0.5 text-xs text-slate-400">
                     Kéo thả các vòng phỏng vấn từ danh sách bên trái để tạo pipeline cho JD:{" "}
                     <span className="font-semibold text-blue-400">{jobDescription?.title}</span>
                   </p>
