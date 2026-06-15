@@ -3,7 +3,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge, getJobDescriptionStatusBadge } from "@/lib/status-utils";
-import { Calendar, Coins, Edit, Eye, Power, Search, Workflow } from "lucide-react";
+import { Calendar, Coins, Edit, Power, Search, Workflow } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
 
@@ -121,16 +121,6 @@ export function JobDescriptionTable({
               <div
                 className="flex shrink-0 items-center gap-0.5"
                 onClick={(e) => e.stopPropagation()}>
-                {onView && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onView(job)}
-                    className="h-7 w-7 rounded-lg text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-950"
-                    title={t("common.seeDetails")}>
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                )}
                 {onConfigureRounds && (
                   <Button
                     variant="ghost"
