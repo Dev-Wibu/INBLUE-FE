@@ -11,6 +11,8 @@ export type {
   JobDescription,
   JobDescriptionLevel,
   JobDescriptionStatus,
+  Round,
+  RoundConfig,
   UpdateCompanyRequest,
   UpdateJobDescriptionRequest,
 } from "@/interfaces";

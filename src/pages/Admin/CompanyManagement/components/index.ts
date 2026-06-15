@@ -3,4 +3,5 @@ export { CompanyFormDialog } from "./CompanyFormDialog";
 export { JobDescriptionDeleteDialog } from "./JobDescriptionDeleteDialog";
 export { JobDescriptionDetailDialog } from "./JobDescriptionDetailDialog";
 export { JobDescriptionFormDialog } from "./JobDescriptionFormDialog";
+export { JobDescriptionRoundsDialog } from "./JobDescriptionRoundsDialog";
 export { JobDescriptionTable } from "./JobDescriptionTable";

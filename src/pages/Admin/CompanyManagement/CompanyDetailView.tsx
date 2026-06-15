@@ -23,6 +23,7 @@ import {
   JobDescriptionDeleteDialog,
   JobDescriptionDetailDialog,
   JobDescriptionFormDialog,
+  JobDescriptionRoundsDialog,
   JobDescriptionTable,
 } from "./components";
 import type {
@@ -71,6 +72,8 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
   const [isViewJobDialogOpen, setIsViewJobDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<JobDescription | null>(null);
   const [jobFormData, setJobFormData] = useState<Partial<JobDescriptionFormData>>({});
+  const [isRoundsDialogOpen, setIsRoundsDialogOpen] = useState(false);
+  const [selectedJobForRounds, setSelectedJobForRounds] = useState<JobDescription | null>(null);
   const loadCompany = useCallback(async () => {
     setIsCompanyLoading(true);
     try {
@@ -207,6 +210,10 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
     setSelectedJob(job);
     setIsDeleteJobDialogOpen(true);
   };
+  const handleConfigureRounds = (job: JobDescription) => {
+    setSelectedJobForRounds(job);
+    setIsRoundsDialogOpen(true);
+  };
   const handleSubmitCreateJob = async () => {
     try {
       const response = await jobDescriptionManager.create({
@@ -264,34 +271,52 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       toast.error(t("adminCompanymanagement.unableToUpdateJd"));
     }
   };
-  const handleConfirmCloseJob = async () => {
-    if (!selectedJob?.id) return;
+  const handleToggleJobStatus = async (job: JobDescription, nextStatus: "OPEN" | "CLOSED") => {
     try {
       const response = await jobDescriptionManager.update({
-        id: selectedJob.id,
-        title: selectedJob.title,
-        description: selectedJob.description,
-        requirements: selectedJob.requirements,
-        benefits: selectedJob.benefits,
-        level: selectedJob.level,
-        status: "CLOSED" as JobDescriptionStatus,
-        salaryMin: selectedJob.salaryMin,
-        salaryMax: selectedJob.salaryMax,
-        currency: selectedJob.currency,
-        deadlineAt: selectedJob.deadlineAt,
+        id: job.id,
+        title: job.title,
+        description: job.description,
+        requirements: job.requirements,
+        benefits: job.benefits,
+        level: job.level,
+        status: nextStatus as JobDescriptionStatus,
+        salaryMin: job.salaryMin,
+        salaryMax: job.salaryMax,
+        currency: job.currency,
+        deadlineAt: job.deadlineAt,
       });
       if (response.success) {
-        toast.success(t("adminCompanymanagement.successfullyClosedJd"));
-        setIsDeleteJobDialogOpen(false);
+        const msg =
+          nextStatus === "OPEN"
+            ? t("adminCompanymanagement.successfullyOpenedJd", "Mở tuyển dụng thành công")
+            : t("adminCompanymanagement.successfullyClosedJd", "Đóng tuyển dụng thành công");
+        toast.success(msg);
         void loadJobDescriptions();
         onCompanyUpdate?.();
       } else {
-        toast.error(response.error || t("adminCompanymanagement.unableToCloseJd"));
+        toast.error(
+          response.error ||
+            t(
+              "adminCompanymanagement.unableToUpdateJdStatus",
+              "Không thể cập nhật trạng thái tuyển dụng"
+            )
+        );
       }
     } catch (error) {
-      console.error("Error closing job description:", error);
-      toast.error(t("adminCompanymanagement.unableToCloseJd"));
+      console.error("Error updating job status:", error);
+      toast.error(
+        t(
+          "adminCompanymanagement.unableToUpdateJdStatus",
+          "Không thể cập nhật trạng thái tuyển dụng"
+        )
+      );
     }
+  };
+  const handleConfirmCloseJob = async () => {
+    if (!selectedJob) return;
+    await handleToggleJobStatus(selectedJob, "CLOSED");
+    setIsDeleteJobDialogOpen(false);
   };
   const filteredJobs = useMemo(
     () =>
@@ -355,20 +380,20 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       </div>
     );
   }
-  const activeJobCount = jobDescriptions.filter((j) => j.status === "OPEN").length;
-  const activeJobPercentage =
-    jobDescriptions.length > 0 ? Math.round((activeJobCount / jobDescriptions.length) * 100) : 0;
   return (
     <div className="flex flex-col">
       {/* Banner + Header */}
       <div className="relative shrink-0">
         {/* Banner image or gradient placeholder */}
-        <div className="from-primary/20 via-primary/10 to-background h-28 w-full overflow-hidden bg-gradient-to-br">
+        <div className="border-border/10 relative h-28 w-full overflow-hidden border-b bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-950">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] bg-[size:1.5rem_1.5rem] opacity-35" />
+          <div className="absolute top-0 right-1/4 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl" />
+          <div className="absolute top-4 left-1/3 h-16 w-16 rounded-full bg-indigo-500/10 blur-2xl" />
           {company?.bannerUrl && (
             <img
               src={company.bannerUrl}
               alt={t("common.banner")}
-              className="h-full w-full object-cover opacity-80"
+              className="absolute inset-0 h-full w-full object-cover opacity-60"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
@@ -388,7 +413,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
 
         {/* Logo overlapping banner */}
         <div className="absolute bottom-0 left-6 translate-y-1/2">
-          <div className="border-background flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border-2 bg-white shadow-md">
+          <div className="border-background/50 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border bg-white shadow-md">
             {company?.logoUrl ? (
               <img
                 src={company.logoUrl}
@@ -413,8 +438,13 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
           <h2 className="text-foreground text-2xl font-bold">
             {company?.name || t("adminCompanymanagement.companyDetails")}
           </h2>
-          {company?.description && (
+          {company?.description && company.description !== "string" ? (
             <p className="text-muted-foreground mt-1 max-w-xl text-sm">{company.description}</p>
+          ) : (
+            <p className="text-muted-foreground/50 mt-1 max-w-xl text-sm italic">
+              Chưa có mô tả cho đối tác này. Bạn có thể cập nhật thông tin bằng cách nhấn nút Chỉnh
+              sửa.
+            </p>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-3">
@@ -434,31 +464,8 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 px-6 pb-4">
-        <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-3 shadow-sm">
-          <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            {t("adminCompanymanagement.totalJd")}
-          </span>
-          <span className="text-foreground text-3xl font-bold">{jobDescriptions.length}</span>
-        </div>
-        <div className="border-border/50 bg-card/40 flex flex-col gap-1 rounded-xl border p-3 shadow-sm">
-          <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-            {t("adminCompanymanagement.jdActive")}
-          </span>
-          <div className="flex items-end justify-between">
-            <span className="text-foreground text-3xl font-bold">{activeJobCount}</span>
-            {jobDescriptions.length > 0 && (
-              <span className="rounded bg-green-500/10 px-2 py-0.5 text-xs font-bold text-green-600 dark:text-green-400">
-                {activeJobPercentage}%
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* JD Table */}
-      <div className="border-border/50 bg-card/40 mx-6 mb-4 flex flex-col rounded-2xl border shadow-sm">
+      <div className="border-border/50 bg-card/40 mx-6 mb-2 flex flex-col rounded-2xl border shadow-sm">
         <div className="border-border/50 bg-card/50 flex flex-col items-start justify-between gap-4 border-b p-4 md:flex-row md:items-center">
           <h3 className="text-foreground text-lg font-bold">
             {t("adminCompanymanagement.jdList")}
@@ -514,6 +521,8 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
               onView={handleViewJob}
               onEdit={handleEditJob}
               onDelete={handleDeleteJob}
+              onToggleStatus={handleToggleJobStatus}
+              onConfigureRounds={handleConfigureRounds}
               getSortProps={getSortProps}
             />
           )}
@@ -586,6 +595,13 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         onOpenChange={setIsDeleteJobDialogOpen}
         jobDescription={selectedJob}
         onConfirm={handleConfirmCloseJob}
+      />
+
+      <JobDescriptionRoundsDialog
+        isOpen={isRoundsDialogOpen}
+        onOpenChange={setIsRoundsDialogOpen}
+        jobDescription={selectedJobForRounds}
+        onSaved={loadJobDescriptions}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -45,15 +46,79 @@ export function JobDescriptionFormDialog({
   const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[92vh] max-w-5xl flex-col overflow-hidden p-0">
+        <DialogHeader className="border-border/10 border-b px-6 pt-6 pb-4">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-4 lg:grid-cols-2">
+
+        {/* Two-Column Form Layout */}
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden p-6 lg:grid-cols-5">
+          {/* Left Column: Large text editing fields (Col-span 3) */}
+          <ScrollArea className="max-h-[55vh] pr-2 lg:col-span-3">
+            <div className="space-y-4 pb-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="jd-description" className="font-semibold">
+                  {t("common.describe")}
+                </Label>
+                <Textarea
+                  id="jd-description"
+                  value={formData.description || ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder={t("common.jobDescription")}
+                  rows={6}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="jd-requirements" className="font-semibold">
+                  {t("adminCompanymanagement.request")}
+                </Label>
+                <Textarea
+                  id="jd-requirements"
+                  value={formData.requirements || ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      requirements: e.target.value,
+                    })
+                  }
+                  placeholder={t("common.candidateRequirements")}
+                  rows={6}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="jd-benefits" className="font-semibold">
+                  {t("common.welfare")}
+                </Label>
+                <Textarea
+                  id="jd-benefits"
+                  value={formData.benefits || ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      benefits: e.target.value,
+                    })
+                  }
+                  placeholder={t("adminCompanymanagement.welfareBenefits")}
+                  rows={6}
+                />
+              </div>
+            </div>
+          </ScrollArea>
+
+          {/* Right Column: General form settings fields (Col-span 2) */}
+          <div className="space-y-4 lg:col-span-2">
             <div className="space-y-1.5">
-              <Label htmlFor="jd-title">{t("common.title1")}</Label>
+              <Label htmlFor="jd-title" className="font-semibold">
+                {t("common.title1")}
+              </Label>
               <Input
                 id="jd-title"
                 value={formData.title || ""}
@@ -66,9 +131,12 @@ export function JobDescriptionFormDialog({
                 placeholder={t("adminCompanymanagement.enterJdTitle")}
               />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="jd-level">{t("general.level")}</Label>
+                <Label htmlFor="jd-level" className="font-semibold">
+                  {t("general.level")}
+                </Label>
                 <Select
                   value={formData.level}
                   onValueChange={(value) =>
@@ -89,8 +157,11 @@ export function JobDescriptionFormDialog({
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-1.5">
-                <Label htmlFor="jd-status">{t("general.status")}</Label>
+                <Label htmlFor="jd-status" className="font-semibold">
+                  {t("general.status")}
+                </Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) =>
@@ -112,121 +183,85 @@ export function JobDescriptionFormDialog({
                 </Select>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="jd-description">{t("common.describe")}</Label>
-            <Textarea
-              id="jd-description"
-              value={formData.description || ""}
-              onChange={(e) =>
-                onFormChange({
-                  ...formData,
-                  description: e.target.value,
-                })
-              }
-              placeholder={t("common.jobDescription")}
-              rows={4}
-            />
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="jd-salary-min" className="font-semibold">
+                  {t("adminCompanymanagement.minimumWage")}
+                </Label>
+                <Input
+                  id="jd-salary-min"
+                  type="number"
+                  min={0}
+                  value={formData.salaryMin ?? ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      salaryMin: e.target.value === "" ? undefined : Number(e.target.value),
+                    })
+                  }
+                  placeholder="0"
+                />
+              </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="jd-requirements">{t("adminCompanymanagement.request")}</Label>
-              <Textarea
-                id="jd-requirements"
-                value={formData.requirements || ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    requirements: e.target.value,
-                  })
-                }
-                placeholder={t("common.candidateRequirements")}
-                rows={4}
-              />
+              <div className="space-y-1.5">
+                <Label htmlFor="jd-salary-max" className="font-semibold">
+                  {t("adminCompanymanagement.maximumSalary")}
+                </Label>
+                <Input
+                  id="jd-salary-max"
+                  type="number"
+                  min={0}
+                  value={formData.salaryMax ?? ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      salaryMax: e.target.value === "" ? undefined : Number(e.target.value),
+                    })
+                  }
+                  placeholder="0"
+                />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="jd-benefits">{t("common.welfare")}</Label>
-              <Textarea
-                id="jd-benefits"
-                value={formData.benefits || ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    benefits: e.target.value,
-                  })
-                }
-                placeholder={t("adminCompanymanagement.welfareBenefits")}
-                rows={4}
-              />
-            </div>
-          </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="jd-salary-min">{t("adminCompanymanagement.minimumWage")}</Label>
-              <Input
-                id="jd-salary-min"
-                type="number"
-                min={0}
-                value={formData.salaryMin ?? ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    salaryMin: e.target.value === "" ? undefined : Number(e.target.value),
-                  })
-                }
-                placeholder="0"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="jd-salary-max">{t("adminCompanymanagement.maximumSalary")}</Label>
-              <Input
-                id="jd-salary-max"
-                type="number"
-                min={0}
-                value={formData.salaryMax ?? ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    salaryMax: e.target.value === "" ? undefined : Number(e.target.value),
-                  })
-                }
-                placeholder="0"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="jd-currency">{t("adminCompanymanagement.currencyUnit")}</Label>
-              <Input
-                id="jd-currency"
-                value={formData.currency || ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    currency: e.target.value,
-                  })
-                }
-                placeholder={t("common.currency")}
-              />
-            </div>
-          </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-1 space-y-1.5">
+                <Label htmlFor="jd-currency" className="font-semibold">
+                  {t("adminCompanymanagement.currencyUnit")}
+                </Label>
+                <Input
+                  id="jd-currency"
+                  value={formData.currency || ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      currency: e.target.value,
+                    })
+                  }
+                  placeholder={t("common.currency")}
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="jd-deadline">{t("adminCompanymanagement.applicationDeadline")}</Label>
-            <DateTimePicker
-              value={formData.deadlineAt ? new Date(formData.deadlineAt) : null}
-              onChange={(date) =>
-                onFormChange({
-                  ...formData,
-                  deadlineAt: date ? date.toISOString() : undefined,
-                })
-              }
-              themeVariant="admin"
-            />
+              <div className="col-span-2 space-y-1.5">
+                <Label htmlFor="jd-deadline" className="font-semibold">
+                  {t("adminCompanymanagement.applicationDeadline")}
+                </Label>
+                <DateTimePicker
+                  value={formData.deadlineAt ? new Date(formData.deadlineAt) : null}
+                  onChange={(date) =>
+                    onFormChange({
+                      ...formData,
+                      deadlineAt: date ? date.toISOString() : undefined,
+                    })
+                  }
+                  themeVariant="admin"
+                />
+              </div>
+            </div>
           </div>
         </div>
-        <DialogFooter>
+
+        <DialogFooter className="border-border/50 bg-card/30 flex shrink-0 justify-end gap-3 border-t px-6 py-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("general.cancel")}
           </Button>

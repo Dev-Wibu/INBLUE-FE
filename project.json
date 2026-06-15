@@ -82,7 +82,7 @@
     "generate-schema": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "pnpm exec dotenv -e .env -- pnpm exec openapi-typescript %VITE_API_BASE_URL%/v3/api-docs -o ./schema-from-be.d.ts"
+        "command": "node scripts/generate-schema.cjs"
       }
     },
     "cypress:open": {

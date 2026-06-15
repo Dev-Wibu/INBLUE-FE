@@ -1,20 +1,12 @@
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge, getJobDescriptionStatusBadge } from "@/lib/status-utils";
-import { cn } from "@/lib/utils";
-import { Edit, Eye, Power, Search } from "lucide-react";
+import { Calendar, Coins, Edit, Eye, Power, Search, Workflow } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
+
 type JobDescriptionSortKey =
   | "idSortValue"
   | "titleSortValue"
@@ -23,22 +15,29 @@ type JobDescriptionSortKey =
   | "salaryMinSortValue"
   | "deadlineSortValue"
   | "updatedAtSortValue";
+
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
+
 interface JobDescriptionTableProps {
   jobDescriptions: JobDescription[];
   onEdit: (job: JobDescription) => void;
   onDelete: (job: JobDescription) => void;
+  onToggleStatus?: (job: JobDescription, nextStatus: "OPEN" | "CLOSED") => void;
   onView?: (job: JobDescription) => void;
+  onConfigureRounds?: (job: JobDescription) => void;
   getSortProps?: (key: JobDescriptionSortKey) => SortProps;
 }
+
 export function JobDescriptionTable({
   jobDescriptions,
   onEdit,
   onDelete,
+  onToggleStatus,
   onView,
+  onConfigureRounds,
   getSortProps,
 }: JobDescriptionTableProps) {
   const { t } = useTranslation();
@@ -72,124 +71,125 @@ export function JobDescriptionTable({
       </div>
     );
   }
+
   return (
-    <Table className="min-w-[980px] table-fixed">
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-16">
-            {getSortProps ? (
-              <SortButton {...getSortProps("idSortValue")}>{t("common.id")}</SortButton>
-            ) : (
-              t("common.id")
-            )}
-          </TableHead>
-          <TableHead>
-            {getSortProps ? (
-              <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
-            ) : (
-              t("common.title")
-            )}
-          </TableHead>
-          <TableHead className="w-24">
-            {getSortProps ? (
-              <SortButton {...getSortProps("levelSortValue")}>{t("common.level")}</SortButton>
-            ) : (
-              t("common.level")
-            )}
-          </TableHead>
-          <TableHead className="w-28">
-            {getSortProps ? (
-              <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
-            ) : (
-              t("common.status")
-            )}
-          </TableHead>
-          <TableHead className="w-52">
-            {getSortProps ? (
-              <SortButton {...getSortProps("salaryMinSortValue")}>
-                {t("adminCompanymanagement.wage")}
-              </SortButton>
-            ) : (
-              t("adminCompanymanagement.wage")
-            )}
-          </TableHead>
-          <TableHead className="w-28">
-            {getSortProps ? (
-              <SortButton {...getSortProps("deadlineSortValue")}>
-                {t("common.submissionDeadline")}
-              </SortButton>
-            ) : (
-              t("common.submissionDeadline")
-            )}
-          </TableHead>
-          <TableHead className="w-28">
-            {getSortProps ? (
-              <SortButton {...getSortProps("updatedAtSortValue")}>{t("general.update")}</SortButton>
-            ) : (
-              t("general.update")
-            )}
-          </TableHead>
-          <TableHead className="w-28 text-right">{t("common.operation")}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <div className="flex w-full min-w-0 flex-col">
+      {/* Modern Sorting Controls */}
+      {getSortProps && (
+        <div className="border-border/50 bg-muted/20 flex flex-wrap items-center gap-2 border-b px-6 py-2.5 text-xs">
+          <span className="text-muted-foreground mr-2 text-[10px] font-semibold tracking-wider uppercase">
+            Sắp xếp theo:
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            <SortButton {...getSortProps("idSortValue")}>{t("common.id")}</SortButton>
+            <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
+            <SortButton {...getSortProps("levelSortValue")}>{t("common.level")}</SortButton>
+            <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
+            <SortButton {...getSortProps("salaryMinSortValue")}>
+              {t("adminCompanymanagement.wage")}
+            </SortButton>
+            <SortButton {...getSortProps("updatedAtSortValue")}>{t("general.update")}</SortButton>
+          </div>
+        </div>
+      )}
+
+      {/* Compact Cards Grid */}
+      <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
         {jobDescriptions.map((job) => (
-          <TableRow
+          <div
             key={job.id}
-            className={cn(onView && "hover:bg-muted/50 cursor-pointer transition-colors")}
-            onClick={() => onView?.(job)}>
-            <TableCell className="text-muted-foreground font-medium">{job.id}</TableCell>
-            <TableCell className="text-foreground truncate font-semibold">
-              {job.title || "—"}
-            </TableCell>
-            <TableCell onClick={(e) => e.stopPropagation()}>
-              {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
-            </TableCell>
-            <TableCell onClick={(e) => e.stopPropagation()}>
-              <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
-            </TableCell>
-            <TableCell className="text-muted-foreground text-sm">
-              {formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
-            </TableCell>
-            <TableCell className="text-muted-foreground text-sm">
-              {formatDate(job.deadlineAt)}
-            </TableCell>
-            <TableCell className="text-muted-foreground text-sm">
-              {formatDate(job.updatedAt)}
-            </TableCell>
-            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-end gap-1">
+            onClick={() => onView?.(job)}
+            className="group border-border/50 bg-card/30 hover:border-primary/30 hover:bg-card/60 flex cursor-pointer flex-col justify-between gap-3 rounded-xl border p-4 shadow-sm transition-all duration-300 hover:shadow-md">
+            {/* Top Row: Title, ID & Actions */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground/60 shrink-0 font-mono text-[10px] font-semibold">
+                    #{job.id}
+                  </span>
+                  <h4 className="text-foreground group-hover:text-primary truncate text-sm leading-snug font-bold transition-colors">
+                    {job.title || "—"}
+                  </h4>
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
+                  {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
+                  <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
+                </div>
+              </div>
+
+              {/* Compact Actions Group */}
+              <div
+                className="flex shrink-0 items-center gap-0.5"
+                onClick={(e) => e.stopPropagation()}>
                 {onView && (
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={() => onView(job)}
-                    className="h-8 w-8 p-0 hover:bg-sky-50 dark:hover:bg-sky-950"
+                    className="h-7 w-7 rounded-lg text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-950"
                     title={t("common.seeDetails")}>
-                    <Eye className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                )}
+                {onConfigureRounds && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onConfigureRounds(job)}
+                    className="h-7 w-7 rounded-lg text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950"
+                    title="Cấu hình quy trình tuyển dụng">
+                    <Workflow className="h-4 w-4" />
                   </Button>
                 )}
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   onClick={() => onEdit(job)}
-                  className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-950"
+                  className="h-7 w-7 rounded-lg text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
                   title={t("general.edit")}>
-                  <Edit className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <Edit className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDelete(job)}
-                  className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-950"
-                  title={t("adminCompanymanagement.closeJd")}>
-                  <Power className="h-4 w-4 text-red-600 dark:text-red-400" />
-                </Button>
+                {job.status === "OPEN" ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(job)}
+                    className="h-7 w-7 rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+                    title={t("adminCompanymanagement.closeJd")}>
+                    <Power className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onToggleStatus && onToggleStatus(job, "OPEN")}
+                    className="h-7 w-7 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                    title={t("adminCompanymanagement.openJd", "Mở tuyển dụng")}>
+                    <Power className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
-            </TableCell>
-          </TableRow>
+            </div>
+
+            {/* Bottom Row: Salary & Deadline */}
+            <div className="border-border/20 flex items-center justify-between gap-2 border-t pt-2.5 text-xs">
+              {/* Salary */}
+              <div className="text-muted-foreground flex items-center gap-1.5">
+                <Coins className="h-3.5 w-3.5 shrink-0 text-green-500/80" />
+                <span className="text-foreground font-semibold">
+                  {formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
+                </span>
+              </div>
+
+              {/* Deadline */}
+              <div className="text-muted-foreground/80 flex shrink-0 items-center gap-1 font-medium">
+                <Calendar className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                <span>Hạn: {formatDate(job.deadlineAt)}</span>
+              </div>
+            </div>
+          </div>
         ))}
-      </TableBody>
-    </Table>
+      </div>
+    </div>
   );
 }

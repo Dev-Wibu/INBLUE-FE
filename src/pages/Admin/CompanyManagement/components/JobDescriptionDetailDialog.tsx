@@ -2,7 +2,6 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge, getJobDescriptionStatusBadge } from "@/lib/status-utils";
 import { cn } from "@/lib/utils";
@@ -101,9 +100,9 @@ export function JobDescriptionDetailDialog({
   const appliedCount: number = job.appliedCount ?? 0;
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl overflow-hidden p-0">
+      <DialogContent className="max-w-4xl overflow-hidden p-0">
         {/* Header with gradient */}
-        <div className="from-primary/10 via-primary/5 to-background relative bg-gradient-to-br px-6 pt-6 pb-4">
+        <div className="from-primary/10 via-primary/5 to-background border-border/10 relative border-b bg-gradient-to-br px-6 pt-6 pb-4">
           <DialogHeader>
             <DialogTitle className="text-foreground pr-8 text-xl font-bold">
               {job.title || t("adminCompanymanagement.jdDetails")}
@@ -121,93 +120,101 @@ export function JobDescriptionDetailDialog({
           </div>
         </div>
 
-        <ScrollArea className="max-h-[60vh] px-6">
-          <div className="flex flex-col gap-4 pb-6">
-            {/* Key info grid */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <InfoRow
-                icon={<Banknote className="h-4 w-4" />}
-                label={t("common.salary")}
-                value={formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
+        {/* Two-Column Content Layout */}
+        <div className="grid min-h-0 grid-cols-1 gap-6 p-6 md:grid-cols-3">
+          {/* Left Column: Scrollable text fields */}
+          <ScrollArea className="max-h-[50vh] pr-2 md:col-span-2">
+            <div className="flex flex-col gap-4 pb-4">
+              <ContentSection
+                icon={<FileText className="h-4 w-4" />}
+                title={t("common.jobDescription")}
+                content={job.description}
               />
-              <InfoRow
-                icon={<Calendar className="h-4 w-4" />}
-                label={t("adminCompanymanagement.applicationDeadline")}
-                value={formatDate(job.deadlineAt)}
+              <ContentSection
+                icon={<ListChecks className="h-4 w-4" />}
+                title={t("common.candidateRequirements")}
+                content={job.requirements}
               />
-              <InfoRow
-                icon={<Clock className="h-4 w-4" />}
-                label={t("adminCompanymanagement.lastUpdated")}
-                value={formatDate(job.updatedAt)}
+              <ContentSection
+                icon={<Gift className="h-4 w-4" />}
+                title={t("adminCompanymanagement.interest")}
+                content={job.benefits}
               />
-              {appliedCount >= 0 && (
-                <InfoRow
-                  icon={<Users className="h-4 w-4" />}
-                  label={t("adminCompanymanagement.numberOfCandidates")}
-                  value={t("general.peopleHaveApplied", {
-                    var_0: appliedCount,
-                  })}
-                />
+
+              {/* Rounds section */}
+              {rounds.length > 0 && (
+                <div className="border-border/50 bg-card/30 rounded-xl border p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Briefcase className="text-primary h-4 w-4" />
+                    <h4 className="text-foreground text-sm font-bold">
+                      {t("adminCompanymanagement.interviewRound")} {rounds.length}{" "}
+                      {t("common.ring")}
+                    </h4>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {rounds.map((round, idx) => (
+                      <div
+                        key={round.id ?? idx}
+                        className="bg-background/50 flex items-start gap-3 rounded-lg p-3">
+                        <div
+                          className={cn(
+                            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
+                            "bg-primary"
+                          )}>
+                          {round.roundOrder ?? idx + 1}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-foreground text-sm font-semibold">
+                            {round.name ||
+                              t("common.roundVar0", {
+                                var_0: round.roundOrder ?? idx + 1,
+                              })}
+                          </p>
+                        </div>
+                        <CheckCircle2 className="text-muted-foreground/40 h-4 w-4 shrink-0" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
+          </ScrollArea>
 
-            <Separator className="my-1" />
-
-            {/* Text content sections */}
-            <ContentSection
-              icon={<FileText className="h-4 w-4" />}
-              title={t("common.jobDescription")}
-              content={job.description}
-            />
-            <ContentSection
-              icon={<ListChecks className="h-4 w-4" />}
-              title={t("common.candidateRequirements")}
-              content={job.requirements}
-            />
-            <ContentSection
-              icon={<Gift className="h-4 w-4" />}
-              title={t("adminCompanymanagement.interest")}
-              content={job.benefits}
-            />
-
-            {/* Rounds section */}
-            {rounds.length > 0 && (
-              <div className="border-border/50 bg-card/30 rounded-xl border p-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <Briefcase className="text-primary h-4 w-4" />
-                  <h4 className="text-foreground text-sm font-bold">
-                    {t("adminCompanymanagement.interviewRound")}
-                    {rounds.length} {t("common.ring")}
-                  </h4>
-                </div>
-                <div className="flex flex-col gap-2">
-                  {rounds.map((round, idx) => (
-                    <div
-                      key={round.id ?? idx}
-                      className="bg-background/50 flex items-start gap-3 rounded-lg p-3">
-                      <div
-                        className={cn(
-                          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
-                          "bg-primary"
-                        )}>
-                        {round.roundOrder ?? idx + 1}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-foreground text-sm font-semibold">
-                          {round.name ||
-                            t("common.roundVar0", {
-                              var_0: round.roundOrder ?? idx + 1,
-                            })}
-                        </p>
-                      </div>
-                      <CheckCircle2 className="text-muted-foreground/40 h-4 w-4 shrink-0" />
-                    </div>
-                  ))}
-                </div>
+          {/* Right Column: General Info Sidebar */}
+          <div className="flex flex-col gap-4 md:col-span-1">
+            <div className="border-border/50 bg-muted/20 dark:bg-muted/5 space-y-4 rounded-2xl border p-5">
+              <h4 className="text-foreground text-muted-foreground/80 mb-2 text-xs font-bold tracking-wider uppercase">
+                Thông tin chung
+              </h4>
+              <div className="flex flex-col gap-4">
+                <InfoRow
+                  icon={<Banknote className="h-4 w-4" />}
+                  label={t("common.salary")}
+                  value={formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
+                />
+                <InfoRow
+                  icon={<Calendar className="h-4 w-4" />}
+                  label={t("adminCompanymanagement.applicationDeadline")}
+                  value={formatDate(job.deadlineAt)}
+                />
+                <InfoRow
+                  icon={<Clock className="h-4 w-4" />}
+                  label={t("adminCompanymanagement.lastUpdated")}
+                  value={formatDate(job.updatedAt)}
+                />
+                {appliedCount >= 0 && (
+                  <InfoRow
+                    icon={<Users className="h-4 w-4" />}
+                    label={t("adminCompanymanagement.numberOfCandidates")}
+                    value={t("general.peopleHaveApplied", {
+                      var_0: appliedCount,
+                    })}
+                  />
+                )}
               </div>
-            )}
+            </div>
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Footer actions */}
         {onEdit && (
