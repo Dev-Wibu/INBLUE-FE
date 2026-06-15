@@ -768,6 +768,66 @@ export function JobDescriptionRoundsDialog({
                                       </div>
                                     );
                                   })}
+
+                                  {/* Trailing append drop-zone — always visible after the last card in the last row */}
+                                  {rowIdx === Math.ceil(rounds.length / COLS) - 1 && (
+                                    <div
+                                      onDragOver={(e) => {
+                                        e.preventDefault();
+                                        setDragOverGap(rounds.length + 999);
+                                      }}
+                                      onDragLeave={() => setDragOverGap(null)}
+                                      onDrop={() => {
+                                        setDragOverGap(null);
+                                        if (activeDragType)
+                                          handleDropFromToolbox(activeDragType, rounds.length);
+                                        else if (activeDragIndex !== null)
+                                          handleReorder(activeDragIndex, rounds.length);
+                                      }}
+                                      className={cn(
+                                        "group relative mx-1 flex h-16 items-center justify-center transition-all duration-200",
+                                        dragOverGap === rounds.length + 999 ? "w-20" : "w-12"
+                                      )}>
+                                      {dragOverGap === rounds.length + 999 ? (
+                                        <div className="flex h-12 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-blue-400 bg-blue-50 text-blue-500 dark:border-blue-500 dark:bg-blue-950/40">
+                                          <Minus className="h-3.5 w-3.5" />
+                                        </div>
+                                      ) : (
+                                        <div
+                                          className={cn(
+                                            "flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed transition-all duration-200",
+                                            activeDragType || activeDragIndex !== null
+                                              ? "border-blue-300 bg-blue-50/80 text-blue-400 dark:border-blue-600 dark:bg-blue-950/30"
+                                              : "border-slate-300 text-slate-400 dark:border-slate-700"
+                                          )}>
+                                          <svg
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 14 14"
+                                            fill="none">
+                                            <line
+                                              x1="7"
+                                              y1="1"
+                                              x2="7"
+                                              y2="13"
+                                              stroke="currentColor"
+                                              strokeWidth="1.8"
+                                              strokeLinecap="round"
+                                            />
+                                            <line
+                                              x1="1"
+                                              y1="7"
+                                              x2="13"
+                                              y2="7"
+                                              stroke="currentColor"
+                                              strokeWidth="1.8"
+                                              strokeLinecap="round"
+                                            />
+                                          </svg>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
 
                                 {/* Row-break connector: curved arrow from last card of this row to first of next */}
