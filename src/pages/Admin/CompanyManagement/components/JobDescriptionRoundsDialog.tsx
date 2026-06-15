@@ -28,7 +28,6 @@ import {
   PlusCircle,
   RotateCcw,
   Save,
-  Settings,
   Trash2,
   UserCheck,
   ZoomIn,
@@ -192,6 +191,7 @@ export function JobDescriptionRoundsDialog({
 }: JobDescriptionRoundsDialogProps) {
   const [rounds, setRounds] = useState<UIRound[]>([]);
   const [selectedRoundIndex, setSelectedRoundIndex] = useState<number | null>(null);
+  const [configModalOpen, setConfigModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasExistingRounds, setHasExistingRounds] = useState(false);
@@ -200,7 +200,8 @@ export function JobDescriptionRoundsDialog({
   // Drag and drop states
   const [activeDragType, setActiveDragType] = useState<RoundType | null>(null);
   const [activeDragIndex, setActiveDragIndex] = useState<number | null>(null);
-  // Index of the arrow gap being hovered during drag (-1 = before first, 0 = after index 0, etc.)
+  const [isDragging, setIsDragging] = useState(false);
+  // Index of the arrow gap being hovered during drag
   const [dragOverGap, setDragOverGap] = useState<number | null>(null);
 
   // Zoom level for pipeline canvas
@@ -499,11 +500,40 @@ export function JobDescriptionRoundsDialog({
                     Thiết lập Quy trình Tuyển dụng
                   </h2>
                   <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    Kéo thả các vòng phỏng vấn từ danh sách bên trái để tạo pipeline cho JD:{" "}
+                    Kéo thả từ danh sách bên trái vào pipeline &middot;{" "}
                     <span className="font-semibold text-blue-600 dark:text-blue-400">
                       {jobDescription?.title}
                     </span>
                   </p>
+                </div>
+                {/* Zoom controls + round count — moved to header */}
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {rounds.length} vòng
+                  </span>
+                  <div className="flex items-center gap-0.5 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-1 dark:border-slate-700 dark:bg-slate-800">
+                    <button
+                      onClick={handleZoomOut}
+                      title="Thu nhỏ (Ctrl+Scroll)"
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">
+                      <ZoomOut className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="min-w-[36px] text-center text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                      {Math.round(zoomLevel * 100)}%
+                    </span>
+                    <button
+                      onClick={handleZoomIn}
+                      title="Phóng to (Ctrl+Scroll)"
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">
+                      <ZoomIn className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={handleZoomReset}
+                      title="Đặt lại zoom"
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">
+                      <RotateCcw className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -513,36 +543,6 @@ export function JobDescriptionRoundsDialog({
                 <div
                   className="relative flex flex-1 flex-col overflow-hidden bg-slate-100 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:18px_18px] dark:bg-slate-950 dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)]"
                   onWheel={handleCanvasWheel}>
-                  {/* Top bar: round count + zoom controls */}
-                  <div className="absolute top-3 right-4 z-20 flex items-center gap-2">
-                    <span className="rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[10px] font-bold text-slate-600 uppercase shadow dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-300">
-                      {rounds.length} vòng
-                    </span>
-                    <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-white/90 px-1.5 py-1 shadow dark:border-slate-700 dark:bg-slate-800/90">
-                      <button
-                        onClick={handleZoomOut}
-                        title="Thu nhỏ (Ctrl+Scroll)"
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">
-                        <ZoomOut className="h-3.5 w-3.5" />
-                      </button>
-                      <span className="min-w-[38px] text-center text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                        {Math.round(zoomLevel * 100)}%
-                      </span>
-                      <button
-                        onClick={handleZoomIn}
-                        title="Phóng to (Ctrl+Scroll)"
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">
-                        <ZoomIn className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={handleZoomReset}
-                        title="Đặt lại zoom"
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white">
-                        <RotateCcw className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Scrollable canvas area */}
                   <div className="h-full w-full overflow-auto select-none">
                     {/* Zoom wrapper */}
@@ -673,12 +673,21 @@ export function JobDescriptionRoundsDialog({
                                         {/* Round Card */}
                                         <div
                                           draggable
-                                          onDragStart={() => setActiveDragIndex(realIdx)}
+                                          onDragStart={() => {
+                                            setActiveDragIndex(realIdx);
+                                            setIsDragging(true);
+                                          }}
                                           onDragEnd={() => {
                                             setActiveDragIndex(null);
                                             setDragOverGap(null);
+                                            setIsDragging(false);
                                           }}
-                                          onClick={() => setSelectedRoundIndex(realIdx)}
+                                          onClick={() => {
+                                            if (!isDragging) {
+                                              setSelectedRoundIndex(realIdx);
+                                              setConfigModalOpen(true);
+                                            }
+                                          }}
                                           onDragOver={(e) => {
                                             e.preventDefault();
                                             if (
@@ -691,6 +700,7 @@ export function JobDescriptionRoundsDialog({
                                           onDrop={(e) => {
                                             e.stopPropagation();
                                             setDragOverGap(null);
+                                            setIsDragging(false);
                                             if (activeDragType)
                                               handleDropFromToolbox(activeDragType, realIdx);
                                             else if (activeDragIndex !== null)
@@ -830,27 +840,30 @@ export function JobDescriptionRoundsDialog({
                                   )}
                                 </div>
 
-                                {/* Row-break connector: curved arrow from last card of this row to first of next */}
+                                {/* Row-break connector: U-turn arrow from end of row to start of next */}
                                 {rowIdx < Math.ceil(rounds.length / COLS) - 1 && (
-                                  <div className="my-1 flex items-center justify-end pr-2">
-                                    <svg width="60" height="48" viewBox="0 0 60 48" fill="none">
+                                  <div
+                                    className={cn(
+                                      "my-0 flex h-10 items-center",
+                                      isEvenRow ? "justify-end" : "justify-start"
+                                    )}>
+                                    <svg width="48" height="40" viewBox="0 0 48 40" fill="none">
                                       <defs>
                                         <marker
                                           id={`bend-arrow-${rowIdx}`}
                                           markerWidth="6"
                                           markerHeight="6"
-                                          refX="5"
+                                          refX="3"
                                           refY="3"
                                           orient="auto">
                                           <path d="M0,0 L0,6 L6,3 z" fill="#94a3b8" />
                                         </marker>
                                       </defs>
-                                      {/* L-shaped connector: right side going down then left to next row start */}
                                       <path
                                         d={
                                           isEvenRow
-                                            ? "M 8 4 Q 52 4 52 24 Q 52 44 8 44"
-                                            : "M 52 4 Q 8 4 8 24 Q 8 44 52 44"
+                                            ? "M 4 4 C 44 4, 44 36, 4 36"
+                                            : "M 44 4 C 4 4, 4 36, 44 36"
                                         }
                                         stroke="#94a3b8"
                                         strokeWidth="1.5"
@@ -870,230 +883,232 @@ export function JobDescriptionRoundsDialog({
                   </div>
                 </div>
 
-                {/* 3. RIGHT PANEL: Configuration Sidebar (32% width) */}
+                {/* 3. CONFIG MODAL — opens when user clicks a round card */}
                 {selectedRoundIndex !== null && selectedRound && (
-                  <div className="animate-in slide-in-from-right flex w-[32%] min-w-[340px] shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white duration-250 dark:border-slate-800 dark:bg-slate-900/40">
-                    <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
-                      <div className="flex items-center gap-2">
-                        <Settings className="text-primary h-4 w-4" />
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                          Cấu hình: Vòng {selectedRoundIndex + 1}
-                        </h3>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                        onClick={() => setSelectedRoundIndex(null)}>
-                        Đóng
-                      </Button>
-                    </div>
-
-                    <ScrollArea className="flex-1 p-5">
-                      <div className="space-y-5 pb-6">
-                        {/* General Settings */}
-                        <div className="space-y-4">
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-300">
-                              Tên vòng tuyển dụng
-                            </Label>
-                            <Input
-                              value={selectedRound.name || ""}
-                              onChange={(e) =>
-                                updateRoundField(selectedRoundIndex, "name", e.target.value)
+                  <Dialog
+                    open={configModalOpen}
+                    onOpenChange={(open) => {
+                      setConfigModalOpen(open);
+                      if (!open) setSelectedRoundIndex(null);
+                    }}>
+                    <DialogContent className="flex max-h-[85vh] w-[640px] max-w-[96vw] flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950">
+                      {/* Modal header */}
+                      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/30">
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className={cn(
+                              "rounded-lg p-1.5",
+                              AVAILABLE_ROUNDS_TEMPLATES.find(
+                                (t) => t.type === selectedRound.roundType
+                              )?.bgColor,
+                              AVAILABLE_ROUNDS_TEMPLATES.find(
+                                (t) => t.type === selectedRound.roundType
+                              )?.color
+                            )}>
+                            {
+                              AVAILABLE_ROUNDS_TEMPLATES.find(
+                                (t) => t.type === selectedRound.roundType
+                              )?.icon
+                            }
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                              Vòng {selectedRoundIndex + 1}: {selectedRound.name || "Chưa đặt tên"}
+                            </h3>
+                            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                              {
+                                AVAILABLE_ROUNDS_TEMPLATES.find(
+                                  (t) => t.type === selectedRound.roundType
+                                )?.title
                               }
-                              placeholder="Nhập tên vòng..."
-                              className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Ngưỡng điểm đạt (Pass Threshold)
-                            </Label>
-                            <div className="flex items-center gap-3">
-                              <Input
-                                type="number"
-                                min={0}
-                                max={1}
-                                step={0.05}
-                                value={selectedRound.passThreshold ?? 0.8}
-                                onChange={(e) =>
-                                  updateRoundField(
-                                    selectedRoundIndex,
-                                    "passThreshold",
-                                    Number(e.target.value)
-                                  )
-                                }
-                                className="w-24 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                              />
-                              <span className="text-xs text-slate-400">
-                                (Tương đương:{" "}
-                                {Math.round((selectedRound.passThreshold ?? 0.8) * 100)}% số điểm
-                                tối đa)
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Thời gian làm bài (Phút)
-                            </Label>
-                            <div className="flex items-center gap-3">
-                              <Input
-                                type="number"
-                                min={0}
-                                value={selectedRound.configData?.timeLimitMinutes ?? 0}
-                                onChange={(e) =>
-                                  updateRoundConfigField(
-                                    selectedRoundIndex,
-                                    "timeLimitMinutes",
-                                    Number(e.target.value)
-                                  )
-                                }
-                                className="w-24 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                              />
-                              <span className="text-xs text-slate-400">
-                                (0 = không giới hạn thời gian)
-                              </span>
-                            </div>
+                            </p>
                           </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 rounded-full px-3 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                          onClick={() => {
+                            setConfigModalOpen(false);
+                            setSelectedRoundIndex(null);
+                          }}>
+                          Đóng
+                        </Button>
+                      </div>
 
-                        {/* Specific features depending on Round Type */}
-                        <div className="border-t border-slate-800/60 pt-4">
-                          {/* 1. CV_SCREENING */}
-                          {selectedRound.roundType === "CV_SCREENING" && (
-                            <>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                  Định dạng nộp hồ sơ
-                                </Label>
-                                <Select
-                                  value={selectedRound.configData?.submissionFormat || "pdf"}
-                                  onValueChange={(val) =>
-                                    updateRoundConfigField(
+                      <ScrollArea className="flex-1 p-5">
+                        <div className="space-y-5 pb-6">
+                          {/* General Settings */}
+                          <div className="space-y-4">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-semibold text-slate-300">
+                                Tên vòng tuyển dụng
+                              </Label>
+                              <Input
+                                value={selectedRound.name || ""}
+                                onChange={(e) =>
+                                  updateRoundField(selectedRoundIndex, "name", e.target.value)
+                                }
+                                placeholder="Nhập tên vòng..."
+                                className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                Ngưỡng điểm đạt (Pass Threshold)
+                              </Label>
+                              <div className="flex items-center gap-3">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={1}
+                                  step={0.05}
+                                  value={selectedRound.passThreshold ?? 0.8}
+                                  onChange={(e) =>
+                                    updateRoundField(
                                       selectedRoundIndex,
-                                      "submissionFormat",
-                                      val
+                                      "passThreshold",
+                                      Number(e.target.value)
                                     )
-                                  }>
-                                  <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                                    <SelectItem value="pdf">Tệp PDF (.pdf)</SelectItem>
-                                    <SelectItem value="doc">Tệp Word (.doc, .docx)</SelectItem>
-                                    <SelectItem value="any">Tất cả định dạng tài liệu</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                  }
+                                  className="w-24 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                                />
+                                <span className="text-xs text-slate-400">
+                                  (Tương đương:{" "}
+                                  {Math.round((selectedRound.passThreshold ?? 0.8) * 100)}% số điểm
+                                  tối đa)
+                                </span>
                               </div>
-                            </>
-                          )}
+                            </div>
 
-                          {/* 2. QUIZ (quizQuestions Array builder) */}
-                          {selectedRound.roundType === "QUIZ" && (
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                  Danh sách câu hỏi trắc nghiệm (
-                                  {selectedRound.configData?.quizQuestions?.length || 0})
-                                </Label>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    const currentQuestions = [
-                                      ...(selectedRound.configData?.quizQuestions || []),
-                                    ];
-                                    currentQuestions.push({
-                                      questionText: "Câu hỏi mới?",
-                                      options: [
-                                        "Lựa chọn A",
-                                        "Lựa chọn B",
-                                        "Lựa chọn C",
-                                        "Lựa chọn D",
-                                      ],
-                                      correctAnswer: "Lựa chọn A",
-                                      points: 10,
-                                    });
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                Thời gian làm bài (Phút)
+                              </Label>
+                              <div className="flex items-center gap-3">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  value={selectedRound.configData?.timeLimitMinutes ?? 0}
+                                  onChange={(e) =>
                                     updateRoundConfigField(
                                       selectedRoundIndex,
-                                      "quizQuestions",
-                                      currentQuestions
-                                    );
-                                  }}
-                                  className="text-primary hover:text-primary/80 h-7 text-xs font-bold">
-                                  <PlusCircle className="mr-1 h-3.5 w-3.5" /> Thêm câu hỏi
-                                </Button>
+                                      "timeLimitMinutes",
+                                      Number(e.target.value)
+                                    )
+                                  }
+                                  className="w-24 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                                />
+                                <span className="text-xs text-slate-400">
+                                  (0 = không giới hạn thời gian)
+                                </span>
                               </div>
+                            </div>
+                          </div>
 
-                              <div className="max-h-[40vh] space-y-4 overflow-y-auto pr-1">
-                                {(selectedRound.configData?.quizQuestions || []).map((q, qIdx) => (
-                                  <div
-                                    key={qIdx}
-                                    className="relative space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-950/40">
-                                    <button
-                                      onClick={() => {
-                                        const currentQuestions = (
-                                          selectedRound.configData?.quizQuestions || []
-                                        ).filter((_, idx) => idx !== qIdx);
-                                        updateRoundConfigField(
-                                          selectedRoundIndex,
-                                          "quizQuestions",
-                                          currentQuestions
-                                        );
-                                      }}
-                                      className="absolute top-3 right-3 text-slate-500 hover:text-red-400">
-                                      <Trash2 className="h-4 w-4" />
-                                    </button>
+                          {/* Specific features depending on Round Type */}
+                          <div className="border-t border-slate-800/60 pt-4">
+                            {/* 1. CV_SCREENING */}
+                            {selectedRound.roundType === "CV_SCREENING" && (
+                              <>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    Định dạng nộp hồ sơ
+                                  </Label>
+                                  <Select
+                                    value={selectedRound.configData?.submissionFormat || "pdf"}
+                                    onValueChange={(val) =>
+                                      updateRoundConfigField(
+                                        selectedRoundIndex,
+                                        "submissionFormat",
+                                        val
+                                      )
+                                    }>
+                                    <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                                      <SelectItem value="pdf">Tệp PDF (.pdf)</SelectItem>
+                                      <SelectItem value="doc">Tệp Word (.doc, .docx)</SelectItem>
+                                      <SelectItem value="any">Tất cả định dạng tài liệu</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </>
+                            )}
 
-                                    <div className="space-y-1">
-                                      <span className="text-[10px] font-bold text-slate-500">
-                                        CÂU HỎI {qIdx + 1}
-                                      </span>
-                                      <Input
-                                        value={q.questionText}
-                                        onChange={(e) => {
-                                          const currentQuestions = [
-                                            ...(selectedRound.configData?.quizQuestions || []),
-                                          ];
-                                          currentQuestions[qIdx] = {
-                                            ...currentQuestions[qIdx],
-                                            questionText: e.target.value,
-                                          };
-                                          updateRoundConfigField(
-                                            selectedRoundIndex,
-                                            "quizQuestions",
-                                            currentQuestions
-                                          );
-                                        }}
-                                        className="dark:border-slate-850 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
-                                      />
-                                    </div>
+                            {/* 2. QUIZ (quizQuestions Array builder) */}
+                            {selectedRound.roundType === "QUIZ" && (
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    Danh sách câu hỏi trắc nghiệm (
+                                    {selectedRound.configData?.quizQuestions?.length || 0})
+                                  </Label>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      const currentQuestions = [
+                                        ...(selectedRound.configData?.quizQuestions || []),
+                                      ];
+                                      currentQuestions.push({
+                                        questionText: "Câu hỏi mới?",
+                                        options: [
+                                          "Lựa chọn A",
+                                          "Lựa chọn B",
+                                          "Lựa chọn C",
+                                          "Lựa chọn D",
+                                        ],
+                                        correctAnswer: "Lựa chọn A",
+                                        points: 10,
+                                      });
+                                      updateRoundConfigField(
+                                        selectedRoundIndex,
+                                        "quizQuestions",
+                                        currentQuestions
+                                      );
+                                    }}
+                                    className="text-primary hover:text-primary/80 h-7 text-xs font-bold">
+                                    <PlusCircle className="mr-1 h-3.5 w-3.5" /> Thêm câu hỏi
+                                  </Button>
+                                </div>
 
-                                    <div className="space-y-2">
-                                      <span className="text-[10px] font-bold text-slate-500">
-                                        CÁC PHƯƠNG ÁN LỰA CHỌN
-                                      </span>
-                                      {(q.options || []).map((opt, oIdx) => (
-                                        <div key={oIdx} className="flex items-center gap-1.5">
-                                          <span className="w-4 font-mono text-[10px] font-bold text-slate-400">
-                                            {String.fromCharCode(65 + oIdx)}.
+                                <div className="max-h-[40vh] space-y-4 overflow-y-auto pr-1">
+                                  {(selectedRound.configData?.quizQuestions || []).map(
+                                    (q, qIdx) => (
+                                      <div
+                                        key={qIdx}
+                                        className="relative space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-950/40">
+                                        <button
+                                          onClick={() => {
+                                            const currentQuestions = (
+                                              selectedRound.configData?.quizQuestions || []
+                                            ).filter((_, idx) => idx !== qIdx);
+                                            updateRoundConfigField(
+                                              selectedRoundIndex,
+                                              "quizQuestions",
+                                              currentQuestions
+                                            );
+                                          }}
+                                          className="absolute top-3 right-3 text-slate-500 hover:text-red-400">
+                                          <Trash2 className="h-4 w-4" />
+                                        </button>
+
+                                        <div className="space-y-1">
+                                          <span className="text-[10px] font-bold text-slate-500">
+                                            CÂU HỎI {qIdx + 1}
                                           </span>
                                           <Input
-                                            value={opt}
+                                            value={q.questionText}
                                             onChange={(e) => {
                                               const currentQuestions = [
                                                 ...(selectedRound.configData?.quizQuestions || []),
                                               ];
-                                              const opts = [
-                                                ...(currentQuestions[qIdx].options || []),
-                                              ];
-                                              opts[oIdx] = e.target.value;
                                               currentQuestions[qIdx] = {
                                                 ...currentQuestions[qIdx],
-                                                options: opts,
+                                                questionText: e.target.value,
                                               };
                                               updateRoundConfigField(
                                                 selectedRoundIndex,
@@ -1101,185 +1116,223 @@ export function JobDescriptionRoundsDialog({
                                                 currentQuestions
                                               );
                                             }}
-                                            className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
+                                            className="dark:border-slate-850 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
                                           />
                                         </div>
-                                      ))}
-                                    </div>
 
-                                    <div className="grid grid-cols-2 gap-3 pt-1">
-                                      <div className="space-y-1">
-                                        <span className="text-[10px] font-bold text-slate-500">
-                                          ĐÁP ÁN ĐÚNG
-                                        </span>
-                                        <Select
-                                          value={q.correctAnswer}
-                                          onValueChange={(val) => {
-                                            const currentQuestions = [
-                                              ...(selectedRound.configData?.quizQuestions || []),
-                                            ];
-                                            currentQuestions[qIdx] = {
-                                              ...currentQuestions[qIdx],
-                                              correctAnswer: val,
-                                            };
-                                            updateRoundConfigField(
-                                              selectedRoundIndex,
-                                              "quizQuestions",
-                                              currentQuestions
-                                            );
-                                          }}>
-                                          <SelectTrigger className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                                            {(q.options || []).map((opt, oIdx) => (
-                                              <SelectItem key={oIdx} value={opt}>
-                                                {String.fromCharCode(65 + oIdx)}. {opt}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
+                                        <div className="space-y-2">
+                                          <span className="text-[10px] font-bold text-slate-500">
+                                            CÁC PHƯƠNG ÁN LỰA CHỌN
+                                          </span>
+                                          {(q.options || []).map((opt, oIdx) => (
+                                            <div key={oIdx} className="flex items-center gap-1.5">
+                                              <span className="w-4 font-mono text-[10px] font-bold text-slate-400">
+                                                {String.fromCharCode(65 + oIdx)}.
+                                              </span>
+                                              <Input
+                                                value={opt}
+                                                onChange={(e) => {
+                                                  const currentQuestions = [
+                                                    ...(selectedRound.configData?.quizQuestions ||
+                                                      []),
+                                                  ];
+                                                  const opts = [
+                                                    ...(currentQuestions[qIdx].options || []),
+                                                  ];
+                                                  opts[oIdx] = e.target.value;
+                                                  currentQuestions[qIdx] = {
+                                                    ...currentQuestions[qIdx],
+                                                    options: opts,
+                                                  };
+                                                  updateRoundConfigField(
+                                                    selectedRoundIndex,
+                                                    "quizQuestions",
+                                                    currentQuestions
+                                                  );
+                                                }}
+                                                className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
+                                              />
+                                            </div>
+                                          ))}
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 pt-1">
+                                          <div className="space-y-1">
+                                            <span className="text-[10px] font-bold text-slate-500">
+                                              ĐÁP ÁN ĐÚNG
+                                            </span>
+                                            <Select
+                                              value={q.correctAnswer}
+                                              onValueChange={(val) => {
+                                                const currentQuestions = [
+                                                  ...(selectedRound.configData?.quizQuestions ||
+                                                    []),
+                                                ];
+                                                currentQuestions[qIdx] = {
+                                                  ...currentQuestions[qIdx],
+                                                  correctAnswer: val,
+                                                };
+                                                updateRoundConfigField(
+                                                  selectedRoundIndex,
+                                                  "quizQuestions",
+                                                  currentQuestions
+                                                );
+                                              }}>
+                                              <SelectTrigger className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white">
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                                                {(q.options || []).map((opt, oIdx) => (
+                                                  <SelectItem key={oIdx} value={opt}>
+                                                    {String.fromCharCode(65 + oIdx)}. {opt}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                          </div>
+
+                                          <div className="space-y-1">
+                                            <span className="text-[10px] font-bold text-slate-500">
+                                              ĐIỂM CÂU HỎI
+                                            </span>
+                                            <Input
+                                              type="number"
+                                              min={1}
+                                              value={q.points}
+                                              onChange={(e) => {
+                                                const currentQuestions = [
+                                                  ...(selectedRound.configData?.quizQuestions ||
+                                                    []),
+                                                ];
+                                                currentQuestions[qIdx] = {
+                                                  ...currentQuestions[qIdx],
+                                                  points: Number(e.target.value),
+                                                };
+                                                updateRoundConfigField(
+                                                  selectedRoundIndex,
+                                                  "quizQuestions",
+                                                  currentQuestions
+                                                );
+                                              }}
+                                              className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
+                                            />
+                                          </div>
+                                        </div>
                                       </div>
-
-                                      <div className="space-y-1">
-                                        <span className="text-[10px] font-bold text-slate-500">
-                                          ĐIỂM CÂU HỎI
-                                        </span>
-                                        <Input
-                                          type="number"
-                                          min={1}
-                                          value={q.points}
-                                          onChange={(e) => {
-                                            const currentQuestions = [
-                                              ...(selectedRound.configData?.quizQuestions || []),
-                                            ];
-                                            currentQuestions[qIdx] = {
-                                              ...currentQuestions[qIdx],
-                                              points: Number(e.target.value),
-                                            };
-                                            updateRoundConfigField(
-                                              selectedRoundIndex,
-                                              "quizQuestions",
-                                              currentQuestions
-                                            );
-                                          }}
-                                          className="dark:border-slate-850 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-
-                                {(!selectedRound.configData?.quizQuestions ||
-                                  selectedRound.configData.quizQuestions.length === 0) && (
-                                  <div className="border-slate-855 rounded-xl border border-dashed py-6 text-center text-xs text-slate-500">
-                                    Chưa có câu hỏi trắc nghiệm nào.
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* 3. CODING (codingProblemsId Array builder) */}
-                          {selectedRound.roundType === "CODING" && (
-                            <>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                  Mã danh sách bài tập (Coding Problem IDs)
-                                </Label>
-                                <Input
-                                  value={(selectedRound.configData?.codingProblemsId || []).join(
-                                    ", "
+                                    )
                                   )}
-                                  onChange={(e) => {
-                                    const idsStr = e.target.value;
-                                    const parsedIds = idsStr
-                                      .split(",")
-                                      .map((id) => id.trim())
-                                      .filter((id) => id !== "" && !isNaN(Number(id)))
-                                      .map(Number);
-                                    updateRoundConfigField(
-                                      selectedRoundIndex,
-                                      "codingProblemsId",
-                                      parsedIds
-                                    );
-                                  }}
-                                  placeholder="Nhập danh sách ID, phân tách bằng dấu phẩy (,)"
-                                  className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                                />
-                                <p className="text-[10px] leading-normal text-slate-500">
-                                  Ví dụ: 101, 102, 105 (các mã bài tập từ cơ sở dữ liệu hệ thống).
-                                </p>
-                              </div>
-                            </>
-                          )}
 
-                          {/* 4. AI INTERVIEW */}
-                          {selectedRound.roundType === "AI_INTERVIEW" && (
-                            <>
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                  AI System Prompt
-                                </Label>
-                                <Textarea
-                                  value={selectedRound.configData?.aiSystemPrompt || ""}
-                                  onChange={(e) =>
-                                    updateRoundConfigField(
-                                      selectedRoundIndex,
-                                      "aiSystemPrompt",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="Cung cấp prompt cấu hình vai trò AI..."
-                                  rows={5}
-                                  className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                                />
+                                  {(!selectedRound.configData?.quizQuestions ||
+                                    selectedRound.configData.quizQuestions.length === 0) && (
+                                    <div className="border-slate-855 rounded-xl border border-dashed py-6 text-center text-xs text-slate-500">
+                                      Chưa có câu hỏi trắc nghiệm nào.
+                                    </div>
+                                  )}
+                                </div>
                               </div>
+                            )}
 
-                              <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                  Tiêu chuẩn Đánh giá
-                                </Label>
-                                <Textarea
-                                  value={selectedRound.configData?.evaluationCriteria || ""}
-                                  onChange={(e) =>
-                                    updateRoundConfigField(
-                                      selectedRoundIndex,
-                                      "evaluationCriteria",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="Các tiêu chuẩn đánh giá kết quả của ứng viên..."
-                                  rows={4}
-                                  className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                                />
-                              </div>
-                            </>
-                          )}
+                            {/* 3. CODING (codingProblemsId Array builder) */}
+                            {selectedRound.roundType === "CODING" && (
+                              <>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    Mã danh sách bài tập (Coding Problem IDs)
+                                  </Label>
+                                  <Input
+                                    value={(selectedRound.configData?.codingProblemsId || []).join(
+                                      ", "
+                                    )}
+                                    onChange={(e) => {
+                                      const idsStr = e.target.value;
+                                      const parsedIds = idsStr
+                                        .split(",")
+                                        .map((id) => id.trim())
+                                        .filter((id) => id !== "" && !isNaN(Number(id)))
+                                        .map(Number);
+                                      updateRoundConfigField(
+                                        selectedRoundIndex,
+                                        "codingProblemsId",
+                                        parsedIds
+                                      );
+                                    }}
+                                    placeholder="Nhập danh sách ID, phân tách bằng dấu phẩy (,)"
+                                    className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                                  />
+                                  <p className="text-[10px] leading-normal text-slate-500">
+                                    Ví dụ: 101, 102, 105 (các mã bài tập từ cơ sở dữ liệu hệ thống).
+                                  </p>
+                                </div>
+                              </>
+                            )}
 
-                          {/* Instruction (Common for all) */}
-                          <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                              Lời Hướng dẫn cho ứng viên
-                            </Label>
-                            <Textarea
-                              value={selectedRound.configData?.instruction || ""}
-                              onChange={(e) =>
-                                updateRoundConfigField(
-                                  selectedRoundIndex,
-                                  "instruction",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Hướng dẫn ứng viên làm bài..."
-                              rows={4}
-                              className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                            />
+                            {/* 4. AI INTERVIEW */}
+                            {selectedRound.roundType === "AI_INTERVIEW" && (
+                              <>
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    AI System Prompt
+                                  </Label>
+                                  <Textarea
+                                    value={selectedRound.configData?.aiSystemPrompt || ""}
+                                    onChange={(e) =>
+                                      updateRoundConfigField(
+                                        selectedRoundIndex,
+                                        "aiSystemPrompt",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Cung cấp prompt cấu hình vai trò AI..."
+                                    rows={5}
+                                    className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                                  />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    Tiêu chuẩn Đánh giá
+                                  </Label>
+                                  <Textarea
+                                    value={selectedRound.configData?.evaluationCriteria || ""}
+                                    onChange={(e) =>
+                                      updateRoundConfigField(
+                                        selectedRoundIndex,
+                                        "evaluationCriteria",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Các tiêu chuẩn đánh giá kết quả của ứng viên..."
+                                    rows={4}
+                                    className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                                  />
+                                </div>
+                              </>
+                            )}
+
+                            {/* Instruction (Common for all) */}
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                Lời Hướng dẫn cho ứng viên
+                              </Label>
+                              <Textarea
+                                value={selectedRound.configData?.instruction || ""}
+                                onChange={(e) =>
+                                  updateRoundConfigField(
+                                    selectedRoundIndex,
+                                    "instruction",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Hướng dẫn ứng viên làm bài..."
+                                rows={4}
+                                className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </ScrollArea>
-                  </div>
+                      </ScrollArea>
+                    </DialogContent>
+                  </Dialog>
                 )}
               </div>
 
