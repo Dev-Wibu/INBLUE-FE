@@ -469,3 +469,13 @@ export interface UserUsageRecord {
   quizSetRemaining?: number | null;
   expiredAt?: string | null;
 }
+
+export type SchemaSummaryResponse = components["schemas"]["SummaryResponse"];
+export type SchemaDetailResponse = components["schemas"]["DetailResponse"];
+export type SchemaUpsertTemplateRequest = components["schemas"]["UpsertTemplateRequest"];
+export type SchemaTemplateRoundItem = components["schemas"]["TemplateRoundItem"];
+
+export type SummaryResponse = SchemaSummaryResponse;
+export type DetailResponse = SchemaDetailResponse;
+export type UpsertTemplateRequest = SchemaUpsertTemplateRequest;
+export type TemplateRoundItem = SchemaTemplateRoundItem;

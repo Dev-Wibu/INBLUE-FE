@@ -2994,6 +2994,17 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        CompilerResponseDto: {
+            status?: string;
+            /** Format: int32 */
+            passedTestCases?: number;
+            /** Format: int32 */
+            totalTestCases?: number;
+            /** Format: int64 */
+            executionTimeMs?: number;
+            errorMessage?: string;
+            testCases?: components["schemas"]["TestCaseResult"][];
+        };
         QuizAnswer: {
             questionText?: string;
             selectedAnswer?: string;
@@ -3003,7 +3014,7 @@ export interface components {
             textContent?: string;
             fileUrl?: string;
             quizAnswers?: components["schemas"]["QuizAnswer"][];
-            testCases?: components["schemas"]["TestCaseResult"][];
+            testCases?: components["schemas"]["CompilerResponseDto"];
         };
         SubmissionResult: {
             /** @enum {string} */
@@ -3165,10 +3176,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
@@ -3183,19 +3194,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3454,18 +3465,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
-            scriptingInvalid?: string;
-            includePreludes?: string[];
             includeCodas?: string[];
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
-            trimDirectiveWhitespaces?: string;
-            elIgnored?: string;
-            isXml?: string;
+            includePreludes?: string[];
             urlPatterns?: string[];
             defaultContentType?: string;
+            isXml?: string;
+            errorOnELNotFound?: string;
+            pageEncoding?: string;
+            scriptingInvalid?: string;
+            trimDirectiveWhitespaces?: string;
+            elIgnored?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -3502,9 +3513,6 @@ export interface components {
         ServletContext: {
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -3519,10 +3527,13 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            initParameterNames?: unknown;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
-            initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -3603,8 +3614,8 @@ export interface components {
             /** Format: int32 */
             maxAge?: number;
             httpOnly?: boolean;
-            secure?: boolean;
             domain?: string;
+            secure?: boolean;
             path?: string;
             name?: string;
             attributes?: {

@@ -11,7 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import type { SummaryResponse } from "@/interfaces";
 import { cn } from "@/lib/utils";
+import { interviewTemplateManager } from "@/services/interview-template.manager";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import { roundManager } from "@/services/round.manager";
 import {
@@ -77,7 +79,7 @@ interface UIRound {
 
 interface JobDescriptionRoundsDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
   jobDescription: JobDescription | null;
   onSaved?: () => void;
 }
@@ -272,6 +274,16 @@ export function JobDescriptionRoundsDialog({
   const [hasExistingRounds, setHasExistingRounds] = useState(false);
   const [availableTypes, setAvailableTypes] = useState<RoundType[]>([]);
 
+  // Templates management states
+  const [activeTab, setActiveTab] = useState<"rounds" | "templates">("rounds");
+  const [templates, setTemplates] = useState<SummaryResponse[]>([]);
+  const [isTemplatesLoading, setIsTemplatesLoading] = useState(false);
+  const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateCategory, setTemplateCategory] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+
   // Drag and drop states
   const [activeDragType, setActiveDragType] = useState<RoundType | null>(null);
   const [dragOverGap, setDragOverGap] = useState<number | null>(null);
@@ -452,6 +464,149 @@ export function JobDescriptionRoundsDialog({
         });
     }
   }, [isOpen, jobDescription]);
+
+  const fetchTemplates = async () => {
+    setIsTemplatesLoading(true);
+    const res = await interviewTemplateManager.getAllTemplates();
+    if (res.success && res.data) {
+      setTemplates(res.data);
+    } else {
+      toast.error(res.error || "Không thể tải danh sách mẫu quy trình");
+    }
+    setIsTemplatesLoading(false);
+  };
+
+  useEffect(() => {
+    if (isOpen && activeTab === "templates") {
+      fetchTemplates();
+    }
+  }, [isOpen, activeTab]);
+
+  const handleDeleteTemplate = async (id: number) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa mẫu quy trình này không?")) return;
+    const res = await interviewTemplateManager.deleteTemplate(id);
+    if (res.success) {
+      toast.success("Đã xóa mẫu quy trình tuyển dụng thành công!");
+      fetchTemplates();
+    } else {
+      toast.error(res.error || "Không thể xóa mẫu quy trình");
+    }
+  };
+
+  const handleApplyTemplate = async (id: number) => {
+    const res = await interviewTemplateManager.getTemplateById(id);
+    if (res.success && res.data) {
+      const template = res.data;
+      if (!template.rounds || template.rounds.length === 0) {
+        toast.error("Mẫu quy trình này không có vòng nào.");
+        return;
+      }
+
+      // Sort rounds by order
+      const sortedRounds = [...template.rounds].sort(
+        (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
+      );
+
+      const uiRounds: UIRound[] = sortedRounds.map((r) => ({
+        name: r.name,
+        roundType: r.roundType as RoundType,
+        passThreshold: r.passThreshold ?? 0.8,
+        configData: {
+          ...r.configData,
+          codingProblemsId:
+            r.configData?.codingProblems
+              ?.map((cp) => cp.problemId)
+              .filter((id): id is number => id !== undefined) ?? [],
+          codingProblems: r.configData?.codingProblems ?? [],
+        },
+      }));
+
+      // Calculate default layout positions for the new rounds count
+      const newPositions = uiRounds.map((_, idx) => ({
+        x: (idx % 3) * 300 + 40,
+        y: Math.floor(idx / 3) * 210 + 40,
+      }));
+
+      setRounds(uiRounds);
+      setPositions(newPositions);
+      toast.success(`Đã áp dụng mẫu "${template.name}" thành công!`);
+    } else {
+      toast.error(res.error || "Không thể tải chi tiết mẫu quy trình");
+    }
+  };
+
+  const handleSaveAsTemplate = async () => {
+    if (!templateName.trim()) {
+      toast.error("Vui lòng nhập tên mẫu");
+      return;
+    }
+    if (!templateCategory.trim()) {
+      toast.error("Vui lòng nhập danh mục");
+      return;
+    }
+    if (rounds.length === 0) {
+      toast.error("Quy trình trống, không có vòng nào để lưu làm mẫu!");
+      return;
+    }
+
+    setIsSavingTemplate(true);
+    try {
+      const payload = {
+        name: templateName,
+        category: templateCategory,
+        description: templateDescription,
+        rounds: rounds.map((r, idx) => ({
+          name: r.name || `Vòng ${idx + 1}`,
+          roundOrder: idx + 1,
+          roundType: r.roundType as RoundType,
+
+          passThreshold: Number(r.passThreshold ?? 0.8),
+          configData: {
+            instruction: r.configData?.instruction || "",
+            submissionFormat: r.configData?.submissionFormat || "",
+            timeLimitMinutes: Number(r.configData?.timeLimitMinutes ?? 0),
+            maxScore: Number(r.configData?.maxScore ?? 100),
+            aiSystemPrompt: r.configData?.aiSystemPrompt || "",
+            evaluationCriteria: r.configData?.evaluationCriteria || "",
+            quizQuestions: (r.configData?.quizQuestions || []).map((q) => ({
+              questionText: q.questionText || "",
+              options: q.options || [],
+              correctAnswer: q.correctAnswer || "",
+              points: Number(q.points ?? 0),
+            })),
+            codingProblems:
+              r.configData?.codingProblemsId?.map((id) => {
+                const cp = r.configData?.codingProblems?.find(
+                  (problem) => problem.problemId === id
+                );
+                return {
+                  problemId: id,
+                  title: cp?.title || `Bài tập #${id}`,
+                  difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
+                };
+              }) ?? [],
+          },
+        })),
+      };
+
+      const res = await interviewTemplateManager.createTemplate(payload);
+      if (res.success) {
+        toast.success("Đã lưu quy trình làm mẫu tuyển dụng thành công!");
+        setTemplateName("");
+        setTemplateCategory("");
+        setTemplateDescription("");
+        setSaveTemplateDialogOpen(false);
+        fetchTemplates();
+      } else {
+        toast.error(res.error || "Không thể lưu mẫu quy trình");
+      }
+    } catch (err) {
+      console.error("Error saving template:", err);
+      toast.error("Đã xảy ra lỗi khi lưu mẫu");
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
 
   // Handle drop from toolbox onto the free-form canvas at a specific position
   const handleCanvasDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -736,44 +891,145 @@ export function JobDescriptionRoundsDialog({
           <>
             {/* 1. LEFT SIDEBAR: Available Rounds Toolbox (occupies full height) */}
             <div className="flex h-full w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30">
-              <div className="flex h-[72px] shrink-0 flex-col justify-center border-b border-slate-200 bg-slate-100/30 px-5 dark:border-slate-800 dark:bg-slate-900/20">
-                <h3 className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-400">
-                  Mẫu vòng tuyển dụng
-                </h3>
-                <p className="dark:text-slate-550 mt-1 text-[11px] text-slate-500">
-                  Kéo các mẫu này thả vào quy trình ở giữa
-                </p>
-              </div>
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-5">
-                <div className="my-auto space-y-3.5 py-2">
-                  {AVAILABLE_ROUNDS_TEMPLATES.filter((t) => availableTypes.includes(t.type)).map(
-                    (template) => (
-                      <div
-                        key={template.type}
-                        draggable
-                        onDragStart={() => setActiveDragType(template.type)}
-                        onDragEnd={() => setActiveDragType(null)}
-                        className={cn(
-                          "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-lg active:cursor-grabbing dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-900",
-                          template.bgColor,
-                          template.color
-                        )}>
-                        <div className="mt-0.5 shrink-0 rounded-xl bg-slate-100 p-2 shadow-inner dark:bg-black/40">
-                          {template.icon}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-sm leading-tight font-bold text-slate-800 transition-colors group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
-                            {template.title}
-                          </h4>
-                          <p className="group-hover:text-slate-650 mt-1 text-xs leading-normal text-slate-500 dark:text-slate-400 dark:group-hover:text-slate-300">
-                            {template.description}
-                          </p>
-                        </div>
-                      </div>
-                    )
-                  )}
+              {/* Tab Switcher Header */}
+              <div className="flex h-[72px] shrink-0 flex-col justify-center border-b border-slate-200 bg-slate-100/30 px-4 dark:border-slate-800 dark:bg-slate-900/20">
+                <div className="flex rounded-lg bg-slate-200/60 p-1 dark:bg-slate-800/60">
+                  <button
+                    onClick={() => setActiveTab("rounds")}
+                    className={cn(
+                      "flex-1 rounded-md py-1.5 text-center text-xs font-bold transition-all duration-200",
+                      activeTab === "rounds"
+                        ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    )}>
+                    Vòng đơn lẻ
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("templates")}
+                    className={cn(
+                      "flex-1 rounded-md py-1.5 text-center text-xs font-bold transition-all duration-200",
+                      activeTab === "templates"
+                        ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    )}>
+                    Mẫu quy trình
+                  </button>
                 </div>
               </div>
+
+              {/* Sidebar Content */}
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
+                {activeTab === "rounds" ? (
+                  <div className="my-auto space-y-3.5 py-2">
+                    {AVAILABLE_ROUNDS_TEMPLATES.filter((t) => availableTypes.includes(t.type)).map(
+                      (template) => (
+                        <div
+                          key={template.type}
+                          draggable
+                          onDragStart={() => setActiveDragType(template.type)}
+                          onDragEnd={() => setActiveDragType(null)}
+                          className={cn(
+                            "group flex cursor-grab items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-lg active:cursor-grabbing dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-900",
+                            template.bgColor,
+                            template.color
+                          )}>
+                          <div className="mt-0.5 shrink-0 rounded-xl bg-slate-100 p-2 shadow-inner dark:bg-black/40">
+                            {template.icon}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-sm leading-tight font-bold text-slate-800 transition-colors group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
+                              {template.title}
+                            </h4>
+                            <p className="group-hover:text-slate-650 mt-1 text-xs leading-normal text-slate-500 dark:text-slate-400 dark:group-hover:text-slate-300">
+                              {template.description}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4 py-2">
+                    {isTemplatesLoading ? (
+                      <div className="text-slate-450 flex flex-col items-center justify-center gap-2 py-10 dark:text-slate-400">
+                        <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
+                        <span className="text-xs">Đang tải danh sách mẫu...</span>
+                      </div>
+                    ) : templates.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-center text-slate-400 dark:text-slate-500">
+                        <Save className="text-slate-350 mb-2 h-8 w-8 dark:text-slate-600" />
+                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                          Chưa có mẫu nào
+                        </span>
+                        <p className="text-slate-450 mt-1 max-w-[200px] text-[11px] leading-normal dark:text-slate-500">
+                          Thiết lập quy trình rồi bấm "Lưu quy trình làm mẫu" để lưu lại dùng cho
+                          các lần sau.
+                        </p>
+                      </div>
+                    ) : (
+                      templates.map((tpl) => (
+                        <div
+                          key={tpl.id}
+                          className="group flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 transition-all duration-200 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/40 dark:hover:border-slate-700">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              {tpl.category && (
+                                <span className="dark:text-slate-450 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-slate-800">
+                                  {tpl.category}
+                                </span>
+                              )}
+                              <h4
+                                className="dark:text-slate-250 mt-1 truncate text-sm font-bold text-slate-800"
+                                title={tpl.name ?? ""}>
+                                {tpl.name}
+                              </h4>
+                            </div>
+                          </div>
+                          {tpl.description && (
+                            <p className="line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                              {tpl.description}
+                            </p>
+                          )}
+                          <div className="mt-1 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-2 dark:border-slate-800/40">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteTemplate(tpl.id!)}
+                              className="h-7 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-950/40">
+                              Xóa
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApplyTemplate(tpl.id!)}
+                              className="h-7 border-slate-200 px-2.5 text-xs hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 dark:hover:text-white">
+                              Áp dụng
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Save template action button under templates tab */}
+              {activeTab === "templates" && (
+                <div className="shrink-0 border-t border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                  <Button
+                    onClick={() => {
+                      if (rounds.length === 0) {
+                        toast.error("Quy trình trống, không thể lưu làm mẫu!");
+                        return;
+                      }
+                      setSaveTemplateDialogOpen(true);
+                    }}
+                    className="w-full gap-2 bg-blue-600 font-bold text-white hover:bg-blue-700">
+                    <Save className="h-4 w-4" />
+                    Lưu quy trình làm mẫu
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* MAIN CONTENT AREA: Header, Center Canvas & Right Config Panel, and Footer */}
@@ -1487,6 +1743,81 @@ export function JobDescriptionRoundsDialog({
                   </DialogContent>
                 </Dialog>
               )}
+
+              {/* 4. SAVE AS TEMPLATE DIALOG */}
+              <Dialog open={saveTemplateDialogOpen} onOpenChange={setSaveTemplateDialogOpen}>
+                <DialogContent
+                  showCloseButton={false}
+                  className="flex max-h-[85vh] w-[450px] max-w-[96vw] flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/30">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                      Lưu quy trình phỏng vấn làm mẫu
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 rounded-full px-3 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                      onClick={() => setSaveTemplateDialogOpen(false)}>
+                      Đóng
+                    </Button>
+                  </div>
+
+                  <div className="flex-1 space-y-4 p-5">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Tên mẫu <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        value={templateName}
+                        onChange={(e) => setTemplateName(e.target.value)}
+                        placeholder="Ví dụ: FAANG Software Engineer..."
+                        className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Danh mục <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        value={templateCategory}
+                        onChange={(e) => setTemplateCategory(e.target.value)}
+                        placeholder="Ví dụ: Backend, Fullstack, DevOps..."
+                        className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Mô tả mẫu quy trình
+                      </Label>
+                      <Textarea
+                        value={templateDescription}
+                        onChange={(e) => setTemplateDescription(e.target.value)}
+                        placeholder="Mô tả mục đích hoặc tiêu chí của mẫu quy trình này..."
+                        rows={4}
+                        className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 justify-end gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/30">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSaveTemplateDialogOpen(false)}>
+                      Hủy
+                    </Button>
+                    <Button
+                      size="sm"
+                      disabled={isSavingTemplate}
+                      onClick={handleSaveAsTemplate}
+                      className="bg-blue-600 font-bold text-white hover:bg-blue-700">
+                      {isSavingTemplate ? "Đang lưu..." : "Lưu mẫu"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {/* Footer inside the main column */}
               <div className="flex shrink-0 justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900/50">
