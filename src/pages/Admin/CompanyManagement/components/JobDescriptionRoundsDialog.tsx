@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScoreInput } from "@/components/ui/score-input";
 import {
   Select,
   SelectContent,
@@ -1367,51 +1368,46 @@ export function JobDescriptionRoundsDialog({
                             />
                           </div>
 
-                          {/* Điểm tối đa & Điểm đạt — same row */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Điểm tối đa (Max Score)
-                              </Label>
-                              <Input
-                                type="number"
-                                min={1}
-                                value={selectedRound.configData?.maxScore ?? 100}
-                                onChange={(e) =>
-                                  updateRoundConfigField(
-                                    selectedRoundIndex,
-                                    "maxScore",
-                                    Number(e.target.value)
-                                  )
-                                }
-                                className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                              />
-                            </div>
+                          {/* Điểm tối đa */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              Điểm tối đa (Max Score)
+                            </Label>
+                            <ScoreInput
+                              value={selectedRound.configData?.maxScore ?? 100}
+                              min={1}
+                              max={500}
+                              step={5}
+                              accent="indigo"
+                              onChange={(v) =>
+                                updateRoundConfigField(selectedRoundIndex, "maxScore", v)
+                              }
+                            />
+                          </div>
 
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Điểm đạt tối thiểu (Pass)
-                              </Label>
-                              <Input
-                                type="number"
-                                min={0}
-                                max={selectedRound.configData?.maxScore ?? 100}
-                                value={Math.round(
-                                  (selectedRound.passThreshold ?? 0.8) *
-                                    (selectedRound.configData?.maxScore ?? 100)
-                                )}
-                                onChange={(e) => {
-                                  const val = Number(e.target.value);
-                                  const max = selectedRound.configData?.maxScore ?? 100;
-                                  updateRoundField(
-                                    selectedRoundIndex,
-                                    "passThreshold",
-                                    max > 0 ? val / max : 0.8
-                                  );
-                                }}
-                                className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                              />
-                            </div>
+                          {/* Điểm đạt tối thiểu */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              Điểm đạt tối thiểu (Pass)
+                            </Label>
+                            <ScoreInput
+                              value={Math.round(
+                                (selectedRound.passThreshold ?? 0.8) *
+                                  (selectedRound.configData?.maxScore ?? 100)
+                              )}
+                              min={0}
+                              max={selectedRound.configData?.maxScore ?? 100}
+                              step={1}
+                              accent="emerald"
+                              onChange={(val) => {
+                                const max = selectedRound.configData?.maxScore ?? 100;
+                                updateRoundField(
+                                  selectedRoundIndex,
+                                  "passThreshold",
+                                  max > 0 ? val / max : 0.8
+                                );
+                              }}
+                            />
                           </div>
 
                           {/* Thời gian làm bài (hidden for CV & EMAIL) */}
