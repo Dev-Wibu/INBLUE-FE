@@ -678,6 +678,45 @@ export function InterviewTemplateManagementPage() {
     setIsEditorOpen(true);
   };
 
+  const handleEditRoundDirectly = (template: DetailResponse, roundIndex: number) => {
+    setEditorMode("edit");
+    setTemplateName(template.name || "");
+    setTemplateCategory(template.category || "");
+    setTemplateDescription(template.description || "");
+
+    const clickedRound = template.rounds?.[roundIndex];
+    const sortedRounds = [...(template.rounds || [])].sort(
+      (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
+    );
+    const sortedIndex = sortedRounds.findIndex((r) => r === clickedRound);
+
+    const uiRounds: UIRound[] = sortedRounds.map((r) => ({
+      name: r.name,
+      roundType: r.roundType as RoundType,
+      passThreshold: r.passThreshold ?? 0.8,
+      configData: {
+        ...r.configData,
+        codingProblemsId:
+          r.configData?.codingProblems
+            ?.map((cp) => cp.problemId)
+            .filter((id): id is number => id !== undefined) ?? [],
+        codingProblems: r.configData?.codingProblems ?? [],
+      },
+    }));
+
+    const newPositions = uiRounds.map((_, idx) => ({
+      x: (idx % 3) * 300 + 40,
+      y: Math.floor(idx / 3) * 210 + 40,
+    }));
+
+    setRounds(uiRounds);
+    setPositions(newPositions);
+    setZoomLevel(1.0);
+    setSelectedRoundIndex(sortedIndex !== -1 ? sortedIndex : 0);
+    setConfigModalOpen(true);
+    setIsEditorOpen(true);
+  };
+
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
       toast.error("Vui lòng nhập tên mẫu");
@@ -956,7 +995,7 @@ export function InterviewTemplateManagementPage() {
                   </div>
 
                   {/* Vertical Timeline */}
-                  <div className="relative space-y-5 pl-6 before:absolute before:top-2 before:bottom-2 before:left-[11px] before:w-[1.5px] before:bg-slate-200 dark:before:bg-slate-800">
+                  <div className="relative space-y-5 pl-12 before:absolute before:top-2 before:bottom-2 before:left-[29px] before:w-[1.5px] before:bg-slate-200 dark:before:bg-slate-800">
                     {selectedTemplate.rounds?.map((round, idx) => {
                       const templateMetadata = AVAILABLE_ROUNDS_TEMPLATES.find(
                         (t) => t.type === round.roundType
@@ -971,11 +1010,13 @@ export function InterviewTemplateManagementPage() {
                       return (
                         <div key={idx} className="group relative">
                           {/* Dot step number */}
-                          <div className="dark:bg-slate-850 absolute top-1 -left-[29px] flex h-[23px] w-[23px] items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-600 shadow-sm dark:border-slate-950 dark:text-slate-400">
+                          <div className="dark:bg-slate-850 absolute top-1 -left-[30px] flex h-[23px] w-[23px] items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-600 shadow-sm dark:border-slate-950 dark:text-slate-400">
                             {idx + 1}
                           </div>
 
-                          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60">
+                          <div
+                            onClick={() => handleEditRoundDirectly(selectedTemplate, idx)}
+                            className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-indigo-500/50 hover:bg-slate-50/50 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-400/50 dark:hover:bg-slate-900">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <div className="flex items-center gap-3">
                                 <div

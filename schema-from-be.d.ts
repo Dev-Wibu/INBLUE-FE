@@ -3181,10 +3181,10 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3465,18 +3465,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            includeCodas?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
-            includePreludes?: string[];
-            urlPatterns?: string[];
-            defaultContentType?: string;
-            isXml?: string;
+            trimDirectiveWhitespaces?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
-            trimDirectiveWhitespaces?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
             elIgnored?: string;
+            isXml?: string;
+            defaultContentType?: string;
+            urlPatterns?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -3500,12 +3500,12 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            redirectView?: boolean;
             propagateQueryProperties?: boolean;
+            redirectView?: boolean;
+            attributesCSV?: string;
             attributesMap?: {
                 [key: string]: unknown;
             };
-            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
@@ -3531,9 +3531,9 @@ export interface components {
             /** Format: int32 */
             sessionTimeout?: number;
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            initParameterNames?: unknown;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -3611,12 +3611,12 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
+            secure?: boolean;
+            path?: string;
             /** Format: int32 */
             maxAge?: number;
             httpOnly?: boolean;
             domain?: string;
-            secure?: boolean;
-            path?: string;
             name?: string;
             attributes?: {
                 [key: string]: string;
