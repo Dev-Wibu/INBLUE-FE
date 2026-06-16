@@ -23,6 +23,7 @@ import {
   FolderOpen,
   GraduationCap,
   LayoutDashboard,
+  LayoutTemplate,
   MessageSquare,
   Newspaper,
   Star,
@@ -39,6 +40,7 @@ import { CandidateProfileManagementPage } from "../CandidateProfileManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
+import { InterviewTemplateManagementPage } from "../InterviewTemplateManagement/InterviewTemplateManagementPage";
 import { MentorManagementPage } from "../MentorManagement";
 import { NotificationManagementPage } from "../NotificationManagement";
 import { PostManagementPage } from "../PostManagement";
@@ -65,7 +67,8 @@ type TabType =
   | "quizSets"
   | "posts"
   | "companies"
-  | "candidateProfiles";
+  | "candidateProfiles"
+  | "interviewTemplates";
 
 const VALID_TAB_TYPES: TabType[] = [
   "dashboard",
@@ -83,6 +86,7 @@ const VALID_TAB_TYPES: TabType[] = [
   "posts",
   "companies",
   "candidateProfiles",
+  "interviewTemplates",
 ];
 
 const isValidTabType = (value: string): value is TabType => {
@@ -154,6 +158,10 @@ const getAvailableTabs = (
     type: "candidateProfiles",
     label: t("common.candidateProfile"),
   },
+  {
+    type: "interviewTemplates",
+    label: "Mẫu quy trình",
+  },
 ];
 const TAB_ICONS: Record<TabType, React.ElementType> = {
   dashboard: LayoutDashboard,
@@ -171,6 +179,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   posts: Newspaper,
   companies: Building2,
   candidateProfiles: FileText,
+  interviewTemplates: LayoutTemplate,
 };
 const TAB_COLORS: Record<TabType, string> = {
   dashboard: "text-indigo-600",
@@ -188,6 +197,7 @@ const TAB_COLORS: Record<TabType, string> = {
   posts: "text-purple-500",
   companies: "text-sky-600",
   candidateProfiles: "text-teal-600",
+  interviewTemplates: "text-violet-600",
 };
 const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup[] => [
   {
@@ -219,6 +229,12 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         label: t("common.manageInterviewSessions"),
         icon: Video,
         iconColor: "text-green-600",
+      },
+      {
+        type: "interviewTemplates",
+        label: "Mẫu quy trình",
+        icon: LayoutTemplate,
+        iconColor: "text-violet-600",
       },
     ],
   },
@@ -328,6 +344,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         icon: Video,
         label: t("common.interviewSession"),
         color: "text-green-600",
+      },
+      {
+        type: "interviewTemplates",
+        icon: LayoutTemplate,
+        label: "Mẫu quy trình",
+        color: "text-violet-600",
       },
     ],
   },
@@ -630,6 +652,8 @@ export function AdminDashboardPage() {
         return <CompanyManagementPage isActive={isTabActive} />;
       case "candidateProfiles":
         return <CandidateProfileManagementPage />;
+      case "interviewTemplates":
+        return <InterviewTemplateManagementPage />;
       default:
         return <div>{t("common.invalidTabType")}</div>;
     }
