@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { CodingEditor } from "@/components/ui/coding-editor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1319,7 +1320,7 @@ export function JobDescriptionRoundsDialog({
                     onOpenAutoFocus={(e) => e.preventDefault()}
                     className={cn(
                       "flex flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950",
-                      selectedRound?.roundType === "QUIZ"
+                      selectedRound?.roundType === "QUIZ" || selectedRound?.roundType === "CODING"
                         ? "h-[88vh] max-h-[88vh] w-[1240px] max-w-[96vw]"
                         : "h-auto max-h-[85vh] w-[960px] max-w-[96vw]"
                     )}>
@@ -1379,7 +1380,9 @@ export function JobDescriptionRoundsDialog({
                     <div
                       className={cn(
                         "flex-1 overflow-hidden",
-                        selectedRound.roundType !== "QUIZ" && "overflow-y-auto p-5"
+                        selectedRound.roundType !== "QUIZ" &&
+                          selectedRound.roundType !== "CODING" &&
+                          "overflow-y-auto p-5"
                       )}>
                       {selectedRound.roundType === "QUIZ" ? (
                         <QuizEditor
@@ -1387,6 +1390,35 @@ export function JobDescriptionRoundsDialog({
                           onChange={(questions) =>
                             updateRoundConfigField(selectedRoundIndex, "quizQuestions", questions)
                           }
+                          maxScore={selectedRound.configData?.maxScore ?? 100}
+                          onMaxScoreChange={(v) =>
+                            updateRoundConfigField(selectedRoundIndex, "maxScore", v)
+                          }
+                          passThreshold={selectedRound.passThreshold ?? 0.8}
+                          onPassThresholdChange={(v) =>
+                            updateRoundField(selectedRoundIndex, "passThreshold", v)
+                          }
+                          timeLimitMinutes={selectedRound.configData?.timeLimitMinutes ?? 0}
+                          onTimeLimitMinutesChange={(v) =>
+                            updateRoundConfigField(selectedRoundIndex, "timeLimitMinutes", v)
+                          }
+                        />
+                      ) : selectedRound.roundType === "CODING" ? (
+                        <CodingEditor
+                          codingProblemsId={selectedRound.configData?.codingProblemsId || []}
+                          codingProblems={selectedRound.configData?.codingProblems || []}
+                          onChange={(ids, problems) => {
+                            const updated = [...rounds];
+                            updated[selectedRoundIndex] = {
+                              ...updated[selectedRoundIndex],
+                              configData: {
+                                ...updated[selectedRoundIndex].configData,
+                                codingProblemsId: ids,
+                                codingProblems: problems,
+                              },
+                            };
+                            setRounds(updated);
+                          }}
                           maxScore={selectedRound.configData?.maxScore ?? 100}
                           onMaxScoreChange={(v) =>
                             updateRoundConfigField(selectedRoundIndex, "maxScore", v)
@@ -1508,39 +1540,7 @@ export function JobDescriptionRoundsDialog({
                               </>
                             )}
 
-                            {/* 3. CODING (codingProblemsId Array builder) */}
-                            {selectedRound.roundType === "CODING" && (
-                              <>
-                                <div className="space-y-1.5">
-                                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Mã danh sách bài tập (Coding Problem IDs)
-                                  </Label>
-                                  <Input
-                                    value={(selectedRound.configData?.codingProblemsId || []).join(
-                                      ", "
-                                    )}
-                                    onChange={(e) => {
-                                      const idsStr = e.target.value;
-                                      const parsedIds = idsStr
-                                        .split(",")
-                                        .map((id) => id.trim())
-                                        .filter((id) => id !== "" && !isNaN(Number(id)))
-                                        .map(Number);
-                                      updateRoundConfigField(
-                                        selectedRoundIndex,
-                                        "codingProblemsId",
-                                        parsedIds
-                                      );
-                                    }}
-                                    placeholder="Nhập danh sách ID, phân tách bằng dấu phẩy (,)"
-                                    className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                                  />
-                                  <p className="text-[10px] leading-normal text-slate-500">
-                                    Ví dụ: 101, 102, 105 (các mã bài tập từ cơ sở dữ liệu hệ thống).
-                                  </p>
-                                </div>
-                              </>
-                            )}
+                            {/* (Coding specific inputs removed since they are inline in CodingEditor) */}
 
                             {/* 4. AI INTERVIEW */}
                             {selectedRound.roundType === "AI_INTERVIEW" && (

@@ -17,6 +17,7 @@ export * from "./application.manager";
 export * from "./auth.manager";
 export * from "./candidate-profile.manager";
 export * from "./chat.manager";
+export * from "./coding-problem.manager";
 export * from "./company.manager";
 export * from "./dashboard-admin.manager";
 export * from "./interview-analysis.manager";

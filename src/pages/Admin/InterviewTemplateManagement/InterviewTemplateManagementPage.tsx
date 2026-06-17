@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { CodingEditor } from "@/components/ui/coding-editor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1456,7 +1457,7 @@ export function InterviewTemplateManagementPage() {
             onOpenAutoFocus={(e) => e.preventDefault()}
             className={cn(
               "flex flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950",
-              selectedRound?.roundType === "QUIZ"
+              selectedRound?.roundType === "QUIZ" || selectedRound?.roundType === "CODING"
                 ? "h-[88vh] max-h-[88vh] w-[1240px] max-w-[96vw]"
                 : "h-auto max-h-[85vh] w-[960px] max-w-[96vw]"
             )}>
@@ -1504,11 +1505,12 @@ export function InterviewTemplateManagementPage() {
               </Button>
             </div>
 
-            {/* Scrollable Form Body */}
             <div
               className={cn(
                 "flex-1 overflow-hidden",
-                selectedRound.roundType !== "QUIZ" && "overflow-y-auto"
+                selectedRound.roundType !== "QUIZ" &&
+                  selectedRound.roundType !== "CODING" &&
+                  "overflow-y-auto"
               )}>
               {selectedRound.roundType === "QUIZ" ? (
                 <QuizEditor
@@ -1516,6 +1518,35 @@ export function InterviewTemplateManagementPage() {
                   onChange={(questions) =>
                     updateRoundConfigField(selectedRoundIndex, "quizQuestions", questions)
                   }
+                  maxScore={selectedRound.configData?.maxScore ?? 100}
+                  onMaxScoreChange={(v) =>
+                    updateRoundConfigField(selectedRoundIndex, "maxScore", v)
+                  }
+                  passThreshold={selectedRound.passThreshold ?? 0.8}
+                  onPassThresholdChange={(v) =>
+                    updateRoundField(selectedRoundIndex, "passThreshold", v)
+                  }
+                  timeLimitMinutes={selectedRound.configData?.timeLimitMinutes ?? 0}
+                  onTimeLimitMinutesChange={(v) =>
+                    updateRoundConfigField(selectedRoundIndex, "timeLimitMinutes", v)
+                  }
+                />
+              ) : selectedRound.roundType === "CODING" ? (
+                <CodingEditor
+                  codingProblemsId={selectedRound.configData?.codingProblemsId || []}
+                  codingProblems={selectedRound.configData?.codingProblems || []}
+                  onChange={(ids, problems) => {
+                    const updated = [...rounds];
+                    updated[selectedRoundIndex] = {
+                      ...updated[selectedRoundIndex],
+                      configData: {
+                        ...updated[selectedRoundIndex].configData,
+                        codingProblemsId: ids,
+                        codingProblems: problems,
+                      },
+                    };
+                    setRounds(updated);
+                  }}
                   maxScore={selectedRound.configData?.maxScore ?? 100}
                   onMaxScoreChange={(v) =>
                     updateRoundConfigField(selectedRoundIndex, "maxScore", v)
@@ -1741,35 +1772,7 @@ export function InterviewTemplateManagementPage() {
                       </div>
                     )}
 
-                    {/* 4. CODING Specific */}
-                    {selectedRound.roundType === "CODING" && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Mã danh sách bài tập (Coding Problem IDs)
-                        </Label>
-                        <Input
-                          value={(selectedRound.configData?.codingProblemsId || []).join(", ")}
-                          onChange={(e) => {
-                            const idsStr = e.target.value;
-                            const parsedIds = idsStr
-                              .split(",")
-                              .map((id) => id.trim())
-                              .filter((id) => id !== "" && !isNaN(Number(id)))
-                              .map(Number);
-                            updateRoundConfigField(
-                              selectedRoundIndex,
-                              "codingProblemsId",
-                              parsedIds
-                            );
-                          }}
-                          placeholder="Nhập danh sách ID, phân tách bằng dấu phẩy (,)"
-                          className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                        />
-                        <p className="text-slate-550 text-[10px] leading-normal">
-                          Ví dụ: 101, 102, 105 (các mã bài tập từ cơ sở dữ liệu hệ thống).
-                        </p>
-                      </div>
-                    )}
+                    {/* (Coding specific inputs removed since they are inline in CodingEditor) */}
 
                     {/* 5. AI INTERVIEW Specific */}
                     {selectedRound.roundType === "AI_INTERVIEW" && (
