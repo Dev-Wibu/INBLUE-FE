@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowLeft,
   Check,
   Code,
   Edit2,
@@ -10,7 +11,6 @@ import {
   Search,
   Sparkles,
   Trash2,
-  X,
 } from "lucide-react";
 import * as React from "react";
 
@@ -124,9 +124,8 @@ const MOCK_QUESTION_BANK = [
 ];
 
 export function QuizEditor({ questions = [], onChange, disabled = false }: QuizEditorProps) {
-  // Modal states
-  const [editorModalOpen, setEditorModalOpen] = React.useState(false);
-  const [bankModalOpen, setBankModalOpen] = React.useState(false);
+  // Navigation / View states: "list" | "edit" | "bank"
+  const [currentView, setCurrentView] = React.useState<"list" | "edit" | "bank">("list");
 
   // Edit states
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
@@ -143,7 +142,7 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
   const [bankCategory, setBankCategory] = React.useState("All");
   const [bankDifficulty, setBankDifficulty] = React.useState("All");
 
-  const openAddModal = () => {
+  const openAddView = () => {
     setEditingIndex(-1);
     setEditForm({
       questionText: "",
@@ -151,10 +150,10 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
       correctAnswer: "",
       points: 10,
     });
-    setEditorModalOpen(true);
+    setCurrentView("edit");
   };
 
-  const openEditModal = (index: number) => {
+  const openEditView = (index: number) => {
     const q = questions[index];
     setEditingIndex(index);
     setEditForm({
@@ -163,7 +162,7 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
       correctAnswer: q.correctAnswer || "",
       points: q.points ?? 10,
     });
-    setEditorModalOpen(true);
+    setCurrentView("edit");
   };
 
   const saveQuestion = () => {
@@ -184,7 +183,7 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
     }
 
     onChange(updated);
-    setEditorModalOpen(false);
+    setCurrentView("list");
     setEditingIndex(null);
   };
 
@@ -219,19 +218,294 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
     });
 
     onChange([...questions, ...selectedQuestions]);
-    setBankModalOpen(false);
+    setCurrentView("list");
     setSelectedBankIndexes([]);
   };
 
   const categories = ["All", "JavaScript", "CSS", "React", "SQL", "OOP"];
 
+  // Render Inline Question Editor Form
+  if (currentView === "edit") {
+    return (
+      <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-5 transition-all dark:border-slate-800 dark:bg-slate-900/10">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/60">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setCurrentView("list")}
+            className="h-8 px-2 text-slate-500 hover:text-slate-900 dark:hover:text-white">
+            <ArrowLeft className="mr-1 h-4 w-4" /> Quay lại
+          </Button>
+          <span className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+          <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+            <Sparkles className="h-4 w-4 text-emerald-500" />
+            {editingIndex === -1
+              ? "Thêm câu hỏi mới"
+              : `Chỉnh sửa câu hỏi #${(editingIndex || 0) + 1}`}
+          </h3>
+        </div>
+
+        <div className="space-y-4">
+          {/* Question Text */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Nội dung câu hỏi
+            </Label>
+            <textarea
+              value={editForm.questionText || ""}
+              onChange={(e) => setEditForm({ ...editForm, questionText: e.target.value })}
+              placeholder="Nhập nội dung câu hỏi (ví dụ: JavaScript là gì?)... Bạn có thể sử dụng ký hiệu ``` để bọc mã code nếu cần."
+              className="min-h-[120px] w-full rounded-lg border border-slate-200 bg-white p-3 font-mono text-xs font-medium text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+            />
+          </div>
+
+          {/* Options */}
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Các phương án lựa chọn (A, B, C, D)
+            </Label>
+            {(editForm.options || ["", "", "", ""]).map((opt, oIdx) => (
+              <div key={oIdx} className="flex items-center gap-2">
+                <span className="w-5 text-center text-xs font-bold text-slate-400">
+                  {String.fromCharCode(65 + oIdx)}
+                </span>
+                <Input
+                  value={opt}
+                  onChange={(e) => {
+                    const newOpts = [...(editForm.options || ["", "", "", ""])];
+                    newOpts[oIdx] = e.target.value;
+                    setEditForm({ ...editForm, options: newOpts });
+                  }}
+                  placeholder={`Phương án ${String.fromCharCode(65 + oIdx)}`}
+                  className="h-8.5 border-slate-200 bg-white text-xs font-medium dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Correct Answer & Score */}
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Đáp án đúng
+              </Label>
+              <Select
+                value={editForm.correctAnswer || ""}
+                onValueChange={(val) => setEditForm({ ...editForm, correctAnswer: val })}>
+                <SelectTrigger className="h-8.5 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                  <SelectValue placeholder="Chọn đáp án đúng" />
+                </SelectTrigger>
+                <SelectContent className="border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
+                  {(editForm.options || ["", "", "", ""]).map((opt, oIdx) => (
+                    <SelectItem key={oIdx} value={opt || `Option-${oIdx}`} disabled={!opt.trim()}>
+                      {String.fromCharCode(65 + oIdx)}. {opt || "(Chưa nhập)"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Điểm số
+              </Label>
+              <Input
+                type="number"
+                min={1}
+                value={editForm.points ?? 10}
+                onChange={(e) => setEditForm({ ...editForm, points: Number(e.target.value) })}
+                className="h-8.5 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-slate-100 bg-transparent pt-4 dark:border-slate-800/60">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setCurrentView("list")}
+            className="h-8.5 border-slate-200 text-xs dark:border-slate-800">
+            Hủy
+          </Button>
+          <Button
+            type="button"
+            onClick={saveQuestion}
+            className="h-8.5 bg-emerald-600 px-4 text-xs text-white hover:bg-emerald-700">
+            Lưu câu hỏi
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Render Inline Question Bank View
+  if (currentView === "bank") {
+    return (
+      <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-5 transition-all dark:border-slate-800 dark:bg-slate-900/10">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/60">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setCurrentView("list")}
+            className="h-8 px-2 text-slate-500 hover:text-slate-900 dark:hover:text-white">
+            <ArrowLeft className="mr-1 h-4 w-4" /> Quay lại
+          </Button>
+          <span className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            Ngân hàng câu hỏi trắc nghiệm
+          </h3>
+        </div>
+
+        {/* Filters */}
+        <div className="border-slate-150 dark:border-slate-850 flex flex-col gap-3 rounded-xl border bg-white p-3 md:flex-row dark:bg-slate-950">
+          <div className="relative flex-1">
+            <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-400" />
+            <Input
+              value={bankSearch}
+              onChange={(e) => setBankSearch(e.target.value)}
+              placeholder="Tìm kiếm nội dung câu hỏi..."
+              className="h-8.5 border-slate-200 bg-white pl-8 text-xs dark:border-slate-800 dark:bg-slate-950"
+            />
+          </div>
+
+          {/* Category selector */}
+          <div className="flex flex-wrap items-center gap-1">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setBankCategory(cat)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[9px] font-bold transition-all",
+                  bankCategory === cat
+                    ? "border-indigo-600 bg-indigo-600 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400"
+                )}>
+                {cat === "All" ? "Tất cả" : cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Questions list */}
+        <div className="max-h-[380px] space-y-3 overflow-y-auto pr-1">
+          {filteredBank.map((q, idx) => {
+            const originalIndex = MOCK_QUESTION_BANK.findIndex(
+              (bq) => bq.questionText === q.questionText
+            );
+            const isSelected = selectedBankIndexes.includes(originalIndex);
+
+            return (
+              <div
+                key={idx}
+                onClick={() => toggleBankSelection(originalIndex)}
+                className={cn(
+                  "flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-all",
+                  isSelected
+                    ? "border-indigo-500 bg-indigo-500/[0.04] dark:bg-indigo-950/15"
+                    : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/20 dark:hover:border-slate-700"
+                )}>
+                <div className="mt-0.5">
+                  <div
+                    className={cn(
+                      "flex h-4 w-4 items-center justify-center rounded border transition-colors",
+                      isSelected
+                        ? "border-indigo-600 bg-indigo-600 text-white"
+                        : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950"
+                    )}>
+                    {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                  </div>
+                </div>
+
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 ring-1 ring-indigo-600/10 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400">
+                      {q.category}
+                    </span>
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold ring-1 ring-inset",
+                        q.difficulty === "Dễ" &&
+                          "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
+                        q.difficulty === "Trung bình" &&
+                          "bg-amber-50 text-amber-700 ring-amber-600/10 dark:bg-amber-950/20 dark:text-amber-400",
+                        q.difficulty === "Khó" &&
+                          "bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-950/20 dark:text-green-400"
+                      )}>
+                      {q.difficulty}
+                    </span>
+                    <span className="ml-auto text-[10px] font-semibold text-slate-400">
+                      {q.points} điểm
+                    </span>
+                  </div>
+
+                  <p className="text-slate-850 dark:border-slate-850 rounded-lg border border-slate-100 bg-slate-50 p-2 font-mono text-xs leading-relaxed font-semibold whitespace-pre-wrap dark:bg-slate-900/40 dark:text-slate-200">
+                    {q.questionText}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 pl-1 text-[10px] text-slate-500">
+                    {q.options.map((opt, oIdx) => (
+                      <div key={oIdx} className="truncate">
+                        <span className="font-bold text-slate-400">
+                          {String.fromCharCode(65 + oIdx)}.{" "}
+                        </span>
+                        <span>{opt}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {filteredBank.length === 0 && (
+            <div className="py-10 text-center text-xs text-slate-500">
+              Không tìm thấy câu hỏi phù hợp.
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-slate-100 bg-transparent pt-4 dark:border-slate-800/60">
+          <span className="text-xs font-medium text-slate-500">
+            Đã chọn{" "}
+            <strong className="text-indigo-600 dark:text-indigo-400">
+              {selectedBankIndexes.length}
+            </strong>{" "}
+            câu hỏi
+          </span>
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCurrentView("list")}
+              className="h-8.5 border-slate-200 text-xs dark:border-slate-800">
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              disabled={selectedBankIndexes.length === 0}
+              onClick={addSelectedFromBank}
+              className="h-8.5 bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700">
+              Thêm vào vòng thi
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Normal List View
   return (
     <div className="space-y-4">
       {/* Header Controls */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-            Câu hỏi trắc nghiệm ({questions.length})
+            Danh sách câu hỏi trắc nghiệm ({questions.length})
           </h4>
           <p className="text-[11px] text-slate-500">
             Tổng số điểm: {questions.reduce((sum, q) => sum + (q.points || 0), 0)} điểm
@@ -250,7 +524,7 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
               setBankSearch("");
               setBankCategory("All");
               setBankDifficulty("All");
-              setBankModalOpen(true);
+              setCurrentView("bank");
             }}
             className="h-8 border-slate-200 text-xs font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
             <FolderOpen className="mr-1.5 h-3.5 w-3.5 text-indigo-500" />
@@ -262,7 +536,7 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
             type="button"
             size="sm"
             disabled={disabled}
-            onClick={openAddModal}
+            onClick={openAddView}
             className="h-8 bg-emerald-600 text-xs font-semibold text-white hover:bg-emerald-700">
             <Plus className="mr-1 h-3.5 w-3.5" />
             Thêm câu hỏi
@@ -271,7 +545,7 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
       </div>
 
       {/* List of current questions */}
-      <div className="max-h-[350px] space-y-2.5 overflow-y-auto pr-1">
+      <div className="max-h-[380px] space-y-2.5 overflow-y-auto pr-1">
         {questions.map((q, idx) => {
           const qText = q.questionText || "";
           const isCode = qText.includes("```");
@@ -294,7 +568,7 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
                   )}
                 </div>
 
-                <p className="line-clamp-2 text-xs leading-relaxed font-medium break-words text-slate-800 dark:text-slate-300">
+                <p className="text-xs leading-relaxed font-semibold break-words whitespace-pre-wrap text-slate-800 dark:text-slate-300">
                   {qText.replace(/```[\s\S]*?```/g, "[Đoạn mã code]")}
                 </p>
 
@@ -331,8 +605,8 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
                     type="button"
                     variant="ghost"
                     size="icon"
-                    onClick={() => openEditModal(idx)}
-                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                    onClick={() => openEditView(idx)}
+                    className="animate-in fade-in zoom-in-75 h-8 w-8 text-slate-400 duration-200 hover:text-indigo-600 dark:hover:text-indigo-400">
                     <Edit2 className="h-3.5 w-3.5" />
                   </Button>
                   <Button
@@ -340,7 +614,7 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
                     variant="ghost"
                     size="icon"
                     onClick={() => deleteQuestion(idx)}
-                    className="h-8 w-8 text-slate-400 hover:text-red-500">
+                    className="animate-in fade-in zoom-in-75 h-8 w-8 text-slate-400 duration-200 hover:text-red-500">
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -359,283 +633,6 @@ export function QuizEditor({ questions = [], onChange, disabled = false }: QuizE
           </div>
         )}
       </div>
-
-      {/* Editor Overlay Modal (Manual Add / Edit) */}
-      {editorModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800">
-              <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
-                <Sparkles className="h-4 w-4 text-emerald-500" />
-                {editingIndex === -1
-                  ? "Thêm câu hỏi mới"
-                  : `Chỉnh sửa câu hỏi #${(editingIndex || 0) + 1}`}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setEditorModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="max-h-[75vh] space-y-4 overflow-y-auto p-5">
-              {/* Question Text */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Nội dung câu hỏi
-                </Label>
-                <textarea
-                  value={editForm.questionText || ""}
-                  onChange={(e) => setEditForm({ ...editForm, questionText: e.target.value })}
-                  placeholder="Nhập nội dung câu hỏi (ví dụ: JavaScript là gì?)... Bạn có thể sử dụng ký hiệu ``` để bọc mã code nếu cần."
-                  className="min-h-[100px] w-full rounded-lg border border-slate-200 bg-white p-3 text-xs font-medium text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                />
-              </div>
-
-              {/* Options */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Các phương án lựa chọn (A, B, C, D)
-                </Label>
-                {(editForm.options || ["", "", "", ""]).map((opt, oIdx) => (
-                  <div key={oIdx} className="flex items-center gap-2">
-                    <span className="w-5 text-center text-xs font-bold text-slate-400">
-                      {String.fromCharCode(65 + oIdx)}
-                    </span>
-                    <Input
-                      value={opt}
-                      onChange={(e) => {
-                        const newOpts = [...(editForm.options || ["", "", "", ""])];
-                        newOpts[oIdx] = e.target.value;
-                        setEditForm({ ...editForm, options: newOpts });
-                      }}
-                      placeholder={`Phương án ${String.fromCharCode(65 + oIdx)}`}
-                      className="h-8.5 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Correct Answer & Score */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Đáp án đúng
-                  </Label>
-                  <Select
-                    value={editForm.correctAnswer || ""}
-                    onValueChange={(val) => setEditForm({ ...editForm, correctAnswer: val })}>
-                    <SelectTrigger className="h-8.5 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-                      <SelectValue placeholder="Chọn đáp án đúng" />
-                    </SelectTrigger>
-                    <SelectContent className="border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
-                      {(editForm.options || ["", "", "", ""]).map((opt, oIdx) => (
-                        <SelectItem
-                          key={oIdx}
-                          value={opt || `Option-${oIdx}`}
-                          disabled={!opt.trim()}>
-                          {String.fromCharCode(65 + oIdx)}. {opt || "(Chưa nhập)"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Điểm số
-                  </Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={editForm.points ?? 10}
-                    onChange={(e) => setEditForm({ ...editForm, points: Number(e.target.value) })}
-                    className="h-8.5 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 rounded-b-2xl border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setEditorModalOpen(false)}
-                className="h-8 border-slate-200 text-xs dark:border-slate-800">
-                Hủy
-              </Button>
-              <Button
-                type="button"
-                onClick={saveQuestion}
-                className="h-8 bg-emerald-600 px-4 text-xs text-white hover:bg-emerald-700">
-                Lưu câu hỏi
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Question Bank Modal */}
-      {bankModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Ngân hàng câu hỏi trắc nghiệm
-                </h3>
-                <p className="mt-0.5 text-[10px] text-slate-400">
-                  Chọn các câu hỏi có sẵn để điền nhanh vào vòng thi tuyển dụng này.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setBankModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 p-4 md:flex-row dark:border-slate-800 dark:bg-slate-950/20">
-              <div className="relative flex-1">
-                <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-400" />
-                <Input
-                  value={bankSearch}
-                  onChange={(e) => setBankSearch(e.target.value)}
-                  placeholder="Tìm kiếm nội dung câu hỏi..."
-                  className="h-8.5 border-slate-200 bg-white pl-8 text-xs dark:border-slate-800 dark:bg-slate-950"
-                />
-              </div>
-
-              {/* Category selector */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setBankCategory(cat)}
-                    className={cn(
-                      "rounded-full border px-2.5 py-1 text-[10px] font-bold transition-all",
-                      bankCategory === cat
-                        ? "border-indigo-600 bg-indigo-600 text-white shadow-sm shadow-indigo-600/10"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400"
-                    )}>
-                    {cat === "All" ? "Tất cả" : cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Questions list */}
-            <div className="max-h-[50vh] space-y-3 overflow-y-auto p-4">
-              {filteredBank.map((q, idx) => {
-                // Find original index in MOCK_QUESTION_BANK
-                const originalIndex = MOCK_QUESTION_BANK.findIndex(
-                  (bq) => bq.questionText === q.questionText
-                );
-                const isSelected = selectedBankIndexes.includes(originalIndex);
-
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => toggleBankSelection(originalIndex)}
-                    className={cn(
-                      "flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-all",
-                      isSelected
-                        ? "border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/10"
-                        : "hover:border-slate-350 dark:hover:border-slate-750 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950/20"
-                    )}>
-                    <div className="mt-0.5">
-                      <div
-                        className={cn(
-                          "flex h-4 w-4 items-center justify-center rounded border transition-colors",
-                          isSelected
-                            ? "border-indigo-600 bg-indigo-600 text-white"
-                            : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950"
-                        )}>
-                        {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
-                      </div>
-                    </div>
-
-                    <div className="min-w-0 flex-1 space-y-1.5">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold text-indigo-700 ring-1 ring-indigo-600/10 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400">
-                          {q.category}
-                        </span>
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold ring-1 ring-inset",
-                            q.difficulty === "Dễ" &&
-                              "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
-                            q.difficulty === "Trung bình" &&
-                              "bg-amber-50 text-amber-700 ring-amber-600/10 dark:bg-amber-950/20 dark:text-amber-400",
-                            q.difficulty === "Khó" &&
-                              "bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-950/20 dark:text-green-400" // Note: fixed syntax here
-                          )}>
-                          {q.difficulty}
-                        </span>
-                        <span className="ml-auto text-[10px] font-semibold text-slate-400">
-                          {q.points} điểm
-                        </span>
-                      </div>
-
-                      <p className="dark:border-slate-850 rounded-lg border border-slate-100 bg-slate-50 p-2 font-mono text-xs leading-relaxed font-semibold whitespace-pre-wrap text-slate-800 dark:bg-slate-900/40 dark:text-slate-200">
-                        {q.questionText}
-                      </p>
-
-                      <div className="grid grid-cols-2 gap-2 pl-1 text-[10px] text-slate-500">
-                        {q.options.map((opt, oIdx) => (
-                          <div key={oIdx} className="truncate">
-                            <span className="font-bold text-slate-400">
-                              {String.fromCharCode(65 + oIdx)}.{" "}
-                            </span>
-                            <span>{opt}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {filteredBank.length === 0 && (
-                <div className="py-10 text-center text-xs text-slate-500">
-                  Không tìm thấy câu hỏi phù hợp.
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between rounded-b-2xl border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-              <span className="text-xs font-medium text-slate-500">
-                Đã chọn{" "}
-                <strong className="text-indigo-600 dark:text-indigo-400">
-                  {selectedBankIndexes.length}
-                </strong>{" "}
-                câu hỏi
-              </span>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setBankModalOpen(false)}
-                  className="h-8 border-slate-200 text-xs dark:border-slate-800">
-                  Hủy
-                </Button>
-                <Button
-                  type="button"
-                  disabled={selectedBankIndexes.length === 0}
-                  onClick={addSelectedFromBank}
-                  className="h-8 bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700">
-                  Thêm vào vòng thi
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

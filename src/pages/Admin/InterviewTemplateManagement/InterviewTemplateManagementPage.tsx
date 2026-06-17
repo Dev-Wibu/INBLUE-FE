@@ -1499,311 +1499,428 @@ export function InterviewTemplateManagementPage() {
               </Button>
             </div>
 
-            {/* Scrollable Form Body - Side by Side layout */}
+            {/* Scrollable Form Body */}
             <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-12">
-                {/* Left Column: General Configuration (col-span-5) */}
-                <div className="space-y-5 lg:col-span-5">
-                  <div className="border-b border-slate-100 pb-2 dark:border-slate-800/40">
-                    <h4 className="text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                      Cấu hình chung
+              {selectedRound.roundType === "QUIZ" ? (
+                <div className="space-y-6 p-6">
+                  {/* General settings in a compact grid at the top */}
+                  <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/10">
+                    <h4 className="mb-3 text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                      Cấu hình chung vòng trắc nghiệm
                     </h4>
-                  </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      {/* Tên vòng */}
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Tên vòng tuyển dụng
+                        </Label>
+                        <Input
+                          value={selectedRound.name || ""}
+                          onChange={(e) =>
+                            updateRoundField(selectedRoundIndex, "name", e.target.value)
+                          }
+                          placeholder="Nhập tên vòng..."
+                          className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                        />
+                      </div>
 
-                  <div className="space-y-4">
-                    {/* Tên vòng tuyển dụng */}
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Tên vòng tuyển dụng
-                      </Label>
-                      <Input
-                        value={selectedRound.name || ""}
-                        onChange={(e) =>
-                          updateRoundField(selectedRoundIndex, "name", e.target.value)
-                        }
-                        placeholder="Nhập tên vòng..."
-                        className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                      />
-                    </div>
+                      {/* Điểm tối đa */}
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Điểm tối đa (Max Score)
+                        </Label>
+                        <ScoreInput
+                          value={selectedRound.configData?.maxScore ?? 100}
+                          min={1}
+                          max={500}
+                          step={5}
+                          accent="indigo"
+                          variant="simple"
+                          onChange={(v) =>
+                            updateRoundConfigField(selectedRoundIndex, "maxScore", v)
+                          }
+                        />
+                      </div>
 
-                    {/* Điểm tối đa */}
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Điểm tối đa (Max Score)
-                      </Label>
-                      <ScoreInput
-                        value={selectedRound.configData?.maxScore ?? 100}
-                        min={1}
-                        max={500}
-                        step={5}
-                        accent="indigo"
-                        variant="simple"
-                        onChange={(v) => updateRoundConfigField(selectedRoundIndex, "maxScore", v)}
-                      />
-                    </div>
+                      {/* Điểm đạt tối thiểu */}
+                      <div className="flex flex-col items-center space-y-1.5">
+                        <Label className="self-start text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Điểm đạt tối thiểu (Pass)
+                        </Label>
+                        <ScoreInput
+                          value={Math.round(
+                            (selectedRound.passThreshold ?? 0.8) *
+                              (selectedRound.configData?.maxScore ?? 100)
+                          )}
+                          min={0}
+                          max={selectedRound.configData?.maxScore ?? 100}
+                          step={1}
+                          accent="emerald"
+                          onChange={(val) => {
+                            const max = selectedRound.configData?.maxScore ?? 100;
+                            updateRoundField(
+                              selectedRoundIndex,
+                              "passThreshold",
+                              max > 0 ? val / max : 0.8
+                            );
+                          }}
+                        />
+                      </div>
 
-                    {/* Điểm đạt tối thiểu */}
-                    <div className="flex flex-col items-center space-y-1.5">
-                      <Label className="self-start text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Điểm đạt tối thiểu (Pass)
-                      </Label>
-                      <ScoreInput
-                        value={Math.round(
-                          (selectedRound.passThreshold ?? 0.8) *
-                            (selectedRound.configData?.maxScore ?? 100)
-                        )}
-                        min={0}
-                        max={selectedRound.configData?.maxScore ?? 100}
-                        step={1}
-                        accent="emerald"
-                        onChange={(val) => {
-                          const max = selectedRound.configData?.maxScore ?? 100;
-                          updateRoundField(
-                            selectedRoundIndex,
-                            "passThreshold",
-                            max > 0 ? val / max : 0.8
-                          );
-                        }}
-                      />
-                    </div>
-
-                    {/* Thời gian làm bài (only for rounds that need it) */}
-                    {selectedRound.roundType !== "CV_SCREENING" &&
-                      selectedRound.roundType !== "EMAIL_SIMULATOR" && (
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            Thời gian làm bài (Phút)
-                          </Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              min={0}
-                              value={selectedRound.configData?.timeLimitMinutes ?? 0}
-                              onChange={(e) =>
-                                updateRoundConfigField(
-                                  selectedRoundIndex,
-                                  "timeLimitMinutes",
-                                  Number(e.target.value)
-                                )
-                              }
-                              className="w-28 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                            />
-                            <span className="text-xs text-slate-400">(0 = không giới hạn)</span>
-                          </div>
+                      {/* Thời gian làm bài */}
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Thời gian làm bài (Phút)
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min={0}
+                            value={selectedRound.configData?.timeLimitMinutes ?? 0}
+                            onChange={(e) =>
+                              updateRoundConfigField(
+                                selectedRoundIndex,
+                                "timeLimitMinutes",
+                                Number(e.target.value)
+                              )
+                            }
+                            className="w-full border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                          />
+                          <span className="shrink-0 text-[10px] text-slate-400">
+                            (0 = không giới hạn)
+                          </span>
                         </div>
-                      )}
-
-                    {/* Định dạng nộp hồ sơ (only if CV_SCREENING) */}
-                    {selectedRound.roundType === "CV_SCREENING" && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Định dạng nộp hồ sơ
-                        </Label>
-                        <Select
-                          value={selectedRound.configData?.submissionFormat || "pdf"}
-                          onValueChange={(val) =>
-                            updateRoundConfigField(selectedRoundIndex, "submissionFormat", val)
-                          }>
-                          <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                            <SelectItem value="pdf">Tệp PDF (.pdf)</SelectItem>
-                            <SelectItem value="doc">Tệp Word (.doc, .docx)</SelectItem>
-                            <SelectItem value="any">Tất cả định dạng tài liệu</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Lời Hướng dẫn cho ứng viên */}
-                  <div className="space-y-1.5 border-t border-slate-100 pt-4 dark:border-slate-800/40">
-                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Lời Hướng dẫn cho ứng viên
-                    </Label>
-                    <Textarea
-                      value={selectedRound.configData?.instruction || ""}
-                      onChange={(e) =>
-                        updateRoundConfigField(selectedRoundIndex, "instruction", e.target.value)
-                      }
-                      placeholder={
-                        selectedRound.roundType === "CV_SCREENING"
-                          ? "Ví dụ: Vui lòng tải lên CV định dạng PDF của bạn để hệ thống tự động đánh giá và chấm điểm."
-                          : selectedRound.roundType === "EMAIL_SIMULATOR"
-                            ? "Ví dụ: Hãy đóng vai một nhân viên chăm sóc khách hàng, phản hồi lại email khiếu nại của khách hàng dưới đây. Chú ý thái độ ôn hòa, xin lỗi về sự cố và đề xuất hướng giải quyết cụ thể."
-                            : "Hướng dẫn ứng viên làm bài..."
-                      }
-                      rows={4}
-                      className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Column: Round Specific Configurations (col-span-7) */}
-                <div className="space-y-5 lg:col-span-7 lg:border-l lg:border-slate-200 lg:pl-6 lg:dark:border-slate-800">
-                  <div className="border-b border-slate-100 pb-2 dark:border-slate-800/40">
-                    <h4 className="text-slate-450 text-xs font-bold tracking-wider uppercase dark:text-slate-500">
-                      Cấu hình chi tiết
-                    </h4>
-                  </div>
-
-                  {/* 1. CV_SCREENING Specific */}
-                  {selectedRound.roundType === "CV_SCREENING" && (
-                    <div className="space-y-4">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Tiêu chí chấm điểm bổ sung của HR (Add-on Criteria)
-                        </Label>
-                        <Textarea
-                          value={selectedRound.configData?.aiSystemPrompt || ""}
-                          onChange={(e) =>
-                            updateRoundConfigField(
-                              selectedRoundIndex,
-                              "aiSystemPrompt",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Ví dụ:&#10;- Cộng thêm 10 điểm cho ứng viên có chứng chỉ AWS/Google Cloud.&#10;- Ưu tiên các hồ sơ có bài báo khoa học (paper) đã xuất bản hoặc đạt giải thưởng học thuật.&#10;- Trừ 5 điểm nếu ứng viên không ghi rõ thời gian làm việc tại mỗi công ty."
-                          rows={6}
-                          className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                        />
-                        <p className="text-[10px] leading-normal text-slate-500">
-                          Các tiêu chí bổ sung này sẽ được gửi kèm cùng với cấu hình gốc của hệ
-                          thống để AI tự động cộng/trừ điểm theo khẩu vị tuyển dụng của bạn.
-                        </p>
                       </div>
                     </div>
-                  )}
 
-                  {/* 2. EMAIL_SIMULATOR Specific */}
-                  {selectedRound.roundType === "EMAIL_SIMULATOR" && (
-                    <div className="space-y-5">
-                      {/* Đề bài / Tình huống giả lập Email */}
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Đề bài / Tình huống giả lập Email (Scenario)
-                        </Label>
-                        <Textarea
-                          value={selectedRound.configData?.evaluationCriteria || ""}
-                          onChange={(e) =>
-                            updateRoundConfigField(
-                              selectedRoundIndex,
-                              "evaluationCriteria",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Ví dụ:&#10;From: guest_kdz@domain.com&#10;Subject: Phàn nàn về chất lượng đơn hàng #12345&#10;&#10;Nội dung: Tôi nhận được đơn hàng trễ 2 ngày, hộp bị móp méo. Khi tôi hỏi lý do thì shipper tỏ thái độ rất cộc cằn..."
-                          rows={6}
-                          className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                        />
-                      </div>
-
-                      {/* Tiêu chí chấm điểm bổ sung của HR */}
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Tiêu chí chấm điểm bổ sung của HR (Add-on Criteria)
-                        </Label>
-                        <Textarea
-                          value={selectedRound.configData?.aiSystemPrompt || ""}
-                          onChange={(e) =>
-                            updateRoundConfigField(
-                              selectedRoundIndex,
-                              "aiSystemPrompt",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Ví dụ:&#10;- Cộng thêm 10 điểm nếu viết thư đầy đủ lời chào mở đầu và lời chúc kết thúc lịch sự.&#10;- Trừ 5 điểm nếu viết sai chính tả quá 3 lỗi.&#10;- Ưu tiên cách giải quyết thông minh, linh hoạt."
-                          rows={6}
-                          className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                        />
-                        <p className="text-[10px] leading-normal text-slate-500">
-                          Các tiêu chí bổ sung này sẽ được gửi kèm cùng với cấu hình gốc của hệ
-                          thống để AI tự động cộng/trừ điểm theo khẩu vị tuyển dụng của bạn.
-                        </p>
-                      </div>
+                    {/* Hướng dẫn */}
+                    <div className="mt-4 space-y-1.5">
+                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Lời Hướng dẫn cho ứng viên
+                      </Label>
+                      <Textarea
+                        value={selectedRound.configData?.instruction || ""}
+                        onChange={(e) =>
+                          updateRoundConfigField(selectedRoundIndex, "instruction", e.target.value)
+                        }
+                        placeholder="Hướng dẫn ứng viên làm bài..."
+                        rows={2}
+                        className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                      />
                     </div>
-                  )}
+                  </div>
 
-                  {/* 3. QUIZ Specific */}
-                  {selectedRound.roundType === "QUIZ" && (
+                  {/* Quiz Editor full width */}
+                  <div className="border-t border-slate-100 pt-4 dark:border-slate-800/40">
                     <QuizEditor
                       questions={selectedRound.configData?.quizQuestions || []}
                       onChange={(questions) =>
                         updateRoundConfigField(selectedRoundIndex, "quizQuestions", questions)
                       }
                     />
-                  )}
-
-                  {/* 4. CODING Specific */}
-                  {selectedRound.roundType === "CODING" && (
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Mã danh sách bài tập (Coding Problem IDs)
-                      </Label>
-                      <Input
-                        value={(selectedRound.configData?.codingProblemsId || []).join(", ")}
-                        onChange={(e) => {
-                          const idsStr = e.target.value;
-                          const parsedIds = idsStr
-                            .split(",")
-                            .map((id) => id.trim())
-                            .filter((id) => id !== "" && !isNaN(Number(id)))
-                            .map(Number);
-                          updateRoundConfigField(selectedRoundIndex, "codingProblemsId", parsedIds);
-                        }}
-                        placeholder="Nhập danh sách ID, phân tách bằng dấu phẩy (,)"
-                        className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                      />
-                      <p className="text-slate-550 text-[10px] leading-normal">
-                        Ví dụ: 101, 102, 105 (các mã bài tập từ cơ sở dữ liệu hệ thống).
-                      </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-12">
+                  {/* Left Column: General Configuration (col-span-5) */}
+                  <div className="space-y-5 lg:col-span-5">
+                    <div className="border-b border-slate-100 pb-2 dark:border-slate-800/40">
+                      <h4 className="text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                        Cấu hình chung
+                      </h4>
                     </div>
-                  )}
 
-                  {/* 5. AI INTERVIEW Specific */}
-                  {selectedRound.roundType === "AI_INTERVIEW" && (
-                    <div className="space-y-5">
+                    <div className="space-y-4">
+                      {/* Tên vòng tuyển dụng */}
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          AI System Prompt
+                          Tên vòng tuyển dụng
                         </Label>
-                        <Textarea
-                          value={selectedRound.configData?.aiSystemPrompt || ""}
+                        <Input
+                          value={selectedRound.name || ""}
                           onChange={(e) =>
-                            updateRoundConfigField(
-                              selectedRoundIndex,
-                              "aiSystemPrompt",
-                              e.target.value
-                            )
+                            updateRoundField(selectedRoundIndex, "name", e.target.value)
                           }
-                          placeholder="Cung cấp prompt cấu hình vai trò AI..."
-                          rows={5}
-                          className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                          placeholder="Nhập tên vòng..."
+                          className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                         />
                       </div>
-                      <div className="mt-4 space-y-1.5">
+
+                      {/* Điểm tối đa */}
+                      <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Tiêu chuẩn Đánh giá
+                          Điểm tối đa (Max Score)
                         </Label>
-                        <Textarea
-                          value={selectedRound.configData?.evaluationCriteria || ""}
-                          onChange={(e) =>
-                            updateRoundConfigField(
-                              selectedRoundIndex,
-                              "evaluationCriteria",
-                              e.target.value
-                            )
+                        <ScoreInput
+                          value={selectedRound.configData?.maxScore ?? 100}
+                          min={1}
+                          max={500}
+                          step={5}
+                          accent="indigo"
+                          variant="simple"
+                          onChange={(v) =>
+                            updateRoundConfigField(selectedRoundIndex, "maxScore", v)
                           }
-                          placeholder="Các tiêu chuẩn đánh giá kết quả của ứng viên..."
-                          rows={4}
-                          className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                         />
                       </div>
+
+                      {/* Điểm đạt tối thiểu */}
+                      <div className="flex flex-col items-center space-y-1.5">
+                        <Label className="self-start text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Điểm đạt tối thiểu (Pass)
+                        </Label>
+                        <ScoreInput
+                          value={Math.round(
+                            (selectedRound.passThreshold ?? 0.8) *
+                              (selectedRound.configData?.maxScore ?? 100)
+                          )}
+                          min={0}
+                          max={selectedRound.configData?.maxScore ?? 100}
+                          step={1}
+                          accent="emerald"
+                          onChange={(val) => {
+                            const max = selectedRound.configData?.maxScore ?? 100;
+                            updateRoundField(
+                              selectedRoundIndex,
+                              "passThreshold",
+                              max > 0 ? val / max : 0.8
+                            );
+                          }}
+                        />
+                      </div>
+
+                      {/* Thời gian làm bài (only for rounds that need it) */}
+                      {selectedRound.roundType !== "CV_SCREENING" &&
+                        selectedRound.roundType !== "EMAIL_SIMULATOR" && (
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              Thời gian làm bài (Phút)
+                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                min={0}
+                                value={selectedRound.configData?.timeLimitMinutes ?? 0}
+                                onChange={(e) =>
+                                  updateRoundConfigField(
+                                    selectedRoundIndex,
+                                    "timeLimitMinutes",
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="w-28 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                              />
+                              <span className="text-xs text-slate-400">(0 = không giới hạn)</span>
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Định dạng nộp hồ sơ (only if CV_SCREENING) */}
+                      {selectedRound.roundType === "CV_SCREENING" && (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Định dạng nộp hồ sơ
+                          </Label>
+                          <Select
+                            value={selectedRound.configData?.submissionFormat || "pdf"}
+                            onValueChange={(val) =>
+                              updateRoundConfigField(selectedRoundIndex, "submissionFormat", val)
+                            }>
+                            <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                              <SelectItem value="pdf">Tệp PDF (.pdf)</SelectItem>
+                              <SelectItem value="doc">Tệp Word (.doc, .docx)</SelectItem>
+                              <SelectItem value="any">Tất cả định dạng tài liệu</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
-                  )}
+
+                    {/* Lời Hướng dẫn cho ứng viên */}
+                    <div className="space-y-1.5 border-t border-slate-100 pt-4 dark:border-slate-800/40">
+                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Lời Hướng dẫn cho ứng viên
+                      </Label>
+                      <Textarea
+                        value={selectedRound.configData?.instruction || ""}
+                        onChange={(e) =>
+                          updateRoundConfigField(selectedRoundIndex, "instruction", e.target.value)
+                        }
+                        placeholder={
+                          selectedRound.roundType === "CV_SCREENING"
+                            ? "Ví dụ: Vui lòng tải lên CV định dạng PDF của bạn để hệ thống tự động đánh giá và chấm điểm."
+                            : selectedRound.roundType === "EMAIL_SIMULATOR"
+                              ? "Ví dụ: Hãy đóng vai một nhân viên chăm sóc khách hàng, phản hồi lại email khiếu nại của khách hàng dưới đây. Chú ý thái độ ôn hòa, xin lỗi về sự cố và đề xuất hướng giải quyết cụ thể."
+                              : "Hướng dẫn ứng viên làm bài..."
+                        }
+                        rows={4}
+                        className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Right Column: Round Specific Configurations (col-span-7) */}
+                  <div className="space-y-5 lg:col-span-7 lg:border-l lg:border-slate-200 lg:pl-6 lg:dark:border-slate-800">
+                    <div className="border-b border-slate-100 pb-2 dark:border-slate-800/40">
+                      <h4 className="text-slate-450 text-xs font-bold tracking-wider uppercase dark:text-slate-500">
+                        Cấu hình chi tiết
+                      </h4>
+                    </div>
+
+                    {/* 1. CV_SCREENING Specific */}
+                    {selectedRound.roundType === "CV_SCREENING" && (
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Tiêu chí chấm điểm bổ sung của HR (Add-on Criteria)
+                          </Label>
+                          <Textarea
+                            value={selectedRound.configData?.aiSystemPrompt || ""}
+                            onChange={(e) =>
+                              updateRoundConfigField(
+                                selectedRoundIndex,
+                                "aiSystemPrompt",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Ví dụ:&#10;- Cộng thêm 10 điểm cho ứng viên có chứng chỉ AWS/Google Cloud.&#10;- Ưu tiên các hồ sơ có bài báo khoa học (paper) đã xuất bản hoặc đạt giải thưởng học thuật.&#10;- Trừ 5 điểm nếu ứng viên không ghi rõ thời gian làm việc tại mỗi công ty."
+                            rows={6}
+                            className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                          />
+                          <p className="text-[10px] leading-normal text-slate-500">
+                            Các tiêu chí bổ sung này sẽ được gửi kèm cùng với cấu hình gốc của hệ
+                            thống để AI tự động cộng/trừ điểm theo khẩu vị tuyển dụng của bạn.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. EMAIL_SIMULATOR Specific */}
+                    {selectedRound.roundType === "EMAIL_SIMULATOR" && (
+                      <div className="space-y-5">
+                        {/* Đề bài / Tình huống giả lập Email */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Đề bài / Tình huống giả lập Email (Scenario)
+                          </Label>
+                          <Textarea
+                            value={selectedRound.configData?.evaluationCriteria || ""}
+                            onChange={(e) =>
+                              updateRoundConfigField(
+                                selectedRoundIndex,
+                                "evaluationCriteria",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Ví dụ:&#10;From: guest_kdz@domain.com&#10;Subject: Phàn nàn về chất lượng đơn hàng #12345&#10;&#10;Nội dung: Tôi nhận được đơn hàng trễ 2 ngày, hộp bị móp méo. Khi tôi hỏi lý do thì shipper tỏ thái độ rất cộc cằn..."
+                            rows={6}
+                            className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                          />
+                        </div>
+
+                        {/* Tiêu chí chấm điểm bổ sung của HR */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Tiêu chí chấm điểm bổ sung của HR (Add-on Criteria)
+                          </Label>
+                          <Textarea
+                            value={selectedRound.configData?.aiSystemPrompt || ""}
+                            onChange={(e) =>
+                              updateRoundConfigField(
+                                selectedRoundIndex,
+                                "aiSystemPrompt",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Ví dụ:&#10;- Cộng thêm 10 điểm nếu viết thư đầy đủ lời chào mở đầu và lời chúc kết thúc lịch sự.&#10;- Trừ 5 điểm nếu viết sai chính tả quá 3 lỗi.&#10;- Ưu tiên cách giải quyết thông minh, linh hoạt."
+                            rows={6}
+                            className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                          />
+                          <p className="text-[10px] leading-normal text-slate-500">
+                            Các tiêu chí bổ sung này sẽ được gửi kèm cùng với cấu hình gốc của hệ
+                            thống để AI tự động cộng/trừ điểm theo khẩu vị tuyển dụng của bạn.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 4. CODING Specific */}
+                    {selectedRound.roundType === "CODING" && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Mã danh sách bài tập (Coding Problem IDs)
+                        </Label>
+                        <Input
+                          value={(selectedRound.configData?.codingProblemsId || []).join(", ")}
+                          onChange={(e) => {
+                            const idsStr = e.target.value;
+                            const parsedIds = idsStr
+                              .split(",")
+                              .map((id) => id.trim())
+                              .filter((id) => id !== "" && !isNaN(Number(id)))
+                              .map(Number);
+                            updateRoundConfigField(
+                              selectedRoundIndex,
+                              "codingProblemsId",
+                              parsedIds
+                            );
+                          }}
+                          placeholder="Nhập danh sách ID, phân tách bằng dấu phẩy (,)"
+                          className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                        />
+                        <p className="text-slate-550 text-[10px] leading-normal">
+                          Ví dụ: 101, 102, 105 (các mã bài tập từ cơ sở dữ liệu hệ thống).
+                        </p>
+                      </div>
+                    )}
+
+                    {/* 5. AI INTERVIEW Specific */}
+                    {selectedRound.roundType === "AI_INTERVIEW" && (
+                      <div className="space-y-5">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            AI System Prompt
+                          </Label>
+                          <Textarea
+                            value={selectedRound.configData?.aiSystemPrompt || ""}
+                            onChange={(e) =>
+                              updateRoundConfigField(
+                                selectedRoundIndex,
+                                "aiSystemPrompt",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Cung cấp prompt cấu hình vai trò AI..."
+                            rows={5}
+                            className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                          />
+                        </div>
+                        <div className="mt-4 space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Tiêu chuẩn Đánh giá
+                          </Label>
+                          <Textarea
+                            value={selectedRound.configData?.evaluationCriteria || ""}
+                            onChange={(e) =>
+                              updateRoundConfigField(
+                                selectedRoundIndex,
+                                "evaluationCriteria",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Các tiêu chuẩn đánh giá kết quả của ứng viên..."
+                            rows={4}
+                            className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {!isEditorOpen && (
