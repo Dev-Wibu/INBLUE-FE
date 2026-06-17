@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { QuizEditor } from "@/components/ui/quiz-editor";
 import { ScoreInput } from "@/components/ui/score-input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -1726,184 +1727,12 @@ export function InterviewTemplateManagementPage() {
 
                   {/* 3. QUIZ Specific */}
                   {selectedRound.roundType === "QUIZ" && (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Danh sách câu hỏi trắc nghiệm (
-                          {selectedRound.configData?.quizQuestions?.length || 0})
-                        </Label>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            const currentQuestions = [
-                              ...(selectedRound.configData?.quizQuestions || []),
-                            ];
-                            currentQuestions.push({
-                              questionText: "Câu hỏi mới?",
-                              options: ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-                              correctAnswer: "Lựa chọn A",
-                              points: 10,
-                            });
-                            updateRoundConfigField(
-                              selectedRoundIndex,
-                              "quizQuestions",
-                              currentQuestions
-                            );
-                          }}
-                          className="text-primary hover:text-primary/80 h-7 text-xs font-bold">
-                          <PlusCircle className="mr-1 h-3.5 w-3.5" /> Thêm câu hỏi
-                        </Button>
-                      </div>
-
-                      <div className="max-h-[50vh] space-y-4 overflow-y-auto pr-1">
-                        {(selectedRound.configData?.quizQuestions || []).map((q, qIdx) => (
-                          <div
-                            key={qIdx}
-                            className="border-slate-250 relative space-y-3 rounded-xl border bg-slate-50/50 p-3.5 dark:border-slate-800 dark:bg-slate-950/40">
-                            <button
-                              onClick={() => {
-                                const currentQuestions = (
-                                  selectedRound.configData?.quizQuestions || []
-                                ).filter((_, idx) => idx !== qIdx);
-                                updateRoundConfigField(
-                                  selectedRoundIndex,
-                                  "quizQuestions",
-                                  currentQuestions
-                                );
-                              }}
-                              className="absolute top-3 right-3 text-slate-400 hover:text-red-400">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-
-                            <div className="space-y-1">
-                              <span className="font-mono text-[10px] font-bold text-slate-500">
-                                CÂU HỎI {qIdx + 1}
-                              </span>
-                              <Input
-                                value={q.questionText}
-                                onChange={(e) => {
-                                  const currentQuestions = [
-                                    ...(selectedRound.configData?.quizQuestions || []),
-                                  ];
-                                  currentQuestions[qIdx] = {
-                                    ...currentQuestions[qIdx],
-                                    questionText: e.target.value,
-                                  };
-                                  updateRoundConfigField(
-                                    selectedRoundIndex,
-                                    "quizQuestions",
-                                    currentQuestions
-                                  );
-                                }}
-                                className="border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <span className="text-[10px] font-bold text-slate-500">
-                                CÁC PHƯƠNG ÁN LỰA CHỌN
-                              </span>
-                              {(q.options || []).map((opt, oIdx) => (
-                                <div key={oIdx} className="flex items-center gap-1.5">
-                                  <span className="w-4 font-mono text-[10px] font-bold text-slate-400">
-                                    {String.fromCharCode(65 + oIdx)}.
-                                  </span>
-                                  <Input
-                                    value={opt}
-                                    onChange={(e) => {
-                                      const currentQuestions = [
-                                        ...(selectedRound.configData?.quizQuestions || []),
-                                      ];
-                                      const opts = [...(currentQuestions[qIdx].options || [])];
-                                      opts[oIdx] = e.target.value;
-                                      currentQuestions[qIdx] = {
-                                        ...currentQuestions[qIdx],
-                                        options: opts,
-                                      };
-                                      updateRoundConfigField(
-                                        selectedRoundIndex,
-                                        "quizQuestions",
-                                        currentQuestions
-                                      );
-                                    }}
-                                    className="h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3 pt-1">
-                              <div className="space-y-1">
-                                <span className="text-[10px] font-bold text-slate-500">
-                                  ĐÁP ÁN ĐÚNG
-                                </span>
-                                <Select
-                                  value={q.correctAnswer}
-                                  onValueChange={(val) => {
-                                    const currentQuestions = [
-                                      ...(selectedRound.configData?.quizQuestions || []),
-                                    ];
-                                    currentQuestions[qIdx] = {
-                                      ...currentQuestions[qIdx],
-                                      correctAnswer: val,
-                                    };
-                                    updateRoundConfigField(
-                                      selectedRoundIndex,
-                                      "quizQuestions",
-                                      currentQuestions
-                                    );
-                                  }}>
-                                  <SelectTrigger className="h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                                    {(q.options || []).map((opt, oIdx) => (
-                                      <SelectItem key={oIdx} value={opt}>
-                                        {String.fromCharCode(65 + oIdx)}. {opt}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              <div className="space-y-1">
-                                <span className="text-[10px] font-bold text-slate-500">
-                                  ĐIỂM CÂU HỎI
-                                </span>
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  value={q.points}
-                                  onChange={(e) => {
-                                    const currentQuestions = [
-                                      ...(selectedRound.configData?.quizQuestions || []),
-                                    ];
-                                    currentQuestions[qIdx] = {
-                                      ...currentQuestions[qIdx],
-                                      points: Number(e.target.value),
-                                    };
-                                    updateRoundConfigField(
-                                      selectedRoundIndex,
-                                      "quizQuestions",
-                                      currentQuestions
-                                    );
-                                  }}
-                                  className="h-8 border-slate-200 bg-white text-xs text-slate-900 dark:bg-slate-950 dark:text-white"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-
-                        {(!selectedRound.configData?.quizQuestions ||
-                          selectedRound.configData.quizQuestions.length === 0) && (
-                          <div className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-500 dark:border-slate-800">
-                            Chưa có câu hỏi trắc nghiệm nào.
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    <QuizEditor
+                      questions={selectedRound.configData?.quizQuestions || []}
+                      onChange={(questions) =>
+                        updateRoundConfigField(selectedRoundIndex, "quizQuestions", questions)
+                      }
+                    />
                   )}
 
                   {/* 4. CODING Specific */}
