@@ -1066,19 +1066,11 @@ export function InterviewTemplateManagementPage() {
                             {round.roundType === "QUIZ" &&
                               round.configData?.quizQuestions &&
                               round.configData.quizQuestions.length > 0 && (
-                                <div className="mt-3 space-y-1">
-                                  <span className="block text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-                                    Câu hỏi trắc nghiệm ({round.configData.quizQuestions.length})
+                                <div className="mt-3 border-t border-slate-100/10 pt-2 dark:border-slate-800/20">
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-500">
+                                    Đã cấu hình {round.configData.quizQuestions.length} câu hỏi trắc
+                                    nghiệm
                                   </span>
-                                  <div className="max-h-36 space-y-1.5 overflow-y-auto pt-1">
-                                    {round.configData.quizQuestions.map((q, qIdx) => (
-                                      <div
-                                        key={qIdx}
-                                        className="border-slate-150/20 rounded border bg-slate-50/30 p-2 text-xs text-slate-600 dark:text-slate-400">
-                                        <strong>{qIdx + 1}.</strong> {q.questionText}
-                                      </div>
-                                    ))}
-                                  </div>
                                 </div>
                               )}
                           </div>
@@ -1465,7 +1457,7 @@ export function InterviewTemplateManagementPage() {
               "flex flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950",
               selectedRound?.roundType === "QUIZ"
                 ? "h-[88vh] max-h-[88vh] w-[1240px] max-w-[96vw]"
-                : "h-[85vh] max-h-[85vh] w-[960px] max-w-[96vw]"
+                : "h-auto max-h-[85vh] w-[960px] max-w-[96vw]"
             )}>
             {/* Modal header */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/30">
