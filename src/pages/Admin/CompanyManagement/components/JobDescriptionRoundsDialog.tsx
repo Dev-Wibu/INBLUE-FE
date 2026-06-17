@@ -1316,6 +1316,7 @@ export function JobDescriptionRoundsDialog({
                   }}>
                   <DialogContent
                     showCloseButton={false}
+                    onOpenAutoFocus={(e) => e.preventDefault()}
                     className={cn(
                       "flex flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950",
                       selectedRound?.roundType === "QUIZ"
