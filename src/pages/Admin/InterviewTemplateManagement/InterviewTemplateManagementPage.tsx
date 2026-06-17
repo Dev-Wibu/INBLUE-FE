@@ -1536,13 +1536,14 @@ export function InterviewTemplateManagementPage() {
                         max={500}
                         step={5}
                         accent="indigo"
+                        variant="simple"
                         onChange={(v) => updateRoundConfigField(selectedRoundIndex, "maxScore", v)}
                       />
                     </div>
 
                     {/* Điểm đạt tối thiểu */}
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <div className="flex flex-col items-center space-y-1.5">
+                      <Label className="self-start text-xs font-semibold text-slate-700 dark:text-slate-300">
                         Điểm đạt tối thiểu (Pass)
                       </Label>
                       <ScoreInput
