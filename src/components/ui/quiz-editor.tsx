@@ -374,7 +374,7 @@ export function QuizEditor({
             </Button>
 
             {/* Question Number Boxes Grid */}
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {questions.map((q, idx) => {
                 const isActive =
                   selectedIndex === idx && (rightView === "view" || rightView === "edit");
@@ -385,7 +385,7 @@ export function QuizEditor({
                     type="button"
                     onClick={() => handleSelectQuestion(idx)}
                     className={cn(
-                      "group relative flex h-8 w-8 items-center justify-center rounded-lg border text-[11px] font-bold transition-all",
+                      "group relative flex h-10 w-10 items-center justify-center rounded-lg border text-xs font-bold transition-all",
                       isActive
                         ? "border-indigo-500 bg-indigo-600 text-white shadow-md shadow-indigo-500/25"
                         : "border-slate-200 bg-white text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400"
@@ -403,8 +403,8 @@ export function QuizEditor({
                 <button
                   type="button"
                   onClick={handleAddNew}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border-2 border-dashed border-slate-200 text-slate-400 transition-all hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600 dark:border-slate-800 dark:hover:border-emerald-600 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400">
-                  <Plus className="h-3.5 w-3.5" />
+                  className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-dashed border-slate-200 text-slate-400 transition-all hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600 dark:border-slate-800 dark:hover:border-emerald-600 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400">
+                  <Plus className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -489,7 +489,7 @@ export function QuizEditor({
 
                 {/* Question content */}
                 <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/20">
-                  <p className="font-mono text-xs leading-relaxed font-semibold whitespace-pre-wrap text-slate-800 dark:text-slate-200">
+                  <p className="font-mono text-sm leading-relaxed font-semibold whitespace-pre-wrap text-slate-800 dark:text-slate-200">
                     {questions[selectedIndex].questionText || ""}
                   </p>
                 </div>
@@ -513,7 +513,7 @@ export function QuizEditor({
                           )}>
                           <span
                             className={cn(
-                              "flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold",
+                              "flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-bold",
                               isCorrect
                                 ? "bg-emerald-500 text-white"
                                 : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
@@ -522,7 +522,7 @@ export function QuizEditor({
                           </span>
                           <span
                             className={cn(
-                              "text-xs",
+                              "text-sm",
                               isCorrect
                                 ? "font-semibold text-emerald-700 dark:text-emerald-400"
                                 : "text-slate-600 dark:text-slate-300"
@@ -562,7 +562,7 @@ export function QuizEditor({
                   value={editForm.questionText || ""}
                   onChange={(e) => setEditForm({ ...editForm, questionText: e.target.value })}
                   placeholder="Nhập nội dung câu hỏi (ví dụ: JavaScript là gì?)... Bạn có thể sử dụng ``` để bọc mã code."
-                  className="min-h-[120px] w-full rounded-lg border border-slate-200 bg-white p-3 font-mono text-xs font-medium text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                  className="min-h-[160px] w-full rounded-lg border border-slate-200 bg-white p-3 font-mono text-sm font-medium text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                 />
               </div>
 
@@ -573,7 +573,7 @@ export function QuizEditor({
                 </Label>
                 {(editForm.options || ["", "", "", ""]).map((opt, oIdx) => (
                   <div key={oIdx} className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                       {String.fromCharCode(65 + oIdx)}
                     </span>
                     <Input
@@ -584,7 +584,7 @@ export function QuizEditor({
                         setEditForm({ ...editForm, options: newOpts });
                       }}
                       placeholder={`Phương án ${String.fromCharCode(65 + oIdx)}`}
-                      className="h-8 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                      className="h-10 border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                     />
                   </div>
                 ))}
@@ -599,7 +599,7 @@ export function QuizEditor({
                   <Select
                     value={editForm.correctAnswer || ""}
                     onValueChange={(val) => setEditForm({ ...editForm, correctAnswer: val })}>
-                    <SelectTrigger className="h-8 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                    <SelectTrigger className="h-10 border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950 dark:text-white">
                       <SelectValue placeholder="Chọn đáp án" />
                     </SelectTrigger>
                     <SelectContent className="border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
@@ -623,7 +623,7 @@ export function QuizEditor({
                     min={1}
                     value={editForm.points ?? 10}
                     onChange={(e) => setEditForm({ ...editForm, points: Number(e.target.value) })}
-                    className="h-8 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                    className="h-10 border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                   />
                 </div>
               </div>

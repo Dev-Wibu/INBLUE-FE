@@ -1461,7 +1461,12 @@ export function InterviewTemplateManagementPage() {
           }}>
           <DialogContent
             showCloseButton={false}
-            className="flex max-h-[85vh] w-[1100px] max-w-[96vw] flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950">
+            className={cn(
+              "flex flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950",
+              selectedRound?.roundType === "QUIZ"
+                ? "h-[88vh] max-h-[88vh] w-[1240px] max-w-[96vw]"
+                : "h-[85vh] max-h-[85vh] w-[960px] max-w-[96vw]"
+            )}>
             {/* Modal header */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/30">
               <div className="flex items-center gap-2.5">
