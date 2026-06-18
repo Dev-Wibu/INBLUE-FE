@@ -170,10 +170,6 @@ export function CodingEditor({
   // Constraint input state
   const [constraintInput, setConstraintInput] = React.useState("");
 
-  // Param type dropdown state
-  const [customParamType, setCustomParamType] = React.useState("");
-  const [customReturnType, setCustomReturnType] = React.useState("");
-
   const handleAddExample = () => {
     setNewProblem((prev) => ({
       ...prev,
@@ -1164,145 +1160,177 @@ export function CodingEditor({
                     </div>
 
                     {/* SECTION 2: CẤU HÌNH & GIỚI HẠN */}
-                    <div className="space-y-3 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/20">
+                    <div className="space-y-4 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/20">
                       <h4 className="border-b border-slate-100 pb-2 text-[11px] font-bold tracking-wider text-indigo-600 uppercase dark:border-slate-800 dark:text-indigo-400">
                         2. Cấu hình & Giới hạn
                       </h4>
 
-                      {/* Param types as tags */}
+                      {/* Param types — pill toggle grid */}
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                          Kiểu dữ liệu tham số đầu vào (Param Types)
-                        </Label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {newProblem.paramTypes.map((pt, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-indigo-200 ring-inset dark:bg-indigo-950/30 dark:text-indigo-300 dark:ring-indigo-800">
-                              {pt}
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveParamType(i)}
-                                className="ml-0.5 rounded hover:text-red-500">
-                                <X className="h-2.5 w-2.5" />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <StyledSelect
-                            value=""
-                            onChange={(v) => v && handleAddParamType(v)}
-                            className="flex-1">
-                            <option value="">+ Chọn kiểu từ danh sách...</option>
-                            {PARAM_TYPE_OPTIONS.filter(
-                              (t) => !newProblem.paramTypes.includes(t)
-                            ).map((t) => (
-                              <option key={t} value={t}>
-                                {t}
-                              </option>
-                            ))}
-                          </StyledSelect>
-                          <div className="flex gap-1.5">
-                            <Input
-                              value={customParamType}
-                              onChange={(e) => setCustomParamType(e.target.value)}
-                              onKeyDown={(e) =>
-                                e.key === "Enter" && handleAddParamType(customParamType)
-                              }
-                              placeholder="Tuỳ chỉnh..."
-                              className="h-9 w-32 text-xs"
-                            />
-                            <Button
+                        <div className="flex items-center justify-between">
+                          <Label className="text-[10px] font-bold text-slate-400 uppercase">
+                            Kiểu tham số đầu vào (Param Types)
+                          </Label>
+                          {newProblem.paramTypes.length > 0 && (
+                            <button
                               type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAddParamType(customParamType)}
-                              className="h-9 px-2 text-xs">
-                              <Plus className="h-3 w-3" />
-                            </Button>
+                              onClick={() => setNewProblem({ ...newProblem, paramTypes: [] })}
+                              className="text-[9px] text-slate-400 transition-colors hover:text-red-400">
+                              Xóa tất cả
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Selected params display */}
+                        {newProblem.paramTypes.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 rounded-lg bg-indigo-50/60 px-3 py-2 dark:bg-indigo-950/20">
+                            <span className="mr-1 self-center text-[9px] font-bold tracking-wider text-indigo-400 uppercase">
+                              Đã chọn:
+                            </span>
+                            {newProblem.paramTypes.map((pt, i) => (
+                              <span
+                                key={i}
+                                className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+                                {pt}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveParamType(i)}
+                                  className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-indigo-700">
+                                  <X className="h-2.5 w-2.5" />
+                                </button>
+                              </span>
+                            ))}
                           </div>
+                        )}
+
+                        {/* Pill grid to pick types */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {PARAM_TYPE_OPTIONS.map((t) => {
+                            const selected = newProblem.paramTypes.includes(t);
+                            return (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() =>
+                                  selected
+                                    ? handleRemoveParamType(newProblem.paramTypes.indexOf(t))
+                                    : handleAddParamType(t)
+                                }
+                                className={cn(
+                                  "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all",
+                                  selected
+                                    ? "border-indigo-500 bg-indigo-500 text-white shadow-sm"
+                                    : "border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/20 dark:hover:text-indigo-400"
+                                )}>
+                                {selected && <Check className="mr-1 inline h-2.5 w-2.5" />}
+                                {t}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
-                      {/* Return type dropdown */}
-                      <div className="space-y-1.5">
+                      {/* Return type — pill grid (single select) + prominent display */}
+                      <div className="space-y-2">
                         <Label className="text-[10px] font-bold text-slate-400 uppercase">
                           Kiểu trả về (Return Type)
                         </Label>
-                        <div className="flex gap-2">
-                          <StyledSelect
-                            value={
-                              RETURN_TYPE_OPTIONS.includes(newProblem.returnType)
-                                ? newProblem.returnType
-                                : ""
-                            }
-                            onChange={(v) => {
-                              if (v) setNewProblem({ ...newProblem, returnType: v });
-                            }}
-                            className="flex-1">
-                            <option value="">Chọn kiểu trả về...</option>
-                            {RETURN_TYPE_OPTIONS.map((t) => (
-                              <option key={t} value={t}>
-                                {t}
-                              </option>
-                            ))}
-                          </StyledSelect>
-                          <Input
-                            value={customReturnType}
-                            onChange={(e) => {
-                              setCustomReturnType(e.target.value);
-                              setNewProblem({ ...newProblem, returnType: e.target.value });
-                            }}
-                            placeholder="Hoặc nhập tuỳ chỉnh..."
-                            className="h-9 w-40 text-xs"
-                          />
-                        </div>
-                        {newProblem.returnType && (
-                          <p className="text-[10px] text-slate-400">
-                            Đã chọn:{" "}
-                            <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+
+                        {/* Prominent selected badge */}
+                        {newProblem.returnType ? (
+                          <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2 dark:border-emerald-800/50 dark:bg-emerald-950/20">
+                            <span className="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">
+                              Kiểu trả về:
+                            </span>
+                            <span className="inline-flex items-center rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white shadow-sm">
                               {newProblem.returnType}
                             </span>
-                          </p>
+                            <button
+                              type="button"
+                              onClick={() => setNewProblem({ ...newProblem, returnType: "" })}
+                              className="ml-auto text-[9px] text-emerald-400 underline transition-colors hover:text-emerald-600">
+                              Đổi kiểu
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="rounded-lg border-2 border-dashed border-slate-200 px-3 py-2 text-center text-[11px] text-slate-400 dark:border-slate-700">
+                            Chọn kiểu trả về bên dưới
+                          </div>
                         )}
+
+                        {/* Pill grid to pick return type */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {RETURN_TYPE_OPTIONS.map((t) => {
+                            const selected = newProblem.returnType === t;
+                            return (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() =>
+                                  setNewProblem({
+                                    ...newProblem,
+                                    returnType: selected ? "" : t,
+                                  })
+                                }
+                                className={cn(
+                                  "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all",
+                                  selected
+                                    ? "border-emerald-500 bg-emerald-500 text-white shadow-sm"
+                                    : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400"
+                                )}>
+                                {selected && <Check className="mr-1 inline h-2.5 w-2.5" />}
+                                {t}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
 
                       {/* Execution limits */}
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                            Giới hạn thời gian (ms)
+                            ⏱ Giới hạn thời gian
                           </Label>
-                          <StyledSelect
-                            value={String(newProblem.executionTimeLimitMs)}
-                            onChange={(v) =>
-                              setNewProblem({
-                                ...newProblem,
-                                executionTimeLimitMs: Number(v),
-                              })
-                            }>
-                            <option value="500">500 ms</option>
-                            <option value="1000">1,000 ms</option>
-                            <option value="2000">2,000 ms</option>
-                            <option value="3000">3,000 ms</option>
-                            <option value="5000">5,000 ms</option>
-                          </StyledSelect>
+                          <div className="flex flex-wrap gap-1.5">
+                            {[500, 1000, 2000, 3000, 5000].map((ms) => (
+                              <button
+                                key={ms}
+                                type="button"
+                                onClick={() =>
+                                  setNewProblem({ ...newProblem, executionTimeLimitMs: ms })
+                                }
+                                className={cn(
+                                  "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all",
+                                  newProblem.executionTimeLimitMs === ms
+                                    ? "border-amber-500 bg-amber-500 text-white shadow-sm"
+                                    : "border-slate-200 bg-white text-slate-600 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
+                                )}>
+                                {ms >= 1000 ? `${ms / 1000}s` : `${ms}ms`}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                            Giới hạn bộ nhớ (MB)
+                            💾 Giới hạn bộ nhớ
                           </Label>
-                          <StyledSelect
-                            value={String(newProblem.memoryLimitMb)}
-                            onChange={(v) =>
-                              setNewProblem({ ...newProblem, memoryLimitMb: Number(v) })
-                            }>
-                            <option value="128">128 MB</option>
-                            <option value="256">256 MB</option>
-                            <option value="512">512 MB</option>
-                            <option value="1024">1,024 MB</option>
-                          </StyledSelect>
+                          <div className="flex flex-wrap gap-1.5">
+                            {[128, 256, 512, 1024].map((mb) => (
+                              <button
+                                key={mb}
+                                type="button"
+                                onClick={() => setNewProblem({ ...newProblem, memoryLimitMb: mb })}
+                                className={cn(
+                                  "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all",
+                                  newProblem.memoryLimitMb === mb
+                                    ? "border-violet-500 bg-violet-500 text-white shadow-sm"
+                                    : "border-slate-200 bg-white text-slate-600 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
+                                )}>
+                                {mb >= 1024 ? `${mb / 1024}GB` : `${mb}MB`}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
