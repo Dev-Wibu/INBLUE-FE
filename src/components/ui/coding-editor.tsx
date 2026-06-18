@@ -6,6 +6,7 @@ import {
   Code2,
   FolderOpen,
   Loader2,
+  Pencil,
   Plus,
   Search,
   Timer,
@@ -170,6 +171,10 @@ export function CodingEditor({
   // Constraint input state
   const [constraintInput, setConstraintInput] = React.useState("");
 
+  // Edit and Custom Dropdown states
+  const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
+  const [isReturnDropdownOpen, setIsReturnDropdownOpen] = React.useState(false);
+
   const handleAddExample = () => {
     setNewProblem((prev) => ({
       ...prev,
@@ -313,8 +318,9 @@ export function CodingEditor({
           hiddenTestCases: mappedHidden,
           codeStubs: gen.codeStubs || { java: "", python: "" },
         });
-        toast.success("AI đã sinh đề bài thành công!");
-        setAiGeneratedLoaded(true);
+        toast.success("AI đã sinh đề bài thành công! Bạn đang ở chế độ chỉnh sửa đề bài.");
+        setCreationMode("manual");
+        setAiGeneratedLoaded(false);
       } else {
         toast.error(res.error || "Không thể sinh đề bài tự động");
       }
@@ -339,23 +345,43 @@ export function CodingEditor({
     try {
       const res = await codingProblemManager.create(newProblem);
       if (res.success && res.data) {
-        toast.success("Tạo bài tập lập trình thành công!");
+        toast.success(
+          editingIndex !== null
+            ? "Cập nhật bài tập thành công!"
+            : "Tạo bài tập lập trình thành công!"
+        );
         await fetchProblemBank();
         const createdId = res.data.id;
-        const newIds = [...codingProblemsId, createdId];
-        const newProblems = [
-          ...codingProblems,
-          {
+
+        const newIds = [...codingProblemsId];
+        const newProblems = [...codingProblems];
+
+        if (editingIndex !== null) {
+          newIds[editingIndex] = createdId;
+          newProblems[editingIndex] = {
             problemId: createdId,
             title: res.data.title,
             difficulty: res.data.difficulty,
-          },
-        ];
+          };
+        } else {
+          newIds.push(createdId);
+          newProblems.push({
+            problemId: createdId,
+            title: res.data.title,
+            difficulty: res.data.difficulty,
+          });
+        }
+
         onChange(newIds, newProblems);
-        setSelectedIndex(newIds.length - 1);
+        if (editingIndex !== null) {
+          setSelectedIndex(editingIndex);
+        } else {
+          setSelectedIndex(newIds.length - 1);
+        }
+        setEditingIndex(null);
         setRightView("view");
       } else {
-        toast.error(res.error || "Không thể lưu bài tập mới");
+        toast.error(res.error || "Không thể lưu bài tập");
       }
     } catch (e) {
       console.error(e);
@@ -676,15 +702,50 @@ export function CodingEditor({
                 </div>
 
                 {!disabled && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteProblem(selectedIndex)}
-                    className="h-8 border-red-200 text-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">
-                    <Trash2 className="mr-1 h-3.5 w-3.5" />
-                    Xóa khỏi vòng
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (selectedProblemDetails) {
+                          setNewProblem({
+                            title: selectedProblemDetails.title || "",
+                            difficulty: selectedProblemDetails.difficulty || "EASY",
+                            problemStatement: selectedProblemDetails.problemStatement || "",
+                            rulesAndConstraints: selectedProblemDetails.rulesAndConstraints || [],
+                            paramTypes: selectedProblemDetails.paramTypes || [],
+                            returnType: selectedProblemDetails.returnType || "",
+                            executionTimeLimitMs:
+                              selectedProblemDetails.executionTimeLimitMs || 1000,
+                            memoryLimitMb: selectedProblemDetails.memoryLimitMb || 256,
+                            visibleExamples: selectedProblemDetails.visibleExamples || [
+                              { inputs: [""], output: "", explanation: "" },
+                            ],
+                            hiddenTestCases: selectedProblemDetails.hiddenTestCases || [
+                              { inputs: [""], expectedOutput: "", weightPoints: 10 },
+                            ],
+                            codeStubs: selectedProblemDetails.codeStubs || { java: "", python: "" },
+                          });
+                          setEditingIndex(selectedIndex);
+                          setRightView("create");
+                          setCreationMode("manual");
+                        }
+                      }}
+                      className="text-indigo-650 h-8 border-indigo-200 text-xs hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/30">
+                      <Pencil className="mr-1 h-3.5 w-3.5" />
+                      Chỉnh sửa
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteProblem(selectedIndex)}
+                      className="h-8 border-red-200 text-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">
+                      <Trash2 className="mr-1 h-3.5 w-3.5" />
+                      Xóa khỏi vòng
+                    </Button>
+                  </div>
                 )}
               </div>
 
@@ -940,7 +1001,17 @@ export function CodingEditor({
 
           {/* --- CREATE STATE --- */}
           {rightView === "create" && (
-            <div className="flex h-full flex-col space-y-4">
+            <div className="relative flex h-full flex-col space-y-4">
+              {isGenerating && (
+                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center rounded-xl bg-slate-50/85 backdrop-blur-[2px] dark:bg-slate-950/85">
+                  <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                    <span className="dark:text-slate-350 text-xs font-semibold text-slate-600">
+                      AI đang sinh đề bài, vui lòng chờ trong giây lát...
+                    </span>
+                  </div>
+                </div>
+              )}
               {/* Header & Mode Select */}
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/60">
                 <div className="flex items-center gap-3">
@@ -1230,59 +1301,72 @@ export function CodingEditor({
                         </div>
                       </div>
 
-                      {/* Return type — pill grid (single select) + prominent display */}
+                      {/* Return type — custom dropdown */}
                       <div className="space-y-2">
                         <Label className="text-[10px] font-bold text-slate-400 uppercase">
                           Kiểu trả về (Return Type)
                         </Label>
 
-                        {/* Prominent selected badge */}
-                        {newProblem.returnType ? (
-                          <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 px-3 py-2 dark:border-emerald-800/50 dark:bg-emerald-950/20">
-                            <span className="text-[9px] font-bold tracking-wider text-emerald-500 uppercase">
-                              Kiểu trả về:
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setIsReturnDropdownOpen(!isReturnDropdownOpen)}
+                            className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-emerald-700">
+                            <span className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold tracking-wider text-emerald-500 uppercase">
+                                Kết quả trả về:
+                              </span>
+                              {newProblem.returnType ? (
+                                <span className="inline-flex items-center rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
+                                  {newProblem.returnType}
+                                </span>
+                              ) : (
+                                <span className="font-normal text-slate-400">
+                                  Chưa chọn kiểu trả về
+                                </span>
+                              )}
                             </span>
-                            <span className="inline-flex items-center rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-bold text-white shadow-sm">
-                              {newProblem.returnType}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setNewProblem({ ...newProblem, returnType: "" })}
-                              className="ml-auto text-[9px] text-emerald-400 underline transition-colors hover:text-emerald-600">
-                              Đổi kiểu
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="rounded-lg border-2 border-dashed border-slate-200 px-3 py-2 text-center text-[11px] text-slate-400 dark:border-slate-700">
-                            Chọn kiểu trả về bên dưới
-                          </div>
-                        )}
+                            <ChevronDown
+                              className={cn(
+                                "h-4 w-4 text-slate-400 transition-transform duration-200",
+                                isReturnDropdownOpen && "rotate-180"
+                              )}
+                            />
+                          </button>
 
-                        {/* Pill grid to pick return type */}
-                        <div className="flex flex-wrap gap-1.5">
-                          {RETURN_TYPE_OPTIONS.map((t) => {
-                            const selected = newProblem.returnType === t;
-                            return (
-                              <button
-                                key={t}
-                                type="button"
-                                onClick={() =>
-                                  setNewProblem({
-                                    ...newProblem,
-                                    returnType: selected ? "" : t,
-                                  })
-                                }
-                                className={cn(
-                                  "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all",
-                                  selected
-                                    ? "border-emerald-500 bg-emerald-500 text-white shadow-sm"
-                                    : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400"
-                                )}>
-                                {selected && <Check className="mr-1 inline h-2.5 w-2.5" />}
-                                {t}
-                              </button>
-                            );
-                          })}
+                          {isReturnDropdownOpen && (
+                            <>
+                              <div
+                                className="fixed inset-0 z-40"
+                                onClick={() => setIsReturnDropdownOpen(false)}
+                              />
+                              <div className="animate-in fade-in-50 slide-in-from-top-1 absolute top-full right-0 left-0 z-50 mt-1.5 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-800 dark:bg-slate-950">
+                                <div className="grid grid-cols-2 gap-1">
+                                  {RETURN_TYPE_OPTIONS.map((t) => {
+                                    const selected = newProblem.returnType === t;
+                                    return (
+                                      <button
+                                        key={t}
+                                        type="button"
+                                        onClick={() => {
+                                          setNewProblem({ ...newProblem, returnType: t });
+                                          setIsReturnDropdownOpen(false);
+                                        }}
+                                        className={cn(
+                                          "flex items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-[11px] font-medium transition-all",
+                                          selected
+                                            ? "bg-emerald-500 text-white shadow-sm"
+                                            : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900/60"
+                                        )}>
+                                        <span>{t}</span>
+                                        {selected && <Check className="h-3 w-3" />}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
 
