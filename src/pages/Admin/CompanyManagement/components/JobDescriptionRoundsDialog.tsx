@@ -457,6 +457,7 @@ export function JobDescriptionRoundsDialog({
                     configObj.codingProblems
                       ?.map((cp) => cp.problemId)
                       .filter((id): id is number => id !== undefined) ?? [],
+                  codingProblems: configObj.codingProblems ?? [],
                 },
               };
             });
@@ -853,6 +854,8 @@ export function JobDescriptionRoundsDialog({
       const payload = {
         // Map UI format to Dto expected by Backend API
         rounds: rounds.map((r, idx) => ({
+          // @ts-expect-error: Backend UpdateJdRoundRequest.RoundItemDto supports id but Swagger schema did not declare it
+          id: r.id,
           name: r.name || `Vòng ${idx + 1}`,
           roundOrder: idx + 1,
           roundType: r.roundType as RoundType,
