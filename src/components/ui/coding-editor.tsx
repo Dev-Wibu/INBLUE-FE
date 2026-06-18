@@ -177,6 +177,8 @@ export const CodingEditor = React.forwardRef<
 
     // Constraint input state
     const [constraintInput, setConstraintInput] = React.useState("");
+    const [, setCustomParamType] = React.useState("");
+    const [, setCustomReturnType] = React.useState("");
 
     // Edit and Custom Dropdown states
     const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
@@ -364,14 +366,14 @@ export const CodingEditor = React.forwardRef<
       }
     };
 
-    const handleSaveProblem = async () => {
+    const handleSaveProblem = async (): Promise<boolean> => {
       if (!newProblem.title.trim()) {
         toast.warning("Vui lòng nhập tiêu đề bài tập");
-        return;
+        return false;
       }
       if (!newProblem.problemStatement.trim()) {
         toast.warning("Vui lòng nhập mô tả bài tập");
-        return;
+        return false;
       }
 
       try {
@@ -412,12 +414,15 @@ export const CodingEditor = React.forwardRef<
           }
           setEditingIndex(null);
           setRightView("view");
+          return true;
         } else {
           toast.error(res.error || "Không thể lưu bài tập");
+          return false;
         }
       } catch (e) {
         console.error(e);
         toast.error("Lỗi khi lưu bài tập");
+        return false;
       }
     };
 
@@ -751,12 +756,20 @@ export const CodingEditor = React.forwardRef<
                               executionTimeLimitMs:
                                 selectedProblemDetails.executionTimeLimitMs || 1000,
                               memoryLimitMb: selectedProblemDetails.memoryLimitMb || 256,
-                              visibleExamples: selectedProblemDetails.visibleExamples || [
-                                { inputs: [""], output: "", explanation: "" },
-                              ],
-                              hiddenTestCases: selectedProblemDetails.hiddenTestCases || [
-                                { inputs: [""], expectedOutput: "", weightPoints: 10 },
-                              ],
+                              visibleExamples: (selectedProblemDetails.visibleExamples || []).map(
+                                (ex) => ({
+                                  inputs: ex.inputs || [""],
+                                  output: ex.output || "",
+                                  explanation: ex.explanation || "",
+                                })
+                              ),
+                              hiddenTestCases: (selectedProblemDetails.hiddenTestCases || []).map(
+                                (tc) => ({
+                                  inputs: tc.inputs || [""],
+                                  expectedOutput: tc.expectedOutput || "",
+                                  weightPoints: tc.weightPoints || 10,
+                                })
+                              ),
                               codeStubs: selectedProblemDetails.codeStubs || {
                                 java: "",
                                 python: "",
