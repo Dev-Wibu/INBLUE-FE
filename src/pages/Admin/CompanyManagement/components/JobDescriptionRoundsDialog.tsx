@@ -273,7 +273,13 @@ export function JobDescriptionRoundsDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasExistingRounds, setHasExistingRounds] = useState(false);
-  const codingEditorRef = useRef<{ saveCurrentProblem: () => Promise<boolean> }>(null);
+  const codingEditorRef = useRef<{
+    saveCurrentProblem: () => Promise<
+      | boolean
+      | { ids: number[]; problems: { problemId?: number; title?: string; difficulty?: string }[] }
+    >;
+  }>(null);
+  const [dialogEditingTime, setDialogEditingTime] = useState(false);
 
   // Unsaved changes tracking states
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -826,20 +832,22 @@ export function JobDescriptionRoundsDialog({
   };
 
   // Save current rounds config to server
-  const handleSave = async () => {
+  // Save current rounds config to server
+  const handleSave = async (shouldCloseParent = true, customRounds?: UIRound[]) => {
     if (!jobDescription?.id) return;
     setIsSaving(true);
+    const roundsToSave = customRounds || rounds;
 
     try {
       // Validate rounds
-      if (rounds.length === 0) {
+      if (roundsToSave.length === 0) {
         toast.error("Vui lòng thêm ít nhất 1 vòng phỏng vấn.");
         setIsSaving(false);
         return;
       }
 
       // Check validation for Quiz rounds
-      const invalidQuizIndex = rounds.findIndex(
+      const invalidQuizIndex = roundsToSave.findIndex(
         (r) =>
           r.roundType === "QUIZ" &&
           (!r.configData?.quizQuestions || r.configData.quizQuestions.length === 0)
@@ -853,7 +861,7 @@ export function JobDescriptionRoundsDialog({
 
       const payload = {
         // Map UI format to Dto expected by Backend API
-        rounds: rounds.map((r, idx) => ({
+        rounds: roundsToSave.map((r, idx) => ({
           id: r.id,
           name: r.name || `Vòng ${idx + 1}`,
           roundOrder: idx + 1,
@@ -902,7 +910,43 @@ export function JobDescriptionRoundsDialog({
         );
         toast.success("Đã lưu thiết lập quy trình phỏng vấn thành công!");
         onSaved?.();
-        onOpenChange(false);
+        if (shouldCloseParent) {
+          onOpenChange(false);
+        } else {
+          // If we are not closing, reload updated rounds with database IDs
+          const jdRes = await jobDescriptionManager.getById(jobDescription.id);
+          if (jdRes.success && jdRes.data) {
+            const fetchedRounds = jdRes.data.rounds ?? [];
+            const sortedRounds = [...fetchedRounds].sort(
+              (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
+            );
+            const uiRounds: UIRound[] = sortedRounds.map((r) => {
+              let parsedConfig = r.configData;
+              if (typeof r.configData === "string") {
+                try {
+                  parsedConfig = JSON.parse(r.configData);
+                } catch (e) {
+                  console.error("Failed to parse configData:", e);
+                }
+              }
+              const configObj = (parsedConfig || {}) as UIRoundConfig;
+              return {
+                ...r,
+                roundType: r.roundType as RoundType,
+                configData: {
+                  ...configObj,
+                  codingProblemsId:
+                    configObj.codingProblems
+                      ?.map((cp) => cp.problemId)
+                      .filter((id): id is number => id !== undefined) ?? [],
+                  codingProblems: configObj.codingProblems ?? [],
+                },
+              };
+            });
+            setRounds(uiRounds);
+            setHasExistingRounds(fetchedRounds.length > 0);
+          }
+        }
       } else {
         toast.error(response.error || "Không thể lưu thiết lập quy trình.");
       }
@@ -1471,80 +1515,108 @@ export function JobDescriptionRoundsDialog({
                           }
                         />
                       ) : (
-                        <div className="space-y-5 pb-6">
+                        <div className="space-y-4 pb-6">
                           {/* General Settings */}
-                          <div className="space-y-4">
-                            {/* Điểm tối đa */}
-                            <div className="space-y-1.5">
-                              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Điểm tối đa (Max Score)
-                              </Label>
-                              <ScoreInput
-                                value={selectedRound.configData?.maxScore ?? 100}
-                                min={1}
-                                max={500}
-                                step={5}
-                                accent="indigo"
-                                variant="simple"
-                                onChange={(v) =>
-                                  updateRoundConfigField(selectedRoundIndex, "maxScore", v)
-                                }
-                              />
-                            </div>
+                          <div className="space-y-3 pb-3">
+                            {/* Max Score + Time in one row */}
+                            <div className="flex items-start gap-4">
+                              <div
+                                className={cn(
+                                  "space-y-1",
+                                  selectedRound.roundType === "CV_SCREENING" ||
+                                    selectedRound.roundType === "EMAIL_SIMULATOR"
+                                    ? "w-full"
+                                    : "w-[55%]"
+                                )}>
+                                <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                                  Điểm tối đa
+                                </Label>
+                                <ScoreInput
+                                  value={selectedRound.configData?.maxScore ?? 100}
+                                  min={1}
+                                  max={500}
+                                  step={5}
+                                  accent="indigo"
+                                  variant="simple"
+                                  onChange={(v) =>
+                                    updateRoundConfigField(selectedRoundIndex, "maxScore", v)
+                                  }
+                                />
+                              </div>
 
-                            {/* Điểm đạt tối thiểu */}
-                            <div className="flex flex-col items-center space-y-1.5">
-                              <Label className="self-start text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                Điểm đạt tối thiểu (Pass)
-                              </Label>
-                              <ScoreInput
-                                value={Math.round(
-                                  (selectedRound.passThreshold ?? 0.8) *
-                                    (selectedRound.configData?.maxScore ?? 100)
-                                )}
-                                min={0}
-                                max={selectedRound.configData?.maxScore ?? 100}
-                                step={1}
-                                accent="emerald"
-                                variant="circular"
-                                onChange={(val) => {
-                                  const max = selectedRound.configData?.maxScore ?? 100;
-                                  updateRoundField(
-                                    selectedRoundIndex,
-                                    "passThreshold",
-                                    max > 0 ? val / max : 0.8
-                                  );
-                                }}
-                              />
-                            </div>
-
-                            {/* Thời gian làm bài (hidden for CV & EMAIL) */}
-                            {selectedRound.roundType !== "CV_SCREENING" &&
-                              selectedRound.roundType !== "EMAIL_SIMULATOR" && (
-                                <div className="space-y-1.5">
-                                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                    Thời gian làm bài (Phút)
-                                  </Label>
-                                  <div className="flex items-center gap-3">
-                                    <Input
-                                      type="number"
-                                      min={0}
-                                      value={selectedRound.configData?.timeLimitMinutes ?? 0}
-                                      onChange={(e) =>
-                                        updateRoundConfigField(
-                                          selectedRoundIndex,
-                                          "timeLimitMinutes",
-                                          Number(e.target.value)
-                                        )
-                                      }
-                                      className="w-24 border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                                    />
-                                    <span className="text-xs text-slate-400">
-                                      (0 = không giới hạn thời gian)
-                                    </span>
+                              {selectedRound.roundType !== "CV_SCREENING" &&
+                                selectedRound.roundType !== "EMAIL_SIMULATOR" && (
+                                  <div className="w-[45%] space-y-1">
+                                    <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                                      Thời gian
+                                    </Label>
+                                    {dialogEditingTime ? (
+                                      <div className="flex items-center gap-1">
+                                        <Input
+                                          type="number"
+                                          min={0}
+                                          autoFocus
+                                          value={selectedRound.configData?.timeLimitMinutes ?? 0}
+                                          onChange={(e) =>
+                                            updateRoundConfigField(
+                                              selectedRoundIndex,
+                                              "timeLimitMinutes",
+                                              Number(e.target.value)
+                                            )
+                                          }
+                                          onBlur={() => setDialogEditingTime(false)}
+                                          onKeyDown={(e) =>
+                                            e.key === "Enter" && setDialogEditingTime(false)
+                                          }
+                                          className="h-11 w-full [appearance:textfield] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-800 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                        />
+                                        <span className="shrink-0 text-[9px] text-slate-400">
+                                          phút
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => setDialogEditingTime(true)}
+                                        className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400">
+                                        <Clock className="h-4 w-4 text-slate-400" />
+                                        {(selectedRound.configData?.timeLimitMinutes ?? 0) > 0
+                                          ? `${selectedRound.configData?.timeLimitMinutes} phút`
+                                          : "Không hạn chế"}
+                                      </button>
+                                    )}
                                   </div>
-                                </div>
-                              )}
+                                )}
+                            </div>
+
+                            {/* Pass Score - circular */}
+                            <div className="space-y-1">
+                              <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                                Điểm đạt tối thiểu
+                              </Label>
+                              <div className="flex justify-center">
+                                <ScoreInput
+                                  value={Math.round(
+                                    (selectedRound.passThreshold ?? 0.8) *
+                                      (selectedRound.configData?.maxScore ?? 100)
+                                  )}
+                                  min={0}
+                                  max={selectedRound.configData?.maxScore ?? 100}
+                                  step={1}
+                                  accent="emerald"
+                                  variant="circular"
+                                  size="sm"
+                                  onChange={(val) => {
+                                    const max = selectedRound.configData?.maxScore ?? 100;
+                                    updateRoundField(
+                                      selectedRoundIndex,
+                                      "passThreshold",
+                                      max > 0 ? val / max : 0.8
+                                    );
+                                  }}
+                                />
+                              </div>
+                            </div>
                           </div>
 
                           {/* Specific features depending on Round Type */}
@@ -1651,12 +1723,28 @@ export function JobDescriptionRoundsDialog({
                         type="button"
                         className="h-9 bg-indigo-600 px-4 text-xs font-bold text-white shadow-md hover:bg-indigo-700"
                         onClick={async () => {
-                          if (codingEditorRef.current) {
-                            const saved = await codingEditorRef.current.saveCurrentProblem();
-                            if (!saved) return;
+                          let finalRounds = rounds;
+                          if (selectedRound?.roundType === "CODING" && codingEditorRef.current) {
+                            const result = await codingEditorRef.current.saveCurrentProblem();
+                            if (!result) return;
+                            if (result !== true) {
+                              const updated = [...rounds];
+                              updated[selectedRoundIndex] = {
+                                ...updated[selectedRoundIndex],
+                                configData: {
+                                  ...updated[selectedRoundIndex].configData,
+                                  codingProblemsId: result.ids,
+                                  codingProblems: result.problems,
+                                },
+                              };
+                              finalRounds = updated;
+                              setRounds(updated);
+                            }
                           }
                           setConfigModalOpen(false);
                           setSelectedRoundIndex(null);
+                          // Save immediately to backend without closing the main diagram
+                          await handleSave(false, finalRounds);
                         }}>
                         Xác nhận thiết lập vòng
                       </Button>
@@ -1755,7 +1843,7 @@ export function JobDescriptionRoundsDialog({
                   Hủy
                 </Button>
                 <Button
-                  onClick={handleSave}
+                  onClick={() => handleSave(true)}
                   disabled={isSaving || isLoading}
                   className="bg-primary text-primary-foreground hover:bg-primary/95 gap-2 font-bold">
                   <Save className="h-4 w-4" />

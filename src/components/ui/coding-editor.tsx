@@ -109,7 +109,12 @@ function StyledSelect({
 }
 
 export const CodingEditor = React.forwardRef<
-  { saveCurrentProblem: () => Promise<boolean> },
+  {
+    saveCurrentProblem: () => Promise<
+      | boolean
+      | { ids: number[]; problems: { problemId?: number; title?: string; difficulty?: string }[] }
+    >;
+  },
   CodingEditorProps
 >(
   (
@@ -141,6 +146,7 @@ export const CodingEditor = React.forwardRef<
 
     // Create problem form states
     const [newProblem, setNewProblem] = React.useState<{
+      id?: number;
       title: string;
       difficulty: "EASY" | "MEDIUM" | "HARD";
       problemStatement: string;
@@ -366,7 +372,10 @@ export const CodingEditor = React.forwardRef<
       }
     };
 
-    const handleSaveProblem = async (): Promise<boolean> => {
+    const handleSaveProblem = async (): Promise<
+      | boolean
+      | { ids: number[]; problems: { problemId?: number; title?: string; difficulty?: string }[] }
+    > => {
       if (!newProblem.title.trim()) {
         toast.warning("Vui lòng nhập tiêu đề bài tập");
         return false;
@@ -414,7 +423,7 @@ export const CodingEditor = React.forwardRef<
           }
           setEditingIndex(null);
           setRightView("view");
-          return true;
+          return { ids: newIds, problems: newProblems };
         } else {
           toast.error(res.error || "Không thể lưu bài tập");
           return false;
@@ -747,6 +756,7 @@ export const CodingEditor = React.forwardRef<
                         onClick={() => {
                           if (selectedProblemDetails) {
                             setNewProblem({
+                              id: selectedProblemDetails.id,
                               title: selectedProblemDetails.title || "",
                               difficulty: selectedProblemDetails.difficulty || "EASY",
                               problemStatement: selectedProblemDetails.problemStatement || "",
