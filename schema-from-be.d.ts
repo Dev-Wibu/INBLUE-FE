@@ -836,6 +836,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/code-review-problems": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAllCodeReviewProblems"];
+        put?: never;
+        post: operations["createCodeReviewProblem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/code-review-problems/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generateCodeReviewProblem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -1895,6 +1927,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/code-review-problems/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCodeReviewProblemById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/candidate-profiles/{userId}": {
         parameters: {
             query?: never;
@@ -2032,6 +2080,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CodeFile: {
+            filename?: string;
+            content?: string;
+            language?: string;
+        };
+        CodeReviewProblemSnapshot: {
+            /** Format: int64 */
+            problemId?: number;
+            title?: string;
+            /** @enum {string} */
+            difficulty?: "EASY" | "MEDIUM" | "HARD";
+            language?: string;
+            problemStatement?: string;
+            files?: components["schemas"]["CodeFile"][];
+            expectedIssues?: components["schemas"]["ExpectedIssue"][];
+        };
         CodingProblemSnapshot: {
             /** Format: int64 */
             problemId?: number;
@@ -2054,6 +2118,13 @@ export interface components {
             output?: string;
             explanation?: string;
         };
+        ExpectedIssue: {
+            filename?: string;
+            /** Format: int32 */
+            lineNumber?: number;
+            severity?: string;
+            description?: string;
+        };
         QuizQuestion: {
             questionText?: string;
             options?: string[];
@@ -2072,6 +2143,7 @@ export interface components {
             evaluationCriteria?: string;
             quizQuestions?: components["schemas"]["QuizQuestion"][];
             codingProblems?: components["schemas"]["CodingProblemSnapshot"][];
+            codeReviewProblems?: components["schemas"]["CodeReviewProblemSnapshot"][];
         };
         TemplateRoundItem: {
             name: string;
@@ -2933,6 +3005,37 @@ export interface components {
             paramTypes?: string[];
             returnType?: string;
         };
+        CodeReviewProblem: {
+            /** Format: int64 */
+            id?: number;
+            title?: string;
+            /** @enum {string} */
+            difficulty?: "EASY" | "MEDIUM" | "HARD";
+            language?: string;
+            problemStatement?: string;
+            files?: components["schemas"]["CodeFile"][];
+            expectedIssues?: components["schemas"]["ExpectedIssue"][];
+            isDeleted?: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        CodeReviewProblemGenerateRequest: {
+            topic?: string;
+            difficulty?: string;
+            targetLevel?: string;
+            programmingLanguage?: string;
+            context?: components["schemas"]["Context"];
+        };
+        CodeReviewProblemGenerateResponse: {
+            title?: string;
+            difficulty?: string;
+            language?: string;
+            problemStatement?: string;
+            files?: components["schemas"]["CodeFile"][];
+            expectedIssues?: components["schemas"]["ExpectedIssue"][];
+        };
         LoginRequest: {
             email?: string;
             password?: string;
@@ -3194,19 +3297,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
+            unpaged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3361,9 +3464,9 @@ export interface components {
             useAt?: string;
         };
         ApplicationContext: {
-            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
@@ -3453,28 +3556,28 @@ export interface components {
         /** @enum {unknown} */
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 CONTENT_TOO_LARGE" | "413 PAYLOAD_TOO_LARGE" | "414 URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "421 MISDIRECTED_REQUEST" | "422 UNPROCESSABLE_CONTENT" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
+            is4xxClientError?: boolean;
+            is5xxServerError?: boolean;
             is1xxInformational?: boolean;
             is2xxSuccessful?: boolean;
             is3xxRedirection?: boolean;
-            is4xxClientError?: boolean;
-            is5xxServerError?: boolean;
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            includeCodas?: string[];
             elIgnored?: string;
+            isXml?: string;
+            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
-            errorOnELNotFound?: string;
-            trimDirectiveWhitespaces?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
-            isXml?: string;
+            includeCodas?: string[];
+            trimDirectiveWhitespaces?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
@@ -3511,7 +3614,9 @@ export interface components {
             };
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
             /** Format: int32 */
             sessionTimeout?: number;
             requestCharacterEncoding?: string;
@@ -3528,12 +3633,10 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            initParameterNames?: unknown;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -3602,8 +3705,8 @@ export interface components {
             minorVersion?: number;
         };
         ServletRegistration: {
-            mappings?: string[];
             runAsRole?: string;
+            mappings?: string[];
             initParameters?: {
                 [key: string]: string;
             };
@@ -3613,9 +3716,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
-            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
+            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -5459,6 +5562,74 @@ export interface operations {
             };
         };
     };
+    getAllCodeReviewProblems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CodeReviewProblem"][];
+                };
+            };
+        };
+    };
+    createCodeReviewProblem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CodeReviewProblem"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CodeReviewProblem"];
+                };
+            };
+        };
+    };
+    generateCodeReviewProblem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CodeReviewProblemGenerateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CodeReviewProblemGenerateResponse"];
+                };
+            };
+        };
+    };
     login: {
         parameters: {
             query?: never;
@@ -7050,6 +7221,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CodingProblem"];
+                };
+            };
+        };
+    };
+    getCodeReviewProblemById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CodeReviewProblem"];
                 };
             };
         };

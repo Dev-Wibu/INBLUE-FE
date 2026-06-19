@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { CodeReviewEditor } from "@/components/ui/code-review-editor";
 import { CodingEditor } from "@/components/ui/coding-editor";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,13 @@ interface UIRoundConfig {
   }[];
   codingProblemsId?: number[];
   codingProblems?: { problemId?: number; title?: string; difficulty?: string }[];
+  codeReviewProblemsId?: number[];
+  codeReviewProblems?: {
+    problemId?: number;
+    title?: string;
+    difficulty?: string;
+    language?: string;
+  }[];
 }
 
 interface UIRound {
@@ -146,6 +154,8 @@ const AVAILABLE_ROUNDS_TEMPLATES: {
     defaultConfig: {
       instruction: "Review đoạn mã nguồn sau và chỉ ra các điểm cần tối ưu.",
       timeLimitMinutes: 30,
+      codeReviewProblemsId: [],
+      codeReviewProblems: [],
     },
   },
   {
@@ -277,6 +287,20 @@ export function InterviewTemplateManagementPage() {
     saveCurrentProblem: () => Promise<
       | boolean
       | { ids: number[]; problems: { problemId?: number; title?: string; difficulty?: string }[] }
+    >;
+  }>(null);
+  const codeReviewEditorRef = useRef<{
+    saveCurrentProblem: () => Promise<
+      | boolean
+      | {
+          ids: number[];
+          problems: {
+            problemId?: number;
+            title?: string;
+            difficulty?: string;
+            language?: string;
+          }[];
+        }
     >;
   }>(null);
   const [dialogEditingTime, setDialogEditingTime] = useState(false);
@@ -705,6 +729,11 @@ export function InterviewTemplateManagementPage() {
             ?.map((cp) => cp.problemId)
             .filter((id): id is number => id !== undefined) ?? [],
         codingProblems: r.configData?.codingProblems ?? [],
+        codeReviewProblemsId:
+          r.configData?.codeReviewProblems
+            ?.map((cp) => cp.problemId)
+            .filter((id): id is number => id !== undefined) ?? [],
+        codeReviewProblems: r.configData?.codeReviewProblems ?? [],
       },
     }));
 
@@ -744,6 +773,11 @@ export function InterviewTemplateManagementPage() {
             ?.map((cp) => cp.problemId)
             .filter((id): id is number => id !== undefined) ?? [],
         codingProblems: r.configData?.codingProblems ?? [],
+        codeReviewProblemsId:
+          r.configData?.codeReviewProblems
+            ?.map((cp) => cp.problemId)
+            .filter((id): id is number => id !== undefined) ?? [],
+        codeReviewProblems: r.configData?.codeReviewProblems ?? [],
       },
     }));
 
@@ -827,6 +861,18 @@ export function InterviewTemplateManagementPage() {
                   problemId: id,
                   title: cp?.title || `Bài tập #${id}`,
                   difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
+                };
+              }) ?? [],
+            codeReviewProblems:
+              r.configData?.codeReviewProblemsId?.map((id) => {
+                const cp = r.configData?.codeReviewProblems?.find(
+                  (problem) => problem.problemId === id
+                );
+                return {
+                  problemId: id,
+                  title: cp?.title || `Bài tập #${id}`,
+                  difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
+                  language: cp?.language || "Java",
                 };
               }) ?? [],
           },
@@ -1515,8 +1561,10 @@ export function InterviewTemplateManagementPage() {
             onOpenAutoFocus={(e) => e.preventDefault()}
             className={cn(
               "flex flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950",
-              selectedRound?.roundType === "QUIZ" || selectedRound?.roundType === "CODING"
-                ? "h-[88vh] max-h-[88vh] w-[1240px] max-w-[96vw]"
+              selectedRound?.roundType === "QUIZ" ||
+                selectedRound?.roundType === "CODING" ||
+                selectedRound?.roundType === "CODE_REVIEW"
+                ? "h-[96vh] max-h-[96vh] w-[98vw] max-w-[98vw]"
                 : "h-auto max-h-[85vh] w-[960px] max-w-[96vw]"
             )}>
             {/* Modal header */}
@@ -1568,6 +1616,7 @@ export function InterviewTemplateManagementPage() {
                 "flex-1 overflow-hidden",
                 selectedRound.roundType !== "QUIZ" &&
                   selectedRound.roundType !== "CODING" &&
+                  selectedRound.roundType !== "CODE_REVIEW" &&
                   "overflow-y-auto"
               )}>
               {selectedRound.roundType === "QUIZ" ? (
@@ -1602,6 +1651,36 @@ export function InterviewTemplateManagementPage() {
                         ...updated[selectedRoundIndex].configData,
                         codingProblemsId: ids,
                         codingProblems: problems,
+                      },
+                    };
+                    setRounds(updated);
+                  }}
+                  maxScore={selectedRound.configData?.maxScore ?? 100}
+                  onMaxScoreChange={(v) =>
+                    updateRoundConfigField(selectedRoundIndex, "maxScore", v)
+                  }
+                  passThreshold={selectedRound.passThreshold ?? 0.8}
+                  onPassThresholdChange={(v) =>
+                    updateRoundField(selectedRoundIndex, "passThreshold", v)
+                  }
+                  timeLimitMinutes={selectedRound.configData?.timeLimitMinutes ?? 0}
+                  onTimeLimitMinutesChange={(v) =>
+                    updateRoundConfigField(selectedRoundIndex, "timeLimitMinutes", v)
+                  }
+                />
+              ) : selectedRound.roundType === "CODE_REVIEW" ? (
+                <CodeReviewEditor
+                  ref={codeReviewEditorRef}
+                  codeReviewProblemsId={selectedRound.configData?.codeReviewProblemsId || []}
+                  codeReviewProblems={selectedRound.configData?.codeReviewProblems || []}
+                  onChange={(ids, problems) => {
+                    const updated = [...rounds];
+                    updated[selectedRoundIndex] = {
+                      ...updated[selectedRoundIndex],
+                      configData: {
+                        ...updated[selectedRoundIndex].configData,
+                        codeReviewProblemsId: ids,
+                        codeReviewProblems: problems,
                       },
                     };
                     setRounds(updated);
@@ -1925,6 +2004,25 @@ export function InterviewTemplateManagementPage() {
                           ...updated[selectedRoundIndex].configData,
                           codingProblemsId: result.ids,
                           codingProblems: result.problems,
+                        },
+                      };
+                      finalRounds = updated;
+                      setRounds(updated);
+                    }
+                  } else if (
+                    selectedRound?.roundType === "CODE_REVIEW" &&
+                    codeReviewEditorRef.current
+                  ) {
+                    const result = await codeReviewEditorRef.current.saveCurrentProblem();
+                    if (!result) return;
+                    if (result !== true) {
+                      const updated = [...rounds];
+                      updated[selectedRoundIndex] = {
+                        ...updated[selectedRoundIndex],
+                        configData: {
+                          ...updated[selectedRoundIndex].configData,
+                          codeReviewProblemsId: result.ids,
+                          codeReviewProblems: result.problems,
                         },
                       };
                       finalRounds = updated;
