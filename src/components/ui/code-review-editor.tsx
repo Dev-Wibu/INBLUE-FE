@@ -488,7 +488,7 @@ export const CodeReviewEditor = React.forwardRef<
     return (
       <div className="grid h-full grid-cols-12 gap-0 overflow-hidden bg-slate-50 dark:bg-slate-950">
         {/* ==================== LEFT COLUMN (SIDEBAR) ==================== */}
-        <div className="col-span-3 flex flex-col border-r border-slate-200 bg-white dark:border-slate-800/80 dark:bg-slate-900">
+        <div className="col-span-3 flex h-full flex-col overflow-hidden border-r border-slate-200 bg-white dark:border-slate-800/80 dark:bg-slate-900">
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
             {/* --- Configuration Settings --- */}
             <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 dark:border-slate-800 dark:bg-slate-950/40">

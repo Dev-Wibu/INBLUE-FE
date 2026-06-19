@@ -1516,6 +1516,7 @@ export function JobDescriptionRoundsDialog({
                         "flex-1 overflow-hidden",
                         selectedRound.roundType !== "QUIZ" &&
                           selectedRound.roundType !== "CODING" &&
+                          selectedRound.roundType !== "CODE_REVIEW" &&
                           "overflow-y-auto p-5"
                       )}>
                       {selectedRound.roundType === "QUIZ" ? (
