@@ -35,16 +35,18 @@ export class QuestionCategoryManager implements BaseManager<QuestionCategory> {
    * Map backend QuestionLesson (lessonName) to frontend QuestionCategory (categoryName)
    */
 
-  private mapFromBackend(data: components["schemas"]["QuestionLesson"]): QuestionCategory {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private mapFromBackend(data: any): QuestionCategory {
     return {
       id: data.id,
-      categoryName: data.lessonName,
+      categoryName: data.name || data.lessonName || data.categoryName,
       description: data.description,
       urlTutorial: data.urlTutorial,
     };
   }
 
-  private mapArrayFromBackend(data: components["schemas"]["QuestionLesson"][]): QuestionCategory[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private mapArrayFromBackend(data: any[]): QuestionCategory[] {
     return data.map((item) => this.mapFromBackend(item));
   }
 

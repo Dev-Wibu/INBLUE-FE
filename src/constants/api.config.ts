@@ -195,6 +195,12 @@ export const API_ENDPOINTS = {
     DELETE: "/api/question-categories/:id",
   },
 
+  // Question Banks endpoints
+  QUESTION_BANKS: {
+    BASE: "/api/question-banks",
+    DETAIL: "/api/question-banks/:id",
+  },
+
   // Question Majors endpoints - Based on schema-from-be.d.ts
   // NOTE: Schema defines these as /api/majors (not /api/question-majors)
   // The object key remains QUESTION_MAJORS for consistency with the service manager naming,

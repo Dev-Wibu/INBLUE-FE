@@ -31,6 +31,7 @@ export * from "./payment.manager";
 export * from "./post.manager";
 export * from "./practice-set-item.manager";
 export * from "./practice-set.manager";
+export * from "./question-bank.manager";
 export * from "./question-category.manager";
 export * from "./question-major.manager";
 export * from "./question.manager";

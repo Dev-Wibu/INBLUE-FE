@@ -137,7 +137,6 @@ export function DashboardSidebar({
   const isControlled = controlledCollapsed !== undefined;
   const isCollapsed = isControlled ? controlledCollapsed : internalCollapsed;
   const desktopSidebarRef = useRef<HTMLElement | null>(null);
-  const [hoveredDesktopParent, setHoveredDesktopParent] = useState<string | null>(null);
   const [pinnedDesktopParent, setPinnedDesktopParent] = useState<string | null>(null);
   const [collapsedDropdownParent, setCollapsedDropdownParent] = useState<string | null>(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -182,7 +181,6 @@ export function DashboardSidebar({
     };
   }, [collapsedDropdownParent, isCollapsed]);
   const toggleCollapse = () => {
-    setHoveredDesktopParent(null);
     setCollapsedDropdownParent(null);
     setPinnedDesktopParent(null);
     setCollapsed((prev) => !prev);
@@ -200,7 +198,6 @@ export function DashboardSidebar({
   const handleNavigate = (type: string) => {
     onNavigate(type);
     setCollapsedDropdownParent(null);
-    setHoveredDesktopParent(null);
     setIsMobileOpen(false);
   };
   const handleLogout = async () => {
@@ -265,23 +262,9 @@ export function DashboardSidebar({
     const isActive = activeTab === item.type || isAnyChildActive;
     const isCollapsedDropdownOpen = collapsedDropdownParent === item.type;
     const isExpandedDropdownOpen =
-      !isCollapsed &&
-      (hoveredDesktopParent === item.type ||
-        (!hoveredDesktopParent && (pinnedDesktopParent === item.type || isAnyChildActive)));
+      !isCollapsed && (pinnedDesktopParent === item.type || isAnyChildActive);
     return (
-      <div
-        key={item.type}
-        className="relative"
-        onMouseEnter={() => {
-          if (!isCollapsed) {
-            setHoveredDesktopParent(item.type);
-          }
-        }}
-        onMouseLeave={() => {
-          if (!isCollapsed) {
-            setHoveredDesktopParent((prev) => (prev === item.type ? null : prev));
-          }
-        }}>
+      <div key={item.type} className="relative">
         {isCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>

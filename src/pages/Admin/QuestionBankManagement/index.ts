@@ -1,0 +1,1 @@
+export { QuestionBankManagementPage } from "./QuestionBankManagementPage";

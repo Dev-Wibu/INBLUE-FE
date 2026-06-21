@@ -17,15 +17,20 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import {
   Bell,
   BookOpen,
+  BrainCircuit,
+  Briefcase,
   Building2,
+  Database,
   FileQuestion,
   FileText,
   FolderOpen,
   GraduationCap,
   LayoutDashboard,
   LayoutTemplate,
+  Library,
   MessageSquare,
   Newspaper,
+  Settings,
   Star,
   Trash2,
   Trophy,
@@ -46,6 +51,7 @@ import { NotificationManagementPage } from "../NotificationManagement";
 import { PostManagementPage } from "../PostManagement";
 import { PracticeQuestionManagementPage } from "../PracticeQuestionManagement";
 import { PracticeSetManagementPage } from "../PracticeSetManagement";
+import { QuestionBankManagementPage } from "../QuestionBankManagement";
 import { QuestionCategoryManagementPage } from "../QuestionCategoryManagement";
 import { QuestionMajorManagementPage } from "../QuestionMajorManagement";
 import { QuizSetManagementPage } from "../QuizSetManagement";
@@ -61,6 +67,7 @@ type TabType =
   | "feedback"
   | "notifications"
   | "questionCategories"
+  | "questionBanks"
   | "questionMajors"
   | "practiceSets"
   | "practiceQuestions"
@@ -79,6 +86,7 @@ const VALID_TAB_TYPES: TabType[] = [
   "feedback",
   "notifications",
   "questionCategories",
+  "questionBanks",
   "questionMajors",
   "practiceSets",
   "practiceQuestions",
@@ -131,6 +139,10 @@ const getAvailableTabs = (
     label: t("common.lesson"),
   },
   {
+    type: "questionBanks",
+    label: t("common.questionBank"),
+  },
+  {
     type: "questionMajors",
     label: t("common.specialized"),
   },
@@ -172,6 +184,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   feedback: MessageSquare,
   notifications: Bell,
   questionCategories: FolderOpen,
+  questionBanks: Database,
   questionMajors: GraduationCap,
   practiceSets: BookOpen,
   practiceQuestions: FileQuestion,
@@ -190,6 +203,7 @@ const TAB_COLORS: Record<TabType, string> = {
   feedback: "text-cyan-600",
   notifications: "text-red-600",
   questionCategories: "text-purple-600",
+  questionBanks: "text-indigo-500",
   questionMajors: "text-pink-600",
   practiceSets: "text-teal-600",
   practiceQuestions: "text-emerald-600",
@@ -225,32 +239,10 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         iconColor: "text-orange-600",
       },
       {
-        type: "sessions",
-        label: t("common.manageInterviewSessions"),
-        icon: Video,
-        iconColor: "text-green-600",
-      },
-      {
-        type: "interviewTemplates",
-        label: "Mẫu quy trình",
-        icon: LayoutTemplate,
-        iconColor: "text-violet-600",
-      },
-    ],
-  },
-  {
-    items: [
-      {
-        type: "reviews",
-        label: t("adminAdmindashboard.manageSentMentorReviews"),
-        icon: Star,
-        iconColor: "text-yellow-600",
-      },
-      {
-        type: "feedback",
-        label: t("adminAdmindashboard.manageResponsesSentByCandidates"),
-        icon: MessageSquare,
-        iconColor: "text-cyan-600",
+        type: "companies",
+        label: t("adminAdmindashboard.companyManagement"),
+        icon: Building2,
+        iconColor: "text-sky-600",
       },
       {
         type: "notifications",
@@ -263,10 +255,50 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
   {
     items: [
       {
+        type: "sessions",
+        label: t("common.manageInterviewSessions"),
+        icon: Video,
+        iconColor: "text-green-600",
+      },
+      {
+        type: "interviewTemplates",
+        label: "Mẫu quy trình",
+        icon: LayoutTemplate,
+        iconColor: "text-violet-600",
+      },
+      {
+        type: "candidateProfiles",
+        label: t("common.candidateProfile"),
+        icon: FileText,
+        iconColor: "text-teal-600",
+      },
+      {
+        type: "reviews",
+        label: t("adminAdmindashboard.manageSentMentorReviews"),
+        icon: Star,
+        iconColor: "text-yellow-600",
+      },
+      {
+        type: "feedback",
+        label: t("adminAdmindashboard.manageResponsesSentByCandidates"),
+        icon: MessageSquare,
+        iconColor: "text-cyan-600",
+      },
+    ],
+  },
+  {
+    items: [
+      {
         type: "questionCategories",
         label: t("common.lesson"),
         icon: FolderOpen,
         iconColor: "text-purple-600",
+      },
+      {
+        type: "questionBanks",
+        label: t("common.questionBank"),
+        icon: Database,
+        iconColor: "text-indigo-500",
       },
       {
         type: "questionMajors",
@@ -302,24 +334,11 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         icon: Newspaper,
         iconColor: "text-purple-500",
       },
-      {
-        type: "companies",
-        label: t("adminAdmindashboard.companyManagement"),
-        icon: Building2,
-        iconColor: "text-sky-600",
-      },
-      {
-        type: "candidateProfiles",
-        label: t("common.candidateProfile"),
-        icon: FileText,
-        iconColor: "text-teal-600",
-      },
     ],
   },
 ];
 const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] => [
   {
-    label: t("adminAdmindashboard.administration"),
     items: [
       {
         type: "dashboard",
@@ -328,109 +347,122 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         color: "text-indigo-600",
       },
       {
-        type: "users",
-        icon: Users,
-        label: t("common.user"),
+        type: "system",
+        icon: Settings,
+        label: t("adminAdmindashboard.administration"),
         color: "text-blue-600",
+        children: [
+          { type: "users", icon: Users, label: t("common.user"), color: "text-blue-600" },
+          {
+            type: "mentors",
+            icon: UserCog,
+            label: t("adminAdmindashboard.instructor"),
+            color: "text-orange-600",
+          },
+          { type: "companies", icon: Building2, label: t("common.company"), color: "text-sky-600" },
+          {
+            type: "notifications",
+            icon: Bell,
+            label: t("common.notification"),
+            color: "text-red-600",
+          },
+        ],
       },
       {
-        type: "mentors",
-        icon: UserCog,
-        label: t("adminAdmindashboard.instructor"),
-        color: "text-orange-600",
-      },
-      {
-        type: "sessions",
-        icon: Video,
-        label: t("common.interviewSession"),
-        color: "text-green-600",
-      },
-      {
-        type: "interviewTemplates",
-        icon: LayoutTemplate,
-        label: "Mẫu quy trình",
-        color: "text-violet-600",
-      },
-    ],
-  },
-  {
-    label: t("adminAdmindashboard.reviewsFeedback"),
-    items: [
-      {
-        type: "reviews",
-        icon: Star,
-        label: t("common.reviewFromMentor"),
-        color: "text-yellow-600",
-      },
-      {
-        type: "feedback",
-        icon: MessageSquare,
-        label: t("common.feedbackFromCandidates"),
-        color: "text-cyan-600",
-      },
-      {
-        type: "notifications",
-        icon: Bell,
-        label: t("common.notification"),
-        color: "text-red-600",
-      },
-    ],
-  },
-  {
-    label: t("common.questionBank"),
-    items: [
-      {
-        type: "questionCategories",
-        icon: FolderOpen,
-        label: t("common.lesson"),
-        color: "text-purple-600",
-      },
-      {
-        type: "questionMajors",
-        icon: GraduationCap,
-        label: t("common.specialized"),
-        color: "text-pink-600",
-      },
-      {
-        type: "practiceSets",
-        icon: BookOpen,
-        label: t("adminAdmindashboard.reviewSet"),
-        color: "text-teal-600",
-      },
-      {
-        type: "practiceQuestions",
-        icon: FileQuestion,
-        label: t("adminAdmindashboard.reviewQuestions"),
+        type: "recruitment",
+        icon: Briefcase,
+        label: "Tuyển dụng",
         color: "text-emerald-600",
+        children: [
+          {
+            type: "sessions",
+            icon: Video,
+            label: t("common.interviewSession"),
+            color: "text-green-600",
+          },
+          {
+            type: "interviewTemplates",
+            icon: LayoutTemplate,
+            label: "Mẫu quy trình",
+            color: "text-violet-600",
+          },
+          {
+            type: "candidateProfiles",
+            icon: FileText,
+            label: t("common.candidateProfile"),
+            color: "text-teal-600",
+          },
+          {
+            type: "reviews",
+            icon: Star,
+            label: t("common.reviewFromMentor"),
+            color: "text-yellow-600",
+          },
+          {
+            type: "feedback",
+            icon: MessageSquare,
+            label: t("common.feedbackFromCandidates"),
+            color: "text-cyan-600",
+          },
+        ],
       },
       {
-        type: "quizSets",
-        icon: Trophy,
-        label: t("adminAdmindashboard.testSet"),
-        color: "text-amber-600",
+        type: "testing",
+        icon: BrainCircuit,
+        label: "Khảo thí & Đào tạo",
+        color: "text-purple-600",
+        children: [
+          {
+            type: "questionCategories",
+            icon: FolderOpen,
+            label: t("common.lesson"),
+            color: "text-purple-600",
+          },
+          {
+            type: "questionBanks",
+            icon: Database,
+            label: t("common.questionBank"),
+            color: "text-indigo-500",
+          },
+          {
+            type: "questionMajors",
+            icon: GraduationCap,
+            label: t("common.specialized"),
+            color: "text-pink-600",
+          },
+          {
+            type: "practiceSets",
+            icon: BookOpen,
+            label: t("adminAdmindashboard.reviewSet"),
+            color: "text-teal-600",
+          },
+          {
+            type: "practiceQuestions",
+            icon: FileQuestion,
+            label: t("adminAdmindashboard.reviewQuestions"),
+            color: "text-emerald-600",
+          },
+          {
+            type: "quizSets",
+            icon: Trophy,
+            label: t("adminAdmindashboard.testSet"),
+            color: "text-amber-600",
+          },
+        ],
       },
-    ],
-  },
-  {
-    label: t("common.content"),
-    items: [
       {
-        type: "posts",
-        icon: Newspaper,
-        label: t("common.articlesCommunity"),
-        color: "text-purple-500",
-      },
-      {
-        type: "companies",
-        icon: Building2,
-        label: t("common.company"),
-        color: "text-sky-600",
-      },
-      {
-        type: "candidateProfiles",
-        icon: FileText,
-        label: t("common.candidateProfile"),
-        color: "text-teal-600",
+        type: "content",
+        icon: Library,
+        label: t("common.content"),
+        color: "text-pink-500",
+        children: [
+          {
+            type: "posts",
+            icon: Newspaper,
+            label: t("common.articlesCommunity"),
+            color: "text-purple-500",
+          },
+        ],
       },
     ],
   },
@@ -638,6 +670,8 @@ export function AdminDashboardPage() {
         return <NotificationManagementPage />;
       case "questionCategories":
         return <QuestionCategoryManagementPage />;
+      case "questionBanks":
+        return <QuestionBankManagementPage />;
       case "questionMajors":
         return <QuestionMajorManagementPage />;
       case "practiceSets":
