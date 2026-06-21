@@ -21,7 +21,7 @@ type SortableQuestionCategory = QuestionCategory & {
   nameSortValue: string;
   descriptionSortValue: string;
 };
-export function QuestionCategoryManagementPage() {
+export function QuestionCategoryManagementPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -174,16 +174,21 @@ export function QuestionCategoryManagementPage() {
     }
   };
   return (
-    <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
+    <div
+      className={
+        isEmbedded ? "flex h-full flex-col" : "min-h-screen bg-white p-8 dark:bg-slate-950"
+      }>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          {t("adminQuestioncategorymanagement.questionListManagement")}
-        </h1>
-        <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          {t("adminQuestioncategorymanagement.manageQuestionCategoriesForInterview")}
-        </p>
-      </div>
+      {!isEmbedded && (
+        <div className="mb-8">
+          <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
+            {t("adminQuestioncategorymanagement.questionListManagement")}
+          </h1>
+          <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
+            {t("adminQuestioncategorymanagement.manageQuestionCategoriesForInterview")}
+          </p>
+        </div>
+      )}
 
       {/* Action Bar */}
       <div className="mb-6 grid gap-3 xl:grid-cols-[1fr_auto]">

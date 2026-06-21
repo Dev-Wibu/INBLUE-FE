@@ -197,7 +197,7 @@ export function QuestionBankManagementPage() {
           </TabsContent>
 
           <TabsContent value="categories" className="mt-0 flex-1">
-            <QuestionCategoryManagementPage />
+            <QuestionCategoryManagementPage isEmbedded />
           </TabsContent>
         </Tabs>
       </div>
