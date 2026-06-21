@@ -107,9 +107,6 @@ importers:
       '@types/sockjs-client':
         specifier: ^1.5.4
         version: 1.5.4
-      '@uppy/compressor':
-        specifier: ^3.1.0
-        version: 3.1.0(@uppy/core@5.2.0)
       '@uppy/core':
         specifier: ^5.2.0
         version: 5.2.0
@@ -2055,11 +2052,6 @@ packages:
       '@uppy/webcam':
         optional: true
 
-  '@uppy/compressor@3.1.0':
-    resolution: {integrity: sha512-EPCU1j/hvey05/ePPzuqaF7p4fORsc3PNvRGDXrT5fiZv0FCAufY5GZf4OUAiKNHkL59wwxAgMySOTJq7WBZtA==}
-    peerDependencies:
-      '@uppy/core': ^5.2.0
-
   '@uppy/core@5.2.0':
     resolution: {integrity: sha512-uvfNyz4cnaplt7LYJmEZHuqOuav0tKp4a9WKJIaH6iIj7XiqYvS2J5SEByexAlUFlzefOAyjzj4Ja2dd/8aMrw==}
 
@@ -2367,9 +2359,6 @@ packages:
   bluebird@3.7.2:
     resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
 
-  blueimp-canvas-to-blob@3.29.0:
-    resolution: {integrity: sha512-0pcSSGxC0QxT+yVkivxIqW0Y4VlO2XSDPofBAqoJ1qJxgH9eiUDLv50Rixij2cDuEfx4M6DpD9UGZpRhT5Q8qg==}
-
   bowser@2.13.1:
     resolution: {integrity: sha512-OHawaAbjwx6rqICCKgSG0SAnT05bzd7ppyKLVUITZpANBaaMFBAsaNkto3LoQ31tyFP5kNujE8Cdx85G9VzOkw==}
 
@@ -2538,9 +2527,6 @@ packages:
   common-tags@1.8.2:
     resolution: {integrity: sha512-gk/Z852D2Wtb//0I+kRFNKKE9dIIVirjoqPoA1wJU+XePVXZfGeBpk45+A1rKO4Q43prqWBNY/MiIeRLbPWUaA==}
     engines: {node: '>=4.0.0'}
-
-  compressorjs@1.3.0:
-    resolution: {integrity: sha512-TsvzkRgDm/6mIRUdxJbrTH7kfSW3oJzOw8b1xU60fziQSosTML5TczpO6Z4H1LGF0yRmTotk6r5UNhuRxEwA1A==}
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
@@ -3359,10 +3345,6 @@ packages:
   is-bigint@1.1.0:
     resolution: {integrity: sha512-n4ZT37wG78iz03xPRKJrHTdZbe3IicyucEtdRsV5yglwc3GyUfbAfpSeD0FJ41NbUNSt5wbhqfp1fS+BgnvDFQ==}
     engines: {node: '>= 0.4'}
-
-  is-blob@2.1.0:
-    resolution: {integrity: sha512-SZ/fTft5eUhQM6oF/ZaASFDEdbFVe89Imltn9uZr03wdKMcWNVYSMjQPFtg05QuNkt5l5c135ElvXEQG0rk4tw==}
-    engines: {node: '>=6'}
 
   is-boolean-object@1.2.2:
     resolution: {integrity: sha512-wa56o2/ElJMYqjCjGkXri7it5FbebW5usLw/nPmCMs5DeZ7eziSYZhSmPRn0txqeW4LnAmQQU7FgqLpsEFKM4A==}
@@ -4213,10 +4195,6 @@ packages:
   process@0.11.10:
     resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
     engines: {node: '>= 0.6.0'}
-
-  promise-queue@2.2.5:
-    resolution: {integrity: sha512-p/iXrPSVfnqPft24ZdNNLECw/UrtLTpT3jpAAMzl/o5/rDsGCPo3/CQS2611flL6LkoEJ3oQZw7C8Q80ZISXRQ==}
-    engines: {node: '>= 0.8.0'}
 
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
@@ -6881,15 +6859,6 @@ snapshots:
       '@uppy/screen-capture': 5.1.0(@uppy/core@5.2.0)
       '@uppy/webcam': 5.1.0(@uppy/core@5.2.0)
 
-  '@uppy/compressor@3.1.0(@uppy/core@5.2.0)':
-    dependencies:
-      '@transloadit/prettier-bytes': 0.3.5
-      '@uppy/core': 5.2.0
-      '@uppy/utils': 7.2.0
-      compressorjs: 1.3.0
-      preact: 10.29.1
-      promise-queue: 2.2.5
-
   '@uppy/core@5.2.0':
     dependencies:
       '@transloadit/prettier-bytes': 0.3.5
@@ -7255,8 +7224,6 @@ snapshots:
 
   bluebird@3.7.2: {}
 
-  blueimp-canvas-to-blob@3.29.0: {}
-
   bowser@2.13.1: {}
 
   brace-expansion@1.1.12:
@@ -7415,11 +7382,6 @@ snapshots:
   commander@6.2.1: {}
 
   common-tags@1.8.2: {}
-
-  compressorjs@1.3.0:
-    dependencies:
-      blueimp-canvas-to-blob: 3.29.0
-      is-blob: 2.1.0
 
   concat-map@0.0.1: {}
 
@@ -8357,8 +8319,6 @@ snapshots:
     dependencies:
       has-bigints: 1.1.0
 
-  is-blob@2.1.0: {}
-
   is-boolean-object@1.2.2:
     dependencies:
       call-bound: 1.0.4
@@ -9161,8 +9121,6 @@ snapshots:
   prismjs@1.30.0: {}
 
   process@0.11.10: {}
-
-  promise-queue@2.2.5: {}
 
   prop-types@15.8.1:
     dependencies:
