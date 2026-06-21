@@ -58,6 +58,22 @@ export function QuestionBankFormDialog({
   const [aiTopics, setAiTopics] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
 
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [isSubmittingCategory, setIsSubmittingCategory] = useState(false);
+
+  const handleCreateCategorySubmit = async () => {
+    if (!newCategoryName.trim() || !onCreateCategory) return;
+    setIsSubmittingCategory(true);
+    const newId = await onCreateCategory(newCategoryName.trim());
+    setIsSubmittingCategory(false);
+    if (newId) {
+      onFormChange({ ...formData, questionCategory: { id: newId } });
+      setIsCreatingCategory(false);
+      setNewCategoryName("");
+    }
+  };
+
   const handleGenerate = async () => {
     const categoryName = categories.find(
       (c) => c.id === formData.questionCategory?.id
@@ -130,41 +146,67 @@ export function QuestionBankFormDialog({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label>Chuyên mục</Label>
-              {onCreateCategory && (
+              {onCreateCategory && !isCreatingCategory && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   className="h-6 px-2 text-xs text-indigo-600"
-                  onClick={async () => {
-                    const name = window.prompt("Nhập tên chuyên mục mới:");
-                    if (name && name.trim()) {
-                      const newId = await onCreateCategory(name.trim());
-                      if (newId) {
-                        onFormChange({ ...formData, questionCategory: { id: newId } });
-                      }
-                    }
-                  }}>
+                  onClick={() => setIsCreatingCategory(true)}>
                   <Plus className="mr-1 h-3 w-3" /> Thêm nhanh
                 </Button>
               )}
+              {isCreatingCategory && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs text-slate-500"
+                  onClick={() => setIsCreatingCategory(false)}>
+                  Hủy
+                </Button>
+              )}
             </div>
-            <Select
-              value={formData.questionCategory?.id?.toString() || ""}
-              onValueChange={(val) =>
-                onFormChange({ ...formData, questionCategory: { id: parseInt(val) } })
-              }>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn chuyên mục" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id!.toString()}>
-                    {c.categoryName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isCreatingCategory ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  autoFocus
+                  placeholder="Nhập tên chuyên mục"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleCreateCategorySubmit();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleCreateCategorySubmit}
+                  disabled={!newCategoryName.trim() || isSubmittingCategory}>
+                  {isSubmittingCategory ? <Loader2 className="h-4 w-4 animate-spin" /> : "Lưu"}
+                </Button>
+              </div>
+            ) : (
+              <Select
+                value={formData.questionCategory?.id?.toString() || ""}
+                onValueChange={(val) =>
+                  onFormChange({ ...formData, questionCategory: { id: parseInt(val) } })
+                }>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn chuyên mục" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id!.toString()}>
+                      {c.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label>Độ khó</Label>

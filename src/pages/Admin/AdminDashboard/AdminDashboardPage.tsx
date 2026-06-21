@@ -289,12 +289,6 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
   {
     items: [
       {
-        type: "questionCategories",
-        label: t("common.lesson"),
-        icon: FolderOpen,
-        iconColor: "text-purple-600",
-      },
-      {
         type: "questionBanks",
         label: t("common.questionBank"),
         icon: Database,
