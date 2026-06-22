@@ -288,7 +288,7 @@ export class UsersAdminManager implements BaseManager<User> {
         // If _data.password is undefined (e.g. from User Site), fall back to existingUser.password
         password: _data.password ?? existingUser.password,
         university: _data.university || existingUser.university,
-        major: _data.major ? normalizeMajor(_data.major) : existingUser.major,
+        major: _data.major ? normalizeMajor(_data.major) : (existingUser.major ?? undefined),
         // Include role if provided - backend may accept this even though not in UserInfo schema
         role: _data.role || existingUser.role,
         // Include Cloudinary public_id for avatar - required for update/delete operations
@@ -397,7 +397,7 @@ export class UsersAdminManager implements BaseManager<User> {
         name: currentUserData?.name?.trim(),
         email: currentUserData?.email?.trim(),
         university: currentUserData?.university,
-        major: currentUserData?.major,
+        major: currentUserData?.major ?? undefined,
         role: currentUserData?.role,
         isActive: newActiveStatus,
         // Include Cloudinary public_id for avatar - required for update operations

@@ -3177,6 +3177,10 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        CodeSubmission: {
+            sourceCode?: string[];
+            testCases?: components["schemas"]["CompilerResponseDto"];
+        };
         CompilerResponseDto: {
             status?: string;
             /** Format: int32 */
@@ -3197,7 +3201,7 @@ export interface components {
             textContent?: string;
             fileUrl?: string;
             quizAnswers?: components["schemas"]["QuizAnswer"][];
-            testCases?: components["schemas"]["CompilerResponseDto"];
+            codeSubmissions?: components["schemas"]["CodeSubmission"][];
         };
         SubmissionResult: {
             /** @enum {string} */
@@ -3227,7 +3231,7 @@ export interface components {
             /** @enum {string} */
             language?: "PYTHON" | "JS" | "JAVA" | "CPP" | "CSHARP" | "C" | "TYPESCRIPT" | "GO" | "KOTLIN" | "SWIFT" | "RUST" | "RUBY" | "PHP" | "DART" | "SCALA" | "ELIXIR" | "ERLANG" | "RACKET";
             sourceCode?: string[];
-            test?: boolean;
+            isTest?: boolean;
         };
         SubmitRequest: {
             /** Format: int64 */
@@ -3236,7 +3240,7 @@ export interface components {
             /** Format: binary */
             file?: string;
             quizAnswers?: string[];
-            compileRequest?: components["schemas"]["CompileRequest"];
+            compileRequest?: components["schemas"]["CompileRequest"][];
         };
         UserResponse: {
             /** Format: int32 */
@@ -3357,15 +3361,15 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
-            pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
-            numberOfElements?: number;
+            totalPages?: number;
+            pageable?: components["schemas"]["PageableObject"];
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3377,17 +3381,17 @@ export interface components {
         PageableObject: {
             /** Format: int32 */
             pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3532,9 +3536,9 @@ export interface components {
             chatHistory?: components["schemas"]["InterviewExchange"][];
         };
         ApplicationContext: {
-            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
@@ -3632,20 +3636,20 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
             trimDirectiveWhitespaces?: string;
+            errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            errorOnELNotFound?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
+            elIgnored?: string;
+            isXml?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
@@ -3671,24 +3675,20 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
+            propagateQueryProperties?: boolean;
             attributesMap?: {
                 [key: string]: unknown;
             };
             attributes?: {
                 [key: string]: string;
             };
+            attributesCSV?: string;
         };
         ServletContext: {
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -3702,8 +3702,12 @@ export interface components {
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
-            serverInfo?: string;
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            serverInfo?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            virtualServerName?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;

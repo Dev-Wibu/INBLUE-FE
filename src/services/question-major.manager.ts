@@ -47,6 +47,7 @@ export class QuestionMajorManager implements BaseManager<Major> {
         }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -92,13 +93,17 @@ export class QuestionMajorManager implements BaseManager<Major> {
         majorName: data.majorName,
         description: data.description || "",
       };
-      const response = await fetchClient.POST("/api/majors", { body: params }).then((res) => ({
-        data: res.data,
-        status: res.response?.status,
-        headers: res.response?.headers,
-      }));
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .POST("/api/majors", { body: params })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -118,13 +123,17 @@ export class QuestionMajorManager implements BaseManager<Major> {
         description: data.description || "",
       };
       // Use PUT method as per schema for update
-      const response = await fetchClient.PUT("/api/majors", { body: params }).then((res) => ({
-        data: res.data,
-        status: res.response?.status,
-        headers: res.response?.headers,
-      }));
+      const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch
+        .PUT("/api/majors", { body: params })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -143,7 +152,6 @@ export class QuestionMajorManager implements BaseManager<Major> {
   async delete(id: string | number): Promise<ApiResponse<void>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_MAJORS.DELETE, { id });
-      // Use DELETE method as per schema
       // @ts-expect-error: Backend Swagger schema mismatch
       await fetchClient.DELETE(endpoint, {}).then((res) => ({
         data: res.data,
