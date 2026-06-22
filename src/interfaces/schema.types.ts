@@ -118,6 +118,8 @@ export interface User extends Omit<SchemaUser, "role"> {
   role?: UserRole;
   /** Membership plan from backend user response (not in schema-from-be schema) */
   membershipPlan?: SchemaMembershipPlan | null;
+  /** Major/field of study */
+  major?: string | null;
 }
 
 /**

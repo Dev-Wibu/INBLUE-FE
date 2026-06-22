@@ -75,7 +75,6 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
         }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -158,7 +157,6 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
         }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -193,7 +191,6 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
         }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -224,7 +221,6 @@ export class PracticeSetItemManager implements BaseManager<PracticeSetItem> {
         }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {

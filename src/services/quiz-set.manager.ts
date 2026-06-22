@@ -78,7 +78,6 @@ export class QuizSetManager {
       }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -127,9 +126,10 @@ export class QuizSetManager {
       const response = await fetchClient
         .POST("/api/quiz-sets", {
           params: {
-            // @ts-expect-error: Backend Swagger schema mismatch
-            quizId,
-            quizName,
+            query: {
+              quizId,
+              quizName,
+            },
           },
         })
         .then((res) => ({
@@ -139,7 +139,6 @@ export class QuizSetManager {
         }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {
@@ -163,19 +162,15 @@ export class QuizSetManager {
   ): Promise<ApiResponse<QuizItem[]>> {
     try {
       const response = await fetchClient
-        .POST(
-          "/api/quiz-sets/create-full",
-          // @ts-expect-error: Backend Swagger schema mismatch
-          {
-            ...{
-              params: {
-                practiceSetId,
-                QuizName: quizName,
-              },
+        .POST("/api/quiz-sets/create-full", {
+          params: {
+            query: {
+              practiceSetId,
+              QuizName: quizName,
             },
-            body: items,
-          }
-        )
+          },
+          body: items,
+        })
         .then((res) => ({
           data: res.data,
           status: res.response?.status,
@@ -274,7 +269,6 @@ export class QuizSetManager {
         }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
       };
     } catch (error) {

@@ -137,7 +137,7 @@ export function UserManagementPage() {
       email: user.email || "",
       password: user.password || "",
       university: user.university,
-      major: user.major,
+      major: user.major ?? undefined,
       isActive: user.isActive,
       // Include Cloudinary public_id fields for file management during update
       public_id: user.public_id,
