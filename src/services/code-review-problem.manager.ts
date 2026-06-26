@@ -56,12 +56,14 @@ export class CodeReviewProblemManager {
    */
   async getById(id: number): Promise<ApiResponse<CodeReviewProblem>> {
     try {
-      const endpoint = `/api/code-review-problems/${encodeURIComponent(id)}`;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const endpoint = `/api/code-review-problems/${encodeURIComponent(id)}` as any;
       const response = await fetchClient.GET(endpoint, {}).then((res) => ({
         data: res.data,
         status: res.response?.status,
         headers: res.response?.headers,
       }));
+      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {
       return {
