@@ -9,7 +9,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 139,
+    "line": 102,
     "character": 28,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -17,7 +17,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 146,
+    "line": 109,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -25,7 +25,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 247,
+    "line": 150,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -33,7 +33,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 377,
+    "line": 296,
     "character": 38,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -41,7 +41,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 378,
+    "line": 297,
     "character": 84,
     "type": "JsxText",
     "category": "english",
@@ -49,7 +49,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 453,
+    "line": 330,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -57,7 +57,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 132,
+    "line": 93,
     "character": 28,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -65,7 +65,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 134,
+    "line": 95,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -73,7 +73,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 235,
+    "line": 136,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -81,7 +81,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 346,
+    "line": 247,
     "character": 38,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -89,7 +89,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 347,
+    "line": 248,
     "character": 84,
     "type": "JsxText",
     "category": "english",
@@ -97,7 +97,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 422,
+    "line": 281,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -120,6 +120,342 @@
     "text": "Google"
   },
   {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 707,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Java"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 708,
+    "character": 56,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Javascript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 709,
+    "character": 56,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TypeScript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 710,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Python"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 711,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "C#"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 712,
+    "character": 49,
+    "type": "JsxText",
+    "category": "english",
+    "text": "SQL"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 713,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Go"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1242,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Java"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1243,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Javascript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1244,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TypeScript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1245,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Python"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1246,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "C#"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1247,
+    "character": 51,
+    "type": "JsxText",
+    "category": "english",
+    "text": "SQL"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1248,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Go"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1259,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Intern"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1260,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Junior"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1261,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Senior"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1305,
+    "character": 79,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Code Files ("
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1429,
+    "character": 82,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Highlight:"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1438,
+    "character": 60,
+    "type": "JsxText",
+    "category": "english",
+    "text": "java"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1439,
+    "character": 66,
+    "type": "JsxText",
+    "category": "english",
+    "text": "javascript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1440,
+    "character": 66,
+    "type": "JsxText",
+    "category": "english",
+    "text": "typescript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1441,
+    "character": 62,
+    "type": "JsxText",
+    "category": "english",
+    "text": "python"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1442,
+    "character": 62,
+    "type": "JsxText",
+    "category": "english",
+    "text": "csharp"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1443,
+    "character": 59,
+    "type": "JsxText",
+    "category": "english",
+    "text": "sql"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1444,
+    "character": 59,
+    "type": "JsxText",
+    "category": "english",
+    "text": "xml"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1445,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "go"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1605,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🔴 Critical"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1608,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🟡 Warning"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1610,
+    "character": 84,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🔵 Info"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 873,
+    "character": 79,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 876,
+    "character": 89,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MB"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 894,
+    "character": 43,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TC"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 894,
+    "character": 90,
+    "type": "JsxText",
+    "category": "english",
+    "text": "&rarr;"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1180,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🌱 Intern"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1181,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "⚡ Junior"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1182,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🔥 Senior"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1558,
+    "character": 37,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1579,
+    "character": 37,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Output"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1634,
+    "character": 57,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1635,
+    "character": 57,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Expected Output"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1636,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Pts"
+  },
+  {
     "file": "src/components/ui/cv-upload-modal.tsx",
     "line": 202,
     "character": 68,
@@ -136,6 +472,222 @@
     "text": "Banner"
   },
   {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 238,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "New Message"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 258,
+    "character": 86,
+    "type": "JsxText",
+    "category": "english",
+    "text": "To"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 263,
+    "character": 17,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "recipient@example.com"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 271,
+    "character": 86,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Subject"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 276,
+    "character": 17,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Enter subject"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 304,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "KB"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 386,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "KB"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 169,
+    "character": 28,
+    "type": "JsxText",
+    "category": "english",
+    "text": "test case passed"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 249,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Overall"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 257,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Skills"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 265,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Experience"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 273,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Education"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 281,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Readability"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 815,
+    "character": 40,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID Detail"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 821,
+    "character": 40,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID JD"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 843,
+    "character": 44,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Detail #"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1107,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1147,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1153,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "HR:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1157,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Final:"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/CodeReviewProblemManagementPage.tsx",
+    "line": 271,
+    "character": 92,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/CodeReviewProblemManagementPage.tsx",
+    "line": 660,
+    "character": 17,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Java, Python..."
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/CodeReviewProblemManagementPage.tsx",
+    "line": 794,
+    "character": 83,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Spring Security..."
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/CodeReviewProblemManagementPage.tsx",
+    "line": 817,
+    "character": 19,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Java"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/CodeReviewProblemManagementPage.tsx",
+    "line": 826,
+    "character": 17,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Junior, Senior..."
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/CodeReviewProblemManagementPage.tsx",
+    "line": 834,
+    "character": 17,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Backend Developer"
+  },
+  {
+    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionRoundsDialog.tsx",
+    "line": 1746,
+    "character": 37,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI System Prompt"
+  },
+  {
     "file": "src/pages/Admin/FeedbackManagement/FeedbackManagementPage.tsx",
     "line": 364,
     "character": 15,
@@ -144,8 +696,32 @@
     "text": "mentor"
   },
   {
+    "file": "src/pages/Admin/InterviewTemplateManagement/InterviewTemplateManagementPage.tsx",
+    "line": 1949,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI System Prompt"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
+    "line": 151,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 297,
+    "character": 17,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "VD: Spring Boot, AOP, Transactional..."
+  },
+  {
     "file": "src/pages/Auth/MentorRegisterPage.tsx",
-    "line": 386,
+    "line": 364,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -158,6 +734,262 @@
     "type": "JsxText",
     "category": "english",
     "text": "INBLUE AI Interview"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 128,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Media Toolkit Playground (DEV)"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 167,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Shared DateTime Picker Playground (DEV)"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 170,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Test interactive instances of the new premium DateTimePicker component supporting\r\n                quick presets, scroll wheel time alignment, and role themes."
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 178,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "1. Standard (24h format)"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 187,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 193,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "2. 12h Format (with AM/PM)"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 198,
+    "character": 21,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "dd/mm/yyyy --:-- --"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 202,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 208,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "3. Date Only Picker"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 212,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 218,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "4. Mentor Theme (Green, Step 15)"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 227,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 233,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "5. User Theme (Blue, Limit +7 Days)"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 243,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Value:"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 249,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "💡 Test Tips:"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 253,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Click the"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 253,
+    "character": 41,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Month Year"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 253,
+    "character": 61,
+    "type": "JsxText",
+    "category": "english",
+    "text": "label in the header to select directly."
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 255,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Presets on the left allow quick date selections."
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 256,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Theme variant matches User (Blue) and Mentor (Green) portals."
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/MediaToolkitTab.tsx",
+    "line": 312,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Endpoint upload"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx",
+    "line": 266,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Speech Playground (DEV)"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx",
+    "line": 283,
+    "character": 42,
+    "type": "JsxText",
+    "category": "english",
+    "text": "voiceschanged:"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx",
+    "line": 308,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Engine test"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx",
+    "line": 314,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Web Speech API"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx",
+    "line": 315,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ResponsiveVoice.js fallback"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx",
+    "line": 331,
+    "character": 43,
+    "type": "JsxText",
+    "category": "english",
+    "text": "English (en-US)"
+  },
+  {
+    "file": "src/pages/Dev/Playground/components/SpeechRecognitionTab.tsx",
+    "line": 511,
+    "character": 49,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Voice URI"
+  },
+  {
+    "file": "src/pages/Dev/Playground/PlaygroundPage.tsx",
+    "line": 9,
+    "character": 75,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Developer Playground"
+  },
+  {
+    "file": "src/pages/Dev/Playground/PlaygroundPage.tsx",
+    "line": 11,
+    "character": 11,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Test and experiment with various components and toolkits."
+  },
+  {
+    "file": "src/pages/Dev/Playground/PlaygroundPage.tsx",
+    "line": 18,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Media Toolkit"
+  },
+  {
+    "file": "src/pages/Dev/Playground/PlaygroundPage.tsx",
+    "line": 19,
+    "character": 41,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Speech Recognition"
   },
   {
     "file": "src/pages/Homepage/Features/AIInterviewFeaturePage.tsx",
@@ -193,7 +1025,7 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 174,
+    "line": 175,
     "character": 20,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -201,7 +1033,7 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 182,
+    "line": 183,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -209,235 +1041,11 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 184,
+    "line": 185,
     "character": 80,
     "type": "JsxText",
     "category": "english",
     "text": "INBLUE AI"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 128,
-    "character": 47,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Media Toolkit Playground (DEV)"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 167,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Shared DateTime Picker Playground (DEV)"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 170,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Test interactive instances of the new premium DateTimePicker component supporting\r\n                quick presets, scroll wheel time alignment, and role themes."
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 178,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "1. Standard (24h format)"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 187,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Value:"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 193,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "2. 12h Format (with AM/PM)"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 198,
-    "character": 21,
-    "type": "JsxAttribute[placeholder]",
-    "category": "english",
-    "text": "dd/mm/yyyy --:-- --"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 202,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Value:"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 208,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "3. Date Only Picker"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 212,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Value:"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 218,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "4. Mentor Theme (Green, Step 15)"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 227,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Value:"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 233,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "5. User Theme (Blue, Limit +7 Days)"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 243,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Value:"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 249,
-    "character": 21,
-    "type": "JsxText",
-    "category": "english",
-    "text": "💡 Test Tips:"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 253,
-    "character": 23,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Click the"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 253,
-    "character": 41,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Month Year"
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 253,
-    "character": 61,
-    "type": "JsxText",
-    "category": "english",
-    "text": "label in the header to select directly."
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 255,
-    "character": 25,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Presets on the left allow quick date selections."
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 256,
-    "character": 25,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Theme variant matches User (Blue) and Mentor (Green) portals."
-  },
-  {
-    "file": "src/pages/Shared/MediaToolkitPlaygroundPage.tsx",
-    "line": 312,
-    "character": 54,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Endpoint upload"
-  },
-  {
-    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
-    "line": 266,
-    "character": 47,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Speech Playground (DEV)"
-  },
-  {
-    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
-    "line": 283,
-    "character": 42,
-    "type": "JsxText",
-    "category": "english",
-    "text": "voiceschanged:"
-  },
-  {
-    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
-    "line": 308,
-    "character": 50,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Engine test"
-  },
-  {
-    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
-    "line": 314,
-    "character": 48,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Web Speech API"
-  },
-  {
-    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
-    "line": 315,
-    "character": 54,
-    "type": "JsxText",
-    "category": "english",
-    "text": "ResponsiveVoice.js fallback"
-  },
-  {
-    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
-    "line": 331,
-    "character": 43,
-    "type": "JsxText",
-    "category": "english",
-    "text": "English (en-US)"
-  },
-  {
-    "file": "src/pages/Shared/SpeechPlaygroundPage.tsx",
-    "line": 511,
-    "character": 49,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Voice URI"
   },
   {
     "file": "src/pages/Staff/FeedbackModeration/FeedbackModerationPage.tsx",
@@ -464,6 +1072,54 @@
     "text": "EN"
   },
   {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 258,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Q"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 469,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Overall Match"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 477,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Skills Match"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 485,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Experience"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 493,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Education"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 501,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Readability"
+  },
+  {
     "file": "src/pages/User/MentorList/components/MentorListHero.tsx",
     "line": 29,
     "character": 26,
@@ -481,7 +1137,7 @@
   },
   {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 239,
+    "line": 240,
     "character": 22,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -489,7 +1145,7 @@
   },
   {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 240,
+    "line": 241,
     "character": 72,
     "type": "JsxText",
     "category": "english",
@@ -497,7 +1153,7 @@
   },
   {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 244,
+    "line": 245,
     "character": 20,
     "type": "JsxAttribute[alt]",
     "category": "english",

@@ -89,7 +89,6 @@ export function PostManagementPage() {
   const [statusUpdatingId, setStatusUpdatingId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [majorFilter, setMajorFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all");
   const [layout, setLayout] = useState<ListLayout>("table");
   const [likesOpen, setLikesOpen] = useState(false);
@@ -148,11 +147,6 @@ export function PostManagementPage() {
       queryKey: ["get", "/api/posts/feed"],
     });
   }, []);
-  const allMajors = useMemo(() => {
-    return [
-      ...new Set(posts.map((p) => p.major?.name || p.major?.majorName).filter(Boolean)),
-    ] as string[];
-  }, [posts]);
   const allTags = useMemo(() => {
     return [...new Set(posts.flatMap((p) => p.tags ?? []))];
   }, [posts]);
@@ -161,10 +155,6 @@ export function PostManagementPage() {
     return posts
       .filter((post) => {
         if (statusFilter !== "all" && post.status !== statusFilter) {
-          return false;
-        }
-        const majorName = post.major?.name || post.major?.majorName;
-        if (majorFilter !== "all" && majorName !== majorFilter) {
           return false;
         }
         if (tagFilter !== "all" && !post.tags?.includes(tagFilter)) {
@@ -178,7 +168,6 @@ export function PostManagementPage() {
           post.summary,
           post.content,
           post.author?.name,
-          majorName,
           ...(post.tags ?? []),
         ];
         return fields.some((field) => field?.toLowerCase().includes(keyword));
@@ -188,7 +177,7 @@ export function PostManagementPage() {
         const timeB = toTimestamp(b.creationDate) ?? 0;
         return timeB - timeA;
       });
-  }, [posts, searchQuery, statusFilter, majorFilter, tagFilter]);
+  }, [posts, searchQuery, statusFilter, tagFilter]);
   const [pageSize, setPageSize] = useHybridPageSize({
     key: "src_pages_admin_postmanagement_postmanagementpage_tsx_pagesize",
     defaultPageSize: 10,
@@ -210,10 +199,7 @@ export function PostManagementPage() {
     };
   }, [posts]);
   const hasActiveFilters =
-    searchQuery.trim().length > 0 ||
-    statusFilter !== "all" ||
-    majorFilter !== "all" ||
-    tagFilter !== "all";
+    searchQuery.trim().length > 0 || statusFilter !== "all" || tagFilter !== "all";
   const detailPost = detailData?.post;
   const detailLikes = detailData?.postLikes ?? [];
   const detailComments = detailData?.postComments ?? [];
@@ -410,13 +396,8 @@ export function PostManagementPage() {
                 </div>
               )}
               <CardHeader className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap gap-2">
                   <StatusBadge {...getPostStatusBadge(detailPost.status)} />
-                  {(detailPost.major?.name || detailPost.major?.majorName) && (
-                    <Badge variant="outline">
-                      {detailPost.major?.name || detailPost.major?.majorName}
-                    </Badge>
-                  )}
                   {detailPost.tags?.map((tag) => (
                     <Badge key={tag} variant="secondary">
                       {tag}
@@ -625,25 +606,6 @@ export function PostManagementPage() {
             </Select>
 
             <Select
-              value={majorFilter}
-              onValueChange={(value) => {
-                setMajorFilter(value);
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("common.specialized")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("common.allMajors")}</SelectItem>
-                {allMajors.map((major) => (
-                  <SelectItem key={major} value={major}>
-                    {major}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
               value={tagFilter}
               onValueChange={(value) => {
                 setTagFilter(value);
@@ -684,7 +646,6 @@ export function PostManagementPage() {
                   onClick={() => {
                     setSearchQuery("");
                     setStatusFilter("all");
-                    setMajorFilter("all");
                     setTagFilter("all");
                     pagination.goToFirstPage();
                   }}>
@@ -708,7 +669,6 @@ export function PostManagementPage() {
                     <TableHead>{t("common.title")}</TableHead>
                     <TableHead>{t("adminPostmanagement.author")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
-                    <TableHead>{t("common.specialized")}</TableHead>
                     <TableHead>{t("common.creationDate")}</TableHead>
                     <TableHead>{t("adminPostmanagement.likes")}</TableHead>
                     <TableHead>{t("common.comment1")}</TableHead>
@@ -728,7 +688,6 @@ export function PostManagementPage() {
                       <TableCell>
                         <StatusBadge {...getPostStatusBadge(post.status)} />
                       </TableCell>
-                      <TableCell>{post.major?.name || post.major?.majorName || "—"}</TableCell>
                       <TableCell>{formatDate(post.creationDate)}</TableCell>
                       <TableCell>{post.likeCount ?? 0}</TableCell>
                       <TableCell>{post.commentCount ?? 0}</TableCell>
@@ -830,9 +789,6 @@ export function PostManagementPage() {
                     </p>
 
                     <div className="flex flex-wrap gap-1">
-                      {(post.major?.name || post.major?.majorName) && (
-                        <Badge variant="outline">{post.major?.name || post.major?.majorName}</Badge>
-                      )}
                       {post.tags?.slice(0, 3).map((tag) => (
                         <Badge key={tag} variant="secondary">
                           {tag}

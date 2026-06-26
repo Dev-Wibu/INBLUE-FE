@@ -1,15 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import {
-  Banknote,
-  CheckCircle2,
-  GaugeCircle,
-  ShieldCheck,
-  Sparkles,
-  Star,
-  Tag,
-  Users,
-} from "lucide-react";
+import { Banknote, CheckCircle2, GaugeCircle, Sparkles, Star, Tag, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 interface MentorHighlightsProps {
   highlights: string[];
@@ -17,7 +8,6 @@ interface MentorHighlightsProps {
   ratingText: string;
   totalSessions: number;
   priceText: string;
-  verificationTags: string[];
   expertiseTags: string[];
 }
 export function MentorHighlights({
@@ -26,7 +16,6 @@ export function MentorHighlights({
   ratingText,
   totalSessions,
   priceText,
-  verificationTags,
   expertiseTags,
 }: MentorHighlightsProps) {
   const { t } = useTranslation();
@@ -98,22 +87,6 @@ export function MentorHighlights({
           </div>
         </div>
       )}
-
-      <div className="space-y-2">
-        <p className="flex items-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-          <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-cyan-600 dark:text-cyan-200" />
-          {t("userMentordetail.verificationStatus")}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {verificationTags.map((tag) => (
-            <Badge
-              key={tag}
-              className="rounded-full border border-cyan-300/40 bg-cyan-50 px-2.5 py-0.5 text-[11px] text-cyan-700 dark:border-cyan-300/20 dark:bg-cyan-400/10 dark:text-cyan-100">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </div>
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
         <p className="flex items-center text-xs font-medium text-slate-600 dark:text-slate-300">

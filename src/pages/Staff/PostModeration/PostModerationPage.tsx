@@ -313,7 +313,6 @@ export function PostModerationPage() {
               <TableHead>
                 <SortButton {...getSortProps("authorSortValue")}>{t("common.author")}</SortButton>
               </TableHead>
-              <TableHead>{t("common.specialized")}</TableHead>
               <TableHead>
                 <SortButton {...getSortProps("createdAtSortValue")}>
                   {t("common.creationDate")}
@@ -332,7 +331,6 @@ export function PostModerationPage() {
                   {post.title || "—"}
                 </TableCell>
                 <TableCell>{post.author?.name || "—"}</TableCell>
-                <TableCell>{post.major?.name || post.major?.majorName || "—"}</TableCell>
                 <TableCell>{formatDate(post.creationDate)}</TableCell>
                 <TableCell>
                   <StatusBadge {...getPostStatusBadge(post.status)} />
@@ -421,11 +419,6 @@ export function PostModerationPage() {
               {/* Meta Info */}
               <div className="flex flex-wrap gap-2">
                 <StatusBadge {...getPostStatusBadge(selectedPost.status)} />
-                {selectedPost.major && (
-                  <Badge variant="outline">
-                    {selectedPost.major.name || selectedPost.major.majorName}
-                  </Badge>
-                )}
                 {selectedPost.tags?.map((tag) => (
                   <Badge key={tag} variant="secondary">
                     {tag}

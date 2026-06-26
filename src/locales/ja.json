@@ -13,9 +13,14 @@
     "reviewsFeedback": "レビュー＆フィードバック",
     "setOfMultipleChoiceQuestions": "選択式問題セット",
     "setOfReviewQuestions": "レビューコンテンツセット",
-    "specializedQuestions": "専攻",
     "systemAdministration": "システム管理",
     "testSet": "テストセット"
+  },
+  "adminApplicationGrading": {
+    "pageTitle": "候補者の答案採点",
+    "pageDescription": "採用プロセス中の候補者の試験ラウンドを閲覧・採点します。",
+    "applicationGrading": "答案採点",
+    "gradeApplications": "候補者のテスト提出物を閲覧・採点する"
   },
   "adminCandidateprofilemanagement": {
     "allRoles": "すべての役割",
@@ -89,7 +94,10 @@
     "updateJdInformation": "JD情報を更新",
     "updatedJdSuccessfully": "JDが正常に更新されました",
     "wage": "給与",
-    "welfareBenefits": "福利厚生"
+    "welfareBenefits": "福利厚生",
+    "successfullyOpenedJd": "JDを正常にオープンしました",
+    "unableToUpdateJdStatus": "JDのステータスを更新できません",
+    "openJd": "JDを開く"
   },
   "adminDashboardoverview": {
     "14Days": "14日間",
@@ -148,12 +156,8 @@
     "mentorStatusCannotBeChanged": "メンターステータスは変更できません",
     "mentorUpdatedSuccessfully": "メンターが正常に更新されました",
     "newFile": "新規ファイル",
-    "noDegreeCertificateHasBeen": "学位/証明書が選択されていません",
     "noMentorsFound": "メンターが見つかりません",
-    "noOtherFilesHaveBeen": "その他のファイルが選択されていません",
     "numberOfSessions": "セッション数",
-    "otherFiles": "その他のファイル",
-    "personalDocuments": "個人書類",
     "priceMin": "単価/分",
     "successfullyCreatedMentor": "メンターが正常に作成されました",
     "unitPricePerMinuteVnd": "1分あたり単価（VND）",
@@ -471,6 +475,7 @@
     "previewYourProfilePicture": "プロフィール画像をプレビュー",
     "reloadUserList": "ユーザー一覧を再読み込み",
     "searchByNameEmailUniversity": "名前、メール、大学で検索...",
+    "selectRole": "役割を選択",
     "targetInformation": "ターゲット情報",
     "thisUserDoesNotHave": "このユーザーにはまだ候補者プロフィールがありません",
     "universityName": "大学名",
@@ -560,10 +565,10 @@
     "registeredSuccessfullyPleaseLogIn": "登録が完了しました。ログインして続行してください。",
     "registering": "登録中...",
     "signInNow": "今すぐログイン",
-    "specialized": "専攻 *",
     "terms": "利用規約",
     "welcomeToInbluePleaseFill": "InBlueへようこそ。情報を入力してください",
-    "welcomeToInbluePleaseFillInfo": "InBlueへようこそ。情報を入力してください"
+    "welcomeToInbluePleaseFillInfo": "InBlueへようこそ。情報を入力してください",
+    "specialized": "専門"
   },
   "authWaitingacceptmentorpage": {
     "2448Hours": "24〜48時間",
@@ -610,6 +615,8 @@
     "5StarRating": "5つ星の評価",
     "account": "アカウント",
     "achievements": "実績",
+    "admin": "管理者",
+    "staff": "スタッフ",
     "act": "アクション",
     "actFast": "素早く行動",
     "activate": "有効化",
@@ -624,7 +631,6 @@
     "aiLearning": "AI＆学習",
     "all": "すべて（",
     "allLevels": "全レベル",
-    "allMajors": "全専攻",
     "allPoints": "全ポイント",
     "allRightsReserved": "全著作権所有 |",
     "allStatus": "全ステータス",
@@ -682,7 +688,6 @@
     "changeYourPasswordToSecureYourAcco": "パスワードを変更してアカウントを保護",
     "checkTheDevice": "デバイスを確認",
     "checking": "確認中...",
-    "chooseAMajor": "専攻を選択",
     "chooseAMentor": "メンターを選択",
     "chooseAnotherMembershipPackage": "別のメンバーシップパッケージを選択",
     "chooseLevel": "レベルを選択",
@@ -733,7 +738,6 @@
     "december": "12月",
     "default": "デフォルト",
     "degree": "学位",
-    "degreecertificate": "学位/証明書",
     "deleteAll": "すべて削除",
     "deleteVar0": "{{var_0}}を削除",
     "deleting": "削除中...",
@@ -813,7 +817,6 @@
     "id": "ID",
     "idMentor": "メンターID",
     "identity": "身元",
-    "identityCard": "身分証明書",
     "imagePreview": "画像プレビュー",
     "individual": "個人",
     "interface": "インターフェース",
@@ -949,7 +952,6 @@
     "operation": "操作",
     "or": "または",
     "other": "その他",
-    "otherDocuments": "その他の書類",
     "outsideOfIt": "IT以外",
     "over1500RealInterviewQuestions": "1,500件以上の実際の面接問題",
     "overview": "概要",
@@ -1084,7 +1086,6 @@
     "small": "小",
     "softSkills": "ソフトスキル",
     "sortBy": "並べ替え:",
-    "specialized": "専攻",
     "stars": "つ星",
     "starsNeedToSee": "星（確認が必要）",
     "startAConversation": "会話を始める",
@@ -1223,7 +1224,19 @@
     "applicationSubmittedSuccessfully": "応募が正常に送信されました",
     "uploading": "アップロード中...",
     "applicationIsBeingReviewed": "応募は審査中です。しばらくお待ちください。",
-    "theApplicationIsBeingReviewed": "応募は審査中です。しばらくお待ちください。"
+    "theApplicationIsBeingReviewed": "応募は審査中です。しばらくお待ちください。",
+    "specialized": "専門",
+    "medium": "中",
+    "success": "成功",
+    "add": "追加",
+    "edit": "編集",
+    "delete": "削除",
+    "noData": "データなし",
+    "questionText": "質問文",
+    "chooseAMajor": "専門を選択",
+    "send": "送信",
+    "unableToSave": "保存できません",
+    "unableToSaveAllQuestions": "すべての質問を保存できません"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -1235,6 +1248,7 @@
     "note": "注意:",
     "password": "パスワード:",
     "seeDemoAccountForTesting": "テスト用デモアカウントを見る",
+    "staffAccountToManageApplications": "書類を採点し、応募を管理するスタッフアカウント",
     "theSystemIsRunningApi": "システムはAPI専用モードで動作しているため、デモリストにはサポート用のバックエンドアカウントのみ含まれています。",
     "thisButtonIsForDevelopment": "このボタンは開発用であり、実際のアカウント作成時に削除されます。",
     "thisIsAVirtualAccount": "これは関数テスト用の仮想アカウントです。カードをクリックすると情報が自動入力されます。",
@@ -1309,7 +1323,6 @@
     "authorTest": "著者テスト",
     "cannotPost": "投稿できません",
     "cannotPostComments": "コメントを投稿できません",
-    "chooseAMajorOptional": "専攻を選択（任意）",
     "closeByBackgroundClickTurns": "背景クリックで閉じると拡大画像のみオフになります",
     "closePhoto": "写真を閉じる",
     "closeWithTheXButton": "Xボタンで閉じると拡大画像のみオフになります",
@@ -2107,7 +2120,11 @@
     "youHaveEnteredIncorrectlyToo": "不正な入力が多すぎます。後でもう一度お試しください",
     "youHaveJustReceivedA": "新しい通知を受信しました。",
     "youHaveNewNotifications": "{{var_0}}件の新しい通知があります",
-    "submit": "提出"
+    "submit": "提出",
+    "or": "または",
+    "create": "作成",
+    "reviewSetCannotBeDeleted": "使用中のレビューセットは削除できません",
+    "cannotCreateFullReviewSet": "完全なレビューセットを作成できません"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50人以上のプロメンター",
@@ -2768,11 +2785,25 @@
     "userId": "ユーザー（ID）:",
     "waitingForApproval": "承認待ち"
   },
+  "staffOverview": {
+    "activitySummary": "アクティビティサマリー",
+    "activitySummaryPlaceholder": "アクティビティサマリーデータがここに表示されます。",
+    "manageCommunityPosts": "コミュニティ投稿を管理",
+    "moderateMentorReviews": "メンターレビューをモデレート",
+    "monitorInterviewSessions": "面接セッションを監視",
+    "processMentorApplications": "メンター登録申請を処理",
+    "quickActions": "クイックアクション",
+    "welcomeDescription": "スタッフダッシュボードへようこそ。",
+    "welcomeTitle": "スタッフホーム"
+  },
   "staffStaffdashboard": {
+    "admindashboardpageThePlusTabMenu": "StaffDashboardPage: 次のタブが「+」メニューにありません: {{missingInMenu}}。availableTabsにないメニュー内のタブ: {{invalidInMenu}}",
     "browseMentors": "メンター審査",
     "candidateResponses": "候補者レスポンス",
     "censor": "審査",
     "coordinationPanel": "調整パネル",
+    "manageCandidateFeedback": "候補者フィードバック",
+    "manageMentorReviews": "メンター評価",
     "mentorSReview": "メンターのレビュー",
     "moderateCandidateResponses": "フィードバック審査",
     "moderateCandidatesResponsesToMentors": "候補者がメンターに送信したレスポンスをモデレート",
@@ -2782,7 +2813,9 @@
     "newTab": "新しいタブ",
     "permanentProcessing": "恒久的処理",
     "postModeration": "投稿審査",
-    "processMentorRegistration": "メンター登録を処理"
+    "processMentorRegistration": "メンター登録を処理",
+    "staffAdministration": "スタッフ管理",
+    "staffPanel": "Staff パネル"
   },
   "userAccount": {
     "alreadyTt": "支払い済み",
@@ -3137,7 +3170,14 @@
     "yourAnswer": "あなたの回答",
     "enterYourContentHere": "ここに内容を入力してください...",
     "pleaseEnterContent": "提出する内容またはファイルを選択してください。",
-    "pleaseSubmitYourDocument": "このラウンドを完了するにはドキュメントを提出してください。"
+    "pleaseSubmitYourDocument": "このラウンドを完了するにはドキュメントを提出してください。",
+    "aiEvaluating": "AIが採点中...",
+    "aiEvaluatingDetail": "AIが提出物を分析中...",
+    "aiEvaluationComplete": "AI評価完了",
+    "aiEvaluationTimeout": "AI評価がタイムアウトしました",
+    "emailScenario": "メールシナリオ",
+    "emailPlaceholder": "メール内容...",
+    "attachFile": "ファイルを添付"
   },
   "userFeedback": {
     "evaluationContent": "評価内容",
@@ -3451,5 +3491,43 @@
       "clear": "クリア",
       "invalidDate": "有効な値を入力してください。フィールドが不完全か、無効な値が含まれています。"
     }
+  },
+  "adminCodeReviewProblem": {
+    "pageTitle": "コードレビュー問題管理",
+    "pageDescription": "コードレビュー評価問題の作成と管理",
+    "searchPlaceholder": "名前、言語、IDで検索...",
+    "difficulty": "難易度",
+    "language": "言語",
+    "problemStatement": "問題文",
+    "files": "ファイル",
+    "expectedIssues": "期待される問題",
+    "updatedAt": "更新日時",
+    "requiredFields": "Topic、Level、Languageを入力してください",
+    "generatedSuccessfully": "AIによる問題が生成されました",
+    "generateFailed": "問題の生成に失敗しました",
+    "titleRequired": "タイトルを入力してください",
+    "generateAI": "AIで生成",
+    "titlePlaceholder": "問題のタイトルを入力",
+    "problemStatementPlaceholder": "問題文を入力...",
+    "file": "ファイル",
+    "filename": "ファイル名",
+    "languagePlaceholder": "例: javascript, python",
+    "contentPlaceholder": "コード内容をここに貼り付け",
+    "issue": "問題",
+    "lineNumber": "行番号",
+    "severity": "重大度",
+    "description": "説明",
+    "aiGenerateTitle": "AIで問題を自動生成",
+    "topic": "トピック",
+    "programmingLanguage": "プログラミング言語",
+    "targetLevel": "対象レベル",
+    "contextJobTitle": "職種（任意）",
+    "contextRequirement": "業務要件（任意）",
+    "contextPrompting": "AIへの追加プロンプト（任意）",
+    "generating": "生成中...",
+    "generate": "問題を生成"
+  },
+  "adminQuestionbankmanagement": {
+    "addQuestion": "質問を追加"
   }
 }

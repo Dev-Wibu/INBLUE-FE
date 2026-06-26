@@ -114,48 +114,51 @@ export function UniversalMediaUploader({
   const description = descriptionProp ?? t("compShared.dragAndDropCopyPaste");
   const note = noteProp ?? t("compShared.supportsPhotosAndPdfsYou");
 
-  const UPLOADER_STRINGS = {
-    closeModal: t("compShared.closeTheFileDownloadWindow"),
-    addMoreFiles: t("compShared.addFiles"),
-    addingMoreFiles: t("compShared.addingFiles"),
-    dashboardWindowTitle: t("compShared.fileDownloadTable"),
-    dashboardTitle: t("compShared.fileDownloadTable"),
-    copyLinkToClipboardSuccess: t("compShared.linkCopied"),
-    copyLinkToClipboardFallback: t("compShared.copyTheLinkBelow"),
-    copyLink: t("compShared.copyLink"),
-    back: t("general.back"),
-    removeFile: t("compShared.deleteFiles"),
-    editFile: t("compShared.editFiles"),
-    saveChanges: t("common.saveChanges"),
-    myDevice: t("compShared.myDevice"),
-    dropHint: t("compShared.dropFilesHere"),
-    uploadComplete: t("compShared.uploadComplete"),
-    uploadPaused: t("compShared.paused"),
-    resumeUpload: t("general.continue"),
-    pauseUpload: t("compShared.pause"),
-    retryUpload: t("common.retry"),
-    cancelUpload: t("compShared.cancelUpload"),
-    xFilesSelected: {
-      0: t("compShared.smartCountSelectedFiles"),
-      1: t("compShared.smartCountSelectedFiles"),
-    },
-    uploadingXFiles: {
-      0: t("compShared.loadingSmartCountFile"),
-      1: t("compShared.loadingSmartCountFile"),
-    },
-    processingXFiles: {
-      0: t("compShared.processingSmartCountFile"),
-      1: t("compShared.processingSmartCountFile"),
-    },
-    addMore: t("common.more"),
-    save: t("general.save"),
-    cancel: t("general.cancel"),
-    dropPasteFiles: t("compShared.dropFilesOrBrowsefiles"),
-    dropPasteBoth: t("compShared.dropFilesOrBrowsefiles"),
-    browseFiles: t("compShared.selectFile"),
-    browseFolders: t("compShared.selectFolder"),
-    done: t("common.completed"),
-  } as const;
+  const UPLOADER_STRINGS = useMemo(
+    () => ({
+      closeModal: t("compShared.closeTheFileDownloadWindow"),
+      addMoreFiles: t("compShared.addFiles"),
+      addingMoreFiles: t("compShared.addingFiles"),
+      dashboardWindowTitle: t("compShared.fileDownloadTable"),
+      dashboardTitle: t("compShared.fileDownloadTable"),
+      copyLinkToClipboardSuccess: t("compShared.linkCopied"),
+      copyLinkToClipboardFallback: t("compShared.copyTheLinkBelow"),
+      copyLink: t("compShared.copyLink"),
+      back: t("general.back"),
+      removeFile: t("compShared.deleteFiles"),
+      editFile: t("compShared.editFiles"),
+      saveChanges: t("common.saveChanges"),
+      myDevice: t("compShared.myDevice"),
+      dropHint: t("compShared.dropFilesHere"),
+      uploadComplete: t("compShared.uploadComplete"),
+      uploadPaused: t("compShared.paused"),
+      resumeUpload: t("general.continue"),
+      pauseUpload: t("compShared.pause"),
+      retryUpload: t("common.retry"),
+      cancelUpload: t("compShared.cancelUpload"),
+      xFilesSelected: {
+        0: t("compShared.smartCountSelectedFiles"),
+        1: t("compShared.smartCountSelectedFiles"),
+      },
+      uploadingXFiles: {
+        0: t("compShared.loadingSmartCountFile"),
+        1: t("compShared.loadingSmartCountFile"),
+      },
+      processingXFiles: {
+        0: t("compShared.processingSmartCountFile"),
+        1: t("compShared.processingSmartCountFile"),
+      },
+      addMore: t("common.more"),
+      save: t("general.save"),
+      cancel: t("general.cancel"),
+      dropPasteFiles: t("compShared.dropFilesOrBrowsefiles"),
+      dropPasteBoth: t("compShared.dropFilesOrBrowsefiles"),
+      browseFiles: t("compShared.selectFile"),
+      browseFolders: t("compShared.selectFolder"),
+      done: t("common.completed"),
+    }),
+    [t]
+  );
   const reactId = useId();
   const uploaderId = id ?? `universal-media-uploader-${reactId.replace(/:/g, "")}`;
   const uppy = useMemo(() => {
@@ -219,10 +222,10 @@ export function UniversalMediaUploader({
     maxNumberOfFiles,
     multipartFieldName,
     sequentialUpload,
-    t,
     token,
     transportMode,
     uploaderId,
+    UPLOADER_STRINGS,
   ]);
   useEffect(() => {
     return () => {

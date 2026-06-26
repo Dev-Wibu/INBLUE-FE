@@ -13,9 +13,14 @@
     "reviewsFeedback": "Đánh giá & phản hồi",
     "setOfMultipleChoiceQuestions": "Bộ câu hỏi trắc nghiệm",
     "setOfReviewQuestions": "Bộ câu hỏi ôn tập",
-    "specializedQuestions": "Chuyên ngành",
     "systemAdministration": "Quản trị hệ thống",
     "testSet": "Bộ trắc nghiệm"
+  },
+  "adminApplicationGrading": {
+    "pageTitle": "Chấm bài ứng viên",
+    "pageDescription": "Xem và chấm điểm các vòng thi của ứng viên trong quy trình tuyển dụng.",
+    "applicationGrading": "Chấm bài ứng viên",
+    "gradeApplications": "Xem và chấm điểm bài thi của ứng viên"
   },
   "adminCandidateprofilemanagement": {
     "allRoles": "Tất cả vai trò",
@@ -89,7 +94,10 @@
     "updateJdInformation": "Cập nhật thông tin JD",
     "updatedJdSuccessfully": "Đã cập nhật JD thành công",
     "wage": "Lương",
-    "welfareBenefits": "Phúc lợi/Quyền lợi"
+    "welfareBenefits": "Phúc lợi/Quyền lợi",
+    "successfullyOpenedJd": "Đã mở JD thành công",
+    "unableToUpdateJdStatus": "Không thể cập nhật trạng thái JD",
+    "openJd": "Mở JD"
   },
   "adminDashboardoverview": {
     "14Days": "14 ngày",
@@ -148,12 +156,8 @@
     "mentorStatusCannotBeChanged": "Không thể thay đổi trạng thái mentor",
     "mentorUpdatedSuccessfully": "Đã cập nhật mentor thành công",
     "newFile": "File mới",
-    "noDegreeCertificateHasBeen": "Chưa chọn bằng cấp/chứng chỉ",
     "noMentorsFound": "Không tìm thấy mentor nào",
-    "noOtherFilesHaveBeen": "Chưa chọn tệp khác",
     "numberOfSessions": "Số buổi",
-    "otherFiles": "Tệp khác",
-    "personalDocuments": "Giấy tờ tùy thân",
     "priceMin": "Giá / phút",
     "successfullyCreatedMentor": "Đã tạo mentor thành công",
     "unitPricePerMinuteVnd": "Đơn giá mỗi phút (VNĐ)",
@@ -471,6 +475,7 @@
     "previewYourProfilePicture": "Xem trước ảnh đại diện",
     "reloadUserList": "Tải lại danh sách người dùng",
     "searchByNameEmailUniversity": "Tìm kiếm theo tên, email, trường đại học...",
+    "selectRole": "Chọn vai trò",
     "targetInformation": "Thông tin mục tiêu",
     "thisUserDoesNotHave": "Người dùng này chưa có hồ sơ ứng viên",
     "universityName": "Tên trường đại học",
@@ -560,10 +565,10 @@
     "registeredSuccessfullyPleaseLogIn": "Đăng ký thành công. Vui lòng đăng nhập để tiếp tục.",
     "registering": "Đang đăng ký...",
     "signInNow": "Đăng nhập ngay",
-    "specialized": "Chuyên ngành *",
     "terms": "Điều khoản",
     "welcomeToInbluePleaseFill": "Chào mừng đến với InBlue. Vui lòng điền thông tin",
-    "welcomeToInbluePleaseFillInfo": "Chào mừng đến với InBlue. Vui lòng điền thông tin"
+    "welcomeToInbluePleaseFillInfo": "Chào mừng đến với InBlue. Vui lòng điền thông tin",
+    "specialized": "Chuyên môn"
   },
   "authWaitingacceptmentorpage": {
     "2448Hours": "24-48 giờ",
@@ -610,6 +615,8 @@
     "5StarRating": "Đánh giá 5 sao",
     "account": "Tài khoản",
     "achievements": "Thành tích",
+    "admin": "Quản trị viên",
+    "staff": "Nhân viên",
     "act": "Hành động",
     "actFast": "Hành động nhanh",
     "activate": "Kích hoạt",
@@ -624,7 +631,6 @@
     "aiLearning": "AI & Học tập",
     "all": "Tất cả (",
     "allLevels": "Tất cả cấp độ",
-    "allMajors": "Tất cả chuyên ngành",
     "allPoints": "Tất cả điểm",
     "allRightsReserved": "Mọi quyền được bảo lưu |",
     "allStatus": "Tất cả trạng thái",
@@ -681,7 +687,6 @@
     "changeYourPasswordToSecureYourAcco": "Đổi mật khẩu để bảo mật tài khoản",
     "checkTheDevice": "Kiểm tra thiết bị",
     "checking": "Đang kiểm tra...",
-    "chooseAMajor": "Chọn chuyên ngành",
     "chooseAMentor": "Chọn mentor",
     "chooseAnotherMembershipPackage": "Chọn gói thành viên khác",
     "chooseLevel": "Chọn cấp độ",
@@ -733,7 +738,6 @@
     "december": "Tháng 12",
     "default": "Mặc định",
     "degree": "Bằng cấp",
-    "degreecertificate": "Bằng cấp/Chứng chỉ",
     "deleteAll": "Xóa tất cả",
     "deleteVar0": "Xóa {{var_0}}",
     "deleting": "Đang xóa...",
@@ -885,7 +889,6 @@
     "view": "Xem",
     "viewCv": "Xem CV",
     "link": "Liên kết",
-    "identityCard": "CCCD/CMND",
     "id": "ID",
     "identity": "Giấy tờ",
     "idMentor": "ID Mentor",
@@ -954,7 +957,6 @@
     "or": "hoặc",
     "other": "Khác",
     "imagePreview": "Xem trước ảnh",
-    "otherDocuments": "Tài liệu khác",
     "outsideOfIt": "Ngoài IT",
     "over1500RealInterviewQuestions": "Hơn 1,500+ câu hỏi phỏng vấn thực tế",
     "overview": "Tổng quan",
@@ -1091,7 +1093,6 @@
     "small": "Nhỏ",
     "softSkills": "Kỹ năng mềm",
     "sortBy": "Sắp xếp theo:",
-    "specialized": "Chuyên ngành",
     "starsNeedToSee": "sao (Cần xem)",
     "startAConversation": "Bắt đầu hội thoại",
     "startDate": "Ngày bắt đầu",
@@ -1223,7 +1224,19 @@
     "applicationSubmittedSuccessfully": "Đơn ứng tuyển đã được gửi thành công",
     "uploading": "Đang tải lên...",
     "applicationIsBeingReviewed": "Đơn đang được chấm, vui lòng chờ",
-    "theApplicationIsBeingReviewed": "Đơn đang được chấm. Vui lòng chờ kết quả."
+    "theApplicationIsBeingReviewed": "Đơn đang được chấm. Vui lòng chờ kết quả.",
+    "specialized": "Chuyên môn",
+    "medium": "Trung bình",
+    "success": "Thành công",
+    "add": "Thêm",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "noData": "Không có dữ liệu",
+    "questionText": "Nội dung câu hỏi",
+    "chooseAMajor": "Chọn chuyên ngành",
+    "send": "Gửi",
+    "unableToSave": "Không thể lưu",
+    "unableToSaveAllQuestions": "Không thể lưu tất cả câu hỏi"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -1235,6 +1248,7 @@
     "note": "Lưu ý:",
     "password": "Mật khẩu:",
     "seeDemoAccountForTesting": "Xem tài khoản demo để thử nghiệm",
+    "staffAccountToManageApplications": "Tài khoản nhân viên để chấm bài và quản lý đơn ứng tuyển",
     "theSystemIsRunningApi": "Hệ thống đang chạy API-only nên danh sách demo chỉ giữ các tài khoản backend đang hỗ trợ.",
     "thisButtonIsForDevelopment": "Nút này chỉ dùng cho mục đích phát triển và sẽ được xóa khi có tài khoản thật.",
     "thisIsAVirtualAccount": "Đây là tài khoản ảo dùng để thử nghiệm chức năng. Click vào thẻ để tự động điền thông tin.",
@@ -1309,7 +1323,6 @@
     "authorTest": "Tác giả test",
     "cannotPost": "Không thể đăng bài",
     "cannotPostComments": "Không thể gửi bình luận",
-    "chooseAMajorOptional": "Chọn chuyên ngành (tùy chọn)",
     "closeByBackgroundClickTurns": "đóng bằng click nền chỉ tắt ảnh phóng to",
     "closePhoto": "Đóng ảnh",
     "closeWithTheXButton": "đóng bằng nút X chỉ tắt ảnh phóng to",
@@ -2086,7 +2099,11 @@
     "youHaveEnteredIncorrectlyToo": "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau",
     "youHaveJustReceivedA": "Bạn vừa nhận được một thông báo mới.",
     "youHaveNewNotifications": "Có {{var_0}} thông báo mới",
-    "submit": "Nộp bài"
+    "submit": "Nộp bài",
+    "or": "hoặc",
+    "create": "Tạo mới",
+    "reviewSetCannotBeDeleted": "Không thể xóa bộ ôn tập đang được sử dụng",
+    "cannotCreateFullReviewSet": "Không thể tạo bộ ôn tập đầy đủ"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50+ Mentor chuyên nghiệp",
@@ -2741,12 +2758,26 @@
     "userId": "Người dùng (ID):",
     "waitingForApproval": "chờ duyệt"
   },
+  "staffOverview": {
+    "activitySummary": "Tóm tắt hoạt động",
+    "activitySummaryPlaceholder": "Dữ liệu tóm tắt hoạt động sẽ được hiển thị tại đây.",
+    "manageCommunityPosts": "Quản lý bài viết cộng đồng",
+    "moderateMentorReviews": "Duyệt đánh giá từ mentor",
+    "monitorInterviewSessions": "Giám sát các phiên phỏng vấn",
+    "processMentorApplications": "Xử lý đơn đăng ký mentor",
+    "quickActions": "Thao tác nhanh",
+    "welcomeDescription": "Chào mừng bạn đến với bảng điều khiển dành cho Staff.",
+    "welcomeTitle": "Trang chủ Staff"
+  },
   "staffStaffdashboard": {
-    "browseMentors": "Duyệt mentor",
-    "candidateResponses": "Phản hồi của ứng viên",
+    "admindashboardpageThePlusTabMenu": "StaffDashboardPage: Các tab sau không có trong menu '+': {{missingInMenu}}. Các tab trong menu nhưng không có trong availableTabs: {{invalidInMenu}}",
+    "browseMentors": "Duyệt Mentor",
+    "candidateResponses": "Phản hồi ứng viên",
     "censor": "Kiểm duyệt",
     "coordinationPanel": "Bảng Điều Phối",
-    "mentorSReview": "Đánh giá của mentor",
+    "manageCandidateFeedback": "Phản hồi ứng viên",
+    "manageMentorReviews": "Đánh giá Mentor",
+    "mentorSReview": "Đánh giá của Mentor",
     "moderateCandidateResponses": "Duyệt phản hồi",
     "moderateCandidatesResponsesToMentors": "Kiểm duyệt phản hồi của ứng viên cho mentor",
     "moderateResponsesFromCandidates": "Duyệt phản hồi",
@@ -2755,7 +2786,9 @@
     "newTab": "Tab mới",
     "permanentProcessing": "Xử lý thường trực",
     "postModeration": "Duyệt bài viết",
-    "processMentorRegistration": "Xử lý đăng ký mentor"
+    "processMentorRegistration": "Xử lý đăng ký mentor",
+    "staffAdministration": "Quản trị viên",
+    "staffPanel": "Staff Panel"
   },
   "userAccount": {
     "alreadyTt": "Đã TT",
@@ -3109,9 +3142,12 @@
     "pleaseEnterContent": "Vui lòng nhập nội dung hoặc chọn file để nộp.",
     "pleaseSubmitYourDocument": "Vui lòng nộp tài liệu để hoàn thành vòng này.",
     "aiEvaluating": "AI đang chấm...",
-    "aiEvaluatingDetail": "AI đang đánh giá bài của bạn, vui lòng chờ trong giây lát...",
-    "aiEvaluationComplete": "AI đã chấm xong! Kết quả đã được cập nhật.",
-    "aiEvaluationTimeout": "Hết thời gian chờ kết quả AI. Vui lòng tải lại trang để kiểm tra."
+    "aiEvaluatingDetail": "AI đang phân tích bài làm của bạn...",
+    "aiEvaluationComplete": "Đánh giá AI hoàn tất",
+    "aiEvaluationTimeout": "Đánh giá AI mất quá nhiều thời gian",
+    "emailScenario": "Tình huống email",
+    "emailPlaceholder": "Nội dung email...",
+    "attachFile": "Đính kèm file"
   },
   "userFeedback": {
     "evaluationContent": "Nội Dung Đánh Giá",
@@ -3452,5 +3488,43 @@
       "clear": "Xóa",
       "invalidDate": "Vui lòng nhập một giá trị hợp lệ. Trường không hoàn chỉnh hoặc có giá trị không hợp lệ."
     }
+  },
+  "adminCodeReviewProblem": {
+    "pageTitle": "Quản lý bài tập Code Review",
+    "pageDescription": "Tạo và quản lý các bài tập đánh giá code review",
+    "searchPlaceholder": "Tìm theo tên, ngôn ngữ, ID...",
+    "difficulty": "Độ khó",
+    "language": "Ngôn ngữ",
+    "problemStatement": "Mô tả bài toán",
+    "files": "Files",
+    "expectedIssues": "Issues kỳ vọng",
+    "updatedAt": "Cập nhật lúc",
+    "requiredFields": "Vui lòng nhập đủ Topic, Level và Language",
+    "generatedSuccessfully": "Đã tạo bài tập bằng AI",
+    "generateFailed": "Tạo bài tập thất bại",
+    "titleRequired": "Vui lòng nhập tiêu đề",
+    "generateAI": "Tạo bằng AI",
+    "titlePlaceholder": "Nhập tiêu đề bài tập",
+    "problemStatementPlaceholder": "Nhập mô tả bài toán...",
+    "file": "File",
+    "filename": "Tên file",
+    "languagePlaceholder": "Ví dụ: javascript, python",
+    "contentPlaceholder": "Dán nội dung code vào đây",
+    "issue": "Issue",
+    "lineNumber": "Dòng",
+    "severity": "Mức độ",
+    "description": "Mô tả",
+    "aiGenerateTitle": "Tạo bài tập tự động bằng AI",
+    "topic": "Chủ đề",
+    "programmingLanguage": "Ngôn ngữ lập trình",
+    "targetLevel": "Trình độ mục tiêu",
+    "contextJobTitle": "Vị trí công việc (tùy chọn)",
+    "contextRequirement": "Yêu cầu công việc (tùy chọn)",
+    "contextPrompting": "Gợi ý thêm cho AI (tùy chọn)",
+    "generating": "Đang tạo...",
+    "generate": "Tạo bài tập"
+  },
+  "adminQuestionbankmanagement": {
+    "addQuestion": "Thêm câu hỏi"
   }
 }

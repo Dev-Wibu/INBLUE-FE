@@ -4,21 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { postManager } from "@/services/post.manager";
-import { type Major, questionMajorManager } from "@/services/question-major.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { ImagePlus, Send, Tag, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 interface CreatePostModalProps {
@@ -37,23 +29,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [majorId, setMajorId] = useState<number | undefined>(undefined);
-  const [majors, setMajors] = useState<Major[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    // Only fetch majors when modal is open and user is logged in
-    if (!open || !user) {
-      return;
-    }
-    const fetchMajors = async () => {
-      const result = await questionMajorManager.getAll();
-      if (result.success && result.data) {
-        const list = Array.isArray(result.data) ? result.data : (result.data.data ?? []);
-        setMajors(list);
-      }
-    };
-    void fetchMajors();
-  }, [open, user]);
   const authorName = user?.name ?? t("common.friend");
   const authorInitials = authorName
     .split(" ")
@@ -69,7 +45,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
     setTags([]);
     setCoverFile(null);
     setCoverPreview(null);
-    setMajorId(undefined);
   };
   const handleAddTag = () => {
     const tag = tagInput.trim();
@@ -98,7 +73,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
         content: content.trim(),
         summary: summary.trim() || undefined,
         authorId: user.id as number,
-        majorId,
         tags: tags.length > 0 ? tags : undefined,
         coverImg: coverFile ?? undefined,
         status: "DRAFT",
@@ -173,24 +147,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
               rows={2}
               className="resize-none"
             />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-slate-500">{t("common.specialized")}</Label>
-            <Select
-              value={majorId !== undefined ? String(majorId) : ""}
-              onValueChange={(val) => setMajorId(val ? Number(val) : undefined)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("compPost.chooseAMajorOptional")} />
-              </SelectTrigger>
-              <SelectContent>
-                {majors.map((m) => (
-                  <SelectItem key={m.id} value={String(m.id)}>
-                    {m.majorName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div>

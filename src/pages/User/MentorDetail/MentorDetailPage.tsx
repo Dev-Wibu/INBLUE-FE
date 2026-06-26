@@ -1,12 +1,10 @@
 import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
 import { formatCurrency } from "@/lib/formatting";
-import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
 import { chatManager } from "@/services/chat.manager";
-import { ArrowLeft, ExternalLink, FileText, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -17,40 +15,12 @@ import {
   MentorHighlights,
   SimilarMentors,
 } from "./components";
-type MentorDocumentItem = {
-  label: string;
-  url: string;
-};
 function isActiveMentor(mentor: SchemaMentorResponse): boolean {
   return mentor.active === true;
 }
-function documentItems(
-  mentor: SchemaMentorResponse,
-  t: (key: string) => string
-): MentorDocumentItem[] {
-  return [
-    {
-      label: t("userMentordetail.identificationDocuments"),
-      // @ts-expect-error: Backend Swagger schema mismatch - identityImg not in Mentor type
-      url: mentor.identityImg,
-    },
-    {
-      label: t("common.degree"),
-      // @ts-expect-error: Backend Swagger schema mismatch - degreeImg not in Mentor type
-      url: mentor.degreeImg,
-    },
-    {
-      label: t("userMentordetail.additionalDocuments"),
-      // @ts-expect-error: Backend Swagger schema mismatch - otherFile not in Mentor type
-      url: mentor.otherFile,
-    },
-  ].filter(
-    (item): item is MentorDocumentItem => typeof item.url === "string" && item.url.length > 0
-  );
-}
 function buildMentorHighlights(
   mentor: SchemaMentorResponse,
-  t: (key: string, opts?: Record<string, unknown>) => string
+  t: (_key: string, _opts?: Record<string, unknown>) => string
 ): string[] {
   const highlights: string[] = [];
   if (mentor.yearsOfExperience && mentor.yearsOfExperience > 0) {
@@ -88,7 +58,10 @@ function buildMentorHighlights(
   }
   return highlights.slice(0, 4);
 }
-function buildSlaEstimate(mentor: SchemaMentorResponse | null, t: (key: string) => string): string {
+function buildSlaEstimate(
+  mentor: SchemaMentorResponse | null,
+  t: (_key: string) => string
+): string {
   if (!mentor) {
     return t("userMentordetail.usuallyRespondsWithin24Hours");
   }
@@ -96,25 +69,6 @@ function buildSlaEstimate(mentor: SchemaMentorResponse | null, t: (key: string) 
     return t("userMentordetail.responseMayTakeLongerThan");
   }
   return t("userMentordetail.usuallyRespondsWithin24Hours");
-}
-function buildVerificationTags(mentor: SchemaMentorResponse, t: (key: string) => string): string[] {
-  const tags: string[] = [];
-  // @ts-expect-error: Backend Swagger schema mismatch - identityImg not in Mentor type
-  if (mentor.identityImg) {
-    tags.push(t("userMentordetail.identityVerified"));
-  }
-  // @ts-expect-error: Backend Swagger schema mismatch - degreeImg not in Mentor type
-  if (mentor.degreeImg) {
-    tags.push(t("userMentordetail.degreeProvided"));
-  }
-  // @ts-expect-error: Backend Swagger schema mismatch - otherFile not in Mentor type
-  if (mentor.otherFile) {
-    tags.push(t("userMentordetail.additionalDocumentationIsAvailable"));
-  }
-  if (tags.length === 0) {
-    tags.push(t("userMentordetail.updatingVerificationProfile"));
-  }
-  return tags;
 }
 function buildExpertiseTags(mentor: SchemaMentorResponse): string[] {
   if (!mentor.expertise) {
@@ -140,7 +94,7 @@ export function MentorDetailPage() {
   const [mentor, setMentor] = useState<SchemaMentorResponse | null>(null);
   const [allMentors, setAllMentors] = useState<SchemaMentorResponse[]>([]);
   const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
+  const [viewerItems] = useState<MediaViewerItem[]>([]);
   const [mentorUnavailableReason, setMentorUnavailableReason] = useState<
     "inactive" | "not-found" | null
   >(null);
@@ -173,7 +127,7 @@ export function MentorDetailPage() {
           setAllMentors(listRes.data.filter(isActiveMentor));
         }
       } catch (error) {
-        console.error("Error fetching mentor detail:", error);
+        console.error("Error fetching mentor data:", error);
         setMentorUnavailableReason("not-found");
         toast.error(t("userMentordetail.anErrorOccurredWhileLoading"));
       } finally {
@@ -202,12 +156,7 @@ export function MentorDetailPage() {
     }
     return raw;
   }, [mentor?.totalSession]);
-  const docs = useMemo(() => (mentor ? documentItems(mentor, t) : []), [mentor, t]);
   const highlights = useMemo(() => (mentor ? buildMentorHighlights(mentor, t) : []), [mentor, t]);
-  const verificationTags = useMemo(
-    () => (mentor ? buildVerificationTags(mentor, t) : []),
-    [mentor, t]
-  );
   const expertiseTags = useMemo(() => (mentor ? buildExpertiseTags(mentor) : []), [mentor]);
   const slaEstimate = useMemo(() => buildSlaEstimate(mentor, t), [mentor, t]);
   const similarMentors = useMemo(() => {
@@ -269,25 +218,6 @@ export function MentorDetailPage() {
       return;
     }
     navigate(`/user/mentors/${targetMentor.id}`);
-  };
-  const handleOpenMentorDocument = (doc: MentorDocumentItem) => {
-    const docKind = inferFileKind({
-      fileName: doc.url,
-    });
-    if (docKind === "other") {
-      openUrlInNewTab(doc.url);
-      return;
-    }
-    setViewerItems([
-      {
-        id: `mentor-detail-doc-${doc.label}`,
-        name: doc.label,
-        src: doc.url,
-        kind: docKind,
-        requireAuth: true,
-      },
-    ]);
-    setViewerOpen(true);
   };
   if (!isMentorIdValid) {
     return (
@@ -367,39 +297,8 @@ export function MentorDetailPage() {
               ratingText={ratingText}
               totalSessions={totalSessions}
               priceText={priceText}
-              verificationTags={verificationTags}
               expertiseTags={expertiseTags}
             />
-
-            <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
-              <h2 className="flex items-center text-lg font-bold text-slate-900 dark:text-white">
-                <ShieldCheck className="mr-2 h-5 w-5 text-cyan-600 dark:text-cyan-200" />
-                {t("userMentordetail.verificationDocuments")}
-              </h2>
-              <Separator className="my-4 bg-slate-200 dark:bg-slate-700" />
-
-              {docs.length === 0 ? (
-                <p className="text-sm text-slate-600 dark:text-slate-300">
-                  {t("userMentordetail.mentorHasNotSharedVerification")}
-                </p>
-              ) : (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {docs.map((doc) => (
-                    <button
-                      type="button"
-                      key={doc.label}
-                      onClick={() => handleOpenMentorDocument(doc)}
-                      className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 transition-colors hover:border-cyan-300/50 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-100 dark:hover:bg-slate-800">
-                      <span className="flex items-center">
-                        <FileText className="mr-2 h-4 w-4 text-cyan-600 dark:text-cyan-200" />
-                        {doc.label}
-                      </span>
-                      <ExternalLink className="h-4 w-4 text-slate-400" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </Card>
 
             <SimilarMentors mentors={similarMentors} onViewProfile={handleViewSimilarProfile} />
           </div>

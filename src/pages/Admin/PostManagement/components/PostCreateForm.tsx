@@ -13,10 +13,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
-import { type Major, questionMajorManager } from "@/services/question-major.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 interface PostCreateFormProps {
@@ -35,19 +34,7 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [majorId, setMajorId] = useState<number | undefined>(undefined);
-  const [majors, setMajors] = useState<Major[]>([]);
   const tagInputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const fetchMajors = async () => {
-      const result = await questionMajorManager.getAll();
-      if (result.success && result.data) {
-        const list = Array.isArray(result.data) ? result.data : (result.data.data ?? []);
-        setMajors(list);
-      }
-    };
-    void fetchMajors();
-  }, []);
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -90,7 +77,6 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
         content: content.trim() || undefined,
         summary: summary.trim() || undefined,
         authorId: user?.id,
-        majorId,
         coverImg: coverFile ?? undefined,
         tags: finalTags.length > 0 ? finalTags : undefined,
         status,
@@ -159,24 +145,6 @@ export function PostCreateForm({ onSuccess, onCancel }: PostCreateFormProps) {
                     className="mt-2 max-h-48 rounded-md object-cover"
                   />
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t("common.specialized")}</Label>
-                <Select
-                  value={majorId?.toString()}
-                  onValueChange={(v) => setMajorId(v ? Number(v) : undefined)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("common.chooseAMajor")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {majors.map((m) => (
-                      <SelectItem key={m.id} value={String(m.id)}>
-                        {m.majorName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="space-y-2">

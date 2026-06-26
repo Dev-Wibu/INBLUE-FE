@@ -6,15 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
-import {
-  AlertCircle,
-  ArrowLeft,
-  Award,
-  CheckCircle2,
-  FileText,
-  UploadCloud,
-  User,
-} from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, UploadCloud, User } from "lucide-react";
 import { useCallback, useState } from "react";
 import { type FileRejection, useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
@@ -30,12 +22,7 @@ type MentorFormData = {
   linkedInUrl: string;
   currentCompany: string;
 };
-type MentorFieldKey =
-  | keyof MentorFormData
-  | "avatarFile"
-  | "identityFile"
-  | "degreeFile"
-  | "otherFile";
+type MentorFieldKey = keyof MentorFormData | "avatarFile";
 interface FileUploadProps {
   label: string;
   required?: boolean;
@@ -62,9 +49,6 @@ const FIELD_KEY_ALIASES: Record<string, MentorFieldKey> = {
   currentcompany: "currentCompany",
   avatar: "avatarFile",
   avatarfile: "avatarFile",
-  identityfile: "identityFile",
-  degreefile: "degreeFile",
-  otherfile: "otherFile",
 };
 const normalizeFieldErrors = (
   rawErrors?: Record<string, string>
@@ -225,9 +209,6 @@ export function MentorRegisterPage() {
     currentCompany: "",
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [identityFile, setIdentityFile] = useState<File | null>(null);
-  const [degreeFile, setDegreeFile] = useState<File | null>(null);
-  const [otherFile, setOtherFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<MentorFieldKey, string>>>({});
@@ -295,9 +276,6 @@ export function MentorRegisterPage() {
         linkedInUrl: formData.linkedInUrl || undefined,
         currentCompany: formData.currentCompany,
         avatar: avatarFile ?? undefined,
-        identityFile: identityFile ?? undefined,
-        degreeFile: degreeFile ?? undefined,
-        otherFile: otherFile ?? undefined,
       });
       if (result.success) {
         navigate("/waiting-accept");
@@ -544,15 +522,9 @@ export function MentorRegisterPage() {
                 </section>
 
                 <section className="space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {t("authMentorregisterpage.proofDocuments")}
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      {t("authMentorregisterpage.uploadingDocumentsHelpsTheTeam")}
-                    </p>
-                  </div>
-
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    {t("common.avatar")}
+                  </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FileUploadBox
                       label={t("common.avatar")}
@@ -571,66 +543,6 @@ export function MentorRegisterPage() {
                       maxSizeBytes={5 * 1024 * 1024}
                       errorText={fieldErrors.avatarFile}
                       onClearError={() => clearFieldError("avatarFile")}
-                    />
-
-                    <FileUploadBox
-                      label={t("common.identityCard")}
-                      acceptedTypes="JPG, PNG, PDF"
-                      maxSize="5MB"
-                      icon={<FileText className="h-5 w-5" />}
-                      onFileSelect={(file) => {
-                        setIdentityFile(file);
-                        clearFieldError("identityFile");
-                      }}
-                      selectedFile={identityFile}
-                      accept={{
-                        "application/pdf": [".pdf"],
-                        "image/jpeg": [".jpg", ".jpeg"],
-                        "image/png": [".png"],
-                      }}
-                      maxSizeBytes={5 * 1024 * 1024}
-                      errorText={fieldErrors.identityFile}
-                      onClearError={() => clearFieldError("identityFile")}
-                    />
-
-                    <FileUploadBox
-                      label={t("common.degreecertificate")}
-                      acceptedTypes="PDF, JPG, PNG"
-                      maxSize="5MB"
-                      icon={<Award className="h-5 w-5" />}
-                      onFileSelect={(file) => {
-                        setDegreeFile(file);
-                        clearFieldError("degreeFile");
-                      }}
-                      selectedFile={degreeFile}
-                      accept={{
-                        "application/pdf": [".pdf"],
-                        "image/jpeg": [".jpg", ".jpeg"],
-                        "image/png": [".png"],
-                      }}
-                      maxSizeBytes={5 * 1024 * 1024}
-                      errorText={fieldErrors.degreeFile}
-                      onClearError={() => clearFieldError("degreeFile")}
-                    />
-
-                    <FileUploadBox
-                      label={t("common.otherDocuments")}
-                      acceptedTypes="PDF, JPG, PNG"
-                      maxSize="5MB"
-                      icon={<FileText className="h-5 w-5" />}
-                      onFileSelect={(file) => {
-                        setOtherFile(file);
-                        clearFieldError("otherFile");
-                      }}
-                      selectedFile={otherFile}
-                      accept={{
-                        "application/pdf": [".pdf"],
-                        "image/jpeg": [".jpg", ".jpeg"],
-                        "image/png": [".png"],
-                      }}
-                      maxSizeBytes={5 * 1024 * 1024}
-                      errorText={fieldErrors.otherFile}
-                      onClearError={() => clearFieldError("otherFile")}
                     />
                   </div>
                 </section>

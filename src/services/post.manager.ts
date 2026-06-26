@@ -21,20 +21,7 @@ import type {
   PostResponseWrapper,
 } from "@/interfaces";
 
-/**
- * Normalize a Post object from backend:
- * - Maps major.majorName → major.name (backend uses majorName)
- */
 function normalizePost(post: Post): Post {
-  if (post.major && !post.major.name && post.major.majorName) {
-    return {
-      ...post,
-      major: {
-        ...post.major,
-        name: post.major.majorName,
-      },
-    };
-  }
   return post;
 }
 
@@ -94,7 +81,6 @@ export class PostManager implements BaseManager<Post> {
       if (data.summary) formData.append("summary", data.summary);
       const authorIdNum = parseInt(String(data.authorId ?? ""), 10);
       if (!isNaN(authorIdNum) && authorIdNum > 0) formData.append("authorId", String(authorIdNum));
-      if (data.majorId) formData.append("majorId", String(data.majorId));
       if (data.coverImg) formData.append("coverImg", data.coverImg);
       if (data.status) formData.append("status", data.status);
       if (data.tags) {
@@ -620,7 +606,6 @@ export class PostManager implements BaseManager<Post> {
       const updateAuthorIdNum = parseInt(String(data.authorId ?? ""), 10);
       if (!isNaN(updateAuthorIdNum) && updateAuthorIdNum > 0)
         formData.append("authorId", String(updateAuthorIdNum));
-      if (data.majorId) formData.append("majorId", String(data.majorId));
       if (data.coverImg) {
         formData.append("coverImg", data.coverImg);
       } else {

@@ -786,8 +786,26 @@ function ApplicationDetailPanel({
   const { data: apiCurrentRound, refetch: refetchCurrentRound } = useCurrentRound(id ?? 0, !!id);
   const apiCurrentRoundOrder = apiCurrentRound?.roundOrder ?? -1;
 
+  // DEBUG: Log current round changes
+  console.log(
+    "[DEBUG][ApplicationDetailPanel] applicationId:",
+    id,
+    "apiCurrentRound:",
+    apiCurrentRound,
+    "apiCurrentRoundOrder:",
+    apiCurrentRoundOrder
+  );
+
   const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
   const [detailsLoading, setDetailsLoading] = useState(false);
+
+  // DEBUG: Log rounds and details after state init
+  console.log(
+    "[DEBUG][ApplicationDetailPanel] JD rounds:",
+    JSON.stringify(rounds),
+    "detailsData:",
+    JSON.stringify(detailsData)
+  );
 
   // Submission dialog state
   const [submissionOpen, setSubmissionOpen] = useState(false);
@@ -809,19 +827,26 @@ function ApplicationDetailPanel({
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchDetails = async (silent = false) => {
+    console.log("[DEBUG][fetchDetails] called for applicationId:", id, "silent:", silent);
     if (!id) return;
     if (!silent) setDetailsLoading(true);
     try {
       const result = await fetchClient.GET("/api/application-details/application/{applicationId}", {
         params: { path: { applicationId: id } },
       });
+      console.log(
+        "[DEBUG][fetchDetails] response:",
+        result.response?.ok,
+        "data count:",
+        Array.isArray(result.data) ? result.data.length : "n/a"
+      );
       if (result.response?.ok) {
         const data = result.data;
         setDetailsData(Array.isArray(data) ? (data as ApplicationDetail[]) : []);
         return Array.isArray(data) ? data : [];
       }
-    } catch {
-      // Silently fail - details are optional
+    } catch (err) {
+      console.log("[DEBUG][fetchDetails] error:", err);
     } finally {
       if (!silent) setDetailsLoading(false);
     }
@@ -903,41 +928,50 @@ function ApplicationDetailPanel({
   // HR must manually advance currentRoundOrder after reviewing AI results.
   const timelineRounds = useMemo(() => {
     if (rounds.length === 0) return [];
-    return rounds.map((round, idx) => {
-      const detail = detailsData.find((d) => d.roundId === round.id);
+    const sortedRounds = [...rounds].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
+    const currentRoundIds = new Set(rounds.map((r) => r.id));
+    const orphanedDetails = detailsData.filter((d) => !currentRoundIds.has(d.roundId));
+    let orphanIdx = 0;
+
+    return sortedRounds.map((round) => {
+      let detail = detailsData.find((d) => d.roundId === round.id);
       const optimistic = optimisticDetails.find((o) => o.roundId === round.id);
+
+      if (!detail && orphanIdx < orphanedDetails.length) {
+        detail = orphanedDetails[orphanIdx++];
+      }
       const hasSubmission = !!detail || !!optimistic;
 
       // This round is completed if:
       // 1. Overall application is PASSED/FAILED/SOFT_FAILED, OR
-      // 2. BE says this round is before current round (idx < currentRoundOrder - 1)
+      // 2. BE says this round is before current round (roundOrder < currentRoundOrder)
       // Note: AI_EVALUATED status alone does NOT mark a round as completed for user-facing UI
       // because HR review may still be pending. A round only "completes" when:
       //   - Application is overall PASSED, OR
       //   - Application is overall FAILED/SOFT_FAILED, OR
-      //   - This round is strictly before currentRoundOrder (BE has officially advanced)
+      //   - This round's roundOrder is strictly before currentRoundOrder (BE has officially advanced)
       const isCompleted =
         status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED"
           ? true
-          : idx < apiCurrentRoundOrder - 1;
+          : (round.roundOrder ?? 0) < apiCurrentRoundOrder;
 
       // This round is current if:
       // 1. Application is still IN_PROGRESS
       // 2. No submission yet
-      // 3. BE says this is the current round (idx === currentRoundOrder - 1)
+      // 3. BE says this is the current round (roundOrder === currentRoundOrder)
       const isCurrent =
         status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED"
           ? false
           : hasSubmission
             ? false // already submitted
-            : idx === apiCurrentRoundOrder - 1 || (apiCurrentRoundOrder === 0 && idx === 0);
+            : round.roundOrder === apiCurrentRoundOrder;
 
       // This round is locked if:
       // 1. Application still active
-      // 2. This round is after the BE's current round
+      // 2. This round's roundOrder is after the BE's current round
       const isLocked =
         !(status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED") &&
-        idx > apiCurrentRoundOrder;
+        (round.roundOrder ?? 0) > apiCurrentRoundOrder;
 
       return { round, detail, optimistic, isCompleted, isCurrent, isLocked };
     });

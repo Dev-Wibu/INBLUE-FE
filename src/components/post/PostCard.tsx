@@ -53,11 +53,6 @@ export function PostCard({ post, onClick }: PostCardProps) {
               {tag}
             </Badge>
           ))}
-          {(post.major?.name || post.major?.majorName) && (
-            <Badge variant="outline" className="text-xs">
-              {post.major?.name || post.major?.majorName}
-            </Badge>
-          )}
         </div>
       </CardContent>
       <CardFooter className="flex items-center gap-3 pt-0">

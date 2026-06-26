@@ -23,13 +23,10 @@ export type MentorInfo = SchemaMentorInfo;
 
 /**
  * Extended mentor data for creation with file uploads
- * Files: avatar, identityFile, degreeFile, otherFile
+ * Files: avatar
  */
 export interface CreateMentorData extends MentorInfo {
   avatar?: File;
-  identityFile?: File;
-  degreeFile?: File;
-  otherFile?: File;
   active?: boolean;
 }
 
@@ -103,7 +100,7 @@ export class MentorManager implements BaseManager<Mentor> {
   /**
    * Create new mentor
    * POST /api/mentors (multipart/form-data)
-   * According to schema: { data: MentorInfo, avatar?: File, identityFile?: File, degreeFile?: File, otherFile?: File }
+   * According to schema: { data: MentorInfo, avatar?: File }
    */
   async create(_data: Partial<Mentor> | CreateMentorData): Promise<ApiResponse<Mentor>> {
     try {
@@ -168,24 +165,6 @@ export class MentorManager implements BaseManager<Mentor> {
         formData.append("avatar", createData.avatar);
       } else {
         formData.append("avatar", createEmptyFilePlaceholder());
-      }
-
-      // Send placeholder files for all optional file fields to avoid backend NullPointerException
-      // Backend calls file.getOriginalFilename() without null check, causing 500 error
-      if (createData.identityFile) {
-        formData.append("identityFile", createData.identityFile);
-      } else {
-        formData.append("identityFile", createEmptyFilePlaceholder());
-      }
-      if (createData.degreeFile) {
-        formData.append("degreeFile", createData.degreeFile);
-      } else {
-        formData.append("degreeFile", createEmptyFilePlaceholder());
-      }
-      if (createData.otherFile) {
-        formData.append("otherFile", createData.otherFile);
-      } else {
-        formData.append("otherFile", createEmptyFilePlaceholder());
       }
 
       // Remove default Content-Type header to let axios set multipart boundary automatically
@@ -286,21 +265,6 @@ export class MentorManager implements BaseManager<Mentor> {
         formData.append("avatar", updateData.avatar);
       } else {
         formData.append("avatar", createEmptyFilePlaceholder());
-      }
-      if (updateData.identityFile) {
-        formData.append("identityFile", updateData.identityFile);
-      } else {
-        formData.append("identityFile", createEmptyFilePlaceholder());
-      }
-      if (updateData.degreeFile) {
-        formData.append("degreeFile", updateData.degreeFile);
-      } else {
-        formData.append("degreeFile", createEmptyFilePlaceholder());
-      }
-      if (updateData.otherFile) {
-        formData.append("otherFile", updateData.otherFile);
-      } else {
-        formData.append("otherFile", createEmptyFilePlaceholder());
       }
 
       // Use POST endpoint (API_ENDPOINTS.MENTOR.CREATE) for BOTH create and update operations

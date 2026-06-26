@@ -22,21 +22,15 @@ import type { Mentor, MentorFormData } from "../types";
  * Based on schema-from-be.d.ts createMentor operation which requires:
  * - data: MentorInfo (JSON)
  * - avatar?: File (binary)
- * - identityFile?: File (binary)
- * - degreeFile?: File (binary)
- * - otherFile?: File (binary)
  */
 interface ExtendedMentorFormData extends Partial<MentorFormData> {
   avatar?: File;
-  identityFile?: File;
-  degreeFile?: File;
-  otherFile?: File;
 }
 interface MentorFormDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
   formData: ExtendedMentorFormData;
-  onFormChange: (data: ExtendedMentorFormData) => void;
+  onFormChange: (_data: ExtendedMentorFormData) => void;
   onSubmit: () => void;
   title: string;
   description: string;
@@ -155,9 +149,6 @@ export function MentorFormDialog({
   const [showPassword, setShowPassword] = useState(false);
   // State for local file previews (blob URLs for new file uploads)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [identityPreview, setIdentityPreview] = useState<string | null>(null);
-  const [degreePreview, setDegreePreview] = useState<string | null>(null);
-  const [otherPreview, setOtherPreview] = useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
 
@@ -165,20 +156,13 @@ export function MentorFormDialog({
   useEffect(() => {
     return () => {
       if (avatarPreview?.startsWith("blob:")) URL.revokeObjectURL(avatarPreview);
-      if (identityPreview?.startsWith("blob:")) URL.revokeObjectURL(identityPreview);
-      if (degreePreview?.startsWith("blob:")) URL.revokeObjectURL(degreePreview);
-      if (otherPreview?.startsWith("blob:")) URL.revokeObjectURL(otherPreview);
     };
-  }, [avatarPreview, identityPreview, degreePreview, otherPreview]);
+  }, [avatarPreview]);
 
   // Handle dialog open/close with preview reset
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      // Reset previews when closing
       setAvatarPreview(null);
-      setIdentityPreview(null);
-      setDegreePreview(null);
-      setOtherPreview(null);
       setViewerOpen(false);
       setViewerItems([]);
     }
@@ -197,41 +181,6 @@ export function MentorFormDialog({
       });
     }
   };
-  const handleIdentityFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (identityPreview?.startsWith("blob:")) URL.revokeObjectURL(identityPreview);
-      setIdentityPreview(URL.createObjectURL(file));
-      onFormChange({
-        ...formData,
-        identityFile: file,
-      });
-    }
-  };
-  const handleDegreeFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (degreePreview?.startsWith("blob:")) URL.revokeObjectURL(degreePreview);
-      setDegreePreview(URL.createObjectURL(file));
-      onFormChange({
-        ...formData,
-        degreeFile: file,
-      });
-    }
-  };
-  const handleOtherFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (otherPreview?.startsWith("blob:")) URL.revokeObjectURL(otherPreview);
-      setOtherPreview(URL.createObjectURL(file));
-      onFormChange({
-        ...formData,
-        otherFile: file,
-      });
-    }
-  };
-
-  // Clear file handlers
   const handleClearAvatar = () => {
     if (avatarPreview?.startsWith("blob:")) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(null);
@@ -240,39 +189,9 @@ export function MentorFormDialog({
       avatar: undefined,
     });
   };
-  const handleClearIdentity = () => {
-    if (identityPreview?.startsWith("blob:")) URL.revokeObjectURL(identityPreview);
-    setIdentityPreview(null);
-    onFormChange({
-      ...formData,
-      identityFile: undefined,
-    });
-  };
-  const handleClearDegree = () => {
-    if (degreePreview?.startsWith("blob:")) URL.revokeObjectURL(degreePreview);
-    setDegreePreview(null);
-    onFormChange({
-      ...formData,
-      degreeFile: undefined,
-    });
-  };
-  const handleClearOther = () => {
-    if (otherPreview?.startsWith("blob:")) URL.revokeObjectURL(otherPreview);
-    setOtherPreview(null);
-    onFormChange({
-      ...formData,
-      otherFile: undefined,
-    });
-  };
 
   // Get display URLs - prioritize new upload preview over existing URL
   const displayAvatarUrl = avatarPreview || selectedMentor?.avatarUrl;
-  // @ts-expect-error: Backend Swagger schema mismatch - identityImg not in Mentor type
-  const displayIdentityUrl = identityPreview || selectedMentor?.identityImg;
-  // @ts-expect-error: Backend Swagger schema mismatch - degreeImg not in Mentor type
-  const displayDegreeUrl = degreePreview || selectedMentor?.degreeImg;
-  // @ts-expect-error: Backend Swagger schema mismatch - otherFile not in Mentor type
-  const displayOtherUrl = otherPreview || selectedMentor?.otherFile;
   const handleOpenFilePreview = ({
     label,
     url,
@@ -464,9 +383,8 @@ export function MentorFormDialog({
           </div>
           {/* File Upload Section with Previews */}
           <div className="mt-2 border-t pt-4">
-            <h4 className="mb-3 text-sm font-medium">{t("adminMentormanagement.document")}</h4>
+            <h4 className="mb-3 text-sm font-medium">{t("common.avatar")}</h4>
             <div className="grid grid-cols-2 gap-4">
-              {/* Avatar */}
               <div className="space-y-1.5">
                 <Label htmlFor="avatar">{t("common.avatar")}</Label>
                 <FilePreview
@@ -495,105 +413,6 @@ export function MentorFormDialog({
                   <p className="text-muted-foreground flex items-center gap-1 text-xs">
                     <ImageIcon className="h-3 w-3" />
                     {t("common.noProfilePictureHasBeenSelectedYet")}
-                  </p>
-                )}
-              </div>
-
-              {/* Identity Document */}
-              <div className="space-y-1.5">
-                <Label htmlFor="identityFile">{t("adminMentormanagement.personalDocuments")}</Label>
-                <FilePreview
-                  url={displayIdentityUrl}
-                  previewUrl={identityPreview}
-                  isNew={!!identityPreview}
-                  onClear={handleClearIdentity}
-                  onOpen={() =>
-                    handleOpenFilePreview({
-                      label: t("adminMentormanagement.personalDocuments"),
-                      url: displayIdentityUrl,
-                      file: formData.identityFile,
-                    })
-                  }
-                  label={t("common.identity")}
-                  fileName={formData.identityFile?.name}
-                />
-                <Input
-                  id="identityFile"
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={handleIdentityFileChange}
-                  className="cursor-pointer"
-                />
-                {!displayIdentityUrl && (
-                  <p className="text-muted-foreground flex items-center gap-1 text-xs">
-                    <FileText className="h-3 w-3" />
-                    {t("adminMentormanagement.idDocumentsHaveNotBeen")}
-                  </p>
-                )}
-              </div>
-
-              {/* Degree/Certificate */}
-              <div className="space-y-1.5">
-                <Label htmlFor="degreeFile">{t("common.degreecertificate")}</Label>
-                <FilePreview
-                  url={displayDegreeUrl}
-                  previewUrl={degreePreview}
-                  isNew={!!degreePreview}
-                  onClear={handleClearDegree}
-                  onOpen={() =>
-                    handleOpenFilePreview({
-                      label: t("common.degreecertificate"),
-                      url: displayDegreeUrl,
-                      file: formData.degreeFile,
-                    })
-                  }
-                  label={t("common.degree")}
-                  fileName={formData.degreeFile?.name}
-                />
-                <Input
-                  id="degreeFile"
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={handleDegreeFileChange}
-                  className="cursor-pointer"
-                />
-                {!displayDegreeUrl && (
-                  <p className="text-muted-foreground flex items-center gap-1 text-xs">
-                    <FileText className="h-3 w-3" />
-                    {t("adminMentormanagement.noDegreeCertificateHasBeen")}
-                  </p>
-                )}
-              </div>
-
-              {/* Other File */}
-              <div className="space-y-1.5">
-                <Label htmlFor="otherFile">{t("adminMentormanagement.otherFiles")}</Label>
-                <FilePreview
-                  url={displayOtherUrl}
-                  previewUrl={otherPreview}
-                  isNew={!!otherPreview}
-                  onClear={handleClearOther}
-                  onOpen={() =>
-                    handleOpenFilePreview({
-                      label: t("common.otherDocuments"),
-                      url: displayOtherUrl,
-                      file: formData.otherFile,
-                    })
-                  }
-                  label={t("common.other")}
-                  fileName={formData.otherFile?.name}
-                />
-                <Input
-                  id="otherFile"
-                  type="file"
-                  accept="image/*,.pdf,.doc,.docx"
-                  onChange={handleOtherFileChange}
-                  className="cursor-pointer"
-                />
-                {!displayOtherUrl && (
-                  <p className="text-muted-foreground flex items-center gap-1 text-xs">
-                    <FileText className="h-3 w-3" />
-                    {t("adminMentormanagement.noOtherFilesHaveBeen")}
                   </p>
                 )}
               </div>

@@ -7,7 +7,7 @@ export interface PaginationConfig {
   totalCount: number;
   pageSize: number;
   maxVisiblePages?: number;
-  onPageChange?: (page: number) => void;
+  onPageChange?: (_page: number) => void;
 }
 
 export interface PaginationState {
@@ -23,7 +23,7 @@ export interface PaginationState {
 }
 
 export interface PaginationActions {
-  setPage: (page: number) => void;
+  setPage: (_page: number) => void;
   nextPage: () => void;
   prevPage: () => void;
   goToFirstPage: () => void;

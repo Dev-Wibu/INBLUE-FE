@@ -132,9 +132,6 @@ export interface MentorRegisterData {
   linkedInUrl?: string;
   currentCompany: string;
   avatar?: File;
-  identityFile?: File;
-  degreeFile?: File;
-  otherFile?: File;
 }
 export class AuthManager {
   /**
@@ -657,7 +654,7 @@ export class AuthManager {
   /**
    * Register as mentor
    * POST /api/mentors (multipart/form-data)
-   * Schema: { data: MentorInfo, avatar?: File, identityFile?: File, degreeFile?: File, otherFile?: File }
+   * Schema: { data: MentorInfo, avatar?: File }
    */
   async registerMentor(data: MentorRegisterData): Promise<
     ApiResponse<{
@@ -688,18 +685,9 @@ export class AuthManager {
         })
       );
 
-      // Only append files the user actually uploaded.
+      // Only append avatar if the user actually uploaded it.
       if (data.avatar) {
         formData.append("avatar", data.avatar);
-      }
-      if (data.identityFile) {
-        formData.append("identityFile", data.identityFile);
-      }
-      if (data.degreeFile) {
-        formData.append("degreeFile", data.degreeFile);
-      }
-      if (data.otherFile) {
-        formData.append("otherFile", data.otherFile);
       }
       const response = await fetchClient
         .POST("/api/mentors", {

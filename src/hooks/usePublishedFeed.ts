@@ -47,7 +47,6 @@ export function usePublishedFeed(): UsePublishedFeedReturn {
                   avatar: p.author.avatarUrl,
                 }
               : undefined,
-            majorName: p.major?.name || p.major?.majorName,
           },
           likeCount: p.likeCount ?? 0,
           commentCount: p.commentCount ?? 0,
@@ -115,11 +114,7 @@ export function usePublishedFeedFiltered(options?: {
           post?.title?.toLowerCase().includes(lower) ||
           post?.tags?.some((t) => t.toLowerCase().includes(lower)) ||
           false;
-        const matchMajor =
-          !options?.majorFilter ||
-          options?.majorFilter === "all" ||
-          post?.major?.name ||
-          post?.major?.majorName === options?.majorFilter;
+        const matchMajor = !options?.majorFilter || options?.majorFilter === "all";
         return matchSearch && matchMajor;
       })
       .sort(() => {

@@ -614,7 +614,7 @@ export function ApplicationGradingPage({
   onOpenGradingDetail,
   basePath,
 }: {
-  onOpenGradingDetail?: (appId: number) => void;
+  onOpenGradingDetail?: (_appId: number) => void;
   basePath?: string;
 }) {
   const { t } = useTranslation();
@@ -952,7 +952,8 @@ export function ApplicationGradingDetailPage({
     // Admin flow: select from details list
     if (details.length === 0) return null;
     const pending = details.find(
-      (d: ApplicationDetail) => d.status === "AI_EVALUATED" && d.hrScore === undefined
+      (d: ApplicationDetail) =>
+        d.status === "AI_EVALUATED" && (d.hrScore === undefined || d.hrScore === null)
     );
     return pending?.id ?? details[0]?.id ?? null;
   }, [singleDetail, details, selectedDetailId]);
@@ -1068,7 +1069,8 @@ export function ApplicationGradingDetailPage({
                     };
                     const resultCfg = detail.finalResult ? RESULT_CONFIG[detail.finalResult] : null;
                     const needsHrScore =
-                      detail.status === "AI_EVALUATED" && detail.hrScore === undefined;
+                      detail.status === "AI_EVALUATED" &&
+                      (detail.hrScore === undefined || detail.hrScore === null);
                     const isActive = detail.id === autoSelectedDetailId;
 
                     return (
@@ -1131,7 +1133,7 @@ export function ApplicationGradingDetailPage({
                     </Badge>
                   )}
                   {selectedDetail.status === "AI_EVALUATED" &&
-                    selectedDetail.hrScore === undefined && (
+                    (selectedDetail.hrScore === undefined || selectedDetail.hrScore === null) && (
                       <Badge variant="outline" className="border-amber-400 text-amber-600">
                         Cần HR chấm
                       </Badge>

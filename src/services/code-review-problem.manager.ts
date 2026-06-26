@@ -51,6 +51,28 @@ export class CodeReviewProblemManager {
   }
 
   /**
+   * Get code review problem by id
+   * GET /api/code-review-problems/{id}
+   */
+  async getById(id: number): Promise<ApiResponse<CodeReviewProblem>> {
+    try {
+      const endpoint = `/api/code-review-problems/${encodeURIComponent(id)}`;
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Không thể tải chi tiết bài tập code review",
+      };
+    }
+  }
+
+  /**
    * Create a code review problem
    * POST /api/code-review-problems
    */

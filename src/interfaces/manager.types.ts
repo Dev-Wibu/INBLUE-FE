@@ -9,27 +9,27 @@ export interface BaseManager<T, CreateDTO = Partial<T>, UpdateDTO = Partial<T>> 
   /**
    * Get all items with optional pagination
    */
-  getAll(params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<T> | T[]>>;
+  getAll(_params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<T> | T[]>>;
 
   /**
    * Get a single item by ID
    */
-  getById(id: string | number): Promise<ApiResponse<T>>;
+  getById(_id: string | number): Promise<ApiResponse<T>>;
 
   /**
    * Create a new item
    */
-  create(data: CreateDTO): Promise<ApiResponse<T>>;
+  create(_data: CreateDTO): Promise<ApiResponse<T>>;
 
   /**
    * Update an existing item
    */
-  update(id: string | number, data: UpdateDTO): Promise<ApiResponse<T>>;
+  update(_id: string | number, _data: UpdateDTO): Promise<ApiResponse<T>>;
 
   /**
    * Delete an item
    */
-  delete(id: string | number): Promise<ApiResponse<void>>;
+  delete(_id: string | number): Promise<ApiResponse<void>>;
 }
 
 /**

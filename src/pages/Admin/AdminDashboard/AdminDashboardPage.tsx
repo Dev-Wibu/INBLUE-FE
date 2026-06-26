@@ -23,6 +23,7 @@ import {
   Briefcase,
   Building2,
   ClipboardCheck,
+  Code2,
   Database,
   FileQuestion,
   FileText,
@@ -48,6 +49,7 @@ import {
   ApplicationGradingPage,
 } from "../ApplicationGrading/ApplicationGradingPage";
 import { CandidateProfileManagementPage } from "../CandidateProfileManagement";
+import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
@@ -81,7 +83,8 @@ type TabType =
   | "applicationGrading"
   | "grading-detail"
   | "gradingTemplates"
-  | "practiceExam";
+  | "practiceExam"
+  | "codeReviewProblems";
 
 const VALID_TAB_TYPES: TabType[] = [
   "dashboard",
@@ -103,6 +106,7 @@ const VALID_TAB_TYPES: TabType[] = [
   "grading-detail",
   "gradingTemplates",
   "practiceExam",
+  "codeReviewProblems",
 ];
 
 const isValidTabType = (value: string): value is TabType => {
@@ -190,6 +194,10 @@ const getAvailableTabs = (
     type: "practiceExam",
     label: "Bài thi thử",
   },
+  {
+    type: "codeReviewProblems",
+    label: "Code Review Problems",
+  },
 ];
 const TAB_ICONS: Record<TabType, React.ElementType> = {
   dashboard: LayoutDashboard,
@@ -211,6 +219,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   gradingTemplates: ClipboardCheck,
   practiceExam: ClipboardCheck,
   "grading-detail": ClipboardCheck,
+  codeReviewProblems: Code2,
 };
 const TAB_COLORS: Record<TabType, string> = {
   dashboard: "text-indigo-600",
@@ -232,6 +241,7 @@ const TAB_COLORS: Record<TabType, string> = {
   gradingTemplates: "text-rose-600",
   practiceExam: "text-rose-600",
   "grading-detail": "text-rose-600",
+  codeReviewProblems: "text-violet-600",
 };
 const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup[] => [
   {
@@ -319,6 +329,12 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         label: t("common.questionBank"),
         icon: Database,
         iconColor: "text-indigo-500",
+      },
+      {
+        type: "codeReviewProblems",
+        label: "Code Review Problems",
+        icon: Code2,
+        iconColor: "text-violet-600",
       },
     ],
   },
@@ -419,6 +435,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             icon: Database,
             label: t("common.questionBank"),
             color: "text-indigo-500",
+          },
+          {
+            type: "codeReviewProblems",
+            icon: Code2,
+            label: "Code Review Problems",
+            color: "text-violet-600",
           },
         ],
       },
@@ -697,6 +719,8 @@ export function AdminDashboardPage() {
         return <ApplicationGradingPage onOpenGradingDetail={openGradingTab} />;
       case "grading-detail":
         return <ApplicationGradingDetailPage appId={gradingAppId} />;
+      case "codeReviewProblems":
+        return <CodeReviewProblemManagementPage />;
       default:
         return <div>{t("common.invalidTabType")}</div>;
     }

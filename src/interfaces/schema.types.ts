@@ -241,7 +241,6 @@ export interface Post {
   author?: User;
   creationDate?: string;
   lastModifiedDate?: string;
-  major?: { id?: number; name?: string; majorName?: string; description?: string };
   coverImgUrl?: string;
   public_id?: string;
   tags?: string[];
@@ -271,7 +270,6 @@ export interface PostCreateRequest {
   content?: string;
   summary?: string;
   authorId?: number;
-  majorId?: number;
   coverImg?: File;
   tags?: string[];
   status?: PostStatus;

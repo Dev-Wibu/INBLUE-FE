@@ -33,7 +33,6 @@ export function CommunityFeedPage({ title, description }: CommunityFeedPageProps
   const { posts, hasMore, isLoading, isReloading, isFetchingMore, loadMore, refresh } =
     usePostFeed();
   const [search, setSearch] = useState("");
-  const [majorFilter, setMajorFilter] = useState("all");
   const [sortBy, setSortBy] = useState<SortBy>("newest");
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -44,10 +43,6 @@ export function CommunityFeedPage({ title, description }: CommunityFeedPageProps
     .join("")
     .slice(0, 2)
     .toUpperCase();
-  const allMajors = useMemo(() => {
-    // @ts-expect-error: Backend Swagger schema mismatch - majorName not in PostResponse
-    return [...new Set(posts.map((p) => p.post?.majorName).filter(Boolean))] as string[];
-  }, [posts]);
   const filtered = useMemo(() => {
     const lower = search.toLowerCase();
     return posts
@@ -56,11 +51,9 @@ export function CommunityFeedPage({ title, description }: CommunityFeedPageProps
         const matchSearch =
           !search ||
           post?.title?.toLowerCase().includes(lower) ||
-          post?.tags?.some((t) => t.toLowerCase().includes(lower)) ||
+          post?.tags?.some((tag) => tag.toLowerCase().includes(lower)) ||
           false;
-        // @ts-expect-error: Backend Swagger schema mismatch - majorName not in PostResponse
-        const matchMajor = majorFilter === "all" || post?.majorName === majorFilter;
-        return matchSearch && matchMajor;
+        return matchSearch;
       })
       .sort((a, b) => {
         if (sortBy === "popular") {
@@ -84,7 +77,7 @@ export function CommunityFeedPage({ title, description }: CommunityFeedPageProps
         }
         return 0;
       });
-  }, [posts, search, majorFilter, sortBy]);
+  }, [posts, search, sortBy]);
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
@@ -148,20 +141,6 @@ export function CommunityFeedPage({ title, description }: CommunityFeedPageProps
             className="pl-9"
           />
         </div>
-
-        <Select value={majorFilter} onValueChange={setMajorFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder={t("common.specialized")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("common.allMajors")}</SelectItem>
-            {allMajors.map((m) => (
-              <SelectItem key={m} value={m}>
-                {m}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
           <SelectTrigger className="w-40">
