@@ -13,10 +13,12 @@ import { useSearchParams } from "react-router-dom";
 
 const STORAGE_KEY_PREFIX = "tabs_state_";
 
-interface Tab {
+export interface Tab {
   id: string;
   type: string;
   label: string;
+  appId?: string;
+  detailId?: string;
 }
 
 interface TabsStateStorage {
@@ -43,6 +45,8 @@ interface UseTabsStateReturn {
   setActiveTab: (_tabType: string, _preventUrlUpdate?: boolean) => void;
   /** Open a new tab or switch to existing */
   openTab: (_tabType: string) => void;
+  /** Open a grading-detail tab for a specific appId (or switch if already open) */
+  openGradingTab: (_appId: number) => void;
   /** Close a tab by ID */
   closeTab: (_tabId: string) => void;
   /** Reset open tabs to only one tab */
@@ -83,19 +87,35 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
 
   // Read active tab from URL, validate and fallback to default if invalid
   const urlTabParam = searchParams.get("tab");
-  const activeTab = isValidTabType(urlTabParam, availableTabs) ? urlTabParam : defaultTab;
+  console.log(
+    "[DEBUG useTabsState] urlTabParam:",
+    urlTabParam,
+    "availableTabs:",
+    availableTabs.map((t) => t.type)
+  );
+  const activeTab = (() => {
+    // Special case: grading-detail is always valid (dynamic tabs)
+    if (urlTabParam === "grading-detail") return urlTabParam;
+    return isValidTabType(urlTabParam, availableTabs) ? urlTabParam : defaultTab;
+  })();
 
   // Helper function to create initial tabs including active tab from URL
   const createInitialTabs = useCallback((): Tab[] => {
     let initialTabs: Tab[] = [];
+
+    const activeTabFromUrl = searchParams.get("tab");
+    console.log("[DEBUG createInitialTabs] activeTabFromUrl:", activeTabFromUrl);
 
     try {
       const saved = localStorage.getItem(fullStorageKey);
       if (saved) {
         const parsed: TabsStateStorage = JSON.parse(saved);
         // Validate saved tabs against available tabs
-        const validTabs = parsed.tabs?.filter((tab) =>
-          availableTabs.some((available) => available.type === tab.type)
+        // Always keep grading-detail tabs (dynamic tabs)
+        const validTabs = parsed.tabs?.filter(
+          (tab) =>
+            tab.type === "grading-detail" ||
+            availableTabs.some((available) => available.type === tab.type)
         );
         if (validTabs && validTabs.length > 0) {
           initialTabs = validTabs;
@@ -120,26 +140,50 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
     }
 
     // Ensure the active tab (from URL) exists in the initial tabs
-    const activeTabFromUrl = searchParams.get("tab");
-    const effectiveActiveTab = isValidTabType(activeTabFromUrl, availableTabs)
-      ? activeTabFromUrl
-      : defaultTab;
+    const effectiveActiveTab = (() => {
+      // Special case: grading-detail is a dynamic tab type, always valid if present in URL
+      if (activeTabFromUrl === "grading-detail") return activeTabFromUrl;
+      const isValid = isValidTabType(activeTabFromUrl, availableTabs);
+      console.log("[DEBUG createInitialTabs] isValid:", isValid, "for:", activeTabFromUrl);
+      return isValid ? activeTabFromUrl : defaultTab;
+    })();
 
     const activeTabExists = initialTabs.some((tab) => tab.type === effectiveActiveTab);
+    console.log(
+      "[DEBUG createInitialTabs] activeTabExists:",
+      activeTabExists,
+      "effectiveActiveTab:",
+      effectiveActiveTab
+    );
     if (!activeTabExists) {
-      const tabConfig = availableTabs.find((t) => t.type === effectiveActiveTab);
-      if (tabConfig) {
+      if (effectiveActiveTab === "grading-detail") {
+        console.log("[DEBUG createInitialTabs] Adding grading-detail tab");
+        const appId = searchParams.get("appId");
         initialTabs = [
           ...initialTabs,
           {
-            id: generateTabId(effectiveActiveTab),
-            type: effectiveActiveTab,
-            label: tabConfig.label,
+            id: generateTabId("grading-detail"),
+            type: "grading-detail",
+            label: appId ? `Đơn #${appId}` : "Chi tiết đơn ứng tuyển",
+            appId: appId ?? undefined,
           },
         ];
+      } else {
+        const tabConfig = availableTabs.find((t) => t.type === effectiveActiveTab);
+        if (tabConfig) {
+          initialTabs = [
+            ...initialTabs,
+            {
+              id: generateTabId(effectiveActiveTab),
+              type: effectiveActiveTab,
+              label: tabConfig.label,
+            },
+          ];
+        }
       }
     }
 
+    console.log("[DEBUG createInitialTabs] returning:", JSON.stringify(initialTabs));
     return initialTabs;
   }, [availableTabs, defaultTab, fullStorageKey, searchParams]);
 
@@ -172,8 +216,8 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
   // Set active tab (updates URL) and ensure tab exists in openTabs
   const setActiveTab = useCallback(
     (tabType: string, preventUrlUpdate = false) => {
-      // Validate tab type
-      if (!isValidTabType(tabType, availableTabs)) {
+      // Special case: grading-detail is a dynamic tab type — allow it
+      if (tabType !== "grading-detail" && !isValidTabType(tabType, availableTabs)) {
         console.warn(`Invalid tab type: ${tabType}`);
         return;
       }
@@ -216,6 +260,39 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
       setActiveTab(tabType);
     },
     [availableTabs, setActiveTab]
+  );
+
+  // Open a grading-detail tab for a specific appId (or switch if already open)
+  const openGradingTab = useCallback(
+    (appId: number) => {
+      const gradingType = "grading-detail";
+
+      setOpenTabs((prev) => {
+        const existingTab = prev.find((t) => t.type === gradingType && t.appId === String(appId));
+
+        if (existingTab) {
+          // Already open — update URL below (tab already in state)
+          return prev;
+        }
+
+        // Add new tab and update URL atomically
+        const newTabs = [
+          ...prev,
+          {
+            id: generateTabId(gradingType),
+            type: gradingType,
+            label: `Đơn #${appId}`,
+            appId: String(appId),
+          },
+        ];
+
+        return newTabs;
+      });
+
+      // URL update runs in the same batch
+      setSearchParams({ tab: gradingType, appId: String(appId) }, { replace: true });
+    },
+    [setSearchParams]
   );
 
   // Close a tab by ID
@@ -305,6 +382,7 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
     openTabs: translatedOpenTabs,
     setActiveTab,
     openTab,
+    openGradingTab,
     closeTab,
     resetTabsTo,
     closeOtherTabs,
