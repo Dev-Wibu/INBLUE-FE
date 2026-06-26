@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentRound } from "@/hooks/useRound";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ import {
   FileText,
   Lock,
   Star,
+  TrendingUp,
   Upload,
   XCircle,
 } from "lucide-react";
@@ -113,7 +115,13 @@ function getRoundTypeLabel(type?: string) {
 // Status Badge (Application level)
 // ============================================================
 
-function ApplicationStatusBadge({ status }: { status: ApplicationStatus }) {
+function ApplicationStatusBadge({
+  status,
+  className: extraClassName,
+}: {
+  status: ApplicationStatus;
+  className?: string;
+}) {
   const { t } = useTranslation();
   const config: Record<ApplicationStatus, { label: string; className: string }> = {
     IN_PROGRESS: {
@@ -137,8 +145,9 @@ function ApplicationStatusBadge({ status }: { status: ApplicationStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-        className
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+        className,
+        extraClassName
       )}>
       {label}
     </span>
@@ -277,13 +286,28 @@ function AIFeedbackCard({
   feedback,
   score,
   finalResult,
+  roundType,
+  hrScore,
+  hrNote,
 }: {
   feedback?: AiFeedback;
   score?: number;
   finalResult?: string;
+  roundType?: string;
+  hrScore?: number;
+  hrNote?: string;
 }) {
   const { t } = useTranslation();
-  if (!feedback && score === undefined) return null;
+  const showAIFeedback = feedback || score !== undefined;
+  const hasHRFeedback = hrScore !== undefined || hrNote;
+  if (!showAIFeedback && !hasHRFeedback) return null;
+
+  // Detect feedback type from extraMetrics shape
+  const em = feedback?.extraMetrics as Record<string, unknown> | undefined;
+  const hasNestedMetrics = em
+    ? Object.values(em).some((v) => v !== null && typeof v === "object" && "score" in (v as object))
+    : false;
+  const isEmailFeedback = roundType === "EMAIL_SIMULATOR" || hasNestedMetrics;
 
   return (
     <div className="mt-3 space-y-2">
@@ -332,6 +356,209 @@ function AIFeedbackCard({
               <span className="text-red-600 dark:text-red-400">{w}</span>
             </div>
           ))}
+        </div>
+      )}
+      {/* extraMetrics - auto-detect format */}
+      {em && Object.keys(em).length > 0 && isEmailFeedback && hasNestedMetrics
+        ? (() => {
+            const criteria = Object.entries(em)
+              .filter(([, v]) => v !== null && typeof v === "object" && "score" in (v as object))
+              .map(([key, val]) => {
+                const obj = val as { score: number; maxScore: number; comment?: string };
+                return {
+                  name: key,
+                  score: obj.score,
+                  maxScore: obj.maxScore,
+                  comment: obj.comment,
+                };
+              })
+              .sort((a, b) => b.score / b.maxScore - a.score / a.maxScore);
+
+            return criteria.length > 0 ? (
+              <div className="mt-2 space-y-1.5">
+                <div className="mb-1 flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5 text-[#0047AB]" />
+                  <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                    Điểm chi tiết theo tiêu chí
+                  </span>
+                </div>
+                {criteria.map((c) => {
+                  const pct = c.maxScore > 0 ? (c.score / c.maxScore) * 100 : 0;
+                  const isGood = pct >= 80;
+                  const isMedium = pct >= 50 && pct < 80;
+                  return (
+                    <div key={c.name} className="group relative">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-600 dark:text-slate-400">
+                          {c.name}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[10px] font-bold",
+                            isGood
+                              ? "text-green-600 dark:text-green-400"
+                              : isMedium
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-red-500 dark:text-red-400"
+                          )}>
+                          {c.score}/{c.maxScore}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all",
+                            isGood ? "bg-green-500" : isMedium ? "bg-amber-400" : "bg-red-400"
+                          )}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      {c.comment && (
+                        <p className="mt-0.5 hidden text-[9px] text-slate-500 italic group-hover:block">
+                          {c.comment}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null;
+          })()
+        : em && Object.keys(em).length > 0
+          ? (() => {
+              const overallMatch =
+                typeof em["Overall CV Match"] === "number"
+                  ? (em["Overall CV Match"] as number)
+                  : null;
+              const skillsMatch =
+                typeof em["Skills Match Score"] === "number"
+                  ? (em["Skills Match Score"] as number)
+                  : null;
+              const educationMatch =
+                typeof em["Education Match Score"] === "number"
+                  ? (em["Education Match Score"] as number)
+                  : null;
+              const keywordDensity =
+                em["Keyword Density"] && typeof em["Keyword Density"] === "object"
+                  ? (em["Keyword Density"] as Record<string, number>)
+                  : null;
+              const redFlags = Array.isArray(em["Potential Red Flags"])
+                ? (em["Potential Red Flags"] as string[])
+                : null;
+              const experienceMatch =
+                typeof em["Experience Match Score"] === "number"
+                  ? (em["Experience Match Score"] as number)
+                  : null;
+              const cvReadability =
+                typeof em["CV Readability Score"] === "number"
+                  ? (em["CV Readability Score"] as number)
+                  : null;
+              return (
+                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+                  <div className="mb-2 flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-[#0047AB]" />
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Điểm phân tích chi tiết
+                    </span>
+                  </div>
+                  {/* Match scores */}
+                  <div className="mb-2 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+                    {overallMatch !== null && (
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-[#0047AB]">{overallMatch}</div>
+                        <div className="text-[10px] text-slate-500">Overall Match</div>
+                      </div>
+                    )}
+                    {skillsMatch !== null && (
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                          {skillsMatch}
+                        </div>
+                        <div className="text-[10px] text-slate-500">Skills Match</div>
+                      </div>
+                    )}
+                    {experienceMatch !== null && (
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                          {experienceMatch}
+                        </div>
+                        <div className="text-[10px] text-slate-500">Experience</div>
+                      </div>
+                    )}
+                    {educationMatch !== null && (
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                          {educationMatch}
+                        </div>
+                        <div className="text-[10px] text-slate-500">Education</div>
+                      </div>
+                    )}
+                    {cvReadability !== null && (
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-cyan-600 dark:text-cyan-400">
+                          {cvReadability}
+                        </div>
+                        <div className="text-[10px] text-slate-500">Readability</div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Keyword density for CV screening */}
+                  {keywordDensity && (
+                    <div className="mb-2">
+                      <div className="mb-1 text-[10px] font-medium text-slate-500">
+                        Từ khóa trong CV
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {Object.entries(keywordDensity)
+                          .filter(([, count]) => count > 0)
+                          .sort((a, b) => b[1] - a[1])
+                          .slice(0, 6)
+                          .map(([keyword, count]) => (
+                            <span
+                              key={keyword}
+                              className="inline-flex items-center rounded-full bg-[#0047AB]/10 px-2 py-0.5 text-[10px] font-medium text-[#0047AB] dark:bg-[#0047AB]/20">
+                              {keyword}: {count}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Potential red flags */}
+                  {redFlags && redFlags.length > 0 && (
+                    <div>
+                      <div className="mb-1 text-[10px] font-medium text-red-500">Cảnh báo</div>
+                      <ul className="space-y-0.5">
+                        {redFlags.slice(0, 2).map((flag, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-1 text-[10px] text-red-600 dark:text-red-400">
+                            <span className="mt-0.5 text-red-500">⚠</span>
+                            <span>{flag}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              );
+            })()
+          : null}
+      {/* HR Feedback */}
+      {hasHRFeedback && (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
+              HR nhận xét
+            </span>
+          </div>
+          {hrScore !== undefined && hrScore !== null && (
+            <div className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-sm font-bold text-[#0047AB]">{hrScore}</span>
+              <span className="text-xs text-slate-400">/100</span>
+            </div>
+          )}
+          {hrNote && <p className="text-xs text-slate-600 italic dark:text-slate-400">{hrNote}</p>}
         </div>
       )}
     </div>
@@ -402,7 +629,7 @@ function RoundTimelineItem({
   const effectiveStatus: RoundDetailStatus | "SUBMITTED" | undefined =
     status ?? (optimistic ? "SUBMITTED" : undefined);
 
-  const displayScore = score ?? aiScore;
+  const displayScore = detail?.hrScore ?? score ?? aiScore;
 
   // Rounds that are submitted but AI hasn't finished evaluating yet
   const isPendingAI = effectiveStatus === "SUBMITTED" || effectiveStatus === "PENDING";
@@ -495,11 +722,17 @@ function RoundTimelineItem({
 
               {submissionData && <SubmissionPreview detail={detail!} />}
 
-              {(aiScore !== undefined || aiFeedback) && (
+              {(aiScore !== undefined ||
+                aiFeedback ||
+                detail?.hrScore !== undefined ||
+                detail?.hrNote) && (
                 <AIFeedbackCard
                   feedback={aiFeedback}
                   score={aiScore}
                   finalResult={detail?.finalResult}
+                  roundType={round?.roundType}
+                  hrScore={detail?.hrScore}
+                  hrNote={detail?.hrNote}
                 />
               )}
             </div>
@@ -545,9 +778,13 @@ function ApplicationDetailPanel({
   onSubmissionSuccess?: () => void;
 }) {
   const { t } = useTranslation();
-  const { id, currentRoundOrder = 0, status } = application;
+  const { id, status } = application;
   const rounds = useMemo(() => application.rounds ?? [], [application.rounds]);
   const totalRounds = rounds.length;
+
+  // Fetch current round from API as source of truth
+  const { data: apiCurrentRound, refetch: refetchCurrentRound } = useCurrentRound(id ?? 0, !!id);
+  const apiCurrentRoundOrder = apiCurrentRound?.roundOrder ?? -1;
 
   const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -624,6 +861,8 @@ function ApplicationDetailPanel({
         setIsPolling(false);
         if (hasResults) {
           toast.success(t("userApplicationhistory.aiEvaluationComplete"));
+          // Refetch current round to get updated currentRoundOrder from API
+          refetchCurrentRound();
         }
         return;
       }
@@ -659,30 +898,50 @@ function ApplicationDetailPanel({
   }, []);
 
   // Build timeline: use JD rounds as source of truth, enriched with detailsData + optimistic details
+  // IMPORTANT: Only BE's currentRoundOrder controls which round is "current" / unlocked.
+  // AI evaluation status (AI_EVALUATED) does NOT advance the user to the next round.
+  // HR must manually advance currentRoundOrder after reviewing AI results.
   const timelineRounds = useMemo(() => {
     if (rounds.length === 0) return [];
     return rounds.map((round, idx) => {
       const detail = detailsData.find((d) => d.roundId === round.id);
       const optimistic = optimisticDetails.find((o) => o.roundId === round.id);
       const hasSubmission = !!detail || !!optimistic;
+
+      // This round is completed if:
+      // 1. Overall application is PASSED/FAILED/SOFT_FAILED, OR
+      // 2. BE says this round is before current round (idx < currentRoundOrder - 1)
+      // Note: AI_EVALUATED status alone does NOT mark a round as completed for user-facing UI
+      // because HR review may still be pending. A round only "completes" when:
+      //   - Application is overall PASSED, OR
+      //   - Application is overall FAILED/SOFT_FAILED, OR
+      //   - This round is strictly before currentRoundOrder (BE has officially advanced)
       const isCompleted =
-        status === "PASSED"
+        status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED"
           ? true
-          : detail
-            ? detail.status === "COMPLETED" || detail.status === "AI_EVALUATED"
-            : idx < currentRoundOrder;
+          : idx < apiCurrentRoundOrder - 1;
+
+      // This round is current if:
+      // 1. Application is still IN_PROGRESS
+      // 2. No submission yet
+      // 3. BE says this is the current round (idx === currentRoundOrder - 1)
       const isCurrent =
         status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED"
           ? false
           : hasSubmission
-            ? false // already submitted, don't allow re-enter
-            : idx === currentRoundOrder - 1 || (currentRoundOrder === 0 && idx === 0);
+            ? false // already submitted
+            : idx === apiCurrentRoundOrder - 1 || (apiCurrentRoundOrder === 0 && idx === 0);
+
+      // This round is locked if:
+      // 1. Application still active
+      // 2. This round is after the BE's current round
       const isLocked =
         !(status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED") &&
-        idx > currentRoundOrder;
+        idx > apiCurrentRoundOrder;
+
       return { round, detail, optimistic, isCompleted, isCurrent, isLocked };
     });
-  }, [rounds, detailsData, optimisticDetails, currentRoundOrder, status]);
+  }, [rounds, detailsData, optimisticDetails, apiCurrentRoundOrder, status]);
 
   const handleEnterRoom = (round: JdRound, detail?: ApplicationDetail) => {
     setSubmissionRound(round);
@@ -696,6 +955,7 @@ function ApplicationDetailPanel({
     detail?: ApplicationDetail;
   }) => {
     setSubmissionOpen(false);
+    // Always show the BE message (e.g. "Bài đang được chấm, vui lòng chờ")
     if (result?.message) {
       toast.success(result.message);
     } else {
@@ -735,6 +995,8 @@ function ApplicationDetailPanel({
 
     // Start polling to detect when AI finishes evaluation
     startPolling();
+    // Also refetch current round in case BE updated it immediately (e.g. sync rounds)
+    refetchCurrentRound();
     onSubmissionSuccess?.();
   };
 
@@ -752,12 +1014,12 @@ function ApplicationDetailPanel({
       {/* Header Card */}
       <Card className="mb-4 overflow-hidden border-0 bg-gradient-to-r from-[#0047AB] via-[#005B9A] to-[#007BFF] py-0">
         <CardContent className="flex items-center justify-between gap-4 p-6">
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-slate-200">
               <Briefcase className="h-7 w-7 text-[#0047AB]" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate text-lg font-bold text-white">
                 {application.jobTitle ?? t("userApplicationhistory.noTitle")}
               </h2>
               <p className="mt-0.5 text-sm font-medium text-white/80">
@@ -777,14 +1039,14 @@ function ApplicationDetailPanel({
                     style={{
                       width: `${
                         totalRounds > 0
-                          ? (Math.min(currentRoundOrder, totalRounds) / totalRounds) * 100
+                          ? (Math.min(apiCurrentRoundOrder, totalRounds) / totalRounds) * 100
                           : 0
                       }%`,
                     }}
                   />
                 </div>
                 <span className="text-sm font-bold">
-                  {currentRoundOrder}/{totalRounds}
+                  {apiCurrentRoundOrder}/{totalRounds}
                 </span>
               </div>
             </div>
@@ -840,6 +1102,7 @@ function ApplicationDetailPanel({
         }}
         applicationId={id ?? 0}
         roundName={submissionRound?.name ?? getRoundTypeLabel(submissionRound?.roundType)}
+        roundType={submissionRound?.roundType}
         instruction={submissionRound?.configData?.instruction}
         submissionFormat={getSubmissionFormat(submissionRound)}
         currentFileUrl={submissionDetail?.submissionData?.fileUrl}
@@ -873,25 +1136,26 @@ function ApplicationCard({
     <Card
       onClick={onClick}
       className={cn(
-        "cursor-pointer transition-all hover:shadow-md",
+        "cursor-pointer overflow-hidden transition-all hover:shadow-md",
         isSelected && "border-[#0047AB] bg-[#0047AB]/5 ring-2 ring-[#0047AB]/20"
       )}>
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-              <Briefcase className="h-5 w-5 text-[#0047AB]" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <CardTitle className="truncate text-sm">
-                {application.jobTitle ?? t("userApplicationhistory.noTitle")}
-              </CardTitle>
-              <CardDescription className="truncate">
-                {application.companyName ?? t("userApplicationhistory.company")}
-              </CardDescription>
-            </div>
+        <div className="flex items-start gap-3 overflow-hidden">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+            <Briefcase className="h-5 w-5 text-[#0047AB]" />
           </div>
-          <ApplicationStatusBadge status={application.status as ApplicationStatus} />
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <CardTitle className="truncate text-sm">
+              {application.jobTitle ?? t("userApplicationhistory.noTitle")}
+            </CardTitle>
+            <CardDescription className="truncate">
+              {application.companyName ?? t("userApplicationhistory.company")}
+            </CardDescription>
+          </div>
+          <ApplicationStatusBadge
+            status={application.status as ApplicationStatus}
+            className="shrink-0"
+          />
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -1117,7 +1381,7 @@ export function ApplicationHistoryPage() {
       {/* Main Content Grid */}
       <div className="grid gap-4 lg:grid-cols-12">
         {/* Left: Application List */}
-        <div className="relative flex max-h-[calc(100vh-14rem)] flex-col overflow-hidden lg:col-span-4">
+        <div className="relative flex max-h-[calc(100vh-14rem)] min-w-0 flex-col overflow-hidden lg:col-span-4">
           <span className="mb-2 shrink-0 text-sm font-medium text-slate-700 dark:text-slate-300">
             {t("userApplicationhistory.applications")} ({filteredApplications.length})
           </span>
@@ -1203,7 +1467,7 @@ export function ApplicationHistoryPage() {
         </div>
 
         {/* Right: Detail Panel */}
-        <div className="lg:col-span-8">
+        <div className="min-w-0 overflow-hidden lg:col-span-8">
           {selectedApplication ? (
             <ApplicationDetailPanel
               application={selectedApplication}
