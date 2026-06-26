@@ -14,4 +14,7 @@ export interface MentorProfileData {
   totalSession?: number;
   active?: boolean;
   createdAt?: string;
+  identityImg?: string | null;
+  degreeImg?: string | null;
+  otherFile?: string | null;
 }

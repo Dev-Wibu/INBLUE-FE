@@ -103,7 +103,7 @@ export class CodeReviewProblemManager {
    */
   async generate(request: {
     topic: string;
-    difficulty: "EASY" | "MEDIUM" | "HARD";
+    difficulty?: "EASY" | "MEDIUM" | "HARD";
     targetLevel: string;
     programmingLanguage: string;
     context?: {
