@@ -1,6 +1,6 @@
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface TabContentWrapperProps {
   tabId: string;
@@ -18,11 +18,6 @@ export function TabContentWrapper({
   children,
 }: TabContentWrapperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hasBeenVisited, setHasBeenVisited] = useState(isActive);
-
-  if (isActive && !hasBeenVisited) {
-    setHasBeenVisited(true);
-  }
 
   useDashboardScrollRestoration(containerRef, {
     enabled: isActive,
@@ -40,7 +35,7 @@ export function TabContentWrapper({
       ref={containerRef}
       className={cn("absolute inset-0 h-full w-full overflow-auto", isActive ? "block" : "hidden")}
       data-testid={`tab-content-${tabType}`}>
-      {hasBeenVisited ? children : null}
+      {children}
     </div>
   );
 }
