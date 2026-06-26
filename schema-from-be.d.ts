@@ -1532,6 +1532,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/email-submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAll_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/email-submissions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getById_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dashboard/total-user": {
         parameters: {
             query?: never;
@@ -2786,6 +2818,8 @@ export interface components {
             quizAnswers?: components["schemas"]["QuizAnswer"][];
             codeSubmissions?: components["schemas"]["CodeSubmission"][];
             codeReviewSubmissions?: components["schemas"]["CodeReviewSubmission"][];
+            /** Format: int64 */
+            emailSubmissionId?: number;
         };
         SubmissionResult: {
             /** @enum {string} */
@@ -2922,10 +2956,10 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -2935,19 +2969,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3088,10 +3122,27 @@ export interface components {
             currentQuestionType?: "BLUEPRINT" | "FOLLOW_UP";
             chatHistory?: components["schemas"]["InterviewExchange"][];
         };
+        EmailSubmission: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            senderEmail?: string;
+            subject?: string;
+            bodyText?: string;
+            /** @enum {string} */
+            status?: "PENDING" | "PROCESSED" | "ERROR" | "IGNORED";
+            errorMessage?: string;
+            attachmentUrls?: string;
+            /** Format: date-time */
+            receivedAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
         ApplicationContext: {
+            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
@@ -3193,16 +3244,16 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
-            trimDirectiveWhitespaces?: string;
-            includePreludes?: string[];
-            includeCodas?: string[];
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
-            scriptingInvalid?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
+            pageEncoding?: string;
+            scriptingInvalid?: string;
+            includePreludes?: string[];
+            errorOnELNotFound?: string;
+            trimDirectiveWhitespaces?: string;
+            includeCodas?: string[];
+            elIgnored?: string;
+            isXml?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
@@ -3228,22 +3279,23 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            redirectView?: boolean;
             propagateQueryProperties?: boolean;
+            redirectView?: boolean;
+            attributesCSV?: string;
             attributesMap?: {
                 [key: string]: unknown;
             };
-            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
         };
         ServletContext: {
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             /** Format: int32 */
             sessionTimeout?: number;
+            serverInfo?: string;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -3258,11 +3310,10 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            contextPath?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
+            contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
                 name?: string;
@@ -6020,6 +6071,48 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["InterviewSessionRedis"];
+                };
+            };
+        };
+    };
+    getAll_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EmailSubmission"][];
+                };
+            };
+        };
+    };
+    getById_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EmailSubmission"];
                 };
             };
         };

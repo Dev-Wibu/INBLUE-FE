@@ -95,6 +95,9 @@
     "updatedJdSuccessfully": "Updated JD successfully",
     "wage": "Wage",
     "welfareBenefits": "Welfare/Benefits",
+    "reviewer": "Reviewer",
+    "selectReviewer": "Select reviewer (STAFF)...",
+    "noReviewerAssigned": "Unassigned",
     "successfullyOpenedJd": "JD opened successfully",
     "unableToUpdateJdStatus": "Unable to update JD status",
     "openJd": "Open JD"

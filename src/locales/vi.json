@@ -95,6 +95,9 @@
     "updatedJdSuccessfully": "Đã cập nhật JD thành công",
     "wage": "Lương",
     "welfareBenefits": "Phúc lợi/Quyền lợi",
+    "reviewer": "Người đánh giá",
+    "selectReviewer": "Chọn người đánh giá (STAFF)...",
+    "noReviewerAssigned": "Không chỉ định",
     "successfullyOpenedJd": "Đã mở JD thành công",
     "unableToUpdateJdStatus": "Không thể cập nhật trạng thái JD",
     "openJd": "Mở JD"
@@ -3492,6 +3495,7 @@
   "adminCodeReviewProblem": {
     "pageTitle": "Quản lý bài tập Code Review",
     "pageDescription": "Tạo và quản lý các bài tập đánh giá code review",
+    "createDescription": "Tạo bài tập đánh giá code review mới cho ứng viên",
     "searchPlaceholder": "Tìm theo tên, ngôn ngữ, ID...",
     "difficulty": "Độ khó",
     "language": "Ngôn ngữ",
