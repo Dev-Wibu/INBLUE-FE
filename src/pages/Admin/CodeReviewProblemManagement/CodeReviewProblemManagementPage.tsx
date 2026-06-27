@@ -1,4 +1,4 @@
-import { PaginationControl, ReloadButton } from "@/components/shared";
+﻿import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,7 +155,7 @@ export function CodeReviewProblemManagementPage() {
 
   if (view.mode === "create") {
     return (
-      <div className="flex h-screen w-full flex-col bg-slate-50 dark:bg-slate-950">
+      <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         <div className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex h-12 items-center gap-2 text-sm">
@@ -195,7 +195,7 @@ export function CodeReviewProblemManagementPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
       {/* Header & Toolbar */}
       <div className="z-10 shrink-0 border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -255,7 +255,7 @@ export function CodeReviewProblemManagementPage() {
       </div>
 
       {/* Main Split Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Left Pane: List */}
         <div className="flex w-[400px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30">
           <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/50 p-3 text-xs font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/20 dark:text-slate-400">
@@ -407,8 +407,8 @@ export function CodeReviewProblemManagementPage() {
                               </Badge>
                             )}
                           </div>
-                          <pre className="overflow-x-auto p-4 font-mono text-sm whitespace-pre text-slate-800 dark:text-slate-300">
-                            {file.content}
+                          <pre className="overflow-x-auto p-4 font-mono text-sm break-all whitespace-pre-wrap text-slate-800 dark:text-slate-300">
+                            {file.content?.replace(/\\n/g, "\n")}
                           </pre>
                         </div>
                       ))}
