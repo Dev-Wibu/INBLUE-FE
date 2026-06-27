@@ -642,16 +642,16 @@ export function CodeReviewProblemBuilder({
                                 Mức độ (Severity)
                               </Label>
                               <StyledSelect
-                                value={issue.severity}
+                                value={issue.severity || ""}
                                 className="mt-1"
                                 onChange={(v) => {
                                   const next = [...newProblem.expectedIssues];
-                                  next[idx].severity = v as "CRITICAL" | "MAJOR" | "MINOR";
+                                  next[idx].severity = v as "CRITICAL" | "WARNING" | "INFO";
                                   setNewProblem({ ...newProblem, expectedIssues: next });
                                 }}>
                                 <option value="CRITICAL">CRITICAL</option>
-                                <option value="MAJOR">MAJOR</option>
-                                <option value="MINOR">MINOR</option>
+                                <option value="WARNING">WARNING</option>
+                                <option value="INFO">INFO</option>
                               </StyledSelect>
                             </div>
                             <div className="col-span-12">
