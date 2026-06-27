@@ -243,7 +243,7 @@ export function CodeReviewProblemManagementPage() {
                   onClick={handleBack}
                   className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
                   <ChevronRight className="mr-1 h-4 w-4 rotate-180" />
-                  {t("common.backToTheList") || "Quay l?i"}
+                  {t("common.backToTheList") || "Quay lại"}
                 </Button>
                 <Separator orientation="vertical" className="mx-2 h-4" />
                 <nav className="flex items-center gap-2 text-slate-500">
@@ -254,7 +254,7 @@ export function CodeReviewProblemManagementPage() {
                   </span>
                   <ChevronRight className="h-3 w-3" />
                   <span className="font-medium text-slate-900 dark:text-slate-200">
-                    {t("common.create") || "T?o m?i"}
+                    {t("common.create") || "Tạo mới"}
                   </span>
                 </nav>
               </div>
@@ -394,7 +394,7 @@ export function CodeReviewProblemManagementPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>{t("adminCodeReviewProblem.difficulty") || "?? kh�"} *</Label>
+                  <Label>{t("adminCodeReviewProblem.difficulty") || "Độ khó�"} *</Label>
                   <Select
                     value={generatedDifficulty}
                     onValueChange={(v) => setGeneratedDifficulty(v as "EASY" | "MEDIUM" | "HARD")}>
@@ -501,7 +501,7 @@ export function CodeReviewProblemManagementPage() {
               })
             }>
             <Plus className="mr-1 h-4 w-4" />
-            {t("common.create") || "T?o m?i"}
+            {t("common.create") || "Tạo mới"}
           </Button>
         </div>
       </div>
@@ -528,7 +528,7 @@ export function CodeReviewProblemManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("adminCodeReviewProblem.difficulty") || "?? kh�"} />
+                <SelectValue placeholder={t("adminCodeReviewProblem.difficulty") || "Độ khó�"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("common.allStatus") || "T?t c?"}</SelectItem>
@@ -558,7 +558,7 @@ export function CodeReviewProblemManagementPage() {
                       {t("adminCodeReviewProblem.language") || "Ng�n ng?"}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
-                      {t("adminCodeReviewProblem.difficulty") || "?? kh�"}
+                      {t("adminCodeReviewProblem.difficulty") || "Độ khó�"}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
                       {t("common.creationDate") || "Ng�y t?o"}
@@ -865,7 +865,7 @@ function CodeReviewProblemForm({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{t("common.create") || "T?o m?i"}</h2>
+        <h2 className="text-lg font-semibold">{t("common.create") || "Tạo mới"}</h2>
         <Button
           variant="outline"
           size="sm"
@@ -887,7 +887,7 @@ function CodeReviewProblemForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>{t("adminCodeReviewProblem.difficulty") || "?? kh�"}</Label>
+          <Label>{t("adminCodeReviewProblem.difficulty") || "Độ khó�"}</Label>
           <Select
             value={difficulty}
             onValueChange={(v) => setDifficulty(v as "EASY" | "MEDIUM" | "HARD")}>
