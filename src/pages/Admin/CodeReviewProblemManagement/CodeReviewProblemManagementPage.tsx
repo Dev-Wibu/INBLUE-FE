@@ -675,8 +675,10 @@ export function CodeReviewProblemManagementPage() {
                           </div>
                           <button
                             onClick={() => {
-                              navigator.clipboard.writeText(file.content);
-                              toast.success("Copied to clipboard");
+                              if (file.content) {
+                                navigator.clipboard.writeText(file.content);
+                                toast.success("Copied to clipboard");
+                              }
                             }}
                             className="flex shrink-0 items-center gap-1.5 rounded px-2.5 py-1 text-xs text-slate-400 transition-colors hover:bg-slate-700 hover:text-slate-200"
                             title="Copy code">
@@ -684,24 +686,26 @@ export function CodeReviewProblemManagementPage() {
                             <span>Copy</span>
                           </button>
                         </div>
-                        <div className="max-h-[450px] overflow-auto">
-                          <table className="w-full font-mono text-sm">
-                            <tbody>
-                              {file.content.split("\\n").flatMap((line, i) =>
-                                line.split("\n").map((l, j) => (
-                                  <tr key={`${i}-${j}`} className="hover:bg-slate-900/50">
-                                    <td className="w-12 shrink-0 border-r border-slate-800 py-0.5 pr-4 pl-4 text-right text-slate-600 select-none dark:text-slate-600">
-                                      {i + j + 1}
-                                    </td>
-                                    <td className="py-0.5 pr-6 pl-4 whitespace-pre text-slate-300">
-                                      {l || " "}
-                                    </td>
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
+                        {file.content && (
+                          <div className="max-h-[450px] overflow-auto">
+                            <table className="w-full font-mono text-sm">
+                              <tbody>
+                                {file.content.split("\\n").flatMap((line, i) =>
+                                  line.split("\n").map((l, j) => (
+                                    <tr key={`${i}-${j}`} className="hover:bg-slate-900/50">
+                                      <td className="w-12 shrink-0 border-r border-slate-800 py-0.5 pr-4 pl-4 text-right text-slate-600 select-none dark:text-slate-600">
+                                        {i + j + 1}
+                                      </td>
+                                      <td className="py-0.5 pr-6 pl-4 whitespace-pre text-slate-300">
+                                        {l || " "}
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
