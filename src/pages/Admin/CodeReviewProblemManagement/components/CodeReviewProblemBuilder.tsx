@@ -124,7 +124,7 @@ export function CodeReviewProblemBuilder({
         setAiGeneratedLoaded(true);
         setCreationMode("manual");
         setCreateTabMode("code");
-        setActiveFileEditMode("bugs");
+
         setCreateActiveFileIdx(0);
         toast.success("Đã sinh đề bài Code Review thành công");
       } else {
@@ -607,7 +607,7 @@ export function CodeReviewProblemBuilder({
                                 Tên file
                               </Label>
                               <StyledSelect
-                                value={issue.filename}
+                                value={issue.filename || ""}
                                 className="mt-1"
                                 onChange={(v) => {
                                   const next = [...newProblem.expectedIssues];
@@ -615,7 +615,7 @@ export function CodeReviewProblemBuilder({
                                   setNewProblem({ ...newProblem, expectedIssues: next });
                                 }}>
                                 {newProblem.files.map((f, fi) => (
-                                  <option key={fi} value={f.filename}>
+                                  <option key={fi} value={f.filename || ""}>
                                     {f.filename || `File ${fi + 1}`}
                                   </option>
                                 ))}

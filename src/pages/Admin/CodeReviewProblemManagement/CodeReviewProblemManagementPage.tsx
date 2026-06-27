@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,9 +17,7 @@ import { formatDate } from "@/lib/formatting";
 import { extractDataArray } from "@/lib/utils";
 import {
   codeReviewProblemManager,
-  type CodeFile,
   type CodeReviewProblem,
-  type ExpectedIssue,
 } from "@/services/code-review-problem.manager";
 import { AlertTriangle, Bot, ChevronRight, Lightbulb, Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -46,7 +43,6 @@ export function CodeReviewProblemManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [selectedProblem, setSelectedProblem] = useState<CodeReviewProblem | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const loadProblems = useCallback(
     async (showReloading = false) => {
@@ -142,90 +138,11 @@ export function CodeReviewProblemManagementPage() {
 
   const handleViewDetail = (problem: CodeReviewProblem) => {
     setSelectedProblem(problem);
-    setIsDetailOpen(true);
   };
 
   const handleBack = () => {
     setView({ mode: "list" });
   };
-
-  const [aiDialogOpen, setAiDialogOpen] = useState(false);
-  const [aiTopic, setAiTopic] = useState("");
-  const [aiTargetLevel, setAiTargetLevel] = useState("");
-  const [aiProgrammingLanguage, setAiProgrammingLanguage] = useState("");
-  const [aiContextJobTitle, setAiContextJobTitle] = useState("");
-  const [aiContextRequirement, setAiContextRequirement] = useState("");
-  const [aiContextPrompting, setAiContextPrompting] = useState("");
-  const [generating, setGenerating] = useState(false);
-
-  const handleGenerateAI = useCallback(async () => {
-    if (!aiTopic.trim() || !aiTargetLevel.trim() || !aiProgrammingLanguage.trim()) {
-      toast.error(
-        t("adminCodeReviewProblem.requiredFields") || "Vui l�ng nh?p ?? Topic, Level v� Language"
-      );
-      return;
-    }
-    setGenerating(true);
-    try {
-      const response = await codeReviewProblemManager.generate({
-        topic: aiTopic.trim(),
-        targetLevel: aiTargetLevel.trim(),
-        programmingLanguage: aiProgrammingLanguage.trim(),
-        context: {
-          jobTitle: aiContextJobTitle.trim() || undefined,
-          requirement: aiContextRequirement.trim() || undefined,
-          prompting: aiContextPrompting.trim() || undefined,
-        },
-      });
-      if (response.success && response.data) {
-        const data = response.data as Partial<CodeReviewProblem>;
-        if (data.title) setGeneratedTitle(data.title);
-        if (data.problemStatement) setGeneratedProblemStatement(data.problemStatement);
-        if (data.language) setGeneratedLanguage(data.language);
-        if (data.difficulty) setGeneratedDifficulty(data.difficulty as "EASY" | "MEDIUM" | "HARD");
-        if (data.files) setGeneratedFiles(data.files);
-        if (data.expectedIssues) setGeneratedIssues(data.expectedIssues);
-        setAiDialogOpen(false);
-        toast.success(
-          t("adminCodeReviewProblem.generatedSuccessfully") || "?� t?o b�i t?p b?ng AI"
-        );
-      } else {
-        toast.error(
-          response.error || t("adminCodeReviewProblem.generateFailed") || "T?o b�i t?p th?t b?i"
-        );
-      }
-    } catch {
-      toast.error(t("adminCodeReviewProblem.generateFailed") || "T?o b�i t?p th?t b?i");
-    } finally {
-      setGenerating(false);
-    }
-  }, [
-    aiTopic,
-    aiTargetLevel,
-    aiProgrammingLanguage,
-    aiContextJobTitle,
-    aiContextRequirement,
-    aiContextPrompting,
-    t,
-  ]);
-
-  const [generatedTitle, setGeneratedTitle] = useState("");
-  const [generatedDifficulty, setGeneratedDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">(
-    "MEDIUM"
-  );
-  const [generatedLanguage, setGeneratedLanguage] = useState("");
-  const [generatedProblemStatement, setGeneratedProblemStatement] = useState("");
-  const [generatedFiles, setGeneratedFiles] = useState<CodeFile[]>([]);
-  const [generatedIssues, setGeneratedIssues] = useState<ExpectedIssue[]>([]);
-
-  const resetGenerated = useCallback(() => {
-    setGeneratedTitle("");
-    setGeneratedDifficulty("MEDIUM");
-    setGeneratedLanguage("");
-    setGeneratedProblemStatement("");
-    setGeneratedFiles([]);
-    setGeneratedIssues([]);
-  }, []);
 
   if (view.mode === "create") {
     return (
