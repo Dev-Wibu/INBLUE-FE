@@ -123,16 +123,25 @@ export function CodeReviewProblemManagementPage() {
   const getDifficultyBadge = (difficulty?: string) => {
     switch (difficulty) {
       case "EASY":
-        return { label: t("common.easy") || "D?", className: "bg-green-100 text-green-700" };
+        return {
+          label: t("common.easy"),
+          className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+        };
       case "MEDIUM":
         return {
-          label: t("common.medium") || "Trung b�nh",
-          className: "bg-amber-100 text-amber-700",
+          label: t("common.medium"),
+          className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
         };
       case "HARD":
-        return { label: t("common.hard") || "Kh�", className: "bg-red-100 text-red-700" };
+        return {
+          label: t("common.hard"),
+          className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+        };
       default:
-        return { label: difficulty || "-", className: "bg-slate-100 text-slate-700" };
+        return {
+          label: difficulty || "-",
+          className: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
+        };
     }
   };
 
