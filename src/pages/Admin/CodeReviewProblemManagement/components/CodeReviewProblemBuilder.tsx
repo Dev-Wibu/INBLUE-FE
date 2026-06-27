@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+﻿import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -169,7 +169,6 @@ export function CodeReviewProblemBuilder({
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
-      {/* LEFT PANE - METADATA */}
       <div className="flex w-[380px] shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
           <div className="flex items-center gap-2 font-sans text-sm font-bold text-slate-700 dark:text-slate-200">
