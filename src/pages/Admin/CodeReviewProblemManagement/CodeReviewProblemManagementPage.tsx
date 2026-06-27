@@ -2,10 +2,7 @@
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -15,7 +12,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { SpinnerBlock } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate } from "@/lib/formatting";
@@ -26,10 +22,11 @@ import {
   type CodeReviewProblem,
   type ExpectedIssue,
 } from "@/services/code-review-problem.manager";
-import { AlertTriangle, Bot, ChevronRight, Eye, Lightbulb, Plus } from "lucide-react";
+import { AlertTriangle, Bot, ChevronRight, Lightbulb, Loader2, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { CodeReviewProblemBuilder } from "./components/CodeReviewProblemBuilder";
 
 type ViewState = { mode: "list" } | { mode: "create" } | { mode: "detail"; problemId: number };
 
@@ -232,804 +229,342 @@ export function CodeReviewProblemManagementPage() {
 
   if (view.mode === "create") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/20">
-        <div className="border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
-              <div className="flex items-center gap-2 text-sm">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleBack}
-                  className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
-                  <ChevronRight className="mr-1 h-4 w-4 rotate-180" />
-                  {t("common.backToTheList") || "Quay lại"}
-                </Button>
-                <Separator orientation="vertical" className="mx-2 h-4" />
-                <nav className="flex items-center gap-2 text-slate-500">
-                  <span
-                    className="cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
-                    onClick={handleBack}>
-                    {t("adminCodeReviewProblem.pageTitle") || "Qu?n l� b�i t?p"}
-                  </span>
-                  <ChevronRight className="h-3 w-3" />
-                  <span className="font-medium text-slate-900 dark:text-slate-200">
-                    {t("common.create") || "Tạo mới"}
-                  </span>
-                </nav>
-              </div>
+      <div className="flex h-screen w-full flex-col bg-slate-50 dark:bg-slate-950">
+        <div className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex h-12 items-center gap-2 text-sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="h-8 px-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
+                <ChevronRight className="mr-1 h-3 w-3 rotate-180" />
+                Quay lại
+              </Button>
+              <Separator orientation="vertical" className="mx-2 h-4" />
+              <nav className="flex items-center gap-2 text-xs text-slate-500">
+                <span
+                  className="cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
+                  onClick={handleBack}>
+                  Quản lý bài tập Code Review
+                </span>
+                <ChevronRight className="h-3 w-3" />
+                <span className="font-medium text-slate-900 dark:text-slate-200">Tạo mới</span>
+              </nav>
             </div>
           </div>
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
-                <Plus className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {t("common.create") || "T?o b�i t?p Code Review"}
-                </h1>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                  {t("adminCodeReviewProblem.createDescription") ||
-                    "T?o b�i t?p ?�nh gi� code review m?i cho ?ng vi�n"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <Card className="border-0 shadow-lg dark:border dark:border-slate-800 dark:bg-slate-900/50">
-                <CardContent className="p-6">
-                  <CodeReviewProblemForm
-                    onSuccess={() => {
-                      handleBack();
-                      void loadProblems(true);
-                    }}
-                    onCancel={handleBack}
-                    aiDialogOpen={aiDialogOpen}
-                    onAiDialogOpenChange={setAiDialogOpen}
-                    aiTopic={aiTopic}
-                    onAiTopicChange={setAiTopic}
-                    aiTargetLevel={aiTargetLevel}
-                    onAiTargetLevelChange={setAiTargetLevel}
-                    aiProgrammingLanguage={aiProgrammingLanguage}
-                    onAiProgrammingLanguageChange={setAiProgrammingLanguage}
-                    aiContextJobTitle={aiContextJobTitle}
-                    onAiContextJobTitleChange={setAiContextJobTitle}
-                    aiContextRequirement={aiContextRequirement}
-                    onAiContextRequirementChange={setAiContextRequirement}
-                    aiContextPrompting={aiContextPrompting}
-                    onAiContextPromptingChange={setAiContextPrompting}
-                    generating={generating}
-                    onGenerateAI={handleGenerateAI}
-                    generatedTitle={generatedTitle}
-                    onGeneratedTitleChange={setGeneratedTitle}
-                    generatedDifficulty={generatedDifficulty}
-                    onGeneratedDifficultyChange={setGeneratedDifficulty}
-                    generatedLanguage={generatedLanguage}
-                    onGeneratedLanguageChange={setGeneratedLanguage}
-                    generatedProblemStatement={generatedProblemStatement}
-                    onGeneratedProblemStatementChange={setGeneratedProblemStatement}
-                    generatedFiles={generatedFiles}
-                    onGeneratedFilesChange={setGeneratedFiles}
-                    generatedIssues={generatedIssues}
-                    onGeneratedIssuesChange={setGeneratedIssues}
-                    resetGenerated={resetGenerated}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="lg:col-span-1">
-              <div className="sticky top-8 space-y-6">
-                <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-center gap-2">
-                      <Lightbulb className="h-5 w-5 text-amber-500" />
-                      <h3 className="font-semibold text-slate-900">M?o t?o b�i t?p</h3>
-                    </div>
-                    <ul className="space-y-3 text-sm text-slate-700">
-                      <li className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-                        <span>??t ti�u ?? r� r�ng, c? th? v? v?n ?? code review</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-                        <span>Cung c?p code m?u ?a d?ng t? nhi?u file</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-                        <span>Li?t k� expected issues chi ti?t v?i severity</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-                        <span>S? d?ng AI ?? generate ?? b�i nhanh ch�ng</span>
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-center gap-2">
-                      <Bot className="h-5 w-5 text-emerald-600" />
-                      <h3 className="font-semibold text-slate-900">T?o b?ng AI</h3>
-                    </div>
-                    <p className="mb-4 text-sm text-slate-700">
-                      S? d?ng AI ?? t? ??ng generate ?? b�i code review ch? trong v�i gi�y.
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="w-full gap-2 border-emerald-200 bg-white hover:bg-emerald-50"
-                      onClick={() => setAiDialogOpen(true)}>
-                      <Bot className="h-4 w-4" />
-                      {t("adminCodeReviewProblem.generateAI") || "T?o b?ng AI"}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
+        <div className="flex-1 overflow-hidden">
+          <CodeReviewProblemBuilder
+            onSuccess={() => {
+              handleBack();
+              void loadProblems(true);
+            }}
+            onCancel={handleBack}
+          />
         </div>
-
-        <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-          <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {t("adminCodeReviewProblem.aiGenerateTitle") || "T?o b�i t?p b?ng AI"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t("adminCodeReviewProblem.topic") || "Ch? ??"} *</Label>
-                <Input
-                  value={aiTopic}
-                  onChange={(e) => setAiTopic(e.target.value)}
-                  placeholder="Spring Security..."
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t("adminCodeReviewProblem.difficulty") || "Độ khó�"} *</Label>
-                  <Select
-                    value={generatedDifficulty}
-                    onValueChange={(v) => setGeneratedDifficulty(v as "EASY" | "MEDIUM" | "HARD")}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EASY">{t("common.easy") || "D?"}</SelectItem>
-                      <SelectItem value="MEDIUM">{t("common.medium") || "Trung b�nh"}</SelectItem>
-                      <SelectItem value="HARD">{t("common.hard") || "Kh�"}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("adminCodeReviewProblem.programmingLanguage") || "Ng�n ng?"} *</Label>
-                  <Input
-                    value={aiProgrammingLanguage}
-                    onChange={(e) => setAiProgrammingLanguage(e.target.value)}
-                    placeholder="Java"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>{t("adminCodeReviewProblem.targetLevel") || "M?c ti�u"} *</Label>
-                <Input
-                  value={aiTargetLevel}
-                  onChange={(e) => setAiTargetLevel(e.target.value)}
-                  placeholder="Junior, Senior..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("adminCodeReviewProblem.contextJobTitle") || "V? tr� c�ng vi?c"}</Label>
-                <Input
-                  value={aiContextJobTitle}
-                  onChange={(e) => setAiContextJobTitle(e.target.value)}
-                  placeholder="Backend Developer"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("adminCodeReviewProblem.contextRequirement") || "Y�u c?u"}</Label>
-                <Textarea
-                  value={aiContextRequirement}
-                  onChange={(e) => setAiContextRequirement(e.target.value)}
-                  placeholder="M� t? y�u c?u..."
-                  rows={2}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("adminCodeReviewProblem.contextPrompting") || "H??ng d?n th�m"}</Label>
-                <Textarea
-                  value={aiContextPrompting}
-                  onChange={(e) => setAiContextPrompting(e.target.value)}
-                  placeholder="G?i � th�m cho AI..."
-                  rows={2}
-                />
-              </div>
-              <div className="flex gap-3">
-                <Button onClick={handleGenerateAI} disabled={generating} className="flex-1">
-                  {generating ? (
-                    <>
-                      <SpinnerBlock size="sm" />
-                      {t("adminCodeReviewProblem.generating") || "?ang t?o..."}
-                    </>
-                  ) : (
-                    <>
-                      <Bot className="mr-2 h-4 w-4" />
-                      {t("adminCodeReviewProblem.generate") || "T?o b�i t?p"}
-                    </>
-                  )}
-                </Button>
-                <Button variant="outline" onClick={() => setAiDialogOpen(false)}>
-                  {t("general.cancel") || "H?y"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">
-            {t("adminCodeReviewProblem.pageTitle") || "Qu?n l� b�i t?p Code Review"}
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {t("adminCodeReviewProblem.pageDescription") ||
-              "T?o v� qu?n l� c�c b�i t?p ?�nh gi� code review"}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ReloadButton
-            onReload={() => loadProblems(true)}
-            isLoading={isReloading}
-            tooltip={t("common.reload")}
-          />
-          <Button
-            onClick={() =>
-              setView({
-                mode: "create",
-              })
-            }>
-            <Plus className="mr-1 h-4 w-4" />
-            {t("common.create") || "Tạo mới"}
-          </Button>
-        </div>
-      </div>
+    <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      {/* Header & Toolbar */}
+      <div className="z-10 shrink-0 border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <Bot className="h-5 w-5 text-indigo-500" />
+              {t("adminCodeReviewProblem.pageTitle") || "Quản lý bài tập Code Review"}
+            </h1>
+          </div>
 
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <div className="flex flex-wrap gap-3">
-            <div className="relative min-w-[220px] flex-1">
+          <div className="flex items-center gap-3">
+            <div className="relative w-64">
               <Input
                 placeholder={
-                  t("adminCodeReviewProblem.searchPlaceholder") || "T�m theo t�n, ng�n ng?, ID..."
+                  t("adminCodeReviewProblem.searchPlaceholder") || "Tìm theo tên, ngôn ngữ, ID..."
                 }
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   pagination.goToFirstPage();
                 }}
+                className="h-9 w-full border-slate-200 bg-slate-100/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800/50"
               />
             </div>
+
             <Select
               value={difficultyFilter}
               onValueChange={(value) => {
                 setDifficultyFilter(value);
                 pagination.goToFirstPage();
               }}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("adminCodeReviewProblem.difficulty") || "Độ khó�"} />
+              <SelectTrigger className="h-9 w-[140px] border-slate-200 bg-slate-100/50 dark:border-slate-700 dark:bg-slate-800/50">
+                <SelectValue placeholder="Độ khó" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("common.allStatus") || "T?t c?"}</SelectItem>
-                <SelectItem value="EASY">{t("common.easy") || "D?"}</SelectItem>
-                <SelectItem value="MEDIUM">{t("common.medium") || "Trung b�nh"}</SelectItem>
-                <SelectItem value="HARD">{t("common.hard") || "Kh�"}</SelectItem>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="EASY">Dễ</SelectItem>
+                <SelectItem value="MEDIUM">Trung bình</SelectItem>
+                <SelectItem value="HARD">Khó</SelectItem>
               </SelectContent>
             </Select>
+
+            <ReloadButton
+              onReload={() => loadProblems(true)}
+              isLoading={isReloading}
+              tooltip={t("common.reload")}
+            />
+
+            <Button
+              className="h-9 bg-indigo-600 px-4 text-white shadow-sm hover:bg-indigo-700"
+              onClick={() => setView({ mode: "create" })}>
+              <Plus className="mr-1.5 h-4 w-4" />
+              {t("common.create") || "Tạo mới"}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Split Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Pane: List */}
+        <div className="flex w-[400px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30">
+          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/50 p-3 text-xs font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/20 dark:text-slate-400">
+            <span>{filteredProblems.length} bài tập</span>
+            {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
           </div>
 
-          {isLoading ? (
-            <SpinnerBlock size="lg" />
-          ) : filteredProblems.length === 0 ? (
-            <div className="py-8 text-center text-slate-500">
-              {t("common.noDataAvailable") || "Kh�ng c� d? li?u"}
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-slate-50">
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">ID</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
-                      {t("common.title1") || "Ti�u ??"}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
-                      {t("adminCodeReviewProblem.language") || "Ng�n ng?"}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
-                      {t("adminCodeReviewProblem.difficulty") || "Độ khó�"}
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">
-                      {t("common.creationDate") || "Ng�y t?o"}
-                    </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-600">
-                      {t("common.operation") || "Thao t�c"}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pageItems.map((problem) => {
-                    const difficultyBadge = getDifficultyBadge(problem.difficulty);
-                    return (
-                      <tr key={problem.id} className="border-b last:border-0">
-                        <td className="px-4 py-3 text-sm">#{problem.id}</td>
-                        <td className="px-4 py-3">
-                          <p className="font-medium">{problem.title}</p>
-                          {problem.problemStatement && (
-                            <p className="text-muted-foreground line-clamp-1 text-xs">
-                              {problem.problemStatement}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-sm">{problem.language || "-"}</td>
-                        <td className="px-4 py-3">
-                          <Badge className={difficultyBadge.className}>
-                            {difficultyBadge.label}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {problem.createdAt ? formatDate(problem.createdAt) : "-"}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleViewDetail(problem)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <PaginationControl
-            pagination={pagination}
-            onPageSizeChange={(nextPageSize) => {
-              setPageSize(nextPageSize);
-              pagination.goToFirstPage();
-            }}
-            pageSizeOptions={[6, 9, 10, 20]}
-          />
-        </CardContent>
-      </Card>
-
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{selectedProblem?.title}</DialogTitle>
-          </DialogHeader>
-          {selectedProblem && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                <Badge className={getDifficultyBadge(selectedProblem.difficulty).className}>
-                  {getDifficultyBadge(selectedProblem.difficulty).label}
-                </Badge>
-                {selectedProblem.language && (
-                  <Badge variant="outline">{selectedProblem.language}</Badge>
-                )}
+          <div className="flex-1 space-y-2 overflow-y-auto p-3">
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <SpinnerBlock size="sm" />
               </div>
-              {selectedProblem.problemStatement && (
-                <div>
-                  <h3 className="mb-2 text-sm font-semibold">
-                    {t("adminCodeReviewProblem.problemStatement") || "?? b�i"}
-                  </h3>
-                  <div className="rounded-lg bg-slate-50 p-4 text-sm whitespace-pre-wrap dark:bg-slate-800">
-                    {selectedProblem.problemStatement}
+            ) : filteredProblems.length === 0 ? (
+              <div className="px-4 py-16 text-center">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                  <AlertTriangle className="h-5 w-5 text-slate-400" />
+                </div>
+                <h3 className="text-sm font-medium text-slate-900 dark:text-white">
+                  Không có dữ liệu
+                </h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  Thử thay đổi bộ lọc hoặc tạo bài tập mới.
+                </p>
+              </div>
+            ) : (
+              pageItems.map((problem) => {
+                const difficultyBadge = getDifficultyBadge(problem.difficulty);
+                const isSelected = selectedProblem?.id === problem.id;
+
+                return (
+                  <div
+                    key={problem.id}
+                    onClick={() => handleViewDetail(problem)}
+                    className={`group relative cursor-pointer rounded-xl border p-4 transition-all ${
+                      isSelected
+                        ? "border-indigo-500/50 bg-white shadow-md ring-1 ring-indigo-500/20 dark:border-indigo-400/50 dark:bg-slate-800"
+                        : "border-slate-200 bg-white/60 hover:border-indigo-300 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-800"
+                    }`}>
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <h4
+                        className={`line-clamp-2 text-sm font-semibold ${isSelected ? "text-indigo-700 dark:text-indigo-400" : "text-slate-900 dark:text-slate-100"}`}>
+                        {problem.title}
+                      </h4>
+                      <Badge
+                        variant="outline"
+                        className={`shrink-0 text-[10px] ${difficultyBadge.className} ${isSelected ? "border-current bg-transparent" : "bg-transparent"}`}>
+                        {difficultyBadge.label}
+                      </Badge>
+                    </div>
+
+                    <p className="mb-3 line-clamp-2 h-8 text-xs text-slate-500 dark:text-slate-400">
+                      {problem.problemStatement || "Không có mô tả..."}
+                    </p>
+
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-md bg-slate-100/80 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          {problem.language || "N/A"}
+                        </span>
+                        <span>#{problem.id}</span>
+                      </div>
+                      <span className="tabular-nums">
+                        {problem.createdAt ? formatDate(problem.createdAt) : ""}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <div className="border-t border-slate-200 bg-white/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+            <PaginationControl
+              pagination={pagination}
+              onPageSizeChange={(nextPageSize) => {
+                setPageSize(nextPageSize);
+                pagination.goToFirstPage();
+              }}
+              pageSizeOptions={[10, 20, 50]}
+            />
+          </div>
+        </div>
+
+        {/* Right Pane: Detail View */}
+        <div className="relative flex flex-1 flex-col overflow-hidden bg-white dark:bg-slate-950">
+          {selectedProblem ? (
+            <div className="flex-1 overflow-y-auto">
+              <div className="mx-auto max-w-4xl p-8">
+                {/* Header Section */}
+                <div className="mb-8">
+                  <div className="mb-3 flex items-center gap-2 text-sm text-slate-500">
+                    <span>Bài tập #{selectedProblem.id}</span>
+                    <span>•</span>
+                    <span>
+                      {selectedProblem.createdAt ? formatDate(selectedProblem.createdAt) : ""}
+                    </span>
+                  </div>
+
+                  <h2 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">
+                    {selectedProblem.title}
+                  </h2>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className={getDifficultyBadge(selectedProblem.difficulty).className}>
+                      {getDifficultyBadge(selectedProblem.difficulty).label}
+                    </Badge>
+                    {selectedProblem.language && (
+                      <Badge variant="outline" className="bg-slate-50 dark:bg-slate-900">
+                        {selectedProblem.language}
+                      </Badge>
+                    )}
                   </div>
                 </div>
-              )}
-              {selectedProblem.files && selectedProblem.files.length > 0 && (
-                <div>
-                  <h3 className="mb-2 text-sm font-semibold">
-                    {t("adminCodeReviewProblem.files") || "Files"}
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedProblem.files.map((file: CodeFile, idx: number) => (
-                      <div key={idx} className="rounded-lg border p-3">
-                        <p className="text-sm font-medium">{file.filename || `File ${idx + 1}`}</p>
-                        {file.language && (
-                          <Badge variant="outline" className="mt-1">
-                            {file.language}
-                          </Badge>
-                        )}
-                        {file.content && (
-                          <pre className="mt-2 overflow-x-auto rounded bg-slate-900 p-3 text-xs text-slate-100">
+
+                <Separator className="my-8" />
+
+                {/* Problem Statement Section */}
+                {selectedProblem.problemStatement && (
+                  <div className="mb-10">
+                    <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+                      <Lightbulb className="h-5 w-5 text-amber-500" />
+                      Mô tả bài tập
+                    </h3>
+                    <div className="prose prose-sm dark:prose-invert max-w-none rounded-xl border border-slate-100 bg-slate-50/50 p-6 whitespace-pre-wrap text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300">
+                      {selectedProblem.problemStatement}
+                    </div>
+                  </div>
+                )}
+
+                {/* Files Section */}
+                {selectedProblem.files && selectedProblem.files.length > 0 && (
+                  <div className="mb-10">
+                    <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+                      <Bot className="h-5 w-5 text-blue-500" />
+                      Mã nguồn (Files)
+                    </h3>
+                    <div className="space-y-4">
+                      {selectedProblem.files.map((file, idx) => (
+                        <div
+                          key={idx}
+                          className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-slate-900/30">
+                          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/50 px-4 py-2 dark:border-slate-800 dark:bg-slate-800/50">
+                            <span className="font-mono text-sm font-medium text-slate-700 dark:text-slate-300">
+                              {file.filename || `File ${idx + 1}`}
+                            </span>
+                            {file.language && (
+                              <Badge variant="secondary" className="text-[10px] uppercase">
+                                {file.language}
+                              </Badge>
+                            )}
+                          </div>
+                          <pre className="overflow-x-auto p-4 font-mono text-sm whitespace-pre text-slate-800 dark:text-slate-300">
                             {file.content}
                           </pre>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {selectedProblem.expectedIssues && selectedProblem.expectedIssues.length > 0 && (
-                <div>
-                  <h3 className="mb-2 text-sm font-semibold">
-                    {t("adminCodeReviewProblem.expectedIssues") || "Expected Issues"}
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedProblem.expectedIssues.map((issue: ExpectedIssue, idx: number) => (
-                      <div key={idx} className="flex items-start gap-2 rounded-lg border p-3">
-                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-                        <div>
-                          <p className="text-sm">
-                            {issue.filename && (
-                              <span className="font-medium">{issue.filename}</span>
-                            )}
-                            {issue.lineNumber && (
-                              <span className="text-slate-500">:{issue.lineNumber}</span>
-                            )}
-                          </p>
-                          {issue.description && (
-                            <p className="text-muted-foreground text-xs">{issue.description}</p>
-                          )}
-                          {issue.severity && (
-                            <Badge variant="outline" className="mt-1">
-                              {issue.severity}
-                            </Badge>
-                          )}
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-              <div className="text-muted-foreground text-xs">
-                {selectedProblem.createdAt && (
-                  <span>
-                    {t("common.creationDate") || "Ng�y t?o"}:{" "}
-                    {formatDate(selectedProblem.createdAt)}
-                  </span>
                 )}
-                {selectedProblem.updatedAt && (
-                  <span className="ml-4">
-                    {t("adminCodeReviewProblem.updatedAt") || "C?p nh?t"}:{" "}
-                    {formatDate(selectedProblem.updatedAt)}
-                  </span>
+
+                {/* Expected Issues Section */}
+                {selectedProblem.expectedIssues && selectedProblem.expectedIssues.length > 0 && (
+                  <div className="mb-10">
+                    <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+                      <AlertTriangle className="h-5 w-5 text-red-500" />
+                      Lỗi cần tìm (Expected Issues)
+                    </h3>
+                    <div className="grid gap-3">
+                      {selectedProblem.expectedIssues.map((issue, idx) => (
+                        <div
+                          key={idx}
+                          className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-900/50">
+                          <div className="mt-0.5 shrink-0">
+                            <AlertTriangle
+                              className={`h-5 w-5 ${
+                                issue.severity === "CRITICAL"
+                                  ? "text-red-500"
+                                  : issue.severity === "WARNING"
+                                    ? "text-amber-500"
+                                    : "text-blue-500"
+                              }`}
+                            />
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                {issue.filename && <span>{issue.filename}</span>}
+                                {issue.lineNumber && (
+                                  <span className="ml-1 text-slate-500 dark:text-slate-400">
+                                    Dòng {issue.lineNumber}
+                                  </span>
+                                )}
+                              </p>
+                              {issue.severity && (
+                                <Badge
+                                  variant="outline"
+                                  className={` ${
+                                    issue.severity === "CRITICAL"
+                                      ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-500/10 dark:text-red-400"
+                                      : issue.severity === "WARNING"
+                                        ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-500/10 dark:text-amber-400"
+                                        : "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-500/10 dark:text-blue-400"
+                                  } `}>
+                                  {issue.severity}
+                                </Badge>
+                              )}
+                            </div>
+                            {issue.description && (
+                              <p className="text-sm text-slate-600 dark:text-slate-300">
+                                {issue.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+              <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                <Bot className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+                Chưa chọn bài tập
+              </h3>
+              <p className="max-w-sm text-slate-500 dark:text-slate-400">
+                Chọn một bài tập từ danh sách bên trái để xem chi tiết thông tin, mã nguồn và các
+                lỗi cần tìm.
+              </p>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-
-function CodeReviewProblemForm({
-  onSuccess,
-  onCancel,
-  aiDialogOpen: _aiDialogOpen,
-  onAiDialogOpenChange: _onAiDialogOpenChange,
-  aiTopic: _aiTopic,
-  onAiTopicChange: _onAiTopicChange,
-  aiTargetLevel: _aiTargetLevel,
-  onAiTargetLevelChange: _onAiTargetLevelChange,
-  aiProgrammingLanguage: _aiProgrammingLanguage,
-  onAiProgrammingLanguageChange: _onAiProgrammingLanguageChange,
-  aiContextJobTitle: _aiContextJobTitle,
-  onAiContextJobTitleChange: _onAiContextJobTitleChange,
-  aiContextRequirement: _aiContextRequirement,
-  onAiContextRequirementChange: _onAiContextRequirementChange,
-  aiContextPrompting: _aiContextPrompting,
-  onAiContextPromptingChange: _onAiContextPromptingChange,
-  generating: _generating,
-  onGenerateAI: _onGenerateAI,
-  generatedTitle: _generatedTitle,
-  onGeneratedTitleChange: _onGeneratedTitleChange,
-  generatedDifficulty: _generatedDifficulty,
-  onGeneratedDifficultyChange: _onGeneratedDifficultyChange,
-  generatedLanguage: _generatedLanguage,
-  onGeneratedLanguageChange: _onGeneratedLanguageChange,
-  generatedProblemStatement: _generatedProblemStatement,
-  onGeneratedProblemStatementChange: _onGeneratedProblemStatementChange,
-  generatedFiles: _generatedFiles,
-  onGeneratedFilesChange: _onGeneratedFilesChange,
-  generatedIssues: _generatedIssues,
-  onGeneratedIssuesChange: _onGeneratedIssuesChange,
-  resetGenerated: _resetGenerated,
-}: {
-  onSuccess: () => void;
-  onCancel: () => void;
-  aiDialogOpen: boolean;
-  onAiDialogOpenChange: (open: boolean) => void;
-  aiTopic: string;
-  onAiTopicChange: (value: string) => void;
-  aiTargetLevel: string;
-  onAiTargetLevelChange: (value: string) => void;
-  aiProgrammingLanguage: string;
-  onAiProgrammingLanguageChange: (value: string) => void;
-  aiContextJobTitle: string;
-  onAiContextJobTitleChange: (value: string) => void;
-  aiContextRequirement: string;
-  onAiContextRequirementChange: (value: string) => void;
-  aiContextPrompting: string;
-  onAiContextPromptingChange: (value: string) => void;
-  generating: boolean;
-  onGenerateAI: () => void;
-  generatedTitle: string;
-  onGeneratedTitleChange: (value: string) => void;
-  generatedDifficulty: "EASY" | "MEDIUM" | "HARD";
-  onGeneratedDifficultyChange: (value: "EASY" | "MEDIUM" | "HARD") => void;
-  generatedLanguage: string;
-  onGeneratedLanguageChange: (value: string) => void;
-  generatedProblemStatement: string;
-  onGeneratedProblemStatementChange: (value: string) => void;
-  generatedFiles: CodeFile[];
-  onGeneratedFilesChange: (value: CodeFile[]) => void;
-  generatedIssues: ExpectedIssue[];
-  onGeneratedIssuesChange: (value: ExpectedIssue[]) => void;
-  resetGenerated: () => void;
-}) {
-  const { t } = useTranslation();
-  const [title, setTitle] = useState("");
-  const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
-  const [language, setLanguage] = useState("");
-  const [problemStatement, setProblemStatement] = useState("");
-  const [files, setFiles] = useState<CodeFile[]>([]);
-  const [expectedIssues, setExpectedIssues] = useState<ExpectedIssue[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleAddFile = () => {
-    setFiles((prev) => [...prev, { filename: "", content: "", language: "" }]);
-  };
-
-  const handleUpdateFile = (index: number, field: keyof CodeFile, value: string) => {
-    setFiles((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      return next;
-    });
-  };
-
-  const handleRemoveFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleAddIssue = () => {
-    setExpectedIssues((prev) => [...prev, {}]);
-  };
-
-  const handleUpdateIssue = (
-    index: number,
-    field: keyof ExpectedIssue,
-    value: string | number | undefined
-  ) => {
-    setExpectedIssues((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      return next;
-    });
-  };
-
-  const handleRemoveIssue = (index: number) => {
-    setExpectedIssues((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async () => {
-    if (!title.trim()) {
-      toast.error(t("adminCodeReviewProblem.titleRequired") || "Vui l�ng nh?p ti�u ??");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const payload: Partial<CodeReviewProblem> = {
-        title: title.trim(),
-        difficulty,
-        language: language.trim() || undefined,
-        problemStatement: problemStatement.trim() || undefined,
-        files: files.length > 0 ? files : undefined,
-        expectedIssues: expectedIssues.length > 0 ? expectedIssues : undefined,
-      };
-      const response = await codeReviewProblemManager.create(payload);
-      if (response.success) {
-        toast.success(t("common.success") || "T?o th�nh c�ng");
-        onSuccess();
-      } else {
-        toast.error(response.error || t("common.unableToSave") || "Kh�ng th? l?u");
-      }
-    } catch {
-      toast.error(t("common.unableToSave") || "Kh�ng th? l?u");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{t("common.create") || "Tạo mới"}</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => _onAiDialogOpenChange(true)}
-          className="gap-2">
-          <Bot className="h-4 w-4" />
-          {t("adminCodeReviewProblem.generateAI") || "T?o b?ng AI"}
-        </Button>
-      </div>
-
-      <div className="space-y-2">
-        <Label>{t("common.title1") || "Ti�u ??"}</Label>
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder={t("adminCodeReviewProblem.titlePlaceholder") || "Nh?p ti�u ?? b�i t?p"}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t("adminCodeReviewProblem.difficulty") || "Độ khó�"}</Label>
-          <Select
-            value={difficulty}
-            onValueChange={(v) => setDifficulty(v as "EASY" | "MEDIUM" | "HARD")}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="EASY">{t("common.easy") || "D?"}</SelectItem>
-              <SelectItem value="MEDIUM">{t("common.medium") || "Trung b�nh"}</SelectItem>
-              <SelectItem value="HARD">{t("common.hard") || "Kh�"}</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
-        <div className="space-y-2">
-          <Label>{t("adminCodeReviewProblem.language") || "Ng�n ng?"}</Label>
-          <Input
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            placeholder="Java, Python..."
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>{t("adminCodeReviewProblem.problemStatement") || "?? b�i"}</Label>
-        <Textarea
-          value={problemStatement}
-          onChange={(e) => setProblemStatement(e.target.value)}
-          placeholder={t("adminCodeReviewProblem.problemStatementPlaceholder") || "Nh?p ?? b�i..."}
-          rows={5}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>{t("adminCodeReviewProblem.files") || "Files"}</Label>
-          <Button type="button" variant="outline" size="sm" onClick={handleAddFile}>
-            <Plus className="mr-1 h-4 w-4" />
-            {t("common.add") || "Th�m"}
-          </Button>
-        </div>
-        <div className="space-y-2">
-          {files.map((file, idx) => (
-            <div key={idx} className="space-y-2 rounded-lg border p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">
-                  {t("adminCodeReviewProblem.file") || "File"} #{idx + 1}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveFile(idx)}>
-                  <Eye className="h-4 w-4 text-red-500" />
-                </Button>
-              </div>
-              <Input
-                value={file.filename || ""}
-                onChange={(e) => handleUpdateFile(idx, "filename", e.target.value)}
-                placeholder={t("adminCodeReviewProblem.filename") || "T�n file"}
-              />
-              <Input
-                value={file.language || ""}
-                onChange={(e) => handleUpdateFile(idx, "language", e.target.value)}
-                placeholder={t("adminCodeReviewProblem.languagePlaceholder") || "Ng�n ng?"}
-              />
-              <Textarea
-                value={file.content || ""}
-                onChange={(e) => handleUpdateFile(idx, "content", e.target.value)}
-                placeholder={t("adminCodeReviewProblem.contentPlaceholder") || "N?i dung code"}
-                rows={4}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>{t("adminCodeReviewProblem.expectedIssues") || "Expected Issues"}</Label>
-          <Button type="button" variant="outline" size="sm" onClick={handleAddIssue}>
-            <Plus className="mr-1 h-4 w-4" />
-            {t("common.add") || "Th�m"}
-          </Button>
-        </div>
-        <div className="space-y-2">
-          {expectedIssues.map((issue, idx) => (
-            <div key={idx} className="space-y-2 rounded-lg border p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">
-                  {t("adminCodeReviewProblem.issue") || "Issue"} #{idx + 1}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveIssue(idx)}>
-                  <Eye className="h-4 w-4 text-red-500" />
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  value={issue.filename || ""}
-                  onChange={(e) => handleUpdateIssue(idx, "filename", e.target.value)}
-                  placeholder={t("adminCodeReviewProblem.filename") || "T�n file"}
-                />
-                <Input
-                  type="number"
-                  value={issue.lineNumber ?? ""}
-                  onChange={(e) =>
-                    handleUpdateIssue(
-                      idx,
-                      "lineNumber",
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
-                  placeholder={t("adminCodeReviewProblem.lineNumber") || "D�ng"}
-                />
-              </div>
-              <Input
-                value={issue.severity || ""}
-                onChange={(e) => handleUpdateIssue(idx, "severity", e.target.value)}
-                placeholder={t("adminCodeReviewProblem.severity") || "CRITICAL/WARNING/INFO"}
-              />
-              <Textarea
-                value={issue.description || ""}
-                onChange={(e) => handleUpdateIssue(idx, "description", e.target.value)}
-                placeholder={t("adminCodeReviewProblem.description") || "M� t? v?n ??"}
-                rows={2}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={submitting} onClick={handleSubmit}>
-          {submitting ? t("common.saving") || "?ang l?u..." : t("common.saveChanges") || "L?u"}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          {t("general.cancel") || "H?y"}
-        </Button>
       </div>
     </div>
   );
