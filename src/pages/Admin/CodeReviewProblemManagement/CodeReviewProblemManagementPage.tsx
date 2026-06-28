@@ -40,8 +40,19 @@ import {
 } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
+import java from "react-syntax-highlighter/dist/cjs/languages/prism/java";
+import sql from "react-syntax-highlighter/dist/cjs/languages/prism/sql";
+import tsx from "react-syntax-highlighter/dist/cjs/languages/prism/tsx";
+import typescript from "react-syntax-highlighter/dist/cjs/languages/prism/typescript";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { toast } from "sonner";
 import { CodeReviewProblemBuilder } from "./components/CodeReviewProblemBuilder";
+
+SyntaxHighlighter.registerLanguage("tsx", tsx);
+SyntaxHighlighter.registerLanguage("typescript", typescript);
+SyntaxHighlighter.registerLanguage("java", java);
+SyntaxHighlighter.registerLanguage("sql", sql);
 
 type ViewState = { mode: "list" } | { mode: "create" } | { mode: "detail"; problemId: number };
 
