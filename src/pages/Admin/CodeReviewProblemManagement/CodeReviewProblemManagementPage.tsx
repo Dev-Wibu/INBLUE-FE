@@ -362,30 +362,30 @@ export function CodeReviewProblemManagementPage() {
         {/* Right Pane: Detail View */}
         <div className="relative flex flex-1 flex-col overflow-hidden bg-white dark:bg-slate-950">
           {selectedProblem ? (
-            <div className="flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-4xl p-8">
+            <div className="flex flex-1 flex-col overflow-y-auto">
+              <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col p-6">
                 {/* Header Section */}
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                     {selectedProblem.title}
                   </h2>
                 </div>
-                \n\n <Separator className="my-8" />
+                <Separator className="my-4" />
                 {/* Problem Statement Section */}
                 {selectedProblem.problemStatement && (
-                  <div className="mb-10">
-                    <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
-                      <Lightbulb className="h-5 w-5 text-amber-500" />
+                  <div className="mb-4">
+                    <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
+                      <Lightbulb className="h-4 w-4 text-amber-500" />
                       Mô tả bài tập
                     </h3>
-                    <div className="prose prose-sm dark:prose-invert max-w-none rounded-xl border border-slate-100 bg-slate-50/50 p-6 whitespace-pre-wrap text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300">
+                    <div className="prose prose-sm dark:prose-invert max-w-none rounded-xl border border-slate-100 bg-slate-50/50 p-4 whitespace-pre-wrap text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300">
                       {selectedProblem.problemStatement}
                     </div>
                   </div>
                 )}
                 {/* IDE-like File Viewer Section */}
                 {selectedProblem.files && selectedProblem.files.length > 0 && (
-                  <div className="mb-10 flex h-[600px] flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm dark:border-slate-800">
+                  <div className="mb-2 flex min-h-[500px] flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm dark:border-slate-800">
                     {/* File Tabs */}
                     <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60">
                       {(selectedProblem.files || []).map((f, fIdx) => (
