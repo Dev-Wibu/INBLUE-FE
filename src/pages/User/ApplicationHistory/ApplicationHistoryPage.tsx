@@ -1,6 +1,7 @@
 import { ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { LoadingCardList } from "@/components/ui/loading-card";
@@ -23,6 +24,7 @@ import {
   ChevronRight,
   FileText,
   Lock,
+  Mail,
   Star,
   TrendingUp,
   Upload,
@@ -209,10 +211,18 @@ function AIEvaluatingBadge({ roundName }: { roundName: string }) {
 // Submission Preview
 // ============================================================
 
-function SubmissionPreview({ detail }: { detail: ApplicationDetail }) {
+function SubmissionPreview({
+  detail,
+  onViewEmailSubmission,
+}: {
+  detail: ApplicationDetail;
+  onViewEmailSubmission?: (emailSubmissionId: number) => void;
+}) {
   const { t } = useTranslation();
   const sd = detail.submissionData;
   if (!sd) return null;
+
+  const emailSubmissionId = sd.emailSubmissionId;
 
   return (
     <div className="mt-3 space-y-2">
@@ -273,6 +283,22 @@ function SubmissionPreview({ detail }: { detail: ApplicationDetail }) {
             </p>
           )}
         </div>
+      )}
+      {emailSubmissionId && emailSubmissionId > 0 && (
+        <button
+          type="button"
+          onClick={() => onViewEmailSubmission?.(emailSubmissionId)}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5",
+            "text-xs font-medium text-blue-700",
+            "hover:border-blue-300 hover:bg-blue-100",
+            "dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300",
+            "dark:hover:border-blue-700 dark:hover:bg-blue-900/30",
+            "transition-colors"
+          )}>
+          <Mail className="h-3.5 w-3.5" />
+          {t("emailPreview.viewSubmittedEmail")}
+        </button>
       )}
     </div>
   );
@@ -578,6 +604,7 @@ function RoundTimelineItem({
   isCurrent,
   isLocked,
   onEnterRoom,
+  onViewEmailSubmission,
   isPolling,
   optimistic,
 }: {
@@ -589,6 +616,7 @@ function RoundTimelineItem({
   isCurrent: boolean;
   isLocked: boolean;
   onEnterRoom?: () => void;
+  onViewEmailSubmission?: (emailSubmissionId: number) => void;
   isPolling?: boolean;
   optimistic?: { isOptimistic: true; roundId: number; status: "SUBMITTED"; submittedAt: string };
 }) {
@@ -720,7 +748,9 @@ function RoundTimelineItem({
                 </p>
               )}
 
-              {submissionData && <SubmissionPreview detail={detail!} />}
+              {submissionData && (
+                <SubmissionPreview detail={detail!} onViewEmailSubmission={onViewEmailSubmission} />
+              )}
 
               {(aiScore !== undefined ||
                 aiFeedback ||
@@ -811,6 +841,10 @@ function ApplicationDetailPanel({
   const [submissionOpen, setSubmissionOpen] = useState(false);
   const [submissionRound, setSubmissionRound] = useState<JdRound | undefined>();
   const [submissionDetail, setSubmissionDetail] = useState<ApplicationDetail | undefined>();
+
+  // Email preview dialog state
+  const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
+  const [emailPreviewId, setEmailPreviewId] = useState<number>(0);
 
   // Optimistic placeholder for rounds submitted but AI not yet evaluated.
   // Used when BE hasn't created the ApplicationDetail record yet (PENDING state).
@@ -983,6 +1017,11 @@ function ApplicationDetailPanel({
     setSubmissionOpen(true);
   };
 
+  const handleViewEmailSubmission = (emailSubmissionId: number) => {
+    setEmailPreviewId(emailSubmissionId);
+    setEmailPreviewOpen(true);
+  };
+
   const handleSubmissionSuccess = (result?: {
     status?: string;
     message?: string;
@@ -1122,6 +1161,7 @@ function ApplicationDetailPanel({
                 onEnterRoom={
                   item.isCurrent ? () => handleEnterRoom(item.round, item.detail) : undefined
                 }
+                onViewEmailSubmission={handleViewEmailSubmission}
               />
             ))
           )}
@@ -1146,6 +1186,15 @@ function ApplicationDetailPanel({
           !!submissionDetail?.submissionData?.textContent
         }
         onSuccess={handleSubmissionSuccess}
+      />
+
+      {/* Email Preview Dialog */}
+      <EmailPreviewDialog
+        open={emailPreviewOpen}
+        onOpenChange={(open) => {
+          if (!open) setEmailPreviewOpen(false);
+        }}
+        emailSubmissionId={emailPreviewId}
       />
     </>
   );

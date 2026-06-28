@@ -3155,6 +3155,16 @@
     "aiEvaluationComplete": "AI evaluation complete",
     "aiEvaluationTimeout": "AI evaluation timed out"
   },
+  "emailPreview": {
+    "title": "Submitted Email",
+    "description": "View the details of the email you submitted for the Email Simulator round.",
+    "fetchError": "Failed to load email. Please try again.",
+    "noSubject": "(No subject)",
+    "from": "From",
+    "attachments": "Attachments",
+    "receivedAt": "Received at",
+    "viewSubmittedEmail": "View submitted email"
+  },
   "userFeedback": {
     "evaluationContent": "Evaluation Content",
     "evaluationFromMentorAfterInterview": "Evaluation from mentor after interview session",

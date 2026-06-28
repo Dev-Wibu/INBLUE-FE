@@ -3185,6 +3185,16 @@
     "emailPlaceholder": "メール内容...",
     "attachFile": "ファイルを添付"
   },
+  "emailPreview": {
+    "title": "提出済みメール",
+    "description": "メールシミュレーターラウンドに提出したメールの詳細を表示します。",
+    "fetchError": "メールの読み込みに失敗しました。もう一度お試しください。",
+    "noSubject": "(件名なし)",
+    "from": "差出人",
+    "attachments": "添付ファイル",
+    "receivedAt": "受信日時",
+    "viewSubmittedEmail": "提出メールを表示"
+  },
   "userFeedback": {
     "evaluationContent": "評価内容",
     "evaluationFromMentorAfterInterview": "面接セッション後のメンター評価",
