@@ -2,6 +2,7 @@ import { PaginationControl } from "@/components/shared/PaginationControl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { LoadingCardList } from "@/components/ui/loading-card";
@@ -34,6 +35,7 @@ import {
   ChevronLeft,
   ClipboardCheck,
   FileText,
+  Mail,
   Search,
   Star,
   ThumbsDown,
@@ -101,23 +103,50 @@ const RESULT_CONFIG: Record<string, { label: string; className: string }> = {
 // Submission Preview
 // ============================================================
 
-function SubmissionPreview({ detail }: { detail: ApplicationDetail }) {
+function SubmissionPreview({
+  detail,
+  onViewEmailSubmission,
+}: {
+  detail: ApplicationDetail;
+  onViewEmailSubmission?: (emailSubmissionId: number) => void;
+}) {
+  const { t } = useTranslation();
   const data = detail.submissionData as SubmissionData | undefined;
   if (!data) return null;
+
+  const emailSubmissionId = data.emailSubmissionId;
 
   if (data.textContent) {
     const isEmail = data.textContent.includes("To:") || data.textContent.includes("Subject:");
     if (isEmail) {
       const lines = data.textContent.split("\n");
       return (
-        <div className="rounded-lg border bg-slate-50 p-3 dark:bg-slate-800/50">
-          {lines.slice(0, 12).map((line, i) => (
-            <p key={i} className="text-xs text-slate-600 dark:text-slate-400">
-              {line}
-            </p>
-          ))}
-          {lines.length > 12 && (
-            <p className="mt-1 text-xs text-slate-400">... +{lines.length - 12} dòng</p>
+        <div className="space-y-2">
+          <div className="rounded-lg border bg-slate-50 p-3 dark:bg-slate-800/50">
+            {lines.slice(0, 12).map((line, i) => (
+              <p key={i} className="text-xs text-slate-600 dark:text-slate-400">
+                {line}
+              </p>
+            ))}
+            {lines.length > 12 && (
+              <p className="mt-1 text-xs text-slate-400">... +{lines.length - 12} dòng</p>
+            )}
+          </div>
+          {emailSubmissionId && emailSubmissionId > 0 && (
+            <button
+              type="button"
+              onClick={() => onViewEmailSubmission?.(emailSubmissionId)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5",
+                "text-xs font-medium text-blue-700",
+                "hover:border-blue-300 hover:bg-blue-100",
+                "dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300",
+                "dark:hover:border-blue-700 dark:hover:bg-blue-900/30",
+                "transition-colors"
+              )}>
+              <Mail className="h-3.5 w-3.5" />
+              {t("emailPreview.viewSubmittedEmail")}
+            </button>
           )}
         </div>
       );
@@ -970,6 +999,15 @@ export function ApplicationGradingDetailPage({
     setSelectedDetailId(detail.id ?? null);
   }, []);
 
+  // Email preview dialog state
+  const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
+  const [emailPreviewId, setEmailPreviewId] = useState<number | null>(null);
+
+  const handleViewEmailSubmission = useCallback((emailSubmissionId: number) => {
+    setEmailPreviewId(emailSubmissionId);
+    setEmailPreviewOpen(true);
+  }, []);
+
   if (!isValidId) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -1168,7 +1206,10 @@ export function ApplicationGradingDetailPage({
                     <h3 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
                       Nội dung bài nộp
                     </h3>
-                    <SubmissionPreview detail={selectedDetail} />
+                    <SubmissionPreview
+                      detail={selectedDetail}
+                      onViewEmailSubmission={handleViewEmailSubmission}
+                    />
                   </div>
                 )}
 
@@ -1218,6 +1259,13 @@ export function ApplicationGradingDetailPage({
           />
         </div>
       </div>
+
+      {/* Email Preview Dialog */}
+      <EmailPreviewDialog
+        open={emailPreviewOpen}
+        onOpenChange={setEmailPreviewOpen}
+        emailSubmissionId={emailPreviewId}
+      />
     </div>
   );
 }

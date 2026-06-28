@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 export interface EmailPreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  emailSubmissionId: number;
+  emailSubmissionId: number | null;
 }
 
 export function EmailPreviewDialog({
@@ -24,7 +24,11 @@ export function EmailPreviewDialog({
   emailSubmissionId,
 }: EmailPreviewDialogProps) {
   const { t } = useTranslation();
-  const { data: email, isLoading, isError } = useEmailSubmission(emailSubmissionId, open);
+  const {
+    data: email,
+    isLoading,
+    isError,
+  } = useEmailSubmission(emailSubmissionId ?? 0, open && emailSubmissionId !== null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
