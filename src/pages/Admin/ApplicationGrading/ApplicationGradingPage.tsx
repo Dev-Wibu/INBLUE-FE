@@ -106,7 +106,9 @@ const RESULT_CONFIG: Record<string, { label: string; className: string }> = {
 interface RoundCardProps {
   detail: ApplicationDetail;
   isExpanded: boolean;
+  isStartGrading: boolean;
   onToggle: () => void;
+  onStartGrading: () => void;
   onViewEmailSubmission: (emailSubmissionId: number) => void;
   onHrScoreSuccess: () => void;
 }
@@ -114,7 +116,9 @@ interface RoundCardProps {
 function RoundCard({
   detail,
   isExpanded,
+  isStartGrading,
   onToggle,
+  onStartGrading,
   onViewEmailSubmission,
   onHrScoreSuccess,
 }: RoundCardProps) {
@@ -166,23 +170,33 @@ function RoundCard({
         needsHrScore && !hasExistingGrade && !isExpanded && "border-amber-300 dark:border-amber-700"
       )}>
       {/* Card Header - Always visible */}
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center justify-between p-4 text-left">
+      <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
-          {/* Expand/Collapse icon */}
-          <div
-            className={cn(
-              "transition-col flex h-8 w-8 items-center justify-center rounded-lg",
-              isExpanded
-                ? "bg-[#0047AB] text-white"
-                : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-            )}>
-            <ChevronRight
-              className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-90")}
-            />
-          </div>
+          {/* Expand/Collapse icon or Grading button */}
+          {needsHrScore && !hasExistingGrade && !isExpanded ? (
+            <Button
+              type="button"
+              size="sm"
+              onClick={onStartGrading}
+              className="h-8 gap-1.5 bg-amber-500 px-3 text-xs font-medium text-white hover:bg-amber-600">
+              <ClipboardCheck className="h-3.5 w-3.5" />
+              Chấm
+            </Button>
+          ) : (
+            <button
+              type="button"
+              onClick={onToggle}
+              className={cn(
+                "transition-col flex h-8 w-8 items-center justify-center rounded-lg",
+                isExpanded
+                  ? "bg-[#0047AB] text-white"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+              )}>
+              <ChevronRight
+                className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-90")}
+              />
+            </button>
+          )}
 
           {/* Round info */}
           <div>
@@ -238,7 +252,7 @@ function RoundCard({
           {detail.finalResult === "PASSED" && <CheckCircle2 className="h-5 w-5 text-green-500" />}
           {detail.finalResult === "FAILED" && <XCircle className="h-5 w-5 text-red-500" />}
         </div>
-      </button>
+      </div>
 
       {/* Expanded Content */}
       {isExpanded && (
@@ -277,18 +291,9 @@ function RoundCard({
             <div>
               <div className="mb-3 flex items-center justify-between">
                 <h4 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
-                  {hasExistingGrade && !isEditing ? "Kết quả HR" : "Chấm điểm HR"}
+                  {hasExistingGrade ? (isEditing ? "Sửa điểm" : "Kết quả HR") : "Chấm điểm HR"}
                 </h4>
-                {hasExistingGrade && !isEditing && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                    className="h-7 gap-1.5 text-xs">
-                    Sửa
-                  </Button>
-                )}
-                {isEditing && (
+                {hasExistingGrade && isEditing && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -303,26 +308,37 @@ function RoundCard({
                 )}
               </div>
 
-              {/* Existing Grade Display */}
-              {hasExistingGrade && !isEditing ? (
-                <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-                  <div className="flex items-center gap-1.5">
-                    <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
-                    <span className="text-3xl font-bold text-[#0047AB]">{detail.hrScore}</span>
-                    <span className="text-base text-slate-400">/100</span>
+              {/* Existing Grade Display - Đã chấm */}
+              {hasExistingGrade && !isEditing && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+                    <div className="flex items-center gap-1.5">
+                      <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                      <span className="text-3xl font-bold text-[#0047AB]">{detail.hrScore}</span>
+                      <span className="text-base text-slate-400">/100</span>
+                    </div>
+                    <div className="h-10 w-px bg-green-200 dark:bg-green-800" />
+                    <Badge
+                      className={
+                        detail.finalResult === "PASSED"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                      }>
+                      {detail.finalResult === "PASSED" ? "Đậu" : "Tạch"}
+                    </Badge>
                   </div>
-                  <div className="h-10 w-px bg-green-200 dark:bg-green-800" />
-                  <Badge
-                    className={
-                      detail.finalResult === "PASSED"
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                    }>
-                    {detail.finalResult === "PASSED" ? "Đậu" : "Tạch"}
-                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditing(true)}
+                    className="gap-1.5 text-xs">
+                    Sửa
+                  </Button>
                 </div>
-              ) : (
-                /* Grading Form */
+              )}
+
+              {/* Grading Form - Chưa chấm, đang sửa, hoặc bấm nút "Chấm" */}
+              {(!hasExistingGrade || isEditing || isStartGrading) && (
                 <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
                   {/* AI Score Reference */}
                   {detail.aiScore !== undefined && (
@@ -428,7 +444,7 @@ function RoundCard({
               )}
 
               {/* Existing HR Note */}
-              {detail.hrNote && (
+              {detail.hrNote && !isEditing && (
                 <div className="mt-4">
                   <h5 className="mb-2 text-xs font-semibold text-slate-500">Ghi chú HR</h5>
                   <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
@@ -1069,6 +1085,9 @@ export function ApplicationGradingDetailPage({
   const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
   const [emailPreviewId, setEmailPreviewId] = useState<number | null>(null);
 
+  // Track which round to start grading (for "Chấm" button)
+  const [startGradingRoundId, setStartGradingRoundId] = useState<number | null>(null);
+
   // Expanded rounds state - track which round cards are expanded
   const [expandedRoundIds, setExpandedRoundIds] = useState<Set<number>>(() => {
     // Auto-expand the first round that needs HR scoring, or first round
@@ -1097,6 +1116,12 @@ export function ApplicationGradingDetailPage({
       }
       return next;
     });
+    setStartGradingRoundId(null);
+  }, []);
+
+  const handleStartGrading = useCallback((detailId: number) => {
+    setStartGradingRoundId(detailId);
+    setExpandedRoundIds(new Set([detailId]));
   }, []);
 
   const expandAll = useCallback(() => {
@@ -1283,7 +1308,9 @@ export function ApplicationGradingDetailPage({
                   key={detail.id}
                   detail={detail}
                   isExpanded={expandedRoundIds.has(detail.id!)}
+                  isStartGrading={startGradingRoundId === detail.id}
                   onToggle={() => toggleExpanded(detail.id!)}
+                  onStartGrading={() => handleStartGrading(detail.id!)}
                   onViewEmailSubmission={handleViewEmailSubmission}
                   onHrScoreSuccess={() => {
                     void refetch();
