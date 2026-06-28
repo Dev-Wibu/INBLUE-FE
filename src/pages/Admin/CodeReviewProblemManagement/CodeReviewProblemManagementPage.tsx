@@ -1,4 +1,4 @@
-import { PaginationControl, ReloadButton } from "@/components/shared";
+import { PaginationControl } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,7 +68,7 @@ export function CodeReviewProblemManagementPage() {
   const [view, setView] = useState<ViewState>({ mode: "list" });
   const [problems, setProblems] = useState<CodeReviewProblem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isReloading, setIsReloading] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [selectedProblem, setSelectedProblem] = useState<CodeReviewProblem | null>(null);
@@ -84,9 +84,7 @@ export function CodeReviewProblemManagementPage() {
 
   const loadProblems = useCallback(
     async (showReloading = false) => {
-      if (showReloading) {
-        setIsReloading(true);
-      } else {
+      if (!showReloading) {
         setIsLoading(true);
       }
       try {
@@ -100,9 +98,7 @@ export function CodeReviewProblemManagementPage() {
       } catch {
         toast.error(t("common.unableToLoadArticleList"));
       } finally {
-        if (showReloading) {
-          setIsReloading(false);
-        } else {
+        if (!showReloading) {
           setIsLoading(false);
         }
       }
@@ -113,33 +109,6 @@ export function CodeReviewProblemManagementPage() {
   useEffect(() => {
     void loadProblems();
   }, [loadProblems]);
-
-  const sortableProblems = useMemo<SortableProblem[]>(() => {
-    return problems.map((problem) => ({
-      ...problem,
-      idSortValue: typeof problem.id === "number" ? problem.id : 0,
-      titleSortValue: problem.title?.toLowerCase() || "",
-      difficultySortValue: problem.difficulty || "",
-      createdAtSortValue: problem.createdAt ? new Date(problem.createdAt).getTime() : 0,
-    }));
-  }, [problems]);
-
-  const { sortedData } = useSortable(sortableProblems, {
-    defaultSort: { key: "createdAtSortValue", direction: "desc" },
-    noSortBehavior: "preserve",
-    tieBreaker: { key: "idSortValue", direction: "desc" },
-  });
-
-  const [pageSize, setPageSize] = useHybridPageSize({
-    key: "src_pages_admin_codereviewproblemmanagement_page_pagesize",
-    defaultPageSize: 10,
-  });
-
-  const pagination = usePagination({ totalCount: sortedData.length, pageSize });
-  const pageItems = useMemo(
-    () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
-    [pagination.endIndex, pagination.startIndex, sortedData]
-  );
 
   const filteredProblems = useMemo(() => {
     return problems.filter((problem) => {
@@ -157,6 +126,33 @@ export function CodeReviewProblemManagementPage() {
       return true;
     });
   }, [problems, searchQuery, difficultyFilter]);
+
+  const sortableProblems = useMemo<SortableProblem[]>(() => {
+    return filteredProblems.map((problem) => ({
+      ...problem,
+      idSortValue: typeof problem.id === "number" ? problem.id : 0,
+      titleSortValue: problem.title?.toLowerCase() || "",
+      difficultySortValue: problem.difficulty || "",
+      createdAtSortValue: problem.createdAt ? new Date(problem.createdAt).getTime() : 0,
+    }));
+  }, [filteredProblems]);
+
+  const { sortedData } = useSortable(sortableProblems, {
+    defaultSort: { key: "createdAtSortValue", direction: "desc" },
+    noSortBehavior: "preserve",
+    tieBreaker: { key: "idSortValue", direction: "desc" },
+  });
+
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_admin_codereviewproblemmanagement_page_pagesize",
+    defaultPageSize: 10,
+  });
+
+  const pagination = usePagination({ totalCount: sortedData.length, pageSize });
+  const pageItems = useMemo(
+    () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
+    [pagination.endIndex, pagination.startIndex, sortedData]
+  );
 
   const getDifficultyBadge = (difficulty?: string) => {
     switch (difficulty) {
@@ -266,26 +262,13 @@ export function CodeReviewProblemManagementPage() {
                   className="h-9 w-full border-slate-200 bg-slate-100/50 text-xs focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800/50"
                 />
               </div>
-              <ReloadButton
-                onReload={() => loadProblems(true)}
-                isLoading={isReloading}
-                tooltip={t("common.reload")}
-              />
-              <Button
-                className="h-9 shrink-0 bg-indigo-600 px-3 text-white shadow-sm hover:bg-indigo-700"
-                onClick={() => setView({ mode: "create" })}>
-                <Plus className="mr-1 h-4 w-4" />
-                {t("common.create") || "Tạo"}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
               <Select
                 value={difficultyFilter}
                 onValueChange={(value) => {
                   setDifficultyFilter(value);
                   pagination.goToFirstPage();
                 }}>
-                <SelectTrigger className="h-8 w-32 border-slate-200 bg-slate-100/50 text-xs dark:border-slate-700 dark:bg-slate-800/50">
+                <SelectTrigger className="h-9 w-24 shrink-0 border-slate-200 bg-slate-100/50 text-xs dark:border-slate-700 dark:bg-slate-800/50">
                   <SelectValue placeholder="Độ khó" />
                 </SelectTrigger>
                 <SelectContent>
@@ -295,6 +278,13 @@ export function CodeReviewProblemManagementPage() {
                   <SelectItem value="HARD">Khó</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                className="h-9 w-9 shrink-0 bg-indigo-600 p-0 text-white shadow-sm hover:bg-indigo-700"
+                onClick={() => setView({ mode: "create" })}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center justify-end">
               <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
                 <span>{filteredProblems.length} bài tập</span>
                 {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
