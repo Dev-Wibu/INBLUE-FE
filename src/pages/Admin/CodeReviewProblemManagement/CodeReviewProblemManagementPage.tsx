@@ -19,10 +19,12 @@ import {
   codeReviewProblemManager,
   type CodeReviewProblem,
 } from "@/services/code-review-problem.manager";
+import Editor from "@monaco-editor/react";
 import {
   AlertTriangle,
   Bot,
   Bug,
+  CheckCircle2,
   ChevronRight,
   Eye,
   EyeOff,
@@ -31,10 +33,38 @@ import {
   Loader2,
   Plus,
 } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CodeReviewProblemBuilder } from "./components/CodeReviewProblemBuilder";
+
+// Map language names to Monaco editor language IDs
+const LANGUAGE_MAP: Record<string, string> = {
+  JAVA: "java",
+  JAVASCRIPT: "javascript",
+  JS: "javascript",
+  TYPESCRIPT: "typescript",
+  TS: "typescript",
+  PYTHON: "python",
+  "PYTHON 3": "python",
+  CPP: "cpp",
+  C: "c",
+  CSHARP: "csharp",
+  C_SHARP: "csharp",
+  GO: "go",
+  RUST: "rust",
+  KOTLIN: "kotlin",
+  SWIFT: "swift",
+  RUBY: "ruby",
+  PHP: "php",
+  SCALA: "scala",
+  DART: "dart",
+};
+
+function getMonacoLanguage(language?: string): string {
+  if (!language) return "plaintext";
+  return LANGUAGE_MAP[language.toUpperCase()] ?? language.toLowerCase();
+}
 
 type ViewState = { mode: "list" } | { mode: "create" } | { mode: "detail"; problemId: number };
 
@@ -409,117 +439,193 @@ export function CodeReviewProblemManagementPage() {
                       ))}
                     </div>
 
-                    {/* Code Workspace view with annotations */}
-                    <div className="flex-1 overflow-y-auto bg-slate-50 p-4 font-mono text-[11px] leading-relaxed select-text dark:bg-slate-950/50">
-                      {(() => {
-                        const file = (selectedProblem.files || [])[viewActiveFileIdx];
-                        if (!file)
-                          return <div className="p-4 text-slate-500 italic">File trống</div>;
-                        const fileLines = (file.content || "").split("\\n");
-                        return (
-                          <div className="w-full">
-                            {fileLines.map((lineText, lineIdx) => {
-                              const currentLineNum = lineIdx + 1;
-                              const lineIssues = (selectedProblem.expectedIssues || []).filter(
-                                (iss) =>
-                                  iss.filename === file.filename &&
-                                  Number(iss.lineNumber) === currentLineNum
-                              );
+                    {/* Code Workspace with Monaco + Issue Annotations */}
+                    {(() => {
+                      const file = (selectedProblem.files || [])[viewActiveFileIdx];
+                      if (!file) return null;
 
-                              const toggleKey = `view-${file.filename}-${currentLineNum}`;
-                              const isExpanded = !!expandedIssues[toggleKey];
+                      const activeIssues = (selectedProblem.expectedIssues || []).filter(
+                        (iss) => iss.filename === file.filename
+                      );
 
-                              return (
-                                <React.Fragment key={lineIdx}>
-                                  <div
-                                    className={cn(
-                                      "group relative flex items-center rounded-sm px-1 py-0.5 hover:bg-slate-200/50 dark:hover:bg-slate-800/40",
-                                      lineIssues.length > 0 &&
-                                        "border-l-2 border-l-red-500 bg-red-50 dark:bg-red-950/10"
-                                    )}>
-                                    {/* Gutter Gutter on the LEFT side */}
-                                    <div className="flex w-20 shrink-0 items-center justify-end gap-1.5 pr-2.5 select-none">
-                                      {lineIssues.length > 0 && (
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            setExpandedIssues((prev) => ({
-                                              ...prev,
-                                              [toggleKey]: !prev[toggleKey],
-                                            }));
-                                          }}
-                                          className={cn(
-                                            "rounded p-0.5 text-indigo-500 transition-colors hover:bg-slate-200 dark:text-indigo-400 dark:hover:bg-slate-800"
-                                          )}>
-                                          {isExpanded ? (
-                                            <EyeOff className="h-3.5 w-3.5" />
-                                          ) : (
-                                            <Eye className="h-3.5 w-3.5" />
-                                          )}
-                                        </button>
-                                      )}
-                                      <span className="w-6 text-right font-semibold text-slate-400 dark:text-slate-600">
-                                        {currentLineNum}
-                                      </span>
-                                    </div>
+                      return (
+                        <div className="relative flex flex-1 overflow-hidden">
+                          {/* Monaco Editor */}
+                          <div className="flex-1 overflow-hidden">
+                            <Editor
+                              height="100%"
+                              language={getMonacoLanguage(file.language)}
+                              value={file.content || ""}
+                              theme="vs-dark"
+                              options={{
+                                readOnly: true,
+                                minimap: { enabled: false },
+                                scrollBeyondLastLine: false,
+                                fontSize: 12,
+                                lineNumbers: "on",
+                                folding: true,
+                                wordWrap: "on",
+                                padding: { top: 8, bottom: 8 },
+                                scrollbar: {
+                                  verticalScrollbarSize: 6,
+                                  horizontalScrollbarSize: 6,
+                                },
+                                renderLineHighlight: "none",
+                                overviewRulerLanes: 0,
+                                hideCursorInOverviewRuler: true,
+                                overviewRulerBorder: false,
+                                contextmenu: false,
+                                links: false,
+                                glyphMargin: true,
+                              }}
+                              onMount={(editor) => {
+                                editor.onMouseDown((e) => {
+                                  const type = e.target.type;
+                                  const position = e.target.position;
+                                  if (
+                                    (type === 2 || type === 3) &&
+                                    position &&
+                                    position.lineNumber
+                                  ) {
+                                    const lineNum = position.lineNumber;
+                                    const lineIssues = activeIssues.filter(
+                                      (iss) => Number(iss.lineNumber) === lineNum
+                                    );
+                                    if (lineIssues.length > 0) {
+                                      const toggleKey = `view-${file.filename}-${lineNum}`;
+                                      setExpandedIssues((prev) => ({
+                                        ...prev,
+                                        [toggleKey]: !prev[toggleKey],
+                                      }));
+                                    }
+                                  }
+                                });
+                              }}
+                            />
+                          </div>
 
-                                    <span className="flex-1 font-mono break-all whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                                      {lineText || " "}
-                                    </span>
-                                  </div>
+                          {/* Issue Annotations Sidebar */}
+                          <div className="w-80 shrink-0 overflow-y-auto border-l border-slate-800 bg-slate-950/30 p-3">
+                            <div className="mb-3 flex items-center gap-2">
+                              <Bug className="h-4 w-4 text-red-400" />
+                              <span className="text-xs font-bold text-slate-300">
+                                Lỗi cần phát hiện ({activeIssues.length})
+                              </span>
+                            </div>
 
-                                  {isExpanded &&
-                                    lineIssues.map((issue, issueIdx) => (
-                                      <div
-                                        key={issueIdx}
+                            {activeIssues.length === 0 ? (
+                              <div className="py-8 text-center">
+                                <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-emerald-500/50" />
+                                <p className="text-xs text-slate-500">
+                                  Không có lỗi mẫu nào trong file này.
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {activeIssues.map((issue, issueIdx) => {
+                                  const toggleKey = `view-${file.filename}-${issue.lineNumber}`;
+                                  const isExpanded = !!expandedIssues[toggleKey];
+
+                                  return (
+                                    <div key={issueIdx}>
+                                      {/* Issue Header Row */}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setExpandedIssues((prev) => ({
+                                            ...prev,
+                                            [toggleKey]: !prev[toggleKey],
+                                          }));
+                                        }}
                                         className={cn(
-                                          "my-1.5 mr-2 ml-20 flex items-start gap-2.5 rounded-lg border p-3 font-sans text-xs shadow-sm",
+                                          "group flex w-full items-center gap-2 rounded-lg border p-2.5 text-left transition-all",
                                           issue.severity === "CRITICAL"
-                                            ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+                                            ? "border-red-900/50 bg-red-950/20 hover:bg-red-950/30"
                                             : issue.severity === "WARNING"
-                                              ? "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
-                                              : "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200"
+                                              ? "border-amber-900/50 bg-amber-950/20 hover:bg-amber-950/30"
+                                              : "border-blue-900/50 bg-blue-950/20 hover:bg-blue-950/30"
                                         )}>
                                         <Bug
                                           className={cn(
-                                            "mt-0.5 h-4 w-4 shrink-0",
+                                            "h-3.5 w-3.5 shrink-0",
                                             issue.severity === "CRITICAL"
-                                              ? "text-red-500 dark:text-red-400"
+                                              ? "text-red-400"
                                               : issue.severity === "WARNING"
-                                                ? "text-amber-500 dark:text-amber-400"
-                                                : "text-blue-500 dark:text-blue-400"
+                                                ? "text-amber-400"
+                                                : "text-blue-400"
                                           )}
                                         />
-                                        <div className="flex-1">
-                                          <div className="mb-1 flex items-center gap-1.5">
-                                            <span className="font-semibold text-slate-900 dark:text-slate-100">
+                                        <div className="min-w-0 flex-1">
+                                          <div className="flex items-center gap-1.5">
+                                            <span
+                                              className={cn(
+                                                "rounded px-1.5 py-0.5 text-[8px] font-bold uppercase",
+                                                issue.severity === "CRITICAL"
+                                                  ? "bg-red-900/60 text-red-300"
+                                                  : issue.severity === "WARNING"
+                                                    ? "bg-amber-900/60 text-amber-300"
+                                                    : "bg-blue-900/60 text-blue-300"
+                                              )}>
+                                              {issue.severity}
+                                            </span>
+                                            <span className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[9px] font-semibold text-slate-400">
+                                              Dòng {issue.lineNumber}
+                                            </span>
+                                          </div>
+                                          {issue.description && (
+                                            <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-slate-400">
+                                              {issue.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                        {isExpanded ? (
+                                          <EyeOff className="h-3.5 w-3.5 shrink-0 text-indigo-400" />
+                                        ) : (
+                                          <Eye className="h-3.5 w-3.5 shrink-0 text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100" />
+                                        )}
+                                      </button>
+
+                                      {/* Expanded Issue Detail */}
+                                      {isExpanded && (
+                                        <div
+                                          className={cn(
+                                            "mt-1 rounded-lg border p-3",
+                                            issue.severity === "CRITICAL"
+                                              ? "border-red-900/50 bg-red-950/30"
+                                              : issue.severity === "WARNING"
+                                                ? "border-amber-900/50 bg-amber-950/30"
+                                                : "border-blue-900/50 bg-blue-950/30"
+                                          )}>
+                                          <div className="mb-2 flex items-center gap-1.5">
+                                            <span className="text-[10px] font-bold text-slate-200">
                                               Lỗi mẫu phát hiện:
                                             </span>
                                             <span
                                               className={cn(
-                                                "rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-wider uppercase",
+                                                "rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase",
                                                 issue.severity === "CRITICAL"
-                                                  ? "bg-red-100 text-red-700 ring-1 ring-red-500/20 dark:bg-red-900/60 dark:text-red-300"
+                                                  ? "bg-red-900/60 text-red-300"
                                                   : issue.severity === "WARNING"
-                                                    ? "bg-amber-100 text-amber-700 ring-1 ring-amber-500/20 dark:bg-amber-900/60 dark:text-amber-300"
-                                                    : "bg-blue-100 text-blue-700 ring-1 ring-blue-500/20 dark:bg-blue-900/60 dark:text-blue-300"
+                                                    ? "bg-amber-900/60 text-amber-300"
+                                                    : "bg-blue-900/60 text-blue-300"
                                               )}>
                                               {issue.severity}
                                             </span>
                                           </div>
-                                          <p className="leading-relaxed text-slate-700 dark:text-slate-300">
-                                            {issue.description}
+                                          <p className="text-[11px] leading-relaxed text-slate-300">
+                                            {issue.description || "(Chưa có mô tả)"}
                                           </p>
                                         </div>
-                                      </div>
-                                    ))}
-                                </React.Fragment>
-                              );
-                            })}
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
-                        );
-                      })()}
-                    </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
