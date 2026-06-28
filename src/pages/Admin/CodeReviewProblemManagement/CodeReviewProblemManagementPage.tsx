@@ -63,6 +63,31 @@ type SortableProblem = CodeReviewProblem & {
   createdAtSortValue: number;
 };
 
+const renderAst = (node: unknown, i: number) => {
+  const n = node as Record<string, unknown>;
+  if (n.type === "text") return n.value as string;
+  if (n.type === "element") {
+    const props: Record<string, unknown> = { key: i };
+    if (n.properties) {
+      const p = n.properties as Record<string, unknown>;
+      if (p.className) {
+        props.className = ((p.className as string[]) || []).join(" ");
+      }
+      if (p.style) {
+        props.style = p.style;
+      }
+    }
+    return React.createElement(
+      n.tagName as string,
+      props,
+      n.children
+        ? (n.children as unknown[]).map((child: unknown, idx: number) => renderAst(child, idx))
+        : null
+    );
+  }
+  return null;
+};
+
 export function CodeReviewProblemManagementPage() {
   const { t } = useTranslation();
   const [view, setView] = useState<ViewState>({ mode: "list" });
