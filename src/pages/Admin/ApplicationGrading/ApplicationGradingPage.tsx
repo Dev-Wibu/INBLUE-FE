@@ -1313,6 +1313,7 @@ export function ApplicationGradingDetailPage({
                   onStartGrading={() => handleStartGrading(detail.id!)}
                   onViewEmailSubmission={handleViewEmailSubmission}
                   onHrScoreSuccess={() => {
+                    setStartGradingRoundId(null);
                     void refetch();
                   }}
                 />
