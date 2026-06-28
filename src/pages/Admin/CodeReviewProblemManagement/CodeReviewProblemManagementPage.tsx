@@ -1,6 +1,13 @@
 import { PaginationControl, ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -59,7 +66,7 @@ export function CodeReviewProblemManagementPage() {
 
   useEffect(() => {
     if (selectedProblem) {
-      setViewActiveFileIdx(-1);
+      setViewActiveFileIdx(0);
       setExpandedIssues({});
     }
   }, [selectedProblem]);
@@ -364,10 +371,32 @@ export function CodeReviewProblemManagementPage() {
           {selectedProblem ? (
             <div className="flex flex-1 flex-col">
               {/* Header Section */}
-              <div className="flex-none border-b border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-950">
+              <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-950">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                   {selectedProblem.title}
                 </h2>
+
+                {selectedProblem.problemStatement && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20">
+                        <Lightbulb className="h-4 w-4" />
+                        Mô tả bài tập
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-xl">
+                          <Lightbulb className="h-5 w-5 text-amber-500" />
+                          Mô tả bài tập
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="prose prose-sm dark:prose-invert mt-4 max-w-none font-sans whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                        {selectedProblem.problemStatement}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
 
               {/* IDE-like File Viewer Section */}
@@ -375,22 +404,6 @@ export function CodeReviewProblemManagementPage() {
                 <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950/50">
                   {/* File Tabs */}
                   <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60">
-                    <button
-                      onClick={() => setViewActiveFileIdx(-1)}
-                      className={cn(
-                        "flex items-center gap-2 border-r border-slate-200 px-4 py-2.5 text-xs font-semibold transition-all dark:border-slate-800",
-                        viewActiveFileIdx === -1
-                          ? "border-b-2 border-b-indigo-500 bg-white text-indigo-600 dark:bg-slate-950 dark:text-indigo-400"
-                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                      )}>
-                      <Lightbulb
-                        className={cn(
-                          "h-3.5 w-3.5",
-                          viewActiveFileIdx === -1 ? "text-indigo-500" : ""
-                        )}
-                      />
-                      Mô tả
-                    </button>
                     {(selectedProblem.files || []).map((f, fIdx) => (
                       <button
                         key={fIdx}
@@ -414,120 +427,113 @@ export function CodeReviewProblemManagementPage() {
 
                   {/* Code Workspace view with annotations */}
                   <div className="flex-1 overflow-y-auto bg-slate-50 p-4 leading-relaxed select-text dark:bg-slate-950/50">
-                    {viewActiveFileIdx === -1 ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none p-2 font-sans whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                        {selectedProblem.problemStatement || "Không có mô tả bài tập."}
-                      </div>
-                    ) : (
-                      (() => {
-                        const file = (selectedProblem.files || [])[viewActiveFileIdx];
-                        if (!file)
-                          return <div className="p-4 text-slate-500 italic">File trống</div>;
-                        const fileLines = (file.content || "").split("\\n");
-                        return (
-                          <div className="w-full">
-                            {fileLines.map((lineText, lineIdx) => {
-                              const currentLineNum = lineIdx + 1;
-                              const lineIssues = (selectedProblem.expectedIssues || []).filter(
-                                (iss) =>
-                                  iss.filename === file.filename &&
-                                  Number(iss.lineNumber) === currentLineNum
-                              );
+                    {(() => {
+                      const file = (selectedProblem.files || [])[viewActiveFileIdx];
+                      if (!file) return <div className="p-4 text-slate-500 italic">File trống</div>;
+                      const fileLines = (file.content || "").split("\\n");
+                      return (
+                        <div className="w-full">
+                          {fileLines.map((lineText, lineIdx) => {
+                            const currentLineNum = lineIdx + 1;
+                            const lineIssues = (selectedProblem.expectedIssues || []).filter(
+                              (iss) =>
+                                iss.filename === file.filename &&
+                                Number(iss.lineNumber) === currentLineNum
+                            );
 
-                              const toggleKey = `view-${file.filename}-${currentLineNum}`;
-                              const isExpanded = !!expandedIssues[toggleKey];
+                            const toggleKey = `view-${file.filename}-${currentLineNum}`;
+                            const isExpanded = !!expandedIssues[toggleKey];
 
-                              return (
-                                <React.Fragment key={lineIdx}>
-                                  <div
-                                    className={cn(
-                                      "group relative flex items-center rounded-sm px-1 py-0.5 hover:bg-slate-200/50 dark:hover:bg-slate-800/40",
-                                      lineIssues.length > 0 &&
-                                        "border-l-2 border-l-red-500 bg-red-50 dark:bg-red-950/10"
-                                    )}>
-                                    {/* Gutter Gutter on the LEFT side */}
-                                    <div className="flex w-20 shrink-0 items-center justify-end gap-1.5 pr-2.5 select-none">
-                                      {lineIssues.length > 0 && (
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            setExpandedIssues((prev) => ({
-                                              ...prev,
-                                              [toggleKey]: !prev[toggleKey],
-                                            }));
-                                          }}
-                                          className={cn(
-                                            "rounded p-0.5 text-indigo-500 transition-colors hover:bg-slate-200 dark:text-indigo-400 dark:hover:bg-slate-800"
-                                          )}>
-                                          {isExpanded ? (
-                                            <EyeOff className="h-3.5 w-3.5" />
-                                          ) : (
-                                            <Eye className="h-3.5 w-3.5" />
-                                          )}
-                                        </button>
-                                      )}
-                                      <span className="w-6 text-right font-semibold text-slate-400 dark:text-slate-600">
-                                        {currentLineNum}
-                                      </span>
-                                    </div>
-
-                                    <span className="flex-1 font-mono break-all whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                                      {lineText || " "}
+                            return (
+                              <React.Fragment key={lineIdx}>
+                                <div
+                                  className={cn(
+                                    "group relative flex items-center rounded-sm px-1 py-0.5 hover:bg-slate-200/50 dark:hover:bg-slate-800/40",
+                                    lineIssues.length > 0 &&
+                                      "border-l-2 border-l-red-500 bg-red-50 dark:bg-red-950/10"
+                                  )}>
+                                  {/* Gutter Gutter on the LEFT side */}
+                                  <div className="flex w-20 shrink-0 items-center justify-end gap-1.5 pr-2.5 select-none">
+                                    {lineIssues.length > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setExpandedIssues((prev) => ({
+                                            ...prev,
+                                            [toggleKey]: !prev[toggleKey],
+                                          }));
+                                        }}
+                                        className={cn(
+                                          "rounded p-0.5 text-indigo-500 transition-colors hover:bg-slate-200 dark:text-indigo-400 dark:hover:bg-slate-800"
+                                        )}>
+                                        {isExpanded ? (
+                                          <EyeOff className="h-3.5 w-3.5" />
+                                        ) : (
+                                          <Eye className="h-3.5 w-3.5" />
+                                        )}
+                                      </button>
+                                    )}
+                                    <span className="w-6 text-right font-semibold text-slate-400 dark:text-slate-600">
+                                      {currentLineNum}
                                     </span>
                                   </div>
 
-                                  {isExpanded &&
-                                    lineIssues.map((issue, issueIdx) => (
-                                      <div
-                                        key={issueIdx}
+                                  <span className="flex-1 font-mono break-all whitespace-pre-wrap text-slate-800 dark:text-slate-200">
+                                    {lineText || " "}
+                                  </span>
+                                </div>
+
+                                {isExpanded &&
+                                  lineIssues.map((issue, issueIdx) => (
+                                    <div
+                                      key={issueIdx}
+                                      className={cn(
+                                        "my-1.5 mr-2 ml-20 flex items-start gap-2.5 rounded-lg border p-3 font-sans text-xs shadow-sm",
+                                        issue.severity === "CRITICAL"
+                                          ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+                                          : issue.severity === "WARNING"
+                                            ? "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+                                            : "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200"
+                                      )}>
+                                      <Bug
                                         className={cn(
-                                          "my-1.5 mr-2 ml-20 flex items-start gap-2.5 rounded-lg border p-3 font-sans text-xs shadow-sm",
+                                          "mt-0.5 h-4 w-4 shrink-0",
                                           issue.severity === "CRITICAL"
-                                            ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
+                                            ? "text-red-500 dark:text-red-400"
                                             : issue.severity === "WARNING"
-                                              ? "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
-                                              : "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200"
-                                        )}>
-                                        <Bug
-                                          className={cn(
-                                            "mt-0.5 h-4 w-4 shrink-0",
-                                            issue.severity === "CRITICAL"
-                                              ? "text-red-500 dark:text-red-400"
-                                              : issue.severity === "WARNING"
-                                                ? "text-amber-500 dark:text-amber-400"
-                                                : "text-blue-500 dark:text-blue-400"
-                                          )}
-                                        />
-                                        <div className="flex-1">
-                                          <div className="mb-1 flex items-center gap-1.5">
-                                            <span className="font-semibold text-slate-900 dark:text-slate-100">
-                                              Lỗi mẫu phát hiện:
-                                            </span>
-                                            <span
-                                              className={cn(
-                                                "rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-wider uppercase",
-                                                issue.severity === "CRITICAL"
-                                                  ? "bg-red-100 text-red-700 ring-1 ring-red-500/20 dark:bg-red-900/60 dark:text-red-300"
-                                                  : issue.severity === "WARNING"
-                                                    ? "bg-amber-100 text-amber-700 ring-1 ring-amber-500/20 dark:bg-amber-900/60 dark:text-amber-300"
-                                                    : "bg-blue-100 text-blue-700 ring-1 ring-blue-500/20 dark:bg-blue-900/60 dark:text-blue-300"
-                                              )}>
-                                              {issue.severity}
-                                            </span>
-                                          </div>
-                                          <p className="leading-relaxed text-slate-700 dark:text-slate-300">
-                                            {issue.description}
-                                          </p>
+                                              ? "text-amber-500 dark:text-amber-400"
+                                              : "text-blue-500 dark:text-blue-400"
+                                        )}
+                                      />
+                                      <div className="flex-1">
+                                        <div className="mb-1 flex items-center gap-1.5">
+                                          <span className="font-semibold text-slate-900 dark:text-slate-100">
+                                            Lỗi mẫu phát hiện:
+                                          </span>
+                                          <span
+                                            className={cn(
+                                              "rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-wider uppercase",
+                                              issue.severity === "CRITICAL"
+                                                ? "bg-red-100 text-red-700 ring-1 ring-red-500/20 dark:bg-red-900/60 dark:text-red-300"
+                                                : issue.severity === "WARNING"
+                                                  ? "bg-amber-100 text-amber-700 ring-1 ring-amber-500/20 dark:bg-amber-900/60 dark:text-amber-300"
+                                                  : "bg-blue-100 text-blue-700 ring-1 ring-blue-500/20 dark:bg-blue-900/60 dark:text-blue-300"
+                                            )}>
+                                            {issue.severity}
+                                          </span>
                                         </div>
+                                        <p className="leading-relaxed text-slate-700 dark:text-slate-300">
+                                          {issue.description}
+                                        </p>
                                       </div>
-                                    ))}
-                                </React.Fragment>
-                              );
-                            })}
-                          </div>
-                        );
-                      })()
-                    )}
+                                    </div>
+                                  ))}
+                              </React.Fragment>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
