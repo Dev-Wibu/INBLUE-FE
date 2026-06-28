@@ -59,7 +59,7 @@ export function CodeReviewProblemManagementPage() {
 
   useEffect(() => {
     if (selectedProblem) {
-      setViewActiveFileIdx(0);
+      setViewActiveFileIdx(-1);
       setExpandedIssues({});
     }
   }, [selectedProblem]);
@@ -362,56 +362,64 @@ export function CodeReviewProblemManagementPage() {
         {/* Right Pane: Detail View */}
         <div className="relative flex flex-1 flex-col overflow-hidden bg-white dark:bg-slate-950">
           {selectedProblem ? (
-            <div className="flex flex-1 flex-col overflow-y-auto">
-              <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col p-6">
-                {/* Header Section */}
-                <div className="mb-4">
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                    {selectedProblem.title}
-                  </h2>
-                </div>
-                <Separator className="my-4" />
-                {/* Problem Statement Section */}
-                {selectedProblem.problemStatement && (
-                  <div className="mb-4">
-                    <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
-                      <Lightbulb className="h-4 w-4 text-amber-500" />
-                      Mô tả bài tập
-                    </h3>
-                    <div className="prose prose-sm dark:prose-invert max-w-none rounded-xl border border-slate-100 bg-slate-50/50 p-4 whitespace-pre-wrap text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300">
-                      {selectedProblem.problemStatement}
-                    </div>
-                  </div>
-                )}
-                {/* IDE-like File Viewer Section */}
-                {selectedProblem.files && selectedProblem.files.length > 0 && (
-                  <div className="mb-2 flex min-h-[500px] flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm dark:border-slate-800">
-                    {/* File Tabs */}
-                    <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60">
-                      {(selectedProblem.files || []).map((f, fIdx) => (
-                        <button
-                          key={fIdx}
-                          onClick={() => setViewActiveFileIdx(fIdx)}
-                          className={cn(
-                            "flex items-center gap-2 border-r border-slate-200 px-4 py-2.5 text-xs font-semibold transition-all dark:border-slate-800",
-                            viewActiveFileIdx === fIdx
-                              ? "border-b-2 border-b-indigo-500 bg-white text-indigo-600 dark:bg-slate-950 dark:text-indigo-400"
-                              : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                          )}>
-                          <FileCode2
-                            className={cn(
-                              "h-3.5 w-3.5",
-                              viewActiveFileIdx === fIdx ? "text-indigo-500" : ""
-                            )}
-                          />
-                          {f.filename || "Untitled"}
-                        </button>
-                      ))}
-                    </div>
+            <div className="flex flex-1 flex-col">
+              {/* Header Section */}
+              <div className="flex-none border-b border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-950">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  {selectedProblem.title}
+                </h2>
+              </div>
 
-                    {/* Code Workspace view with annotations */}
-                    <div className="flex-1 overflow-y-auto bg-slate-50 p-4 font-mono text-[11px] leading-relaxed select-text dark:bg-slate-950/50">
-                      {(() => {
+              {/* IDE-like File Viewer Section */}
+              {selectedProblem.files && selectedProblem.files.length > 0 && (
+                <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950/50">
+                  {/* File Tabs */}
+                  <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60">
+                    <button
+                      onClick={() => setViewActiveFileIdx(-1)}
+                      className={cn(
+                        "flex items-center gap-2 border-r border-slate-200 px-4 py-2.5 text-xs font-semibold transition-all dark:border-slate-800",
+                        viewActiveFileIdx === -1
+                          ? "border-b-2 border-b-indigo-500 bg-white text-indigo-600 dark:bg-slate-950 dark:text-indigo-400"
+                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                      )}>
+                      <Lightbulb
+                        className={cn(
+                          "h-3.5 w-3.5",
+                          viewActiveFileIdx === -1 ? "text-indigo-500" : ""
+                        )}
+                      />
+                      Mô tả
+                    </button>
+                    {(selectedProblem.files || []).map((f, fIdx) => (
+                      <button
+                        key={fIdx}
+                        onClick={() => setViewActiveFileIdx(fIdx)}
+                        className={cn(
+                          "flex items-center gap-2 border-r border-slate-200 px-4 py-2.5 text-xs font-semibold transition-all dark:border-slate-800",
+                          viewActiveFileIdx === fIdx
+                            ? "border-b-2 border-b-indigo-500 bg-white text-indigo-600 dark:bg-slate-950 dark:text-indigo-400"
+                            : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                        )}>
+                        <FileCode2
+                          className={cn(
+                            "h-3.5 w-3.5",
+                            viewActiveFileIdx === fIdx ? "text-indigo-500" : ""
+                          )}
+                        />
+                        {f.filename || "Untitled"}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Code Workspace view with annotations */}
+                  <div className="flex-1 overflow-y-auto bg-slate-50 p-4 leading-relaxed select-text dark:bg-slate-950/50">
+                    {viewActiveFileIdx === -1 ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none p-2 font-sans whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                        {selectedProblem.problemStatement || "Không có mô tả bài tập."}
+                      </div>
+                    ) : (
+                      (() => {
                         const file = (selectedProblem.files || [])[viewActiveFileIdx];
                         if (!file)
                           return <div className="p-4 text-slate-500 italic">File trống</div>;
@@ -518,11 +526,11 @@ export function CodeReviewProblemManagementPage() {
                             })}
                           </div>
                         );
-                      })()}
-                    </div>
+                      })()
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
