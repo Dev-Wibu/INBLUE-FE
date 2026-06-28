@@ -8,6 +8,7 @@ import {
   type CodeReviewProblem,
   type ExpectedIssue,
 } from "@/services/code-review-problem.manager";
+import Editor from "@monaco-editor/react";
 import {
   Bug,
   ChevronDown,
@@ -524,17 +525,39 @@ export function CodeReviewProblemBuilder({
                               />
                             </div>
                           </div>
-                          <div className="relative flex-1 rounded-md border border-slate-800 bg-slate-950">
-                            <textarea
-                              value={newProblem.files[createActiveFileIdx].content}
-                              onChange={(e) => {
+                          <div className="relative min-h-[400px] flex-1 overflow-hidden rounded-md border border-slate-800">
+                            <Editor
+                              height="100%"
+                              language={(
+                                newProblem.files[createActiveFileIdx]?.language || "java"
+                              ).toLowerCase()}
+                              value={newProblem.files[createActiveFileIdx]?.content || ""}
+                              theme="vs-dark"
+                              options={{
+                                readOnly: false,
+                                minimap: { enabled: false },
+                                scrollBeyondLastLine: false,
+                                fontSize: 13,
+                                lineNumbers: "on",
+                                folding: true,
+                                wordWrap: "on",
+                                padding: { top: 12, bottom: 12 },
+                                scrollbar: {
+                                  verticalScrollbarSize: 6,
+                                  horizontalScrollbarSize: 6,
+                                },
+                                renderLineHighlight: "line",
+                                overviewRulerLanes: 0,
+                                hideCursorInOverviewRuler: true,
+                                overviewRulerBorder: false,
+                                contextmenu: false,
+                                glyphMargin: false,
+                              }}
+                              onChange={(value) => {
                                 const files = [...newProblem.files];
-                                files[createActiveFileIdx].content = e.target.value;
+                                files[createActiveFileIdx].content = value || "";
                                 setNewProblem({ ...newProblem, files });
                               }}
-                              className="absolute inset-0 h-full w-full resize-none bg-transparent p-4 font-mono text-[13px] leading-relaxed text-slate-300 focus:outline-none"
-                              placeholder="// Viết code hoặc copy paste mã nguồn vào đây..."
-                              spellCheck={false}
                             />
                           </div>
                         </div>

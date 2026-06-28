@@ -26,6 +26,7 @@ import {
   codeReviewProblemManager,
   type CodeReviewProblem,
 } from "@/services/code-review-problem.manager";
+import Editor from "@monaco-editor/react";
 import {
   AlertTriangle,
   Bot,
@@ -38,7 +39,7 @@ import {
   Loader2,
   Plus,
 } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CodeReviewProblemBuilder } from "./components/CodeReviewProblemBuilder";
@@ -401,139 +402,193 @@ export function CodeReviewProblemManagementPage() {
 
               {/* IDE-like File Viewer Section */}
               {selectedProblem.files && selectedProblem.files.length > 0 && (
-                <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950/50">
-                  {/* File Tabs */}
-                  <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60">
-                    {(selectedProblem.files || []).map((f, fIdx) => (
-                      <button
-                        key={fIdx}
-                        onClick={() => setViewActiveFileIdx(fIdx)}
-                        className={cn(
-                          "flex items-center gap-2 border-r border-slate-200 px-4 py-2.5 text-xs font-semibold transition-all dark:border-slate-800",
-                          viewActiveFileIdx === fIdx
-                            ? "border-b-2 border-b-indigo-500 bg-white text-indigo-600 dark:bg-slate-950 dark:text-indigo-400"
-                            : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                        )}>
-                        <FileCode2
-                          className={cn(
-                            "h-3.5 w-3.5",
-                            viewActiveFileIdx === fIdx ? "text-indigo-500" : ""
-                          )}
-                        />
-                        {f.filename || "Untitled"}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-1 overflow-hidden bg-slate-950 dark:bg-slate-950">
+                  {/* Monaco Editor Pane */}
+                  <div className="relative flex min-w-0 flex-1 flex-col">
+                    {/* File Tabs */}
+                    <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-2">
+                      <div className="flex overflow-x-auto">
+                        {(selectedProblem.files || []).map((f, fIdx) => (
+                          <button
+                            key={fIdx}
+                            onClick={() => setViewActiveFileIdx(fIdx)}
+                            className={cn(
+                              "flex items-center gap-1.5 border-r border-slate-800 px-3 py-2.5 text-xs font-semibold transition-all",
+                              viewActiveFileIdx === fIdx
+                                ? "border-b-2 border-b-indigo-500 text-indigo-400"
+                                : "text-slate-500 hover:bg-slate-900 hover:text-slate-300"
+                            )}>
+                            <FileCode2
+                              className={cn(
+                                "h-3.5 w-3.5",
+                                viewActiveFileIdx === fIdx ? "text-indigo-400" : ""
+                              )}
+                            />
+                            {f.filename || "Untitled"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                  {/* Code Workspace view with annotations */}
-                  <div className="flex-1 overflow-y-auto bg-slate-50 p-4 leading-relaxed select-text dark:bg-slate-950/50">
-                    {(() => {
-                      const file = (selectedProblem.files || [])[viewActiveFileIdx];
-                      if (!file) return <div className="p-4 text-slate-500 italic">File trống</div>;
-                      const fileLines = (file.content || "").split("\\n");
-                      return (
-                        <div className="w-full">
-                          {fileLines.map((lineText, lineIdx) => {
-                            const currentLineNum = lineIdx + 1;
-                            const lineIssues = (selectedProblem.expectedIssues || []).filter(
+                    {/* Monaco Editor with gutter eye icons */}
+                    <div className="relative flex-1 overflow-hidden">
+                      <Editor
+                        height="100%"
+                        language={(
+                          selectedProblem.files[viewActiveFileIdx]?.language || "java"
+                        ).toLowerCase()}
+                        value={selectedProblem.files[viewActiveFileIdx]?.content || ""}
+                        theme="vs-dark"
+                        options={{
+                          readOnly: true,
+                          minimap: { enabled: false },
+                          scrollBeyondLastLine: false,
+                          fontSize: 13,
+                          lineNumbers: (lineNumber) => {
+                            const currentLine = lineNumber;
+                            const file = (selectedProblem.files || [])[viewActiveFileIdx];
+                            if (!file) return String(lineNumber);
+                            const issues = (selectedProblem.expectedIssues || []).filter(
                               (iss) =>
                                 iss.filename === file.filename &&
-                                Number(iss.lineNumber) === currentLineNum
+                                Number(iss.lineNumber) === currentLine
                             );
+                            if (issues.length > 0) {
+                              const toggleKey = `view-${file.filename}-${currentLine}`;
+                              const isExpanded = !!expandedIssues[toggleKey];
+                              return isExpanded ? "👁‍🗨" : "👁";
+                            }
+                            return String(lineNumber);
+                          },
+                          lineNumbersMinChars: 0,
+                          glyphMargin: true,
+                          folding: true,
+                          wordWrap: "on",
+                          padding: { top: 12, bottom: 12 },
+                          scrollbar: {
+                            verticalScrollbarSize: 6,
+                            horizontalScrollbarSize: 6,
+                          },
+                          renderLineHighlight: "none",
+                          overviewRulerLanes: 0,
+                          hideCursorInOverviewRuler: true,
+                          overviewRulerBorder: false,
+                          contextmenu: false,
+                        }}
+                        onMount={(editor) => {
+                          editor.onMouseDown((e) => {
+                            if (e.target.type === 3) {
+                              const currentLine = e.target.position?.lineNumber;
+                              if (!currentLine) return;
+                              const file = (selectedProblem.files || [])[viewActiveFileIdx];
+                              if (!file) return;
+                              const issues = (selectedProblem.expectedIssues || []).filter(
+                                (iss) =>
+                                  iss.filename === file.filename &&
+                                  Number(iss.lineNumber) === currentLine
+                              );
+                              if (issues.length > 0) {
+                                const toggleKey = `view-${file.filename}-${currentLine}`;
+                                setExpandedIssues((prev) => ({
+                                  ...prev,
+                                  [toggleKey]: !prev[toggleKey],
+                                }));
+                              }
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
 
-                            const toggleKey = `view-${file.filename}-${currentLineNum}`;
-                            const isExpanded = !!expandedIssues[toggleKey];
-
-                            return (
-                              <React.Fragment key={lineIdx}>
+                  {/* Issue Annotations Sidebar */}
+                  <div className="w-[280px] shrink-0 overflow-y-auto border-l border-slate-800 bg-slate-900/80 p-3">
+                    <div className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-300">
+                      <Bug className="h-4 w-4 text-rose-500" />
+                      Lỗi cần tìm ({selectedProblem.expectedIssues?.length || 0})
+                    </div>
+                    <div className="space-y-2">
+                      {(() => {
+                        const file = (selectedProblem.files || [])[viewActiveFileIdx];
+                        const fileIssues = (selectedProblem.expectedIssues || []).filter(
+                          (iss) => iss.filename === file?.filename
+                        );
+                        if (fileIssues.length === 0) {
+                          return (
+                            <p className="text-xs text-slate-600">
+                              Không có lỗi nào trong file này.
+                            </p>
+                          );
+                        }
+                        return fileIssues.map((issue, idx) => {
+                          const toggleKey = `view-${issue.filename}-${issue.lineNumber}`;
+                          const isExpanded = !!expandedIssues[toggleKey];
+                          return (
+                            <div key={idx}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setExpandedIssues((prev) => ({
+                                    ...prev,
+                                    [toggleKey]: !prev[toggleKey],
+                                  }));
+                                }}
+                                className={cn(
+                                  "flex w-full items-center gap-2 rounded-md border px-2.5 py-2 text-left text-xs transition-colors",
+                                  issue.severity === "CRITICAL"
+                                    ? "border-red-900/60 bg-red-950/30 text-red-300 hover:bg-red-950/60"
+                                    : issue.severity === "WARNING"
+                                      ? "border-amber-900/60 bg-amber-950/30 text-amber-300 hover:bg-amber-950/60"
+                                      : "border-blue-900/60 bg-blue-950/30 text-blue-300 hover:bg-blue-950/60"
+                                )}>
+                                <Bug
+                                  className={cn(
+                                    "h-3.5 w-3.5 shrink-0",
+                                    issue.severity === "CRITICAL"
+                                      ? "text-red-400"
+                                      : issue.severity === "WARNING"
+                                        ? "text-amber-400"
+                                        : "text-blue-400"
+                                  )}
+                                />
+                                <span className="flex-1 font-medium">Dòng {issue.lineNumber}</span>
+                                {isExpanded ? (
+                                  <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+                                ) : (
+                                  <Eye className="h-3.5 w-3.5 text-indigo-400" />
+                                )}
+                              </button>
+                              {isExpanded && (
                                 <div
                                   className={cn(
-                                    "group relative flex items-center rounded-sm px-1 py-0.5 hover:bg-slate-200/50 dark:hover:bg-slate-800/40",
-                                    lineIssues.length > 0 &&
-                                      "border-l-2 border-l-red-500 bg-red-50 dark:bg-red-950/10"
+                                    "mt-1.5 rounded-md border p-2.5 text-xs",
+                                    issue.severity === "CRITICAL"
+                                      ? "border-red-900/40 bg-red-950/20 text-red-200"
+                                      : issue.severity === "WARNING"
+                                        ? "border-amber-900/40 bg-amber-950/20 text-amber-200"
+                                        : "border-blue-900/40 bg-blue-950/20 text-blue-200"
                                   )}>
-                                  {/* Gutter Gutter on the LEFT side */}
-                                  <div className="flex w-20 shrink-0 items-center justify-end gap-1.5 pr-2.5 select-none">
-                                    {lineIssues.length > 0 && (
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setExpandedIssues((prev) => ({
-                                            ...prev,
-                                            [toggleKey]: !prev[toggleKey],
-                                          }));
-                                        }}
-                                        className={cn(
-                                          "rounded p-0.5 text-indigo-500 transition-colors hover:bg-slate-200 dark:text-indigo-400 dark:hover:bg-slate-800"
-                                        )}>
-                                        {isExpanded ? (
-                                          <EyeOff className="h-3.5 w-3.5" />
-                                        ) : (
-                                          <Eye className="h-3.5 w-3.5" />
-                                        )}
-                                      </button>
-                                    )}
-                                    <span className="w-6 text-right font-semibold text-slate-400 dark:text-slate-600">
-                                      {currentLineNum}
+                                  <div className="mb-1.5 flex items-center gap-1.5">
+                                    <span
+                                      className={cn(
+                                        "rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-wider uppercase",
+                                        issue.severity === "CRITICAL"
+                                          ? "bg-red-900/50 text-red-300"
+                                          : issue.severity === "WARNING"
+                                            ? "bg-amber-900/50 text-amber-300"
+                                            : "bg-blue-900/50 text-blue-300"
+                                      )}>
+                                      {issue.severity}
                                     </span>
                                   </div>
-
-                                  <span className="flex-1 font-mono break-all whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                                    {lineText || " "}
-                                  </span>
+                                  <p className="leading-relaxed">{issue.description}</p>
                                 </div>
-
-                                {isExpanded &&
-                                  lineIssues.map((issue, issueIdx) => (
-                                    <div
-                                      key={issueIdx}
-                                      className={cn(
-                                        "my-1.5 mr-2 ml-20 flex items-start gap-2.5 rounded-lg border p-3 font-sans text-xs shadow-sm",
-                                        issue.severity === "CRITICAL"
-                                          ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
-                                          : issue.severity === "WARNING"
-                                            ? "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
-                                            : "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200"
-                                      )}>
-                                      <Bug
-                                        className={cn(
-                                          "mt-0.5 h-4 w-4 shrink-0",
-                                          issue.severity === "CRITICAL"
-                                            ? "text-red-500 dark:text-red-400"
-                                            : issue.severity === "WARNING"
-                                              ? "text-amber-500 dark:text-amber-400"
-                                              : "text-blue-500 dark:text-blue-400"
-                                        )}
-                                      />
-                                      <div className="flex-1">
-                                        <div className="mb-1 flex items-center gap-1.5">
-                                          <span className="font-semibold text-slate-900 dark:text-slate-100">
-                                            Lỗi mẫu phát hiện:
-                                          </span>
-                                          <span
-                                            className={cn(
-                                              "rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-wider uppercase",
-                                              issue.severity === "CRITICAL"
-                                                ? "bg-red-100 text-red-700 ring-1 ring-red-500/20 dark:bg-red-900/60 dark:text-red-300"
-                                                : issue.severity === "WARNING"
-                                                  ? "bg-amber-100 text-amber-700 ring-1 ring-amber-500/20 dark:bg-amber-900/60 dark:text-amber-300"
-                                                  : "bg-blue-100 text-blue-700 ring-1 ring-blue-500/20 dark:bg-blue-900/60 dark:text-blue-300"
-                                            )}>
-                                            {issue.severity}
-                                          </span>
-                                        </div>
-                                        <p className="leading-relaxed text-slate-700 dark:text-slate-300">
-                                          {issue.description}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  ))}
-                              </React.Fragment>
-                            );
-                          })}
-                        </div>
-                      );
-                    })()}
+                              )}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
                   </div>
                 </div>
               )}
