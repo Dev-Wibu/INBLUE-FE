@@ -9,7 +9,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useEmailSubmission } from "@/hooks/useEmailSubmission";
 import { cn } from "@/lib/utils";
-import { Mail, Paperclip } from "lucide-react";
+import { ChevronDown, ChevronUp, Mail, Paperclip } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export interface EmailPreviewDialogProps {
@@ -24,127 +25,209 @@ export function EmailPreviewDialog({
   emailSubmissionId,
 }: EmailPreviewDialogProps) {
   const { t } = useTranslation();
+  const [isContentExpanded, setIsContentExpanded] = useState(false);
   const {
     data: email,
     isLoading,
     isError,
   } = useEmailSubmission(emailSubmissionId ?? 0, open && emailSubmissionId !== null);
 
+  const isLongContent = (email?.bodyText?.length ?? 0) > 1000;
+  const shouldTruncate = isLongContent && !isContentExpanded;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5 text-[#0047AB]" />
-            {t("emailPreview.title")}
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        onOpenChange(newOpen);
+        if (!newOpen) setIsContentExpanded(false);
+      }}>
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0">
+        {/* Fixed Header */}
+        <DialogHeader className="shrink-0 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-6 py-4 dark:border-slate-700 dark:from-slate-800 dark:to-slate-800/80">
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0047AB]">
+              <Mail className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <span className="text-slate-900 dark:text-white">{t("emailPreview.title")}</span>
+              <DialogDescription className="mt-0.5 text-left text-xs text-slate-500">
+                {t("emailPreview.description")}
+              </DialogDescription>
+            </div>
           </DialogTitle>
-          <DialogDescription className="text-left">
-            {t("emailPreview.description")}
-          </DialogDescription>
         </DialogHeader>
 
-        {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <Spinner size="lg" />
-          </div>
-        )}
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {/* Loading State */}
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Spinner size="lg" />
+              <p className="mt-3 text-sm text-slate-500">Đang tải email...</p>
+            </div>
+          )}
 
-        {isError && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Mail className="mb-3 h-12 w-12 text-slate-300" />
-            <p className="text-sm text-red-500">{t("emailPreview.fetchError")}</p>
-          </div>
-        )}
+          {/* Error State */}
+          {isError && (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
+                <Mail className="h-8 w-8 text-red-400" />
+              </div>
+              <p className="font-medium text-red-600 dark:text-red-400">
+                {t("emailPreview.fetchError")}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">Vui lòng thử lại sau</p>
+            </div>
+          )}
 
-        {email && !isLoading && (
-          <div className="mt-2 space-y-4">
-            {/* Email metadata card */}
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-              {/* Header */}
-              <div className="border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/80">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0047AB]/10">
-                    <Mail className="h-4 w-4 text-[#0047AB]" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
-                      {email.subject || t("emailPreview.noSubject")}
-                    </p>
-                    <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
-                      {t("emailPreview.from")}: {email.senderEmail}
-                    </p>
+          {/* Email Content */}
+          {email && !isLoading && (
+            <div className="space-y-4">
+              {/* Email Card */}
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                {/* Subject & Sender Header */}
+                <div className="border-b border-slate-100 bg-slate-50/80 px-5 py-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0047AB]/10">
+                      <Mail className="h-5 w-5 text-[#0047AB]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-base font-semibold text-slate-900 dark:text-white">
+                        {email.subject || t("emailPreview.noSubject")}
+                      </h3>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-slate-500 dark:text-slate-400">
+                        <span className="font-medium">Từ:</span>
+                        <span className="truncate">{email.senderEmail}</span>
+                        {email.receivedAt && (
+                          <>
+                            <span className="text-slate-300 dark:text-slate-600">•</span>
+                            <span>{new Date(email.receivedAt).toLocaleString("vi-VN")}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Body */}
-              <div className="px-4 py-4">
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <pre className="m-0 overflow-visible border-0 bg-transparent p-0 font-sans text-sm leading-relaxed whitespace-pre-wrap text-slate-700 shadow-none dark:text-slate-300">
-                    {email.bodyText}
-                  </pre>
+                {/* Email Body */}
+                <div className="px-5 py-4">
+                  <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-900/50">
+                    <pre
+                      className={cn(
+                        "m-0 font-sans text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300",
+                        shouldTruncate && "max-h-64 overflow-hidden"
+                      )}>
+                      {email.bodyText}
+                    </pre>
+                    {shouldTruncate && (
+                      <div className="relative -mt-8 flex flex-col items-center justify-center bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent pt-12 dark:from-slate-900/50 dark:via-slate-900/50 dark:to-transparent">
+                        <button
+                          onClick={() => setIsContentExpanded(true)}
+                          className="flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-[#0047AB] shadow-md transition-colors hover:bg-slate-50 dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-slate-700">
+                          <ChevronDown className="h-4 w-4" />
+                          Xem thêm nội dung
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Expand/Collapse Button (when expanded) */}
+                  {isContentExpanded && isLongContent && (
+                    <button
+                      onClick={() => setIsContentExpanded(false)}
+                      className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
+                      <ChevronUp className="h-4 w-4" />
+                      Thu gọn
+                    </button>
+                  )}
                 </div>
-              </div>
 
-              {/* Attachments */}
-              {email.attachmentUrls &&
-              email.attachmentUrls !== "[]" &&
-              email.attachmentUrls !== "[]" ? (
-                <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-700">
-                  <div className="mb-2 flex items-center gap-2">
-                    <Paperclip className="h-3.5 w-3.5 text-slate-400" />
-                    <span className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                      {t("emailPreview.attachments")}
+                {/* Attachments */}
+                {email.attachmentUrls &&
+                email.attachmentUrls !== "[]" &&
+                email.attachmentUrls !== "[]" ? (
+                  <div className="border-t border-slate-100 px-5 py-4 dark:border-slate-700">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Paperclip className="h-4 w-4 text-slate-400" />
+                      <span className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                        {t("emailPreview.attachments")}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(() => {
+                        try {
+                          const urls = JSON.parse(email.attachmentUrls ?? "[]") as string[];
+                          return urls.map((url, i) => (
+                            <a
+                              key={i}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn(
+                                "inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-all",
+                                "border-slate-200 bg-white text-slate-700",
+                                "hover:border-[#0047AB]/50 hover:bg-[#0047AB]/5 hover:text-[#0047AB]",
+                                "dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300",
+                                "dark:hover:border-blue-500/50 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+                              )}>
+                              <Paperclip className="h-4 w-4" />
+                              <span className="max-w-[200px] truncate">
+                                {url.split("/").pop() ?? `Tệp đính kèm ${i + 1}`}
+                              </span>
+                            </a>
+                          ));
+                        } catch {
+                          return null;
+                        }
+                      })()}
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Status Badge */}
+                <div className="border-t border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-700 dark:bg-slate-800/30">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                        email.status === "PROCESSED"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : email.status === "ERROR"
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                      )}>
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          email.status === "PROCESSED"
+                            ? "bg-green-500"
+                            : email.status === "ERROR"
+                              ? "bg-red-500"
+                              : "bg-yellow-500"
+                        )}
+                      />
+                      {email.status === "PROCESSED"
+                        ? "Đã xử lý"
+                        : email.status === "ERROR"
+                          ? "Lỗi"
+                          : email.status}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(() => {
-                      try {
-                        const urls = JSON.parse(email.attachmentUrls ?? "[]") as string[];
-                        return urls.map((url, i) => (
-                          <a
-                            key={i}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn(
-                              "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium",
-                              "border-slate-200 bg-white text-slate-700",
-                              "hover:border-[#0047AB]/30 hover:bg-slate-50",
-                              "dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300",
-                              "transition-colors dark:hover:bg-slate-700"
-                            )}>
-                            <Paperclip className="h-3 w-3" />
-                            <span className="max-w-[150px] truncate">
-                              {url.split("/").pop() ?? `Attachment ${i + 1}`}
-                            </span>
-                          </a>
-                        ));
-                      } catch {
-                        return null;
-                      }
-                    })()}
-                  </div>
                 </div>
-              ) : null}
-
-              {/* Footer: timestamp */}
-              {email.receivedAt && (
-                <div className="border-t border-slate-100 bg-slate-50 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p className="text-xs text-slate-400">
-                    {t("emailPreview.receivedAt")}:{" "}
-                    {new Date(email.receivedAt).toLocaleString("vi-VN")}
-                  </p>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        <div className="mt-4 flex justify-end">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t("general.close")}
-          </Button>
+        {/* Fixed Footer */}
+        <div className="shrink-0 border-t border-slate-200 bg-white px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-slate-400">ID: {emailSubmissionId || "-"}</p>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Đóng
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
