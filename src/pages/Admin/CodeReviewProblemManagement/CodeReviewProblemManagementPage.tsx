@@ -430,108 +430,122 @@ export function CodeReviewProblemManagementPage() {
                     {(() => {
                       const file = (selectedProblem.files || [])[viewActiveFileIdx];
                       if (!file) return <div className="p-4 text-slate-500 italic">File trống</div>;
-                      const fileLines = (file.content || "").split("\\n");
+
                       return (
-                        <div className="w-full">
-                          {fileLines.map((lineText, lineIdx) => {
-                            const currentLineNum = lineIdx + 1;
-                            const lineIssues = (selectedProblem.expectedIssues || []).filter(
-                              (iss) =>
-                                iss.filename === file.filename &&
-                                Number(iss.lineNumber) === currentLineNum
-                            );
-
-                            const toggleKey = `view-${file.filename}-${currentLineNum}`;
-                            const isExpanded = !!expandedIssues[toggleKey];
-
+                        <SyntaxHighlighter
+                          language={file.language ? file.language.toLowerCase() : "typescript"}
+                          style={vscDarkPlus}
+                          customStyle={{ margin: 0, padding: 0, background: "transparent" }}
+                          wrapLines={true}
+                          renderer={({ rows }) => {
                             return (
-                              <React.Fragment key={lineIdx}>
-                                <div
-                                  className={cn(
-                                    "group relative flex items-center rounded-sm px-1 py-0.5 hover:bg-slate-200/50 dark:hover:bg-slate-800/40",
-                                    lineIssues.length > 0 &&
-                                      "border-l-2 border-l-red-500 bg-red-50 dark:bg-red-950/10"
-                                  )}>
-                                  {/* Gutter Gutter on the LEFT side */}
-                                  <div className="flex w-20 shrink-0 items-center justify-end gap-1.5 pr-2.5 select-none">
-                                    {lineIssues.length > 0 && (
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setExpandedIssues((prev) => ({
-                                            ...prev,
-                                            [toggleKey]: !prev[toggleKey],
-                                          }));
-                                        }}
+                              <div className="w-full">
+                                {rows.map((row, lineIdx) => {
+                                  const currentLineNum = lineIdx + 1;
+                                  const lineIssues = (selectedProblem.expectedIssues || []).filter(
+                                    (iss) =>
+                                      iss.filename === file.filename &&
+                                      Number(iss.lineNumber) === currentLineNum
+                                  );
+
+                                  const toggleKey = `view-${file.filename}-${currentLineNum}`;
+                                  const isExpanded = !!expandedIssues[toggleKey];
+
+                                  return (
+                                    <React.Fragment key={lineIdx}>
+                                      <div
                                         className={cn(
-                                          "rounded p-0.5 text-indigo-500 transition-colors hover:bg-slate-200 dark:text-indigo-400 dark:hover:bg-slate-800"
+                                          "group relative flex items-center rounded-sm px-1 py-0.5 hover:bg-slate-200/50 dark:hover:bg-slate-800/40",
+                                          lineIssues.length > 0 &&
+                                            "border-l-2 border-l-red-500 bg-red-50 dark:bg-red-950/10"
                                         )}>
-                                        {isExpanded ? (
-                                          <EyeOff className="h-3.5 w-3.5" />
-                                        ) : (
-                                          <Eye className="h-3.5 w-3.5" />
-                                        )}
-                                      </button>
-                                    )}
-                                    <span className="w-6 text-right font-semibold text-slate-400 dark:text-slate-600">
-                                      {currentLineNum}
-                                    </span>
-                                  </div>
-
-                                  <span className="flex-1 font-mono break-all whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                                    {lineText || " "}
-                                  </span>
-                                </div>
-
-                                {isExpanded &&
-                                  lineIssues.map((issue, issueIdx) => (
-                                    <div
-                                      key={issueIdx}
-                                      className={cn(
-                                        "my-1.5 mr-2 ml-20 flex items-start gap-2.5 rounded-lg border p-3 font-sans text-xs shadow-sm",
-                                        issue.severity === "CRITICAL"
-                                          ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200"
-                                          : issue.severity === "WARNING"
-                                            ? "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
-                                            : "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200"
-                                      )}>
-                                      <Bug
-                                        className={cn(
-                                          "mt-0.5 h-4 w-4 shrink-0",
-                                          issue.severity === "CRITICAL"
-                                            ? "text-red-500 dark:text-red-400"
-                                            : issue.severity === "WARNING"
-                                              ? "text-amber-500 dark:text-amber-400"
-                                              : "text-blue-500 dark:text-blue-400"
-                                        )}
-                                      />
-                                      <div className="flex-1">
-                                        <div className="mb-1 flex items-center gap-1.5">
-                                          <span className="font-semibold text-slate-900 dark:text-slate-100">
-                                            Lỗi mẫu phát hiện:
-                                          </span>
-                                          <span
-                                            className={cn(
-                                              "rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-wider uppercase",
-                                              issue.severity === "CRITICAL"
-                                                ? "bg-red-100 text-red-700 ring-1 ring-red-500/20 dark:bg-red-900/60 dark:text-red-300"
-                                                : issue.severity === "WARNING"
-                                                  ? "bg-amber-100 text-amber-700 ring-1 ring-amber-500/20 dark:bg-amber-900/60 dark:text-amber-300"
-                                                  : "bg-blue-100 text-blue-700 ring-1 ring-blue-500/20 dark:bg-blue-900/60 dark:text-blue-300"
-                                            )}>
-                                            {issue.severity}
+                                        {/* Gutter Gutter on the LEFT side */}
+                                        <div className="flex w-20 shrink-0 items-center justify-end gap-1.5 pr-2.5 select-none">
+                                          {lineIssues.length > 0 && (
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setExpandedIssues((prev) => ({
+                                                  ...prev,
+                                                  [toggleKey]: !prev[toggleKey],
+                                                }));
+                                              }}
+                                              className={cn(
+                                                "flex items-center justify-center rounded-full transition-colors",
+                                                isExpanded
+                                                  ? "text-red-600 hover:text-red-700 dark:text-red-400"
+                                                  : "text-red-400 hover:text-red-600 dark:text-red-500"
+                                              )}>
+                                              {isExpanded ? (
+                                                <Eye className="h-4 w-4" />
+                                              ) : (
+                                                <EyeOff className="h-4 w-4" />
+                                              )}
+                                            </button>
+                                          )}
+                                          <span className="w-6 text-right font-semibold text-slate-400 dark:text-slate-600">
+                                            {currentLineNum}
                                           </span>
                                         </div>
-                                        <p className="leading-relaxed text-slate-700 dark:text-slate-300">
-                                          {issue.description}
-                                        </p>
+
+                                        {/* Code Line Content */}
+                                        <div className="ml-4 flex-1 font-mono break-all whitespace-pre-wrap text-slate-800 dark:text-slate-200">
+                                          {row.children.map((child, idx) => renderAst(child, idx))}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
-                              </React.Fragment>
+
+                                      {/* Expanded Issue Detail */}
+                                      {isExpanded && lineIssues.length > 0 && (
+                                        <div className="animate-in fade-in slide-in-from-top-1 my-1.5 mr-2 ml-20 flex">
+                                          <div className="relative w-full rounded-md border border-red-200 bg-white p-3 shadow-sm dark:border-red-900/50 dark:bg-slate-900">
+                                            <div className="absolute top-3 -left-2 h-0 w-0 border-y-[6px] border-r-[8px] border-y-transparent border-r-red-200 dark:border-r-red-900/50"></div>
+                                            <div className="absolute top-[13px] -left-[7px] h-0 w-0 border-y-[5px] border-r-[7px] border-y-transparent border-r-white dark:border-r-slate-900"></div>
+
+                                            <div className="flex flex-col gap-3">
+                                              {lineIssues.map((iss, iIdx) => (
+                                                <div key={iIdx} className="flex gap-2">
+                                                  <Bug className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+                                                  <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                                        Lỗi dòng {iss.lineNumber}
+                                                      </span>
+                                                      <Badge
+                                                        variant="outline"
+                                                        className={cn(
+                                                          "h-5 border-transparent px-1.5 text-[10px] uppercase",
+                                                          iss.severity === "CRITICAL" &&
+                                                            "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400",
+                                                          iss.severity === "HIGH" &&
+                                                            "bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400",
+                                                          iss.severity === "MEDIUM" &&
+                                                            "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400",
+                                                          iss.severity === "LOW" &&
+                                                            "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400",
+                                                          iss.severity === "INFO" &&
+                                                            "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                                        )}>
+                                                        {iss.severity}
+                                                      </Badge>
+                                                    </div>
+                                                    <p className="font-sans text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
+                                                      {iss.description}
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </div>
                             );
-                          })}
-                        </div>
+                          }}>
+                          {file.content || ""}
+                        </SyntaxHighlighter>
                       );
                     })()}
                   </div>
