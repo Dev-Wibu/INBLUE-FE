@@ -243,52 +243,6 @@ export function CodeReviewProblemManagementPage() {
               {t("adminCodeReviewProblem.pageTitle") || "Quản lý bài tập Code Review"}
             </h1>
           </div>
-
-          <div className="flex items-center gap-3">
-            <div className="relative w-64">
-              <Input
-                placeholder={
-                  t("adminCodeReviewProblem.searchPlaceholder") || "Tìm theo tên, ngôn ngữ, ID..."
-                }
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  pagination.goToFirstPage();
-                }}
-                className="h-9 w-full border-slate-200 bg-slate-100/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800/50"
-              />
-            </div>
-
-            <Select
-              value={difficultyFilter}
-              onValueChange={(value) => {
-                setDifficultyFilter(value);
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="h-9 w-[140px] border-slate-200 bg-slate-100/50 dark:border-slate-700 dark:bg-slate-800/50">
-                <SelectValue placeholder="Độ khó" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="EASY">Dễ</SelectItem>
-                <SelectItem value="MEDIUM">Trung bình</SelectItem>
-                <SelectItem value="HARD">Khó</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <ReloadButton
-              onReload={() => loadProblems(true)}
-              isLoading={isReloading}
-              tooltip={t("common.reload")}
-            />
-
-            <Button
-              className="h-9 bg-indigo-600 px-4 text-white shadow-sm hover:bg-indigo-700"
-              onClick={() => setView({ mode: "create" })}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              {t("common.create") || "Tạo mới"}
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -296,9 +250,56 @@ export function CodeReviewProblemManagementPage() {
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Left Pane: List */}
         <div className="flex w-[400px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30">
-          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/50 p-3 text-xs font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-800/20 dark:text-slate-400">
-            <span>{filteredProblems.length} bài tập</span>
-            {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+          <div className="flex flex-col gap-3 border-b border-slate-200 bg-white/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+            {/* The toolbar */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Input
+                  placeholder={
+                    t("adminCodeReviewProblem.searchPlaceholder") || "Tìm theo tên, ngôn ngữ, ID..."
+                  }
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    pagination.goToFirstPage();
+                  }}
+                  className="h-9 w-full border-slate-200 bg-slate-100/50 text-xs focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800/50"
+                />
+              </div>
+              <ReloadButton
+                onReload={() => loadProblems(true)}
+                isLoading={isReloading}
+                tooltip={t("common.reload")}
+              />
+              <Button
+                className="h-9 shrink-0 bg-indigo-600 px-3 text-white shadow-sm hover:bg-indigo-700"
+                onClick={() => setView({ mode: "create" })}>
+                <Plus className="mr-1 h-4 w-4" />
+                {t("common.create") || "Tạo"}
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <Select
+                value={difficultyFilter}
+                onValueChange={(value) => {
+                  setDifficultyFilter(value);
+                  pagination.goToFirstPage();
+                }}>
+                <SelectTrigger className="h-8 w-32 border-slate-200 bg-slate-100/50 text-xs dark:border-slate-700 dark:bg-slate-800/50">
+                  <SelectValue placeholder="Độ khó" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="EASY">Dễ</SelectItem>
+                  <SelectItem value="MEDIUM">Trung bình</SelectItem>
+                  <SelectItem value="HARD">Khó</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span>{filteredProblems.length} bài tập</span>
+                {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+              </div>
+            </div>
           </div>
 
           <div className="flex-1 space-y-2 overflow-y-auto p-3">
@@ -380,7 +381,7 @@ export function CodeReviewProblemManagementPage() {
         {/* Right Pane: Detail View */}
         <div className="relative flex flex-1 flex-col overflow-hidden bg-white dark:bg-slate-950">
           {selectedProblem ? (
-            <div className="flex flex-1 flex-col">
+            <div className="flex min-h-0 flex-1 flex-col">
               {/* Header Section */}
               <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-950">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
