@@ -63,31 +63,6 @@ type SortableProblem = CodeReviewProblem & {
   createdAtSortValue: number;
 };
 
-const renderAst = (node: unknown, i: number) => {
-  const n = node as Record<string, unknown>;
-  if (n.type === "text") return n.value as string;
-  if (n.type === "element") {
-    const props: Record<string, unknown> = { key: i };
-    if (n.properties) {
-      const p = n.properties as Record<string, unknown>;
-      if (p.className) {
-        props.className = ((p.className as string[]) || []).join(" ");
-      }
-      if (p.style) {
-        props.style = p.style;
-      }
-    }
-    return React.createElement(
-      n.tagName as string,
-      props,
-      n.children
-        ? (n.children as unknown[]).map((child: unknown, idx: number) => renderAst(child, idx))
-        : null
-    );
-  }
-  return null;
-};
-
 export function CodeReviewProblemManagementPage() {
   const { t } = useTranslation();
   const [view, setView] = useState<ViewState>({ mode: "list" });
@@ -473,7 +448,43 @@ export function CodeReviewProblemManagementPage() {
                           style={vscDarkPlus}
                           customStyle={{ margin: 0, padding: 0, background: "transparent" }}
                           wrapLines={true}
-                          renderer={({ rows }) => {
+                          renderer={({ rows, stylesheet, useInlineStyles }) => {
+                            const renderAst = (node: unknown, i: number) => {
+                              const n = node as Record<string, unknown>;
+                              if (n.type === "text") return n.value as string;
+                              if (n.type === "element") {
+                                const props: Record<string, unknown> = { key: i };
+                                if (n.properties) {
+                                  const p = n.properties as Record<string, unknown>;
+                                  if (p.className) {
+                                    const classes = p.className as string[];
+                                    props.className = classes.join(" ");
+                                    if (useInlineStyles && stylesheet) {
+                                      props.style = classes.reduce((acc, cls) => {
+                                        return { ...acc, ...(stylesheet[cls] || {}) };
+                                      }, {});
+                                    }
+                                  }
+                                  if (p.style) {
+                                    props.style = {
+                                      ...((props.style as object) || {}),
+                                      ...(p.style as object),
+                                    };
+                                  }
+                                }
+                                return React.createElement(
+                                  n.tagName as string,
+                                  props,
+                                  n.children
+                                    ? (n.children as unknown[]).map((child: unknown, idx: number) =>
+                                        renderAst(child, idx)
+                                      )
+                                    : null
+                                );
+                              }
+                              return null;
+                            };
+
                             return (
                               <div className="w-full">
                                 {rows.map((row, lineIdx) => {
@@ -526,7 +537,11 @@ export function CodeReviewProblemManagementPage() {
 
                                         {/* Code Line Content */}
                                         <div className="ml-4 flex-1 font-mono break-all whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                                          {row.children.map((child, idx) => renderAst(child, idx))}
+                                          {row.children
+                                            ? row.children.map((child, idx) =>
+                                                renderAst(child, idx)
+                                              )
+                                            : null}
                                         </div>
                                       </div>
 
@@ -550,15 +565,15 @@ export function CodeReviewProblemManagementPage() {
                                                         variant="outline"
                                                         className={cn(
                                                           "h-5 border-transparent px-1.5 text-[10px] uppercase",
-                                                          iss.severity === "CRITICAL" &&
+                                                          (iss.severity as string) === "CRITICAL" &&
                                                             "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400",
-                                                          iss.severity === "HIGH" &&
+                                                          (iss.severity as string) === "HIGH" &&
                                                             "bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400",
-                                                          iss.severity === "MEDIUM" &&
+                                                          (iss.severity as string) === "MEDIUM" &&
                                                             "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400",
-                                                          iss.severity === "LOW" &&
+                                                          (iss.severity as string) === "LOW" &&
                                                             "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400",
-                                                          iss.severity === "INFO" &&
+                                                          (iss.severity as string) === "INFO" &&
                                                             "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                                                         )}>
                                                         {iss.severity}
@@ -580,7 +595,7 @@ export function CodeReviewProblemManagementPage() {
                               </div>
                             );
                           }}>
-                          {file.content || ""}
+                          {(file.content || "").replace(/\\n/g, "\n")}
                         </SyntaxHighlighter>
                       );
                     })()}
