@@ -3158,6 +3158,8 @@
     "roundAiEvaluated": "AI評価済み",
     "roundCompleted": "完了",
     "roundError": "エラー",
+    "emailRound": "メールシミュレーター回",
+    "emailInstructions": "指示に従ってメールを送信し、この回を完了してください。",
     "submittedContent": "提出内容",
     "viewUploadedFile": "アップロードファイルを見る",
     "quizAnswers": "クイズ回答",

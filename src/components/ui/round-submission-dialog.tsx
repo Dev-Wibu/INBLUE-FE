@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { CodingSubmissionModal } from "@/components/ui/coding-submission-modal";
 import {
   Dialog,
   DialogContent,
@@ -18,11 +19,13 @@ import { toast } from "sonner";
 import type { components } from "../../../schema-from-be";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
+type CodingProblemSnapshot = components["schemas"]["CodingProblemSnapshot"];
 
 export interface RoundSubmissionDialogProps {
   open: boolean;
   onOpenChange: (_open: boolean) => void;
   applicationId: number;
+  roundId?: number;
   roundName?: string;
   roundType?: string;
   instruction?: string;
@@ -30,6 +33,10 @@ export interface RoundSubmissionDialogProps {
   currentFileUrl?: string;
   currentTextContent?: string;
   emailSubmissionId?: number | null;
+  // CODING round specific
+  codingProblems?: CodingProblemSnapshot[];
+  codingProblemsId?: number[];
+  timeLimitMinutes?: number;
   onSuccess?: (_result: { status?: string; message?: string; detail?: ApplicationDetail }) => void;
 }
 
@@ -39,6 +46,7 @@ export function RoundSubmissionDialog({
   open,
   onOpenChange,
   applicationId,
+  roundId,
   roundName,
   roundType,
   instruction,
@@ -46,6 +54,9 @@ export function RoundSubmissionDialog({
   currentFileUrl,
   currentTextContent,
   emailSubmissionId,
+  codingProblems,
+  codingProblemsId,
+  timeLimitMinutes,
   onSuccess,
 }: RoundSubmissionDialogProps) {
   const { t } = useTranslation();
@@ -61,6 +72,7 @@ export function RoundSubmissionDialog({
   const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
 
   const isEmailMode = roundType === "EMAIL_SIMULATOR";
+  const isCodingMode = roundType === "CODING";
 
   // Filter old emails from instruction and replace with system email
   const filteredInstruction = instruction
@@ -172,6 +184,27 @@ export function RoundSubmissionDialog({
     const subject = `[INBLUE-APP-${applicationId}]`;
     window.open(`mailto:${SYSTEM_EMAIL}?subject=${encodeURIComponent(subject)}`, "_blank");
   };
+
+  // If CODING mode, render the full IDE modal instead
+  if (isCodingMode) {
+    return (
+      <CodingSubmissionModal
+        open={open}
+        onOpenChange={onOpenChange}
+        applicationId={applicationId}
+        roundId={roundId ?? 0}
+        roundName={roundName}
+        codingProblems={codingProblems!}
+        codingProblemsId={codingProblemsId}
+        instruction={instruction}
+        timeLimitMinutes={timeLimitMinutes}
+        onSuccess={(message) => {
+          onOpenChange(false);
+          onSuccess?.({ message });
+        }}
+      />
+    );
+  }
 
   return (
     <>

@@ -2,6 +2,7 @@ import { PaginationControl } from "@/components/shared/PaginationControl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { CodingRoundGrader } from "@/components/ui/coding-round-grader";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -605,24 +606,9 @@ function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewP
     );
   }
 
-  // Code submissions
+  // Code submissions (CODING round) — use IDE-style grader
   if (data.codeSubmissions && data.codeSubmissions.length > 0) {
-    const passed = data.codeSubmissions.reduce(
-      (sum, sub) => sum + (sub.testCases?.passedTestCases ?? 0),
-      0
-    );
-    const total = data.codeSubmissions.reduce(
-      (sum, sub) => sum + (sub.testCases?.totalTestCases ?? 0),
-      0
-    );
-    return (
-      <div className="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400">
-        <Star className="h-4 w-4" />
-        <span>
-          {passed}/{total} test case passed
-        </span>
-      </div>
-    );
+    return <CodingRoundGrader detail={detail} />;
   }
 
   // Code review submissions
@@ -1040,7 +1026,7 @@ export function ApplicationGradingPage({
                         const jdId = item.jdId;
 
                         return (
-                          <TableRow key={item.id}>
+                          <TableRow key={item.detailId ?? item.id}>
                             <TableCell className="font-medium">#{item.id}</TableCell>
                             {isStaff ? (
                               <>
@@ -1110,9 +1096,11 @@ export function ApplicationGradingPage({
 
 export function ApplicationGradingDetailPage({
   appId: appIdProp,
+  detailId: detailIdProp,
   basePath,
 }: {
   appId?: string;
+  detailId?: string;
   basePath?: string;
 }) {
   const { t } = useTranslation();
@@ -1121,24 +1109,26 @@ export function ApplicationGradingDetailPage({
 
   // Auto-detect base path from current location if not provided
   const dashboardBase = basePath ?? (location.pathname.startsWith("/staff") ? "/staff" : "/admin");
+  const isStaff = dashboardBase === "/staff";
 
-  // Check if this is a valid ID
-  const numericId = Number(appIdProp);
+  // Staff: numericId is a detail ID  → single detail
+  // Admin: numericId is an application ID → all details for that application
+  const numericId = Number(appIdProp ?? detailIdProp ?? "0");
   const isValidId = Number.isFinite(numericId) && numericId > 0;
 
-  // For Staff: fetch single detail by ID
+  // Staff: fetch single detail by ID
   const {
     data: singleDetail,
     isLoading: isLoadingSingle,
     refetch: refetchSingle,
-  } = useApplicationDetail(numericId, isValidId);
+  } = useApplicationDetail(numericId, isValidId && isStaff);
 
-  // For Admin: fetch all details by applicationId
+  // Admin: fetch all details by applicationId
   const {
     data: details = [],
     isLoading: isLoadingDetails,
     refetch: refetchDetails,
-  } = useApplicationDetails(numericId, isValidId);
+  } = useApplicationDetails(numericId, isValidId && !isStaff);
 
   const isLoading = isLoadingSingle || isLoadingDetails;
   const refetch = refetchSingle || refetchDetails;
@@ -1150,17 +1140,24 @@ export function ApplicationGradingDetailPage({
   // Track which round to start grading (for "Chấm" button)
   const [startGradingRoundId, setStartGradingRoundId] = useState<number | null>(null);
 
+  // Unified details array: single detail for Staff, all details for Admin
+  const displayDetails = useMemo((): ApplicationDetail[] => {
+    if (isStaff && singleDetail) {
+      return [singleDetail];
+    }
+    return details;
+  }, [isStaff, singleDetail, details]);
+
   // Expanded rounds state - track which round cards are expanded
   const [expandedRoundIds, setExpandedRoundIds] = useState<Set<number>>(() => {
-    // Auto-expand the first round that needs HR scoring, or first round
-    if (details.length === 0) return new Set();
-    const firstNeedsHr = details.find(
-      (d: ApplicationDetail) =>
-        d.status === "AI_EVALUATED" && (d.hrScore === undefined || d.hrScore === null)
+    if (displayDetails.length === 0) return new Set<number>();
+    const firstNeedsHr = displayDetails.find(
+      (d) => d.status === "AI_EVALUATED" && (d.hrScore === undefined || d.hrScore === null)
     );
-    const firstId = firstNeedsHr?.id ?? details[0]?.id;
-    return firstId !== undefined ? new Set([firstId]) : new Set();
+    const firstId = firstNeedsHr?.id ?? displayDetails[0]?.id;
+    return firstId !== undefined ? new Set([firstId]) : new Set<number>();
   });
+
   const [showPendingOnly, setShowPendingOnly] = useState(false);
 
   const handleViewEmailSubmission = useCallback((emailSubmissionId: number) => {
@@ -1187,36 +1184,40 @@ export function ApplicationGradingDetailPage({
   }, []);
 
   const expandAll = useCallback(() => {
-    setExpandedRoundIds(new Set(details.map((d: ApplicationDetail) => d.id!).filter(Boolean)));
-  }, [details]);
+    setExpandedRoundIds(
+      new Set(displayDetails.map((d: ApplicationDetail) => d.id!).filter(Boolean))
+    );
+  }, [displayDetails]);
 
   const collapseAll = useCallback(() => {
     setExpandedRoundIds(new Set());
   }, []);
 
-  // Filter details based on showPendingOnly
+  // Filter displayDetails based on showPendingOnly
   const filteredDetails = useMemo(() => {
-    if (!showPendingOnly) return details;
-    return details.filter(
+    if (!showPendingOnly) return displayDetails;
+    return displayDetails.filter(
       (d: ApplicationDetail) =>
         d.status === "AI_EVALUATED" && (d.hrScore === undefined || d.hrScore === null)
     );
-  }, [details, showPendingOnly]);
+  }, [displayDetails, showPendingOnly]);
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
-    const total = details.length;
-    const pending = details.filter(
+    const total = displayDetails.length;
+    const pending = displayDetails.filter(
       (d: ApplicationDetail) =>
         d.status === "AI_EVALUATED" && (d.hrScore === undefined || d.hrScore === null)
     ).length;
-    const completed = details.filter((d: ApplicationDetail) => d.finalResult).length;
-    const passed = details.filter((d: ApplicationDetail) => d.finalResult === "PASSED").length;
+    const completed = displayDetails.filter((d: ApplicationDetail) => d.finalResult).length;
+    const passed = displayDetails.filter(
+      (d: ApplicationDetail) => d.finalResult === "PASSED"
+    ).length;
     const avgScore =
-      details.reduce((sum: number, d: ApplicationDetail) => sum + (d.hrScore ?? 0), 0) /
+      displayDetails.reduce((sum: number, d: ApplicationDetail) => sum + (d.hrScore ?? 0), 0) /
       (completed || 1);
     return { total, pending, completed, passed, avgScore: Math.round(avgScore) };
-  }, [details]);
+  }, [displayDetails]);
 
   if (!isValidId) {
     return (
@@ -1358,7 +1359,7 @@ export function ApplicationGradingDetailPage({
 
         {/* Expandable Round Cards */}
         <div className="flex-1 overflow-y-auto p-6">
-          {details.length === 0 ? (
+          {filteredDetails.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center text-center">
               <ClipboardCheck className="mb-4 h-12 w-12 text-slate-300" />
               <p className="text-sm text-slate-400">Chưa có vòng thi nào cho đơn ứng tuyển này.</p>

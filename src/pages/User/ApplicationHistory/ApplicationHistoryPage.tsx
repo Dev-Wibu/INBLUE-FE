@@ -1,6 +1,7 @@
 import { ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CodeSubmissionViewer } from "@/components/ui/code-submission-viewer";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,11 @@ interface JdRound {
     instruction?: string;
     timeLimitMinutes?: number;
     submissionFormat?: string;
+    codingProblemsId?: number[];
+    codingProblems?: components["schemas"]["CodingProblemSnapshot"][];
+    quizQuestions?: components["schemas"]["QuizQuestion"][];
+    codeReviewProblems?: components["schemas"]["CodeReviewProblemSnapshot"][];
+    mentorInterview?: components["schemas"]["MentorInterviewDto"];
   };
 }
 
@@ -299,6 +305,23 @@ function SubmissionPreview({
           <Mail className="h-3.5 w-3.5" />
           {t("emailPreview.viewSubmittedEmail")}
         </button>
+      )}
+      {sd.codeSubmissions && sd.codeSubmissions.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {sd.codeSubmissions.length > 1
+              ? `${sd.codeSubmissions.length} bài nộp code`
+              : "Bài nộp code"}
+          </p>
+          {sd.codeSubmissions.map((submission, idx) => (
+            <CodeSubmissionViewer
+              key={idx}
+              codeSubmission={submission}
+              title={`Bài ${idx + 1}`}
+              defaultExpanded={sd.codeSubmissions!.length === 1}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -1184,6 +1207,7 @@ function ApplicationDetailPanel({
           if (!open) setSubmissionOpen(false);
         }}
         applicationId={id ?? 0}
+        roundId={submissionRound?.id}
         roundName={submissionRound?.name ?? getRoundTypeLabel(submissionRound?.roundType)}
         roundType={submissionRound?.roundType}
         instruction={submissionRound?.configData?.instruction}
@@ -1191,6 +1215,9 @@ function ApplicationDetailPanel({
         currentFileUrl={submissionDetail?.submissionData?.fileUrl}
         currentTextContent={submissionDetail?.submissionData?.textContent}
         emailSubmissionId={submissionDetail?.submissionData?.emailSubmissionId}
+        codingProblems={submissionRound?.configData?.codingProblems}
+        codingProblemsId={submissionRound?.configData?.codingProblemsId}
+        timeLimitMinutes={submissionRound?.configData?.timeLimitMinutes}
         onSuccess={handleSubmissionSuccess}
       />
 
