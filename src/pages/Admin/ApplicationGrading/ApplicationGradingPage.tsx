@@ -264,12 +264,7 @@ function RoundCard({
                 <h4 className="mb-2 text-xs font-semibold tracking-wide text-slate-500 uppercase">
                   Nội dung bài nộp
                 </h4>
-                <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
-                  <SubmissionPreview
-                    detail={detail}
-                    onViewEmailSubmission={onViewEmailSubmission}
-                  />
-                </div>
+                <SubmissionPreview detail={detail} onViewEmailSubmission={onViewEmailSubmission} />
               </div>
             )}
 
@@ -466,45 +461,99 @@ function RoundCard({
 // Submission Preview
 // ============================================================
 
-function SubmissionPreview({
-  detail,
-  onViewEmailSubmission,
-}: {
+interface SubmissionPreviewProps {
   detail: ApplicationDetail;
   onViewEmailSubmission?: (emailSubmissionId: number) => void;
-}) {
+}
+
+function SubmissionPreview({ detail, onViewEmailSubmission }: SubmissionPreviewProps) {
   const { t } = useTranslation();
   const data = detail.submissionData as SubmissionData | undefined;
+  const [localExpanded, setLocalExpanded] = useState(false);
+
   if (!data) return null;
 
   const emailSubmissionId = data.emailSubmissionId;
 
+  // Email content
   if (data.textContent) {
-    const isEmail = data.textContent.includes("To:") || data.textContent.includes("Subject:");
-    if (isEmail) {
-      const lines = data.textContent.split("\n");
-      return (
-        <div className="space-y-2">
-          <div className="rounded-lg border bg-slate-50 p-3 dark:bg-slate-800/50">
-            {lines.slice(0, 12).map((line, i) => (
-              <p key={i} className="text-xs text-slate-600 dark:text-slate-400">
-                {line}
-              </p>
-            ))}
-            {lines.length > 12 && (
-              <p className="mt-1 text-xs text-slate-400">... +{lines.length - 12} dòng</p>
-            )}
+    const isEmail =
+      data.textContent.includes("To:") ||
+      data.textContent.includes("Subject:") ||
+      data.textContent.includes("Kính gửi") ||
+      data.textContent.includes("Dear");
+    const lines = data.textContent.split("\n");
+    const shouldTruncate = lines.length > 12;
+    const displayLines = localExpanded ? lines : lines.slice(0, 12);
+
+    return (
+      <div className="space-y-3">
+        {/* Email type indicator */}
+        {isEmail && (
+          <div className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-blue-500" />
+            <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+              Email nộp bài
+            </span>
           </div>
+        )}
+
+        {/* Email content */}
+        <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+          {displayLines.map((line, i) => (
+            <p
+              key={i}
+              className={cn(
+                "text-sm text-slate-700 dark:text-slate-300",
+                line.trim() === "" ? "h-2" : ""
+              )}>
+              {line}
+            </p>
+          ))}
+          {shouldTruncate && !localExpanded && (
+            <p className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-400 dark:border-slate-700">
+              ... +{lines.length - 12} dòng còn lại
+            </p>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-wrap gap-2">
+          {/* Expand/Collapse email */}
+          {shouldTruncate && (
+            <button
+              type="button"
+              onClick={() => setLocalExpanded(!localExpanded)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5",
+                "text-xs font-medium transition-colors",
+                localExpanded
+                  ? "border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                  : "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300"
+              )}>
+              {localExpanded ? (
+                <>
+                  <ChevronRight className="h-3.5 w-3.5 rotate-180" />
+                  Thu gọn
+                </>
+              ) : (
+                <>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                  Xem đầy đủ ({lines.length} dòng)
+                </>
+              )}
+            </button>
+          )}
+
+          {/* View original email */}
           {emailSubmissionId && emailSubmissionId > 0 && (
             <button
               type="button"
               onClick={() => onViewEmailSubmission?.(emailSubmissionId)}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5",
-                "text-xs font-medium text-blue-700",
-                "hover:border-blue-300 hover:bg-blue-100",
-                "dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300",
-                "dark:hover:border-blue-700 dark:hover:bg-blue-900/30",
+                "text-xs font-medium text-blue-700 hover:bg-blue-100",
+                "dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30",
                 "transition-colors"
               )}>
               <Mail className="h-3.5 w-3.5" />
@@ -512,27 +561,38 @@ function SubmissionPreview({
             </button>
           )}
         </div>
-      );
-    }
-    return (
-      <p className="line-clamp-6 text-sm whitespace-pre-wrap text-slate-600 dark:text-slate-400">
-        {data.textContent.slice(0, 800)}
-        {data.textContent.length > 800 && "..."}
-      </p>
+      </div>
     );
   }
 
+  // File upload (CV, etc.)
   if (data.fileUrl) {
     return (
-      <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
-        <FileText className="h-4 w-4" />
-        <a href={data.fileUrl} target="_blank" rel="noopener noreferrer" className="underline">
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-orange-500" />
+          <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
+            File đã nộp
+          </span>
+        </div>
+        <a
+          href={data.fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5",
+            "text-xs font-medium text-blue-700 hover:bg-blue-100",
+            "dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30",
+            "transition-colors"
+          )}>
+          <FileText className="h-3.5 w-3.5" />
           Xem file đã nộp
         </a>
       </div>
     );
   }
 
+  // Quiz answers
   if (data.quizAnswers && data.quizAnswers.length > 0) {
     const correct = data.quizAnswers.filter((a) => a.isCorrect).length;
     return (
@@ -545,6 +605,7 @@ function SubmissionPreview({
     );
   }
 
+  // Code submissions
   if (data.codeSubmissions && data.codeSubmissions.length > 0) {
     const passed = data.codeSubmissions.reduce(
       (sum, sub) => sum + (sub.testCases?.passedTestCases ?? 0),
@@ -564,6 +625,7 @@ function SubmissionPreview({
     );
   }
 
+  // Code review submissions
   if (data.codeReviewSubmissions && data.codeReviewSubmissions.length > 0) {
     return (
       <div className="flex items-center gap-2 text-sm text-cyan-600 dark:text-cyan-400">

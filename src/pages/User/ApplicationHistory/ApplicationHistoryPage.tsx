@@ -808,6 +808,7 @@ function ApplicationDetailPanel({
   onSubmissionSuccess?: () => void;
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { id, status } = application;
   const rounds = useMemo(() => application.rounds ?? [], [application.rounds]);
   const totalRounds = rounds.length;
@@ -1012,6 +1013,14 @@ function ApplicationDetailPanel({
   }, [rounds, detailsData, optimisticDetails, apiCurrentRoundOrder, status]);
 
   const handleEnterRoom = (round: JdRound, detail?: ApplicationDetail) => {
+    // If this is a QUIZ round, navigate to the quiz page
+    if (round.roundType === "QUIZ") {
+      // Get JD ID from the application (passed via context)
+      const jdId = (application as unknown as { jdId?: number }).jdId ?? 0;
+      navigate(`/user/quiz/${application.id}/round/${round.id}?jdId=${jdId}`);
+      return;
+    }
+
     setSubmissionRound(round);
     setSubmissionDetail(detail);
     setSubmissionOpen(true);
