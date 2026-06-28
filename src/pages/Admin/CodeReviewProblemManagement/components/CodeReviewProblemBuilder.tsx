@@ -525,16 +525,27 @@ export function CodeReviewProblemBuilder({
                             </div>
                           </div>
                           <div className="relative flex-1 rounded-md border border-slate-800 bg-slate-950">
-                            <textarea
+                            <Editor
+                              height="100%"
+                              language={
+                                newProblem.files[createActiveFileIdx].language?.toLowerCase() ||
+                                "csharp"
+                              }
+                              theme="vs-dark"
                               value={newProblem.files[createActiveFileIdx].content}
-                              onChange={(e) => {
+                              onChange={(val) => {
                                 const files = [...newProblem.files];
-                                files[createActiveFileIdx].content = e.target.value;
+                                files[createActiveFileIdx].content = val || "";
                                 setNewProblem({ ...newProblem, files });
                               }}
-                              className="absolute inset-0 h-full w-full resize-none bg-transparent p-4 font-mono text-[13px] leading-relaxed text-slate-300 focus:outline-none"
-                              placeholder="// Viết code hoặc copy paste mã nguồn vào đây..."
-                              spellCheck={false}
+                              options={{
+                                minimap: { enabled: false },
+                                fontSize: 13,
+                                lineNumbers: "on",
+                                scrollBeyondLastLine: false,
+                                wordWrap: "on",
+                                automaticLayout: true,
+                              }}
                             />
                           </div>
                         </div>
