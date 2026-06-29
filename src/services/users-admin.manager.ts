@@ -169,8 +169,8 @@ export class UsersAdminManager implements BaseManager<User> {
         // Backend will use this to determine if it should create new files.
         // Error "Missing required parameter - public_id" occurs when this field is missing.
         public_id: createData.avatar ? "" : undefined,
-        // empty string when uploading new file
         cv_public_id: createData.cvFile ? "" : undefined, // empty string when uploading new file
+        role: _data.role || "USER",
       };
 
       // Append the 'data' field as a JSON Blob
