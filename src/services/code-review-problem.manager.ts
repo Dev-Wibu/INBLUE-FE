@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
+import i18n from "@/lib/i18n";
 
 export interface CodeFile {
   filename?: string;
@@ -44,8 +45,7 @@ export class CodeReviewProblemManager {
     } catch (error) {
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : "Không thể tải danh sách bài tập code review",
+        error: error instanceof Error ? error.message : i18n.t("problem.loadCodeReviewListFailed"),
       };
     }
   }
@@ -68,7 +68,7 @@ export class CodeReviewProblemManager {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : "Không thể tải chi tiết bài tập code review",
+          error instanceof Error ? error.message : i18n.t("problem.loadCodeReviewDetailsFailed"),
       };
     }
   }
@@ -93,7 +93,7 @@ export class CodeReviewProblemManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Không thể tạo bài tập code review",
+        error: error instanceof Error ? error.message : i18n.t("problem.createCodeReviewFailed"),
       };
     }
   }
@@ -128,7 +128,8 @@ export class CodeReviewProblemManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Không thể tạo tự động bài tập code review",
+        error:
+          error instanceof Error ? error.message : i18n.t("problem.autoCreateCodeReviewFailed"),
       };
     }
   }

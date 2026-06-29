@@ -47,7 +47,7 @@ export function ChatBubble({
             : "bg-emerald-100 dark:bg-emerald-900/40"
         )}>
         {isAI ? (
-          <img src={logo} alt={t("common.ai")} className="h-6 w-6 object-contain" />
+          <img src={logo} alt={"AI"} className="h-6 w-6 object-contain" />
         ) : userAvatarUrl ? (
           <img
             src={userAvatarUrl}
@@ -135,11 +135,10 @@ export function ChatBubble({
   );
 }
 export function TypingIndicator() {
-  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-cyan-600 to-blue-700 shadow-sm">
-        <img src={logo} alt={t("common.ai")} className="h-6 w-6 object-contain" />
+        <img src={logo} alt={"AI"} className="h-6 w-6 object-contain" />
       </div>
       <div className="rounded-2xl rounded-tl-sm border border-cyan-200/70 bg-linear-to-br from-white via-cyan-50/60 to-blue-50/60 px-4 py-3 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
         <div className="flex items-center gap-1.5">
@@ -156,7 +155,7 @@ export function EvaluatingIndicator() {
   return (
     <div className="flex items-center gap-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-cyan-600 to-blue-700 shadow-sm">
-        <img src={logo} alt={t("common.ai")} className="h-6 w-6 object-contain" />
+        <img src={logo} alt={"AI"} className="h-6 w-6 object-contain" />
       </div>
       <div className="rounded-2xl rounded-tl-sm border border-cyan-200/70 bg-cyan-50 px-4 py-3 shadow-sm dark:border-cyan-800/70 dark:bg-cyan-950/30">
         <div className="flex items-center gap-2">

@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import Editor from "@monaco-editor/react";
 import { CheckCircle2, Clock, Code2, Copy, Cpu } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { components } from "../../../schema-from-be";
 
 type CodeSubmission = components["schemas"]["CodeSubmission"];
@@ -63,6 +64,7 @@ export function CodeSubmissionViewer({
   aiScore,
   defaultExpanded = true,
 }: CodeSubmissionViewerProps) {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"code" | "test-results">("code");
@@ -108,7 +110,7 @@ export function CodeSubmissionViewer({
         <div className="flex items-center gap-3">
           <Code2 className="h-4 w-4 text-orange-500" />
           <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {title ?? "Bài nộp Code"}
+            {title ?? t("compCodeSubmissionViewer.codeSubmission")}
           </span>
           {difficulty && (
             <span
@@ -174,7 +176,7 @@ export function CodeSubmissionViewer({
                   : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
               )}>
               <Code2 className="h-3.5 w-3.5" />
-              Code ({codeLines.length} dòng)
+              Code ({codeLines.length} {t("compCodeSubmissionViewer.lines")}
             </button>
             {hasTests && (
               <button

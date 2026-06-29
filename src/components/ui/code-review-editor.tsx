@@ -1,4 +1,6 @@
 "use client";
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 
 import {
   AlertTriangle,
@@ -240,7 +242,7 @@ export const CodeReviewEditor = React.forwardRef<
 
     const handleAiGenerate = async () => {
       if (!aiTopic.trim()) {
-        toast.warning("Vui lòng nhập chủ đề bài toán để AI sinh đề");
+        toast.warning(t("adminCodeReviewProblem.pleaseEnterTopicForAi"));
         return;
       }
       setIsGenerating(true);
@@ -252,7 +254,7 @@ export const CodeReviewEditor = React.forwardRef<
           programmingLanguage: aiLanguage,
           context: {
             jobTitle: "",
-            requirement: aiRequirement.trim() || "Cơ bản và thực tế",
+            requirement: aiRequirement.trim() || t("adminCodeReviewProblem.basicAndPractical"),
             prompting: "",
           },
         });
@@ -277,18 +279,18 @@ export const CodeReviewEditor = React.forwardRef<
               { filename: "Solution.java", lineNumber: 1, severity: "CRITICAL", description: "" },
             ],
           });
-          toast.success("AI đã sinh đề bài thành công! Hãy kiểm tra và lưu lại.");
+          toast.success(t("adminCodeReviewProblem.aiGenerateSuccess"));
           setCreationMode("manual");
           setAiGeneratedLoaded(true);
           setCreateActiveFileIdx(0);
           setCreateTabMode("code");
           setActiveFileEditMode("bugs");
         } else {
-          toast.error(res.error || "Không thể sinh đề bài tự động");
+          toast.error(res.error || t("adminCodeReviewProblem.cannotGenerateAutomatically"));
         }
       } catch (e) {
         console.error(e);
-        toast.error("Lỗi khi sinh đề bằng AI");
+        toast.error(t("adminCodeReviewProblem.errorGenerateByAi"));
       } finally {
         setIsGenerating(false);
       }
@@ -307,15 +309,15 @@ export const CodeReviewEditor = React.forwardRef<
         }
     > => {
       if (!newProblem.title.trim()) {
-        toast.warning("Vui lòng nhập tiêu đề bài tập");
+        toast.warning(t("adminCodeReviewProblem.pleaseEnterTitle"));
         return false;
       }
       if (!newProblem.problemStatement.trim()) {
-        toast.warning("Vui lòng nhập mô tả bài tập");
+        toast.warning(t("adminCodeReviewProblem.pleaseEnterDescription"));
         return false;
       }
       if (newProblem.files.some((f) => !f.filename?.trim() || !f.content?.trim())) {
-        toast.warning("Vui lòng điền đầy đủ tên file và nội dung code");
+        toast.warning(t("adminCodeReviewProblem.pleaseEnterFilenameAndCode"));
         return false;
       }
 
@@ -354,12 +356,12 @@ export const CodeReviewEditor = React.forwardRef<
           setRightView("view");
           return { ids: newIds, problems: newProblems };
         } else {
-          toast.error(res.error || "Không thể lưu bài tập");
+          toast.error(res.error || t("adminCodeReviewProblem.cannotSaveProblem"));
           return false;
         }
       } catch (e) {
         console.error(e);
-        toast.error("Lỗi khi lưu bài tập");
+        toast.error(t("adminCodeReviewProblem.errorSaveProblem"));
         return false;
       }
     };
@@ -373,11 +375,11 @@ export const CodeReviewEditor = React.forwardRef<
         if (res.success && res.data) {
           setBankProblems(res.data);
         } else {
-          toast.error(res.error || "Không thể tải danh sách đề code review");
+          toast.error(res.error || t("adminCodeReviewProblem.cannotLoadList"));
         }
       } catch (e) {
         console.error(e);
-        toast.error("Lỗi khi tải danh sách đề");
+        toast.error(t("adminCodeReviewProblem.errorLoadList"));
       } finally {
         setIsLoadingBank(false);
       }
@@ -467,7 +469,11 @@ export const CodeReviewEditor = React.forwardRef<
         : null;
 
     const difficultyBadge = (diff?: string) => {
-      const map: Record<string, string> = { EASY: "Dễ", MEDIUM: "Trung bình", HARD: "Khó" };
+      const map: Record<string, string> = {
+        EASY: t("common.difficultyEasy"),
+        MEDIUM: t("common.difficultyMedium"),
+        HARD: t("common.difficultyHard"),
+      };
       const colorMap: Record<string, string> = {
         EASY: "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
         MEDIUM:
@@ -494,13 +500,13 @@ export const CodeReviewEditor = React.forwardRef<
             <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 dark:border-slate-800 dark:bg-slate-950/40">
               <div className="mb-3 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                 <Settings className="h-3.5 w-3.5" />
-                Cấu hình vòng thi
+                {t("adminCodeReviewProblem.roundConfig")}
               </div>
               <div className="space-y-3.5">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
-                      Điểm tối đa
+                      {t("adminCodeReviewProblem.maxScore")}
                     </Label>
                     <ScoreInput
                       value={maxScore}
@@ -515,7 +521,7 @@ export const CodeReviewEditor = React.forwardRef<
 
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
-                      Thời gian
+                      {t("common.time")}
                     </Label>
                     {editingTime ? (
                       <div className="flex items-center gap-1">
@@ -529,7 +535,9 @@ export const CodeReviewEditor = React.forwardRef<
                           onKeyDown={(e) => e.key === "Enter" && setEditingTime(false)}
                           className="h-11 w-full [appearance:textfield] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                         />
-                        <span className="shrink-0 text-[9px] text-slate-400">phút</span>
+                        <span className="shrink-0 text-[9px] text-slate-400">
+                          {t("common.minute")}
+                        </span>
                       </div>
                     ) : (
                       <button
@@ -545,7 +553,8 @@ export const CodeReviewEditor = React.forwardRef<
 
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
-                    Điểm đạt: {passScore}/{maxScore} ({Math.round(passThreshold * 100)}%)
+                    {t("adminCodeReviewProblem.passingScore")}
+                    {passScore}/{maxScore} ({Math.round(passThreshold * 100)}%)
                   </Label>
                   <div className="flex justify-center">
                     <ScoreInput
@@ -571,7 +580,8 @@ export const CodeReviewEditor = React.forwardRef<
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                  Danh sách đề bài ({codeReviewProblemsId.length})
+                  {t("adminCodeReviewProblem.problemListWithParen")}
+                  {codeReviewProblemsId.length})
                 </h4>
               </div>
 
@@ -588,7 +598,7 @@ export const CodeReviewEditor = React.forwardRef<
                       "border-indigo-500 bg-indigo-50/50 text-indigo-600 dark:bg-indigo-950/20"
                   )}>
                   <FolderOpen className="mr-1 h-3.5 w-3.5 text-indigo-500" />
-                  Kho đề
+                  {t("adminCodeReviewProblem.problemBank")}
                 </Button>
                 <Button
                   type="button"
@@ -602,7 +612,7 @@ export const CodeReviewEditor = React.forwardRef<
                       "border-emerald-500 bg-emerald-50/50 text-emerald-600 dark:bg-emerald-950/20"
                   )}>
                   <Plus className="mr-1 h-3.5 w-3.5 text-emerald-500" />
-                  Tạo đề
+                  {t("adminCodeReviewProblem.createProblem")}
                 </Button>
               </div>
 
@@ -652,7 +662,7 @@ export const CodeReviewEditor = React.forwardRef<
                 <div className="py-6 text-center">
                   <BookOpen className="mx-auto h-7 w-7 text-slate-300 dark:text-slate-700" />
                   <p className="mt-2 text-[10px] text-slate-400">
-                    Chưa có bài tập nào được chọn cho vòng thi.
+                    {t("adminCodeReviewProblem.noProblemSelected")}
                   </p>
                 </div>
               )}
@@ -663,7 +673,7 @@ export const CodeReviewEditor = React.forwardRef<
               <div className="space-y-2 border-t border-slate-100 pt-3 font-sans dark:border-slate-800">
                 <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                   <BookOpen className="h-3.5 w-3.5 text-indigo-500" />
-                  Mục tiêu Review
+                  {t("adminCodeReviewProblem.reviewObjective")}
                 </div>
                 <div className="text-slate-605 max-h-[220px] overflow-y-auto rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-xs leading-relaxed whitespace-pre-wrap dark:border-slate-800/60 dark:bg-slate-900/30 dark:text-slate-300">
                   {selectedProblemDetails.problemStatement}
@@ -679,18 +689,18 @@ export const CodeReviewEditor = React.forwardRef<
                   <div className="space-y-3.5 border-t border-slate-100 pt-3 dark:border-slate-800">
                     <div className="flex items-center gap-1.5 font-sans text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                       <Settings className="h-3.5 w-3.5 text-emerald-500" />
-                      Thiết lập bài toán
+                      {t("adminCodeReviewProblem.problemSetup")}
                     </div>
 
                     <div className="space-y-3 font-sans text-xs">
                       <div>
                         <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
-                          Tiêu đề bài
+                          {t("adminCodeReviewProblem.problemTitle")}
                         </Label>
                         <Input
                           value={newProblem.title}
                           onChange={(e) => setNewProblem({ ...newProblem, title: e.target.value })}
-                          placeholder="Ví dụ: Rò rỉ API Token"
+                          placeholder={t("compCodeReviewEditor.exampleTokenLeak")}
                           className="mt-1 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                         />
                       </div>
@@ -698,7 +708,7 @@ export const CodeReviewEditor = React.forwardRef<
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
-                            Ngôn ngữ
+                            {t("common.language")}
                           </Label>
                           <StyledSelect
                             value={newProblem.language}
@@ -715,7 +725,7 @@ export const CodeReviewEditor = React.forwardRef<
                         </div>
                         <div>
                           <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
-                            Độ khó
+                            {t("common.difficulty")}
                           </Label>
                           <StyledSelect
                             value={newProblem.difficulty}
@@ -726,16 +736,16 @@ export const CodeReviewEditor = React.forwardRef<
                                 difficulty: v as "EASY" | "MEDIUM" | "HARD",
                               })
                             }>
-                            <option value="EASY">Dễ</option>
-                            <option value="MEDIUM">Trung bình</option>
-                            <option value="HARD">Khó</option>
+                            <option value="EASY">{t("common.difficultyEasy")}</option>
+                            <option value="MEDIUM">{t("common.difficultyMedium")}</option>
+                            <option value="HARD">{t("common.difficultyHard")}</option>
                           </StyledSelect>
                         </div>
                       </div>
 
                       <div>
                         <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
-                          Yêu cầu / Ngữ cảnh
+                          {t("adminCodeReviewProblem.requirementContext")}
                         </Label>
                         <textarea
                           value={newProblem.problemStatement}
@@ -743,7 +753,7 @@ export const CodeReviewEditor = React.forwardRef<
                             setNewProblem({ ...newProblem, problemStatement: e.target.value })
                           }
                           rows={5}
-                          placeholder="Mô tả ngữ cảnh và mục tiêu đề..."
+                          placeholder={t("compCodeReviewEditor.contextGoalPlaceholder")}
                           className="mt-1 flex max-h-[140px] w-full rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
                         />
                       </div>
@@ -762,10 +772,11 @@ export const CodeReviewEditor = React.forwardRef<
             <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="max-w-md p-6">
                 <Code2 className="text-slate-650 mx-auto mb-4 h-12 w-12 dark:text-slate-500" />
-                <h3 className="text-sm font-semibold text-slate-300">Không có file nào đang mở</h3>
+                <h3 className="text-sm font-semibold text-slate-300">
+                  {t("adminCodeReviewProblem.noFileOpen")}
+                </h3>
                 <p className="mt-1 text-xs text-slate-500">
-                  Chọn một bài tập từ cột danh sách bên trái hoặc nhấn vào "Kho đề", "Tạo đề" để bắt
-                  đầu thiết kế.
+                  {t("adminCodeReviewProblem.selectProblemHint")}
                 </p>
               </div>
             </div>
@@ -827,7 +838,7 @@ export const CodeReviewEditor = React.forwardRef<
                       }}
                       className="hover:bg-slate-750 h-8 border-slate-700 bg-slate-800 text-xs text-indigo-400 hover:text-indigo-300">
                       <Pencil className="mr-1 h-3.5 w-3.5" />
-                      Chỉnh sửa
+                      {t("common.edit")}
                     </Button>
                     <Button
                       type="button"
@@ -836,7 +847,7 @@ export const CodeReviewEditor = React.forwardRef<
                       onClick={() => handleDeleteProblem(selectedIndex)}
                       className="h-8 border-red-950 bg-red-950/20 text-xs text-red-400 hover:bg-red-950/40 hover:text-red-300">
                       <Trash2 className="mr-1 h-3.5 w-3.5" />
-                      Xóa
+                      {t("common.delete")}
                     </Button>
                   </div>
                 )}
@@ -866,7 +877,12 @@ export const CodeReviewEditor = React.forwardRef<
                 <div className="flex-1 overflow-y-auto p-4 font-mono text-[11px] leading-relaxed select-text">
                   {(() => {
                     const file = (selectedProblemDetails.files || [])[viewActiveFileIdx];
-                    if (!file) return <div className="p-4 text-slate-500 italic">File trống</div>;
+                    if (!file)
+                      return (
+                        <div className="p-4 text-slate-500 italic">
+                          {t("adminCodeReviewProblem.emptyFile")}
+                        </div>
+                      );
                     const lines = (file.content || "").split("\n");
                     return (
                       <div className="w-full">
@@ -945,7 +961,7 @@ export const CodeReviewEditor = React.forwardRef<
                                     <div className="flex-1">
                                       <div className="mb-1 flex items-center gap-1.5">
                                         <span className="font-semibold text-slate-100">
-                                          Lỗi mẫu phát hiện:
+                                          {t("adminCodeReviewProblem.detectedSampleBugs")}
                                         </span>
                                         <span
                                           className={cn(
@@ -981,9 +997,12 @@ export const CodeReviewEditor = React.forwardRef<
             <div className="flex h-full flex-col overflow-hidden bg-slate-950/30 p-5">
               <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
                 <FolderOpen className="h-4 w-4 text-indigo-400" />
-                <h3 className="text-sm font-bold text-white">Ngân hàng bài tập Code Review</h3>
+                <h3 className="text-sm font-bold text-white">
+                  {t("adminCodeReviewProblem.codeReviewBank")}
+                </h3>
                 <span className="ml-auto text-xs font-semibold text-slate-400">
-                  Đã chọn <strong className="text-indigo-400">{selectedBankIds.length}</strong>
+                  {t("common.selected")}
+                  <strong className="text-indigo-400">{selectedBankIds.length}</strong>
                 </span>
               </div>
 
@@ -994,7 +1013,7 @@ export const CodeReviewEditor = React.forwardRef<
                   <Input
                     value={bankSearch}
                     onChange={(e) => setBankSearch(e.target.value)}
-                    placeholder="Tìm kiếm bài tập..."
+                    placeholder={t("adminCodeReviewProblem.searchProblem")}
                     className="bg-slate-955 h-9 border-slate-800 bg-slate-950 pl-8 text-xs text-white"
                   />
                 </div>
@@ -1011,18 +1030,18 @@ export const CodeReviewEditor = React.forwardRef<
                           : "hover:bg-slate-850 border-slate-800 bg-slate-950 text-slate-400"
                       )}>
                       {diff === "ALL"
-                        ? "Tất cả"
+                        ? t("common.all")
                         : diff === "EASY"
-                          ? "Dễ"
+                          ? t("common.difficultyEasy")
                           : diff === "MEDIUM"
-                            ? "T.Bình"
-                            : "Khó"}
+                            ? t("common.difficultyMediumShort")
+                            : t("common.difficultyHard")}
                     </button>
                   ))}
 
                   <div className="w-28">
                     <StyledSelect value={bankLanguage} onChange={setBankLanguage}>
-                      <option value="ALL">Mọi ngôn ngữ</option>
+                      <option value="ALL">{t("adminCodeReviewProblem.anyLanguage")}</option>
                       {availableLanguages.map((lang) => (
                         <option key={lang} value={lang}>
                           {lang}
@@ -1038,7 +1057,7 @@ export const CodeReviewEditor = React.forwardRef<
                 {isLoadingBank ? (
                   <div className="py-10 text-center text-xs text-slate-500">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin text-slate-500" />
-                    <p className="mt-2">Đang tải danh sách bài tập...</p>
+                    <p className="mt-2">{t("adminCodeReviewProblem.loadingProblemList")}</p>
                   </div>
                 ) : (
                   filteredBank.map((p, idx) => {
@@ -1081,7 +1100,7 @@ export const CodeReviewEditor = React.forwardRef<
                             <span className="text-xs font-semibold text-white">{p.title}</span>
                             {isAdded && (
                               <span className="ml-auto text-[10px] text-slate-500 italic">
-                                Đã thêm
+                                {t("common.added")}
                               </span>
                             )}
                           </div>
@@ -1096,7 +1115,7 @@ export const CodeReviewEditor = React.forwardRef<
 
                 {!isLoadingBank && filteredBank.length === 0 && (
                   <div className="py-10 text-center text-xs text-slate-500">
-                    Không tìm thấy bài tập phù hợp.
+                    {t("adminCodeReviewProblem.noMatchingProblem")}
                   </div>
                 )}
               </div>
@@ -1112,7 +1131,7 @@ export const CodeReviewEditor = React.forwardRef<
                     setSelectedIndex(null);
                   }}
                   className="hover:bg-slate-805 h-8 border-slate-800 bg-slate-900 text-xs hover:bg-slate-800">
-                  Hủy
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="button"
@@ -1120,7 +1139,9 @@ export const CodeReviewEditor = React.forwardRef<
                   disabled={selectedBankIds.length === 0}
                   onClick={handleAddSelectedFromBank}
                   className="h-8 bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700">
-                  Thêm{selectedBankIds.length > 0 ? ` (${selectedBankIds.length})` : ""} đề đã chọn
+                  {t("common.add")}
+                  {selectedBankIds.length > 0 ? ` (${selectedBankIds.length})` : ""}{" "}
+                  {t("adminCodeReviewProblem.selectedProblemsCount")}
                 </Button>
               </div>
             </div>
@@ -1134,7 +1155,7 @@ export const CodeReviewEditor = React.forwardRef<
                   <div className="flex flex-col items-center gap-3">
                     <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
                     <span className="text-xs font-semibold text-slate-300">
-                      AI đang sinh đề bài Code Review, vui lòng chờ trong giây lát...
+                      {t("adminCodeReviewProblem.aiGeneratingWait")}
                     </span>
                   </div>
                 </div>
@@ -1145,7 +1166,9 @@ export const CodeReviewEditor = React.forwardRef<
                 <div className="flex items-center gap-3">
                   <Plus className="h-4 w-4 text-emerald-400" />
                   <h3 className="text-xs font-bold text-white">
-                    {editingIndex !== null ? "Chỉnh sửa đề bài" : "Thiết kế đề Code Review mới"}
+                    {editingIndex !== null
+                      ? t("adminCodeReviewProblem.editProblem")
+                      : t("adminCodeReviewProblem.designNewProblem")}
                   </h3>
                   <div className="rounded-lg bg-slate-900 p-0.5">
                     <div className="flex gap-0.5">
@@ -1159,7 +1182,7 @@ export const CodeReviewEditor = React.forwardRef<
                           "rounded px-2.5 py-1 text-[10px] font-bold transition-all",
                           creationMode === "ai" ? "bg-slate-800 text-indigo-400" : "text-slate-400"
                         )}>
-                        ✨ Sinh bằng AI
+                        {t("adminCodeReviewProblem.generateByAi")}
                       </button>
                       <button
                         type="button"
@@ -1173,7 +1196,7 @@ export const CodeReviewEditor = React.forwardRef<
                             ? "bg-slate-800 text-indigo-400"
                             : "text-slate-400"
                         )}>
-                        ✏️ Thủ công
+                        {t("adminCodeReviewProblem.manual")}
                       </button>
                     </div>
                   </div>
@@ -1193,12 +1216,10 @@ export const CodeReviewEditor = React.forwardRef<
                         </div>
                         <div>
                           <h3 className="text-lg font-bold tracking-wide text-white">
-                            Thiết Kế Đề Bài Bằng Trí Tuệ Nhân Tạo (AI)
+                            {t("adminCodeReviewProblem.designByAi")}
                           </h3>
                           <p className="mt-2 max-w-md text-xs leading-relaxed text-slate-400">
-                            Nhập các tham số thiết kế bên dưới. AI sẽ tự động tạo cấu trúc các file
-                            source code chứa lỗi logic/bảo mật, đồng thời thiết lập các bình luận
-                            chỉ định lỗi review mẫu.
+                            {t("adminCodeReviewProblem.aiGenerateInstruction")}
                           </p>
                         </div>
                       </div>
@@ -1206,13 +1227,13 @@ export const CodeReviewEditor = React.forwardRef<
                       <div className="space-y-4 text-left">
                         <div>
                           <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                            Chủ đề / Lỗi bảo mật cần review *
+                            {t("adminCodeReviewProblem.topicSecurityVulnerability")}
                           </Label>
                           <Input
                             value={aiTopic}
                             onChange={(e) => setAiTopic(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAiGenerate()}
-                            placeholder="Ví dụ: Rò rỉ thông tin qua log, SQL Injection, N+1 Query..."
+                            placeholder={t("compCodeReviewEditor.exampleVulnerabilities")}
                             className="mt-1.5 h-10 border-slate-800 bg-slate-950/60 px-3 text-xs text-white focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                           />
                         </div>
@@ -1220,20 +1241,20 @@ export const CodeReviewEditor = React.forwardRef<
                         <div className="grid grid-cols-3 gap-3">
                           <div>
                             <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                              Độ khó bài tập
+                              {t("adminCodeReviewProblem.problemDifficulty")}
                             </Label>
                             <StyledSelect
                               value={aiDifficulty}
                               className="border-slate-850 mt-1.5 h-10 bg-slate-950/60 text-xs"
                               onChange={(v) => setAiDifficulty(v as "EASY" | "MEDIUM" | "HARD")}>
-                              <option value="EASY">Dễ</option>
-                              <option value="MEDIUM">Trung bình</option>
-                              <option value="HARD">Khó</option>
+                              <option value="EASY">{t("common.difficultyEasy")}</option>
+                              <option value="MEDIUM">{t("common.difficultyMedium")}</option>
+                              <option value="HARD">{t("common.difficultyHard")}</option>
                             </StyledSelect>
                           </div>
                           <div>
                             <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                              Ngôn ngữ
+                              {t("common.language")}
                             </Label>
                             <StyledSelect
                               value={aiLanguage}
@@ -1250,7 +1271,7 @@ export const CodeReviewEditor = React.forwardRef<
                           </div>
                           <div>
                             <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                              Cấp độ ứng viên
+                              {t("adminCodeReviewProblem.candidateLevel")}
                             </Label>
                             <StyledSelect
                               value={aiLevel}
@@ -1265,13 +1286,13 @@ export const CodeReviewEditor = React.forwardRef<
 
                         <div>
                           <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                            Ngữ cảnh đặc biệt / Yêu cầu bổ sung
+                            {t("adminCodeReviewProblem.specialContextAdditionalRequirements")}
                           </Label>
                           <textarea
                             value={aiRequirement}
                             onChange={(e) => setAiRequirement(e.target.value)}
                             rows={4}
-                            placeholder="Mô tả context dự án hoặc hướng dẫn đặc biệt cho AI..."
+                            placeholder={t("compCodeReviewEditor.projectContextAiPlaceholder")}
                             className="border-slate-850 mt-1.5 flex w-full rounded-md border bg-slate-950/60 px-3 py-2 text-xs text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
                           />
                         </div>
@@ -1282,7 +1303,7 @@ export const CodeReviewEditor = React.forwardRef<
                           onClick={handleAiGenerate}
                           className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 font-sans text-xs font-bold text-white shadow-lg transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
                           <Sparkles className="h-4 w-4" />
-                          Bắt đầu sinh đề bài với AI
+                          {t("adminCodeReviewProblem.startGeneratingByAi")}
                         </Button>
                       </div>
                     </div>
@@ -1314,7 +1335,8 @@ export const CodeReviewEditor = React.forwardRef<
                               ? "border-b-2 border-b-indigo-500 text-indigo-400"
                               : "text-slate-400 hover:text-slate-200"
                           )}>
-                          <Bug className="mr-1 inline-block h-3.5 w-3.5" /> Lỗi cần bắt (
+                          <Bug className="mr-1 inline-block h-3.5 w-3.5" />{" "}
+                          {t("adminCodeReviewProblem.bugsToCatchWithParen")}
                           {newProblem.expectedIssues.length})
                         </button>
                       </div>
@@ -1331,7 +1353,7 @@ export const CodeReviewEditor = React.forwardRef<
                                   ? "bg-slate-800 text-indigo-400"
                                   : "text-slate-400"
                               )}>
-                              🐛 Design Lỗi
+                              {t("adminCodeReviewProblem.designBugs")}
                             </button>
                             <button
                               type="button"
@@ -1342,7 +1364,7 @@ export const CodeReviewEditor = React.forwardRef<
                                   ? "bg-slate-800 text-indigo-400"
                                   : "text-slate-400"
                               )}>
-                              ✏️ Viết Code
+                              {t("adminCodeReviewProblem.writeCode")}
                             </button>
                           </div>
                           <Button
@@ -1350,7 +1372,8 @@ export const CodeReviewEditor = React.forwardRef<
                             variant="ghost"
                             onClick={handleAddFile}
                             className="h-7 text-[10px] font-bold text-indigo-400 hover:bg-slate-800">
-                            <Plus className="mr-1 h-3.5 w-3.5" /> Thêm File
+                            <Plus className="mr-1 h-3.5 w-3.5" />{" "}
+                            {t("adminCodeReviewProblem.addFile")}
                           </Button>
                         </div>
                       )}
@@ -1400,7 +1423,9 @@ export const CodeReviewEditor = React.forwardRef<
                                 {/* Config panel */}
                                 <div className="flex items-center gap-4 border-b border-slate-800 bg-slate-900/30 px-4 py-2 font-sans text-xs">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="font-medium text-slate-400">Tên file:</span>
+                                    <span className="font-medium text-slate-400">
+                                      {t("adminCodeReviewProblem.filename")}
+                                    </span>
                                     <input
                                       type="text"
                                       value={activeFile.filename}
@@ -1451,7 +1476,7 @@ export const CodeReviewEditor = React.forwardRef<
                                 {activeFileEditMode === "text" ? (
                                   <div className="flex flex-1 flex-col space-y-2 p-4">
                                     <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase">
-                                      Nhập mã nguồn của file
+                                      {t("adminCodeReviewProblem.enterSourceCode")}
                                     </Label>
                                     <textarea
                                       value={activeFile.content}
@@ -1461,7 +1486,9 @@ export const CodeReviewEditor = React.forwardRef<
                                         setNewProblem({ ...newProblem, files });
                                       }}
                                       className="w-full flex-1 rounded-md border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] leading-relaxed text-slate-200 focus:outline-none"
-                                      placeholder="Hãy viết hoặc dán mã nguồn chứa bug tại đây..."
+                                      placeholder={t(
+                                        "compCodeReviewEditor.sourceCodeBugPlaceholder"
+                                      )}
                                     />
                                   </div>
                                 ) : (
@@ -1580,7 +1607,9 @@ export const CodeReviewEditor = React.forwardRef<
                                                           <div className="flex items-center gap-3">
                                                             <Bug className="h-4.5 w-4.5 text-slate-400" />
                                                             <span className="font-bold text-slate-200">
-                                                              Cấu hình lỗi
+                                                              {t(
+                                                                "adminCodeReviewProblem.bugConfig"
+                                                              )}
                                                             </span>
 
                                                             {/* Severity Select directly at the top header */}
@@ -1617,7 +1646,11 @@ export const CodeReviewEditor = React.forwardRef<
                                                             }
                                                             className="flex items-center gap-1 text-[10px] text-red-400 hover:text-red-300">
                                                             <Trash className="h-3.5 w-3.5" />
-                                                            <span>Xóa lỗi</span>
+                                                            <span>
+                                                              {t(
+                                                                "adminCodeReviewProblem.deleteBug"
+                                                              )}
+                                                            </span>
                                                           </button>
                                                         </div>
 
@@ -1638,7 +1671,9 @@ export const CodeReviewEditor = React.forwardRef<
                                                               });
                                                             }}
                                                             rows={3}
-                                                            placeholder="Mô tả lỗi tại đây (AI sẽ đối chiếu mô tả này để tự động chấm điểm)..."
+                                                            placeholder={t(
+                                                              "compCodeReviewEditor.describeBugAiGradingPlaceholder"
+                                                            )}
                                                             className="border-slate-850 w-full rounded border bg-slate-950 px-2.5 py-1.5 font-sans text-xs text-white focus:outline-none"
                                                           />
                                                         </div>
@@ -1661,8 +1696,7 @@ export const CodeReviewEditor = React.forwardRef<
                         /* Summary of Expected Issues list only */
                         <div className="flex-1 space-y-3 overflow-y-auto p-4 font-sans">
                           <div className="mb-2 text-xs font-medium text-slate-400">
-                            Nhấp vào bất kỳ lỗi nào dưới đây để tự động chuyển đến file và dòng
-                            tương ứng chứa lỗi đó để chỉnh sửa.
+                            {t("adminCodeReviewProblem.clickIssueToEdit")}
                           </div>
 
                           <div className="grid grid-cols-1 gap-2.5">
@@ -1706,7 +1740,8 @@ export const CodeReviewEditor = React.forwardRef<
                                         {issue.filename || "Solution.java"}
                                       </span>
                                       <span className="rounded bg-slate-950 px-2 py-0.5 text-[10px] font-bold text-slate-400">
-                                        Dòng {issue.lineNumber}
+                                        {t("common.line")}
+                                        {issue.lineNumber}
                                       </span>
                                       <span
                                         className={cn(
@@ -1721,13 +1756,14 @@ export const CodeReviewEditor = React.forwardRef<
                                       </span>
                                     </div>
                                     <p className="mt-1 line-clamp-1 text-xs text-slate-400 group-hover:text-slate-300">
-                                      {issue.description || "(Chưa có mô tả chi tiết)"}
+                                      {issue.description ||
+                                        t("adminCodeReviewProblem.noDetailedDescription")}
                                     </p>
                                   </div>
                                 </div>
 
                                 <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 transition-colors group-hover:text-indigo-400">
-                                  <span>Sửa trong Code</span>
+                                  <span>{t("adminCodeReviewProblem.editInCode")}</span>
                                   <ArrowRight className="h-3.5 w-3.5" />
                                 </div>
                               </div>
@@ -1738,8 +1774,7 @@ export const CodeReviewEditor = React.forwardRef<
                             <div className="py-10 text-center">
                               <AlertTriangle className="mx-auto mb-2 h-8 w-8 text-amber-500/80" />
                               <p className="text-xs text-slate-400">
-                                Chưa có lỗi mẫu nào được thiết lập. Hãy chuyển sang tab Code Files
-                                để thêm.
+                                {t("adminCodeReviewProblem.noSampleBugsSet")}
                               </p>
                             </div>
                           )}

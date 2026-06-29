@@ -1,5 +1,7 @@
+import i18n from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import type { components } from "../../schema-from-be";
+const t = i18n.t.bind(i18n);
 
 type RoundConfig = components["schemas"]["RoundConfig"];
 type CodingProblemSnapshot = components["schemas"]["CodingProblemSnapshot"];
@@ -41,7 +43,7 @@ export function useRoundConfig(jdId: number) {
 
       return {
         roundId: codingRound.id,
-        roundName: codingRound.name ?? "Vòng Lập trình",
+        roundName: codingRound.name ?? t("adminCodingProblem.programmingRound"),
         maxScore: configData?.maxScore ?? 100,
         passThreshold: codingRound.passThreshold ?? 0.7,
         timeLimitMinutes: configData?.timeLimitMinutes ?? 60,
