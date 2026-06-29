@@ -20,6 +20,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -130,12 +131,13 @@ function QuestionCard({
   showReview?: boolean;
   isCorrect?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       {/* Question Header */}
       <div className="flex items-center justify-between">
         <Badge variant="outline" className="bg-[#0047AB]/10 text-[#0047AB]">
-          Câu hỏi {questionNumber} / {totalQuestions}
+          {t("common.question")} {questionNumber} / {totalQuestions}
         </Badge>
         {showReview && isCorrect !== undefined && (
           <Badge
@@ -144,7 +146,7 @@ function QuestionCard({
                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
                 : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
             )}>
-            {isCorrect ? "Đúng" : "Sai"}
+            {isCorrect ? t("userApplicationQuiz.correct") : "Sai"}
           </Badge>
         )}
       </div>
@@ -225,12 +227,12 @@ function QuestionCard({
       <div className="flex items-center justify-between pt-4">
         <Button variant="outline" onClick={onPrevious} disabled={isFirst} className="gap-2">
           <ChevronLeft className="h-4 w-4" />
-          Câu trước
+          {t("userApplicationQuiz.previousQuestion")}
         </Button>
         <Button
           onClick={onNext}
           className={cn("gap-2 bg-[#0047AB] hover:bg-[#003d91]", !selectedAnswer && "opacity-50")}>
-          {isLast ? "Xem lại" : "Câu tiếp theo"}
+          {isLast ? t("userPractice.review") : t("userAiinterview.nextSentence")}
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -262,6 +264,7 @@ function QuizResultSummary({
   totalQuestions: number;
   onBack?: () => void;
 }) {
+  const { t } = useTranslation();
   const percentage = Math.round((correctCount / totalQuestions) * 100);
   const isPass = percentage >= 50;
 
@@ -277,7 +280,7 @@ function QuizResultSummary({
               : "bg-gradient-to-br from-red-500 to-red-600"
           )}>
           <div className="mb-2 text-sm font-medium tracking-wider text-white/80 uppercase">
-            Kết quả Quiz
+            {t("userApplicationQuiz.quizResult")}
           </div>
           <div className="mb-4 text-6xl font-bold text-white">
             {score}
@@ -285,18 +288,18 @@ function QuizResultSummary({
           </div>
           <div className="text-2xl font-semibold text-white">{percentage}%</div>
           <div className="mt-2 text-white/80">
-            {correctCount}/{totalQuestions} câu đúng
+            {correctCount}/{totalQuestions} {t("userApplicationQuiz.correctAnswers")}
           </div>
           <div className="mt-4">
             {isPass ? (
               <Badge className="bg-white text-green-700 hover:bg-white/90">
                 <CheckCircle2 className="mr-1 h-4 w-4" />
-                Đậu
+                {t("userApplicationhistory.passed")}
               </Badge>
             ) : (
               <Badge className="bg-white text-red-700 hover:bg-white/90">
                 <XCircle className="mr-1 h-4 w-4" />
-                Tạch
+                {t("userApplicationhistory.failed")}
               </Badge>
             )}
           </div>
@@ -306,7 +309,9 @@ function QuizResultSummary({
       {/* Detailed Results */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Chi tiết từng câu</CardTitle>
+          <CardTitle className="text-lg">
+            {t("userApplicationQuiz.detailForEachQuestion")}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {results.map((result, idx) => (
@@ -320,7 +325,7 @@ function QuizResultSummary({
               )}>
               <div className="mb-2 flex items-start justify-between gap-2">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Câu {idx + 1}: {result.questionText}
+                  {t("common.sentence")} {idx + 1}: {result.questionText}
                 </span>
                 {result.isCorrect ? (
                   <Check className="h-5 w-5 shrink-0 text-green-500" />
@@ -330,7 +335,7 @@ function QuizResultSummary({
               </div>
               {!result.isCorrect && result.correctAnswer && (
                 <div className="mt-2 text-xs text-slate-500">
-                  <span className="font-medium">Đáp án đúng: </span>
+                  <span className="font-medium">{t("userPractice.correctAnswer")} </span>
                   <span className="font-semibold text-green-600">
                     {result.correctAnswer}. {result.questionText}
                   </span>
@@ -338,7 +343,7 @@ function QuizResultSummary({
               )}
               {result.selectedAnswer && (
                 <div className="mt-1 text-xs text-slate-500">
-                  <span className="font-medium">Bạn chọn: </span>
+                  <span className="font-medium">{t("userApplicationQuiz.youSelected")} </span>
                   <span
                     className={cn(
                       "font-semibold",
@@ -357,7 +362,7 @@ function QuizResultSummary({
       <div className="flex gap-3">
         {onBack && (
           <Button variant="outline" onClick={onBack} className="flex-1 gap-2">
-            Quay lại
+            {t("common.goBack")}
           </Button>
         )}
       </div>
@@ -382,6 +387,7 @@ function QuizReview({
   onBack: () => void;
   isSubmitting: boolean;
 }) {
+  const { t } = useTranslation();
   const answeredCount = Object.keys(answers).length;
   const unansweredCount = questions.length - answeredCount;
 
@@ -389,25 +395,25 @@ function QuizReview({
     <div className="space-y-6">
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Xem lại câu trả lời</CardTitle>
+          <CardTitle className="text-lg">{t("userApplicationQuiz.reviewAnswers")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Summary Stats */}
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg bg-green-50 p-4 text-center dark:bg-green-900/20">
               <div className="text-2xl font-bold text-green-600">{answeredCount}</div>
-              <div className="text-sm text-slate-500">Đã trả lời</div>
+              <div className="text-sm text-slate-500">{t("userApplicationQuiz.answered")}</div>
             </div>
             <div className="rounded-lg bg-amber-50 p-4 text-center dark:bg-amber-900/20">
               <div className="text-2xl font-bold text-amber-600">{unansweredCount}</div>
-              <div className="text-sm text-slate-500">Chưa trả lời</div>
+              <div className="text-sm text-slate-500">{t("userApplicationQuiz.unanswered")}</div>
             </div>
           </div>
 
           {/* Question List */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Danh sách câu hỏi
+              {t("adminQuestionbankmanagement.questionList")}
             </h4>
             <div className="grid grid-cols-5 gap-2">
               {questions.map((_q, idx) => {
@@ -433,7 +439,8 @@ function QuizReview({
             <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
               <p className="text-sm text-amber-700 dark:text-amber-300">
-                Bạn còn {unansweredCount} câu chưa trả lời. Bạn có muốn nộp bài không?
+                {t("userApplicationQuiz.youHaveRemaining")} {unansweredCount}{" "}
+                {t("userApplicationQuiz.unansweredQuestionsSubmitConfirm")}
               </p>
             </div>
           )}
@@ -444,7 +451,7 @@ function QuizReview({
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1 gap-2" disabled={isSubmitting}>
           <ChevronLeft className="h-4 w-4" />
-          Quay lại
+          {t("common.goBack")}
         </Button>
         <Button
           onClick={onSubmit}
@@ -453,11 +460,11 @@ function QuizReview({
           {isSubmitting ? (
             <>
               <Spinner size="sm" tone="white" />
-              Đang nộp...
+              {t("common.submitting")}
             </>
           ) : (
             <>
-              Nộp bài
+              {t("common.submit")}
               <Check className="h-4 w-4" />
             </>
           )}
@@ -472,6 +479,7 @@ function QuizReview({
 // ============================================================
 
 export function ApplicationQuizPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -610,7 +618,7 @@ export function ApplicationQuizPage() {
 
   // Time's up - auto submit
   const handleTimeUp = useCallback(() => {
-    toast.warning("Hết giờ! Bài sẽ được nộp tự động.");
+    toast.warning(t("userApplicationQuiz.timeUpAutoSubmit"));
     handleSubmit();
   }, [handleSubmit]);
 
@@ -634,7 +642,7 @@ export function ApplicationQuizPage() {
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-4">
           <Spinner className="h-10 w-10" />
-          <p className="text-slate-500">Đang tải câu hỏi...</p>
+          <p className="text-slate-500">{t("userApplicationQuiz.loadingQuestions")}</p>
         </div>
       </div>
     );
@@ -647,14 +655,12 @@ export function ApplicationQuizPage() {
         <Card className="max-w-md">
           <CardContent className="p-8 text-center">
             <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-amber-500" />
-            <h2 className="mb-2 text-lg font-semibold">Không tìm thấy quiz</h2>
-            <p className="mb-6 text-sm text-slate-500">
-              Không có câu hỏi quiz nào cho vòng thi này. Vui lòng quay lại.
-            </p>
+            <h2 className="mb-2 text-lg font-semibold">{t("userApplicationQuiz.quizNotFound")}</h2>
+            <p className="mb-6 text-sm text-slate-500">{t("application.noRounds")}</p>
             <Button
               onClick={() => navigate("/user?tab=applicationHistory")}
               className="gap-2 bg-[#0047AB]">
-              Quay lại
+              {t("common.goBack")}
             </Button>
           </CardContent>
         </Card>
@@ -673,7 +679,7 @@ export function ApplicationQuizPage() {
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1">
               <ChevronLeft className="h-4 w-4" />
-              Quay lại
+              {t("common.goBack")}
             </Button>
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
             <div>
@@ -681,7 +687,8 @@ export function ApplicationQuizPage() {
                 {quizConfig?.roundName ?? "Quiz"}
               </h1>
               <p className="text-xs text-slate-500">
-                {questions.length} câu hỏi • {quizConfig?.timeLimitMinutes ?? 30} phút
+                {questions.length} {t("userApplicationQuiz.questionsDot")}{" "}
+                {quizConfig?.timeLimitMinutes ?? 30} {t("common.minutes")}
               </p>
             </div>
           </div>
@@ -715,11 +722,12 @@ export function ApplicationQuizPage() {
                     </svg>
                   </div>
                   <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-slate-100">
-                    Bài Quiz: {quizConfig?.roundName ?? "Quiz"}
+                    {t("userApplicationQuiz.quizExam")} {quizConfig?.roundName ?? "Quiz"}
                   </h2>
                   <p className="mx-auto max-w-md text-slate-600 dark:text-slate-400">
-                    {questions.length} câu hỏi • Thời gian: {quizConfig?.timeLimitMinutes ?? 30}{" "}
-                    phút • Điểm tối đa: {quizConfig?.maxScore ?? 100}
+                    {questions.length} {/*câu hỏi •*/} {t("common.time")}:{" "}
+                    {quizConfig?.timeLimitMinutes ?? 30} {t("common.minute")} {/*• Điểm tối đa:*/}{" "}
+                    {quizConfig?.maxScore ?? 100}
                   </p>
                 </div>
 
@@ -737,10 +745,10 @@ export function ApplicationQuizPage() {
                     size="lg"
                     className="w-full gap-2 bg-[#0047AB] text-base hover:bg-[#003d91]">
                     <Check className="h-5 w-5" />
-                    Bắt đầu làm bài
+                    {t("userApplicationQuiz.startExam")}
                   </Button>
                   <p className="text-xs text-slate-400">
-                    * Bài làm sẽ được lưu tự động. Bạn có thể tắt và quay lại trước khi hết giờ.
+                    {t("userApplicationQuiz.autoSaveNotice")}
                   </p>
                 </div>
               </CardContent>

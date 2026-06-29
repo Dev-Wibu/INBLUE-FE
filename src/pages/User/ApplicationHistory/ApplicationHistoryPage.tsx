@@ -311,7 +311,7 @@ function SubmissionPreview({
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {sd.codeSubmissions.length > 1
               ? `${sd.codeSubmissions.length} bài nộp code`
-              : "Bài nộp code"}
+              : t("submission.codeSubmission")}
           </p>
           {sd.codeSubmissions.map((submission, idx) => (
             <CodeSubmissionViewer
@@ -428,7 +428,7 @@ function AIFeedbackCard({
                 <div className="mb-1 flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5 text-[#0047AB]" />
                   <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">
-                    Điểm chi tiết theo tiêu chí
+                    {t("grading.detailedScoreByCriteria")}
                   </span>
                 </div>
                 {criteria.map((c) => {
@@ -507,7 +507,7 @@ function AIFeedbackCard({
                   <div className="mb-2 flex items-center gap-1.5">
                     <TrendingUp className="h-3.5 w-3.5 text-[#0047AB]" />
                     <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Điểm phân tích chi tiết
+                      {t("grading.detailedAnalysisScore")}
                     </span>
                   </div>
                   {/* Match scores */}
@@ -555,7 +555,7 @@ function AIFeedbackCard({
                   {keywordDensity && (
                     <div className="mb-2">
                       <div className="mb-1 text-[10px] font-medium text-slate-500">
-                        Từ khóa trong CV
+                        {t("cv.keywords")}
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {Object.entries(keywordDensity)
@@ -575,7 +575,9 @@ function AIFeedbackCard({
                   {/* Potential red flags */}
                   {redFlags && redFlags.length > 0 && (
                     <div>
-                      <div className="mb-1 text-[10px] font-medium text-red-500">Cảnh báo</div>
+                      <div className="mb-1 text-[10px] font-medium text-red-500">
+                        {t("general.warning")}
+                      </div>
                       <ul className="space-y-0.5">
                         {redFlags.slice(0, 2).map((flag, i) => (
                           <li
@@ -597,7 +599,7 @@ function AIFeedbackCard({
         <div className="mt-3 space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
-              HR nhận xét
+              {t("grading.hrReview")}
             </span>
           </div>
           {hrScore !== undefined && hrScore !== null && (
