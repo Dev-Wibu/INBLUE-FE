@@ -3880,7 +3880,11 @@
     "issuesToCatchCount": "Issues to catch ({{count}})",
     "highlightLanguage": "Highlight Language",
     "aiGenerating": "AI is generating code review problem, please wait...",
-    "clickIssueToEdit": "Click on any issue below to automatically jump to the corresponding file and line containing that issue for editing."
+    "clickIssueToEdit": "Click on any issue below to automatically jump to the corresponding file and line containing that issue for editing.",
+    "noIssues": "No issues in this file",
+    "selectFromList": "Select an exercise from the list to view details",
+    "updateFailed": "Cannot update problem",
+    "createNew": "Create new"
   },
   "adminQuestionbankmanagement": {
     "addQuestion": "Add question",

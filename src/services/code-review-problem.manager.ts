@@ -99,6 +99,35 @@ export class CodeReviewProblemManager {
   }
 
   /**
+   * Update a code review problem
+   * PUT /api/code-review-problems/{id}
+   */
+  async update(
+    id: number,
+    data: Partial<CodeReviewProblem>
+  ): Promise<ApiResponse<CodeReviewProblem>> {
+    try {
+      const response = await fetchClient
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .PUT(`/api/code-review-problems/${encodeURIComponent(id)}` as any, {
+          body: data as never,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : i18n.t("adminCodeReviewProblem.updateFailed"),
+      };
+    }
+  }
+
+  /**
    * Generate a code review problem using AI
    * POST /api/code-review-problems/generate
    */

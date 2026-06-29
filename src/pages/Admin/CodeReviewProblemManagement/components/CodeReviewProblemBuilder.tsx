@@ -1,6 +1,7 @@
-import { Button } from "@/components/ui/button";
+﻿import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -53,10 +54,13 @@ function StyledSelect({
 export function CodeReviewProblemBuilder({
   onSuccess,
   onCancel,
+  initialData,
 }: {
   onSuccess: () => void;
   onCancel: () => void;
+  initialData?: CodeReviewProblem | null;
 }) {
+  const monacoTheme = useMonacoTheme();
   const [creationMode, setCreationMode] = React.useState<"ai" | "manual">("manual");
   const [aiGeneratedLoaded, setAiGeneratedLoaded] = React.useState(true);
   const [createTabMode, setCreateTabMode] = React.useState<"code" | "issues">("code");
@@ -71,12 +75,14 @@ export function CodeReviewProblemBuilder({
     files: CodeFile[];
     expectedIssues: ExpectedIssue[];
   }>({
-    title: "",
-    difficulty: "EASY",
-    language: "Java",
-    problemStatement: "",
-    files: [{ filename: "Solution.java", content: "", language: "java" }],
-    expectedIssues: [],
+    title: initialData?.title || "",
+    difficulty: initialData?.difficulty || "EASY",
+    language: initialData?.language || "Java",
+    problemStatement: initialData?.problemStatement || "",
+    files: initialData?.files?.length
+      ? initialData.files
+      : [{ filename: "Solution.java", content: "", language: "java" }],
+    expectedIssues: initialData?.expectedIssues || [],
   });
 
   // AI states
@@ -156,9 +162,18 @@ export function CodeReviewProblemBuilder({
         expectedIssues:
           newProblem.expectedIssues.length > 0 ? newProblem.expectedIssues : undefined,
       };
-      const response = await codeReviewProblemManager.create(payload);
+
+      let response;
+      if (initialData?.id) {
+        response = await codeReviewProblemManager.update(initialData.id, payload);
+      } else {
+        response = await codeReviewProblemManager.create(payload);
+      }
+
       if (response.success) {
-        toast.success(t("problem.createdSuccessfully"));
+        toast.success(
+          initialData?.id ? t("adminCodingProblem.updateSuccess") : t("problem.createdSuccessfully")
+        );
         onSuccess();
       } else {
         toast.error(response.error || t("adminCodeReviewProblem.cannotSaveProblem"));
@@ -538,7 +553,7 @@ export function CodeReviewProblemBuilder({
                                 newProblem.files[createActiveFileIdx].language?.toLowerCase() ||
                                 "csharp"
                               }
-                              theme="vs-dark"
+                              theme={monacoTheme}
                               value={newProblem.files[createActiveFileIdx].content}
                               onChange={(val) => {
                                 const files = [...newProblem.files];

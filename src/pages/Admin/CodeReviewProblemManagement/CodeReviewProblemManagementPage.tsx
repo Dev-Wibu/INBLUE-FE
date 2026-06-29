@@ -16,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate } from "@/lib/formatting";
@@ -25,34 +27,31 @@ import {
   codeReviewProblemManager,
   type CodeReviewProblem,
 } from "@/services/code-review-problem.manager";
+import { useThemeStore } from "@/stores/themeStore";
+import Editor from "@monaco-editor/react";
 import {
   AlertTriangle,
   Bot,
   Bug,
+  ChevronRight,
   Eye,
   EyeOff,
   FileCode2,
   Lightbulb,
   Loader2,
+  Pencil,
   Plus,
 } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
-import java from "react-syntax-highlighter/dist/cjs/languages/prism/java";
-import sql from "react-syntax-highlighter/dist/cjs/languages/prism/sql";
-import tsx from "react-syntax-highlighter/dist/cjs/languages/prism/tsx";
-import typescript from "react-syntax-highlighter/dist/cjs/languages/prism/typescript";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { toast } from "sonner";
 import { CodeReviewProblemBuilder } from "./components/CodeReviewProblemBuilder";
 
-SyntaxHighlighter.registerLanguage("tsx", tsx);
-SyntaxHighlighter.registerLanguage("typescript", typescript);
-SyntaxHighlighter.registerLanguage("java", java);
-SyntaxHighlighter.registerLanguage("sql", sql);
-
-type ViewState = { mode: "list" } | { mode: "create" } | { mode: "detail"; problemId: number };
+type ViewState =
+  | { mode: "list" }
+  | { mode: "create" }
+  | { mode: "detail"; problemId: number }
+  | { mode: "edit"; problem: CodeReviewProblem };
 
 type SortableProblem = CodeReviewProblem & {
   idSortValue: number;
@@ -63,10 +62,15 @@ type SortableProblem = CodeReviewProblem & {
 
 export function CodeReviewProblemManagementPage() {
   const { t } = useTranslation();
+  const monacoTheme = useMonacoTheme();
+  const theme = useThemeStore((state) => state.theme);
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [view, setView] = useState<ViewState>({ mode: "list" });
   const [problems, setProblems] = useState<CodeReviewProblem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [selectedProblem, setSelectedProblem] = useState<CodeReviewProblem | null>(null);
@@ -82,7 +86,9 @@ export function CodeReviewProblemManagementPage() {
 
   const loadProblems = useCallback(
     async (showReloading = false) => {
-      if (!showReloading) {
+      if (showReloading) {
+        setIsReloading(true);
+      } else {
         setIsLoading(true);
       }
       try {
@@ -96,7 +102,9 @@ export function CodeReviewProblemManagementPage() {
       } catch {
         toast.error(t("common.unableToLoadArticleList"));
       } finally {
-        if (!showReloading) {
+        if (showReloading) {
+          setIsReloading(false);
+        } else {
           setIsLoading(false);
         }
       }
@@ -108,32 +116,15 @@ export function CodeReviewProblemManagementPage() {
     void loadProblems();
   }, [loadProblems]);
 
-  const filteredProblems = useMemo(() => {
-    return problems.filter((problem) => {
-      if (difficultyFilter !== "all" && problem.difficulty !== difficultyFilter) {
-        return false;
-      }
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        return (
-          problem.title?.toLowerCase().includes(q) ||
-          problem.language?.toLowerCase().includes(q) ||
-          String(problem.id).includes(q)
-        );
-      }
-      return true;
-    });
-  }, [problems, searchQuery, difficultyFilter]);
-
   const sortableProblems = useMemo<SortableProblem[]>(() => {
-    return filteredProblems.map((problem) => ({
+    return problems.map((problem) => ({
       ...problem,
       idSortValue: typeof problem.id === "number" ? problem.id : 0,
       titleSortValue: problem.title?.toLowerCase() || "",
       difficultySortValue: problem.difficulty || "",
       createdAtSortValue: problem.createdAt ? new Date(problem.createdAt).getTime() : 0,
     }));
-  }, [filteredProblems]);
+  }, [problems]);
 
   const { sortedData } = useSortable(sortableProblems, {
     defaultSort: { key: "createdAtSortValue", direction: "desc" },
@@ -151,6 +142,23 @@ export function CodeReviewProblemManagementPage() {
     () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
     [pagination.endIndex, pagination.startIndex, sortedData]
   );
+
+  const filteredProblems = useMemo(() => {
+    return problems.filter((problem) => {
+      if (difficultyFilter !== "all" && problem.difficulty !== difficultyFilter) {
+        return false;
+      }
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (
+          problem.title?.toLowerCase().includes(q) ||
+          problem.language?.toLowerCase().includes(q) ||
+          String(problem.id).includes(q)
+        );
+      }
+      return true;
+    });
+  }, [problems, searchQuery, difficultyFilter]);
 
   const getDifficultyBadge = (difficulty?: string) => {
     switch (difficulty) {
@@ -185,24 +193,92 @@ export function CodeReviewProblemManagementPage() {
     setView({ mode: "list" });
   };
 
+  const handleEditProblem = () => {
+    if (selectedProblem) {
+      setView({ mode: "edit", problem: selectedProblem });
+    }
+  };
+
   if (view.mode === "create") {
     return (
       <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-        <div className="z-10 shrink-0 border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                <Bot className="h-5 w-5 text-indigo-500" />
-                {t("adminCodeReviewProblem.pageTitle") || t("adminCodeReviewProblem.pageTitle")}
-              </h1>
+        <div className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex h-12 items-center gap-2 text-sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="h-8 px-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
+                <ChevronRight className="mr-1 h-3 w-3 rotate-180" />
+                {t("general.back")}
+              </Button>
+              <Separator orientation="vertical" className="mx-2 h-4" />
+              <nav className="flex items-center gap-2 text-xs text-slate-500">
+                <span
+                  className="cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
+                  onClick={handleBack}>
+                  {t("adminCodeReviewProblem.pageTitle")}
+                </span>
+                <ChevronRight className="h-3 w-3" />
+                <span className="font-medium text-slate-900 dark:text-slate-200">
+                  {t("adminCodeReviewProblem.createNew", "Create new")}
+                </span>
+              </nav>
             </div>
-            {/* The CodeReviewProblemBuilder has its own Cancel button, but we can add a Back button here if needed.
-                Since user asked to just keep it like the management page, we leave the title as is. */}
           </div>
         </div>
 
         <div className="flex-1 overflow-hidden">
           <CodeReviewProblemBuilder
+            onSuccess={() => {
+              handleBack();
+              void loadProblems(true);
+            }}
+            onCancel={handleBack}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (view.mode === "edit") {
+    return (
+      <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <div className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex h-12 items-center gap-2 text-sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="h-8 px-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
+                <ChevronRight className="mr-1 h-3 w-3 rotate-180" />
+                {t("general.back")}
+              </Button>
+              <Separator orientation="vertical" className="mx-2 h-4" />
+              <nav className="flex items-center gap-2 text-xs text-slate-500">
+                <span
+                  className="cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
+                  onClick={handleBack}>
+                  {t("adminCodeReviewProblem.pageTitle")}
+                </span>
+                <ChevronRight className="h-3 w-3" />
+                <span className="font-medium text-slate-900 dark:text-slate-200">
+                  {view.problem.title}
+                </span>
+                <ChevronRight className="h-3 w-3" />
+                <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                  {t("general.edit")}
+                </span>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-hidden">
+          <CodeReviewProblemBuilder
+            initialData={view.problem}
             onSuccess={() => {
               handleBack();
               void loadProblems(true);
@@ -367,224 +443,219 @@ export function CodeReviewProblemManagementPage() {
                   {selectedProblem.title}
                 </h2>
 
-                {selectedProblem.problemStatement && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20">
-                        <Lightbulb className="h-4 w-4" />
-                        {/*Mô tả*/} {t("common.exercises")}
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-xl">
-                          <Lightbulb className="h-5 w-5 text-amber-500" />
-                          Mô tả {t("common.exercises")}
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="prose prose-sm dark:prose-invert mt-4 max-w-none font-sans whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                        {selectedProblem.problemStatement}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
+                <div className="flex items-center gap-2">
+                  {selectedProblem.problemStatement && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20">
+                          <Lightbulb className="h-4 w-4" />
+                          {t("common.exercises")}
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2 text-xl">
+                            <Lightbulb className="h-5 w-5 text-amber-500" />
+                            {t("common.exercises")}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="prose prose-sm dark:prose-invert mt-4 max-w-none font-sans whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                          {selectedProblem.problemStatement}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleEditProblem}
+                    className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20">
+                    <Pencil className="h-4 w-4" />
+                    {t("general.edit")}
+                  </button>
+                </div>
               </div>
 
               {/* IDE-like File Viewer Section */}
               {selectedProblem.files && selectedProblem.files.length > 0 && (
-                <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950/50">
-                  {/* File Tabs */}
-                  <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60">
-                    {(selectedProblem.files || []).map((f, fIdx) => (
-                      <button
-                        key={fIdx}
-                        onClick={() => setViewActiveFileIdx(fIdx)}
-                        className={cn(
-                          "flex items-center gap-2 border-r border-slate-200 px-4 py-2.5 text-xs font-semibold transition-all dark:border-slate-800",
-                          viewActiveFileIdx === fIdx
-                            ? "border-b-2 border-b-indigo-500 bg-white text-indigo-600 dark:bg-slate-950 dark:text-indigo-400"
-                            : "text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                        )}>
-                        <FileCode2
-                          className={cn(
-                            "h-3.5 w-3.5",
-                            viewActiveFileIdx === fIdx ? "text-indigo-500" : ""
-                          )}
-                        />
-                        {f.filename || "Untitled"}
-                      </button>
-                    ))}
+                <div
+                  className={cn(
+                    "flex flex-1 overflow-hidden",
+                    isDark ? "bg-slate-950" : "bg-slate-200"
+                  )}>
+                  {/* Monaco Editor Pane */}
+                  <div className="relative flex min-w-0 flex-1 flex-col">
+                    {/* File Tabs */}
+                    <div
+                      className={cn(
+                        "flex items-center justify-between border-b px-2",
+                        isDark ? "border-slate-800 bg-slate-950" : "border-slate-300 bg-slate-200"
+                      )}>
+                      <div className="flex overflow-x-auto">
+                        {(selectedProblem.files || []).map((f, fIdx) => (
+                          <button
+                            key={fIdx}
+                            onClick={() => setViewActiveFileIdx(fIdx)}
+                            className={cn(
+                              "flex items-center gap-1.5 border-r px-3 py-2.5 text-xs font-semibold transition-all",
+                              isDark ? "border-slate-800" : "border-slate-300",
+                              viewActiveFileIdx === fIdx
+                                ? isDark
+                                  ? "border-b-2 border-b-indigo-500 text-indigo-400"
+                                  : "border-b-2 border-b-indigo-600 text-indigo-700"
+                                : isDark
+                                  ? "text-slate-500 hover:bg-slate-900 hover:text-slate-300"
+                                  : "text-slate-600 hover:bg-slate-300 hover:text-slate-800"
+                            )}>
+                            <FileCode2
+                              className={cn(
+                                "h-3.5 w-3.5",
+                                viewActiveFileIdx === fIdx
+                                  ? isDark
+                                    ? "text-indigo-400"
+                                    : "text-indigo-600"
+                                  : ""
+                              )}
+                            />
+                            {f.filename || "Untitled"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Monaco Editor */}
+                    <div className="relative flex-1 overflow-hidden">
+                      <Editor
+                        height="100%"
+                        language={(
+                          selectedProblem.files[viewActiveFileIdx]?.language || "java"
+                        ).toLowerCase()}
+                        value={selectedProblem.files[viewActiveFileIdx]?.content || ""}
+                        theme={monacoTheme}
+                        options={{
+                          readOnly: true,
+                          minimap: { enabled: false },
+                          scrollBeyondLastLine: false,
+                          fontSize: 13,
+                          lineNumbers: "on",
+                          folding: true,
+                          wordWrap: "on",
+                          padding: { top: 12, bottom: 12 },
+                          scrollbar: {
+                            verticalScrollbarSize: 6,
+                            horizontalScrollbarSize: 6,
+                          },
+                          renderLineHighlight: "none",
+                          overviewRulerLanes: 0,
+                          hideCursorInOverviewRuler: true,
+                          overviewRulerBorder: false,
+                          glyphMargin: false,
+                        }}
+                      />
+                    </div>
                   </div>
 
-                  {/* Code Workspace view with annotations */}
-                  <div className="flex-1 overflow-y-auto bg-slate-50 p-4 leading-relaxed select-text dark:bg-slate-950/50">
-                    {(() => {
-                      const file = (selectedProblem.files || [])[viewActiveFileIdx];
-                      if (!file)
-                        return (
-                          <div className="p-4 text-slate-500 italic">
-                            {t("adminCodeReviewProblem.emptyFile")}
-                          </div>
+                  {/* Issue Annotations Sidebar */}
+                  <div
+                    className={cn(
+                      "w-[280px] shrink-0 overflow-y-auto border-l p-3",
+                      isDark ? "border-slate-800 bg-slate-900/80" : "border-slate-300 bg-slate-100"
+                    )}>
+                    <div
+                      className={cn(
+                        "mb-3 flex items-center gap-2 text-xs font-bold",
+                        isDark ? "text-slate-300" : "text-slate-700"
+                      )}>
+                      <Bug className="h-4 w-4 text-rose-500" />
+                      {t("adminCodeReviewProblem.expectedIssues")} (
+                      {selectedProblem.expectedIssues?.length || 0})
+                    </div>
+                    <div className="space-y-2">
+                      {(() => {
+                        const file = (selectedProblem.files || [])[viewActiveFileIdx];
+                        const fileIssues = (selectedProblem.expectedIssues || []).filter(
+                          (iss) => iss.filename === file?.filename
                         );
-
-                      return (
-                        <SyntaxHighlighter
-                          language={file.language ? file.language.toLowerCase() : "typescript"}
-                          style={vscDarkPlus}
-                          customStyle={{ margin: 0, padding: 0, background: "transparent" }}
-                          wrapLines={true}
-                          renderer={({ rows, stylesheet, useInlineStyles }) => {
-                            const renderAst = (node: unknown, i: number): React.ReactNode => {
-                              const n = node as Record<string, unknown>;
-                              if (n.type === "text") return n.value as string;
-                              if (n.type === "element") {
-                                const props: Record<string, unknown> = { key: i };
-                                if (n.properties) {
-                                  const p = n.properties as Record<string, unknown>;
-                                  if (p.className) {
-                                    const classes = p.className as string[];
-                                    props.className = classes.join(" ");
-                                    if (useInlineStyles && stylesheet) {
-                                      props.style = classes.reduce((acc, cls) => {
-                                        return { ...acc, ...(stylesheet[cls] || {}) };
-                                      }, {});
-                                    }
-                                  }
-                                  if (p.style) {
-                                    props.style = {
-                                      ...((props.style as object) || {}),
-                                      ...(p.style as object),
-                                    };
-                                  }
-                                }
-                                return React.createElement(
-                                  n.tagName as string,
-                                  props,
-                                  n.children
-                                    ? (n.children as unknown[]).map((child: unknown, idx: number) =>
-                                        renderAst(child, idx)
-                                      )
-                                    : null
-                                );
-                              }
-                              return null;
-                            };
-
-                            return (
-                              <div className="w-full">
-                                {rows.map((row, lineIdx) => {
-                                  const currentLineNum = lineIdx + 1;
-                                  const lineIssues = (selectedProblem.expectedIssues || []).filter(
-                                    (iss) =>
-                                      iss.filename === file.filename &&
-                                      Number(iss.lineNumber) === currentLineNum
-                                  );
-
-                                  const toggleKey = `view-${file.filename}-${currentLineNum}`;
-                                  const isExpanded = !!expandedIssues[toggleKey];
-
-                                  return (
-                                    <React.Fragment key={lineIdx}>
-                                      <div
-                                        className={cn(
-                                          "group relative flex items-center rounded-sm px-1 py-0.5 hover:bg-slate-200/50 dark:hover:bg-slate-800/40",
-                                          lineIssues.length > 0 &&
-                                            "border-l-2 border-l-red-500 bg-red-50 dark:bg-red-950/10"
-                                        )}>
-                                        {/* Gutter Gutter on the LEFT side */}
-                                        <div className="flex w-20 shrink-0 items-center justify-end gap-1.5 pr-2.5 select-none">
-                                          {lineIssues.length > 0 && (
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                setExpandedIssues((prev) => ({
-                                                  ...prev,
-                                                  [toggleKey]: !prev[toggleKey],
-                                                }));
-                                              }}
-                                              className={cn(
-                                                "flex items-center justify-center rounded-full transition-colors",
-                                                isExpanded
-                                                  ? "text-red-600 hover:text-red-700 dark:text-red-400"
-                                                  : "text-red-400 hover:text-red-600 dark:text-red-500"
-                                              )}>
-                                              {isExpanded ? (
-                                                <Eye className="h-4 w-4" />
-                                              ) : (
-                                                <EyeOff className="h-4 w-4" />
-                                              )}
-                                            </button>
-                                          )}
-                                          <span className="w-6 text-right font-semibold text-slate-400 dark:text-slate-600">
-                                            {currentLineNum}
-                                          </span>
-                                        </div>
-
-                                        {/* Code Line Content */}
-                                        <div className="ml-4 flex-1 font-mono break-all whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                                          {row.children
-                                            ? row.children.map((child, idx) =>
-                                                renderAst(child, idx)
-                                              )
-                                            : null}
-                                        </div>
-                                      </div>
-
-                                      {/* Expanded Issue Detail */}
-                                      {isExpanded && lineIssues.length > 0 && (
-                                        <div className="animate-in fade-in slide-in-from-top-1 my-1.5 mr-2 ml-20 flex">
-                                          <div className="relative w-full rounded-md border border-red-200 bg-white p-3 shadow-sm dark:border-red-900/50 dark:bg-slate-900">
-                                            <div className="absolute top-3 -left-2 h-0 w-0 border-y-[6px] border-r-[8px] border-y-transparent border-r-red-200 dark:border-r-red-900/50"></div>
-                                            <div className="absolute top-[13px] -left-[7px] h-0 w-0 border-y-[5px] border-r-[7px] border-y-transparent border-r-white dark:border-r-slate-900"></div>
-
-                                            <div className="flex flex-col gap-3">
-                                              {lineIssues.map((iss, iIdx) => (
-                                                <div key={iIdx} className="flex gap-2">
-                                                  <Bug className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
-                                                  <div className="flex flex-col gap-1">
-                                                    <div className="flex items-center gap-2">
-                                                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                                        {t("common.error")} {/*dòng*/}{" "}
-                                                        {iss.lineNumber}
-                                                      </span>
-                                                      <Badge
-                                                        variant="outline"
-                                                        className={cn(
-                                                          "h-5 border-transparent px-1.5 text-[10px] uppercase",
-                                                          (iss.severity as string) === "CRITICAL" &&
-                                                            "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400",
-                                                          (iss.severity as string) === "HIGH" &&
-                                                            "bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400",
-                                                          (iss.severity as string) === "MEDIUM" &&
-                                                            "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400",
-                                                          (iss.severity as string) === "LOW" &&
-                                                            "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400",
-                                                          (iss.severity as string) === "INFO" &&
-                                                            "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                                                        )}>
-                                                        {iss.severity}
-                                                      </Badge>
-                                                    </div>
-                                                    <p className="font-sans text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
-                                                      {iss.description}
-                                                    </p>
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </React.Fragment>
-                                  );
-                                })}
-                              </div>
-                            );
-                          }}>
-                          {(file.content || "").replace(/\\n/g, "\n")}
-                        </SyntaxHighlighter>
-                      );
-                    })()}
+                        if (fileIssues.length === 0) {
+                          return (
+                            <p
+                              className={cn(
+                                "text-xs",
+                                isDark ? "text-slate-600" : "text-slate-500"
+                              )}>
+                              {t("adminCodeReviewProblem.noIssues", "No issues in this file")}
+                            </p>
+                          );
+                        }
+                        return fileIssues.map((issue, idx) => {
+                          const toggleKey = `view-${issue.filename}-${issue.lineNumber}`;
+                          const isExpanded = !!expandedIssues[toggleKey];
+                          return (
+                            <div key={idx}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setExpandedIssues((prev) => ({
+                                    ...prev,
+                                    [toggleKey]: !prev[toggleKey],
+                                  }));
+                                }}
+                                className={cn(
+                                  "flex w-full items-center gap-2 rounded-md border px-2.5 py-2 text-left text-xs transition-colors",
+                                  issue.severity === "CRITICAL"
+                                    ? isDark
+                                      ? "border-red-900/60 bg-red-950/30 text-red-300 hover:bg-red-950/60"
+                                      : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                                    : issue.severity === "WARNING"
+                                      ? isDark
+                                        ? "border-amber-900/60 bg-amber-950/30 text-amber-300 hover:bg-amber-950/60"
+                                        : "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                                      : isDark
+                                        ? "border-blue-900/60 bg-blue-950/30 text-blue-300 hover:bg-blue-950/60"
+                                        : "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                                )}>
+                                <Bug className="h-3.5 w-3.5 shrink-0" />
+                                <span className="flex-1 truncate">
+                                  {t("general.lineNumber")} {issue.lineNumber}
+                                </span>
+                                {isExpanded ? (
+                                  <Eye className="h-3.5 w-3.5 shrink-0" />
+                                ) : (
+                                  <EyeOff className="h-3.5 w-3.5 shrink-0" />
+                                )}
+                              </button>
+                              {isExpanded && (
+                                <div
+                                  className={cn(
+                                    "mt-1.5 rounded-md border p-2.5 text-xs",
+                                    isDark
+                                      ? "border-slate-700 bg-slate-900/50"
+                                      : "border-slate-200 bg-white"
+                                  )}>
+                                  <div
+                                    className={cn(
+                                      "mb-1.5 font-semibold uppercase",
+                                      issue.severity === "CRITICAL"
+                                        ? "text-red-500"
+                                        : issue.severity === "WARNING"
+                                          ? "text-amber-500"
+                                          : "text-blue-500"
+                                    )}>
+                                    {issue.severity}
+                                  </div>
+                                  <p
+                                    className={cn(
+                                      "leading-relaxed",
+                                      isDark ? "text-slate-300" : "text-slate-600"
+                                    )}>
+                                    {issue.description}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
                   </div>
                 </div>
               )}
@@ -595,11 +666,13 @@ export function CodeReviewProblemManagementPage() {
                 <Bot className="h-10 w-10 text-slate-300 dark:text-slate-600" />
               </div>
               <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
-                {/*Chưa chọn*/} {t("common.exercises")}
+                {t("common.exercises")}
               </h3>
               <p className="max-w-sm text-slate-500 dark:text-slate-400">
-                {/*Chọn một*/} {t("common.exercises")} từ danh sách bên trái để xem chi tiết thông
-                tin, mã nguồn và các lỗi cần tìm.
+                {t(
+                  "adminCodeReviewProblem.selectFromList",
+                  "Select an exercise from the list to view details"
+                )}
               </p>
             </div>
           )}
