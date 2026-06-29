@@ -1,4 +1,6 @@
 "use client";
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,7 +10,6 @@ import { applicationDetailManager } from "@/services/application-detail.manager"
 import Editor from "@monaco-editor/react";
 import { BookOpen, CheckCircle2, Clock, Code2, FileCode2, Send, Terminal } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../schema-from-be";
 
@@ -62,8 +63,6 @@ export function CodingSubmissionModal({
   timeLimitMinutes = 60,
   onSuccess,
 }: CodingSubmissionModalProps) {
-  const { t } = useTranslation();
-
   const [activeProblemIdx, setActiveProblemIdx] = useState(0);
   const [language, setLanguage] = useState("JAVA");
   const [codes, setCodes] = useState<Record<number, string>>({});
@@ -150,7 +149,7 @@ export function CodingSubmissionModal({
 
   const handleSubmit = async () => {
     if (problems.length === 0) {
-      toast.warning("Chưa có bài tập nào. Không thể nộp bài.");
+      toast.warning(t("compCodingSubmissionModal.noProblemsCannotSubmit"));
       return;
     }
 
@@ -190,15 +189,19 @@ export function CodingSubmissionModal({
         toast.success(
           result.data?.message ??
             t("common.applicationSubmittedSuccessfully") ??
-            "Nộp bài thành công!"
+            t("compCodingSubmissionModal.submitSuccess")
         );
         onSuccess?.(result.data?.message);
       } else {
-        toast.error(result.error ?? t("common.anErrorHasOccurred") ?? "Có lỗi xảy ra");
+        toast.error(
+          result.error ??
+            t("common.anErrorHasOccurred") ??
+            t("compCodingSubmissionModal.errorOccurred")
+        );
       }
     } catch (e) {
       console.error(e);
-      toast.error(t("common.anErrorHasOccurred") ?? "Có lỗi xảy ra");
+      toast.error(t("common.anErrorHasOccurred") ?? t("compCodingSubmissionModal.errorOccurred"));
     } finally {
       setIsSubmitting(false);
     }
@@ -228,13 +231,13 @@ export function CodingSubmissionModal({
               </div>
               <div className="min-w-0">
                 <div className="truncate text-slate-900 dark:text-white">
-                  {roundName ?? "Vòng Lập trình"}
+                  {roundName ?? t("adminCodingProblem.programmingRound")}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400">
                     {problems.length > 0
                       ? `${problems.length} bài tập · ${LANGUAGES.find((l) => l.value === language)?.label}`
-                      : "Chưa có đề bài"}
+                      : t("adminCodingProblem.noProblem")}
                   </span>
                 </div>
               </div>
@@ -245,7 +248,7 @@ export function CodingSubmissionModal({
                 <div className="flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 ring-1 ring-amber-200 dark:bg-amber-900/20 dark:ring-amber-800">
                   <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                   <span className="text-xs font-bold text-amber-700 tabular-nums dark:text-amber-300">
-                    {timeLimitMinutes} phút
+                    {timeLimitMinutes} {t("common.minute")}
                   </span>
                 </div>
               )}
@@ -257,12 +260,12 @@ export function CodingSubmissionModal({
                 {isSubmitting ? (
                   <>
                     <Spinner size="sm" tone="white" />
-                    <span>Đang nộp...</span>
+                    <span>{t("common.submitting")}</span>
                   </>
                 ) : (
                   <>
                     <Send className="h-3.5 w-3.5" />
-                    <span>Nộp bài</span>
+                    <span>{t("compCodingSubmissionModal.submitExam")}</span>
                   </>
                 )}
               </Button>
@@ -285,7 +288,7 @@ export function CodingSubmissionModal({
               className="group flex h-10 shrink-0 items-center justify-between border-b border-slate-200 px-3 dark:border-slate-700 dark:bg-slate-800/50">
               {!sidebarCollapsed && (
                 <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                  Bài tập
+                  {t("compCodingSubmissionModal.problem")}
                 </span>
               )}
               <div className="ml-auto rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200">
@@ -308,8 +311,12 @@ export function CodingSubmissionModal({
                 {problems.length === 0 ? (
                   <div className="flex flex-col items-center px-4 py-8 text-center">
                     <BookOpen className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                    <p className="mt-3 text-xs font-medium text-slate-400">Chưa có đề bài</p>
-                    <p className="mt-1 text-[10px] text-slate-400">Admin chưa cấu hình bài tập</p>
+                    <p className="mt-3 text-xs font-medium text-slate-400">
+                      {t("compCodingSubmissionModal.noProblem")}
+                    </p>
+                    <p className="mt-1 text-[10px] text-slate-400">
+                      {t("compCodingSubmissionModal.adminNotConfiguredProblems")}
+                    </p>
                   </div>
                 ) : (
                   problems.map((problem, idx) => {
@@ -466,7 +473,9 @@ export function CodingSubmissionModal({
           <div className="flex w-80 shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
             <div className="border-b border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900">
               <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                {activeProblem ? `Đề bài #${activeProblemIdx + 1}` : "Không có đề bài"}
+                {activeProblem
+                  ? `Đề bài #${activeProblemIdx + 1}`
+                  : t("compCodingSubmissionModal.noProblemContent")}
               </span>
             </div>
 
@@ -477,7 +486,7 @@ export function CodingSubmissionModal({
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <BookOpen className="h-10 w-10 text-slate-200 dark:text-slate-700" />
                   <p className="mt-3 text-sm font-medium text-slate-400">
-                    Không có thông tin đề bài
+                    {t("compCodingSubmissionModal.noProblemInfo")}
                   </p>
                 </div>
               )}
@@ -527,7 +536,7 @@ function ProblemView({ problem }: { problem: CodingProblemSnapshot }) {
       {/* Problem statement */}
       {problem.problemStatement && (
         <div>
-          <SectionLabel>Mô tả</SectionLabel>
+          <SectionLabel>{t("compCodingSubmissionModal.description")}</SectionLabel>
           <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
             {problem.problemStatement}
           </p>
@@ -537,7 +546,7 @@ function ProblemView({ problem }: { problem: CodingProblemSnapshot }) {
       {/* Rules & Constraints */}
       {problem.rulesAndConstraints && problem.rulesAndConstraints.length > 0 && (
         <div>
-          <SectionLabel>Ràng buộc</SectionLabel>
+          <SectionLabel>{t("compCodingSubmissionModal.constraints")}</SectionLabel>
           <ul className="space-y-1.5">
             {problem.rulesAndConstraints.map((rule, i) => (
               <li key={i} className="flex items-start gap-2">
@@ -554,7 +563,7 @@ function ProblemView({ problem }: { problem: CodingProblemSnapshot }) {
       {/* Visible Examples */}
       {problem.visibleExamples && problem.visibleExamples.length > 0 && (
         <div>
-          <SectionLabel>Ví dụ</SectionLabel>
+          <SectionLabel>{t("common.example")}</SectionLabel>
           <div className="space-y-3">
             {problem.visibleExamples.map((ex, i) => (
               <div
@@ -578,7 +587,9 @@ function ProblemView({ problem }: { problem: CodingProblemSnapshot }) {
                 )}
                 {ex.explanation && (
                   <div>
-                    <span className="text-[10px] font-semibold text-slate-400">Giải thích: </span>
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      {t("common.explanation")}{" "}
+                    </span>
                     <span className="text-xs text-slate-500 italic dark:text-slate-400">
                       {ex.explanation}
                     </span>
@@ -635,9 +646,9 @@ function DifficultyPill({ difficulty, active }: { difficulty: string; active: bo
     HARD: "bg-red-300/20 text-red-200 ring-1 ring-red-300/30",
   };
   const labels: Record<string, string> = {
-    EASY: "Dễ",
+    EASY: t("common.easy"),
     MEDIUM: "TB",
-    HARD: "Khó",
+    HARD: t("common.hard"),
   };
 
   return (

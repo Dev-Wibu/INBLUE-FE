@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 import {
   Check,
@@ -132,6 +133,7 @@ export const CodingEditor = React.forwardRef<
     },
     ref
   ) => {
+    const { t } = useTranslation();
     const [rightView, setRightView] = React.useState<RightPaneView>("idle");
     const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
 
@@ -306,7 +308,7 @@ export const CodingEditor = React.forwardRef<
 
     const handleAiGenerate = async () => {
       if (!aiTopic.trim()) {
-        toast.warning("Vui lòng nhập chủ đề bài toán để AI sinh đề");
+        toast.warning(t("adminCodeReviewProblem.pleaseEnterTopicForAi"));
         return;
       }
       setIsGenerating(true);
@@ -317,7 +319,7 @@ export const CodingEditor = React.forwardRef<
           targetLevel: aiLevel,
           context: {
             jobTitle: "",
-            requirement: aiRequirement.trim() || "Cơ bản và thực tế",
+            requirement: aiRequirement.trim() || t("adminCodeReviewProblem.basicAndPractical"),
             prompting: "",
           },
         });
@@ -358,15 +360,15 @@ export const CodingEditor = React.forwardRef<
             hiddenTestCases: mappedHidden,
             codeStubs: gen.codeStubs || { java: "", python: "" },
           });
-          toast.success("AI đã sinh đề bài thành công! Bạn đang ở chế độ chỉnh sửa đề bài.");
+          toast.success(t("adminCodeReviewProblem.aiGenerateSuccessEditMode"));
           setCreationMode("manual");
           setAiGeneratedLoaded(false);
         } else {
-          toast.error(res.error || "Không thể sinh đề bài tự động");
+          toast.error(res.error || t("adminCodeReviewProblem.cannotGenerateAutomatically"));
         }
       } catch (e) {
         console.error(e);
-        toast.error("Lỗi khi sinh đề bằng AI");
+        toast.error(t("adminCodeReviewProblem.errorGenerateByAi"));
       } finally {
         setIsGenerating(false);
       }
@@ -377,11 +379,11 @@ export const CodingEditor = React.forwardRef<
       | { ids: number[]; problems: { problemId?: number; title?: string; difficulty?: string }[] }
     > => {
       if (!newProblem.title.trim()) {
-        toast.warning("Vui lòng nhập tiêu đề bài tập");
+        toast.warning(t("adminCodeReviewProblem.pleaseEnterTitle"));
         return false;
       }
       if (!newProblem.problemStatement.trim()) {
-        toast.warning("Vui lòng nhập mô tả bài tập");
+        toast.warning(t("adminCodeReviewProblem.pleaseEnterDescription"));
         return false;
       }
 
@@ -390,8 +392,8 @@ export const CodingEditor = React.forwardRef<
         if (res.success && res.data) {
           toast.success(
             editingIndex !== null
-              ? "Cập nhật bài tập thành công!"
-              : "Tạo bài tập lập trình thành công!"
+              ? t("adminCodingProblem.updateSuccess")
+              : t("adminCodingProblem.createSuccess")
           );
           await fetchProblemBank();
           const createdId = res.data.id;
@@ -425,12 +427,12 @@ export const CodingEditor = React.forwardRef<
           setRightView("view");
           return { ids: newIds, problems: newProblems };
         } else {
-          toast.error(res.error || "Không thể lưu bài tập");
+          toast.error(res.error || t("adminCodeReviewProblem.cannotSaveProblem"));
           return false;
         }
       } catch (e) {
         console.error(e);
-        toast.error("Lỗi khi lưu bài tập");
+        toast.error(t("adminCodeReviewProblem.errorSaveProblem"));
         return false;
       }
     };
@@ -446,11 +448,11 @@ export const CodingEditor = React.forwardRef<
         if (res.success && res.data) {
           setBankProblems(res.data);
         } else {
-          toast.error(res.error || "Không thể tải danh sách đề lập trình");
+          toast.error(res.error || t("adminCodingProblem.cannotLoadList"));
         }
       } catch (e) {
         console.error(e);
-        toast.error("Lỗi khi tải danh sách đề");
+        toast.error(t("adminCodeReviewProblem.errorLoadList"));
       } finally {
         setIsLoadingBank(false);
       }
@@ -529,7 +531,11 @@ export const CodingEditor = React.forwardRef<
         : null;
 
     const difficultyBadge = (diff?: string) => {
-      const map: Record<string, string> = { EASY: "Dễ", MEDIUM: "Trung bình", HARD: "Khó" };
+      const map: Record<string, string> = {
+        EASY: t("common.difficultyEasy"),
+        MEDIUM: t("common.difficultyMedium"),
+        HARD: t("common.difficultyHard"),
+      };
       const colorMap: Record<string, string> = {
         EASY: "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
         MEDIUM:
@@ -557,7 +563,7 @@ export const CodingEditor = React.forwardRef<
               <div className="flex items-start gap-4">
                 <div className="w-[55%] space-y-1">
                   <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                    Điểm tối đa
+                    {t("adminCodeReviewProblem.maxScore")}
                   </Label>
                   <ScoreInput
                     value={maxScore}
@@ -572,7 +578,7 @@ export const CodingEditor = React.forwardRef<
 
                 <div className="w-[45%] space-y-1">
                   <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                    Thời gian
+                    {t("common.time")}
                   </Label>
                   {editingTime ? (
                     <div className="flex items-center gap-1">
@@ -586,7 +592,9 @@ export const CodingEditor = React.forwardRef<
                         onKeyDown={(e) => e.key === "Enter" && setEditingTime(false)}
                         className="h-11 w-full [appearance:textfield] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-800 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
-                      <span className="shrink-0 text-[9px] text-slate-400">phút</span>
+                      <span className="shrink-0 text-[9px] text-slate-400">
+                        {t("common.minute")}
+                      </span>
                     </div>
                   ) : (
                     <button
@@ -594,7 +602,7 @@ export const CodingEditor = React.forwardRef<
                       onClick={() => setEditingTime(true)}
                       className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400">
                       <Timer className="h-4 w-4 text-slate-400" />
-                      {timeLimitMinutes > 0 ? `${timeLimitMinutes} phút` : "Không hạn chế"}
+                      {timeLimitMinutes > 0 ? `${timeLimitMinutes} phút` : t("common.unlimited")}
                     </button>
                   )}
                 </div>
@@ -602,7 +610,7 @@ export const CodingEditor = React.forwardRef<
 
               <div className="space-y-1">
                 <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                  Điểm đạt tối thiểu
+                  {t("adminCodingProblem.minimumPassingScore")}
                 </Label>
                 <div className="flex justify-center">
                   <ScoreInput
@@ -627,7 +635,8 @@ export const CodingEditor = React.forwardRef<
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-500">
-                  Bài tập ({codingProblemsId.length})
+                  {t("adminCodingProblem.problemWithParen")}
+                  {codingProblemsId.length})
                 </h4>
               </div>
 
@@ -644,7 +653,7 @@ export const CodingEditor = React.forwardRef<
                       "border-indigo-500 bg-indigo-50/50 text-indigo-600 dark:border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400"
                   )}>
                   <FolderOpen className="mr-1.5 h-3 w-3 text-indigo-500" />
-                  Ngân hàng đề
+                  {t("adminCodingProblem.problemBank")}
                 </Button>
                 <Button
                   type="button"
@@ -658,7 +667,7 @@ export const CodingEditor = React.forwardRef<
                       "border-emerald-500 bg-emerald-50/50 text-emerald-600 dark:border-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
                   )}>
                   <Plus className="mr-1.5 h-3 w-3 text-emerald-500" />
-                  Tạo đề bài
+                  {t("adminCodingProblem.createProblem")}
                 </Button>
               </div>
 
@@ -702,8 +711,9 @@ export const CodingEditor = React.forwardRef<
 
               {codingProblemsId.length === 0 && (
                 <p className="text-[10px] leading-relaxed text-slate-400">
-                  Chưa chọn bài tập. Nhấn <strong>Ngân hàng bài tập</strong> để lựa chọn bài tập hệ
-                  thống.
+                  {t("adminCodingProblem.noProblemSelectedPress")}
+                  <strong>{t("adminCodingProblem.problemBankFull")}</strong>{" "}
+                  {t("adminCodingProblem.toSelectSystemProblem")}
                 </p>
               )}
             </div>
@@ -719,10 +729,11 @@ export const CodingEditor = React.forwardRef<
                 <div className="rounded-2xl border-2 border-dashed border-slate-200 px-10 py-12 dark:border-slate-800">
                   <Code2 className="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-slate-600" />
                   <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                    Chọn bài tập để xem chi tiết
+                    {t("adminCodingProblem.selectProblemToViewDetail")}
                   </p>
                   <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-                    Nhấn vào ô số bên trái hoặc mở <strong>Ngân hàng bài tập</strong>.
+                    {t("adminCodingProblem.pressLeftBoxOrOpen")}
+                    <strong>{t("adminCodingProblem.problemBankFull")}</strong>.
                   </p>
                 </div>
               </div>
@@ -792,7 +803,7 @@ export const CodingEditor = React.forwardRef<
                         }}
                         className="text-indigo-650 h-8 border-indigo-200 text-xs hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/30">
                         <Pencil className="mr-1 h-3.5 w-3.5" />
-                        Chỉnh sửa
+                        {t("common.edit")}
                       </Button>
                       <Button
                         type="button"
@@ -801,7 +812,7 @@ export const CodingEditor = React.forwardRef<
                         onClick={() => handleDeleteProblem(selectedIndex)}
                         className="h-8 border-red-200 text-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30">
                         <Trash2 className="mr-1 h-3.5 w-3.5" />
-                        Xóa khỏi vòng
+                        {t("adminCodingProblem.removeFromRound")}
                       </Button>
                     </div>
                   )}
@@ -812,7 +823,7 @@ export const CodingEditor = React.forwardRef<
                     {/* Problem Statement */}
                     <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/20">
                       <h4 className="mb-1 text-xs font-bold text-slate-700 dark:text-slate-300">
-                        Mô tả bài toán
+                        {t("adminCodingProblem.problemDescription")}
                       </h4>
                       <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200">
                         {selectedProblemDetails.problemStatement}
@@ -824,7 +835,7 @@ export const CodingEditor = React.forwardRef<
                       selectedProblemDetails.rulesAndConstraints.length > 0 && (
                         <div className="space-y-1.5">
                           <Label className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">
-                            Ràng buộc & Quy tắc
+                            {t("adminCodingProblem.constraintsAndRules")}
                           </Label>
                           <ul className="list-disc space-y-1 pl-5 text-xs text-slate-600 dark:text-slate-400">
                             {selectedProblemDetails.rulesAndConstraints.map((rule, idx) => (
@@ -839,7 +850,7 @@ export const CodingEditor = React.forwardRef<
                       selectedProblemDetails.visibleExamples.length > 0 && (
                         <div className="space-y-2">
                           <Label className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">
-                            Ví dụ mẫu
+                            {t("adminCodingProblem.sampleExamples")}
                           </Label>
                           <div className="space-y-2">
                             {selectedProblemDetails.visibleExamples.map((ex, idx) => (
@@ -847,17 +858,18 @@ export const CodingEditor = React.forwardRef<
                                 key={idx}
                                 className="space-y-1 rounded-lg border border-slate-100 bg-white p-3 dark:border-slate-800 dark:bg-slate-950/30">
                                 <div className="text-xs font-bold text-slate-500">
-                                  Ví dụ {idx + 1}:
+                                  {t("common.example")}
+                                  {idx + 1}:
                                 </div>
                                 <div className="font-mono text-xs text-slate-600 dark:text-slate-300">
-                                  <strong>Đầu vào:</strong> {ex.inputs?.join(", ")}
+                                  <strong>{t("common.input")}</strong> {ex.inputs?.join(", ")}
                                 </div>
                                 <div className="font-mono text-xs text-slate-600 dark:text-slate-300">
-                                  <strong>Đầu ra:</strong> {ex.output}
+                                  <strong>{t("common.output")}</strong> {ex.output}
                                 </div>
                                 {ex.explanation && (
                                   <div className="text-xs text-slate-500 italic">
-                                    <strong>Giải thích:</strong> {ex.explanation}
+                                    <strong>{t("common.explanation")}</strong> {ex.explanation}
                                   </div>
                                 )}
                               </div>
@@ -869,11 +881,12 @@ export const CodingEditor = React.forwardRef<
                     {/* Resource Limits */}
                     <div className="grid grid-cols-2 gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800/40">
                       <div>
-                        Giới hạn thời gian chạy:{" "}
+                        {t("adminCodingProblem.runtimeLimit")}{" "}
                         <strong>{selectedProblemDetails.executionTimeLimitMs} ms</strong>
                       </div>
                       <div>
-                        Giới hạn bộ nhớ: <strong>{selectedProblemDetails.memoryLimitMb} MB</strong>
+                        {t("adminCodingProblem.memoryLimit")}
+                        <strong>{selectedProblemDetails.memoryLimitMb} MB</strong>
                       </div>
                     </div>
 
@@ -882,7 +895,7 @@ export const CodingEditor = React.forwardRef<
                       selectedProblemDetails.hiddenTestCases.length > 0 && (
                         <div className="space-y-2 border-t border-slate-100 pt-3 dark:border-slate-800/40">
                           <Label className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">
-                            Bộ Test Case ẩn chấm điểm (
+                            {t("adminCodingProblem.hiddenTestCasesWithParen")}
                             {selectedProblemDetails.hiddenTestCases.length})
                           </Label>
                           <div className="grid grid-cols-1 gap-2">
@@ -897,7 +910,7 @@ export const CodingEditor = React.forwardRef<
                                   </span>
                                 </div>
                                 <div className="text-[10px] font-bold text-slate-400">
-                                  Điểm:{" "}
+                                  {t("common.scoreColon")}{" "}
                                   <span className="font-semibold text-emerald-600">
                                     {tc.weightPoints}
                                   </span>
@@ -910,7 +923,7 @@ export const CodingEditor = React.forwardRef<
                   </div>
                 ) : (
                   <div className="py-10 text-center text-xs text-slate-400 italic">
-                    Đang tải thông tin chi tiết của bài tập...
+                    {t("adminCodingProblem.loadingProblemDetails")}
                   </div>
                 )}
               </div>
@@ -922,10 +935,10 @@ export const CodingEditor = React.forwardRef<
                 <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3 dark:border-slate-800/60">
                   <FolderOpen className="h-4 w-4 text-indigo-500" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Ngân hàng bài tập lập trình
+                    {t("adminCodingProblem.codingProblemBank")}
                   </h3>
                   <span className="ml-auto text-xs font-medium text-slate-400">
-                    Đã chọn{" "}
+                    {t("common.selected")}{" "}
                     <strong className="text-indigo-600 dark:text-indigo-400">
                       {selectedBankIds.length}
                     </strong>
@@ -939,7 +952,7 @@ export const CodingEditor = React.forwardRef<
                     <Input
                       value={bankSearch}
                       onChange={(e) => setBankSearch(e.target.value)}
-                      placeholder="Tìm kiếm bài tập..."
+                      placeholder={t("adminCodeReviewProblem.searchProblem")}
                       className="h-9 border-slate-200 bg-white pl-8 text-xs dark:border-slate-800 dark:bg-slate-950"
                     />
                   </div>
@@ -956,12 +969,12 @@ export const CodingEditor = React.forwardRef<
                             : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400"
                         )}>
                         {diff === "ALL"
-                          ? "Tất cả"
+                          ? t("common.all")
                           : diff === "EASY"
-                            ? "Dễ"
+                            ? t("common.difficultyEasy")
                             : diff === "MEDIUM"
-                              ? "Trung bình"
-                              : "Khó"}
+                              ? t("common.difficultyMedium")
+                              : t("common.difficultyHard")}
                       </button>
                     ))}
                   </div>
@@ -971,7 +984,7 @@ export const CodingEditor = React.forwardRef<
                 <div className="max-h-[360px] space-y-2.5 overflow-y-auto pr-1">
                   {isLoadingBank ? (
                     <div className="py-10 text-center text-xs text-slate-400">
-                      Đang tải danh sách bài tập...
+                      {t("adminCodeReviewProblem.loadingProblemList")}
                     </div>
                   ) : (
                     filteredBank.map((p, idx) => {
@@ -1011,7 +1024,7 @@ export const CodingEditor = React.forwardRef<
                               </span>
                               {isAdded && (
                                 <span className="ml-auto text-[10px] text-slate-400 italic">
-                                  Đã có trong vòng
+                                  {t("adminCodingProblem.alreadyInRound")}
                                 </span>
                               )}
                             </div>
@@ -1026,7 +1039,7 @@ export const CodingEditor = React.forwardRef<
 
                   {!isLoadingBank && filteredBank.length === 0 && (
                     <div className="py-10 text-center text-xs text-slate-500">
-                      Không tìm thấy bài tập phù hợp.
+                      {t("adminCodeReviewProblem.noMatchingProblem")}
                     </div>
                   )}
                 </div>
@@ -1042,7 +1055,7 @@ export const CodingEditor = React.forwardRef<
                       setSelectedIndex(null);
                     }}
                     className="h-8 border-slate-200 text-xs dark:border-slate-800">
-                    Hủy
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     type="button"
@@ -1050,8 +1063,9 @@ export const CodingEditor = React.forwardRef<
                     disabled={selectedBankIds.length === 0}
                     onClick={handleAddSelectedFromBank}
                     className="h-8 bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700">
-                    Thêm{selectedBankIds.length > 0 ? ` (${selectedBankIds.length})` : ""} vào vòng
-                    thi
+                    {t("common.add")}
+                    {selectedBankIds.length > 0 ? ` (${selectedBankIds.length})` : ""}{" "}
+                    {t("adminCodingProblem.intoRound")}
                   </Button>
                 </div>
               </div>
@@ -1065,7 +1079,7 @@ export const CodingEditor = React.forwardRef<
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
                       <span className="dark:text-slate-350 text-xs font-semibold text-slate-600">
-                        AI đang sinh đề bài, vui lòng chờ trong giây lát...
+                        {t("adminCodingProblem.aiGeneratingWait")}
                       </span>
                     </div>
                   </div>
@@ -1076,7 +1090,7 @@ export const CodingEditor = React.forwardRef<
                     <div className="flex items-center gap-2">
                       <Plus className="h-4 w-4 text-emerald-500" />
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                        Tạo đề bài lập trình mới
+                        {t("adminCodingProblem.createNewCodingProblem")}
                       </h3>
                     </div>
 
@@ -1092,7 +1106,7 @@ export const CodingEditor = React.forwardRef<
                               ? "text-indigo-650 bg-white shadow-sm dark:bg-slate-800 dark:text-indigo-400"
                               : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
                           )}>
-                          ✨ Sinh bằng AI
+                          {t("adminCodeReviewProblem.generateByAi")}
                         </button>
                         <button
                           type="button"
@@ -1106,7 +1120,7 @@ export const CodingEditor = React.forwardRef<
                               ? "text-indigo-650 bg-white shadow-sm dark:bg-slate-800 dark:text-indigo-400"
                               : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
                           )}>
-                          ✏️ Thủ công
+                          {t("adminCodeReviewProblem.manual")}
                         </button>
                       </div>
                     </div>
@@ -1123,12 +1137,12 @@ export const CodingEditor = React.forwardRef<
                       {isGenerating ? (
                         <>
                           <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                          Đang sinh...
+                          {t("common.generating")}
                         </>
                       ) : (
                         <>
                           <Wand2 className="mr-1.5 h-3.5 w-3.5" />
-                          Sinh đề với AI
+                          {t("adminCodingProblem.generateWithAi")}
                         </>
                       )}
                     </Button>
@@ -1141,19 +1155,20 @@ export const CodingEditor = React.forwardRef<
                     <div className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/60 to-violet-50/40 p-5 dark:border-indigo-950/30 dark:from-indigo-950/10 dark:to-violet-950/10">
                       <div className="mb-4 flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-400">
                         <Wand2 className="h-4 w-4 animate-pulse" />
-                        Nhập thông tin để AI tự động sinh đề bài
+                        {t("adminCodingProblem.enterInfoForAiGenerate")}
                       </div>
 
                       {/* Row 1: Topic full width */}
                       <div className="mb-4 space-y-1.5">
                         <Label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase">
-                          Chủ đề bài tập <span className="text-red-400">*</span>
+                          {t("adminCodingProblem.problemTopic")}
+                          <span className="text-red-400">*</span>
                         </Label>
                         <Input
                           value={aiTopic}
                           onChange={(e) => setAiTopic(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && handleAiGenerate()}
-                          placeholder="Ví dụ: Tìm số lớn thứ hai trong mảng, Đảo ngược chuỗi..."
+                          placeholder={t("compCodingEditor.exampleTitle")}
                           className="h-10 bg-white text-xs dark:bg-slate-950"
                         />
                       </div>
@@ -1162,19 +1177,19 @@ export const CodingEditor = React.forwardRef<
                       <div className="mb-4 grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase">
-                            Độ khó
+                            {t("common.difficulty")}
                           </Label>
                           <StyledSelect
                             value={aiDifficulty}
                             onChange={(v) => setAiDifficulty(v as "EASY" | "MEDIUM" | "HARD")}>
-                            <option value="EASY">🟢 Dễ (Easy)</option>
-                            <option value="MEDIUM">🟡 Trung bình (Medium)</option>
-                            <option value="HARD">🔴 Khó (Hard)</option>
+                            <option value="EASY">{t("compCodingEditor.easy")}</option>
+                            <option value="MEDIUM">{t("compCodingEditor.medium")}</option>
+                            <option value="HARD">{t("compCodingEditor.hard")}</option>
                           </StyledSelect>
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase">
-                            Cấp độ ứng viên
+                            {t("adminCodeReviewProblem.candidateLevel")}
                           </Label>
                           <StyledSelect value={aiLevel} onChange={setAiLevel}>
                             <option value="Intern">🌱 Intern</option>
@@ -1187,12 +1202,12 @@ export const CodingEditor = React.forwardRef<
                       {/* Row 3: Requirement */}
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-bold tracking-wide text-slate-500 uppercase">
-                          Yêu cầu đặc biệt (tuỳ chọn)
+                          {t("adminCodingProblem.specialRequirementsOptional")}
                         </Label>
                         <Input
                           value={aiRequirement}
                           onChange={(e) => setAiRequirement(e.target.value)}
-                          placeholder="Ví dụ: Không dùng sort, độ phức tạp O(N log N)..."
+                          placeholder={t("compCodingEditor.exampleHint")}
                           className="h-9 bg-white text-xs dark:bg-slate-950"
                         />
                       </div>
@@ -1205,7 +1220,7 @@ export const CodingEditor = React.forwardRef<
                         size="sm"
                         onClick={() => setRightView("idle")}
                         className="h-8 text-xs text-slate-400 hover:text-slate-600">
-                        Hủy
+                        {t("common.cancel")}
                       </Button>
                     </div>
                   </div>
@@ -1216,17 +1231,14 @@ export const CodingEditor = React.forwardRef<
                   <div className="flex min-h-0 flex-1 flex-col space-y-4">
                     {creationMode === "ai" && aiGeneratedLoaded && (
                       <div className="flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50/60 p-2.5 text-xs font-semibold text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-400">
-                        <span>
-                          ✨ Đã sinh đề bài từ AI thành công! Bạn có thể chỉnh sửa lại các thông tin
-                          dưới đây.
-                        </span>
+                        <span>{t("adminCodingProblem.aiGenerateSuccessEdit")}</span>
                         <button
                           type="button"
                           onClick={() => {
                             setAiGeneratedLoaded(false);
                           }}
                           className="text-[10px] underline hover:text-emerald-900 dark:hover:text-emerald-300">
-                          Sinh lại đề khác
+                          {t("adminCodingProblem.generateAnotherProblem")}
                         </button>
                       </div>
                     )}
@@ -1236,26 +1248,26 @@ export const CodingEditor = React.forwardRef<
                       {/* SECTION 1: THÔNG TIN CHUNG */}
                       <div className="space-y-3 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/20">
                         <h4 className="border-b border-slate-100 pb-2 text-[11px] font-bold tracking-wider text-indigo-600 uppercase dark:border-slate-800 dark:text-indigo-400">
-                          1. Thông tin chung
+                          {t("adminCodingProblem.step1GeneralInfo")}
                         </h4>
 
                         <div className="grid grid-cols-12 gap-3">
                           <div className="col-span-8 space-y-1">
                             <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                              Tiêu đề bài toán
+                              {t("adminCodingProblem.problemTitle")}
                             </Label>
                             <Input
                               value={newProblem.title}
                               onChange={(e) =>
                                 setNewProblem({ ...newProblem, title: e.target.value })
                               }
-                              placeholder="Ví dụ: Hai số có tổng bằng Target"
+                              placeholder={t("compCodingEditor.exampleDescription")}
                               className="h-9 text-xs"
                             />
                           </div>
                           <div className="col-span-4 space-y-1">
                             <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                              Độ khó
+                              {t("common.difficulty")}
                             </Label>
                             <StyledSelect
                               value={newProblem.difficulty}
@@ -1265,16 +1277,16 @@ export const CodingEditor = React.forwardRef<
                                   difficulty: v as "EASY" | "MEDIUM" | "HARD",
                                 })
                               }>
-                              <option value="EASY">🟢 Dễ</option>
-                              <option value="MEDIUM">🟡 Trung bình</option>
-                              <option value="HARD">🔴 Khó</option>
+                              <option value="EASY">{t("common.difficultyEasyEmoji")}</option>
+                              <option value="MEDIUM">{t("common.difficultyMediumEmoji")}</option>
+                              <option value="HARD">{t("common.difficultyHardEmoji")}</option>
                             </StyledSelect>
                           </div>
                         </div>
 
                         <div className="space-y-1">
                           <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                            Mô tả chi tiết đề bài
+                            {t("adminCodingProblem.detailedProblemDescription")}
                           </Label>
                           <textarea
                             value={newProblem.problemStatement}
@@ -1282,7 +1294,7 @@ export const CodingEditor = React.forwardRef<
                               setNewProblem({ ...newProblem, problemStatement: e.target.value })
                             }
                             rows={4}
-                            placeholder="Mô tả bài toán, quy tắc, hướng dẫn..."
+                            placeholder={t("compCodingEditor.problemDescriptionPlaceholder")}
                             className="flex w-full rounded-md border border-slate-200 bg-white px-3 py-2 font-sans text-xs shadow-sm transition-colors focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
                           />
                         </div>
@@ -1291,21 +1303,21 @@ export const CodingEditor = React.forwardRef<
                       {/* SECTION 2: CẤU HÌNH & GIỚI HẠN */}
                       <div className="space-y-4 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/20">
                         <h4 className="border-b border-slate-100 pb-2 text-[11px] font-bold tracking-wider text-indigo-600 uppercase dark:border-slate-800 dark:text-indigo-400">
-                          2. Cấu hình & Giới hạn
+                          {t("adminCodingProblem.step2ConfigAndLimits")}
                         </h4>
 
                         {/* Param types — pill toggle grid */}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                              Kiểu tham số đầu vào (Param Types)
+                              {t("adminCodingProblem.inputParamTypes")}
                             </Label>
                             {newProblem.paramTypes.length > 0 && (
                               <button
                                 type="button"
                                 onClick={() => setNewProblem({ ...newProblem, paramTypes: [] })}
                                 className="text-[9px] text-slate-400 transition-colors hover:text-red-400">
-                                Xóa tất cả
+                                {t("common.deleteAll")}
                               </button>
                             )}
                           </div>
@@ -1314,7 +1326,7 @@ export const CodingEditor = React.forwardRef<
                           {newProblem.paramTypes.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 rounded-lg bg-indigo-50/60 px-3 py-2 dark:bg-indigo-950/20">
                               <span className="mr-1 self-center text-[9px] font-bold tracking-wider text-indigo-400 uppercase">
-                                Đã chọn:
+                                {t("common.selectedColon")}
                               </span>
                               {newProblem.paramTypes.map((pt, i) => (
                                 <span
@@ -1362,7 +1374,7 @@ export const CodingEditor = React.forwardRef<
                         {/* Return type — custom dropdown */}
                         <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                            Kiểu trả về (Return Type)
+                            {t("adminCodingProblem.returnType")}
                           </Label>
 
                           <div ref={returnDropdownRef} className="relative">
@@ -1372,7 +1384,7 @@ export const CodingEditor = React.forwardRef<
                               className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:border-emerald-300 hover:bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-emerald-700">
                               <span className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold tracking-wider text-emerald-500 uppercase">
-                                  Kết quả trả về:
+                                  {t("adminCodingProblem.resultReturns")}
                                 </span>
                                 {newProblem.returnType ? (
                                   <span className="inline-flex items-center rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
@@ -1380,7 +1392,7 @@ export const CodingEditor = React.forwardRef<
                                   </span>
                                 ) : (
                                   <span className="font-normal text-slate-400">
-                                    Chưa chọn kiểu trả về
+                                    {t("adminCodingProblem.noReturnTypeSelected")}
                                   </span>
                                 )}
                               </span>
@@ -1426,7 +1438,7 @@ export const CodingEditor = React.forwardRef<
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                              ⏱ Giới hạn thời gian
+                              {t("adminCodingProblem.timeLimitEmoji")}
                             </Label>
                             <div className="flex flex-wrap gap-1.5">
                               {[500, 1000, 2000, 3000, 5000].map((ms) => (
@@ -1449,7 +1461,7 @@ export const CodingEditor = React.forwardRef<
                           </div>
                           <div className="space-y-2">
                             <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                              💾 Giới hạn bộ nhớ
+                              {t("adminCodingProblem.memoryLimitEmoji")}
                             </Label>
                             <div className="flex flex-wrap gap-1.5">
                               {[128, 256, 512, 1024].map((mb) => (
@@ -1475,7 +1487,7 @@ export const CodingEditor = React.forwardRef<
                         {/* Constraints as tags */}
                         <div className="space-y-2">
                           <Label className="text-[10px] font-bold text-slate-400 uppercase">
-                            Ràng buộc & Quy tắc
+                            {t("adminCodingProblem.constraintsAndRules")}
                           </Label>
                           {newProblem.rulesAndConstraints.length > 0 && (
                             <div className="flex flex-wrap gap-1.5">
@@ -1504,7 +1516,7 @@ export const CodingEditor = React.forwardRef<
                                   handleAddConstraint(constraintInput);
                                 }
                               }}
-                              placeholder="Ví dụ: nums.length <= 10^4 (Enter để thêm)"
+                              placeholder={t("compCodingEditor.exampleConstraint")}
                               className="h-9 flex-1 text-xs"
                             />
                             <Button
@@ -1514,7 +1526,7 @@ export const CodingEditor = React.forwardRef<
                               onClick={() => handleAddConstraint(constraintInput)}
                               className="h-9 px-3 text-xs">
                               <Plus className="mr-1 h-3 w-3" />
-                              Thêm
+                              {t("common.add")}
                             </Button>
                           </div>
                         </div>
@@ -1524,7 +1536,8 @@ export const CodingEditor = React.forwardRef<
                       <div className="space-y-3 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/20">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
                           <h4 className="text-[11px] font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
-                            3. Ví dụ mẫu ({newProblem.visibleExamples.length})
+                            {t("adminCodingProblem.step3SampleExamplesWithParen")}
+                            {newProblem.visibleExamples.length})
                           </h4>
                           <Button
                             type="button"
@@ -1532,7 +1545,7 @@ export const CodingEditor = React.forwardRef<
                             onClick={handleAddExample}
                             className="h-6 text-[10px] text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-400">
                             <Plus className="mr-1 h-3 w-3" />
-                            Thêm ví dụ
+                            {t("adminCodingProblem.addExample")}
                           </Button>
                         </div>
 
@@ -1543,7 +1556,8 @@ export const CodingEditor = React.forwardRef<
                               className="relative rounded-lg border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/20">
                               <div className="mb-2.5 flex items-center justify-between">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase">
-                                  Ví dụ #{idx + 1}
+                                  {t("adminCodingProblem.exampleNumber")}
+                                  {idx + 1}
                                 </span>
                                 <button
                                   type="button"
@@ -1592,7 +1606,7 @@ export const CodingEditor = React.forwardRef<
                               </div>
                               <div className="mt-2 space-y-1">
                                 <Label className="text-[9px] font-bold text-slate-400 uppercase">
-                                  Giải thích
+                                  {t("common.explanationShort")}
                                 </Label>
                                 <Input
                                   value={ex.explanation}
@@ -1601,7 +1615,7 @@ export const CodingEditor = React.forwardRef<
                                     list[idx] = { ...list[idx], explanation: e.target.value };
                                     setNewProblem({ ...newProblem, visibleExamples: list });
                                   }}
-                                  placeholder="Giải thích logic chạy thử..."
+                                  placeholder={t("compCodingEditor.explainLogicPlaceholder")}
                                   className="h-8 bg-white text-xs dark:bg-slate-950"
                                 />
                               </div>
@@ -1614,7 +1628,8 @@ export const CodingEditor = React.forwardRef<
                       <div className="space-y-3 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950/20">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
                           <h4 className="text-[11px] font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
-                            4. Test Cases ẩn chấm điểm ({newProblem.hiddenTestCases.length})
+                            {t("adminCodingProblem.step4HiddenTestCasesWithParen")}
+                            {newProblem.hiddenTestCases.length})
                           </h4>
                           <Button
                             type="button"
@@ -1622,7 +1637,7 @@ export const CodingEditor = React.forwardRef<
                             onClick={handleAddTestCase}
                             className="h-6 text-[10px] text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-400">
                             <Plus className="mr-1 h-3 w-3" />
-                            Thêm TC
+                            {t("adminCodingProblem.addTc")}
                           </Button>
                         </div>
 
@@ -1707,7 +1722,7 @@ export const CodingEditor = React.forwardRef<
 
                           {newProblem.hiddenTestCases.length === 0 && (
                             <div className="py-6 text-center text-[11px] text-slate-400 italic">
-                              Chưa có test case. Nhấn &quot;Thêm TC&quot; để thêm.
+                              {t("adminCodingProblem.noTestCasePressAdd")}
                             </div>
                           )}
                         </div>
@@ -1726,7 +1741,7 @@ export const CodingEditor = React.forwardRef<
                           setEditingIndex(null);
                         }}
                         className="h-9 border-slate-200 text-xs dark:border-slate-800">
-                        Quay lại danh sách
+                        {t("common.backToList")}
                       </Button>
                     </div>
                   </div>

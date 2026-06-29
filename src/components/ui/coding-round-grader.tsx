@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "react-i18next";
 
 import { useRoundConfig } from "@/hooks/useRoundConfig";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,7 @@ interface CodingRoundGraderProps {
 }
 
 export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
+  const { t } = useTranslation();
   const [activeProblemIdx, setActiveProblemIdx] = useState(0);
   const [activeRightTab, setActiveRightTab] = useState<"problem" | "test-results">("problem");
 
@@ -114,11 +116,11 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
           </div>
           <div>
             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
-              {roundConfig?.roundName ?? "Vòng Lập trình"}
+              {roundConfig?.roundName ?? t("adminCodingProblem.programmingRound")}
             </span>
             {problems.length > 0 && (
               <span className="ml-2 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-                {problems.length} bài
+                {problems.length} {t("common.problemCount")}
               </span>
             )}
           </div>
@@ -171,7 +173,7 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
         <div className="flex w-56 shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
           <div className="border-b border-slate-200 px-3 py-2 dark:border-slate-700">
             <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-              Đề bài & Bài nộp
+              {t("adminCodingProblem.problemAndSubmission")}
             </span>
           </div>
 
@@ -179,7 +181,9 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
             {isConfigLoading ? (
               <div className="flex flex-col items-center gap-2 py-8">
                 <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-                <span className="text-xs text-slate-400">Đang tải đề bài...</span>
+                <span className="text-xs text-slate-400">
+                  {t("adminCodingProblem.loadingProblem")}
+                </span>
               </div>
             ) : problems.length > 0 ? (
               problems.map((problem, idx) => (
@@ -205,7 +209,7 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
             ) : (
               <div className="px-3 py-8 text-center">
                 <BookOpen className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600" />
-                <p className="mt-2 text-xs text-slate-400">Chưa có đề bài</p>
+                <p className="mt-2 text-xs text-slate-400">{t("adminCodingProblem.noProblem")}</p>
               </div>
             )}
           </div>
@@ -277,8 +281,12 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
             ) : (
               <div className="flex h-full flex-col items-center justify-center bg-slate-950">
                 <FileCode2 className="h-12 w-12 text-slate-600" />
-                <p className="mt-3 text-sm font-medium text-slate-400">Chưa có bài nộp</p>
-                <p className="mt-1 text-xs text-slate-500">Ứng viên chưa nộp bài cho vòng này</p>
+                <p className="mt-3 text-sm font-medium text-slate-400">
+                  {t("adminCodingProblem.noSubmission")}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {t("adminCodingProblem.candidateNotSubmitted")}
+                </p>
               </div>
             )}
           </div>
@@ -297,7 +305,7 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
                   : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
               )}>
               <BookOpen className="h-3.5 w-3.5" />
-              Đề bài
+              {t("adminCodingProblem.problem")}
             </button>
             <button
               type="button"
@@ -309,7 +317,7 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
                   : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
               )}>
               <Terminal className="h-3.5 w-3.5" />
-              Kết quả
+              {t("common.result")}
               {hasSubmissions && (
                 <span
                   className={cn(
@@ -448,6 +456,7 @@ function SubmissionSidebarItem({
   submission: CodeSubmission;
   onClick: () => void;
 }) {
+  const { t } = useTranslation();
   const passed = submission.testCases?.passedTestCases ?? 0;
   const total = submission.testCases?.totalTestCases ?? 0;
   const passRate = total > 0 ? passed / total : 0;
@@ -478,7 +487,8 @@ function SubmissionSidebarItem({
           <span className="text-[10px] font-bold text-slate-400">#{idx + 1}</span>
         </div>
         <p className="mt-0.5 truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-          Bài nộp #{idx + 1}
+          {t("adminCodingProblem.submissionNumber")}
+          {idx + 1}
         </p>
         <p className="mt-0.5 text-[10px] text-slate-400">
           {passed}/{total} passed
@@ -501,12 +511,17 @@ function ProblemDescriptionPanel({
   problem: CodingProblemSnapshot | null;
   roundConfig: import("@/hooks/useRoundConfig").CodingRoundConfig | null;
 }) {
+  const { t } = useTranslation();
   if (!problem) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <BookOpen className="h-10 w-10 text-slate-300 dark:text-slate-600" />
-        <p className="mt-3 text-sm font-medium text-slate-400">Chưa có thông tin đề bài</p>
-        <p className="mt-1 text-xs text-slate-400">Đề bài sẽ hiển thị ở đây</p>
+        <p className="mt-3 text-sm font-medium text-slate-400">
+          {t("adminCodingProblem.noProblemInfo")}
+        </p>
+        <p className="mt-1 text-xs text-slate-400">
+          {t("adminCodingProblem.problemWillDisplayHere")}
+        </p>
       </div>
     );
   }
@@ -552,7 +567,7 @@ function ProblemDescriptionPanel({
       {problem.rulesAndConstraints && problem.rulesAndConstraints.length > 0 && (
         <div>
           <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-            Ràng buộc
+            {t("adminCodingProblem.constraints")}
           </h4>
           <ul className="space-y-1">
             {problem.rulesAndConstraints.map((rule, i) => (
@@ -568,7 +583,7 @@ function ProblemDescriptionPanel({
       {problem.problemStatement && (
         <div>
           <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-            Mô tả
+            {t("common.description")}
           </h4>
           <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
             {problem.problemStatement}
@@ -579,7 +594,7 @@ function ProblemDescriptionPanel({
       {problem.visibleExamples && problem.visibleExamples.length > 0 && (
         <div>
           <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-            Ví dụ
+            {t("common.example")}
           </h4>
           <div className="space-y-3">
             {problem.visibleExamples.map((ex, i) => (
@@ -604,7 +619,9 @@ function ProblemDescriptionPanel({
                 )}
                 {ex.explanation && (
                   <div>
-                    <span className="text-[10px] font-semibold text-slate-400">Giải thích: </span>
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      {t("common.explanation")}
+                    </span>
                     <span className="text-xs text-slate-500 italic dark:text-slate-400">
                       {ex.explanation}
                     </span>
@@ -653,6 +670,7 @@ function TestResultsPanel({
   totalTests: number;
   roundConfig: import("@/hooks/useRoundConfig").CodingRoundConfig | null;
 }) {
+  const { t } = useTranslation();
   const testCases = submission?.testCases;
   const results = testCases?.testCases ?? [];
   const passRate = totalTests > 0 ? Math.round((totalPassed / totalTests) * 100) : 0;
@@ -662,8 +680,12 @@ function TestResultsPanel({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Terminal className="h-10 w-10 text-slate-300 dark:text-slate-600" />
-        <p className="mt-3 text-sm font-medium text-slate-400">Chưa có kết quả chấm</p>
-        <p className="mt-1 text-xs text-slate-400">Kết quả test sẽ hiển thị ở đây</p>
+        <p className="mt-3 text-sm font-medium text-slate-400">
+          {t("adminCodingProblem.noGradingResult")}
+        </p>
+        <p className="mt-1 text-xs text-slate-400">
+          {t("adminCodingProblem.testResultWillDisplayHere")}
+        </p>
       </div>
     );
   }
@@ -672,7 +694,9 @@ function TestResultsPanel({
     <div className="space-y-4 p-4">
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Tổng kết</span>
+          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+            {t("common.summary")}
+          </span>
           <span
             className={cn(
               "text-sm font-bold",
@@ -708,7 +732,7 @@ function TestResultsPanel({
 
         {roundConfig && totalTests > 0 && (
           <div className="mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
-            <span className="text-xs text-slate-500">Điểm test</span>
+            <span className="text-xs text-slate-500">{t("adminCodingProblem.testScore")}</span>
             <span className="font-bold text-slate-700 dark:text-slate-200">
               {Math.round((totalPassed / totalTests) * roundConfig.maxScore)} /{" "}
               {roundConfig.maxScore}
@@ -720,7 +744,7 @@ function TestResultsPanel({
       {results.length > 0 ? (
         <div>
           <h4 className="mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-            Chi tiết test cases
+            {t("adminCodingProblem.testCaseDetails")}
           </h4>
           <div className="space-y-2">
             {results.map((tc, i) => (
@@ -730,7 +754,7 @@ function TestResultsPanel({
         </div>
       ) : (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-xs text-slate-400">Chưa có chi tiết test case</p>
+          <p className="text-xs text-slate-400">{t("adminCodingProblem.noTestCaseDetails")}</p>
         </div>
       )}
 
@@ -739,7 +763,7 @@ function TestResultsPanel({
           <div className="mb-1 flex items-center gap-1.5">
             <XCircle className="h-4 w-4 text-red-500" />
             <span className="text-xs font-bold text-red-600 dark:text-red-400">
-              Lỗi Runtime / Compile
+              {t("adminCodingProblem.runtimeCompileError")}
             </span>
           </div>
           <pre className="font-mono text-[10px] leading-relaxed whitespace-pre-wrap text-red-700 dark:text-red-300">
@@ -832,15 +856,16 @@ function TestCaseCard({ tc, index }: { tc: TestCaseResult; index: number }) {
 }
 
 function DifficultyBadge({ difficulty }: { difficulty: string }) {
+  const { t } = useTranslation();
   const map: Record<string, string> = {
     EASY: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300",
     MEDIUM: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
     HARD: "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300",
   };
   const labels: Record<string, string> = {
-    EASY: "Dễ",
-    MEDIUM: "Trung bình",
-    HARD: "Khó",
+    EASY: t("common.difficultyEasy"),
+    MEDIUM: t("common.difficultyMedium"),
+    HARD: t("common.difficultyHard"),
   };
   return (
     <span
