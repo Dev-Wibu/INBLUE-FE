@@ -6,7 +6,6 @@ const t = i18n.t.bind(i18n);
  */
 
 import { API_BASE_URL, API_ENDPOINTS } from "@/constants/api.config";
-import { isValidMajor } from "@/constants/majors";
 import type { ApiResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
@@ -119,8 +118,6 @@ export interface SignupData {
   fullName: string;
   email: string;
   password: string;
-  university: string;
-  major: string;
 }
 export interface MentorRegisterData {
   name: string;
@@ -584,26 +581,17 @@ export class AuthManager {
    * {
    *   "name": "Nguyen Van A",
    *   "email": "nguyenvana@example.com",
-   *   "password": "Password123!",
-   *   "university": "Hanoi University of Science and Technology",
-   *   "major": "Computer Science"
+   *   "password": "Password123!"
    * }
    */
   async signup(data: SignupData): Promise<ApiResponse<LoginPayload>> {
     try {
-      if (!isValidMajor(data.major)) {
-        return {
-          success: false,
-          error: t("general.invalidMajor"),
-        };
-      }
       const formData = new FormData();
       const userInfo = {
         name: data.fullName.trim(),
         email: data.email.trim(),
         password: data.password,
-        university: data.university?.trim() || "",
-        major: data.major,
+        role: "USER",
       };
       formData.append(
         "data",

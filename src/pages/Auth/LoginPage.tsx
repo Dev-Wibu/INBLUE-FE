@@ -238,7 +238,7 @@ export function LoginPage() {
             {t("authLoginpage.doYouHaveAnAccount")}{" "}
           </span>
           <Link
-            to="/signup"
+            to="/select-role"
             className="font-medium text-[#0047AB] hover:underline dark:text-[#66B2FF]">
             {t("authLoginpage.registerNow")}
           </Link>

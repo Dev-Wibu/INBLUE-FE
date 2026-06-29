@@ -3,14 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useMajorOptions } from "@/constants/majors";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
@@ -30,15 +22,12 @@ type SignupAuthPayload = {
 };
 export function SignupPage() {
   const { t } = useTranslation();
-  const majorOptions = useMajorOptions();
   const navigate = useNavigate();
   const location = useLocation();
   const { setUser, setToken, setIsLoggedIn } = useAuthStore();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    university: "",
-    major: "",
     password: "",
     confirmPassword: "",
   });
@@ -118,8 +107,6 @@ export function SignupPage() {
       fullName: formData.fullName,
       email: formData.email,
       password: formData.password,
-      university: formData.university,
-      major: formData.major,
     });
     if (result.success && result.data?.user) {
       const token = typeof result.data.token === "string" ? result.data.token.trim() : "";
@@ -147,7 +134,7 @@ export function SignupPage() {
         navigate("/login", {
           replace: true,
           state: {
-            message: t("common.registrationFailed"),
+            message: t("authSignuppage.registeredSuccessfullyPleaseLogIn"),
             prefillEmail: result.data.user.email,
           },
         });
@@ -246,48 +233,6 @@ export function SignupPage() {
                 required
                 className={inputClassName}
               />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="university" className="dark:text-slate-300">
-                {t("common.university")}
-              </Label>
-              <Input
-                id="university"
-                name="university"
-                value={formData.university}
-                onChange={handleChange}
-                placeholder={t("authSignuppage.hust")}
-                required
-                className={inputClassName}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="major" className="dark:text-slate-300">
-                {t("authSignuppage.specialized")}
-              </Label>
-              <Select
-                value={formData.major}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    major: value,
-                  })
-                }>
-                <SelectTrigger className={inputClassName}>
-                  <SelectValue placeholder={t("common.chooseAMajor")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {majorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
