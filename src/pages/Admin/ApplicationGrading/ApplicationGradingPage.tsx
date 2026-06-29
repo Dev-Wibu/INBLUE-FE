@@ -48,7 +48,8 @@ import { useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
-const t = i18n.t.bind(i18n);
+const t = (k: string, opts?: string | Record<string, unknown>): string =>
+  i18n.t(k, opts as string) as unknown as string;
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type SubmissionData = components["schemas"]["SubmissionData"];

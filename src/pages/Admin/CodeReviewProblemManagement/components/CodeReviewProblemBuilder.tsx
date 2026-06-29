@@ -25,7 +25,8 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-const t = i18n.t.bind(i18n);
+const t = (k: string, opts?: string | Record<string, unknown>): string =>
+  i18n.t(k, opts as string) as unknown as string;
 
 function StyledSelect({
   value,

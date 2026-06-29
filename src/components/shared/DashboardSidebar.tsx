@@ -11,7 +11,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getInitialSidebarCollapsed } from "./sidebar-collapse";
-const t = i18n.t.bind(i18n);
+const t = (k: string, opts?: string | Record<string, unknown>): string =>
+  i18n.t(k, opts as string) as unknown as string;
 export interface SidebarMenuItem {
   type: string;
   icon: React.ElementType;

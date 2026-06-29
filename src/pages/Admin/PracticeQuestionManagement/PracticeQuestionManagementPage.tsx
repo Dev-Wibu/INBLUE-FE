@@ -41,7 +41,8 @@ import { Plus, Search, Trash2, Upload } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-const t = i18n.t.bind(i18n);
+const t = (k: string, opts?: string | Record<string, unknown>): string =>
+  i18n.t(k, opts as string) as unknown as string;
 const levelBadgeMap: Record<string, string> = {
   EASY: "bg-green-100 text-green-700 hover:bg-green-100",
   MEDIUM: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
