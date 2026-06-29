@@ -3784,7 +3784,11 @@
     "issuesToCatchCount": "キャッチする問題 ({{count}})",
     "highlightLanguage": "ハイライト言語",
     "aiGenerating": "AIがコードレビューの問題を生成しています、お待ちください...",
-    "clickIssueToEdit": "以下の問題をクリックすると、その問題を含む該当するファイルと行に自動的にジャンプして編集できます。"
+    "clickIssueToEdit": "以下の問題をクリックすると、その問題を含む該当するファイルと行に自動的にジャンプして編集できます。",
+    "noIssues": "このファイルには問題がありません",
+    "selectFromList": "リストから問題を選択して詳細を表示",
+    "updateFailed": "問題を更新できません",
+    "createNew": "新規作成"
   },
   "adminQuestionbankmanagement": {
     "addQuestion": "質問を追加",

@@ -3811,7 +3811,11 @@
     "issuesToCatchCount": "Lỗi cần bắt ({{count}})",
     "highlightLanguage": "Ngôn ngữ highlight",
     "aiGenerating": "AI đang sinh đề bài Code Review, vui lòng chờ trong giây lát...",
-    "clickIssueToEdit": "Nhấp vào bất kỳ lỗi nào dưới đây để tự động chuyển đến file và dòng\r\n                            tương ứng chứa lỗi đó để chỉnh sửa."
+    "clickIssueToEdit": "Nhấp vào bất kỳ lỗi nào dưới đây để tự động chuyển đến file và dòng\r\n                            tương ứng chứa lỗi đó để chỉnh sửa.",
+    "noIssues": "Không có lỗi nào trong file này",
+    "selectFromList": "Chọn một bài tập từ danh sách để xem chi tiết",
+    "updateFailed": "Không thể cập nhật bài tập",
+    "createNew": "Tạo mới"
   },
   "adminQuestionbankmanagement": {
     "addQuestion": "Thêm câu hỏi",
