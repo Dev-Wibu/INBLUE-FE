@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
+import i18n from "@/lib/i18n";
 
 export interface CodingProblemExample {
   inputs?: string[];
@@ -46,7 +47,7 @@ export class CodingProblemManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Không thể tải danh sách bài tập lập trình",
+        error: error instanceof Error ? error.message : i18n.t("problem.loadCodingListFailed"),
       };
     }
   }
@@ -70,7 +71,7 @@ export class CodingProblemManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Không thể tạo bài tập lập trình",
+        error: error instanceof Error ? error.message : i18n.t("problem.createCodingFailed"),
       };
     }
   }
@@ -104,7 +105,7 @@ export class CodingProblemManager {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Không thể tạo tự động bài tập lập trình",
+        error: error instanceof Error ? error.message : i18n.t("problem.autoCreateCodingFailed"),
       };
     }
   }

@@ -1,8 +1,10 @@
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
+import i18n from "@/lib/i18n";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { components } from "../../schema-from-be";
+const t = i18n.t.bind(i18n);
 
 export type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 
@@ -89,7 +91,7 @@ export const useHrScore = (options?: {
       return result.data!;
     },
     onSuccess: (_data, variables) => {
-      toast.success("Đã chấm điểm thành công!");
+      toast.success(t("grading.gradeSuccess"));
       queryClient.invalidateQueries({ queryKey: ["applicationDetails"] });
       queryClient.invalidateQueries({
         queryKey: ["applicationDetails", "byApplicationId", variables.applicationDetailId],

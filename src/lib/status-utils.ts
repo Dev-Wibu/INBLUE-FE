@@ -184,25 +184,25 @@ export function getJobDescriptionLevelBadge(level?: string): StatusBadgeConfig {
   switch (level?.toUpperCase()) {
     case "INTERN":
       return {
-        label: t("common.intern"),
+        label: "Intern",
         variant: "default",
         className: "bg-gray-500 text-white hover:bg-gray-500",
       };
     case "FRESHER":
       return {
-        label: t("common.fresher"),
+        label: "Fresher",
         variant: "default",
         className: "bg-green-500 text-white hover:bg-green-500",
       };
     case "JUNIOR":
       return {
-        label: t("common.junior"),
+        label: "Junior",
         variant: "default",
         className: "bg-blue-500 text-white hover:bg-blue-500",
       };
     case "MIDDLE":
       return {
-        label: t("common.middle"),
+        label: "Middle",
         variant: "default",
         className: "bg-purple-600 text-white hover:bg-purple-600",
       };

@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+const t = i18n.t.bind(i18n);
 /**
  * Custom hook for managing tab state with URL synchronization and localStorage persistence.
  *
@@ -164,7 +166,7 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
           {
             id: generateTabId("grading-detail"),
             type: "grading-detail",
-            label: appId ? `Đơn #${appId}` : "Chi tiết đơn ứng tuyển",
+            label: appId ? `Đơn #${appId}` : t("application.details"),
             appId: appId ?? undefined,
           },
         ];

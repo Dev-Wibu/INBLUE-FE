@@ -1,10 +1,12 @@
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
+import i18n from "@/lib/i18n";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../schema-from-be";
+const t = i18n.t.bind(i18n);
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type SubmissionResult = components["schemas"]["SubmissionResult"];
@@ -235,7 +237,7 @@ export function useSubmitQuiz(options?: {
       return result.data!;
     },
     onSuccess: (data) => {
-      toast.success("Nộp bài quiz thành công!");
+      toast.success(t("quiz.submitSuccess"));
       queryClient.invalidateQueries({ queryKey: ["applicationDetails"] });
       options?.onSuccess?.(data);
     },
