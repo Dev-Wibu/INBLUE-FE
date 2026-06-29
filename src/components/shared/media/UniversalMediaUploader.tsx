@@ -1,290 +1,438 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuthStore } from "@/stores/authStore";
-import Uppy, { type UploadResult, type UppyFile } from "@uppy/core";
+import { cn } from "@/lib/utils";
+import { useThemeStore } from "@/stores/themeStore";
 import "@uppy/core/css/style.min.css";
 import "@uppy/dashboard/css/style.min.css";
-import ImageEditor from "@uppy/image-editor";
 import "@uppy/image-editor/css/style.min.css";
 import Dashboard from "@uppy/react/dashboard";
-import XHRUpload from "@uppy/xhr-upload";
-import { useEffect, useId, useMemo } from "react";
+import DashboardModal from "@uppy/react/dashboard-modal";
+import "@uppy/screen-capture/css/style.min.css";
+import "@uppy/webcam/css/style.min.css";
+import { FileText, Upload, X, ZoomIn } from "lucide-react";
+import * as React from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-import type { UploadTransportMode, UploadedMediaFile } from "./types";
-type UploadMeta = Record<string, never>;
-type UploadBody = Record<string, unknown>;
+import { MediaLightboxDialog } from "./MediaLightboxDialog";
+import type {
+  InitialFileItem,
+  UploaderDisplayMode,
+  UploaderPreset,
+  UploaderThemeVariant,
+} from "./types";
+import { resolvePresetConfig } from "./uploader-presets";
+import "./uploader-themes.css";
+import { useUppyInstance } from "./useUppyInstance";
+
+const PdfIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    fill="currentColor"
+    viewBox="0 0 384 512"
+    xmlns="http://www.w3.org/2000/svg">
+    <path d="M181.9 256.1c-5-16-4.9-46.9-2-46.9 8.4 0 7.6 36.9 2 46.9zm-1.7 47.2c-7.7 20.2-17.3 43.3-28.4 62.7 18.3-7 39-17.2 62.9-21.9-12.7-9.6-24.9-23.4-34.5-40.8zM86.1 428.1c0 .8 13.2-5.4 34.9-40.2-6.7 6.3-29.1 24.5-34.9 40.2zM261.6 293c-23.4 3.7-46 12.6-67 25 18 20.4 44 26.5 59.8 26.5 24.7 0 24.5-12.4 24.5-14.7 0-9.6-9.1-13.4-17.3-36.8zm116.2-70.3H264.4c-6.6 0-12-5.4-12-12V97.3C252.4 43.6 208.8 0 155.1 0H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V222.7zM257 362.4c-19.6 0-41.6-6-63.5-24-21 10.9-42.3 19.3-63.1 24.6-21.3 23.3-43.5 39.1-57.5 39.1-12.4 0-17.4-8.8-17.4-19.1 0-14.7 13.5-29.2 38.6-43.3 11.2-6.3 25-10.8 38.9-13.5 12.1-23.5 22.3-51.4 28.5-74-7.4-23.3-13.5-51.3-8.8-70.2 4-16.1 19.3-20.9 30-20.9 9.9 0 17.5 4.3 17.5 18.1 0 23.3-15.6 50.8-21.6 69.8 9.5 17.7 21.7 32.2 35.1 42.1 23.3-5.2 45-8.4 59.2-8.4 12.1 0 20.9 3 25.4 8.7 3.6 4.6 5.4 11.1 5.4 18 0 17.1-14.6 34.6-46.7 34.6zM264.4 95.3h101.3v3.4H264.4z"></path>
+  </svg>
+);
+
 export interface UniversalMediaUploaderProps {
+  // ── Identity
   id?: string;
-  title?: string;
-  description?: string;
-  transportMode?: UploadTransportMode;
-  endpoint?: string;
-  headers?: Record<string, string>;
-  multipartFieldName?: string;
+  className?: string;
+
+  // ── Display
+  displayMode?: UploaderDisplayMode;
+  height?: number;
+  note?: string;
+
+  // ── Preset (sets defaults for acceptedFileTypes, maxNumberOfFiles, etc.)
+  preset?: UploaderPreset;
+
+  // ── Restrictions (override preset when provided)
   acceptedFileTypes?: string[];
   maxFileSizeMB?: number;
   maxNumberOfFiles?: number;
-  autoProceed?: boolean;
-  sequentialUpload?: boolean;
-  bundleUpload?: boolean;
-  height?: number;
-  note?: string;
+
+  // ── Plugin toggles (override preset defaults when provided)
+  enableImageEditor?: boolean;
+  enableWebcam?: boolean;
+  enableScreenCapture?: boolean;
+
+  // ── Theme
+  themeVariant?: UploaderThemeVariant;
+
+  // ── Data
+  initialFiles?: InitialFileItem[];
+
+  // ── Callbacks
   onFilesChange?: (_files: File[]) => void;
-  onUploadComplete?: (_files: UploadedMediaFile[]) => void;
-  onUploadError?: (_message: string) => void;
 }
-function mapUploadedFile(file: UppyFile<UploadMeta, UploadBody>): UploadedMediaFile {
-  return {
-    id: file.id,
-    name: file.name,
-    size: file.size ?? 0,
-    type: file.type ?? "application/octet-stream",
-    uploadUrl: typeof file.response?.uploadURL === "string" ? file.response.uploadURL : undefined,
-  };
-}
-async function runMockSingleUpload(
-  uppy: Uppy<UploadMeta, UploadBody>,
-  fileId: string,
-  delayPerStepMs: number
-): Promise<void> {
-  const initialFile = uppy.getFile(fileId);
-  if (!initialFile) {
-    return;
-  }
-  const totalBytes = initialFile.size && initialFile.size > 0 ? initialFile.size : 1;
-  for (let step = 1; step <= 8; step += 1) {
-    await new Promise((resolve) => {
-      setTimeout(resolve, delayPerStepMs);
-    });
-    const currentFile = uppy.getFile(fileId);
-    if (!currentFile) {
-      return;
-    }
-    const bytesUploaded = Math.round((totalBytes * step) / 8);
-    uppy.emit(
-      "upload-progress",
-      currentFile as never,
-      {
-        uploader: "mock-uploader",
-        bytesUploaded,
-        bytesTotal: totalBytes,
-      } as never
-    );
-  }
-  const finishedFile = uppy.getFile(fileId);
-  if (!finishedFile) {
-    return;
-  }
-  uppy.emit(
-    "upload-success",
-    finishedFile as never,
-    {
-      status: 200,
-      body: {
-        mock: true,
-      },
-      uploadURL: `mock://${encodeURIComponent(finishedFile.name)}`,
-    } as never
-  );
-}
+
+/**
+ * UniversalMediaUploader — the project's single entry-point for all file uploads.
+ *
+ * Two display modes:
+ *  - "dashboard" — Full Uppy Dashboard (drag-drop, paste, progress, editor tabs)
+ *  - "modal"     — Dashboard inside a modal overlay (triggered by a button)
+ *
+ * Use presets for common use-cases instead of wiring every restriction prop:
+ *  preset="single-image" | "multi-image" | "single-pdf" | "multi-pdf" | "mixed"
+ *
+ * The component does NOT wrap itself in a <Card>; the caller decides the container.
+ */
 export function UniversalMediaUploader({
   id,
-  title: titleProp,
-  description: descriptionProp,
-  transportMode = "mock",
-  endpoint,
-  headers,
-  multipartFieldName = "file",
-  acceptedFileTypes = ["image/*", ".pdf", "application/pdf"],
-  maxFileSizeMB = 25,
-  maxNumberOfFiles = 20,
-  autoProceed = false,
-  sequentialUpload = true,
-  bundleUpload = false,
+  className,
+  displayMode = "modal",
   height = 460,
-  note: noteProp,
+  note,
+  preset,
+  acceptedFileTypes: acceptedFileTypesProp,
+  maxFileSizeMB: maxFileSizeMBProp,
+  maxNumberOfFiles: maxNumberOfFilesProp,
+  enableImageEditor: enableImageEditorProp,
+  enableWebcam = false,
+  enableScreenCapture = false,
+  themeVariant = "default",
+  initialFiles,
   onFilesChange,
-  onUploadComplete,
-  onUploadError,
 }: UniversalMediaUploaderProps) {
   const { t } = useTranslation();
-  const token = useAuthStore((state) => state.token);
 
-  const title = titleProp ?? t("compShared.downloadPhotosAndDocuments");
-  const description = descriptionProp ?? t("compShared.dragAndDropCopyPaste");
-  const note = noteProp ?? t("compShared.supportsPhotosAndPdfsYou");
+  // Resolve preset → merge with any explicit prop overrides
+  const resolved = resolvePresetConfig(preset, {
+    acceptedFileTypes: acceptedFileTypesProp,
+    maxNumberOfFiles: maxNumberOfFilesProp,
+    enableImageEditor: enableImageEditorProp,
+  });
 
-  const UPLOADER_STRINGS = useMemo(
-    () => ({
-      closeModal: t("compShared.closeTheFileDownloadWindow"),
-      addMoreFiles: t("compShared.addFiles"),
-      addingMoreFiles: t("compShared.addingFiles"),
-      dashboardWindowTitle: t("compShared.fileDownloadTable"),
-      dashboardTitle: t("compShared.fileDownloadTable"),
-      copyLinkToClipboardSuccess: t("compShared.linkCopied"),
-      copyLinkToClipboardFallback: t("compShared.copyTheLinkBelow"),
-      copyLink: t("compShared.copyLink"),
-      back: t("general.back"),
-      removeFile: t("compShared.deleteFiles"),
-      editFile: t("compShared.editFiles"),
-      saveChanges: t("common.saveChanges"),
-      myDevice: t("compShared.myDevice"),
-      dropHint: t("compShared.dropFilesHere"),
-      uploadComplete: t("compShared.uploadComplete"),
-      uploadPaused: t("compShared.paused"),
-      resumeUpload: t("general.continue"),
-      pauseUpload: t("compShared.pause"),
-      retryUpload: t("common.retry"),
-      cancelUpload: t("compShared.cancelUpload"),
-      xFilesSelected: {
-        0: t("compShared.smartCountSelectedFiles"),
-        1: t("compShared.smartCountSelectedFiles"),
-      },
-      uploadingXFiles: {
-        0: t("compShared.loadingSmartCountFile"),
-        1: t("compShared.loadingSmartCountFile"),
-      },
-      processingXFiles: {
-        0: t("compShared.processingSmartCountFile"),
-        1: t("compShared.processingSmartCountFile"),
-      },
-      addMore: t("common.more"),
-      save: t("general.save"),
-      cancel: t("general.cancel"),
-      dropPasteFiles: t("compShared.dropFilesOrBrowsefiles"),
-      dropPasteBoth: t("compShared.dropFilesOrBrowsefiles"),
-      browseFiles: t("compShared.selectFile"),
-      browseFolders: t("compShared.selectFolder"),
-      done: t("common.completed"),
-    }),
-    [t]
-  );
-  const reactId = useId();
-  const uploaderId = id ?? `universal-media-uploader-${reactId.replace(/:/g, "")}`;
-  const uppy = useMemo(() => {
-    const uploader = new Uppy<UploadMeta, UploadBody>({
-      id: uploaderId,
-      autoProceed,
-      allowMultipleUploadBatches: true,
-      restrictions: {
-        maxFileSize: maxFileSizeMB * 1024 * 1024,
-        maxNumberOfFiles,
-        allowedFileTypes: acceptedFileTypes,
-      },
-      locale: {
-        strings: UPLOADER_STRINGS,
-      } as never,
-    });
-    uploader.use(ImageEditor, {
-      quality: 0.92,
-      cropperOptions: {
-        viewMode: 1,
-        background: false,
-        autoCropArea: 1,
-      },
-    });
-    if (transportMode === "xhr" && endpoint) {
-      const requestHeaders: Record<string, string> = {
-        ...(headers ?? {}),
-      };
-      const normalizedToken = token?.replace(/^Bearer\s+/i, "").trim();
-      if (normalizedToken) {
-        requestHeaders.Authorization = `Bearer ${normalizedToken}`;
-      }
-      uploader.use(XHRUpload, {
-        endpoint,
-        method: "POST",
-        formData: true,
-        fieldName: multipartFieldName,
-        bundle: bundleUpload,
-        limit: sequentialUpload ? 1 : 5,
-        headers: requestHeaders,
-      });
-    } else {
-      uploader.addUploader(async (fileIds) => {
-        if (sequentialUpload) {
-          for (const fileId of fileIds) {
-            await runMockSingleUpload(uploader, fileId, 220);
-          }
-          return;
-        }
-        await Promise.all(fileIds.map((fileId) => runMockSingleUpload(uploader, fileId, 220)));
-      });
-    }
-    return uploader;
-  }, [
-    acceptedFileTypes,
-    autoProceed,
-    bundleUpload,
-    endpoint,
-    headers,
+  const maxFileSizeMB = maxFileSizeMBProp ?? 10;
+  const resolvedNote = note ?? t(resolved.noteKey);
+
+  const uppy = useUppyInstance({
+    id,
+    acceptedFileTypes: resolved.acceptedFileTypes,
     maxFileSizeMB,
-    maxNumberOfFiles,
-    multipartFieldName,
-    sequentialUpload,
-    token,
-    transportMode,
-    uploaderId,
-    UPLOADER_STRINGS,
-  ]);
-  useEffect(() => {
-    return () => {
-      uppy.cancelAll();
-      uppy.destroy();
-    };
-  }, [uppy]);
-  useEffect(() => {
-    const handleFilesAdded = (files: UppyFile<UploadMeta, UploadBody>[]) => {
-      if (!onFilesChange) {
-        return;
-      }
-      const selectedFiles = files
-        .map((item) => item.data)
-        .filter((item): item is File => item instanceof File);
-      onFilesChange(selectedFiles);
-    };
-    const handleComplete = (result: UploadResult<UploadMeta, UploadBody>) => {
-      if (transportMode === "mock") {
-        toast.success(t("compShared.theFileDownloadSimulationWas"));
-      }
-      onUploadComplete?.((result.successful ?? []).map(mapUploadedFile));
-    };
-    const handleError = (error: Error) => {
-      const message = error.message || t("compShared.couldNotLoadFilePlease");
-      toast.error(message);
-      onUploadError?.(message);
-    };
-    uppy.on("files-added", handleFilesAdded);
-    uppy.on("complete", handleComplete);
-    uppy.on("error", handleError);
-    return () => {
-      uppy.off("files-added", handleFilesAdded);
-      uppy.off("complete", handleComplete);
-      uppy.off("error", handleError);
-    };
-  }, [onFilesChange, onUploadComplete, onUploadError, transportMode, uppy, t]);
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    maxNumberOfFiles: resolved.maxNumberOfFiles,
+    enableImageEditor: resolved.enableImageEditor,
+    enableWebcam,
+    enableScreenCapture,
+    initialFiles,
+    onFilesChange,
+  });
+
+  const allowsVideo = resolved.acceptedFileTypes.some(
+    (type) => type.startsWith("video/") || type === "*/*"
+  );
+
+  const themeClass = cn(
+    `uploader-theme-${themeVariant}`,
+    !allowsVideo && "hide-screen-capture-video"
+  );
+
+  // ── Dashboard mode ───────────────────────────────────────────────────────
+  if (displayMode === "dashboard") {
+    return (
+      <div className={cn(themeClass, className)}>
         <Dashboard
           uppy={uppy}
           width="100%"
           height={height}
-          note={note}
+          note={resolvedNote}
           proudlyDisplayPoweredByUppy={false}
-          hideProgressDetails={false}
+          hideProgressDetails={true}
           showSelectedFiles
           showRemoveButtonAfterComplete
-          hidePauseResumeButton={transportMode === "mock"}
+          hidePauseResumeButton={true}
+          hideUploadButton={true}
           doneButtonHandler={() => {
             uppy.clear();
           }}
         />
-      </CardContent>
-    </Card>
+      </div>
+    );
+  }
+
+  // ── Modal mode (Default) ─────────────────────────────────────────────────
+  return (
+    <ModalMode
+      uppy={uppy}
+      themeClass={themeClass}
+      className={className}
+      t={t}
+      resolved={resolved}
+    />
+  );
+}
+
+// ── Modal sub-component ──────────────────────────────────────────────────────
+
+interface SubModeProps {
+  uppy: ReturnType<typeof useUppyInstance>;
+  themeClass: string;
+  className?: string;
+  t: (_key: string) => string;
+  resolved?: ReturnType<typeof resolvePresetConfig>;
+}
+
+function ModalMode({ uppy, themeClass, className, t }: SubModeProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [lightboxIndex, setLightboxIndex] = React.useState(-1);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [files, setFiles] = React.useState<
+    Array<{
+      id: string;
+      name: string;
+      size: number;
+      type: string;
+      previewUrl?: string;
+      data?: File;
+    }>
+  >([]);
+
+  React.useEffect(() => {
+    const syncFiles = () => {
+      const uppyFiles = Object.values(uppy.getState().files);
+      setFiles(
+        uppyFiles.map((f) => ({
+          id: f.id,
+          name: f.name,
+          size: f.size ?? 0,
+          type: f.type ?? "",
+          previewUrl: f.preview,
+          data: f.data instanceof File ? f.data : undefined,
+        }))
+      );
+    };
+    uppy.on("files-added", syncFiles);
+    uppy.on("file-removed", syncFiles);
+    uppy.on("thumbnail:generated", syncFiles);
+    return () => {
+      uppy.off("files-added", syncFiles);
+      uppy.off("file-removed", syncFiles);
+      uppy.off("thumbnail:generated", syncFiles);
+    };
+  }, [uppy]);
+
+  const { theme: appTheme } = useThemeStore();
+  const uppyTheme = appTheme === "system" ? "auto" : appTheme;
+
+  React.useEffect(() => {
+    if (isOpen && themeClass) {
+      const classes = themeClass.split(" ").filter(Boolean);
+      document.body.classList.add(...classes);
+      return () => {
+        document.body.classList.remove(...classes);
+      };
+    }
+  }, [isOpen, themeClass]);
+
+  // Handle native drag & drop to add files directly
+  const handleDragOver = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = React.useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = React.useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const droppedFiles = Array.from(e.dataTransfer.files);
+        droppedFiles.forEach((file) => {
+          try {
+            uppy.addFile({
+              name: file.name,
+              type: file.type,
+              data: file,
+              source: "Local",
+              isRemote: false,
+            });
+          } catch {
+            // Silently ignore duplicates
+          }
+        });
+      }
+    },
+    [uppy]
+  );
+
+  const handlePaste = React.useCallback(
+    (e: React.ClipboardEvent) => {
+      if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+        const pastedFiles = Array.from(e.clipboardData.files);
+        pastedFiles.forEach((file) => {
+          try {
+            uppy.addFile({
+              name: file.name,
+              type: file.type,
+              data: file,
+              source: "Local",
+              isRemote: false,
+            });
+          } catch {
+            // Silently ignore duplicates
+          }
+        });
+      }
+    },
+    [uppy]
+  );
+
+  // Map Uppy files → MediaViewerItem[] for the Lightbox
+  const lightboxItems = files.map((f) => ({
+    id: f.id,
+    name: f.name,
+    file: f.data,
+    mimeType: f.type,
+    requireAuth: false,
+  }));
+
+  const isPdf = (type: string) => type === "application/pdf" || type === "application/x-pdf";
+
+  const modalContent = (
+    <DashboardModal
+      uppy={uppy}
+      open={isOpen}
+      theme={uppyTheme}
+      onRequestClose={() => setIsOpen(false)}
+      closeModalOnClickOutside
+      browserBackButtonClose={true}
+      disablePageScrollWhenModalOpen={true}
+      proudlyDisplayPoweredByUppy={false}
+      hideProgressDetails={true}
+      showSelectedFiles
+      showRemoveButtonAfterComplete
+      hidePauseResumeButton={true}
+      hideUploadButton={true}
+      doneButtonHandler={() => setIsOpen(false)}
+    />
+  );
+
+  return (
+    <div
+      className={cn(themeClass, className)}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onPaste={handlePaste}>
+      {/* 
+        Render DashboardModal into a Portal attached directly to document.body.
+        This isolates the `position: fixed` element from any parent components (like <Card>)
+        that use `backdrop-blur` or `transform` which create new containing blocks.
+      */}
+      {typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent}
+
+      {/* Lightbox for full-size preview */}
+      {lightboxItems.length > 0 && lightboxIndex >= 0 && (
+        <MediaLightboxDialog
+          open={lightboxIndex >= 0}
+          onOpenChange={(open) => {
+            if (!open) setLightboxIndex(-1);
+          }}
+          items={lightboxItems}
+          initialIndex={lightboxIndex}
+        />
+      )}
+
+      {files.length === 0 ? (
+        /* ── Empty state trigger ───────────────────────────────────────── */
+        <div
+          className={cn(
+            "group flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-5 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0047AB]",
+            isDragging
+              ? "scale-[1.02] border-[#0047AB] bg-[#0047AB]/5 dark:border-[#66B2FF] dark:bg-[#66B2FF]/10"
+              : "border-slate-300 bg-white/80 hover:border-[#0047AB]/60 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-[#66B2FF]/70 dark:hover:bg-slate-900"
+          )}
+          onClick={() => setIsOpen(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setIsOpen(true);
+          }}>
+          <Upload className="mb-2 h-6 w-6 text-slate-400 group-hover:text-[#0047AB] dark:group-hover:text-[#66B2FF]" />
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {t("compShared.clickToOpenUploader")}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">{t("compShared.supportsAdvancedFeatures")}</p>
+        </div>
+      ) : (
+        /* ── File list ─────────────────────────────────────────────────── */
+        <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+          <ul className="space-y-2">
+            {files.map((file, index) => (
+              <li
+                key={file.id}
+                className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-2 shadow-xs dark:border-slate-700 dark:bg-slate-950">
+                {/* Thumbnail with zoom overlay */}
+                <button
+                  type="button"
+                  className="group relative h-10 w-10 shrink-0 overflow-hidden rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0047AB]"
+                  onClick={() => setLightboxIndex(index)}
+                  aria-label={t("compShared.viewMedia") + " " + file.name}>
+                  {file.previewUrl ? (
+                    <img
+                      src={file.previewUrl}
+                      alt={file.name}
+                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
+                    />
+                  ) : isPdf(file.type) ? (
+                    <div className="flex h-full w-full items-center justify-center bg-red-50 dark:bg-red-950/30">
+                      <PdfIcon className="h-6 w-6 text-red-500" />
+                    </div>
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-slate-100 dark:bg-slate-800">
+                      <FileText className="h-5 w-5 text-slate-400" />
+                    </div>
+                  )}
+                  {/* Zoom-in overlay on hover */}
+                  {(file.previewUrl || isPdf(file.type)) && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                      <ZoomIn className="h-4 w-4 text-white" />
+                    </div>
+                  )}
+                </button>
+
+                {/* File info */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                    {file.name}
+                  </p>
+                  <p className="text-xs text-slate-500">{(file.size / 1024).toFixed(0)} KB</p>
+                </div>
+
+                {/* Delete button */}
+                <button
+                  type="button"
+                  className="shrink-0 rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    uppy.removeFile(file.id);
+                  }}
+                  aria-label={t("compShared.deleteFiles")}>
+                  <X className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          {/* Edit / change button */}
+          <button
+            type="button"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            onClick={() => setIsOpen(true)}>
+            <Upload className="h-4 w-4" />
+            {t("compShared.editOrChangeFiles")}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

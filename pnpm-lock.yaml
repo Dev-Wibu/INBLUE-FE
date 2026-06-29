@@ -118,7 +118,13 @@ importers:
         version: 4.2.0(@uppy/core@5.2.0)
       '@uppy/react':
         specifier: ^5.2.0
-        version: 5.2.0(@uppy/core@5.2.0)(@uppy/dashboard@5.1.1(@uppy/core@5.2.0))(@uppy/image-editor@4.2.0(@uppy/core@5.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 5.2.0(@uppy/core@5.2.0)(@uppy/dashboard@5.1.1(@uppy/core@5.2.0))(@uppy/image-editor@4.2.0(@uppy/core@5.2.0))(@uppy/screen-capture@5.1.0(@uppy/core@5.2.0))(@uppy/webcam@5.1.0(@uppy/core@5.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@uppy/screen-capture':
+        specifier: ^5.1.0
+        version: 5.1.0(@uppy/core@5.2.0)
+      '@uppy/webcam':
+        specifier: ^5.1.0
+        version: 5.1.0(@uppy/core@5.2.0)
       '@uppy/xhr-upload':
         specifier: ^5.2.0
         version: 5.2.0(@uppy/core@5.2.0)
@@ -2084,6 +2090,11 @@ packages:
       '@uppy/webcam':
         optional: true
 
+  '@uppy/screen-capture@5.1.0':
+    resolution: {integrity: sha512-+/AAU6Uxmup+Pzuy8/8S1ZttDAcMLnQleapxQLVpzSeddFCCeM+t6CfQ5tL/huSolz0o4v5rZWNaoUm+m5+wUw==}
+    peerDependencies:
+      '@uppy/core': ^5.2.0
+
   '@uppy/store-default@5.0.0':
     resolution: {integrity: sha512-hQtCSQ1yGiaval/wVYUWquYGDJ+bpQ7e4FhUUAsRQz1x1K+o7NBtjfp63O9I4Ks1WRoKunpkarZ+as09l02cPw==}
 
@@ -2094,6 +2105,11 @@ packages:
 
   '@uppy/utils@7.2.0':
     resolution: {integrity: sha512-6lC246qszMv6bTyl/+QyHwrudgeguWkA94ME1wHn+a6uRAvmtAEaUManIfGqTJfoKvWAiCJqdJPl5xRJjhAloQ==}
+
+  '@uppy/webcam@5.1.0':
+    resolution: {integrity: sha512-SHI+yiNrD4JrTFhQPyt7Mi9nL5r5YDwyXtYXuSRM3URB0etKes6u02MKY5GEn2LEpCSqSceXUi84Prig7UWYIw==}
+    peerDependencies:
+      '@uppy/core': ^5.2.0
 
   '@uppy/xhr-upload@5.2.0':
     resolution: {integrity: sha512-3LV/X5Of6BINnKplP+CwUJ0a4/7cRFfzxwGyXnW+uCrNQHoo09dttcz3begWHejGvzenQHuUnMO3Fxyc71Pryg==}
@@ -3396,6 +3412,9 @@ packages:
   is-map@2.0.3:
     resolution: {integrity: sha512-1Qed0/Hr2m+YqxnM09CjA2d/i6YZNfF6R2oRAOj36eUdS6qIV/huPJNSEpKbupewFs+ZsJlxsjjPbc0/afW6Lw==}
     engines: {node: '>= 0.4'}
+
+  is-mobile@4.0.0:
+    resolution: {integrity: sha512-mlcHZA84t1qLSuWkt2v0I2l61PYdyQDt4aG1mLIXF5FDMm4+haBCxCPYSr/uwqQNRk1MiTizn0ypEuRAOLRAew==}
 
   is-negative-zero@2.0.3:
     resolution: {integrity: sha512-5KoIu2Ngpyek75jXodFvnafB6DJgr3u8uuK0LEZJjrU19DrMD3EVERaR8sjz8CCGgpZvxPl9SuE1GMVPFHx1mw==}
@@ -6828,7 +6847,7 @@ snapshots:
       namespace-emitter: 2.0.1
       p-retry: 6.2.1
 
-  '@uppy/components@1.2.0(@uppy/core@5.2.0)(@uppy/image-editor@4.2.0(@uppy/core@5.2.0))':
+  '@uppy/components@1.2.0(@uppy/core@5.2.0)(@uppy/image-editor@4.2.0(@uppy/core@5.2.0))(@uppy/screen-capture@5.1.0(@uppy/core@5.2.0))(@uppy/webcam@5.1.0(@uppy/core@5.2.0))':
     dependencies:
       '@uppy/core': 5.2.0
       clsx: 2.1.1
@@ -6837,6 +6856,8 @@ snapshots:
       pretty-bytes: 6.1.1
     optionalDependencies:
       '@uppy/image-editor': 4.2.0(@uppy/core@5.2.0)
+      '@uppy/screen-capture': 5.1.0(@uppy/core@5.2.0)
+      '@uppy/webcam': 5.1.0(@uppy/core@5.2.0)
 
   '@uppy/core@5.2.0':
     dependencies:
@@ -6879,9 +6900,9 @@ snapshots:
       p-queue: 8.1.1
       preact: 10.29.1
 
-  '@uppy/react@5.2.0(@uppy/core@5.2.0)(@uppy/dashboard@5.1.1(@uppy/core@5.2.0))(@uppy/image-editor@4.2.0(@uppy/core@5.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@uppy/react@5.2.0(@uppy/core@5.2.0)(@uppy/dashboard@5.1.1(@uppy/core@5.2.0))(@uppy/image-editor@4.2.0(@uppy/core@5.2.0))(@uppy/screen-capture@5.1.0(@uppy/core@5.2.0))(@uppy/webcam@5.1.0(@uppy/core@5.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@uppy/components': 1.2.0(@uppy/core@5.2.0)(@uppy/image-editor@4.2.0(@uppy/core@5.2.0))
+      '@uppy/components': 1.2.0(@uppy/core@5.2.0)(@uppy/image-editor@4.2.0(@uppy/core@5.2.0))(@uppy/screen-capture@5.1.0(@uppy/core@5.2.0))(@uppy/webcam@5.1.0(@uppy/core@5.2.0))
       '@uppy/core': 5.2.0
       preact: 10.29.1
       react: 19.2.0
@@ -6889,8 +6910,16 @@ snapshots:
       use-sync-external-store: 1.6.0(react@19.2.0)
     optionalDependencies:
       '@uppy/dashboard': 5.1.1(@uppy/core@5.2.0)
+      '@uppy/screen-capture': 5.1.0(@uppy/core@5.2.0)
+      '@uppy/webcam': 5.1.0(@uppy/core@5.2.0)
     transitivePeerDependencies:
       - '@uppy/image-editor'
+
+  '@uppy/screen-capture@5.1.0(@uppy/core@5.2.0)':
+    dependencies:
+      '@uppy/core': 5.2.0
+      '@uppy/utils': 7.2.0
+      preact: 10.29.1
 
   '@uppy/store-default@5.0.0': {}
 
@@ -6903,6 +6932,13 @@ snapshots:
   '@uppy/utils@7.2.0':
     dependencies:
       lodash: 4.18.1
+      preact: 10.29.1
+
+  '@uppy/webcam@5.1.0(@uppy/core@5.2.0)':
+    dependencies:
+      '@uppy/core': 5.2.0
+      '@uppy/utils': 7.2.0
+      is-mobile: 4.0.0
       preact: 10.29.1
 
   '@uppy/xhr-upload@5.2.0(@uppy/core@5.2.0)':
@@ -8343,6 +8379,8 @@ snapshots:
   is-interactive@1.0.0: {}
 
   is-map@2.0.3: {}
+
+  is-mobile@4.0.0: {}
 
   is-negative-zero@2.0.3: {}
 

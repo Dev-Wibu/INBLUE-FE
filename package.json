@@ -73,6 +73,8 @@
     "@uppy/dashboard": "^5.1.1",
     "@uppy/image-editor": "^4.2.0",
     "@uppy/react": "^5.2.0",
+    "@uppy/screen-capture": "^5.1.0",
+    "@uppy/webcam": "^5.1.0",
     "@uppy/xhr-upload": "^5.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
