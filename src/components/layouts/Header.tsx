@@ -216,8 +216,8 @@ export function Header() {
               <Button
                 className="rounded-full border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] px-3 text-white shadow-sm hover:text-white hover:shadow-md sm:px-6"
                 asChild>
-                <Link to="/signup">
-                  <Rocket className="h-4 w-4 text-white sm:mr-2" />
+                <Link to="/select-role">
+                  <Rocket className="mr-2 h-4 w-4 text-white sm:mr-2" />
                   <span className="hidden sm:inline">{t("common.register")}</span>
                 </Link>
               </Button>
@@ -343,7 +343,7 @@ export function Header() {
                         <Button
                           className="h-9 w-full justify-center rounded-xl border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] py-4 text-xs text-white shadow-sm hover:shadow-md"
                           asChild>
-                          <Link to="/signup">
+                          <Link to="/select-role">
                             <Rocket className="mr-1.5 h-3.5 w-3.5" />
                             {t("common.register")}
                           </Link>
