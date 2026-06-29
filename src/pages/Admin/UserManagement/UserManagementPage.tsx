@@ -18,7 +18,13 @@ import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { CandidateProfileModal, DeleteUserDialog, UserFormDialog, UserTable } from "./components";
+import {
+  CandidateProfileModal,
+  DeleteUserDialog,
+  UserDetailModal,
+  UserFormDialog,
+  UserTable,
+} from "./components";
 import type { User, UserFormData } from "./types";
 export function UserManagementPage() {
   const { t } = useTranslation();
@@ -32,6 +38,7 @@ export function UserManagementPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<Partial<UserFormData>>({});
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // CV Upload Modal state
   const [isCvModalOpen, setIsCvModalOpen] = useState(false);
@@ -338,6 +345,10 @@ export function UserManagementPage() {
               onDelete={handleDelete}
               onUploadCV={handleUploadCV}
               onViewProfile={handleViewProfile}
+              onViewDetail={(user) => {
+                setSelectedUser(user);
+                setIsDetailModalOpen(true);
+              }}
               getSortProps={getSortProps}
             />
 
@@ -419,6 +430,13 @@ export function UserManagementPage() {
         profile={selectedProfileData}
         open={isProfileModalOpen}
         onOpenChange={setIsProfileModalOpen}
+      />
+
+      {/* User Detail Modal */}
+      <UserDetailModal
+        user={selectedUser}
+        isOpen={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
       />
     </div>
   );

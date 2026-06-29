@@ -1,4 +1,5 @@
 import { SortButton, type SortDirection } from "@/components/shared";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,22 +10,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getMajorLabel } from "@/constants/majors";
-import { Edit, FileText, Power, Search, User } from "lucide-react";
+import { Edit, Eye, FileText, Power, Search, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UserRole, User as UserType } from "../types";
+
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
+
 interface UserTableProps {
   users: UserType[];
   onEdit: (user: UserType) => void;
   onDelete: (user: UserType) => void;
   onUploadCV: (user: UserType) => void;
   onViewProfile?: (user: UserType) => void;
+  onViewDetail: (user: UserType) => void;
   getSortProps?: (key: keyof UserType) => SortProps;
 }
+
 const getRoleBadgeClass = (role?: UserRole): string => {
   switch (role) {
     case "ADMIN":
@@ -37,15 +41,18 @@ const getRoleBadgeClass = (role?: UserRole): string => {
       return "bg-gray-500 hover:bg-gray-500";
   }
 };
+
 export function UserTable({
   users,
   onEdit,
   onDelete,
   onUploadCV,
   onViewProfile,
+  onViewDetail,
   getSortProps,
 }: UserTableProps) {
   const { t } = useTranslation();
+
   if (users.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4">
@@ -56,6 +63,7 @@ export function UserTable({
       </div>
     );
   }
+
   return (
     <Table>
       <TableHeader>
@@ -70,39 +78,47 @@ export function UserTable({
           </TableHead>
           <TableHead>{t("common.email")}</TableHead>
           <TableHead className="w-24">{t("common.role")}</TableHead>
-          <TableHead>{t("common.university")}</TableHead>
-          <TableHead>{t("common.specialized")}</TableHead>
           <TableHead className="w-24">{t("common.status")}</TableHead>
-          <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
+          <TableHead className="w-32 text-right">{t("common.operation")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {users.map((user) => (
           <TableRow key={user.id}>
             <TableCell className="font-medium">{user.id}</TableCell>
-            <TableCell className="font-medium">{user.name}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
+                  <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                    {user.name?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="font-medium">{user.name}</span>
+              </div>
+            </TableCell>
             <TableCell className="text-muted-foreground">{user.email}</TableCell>
             <TableCell>
               <Badge variant="default" className={`text-white ${getRoleBadgeClass(user.role)}`}>
                 {user.role}
               </Badge>
             </TableCell>
-            <TableCell className="max-w-xs truncate">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(user as any).university || "-"}
-            </TableCell>
-            <TableCell>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {getMajorLabel((user as any).major || "", t) || "-"}
-            </TableCell>
             <TableCell>
               <Badge variant={user.isActive !== false ? "default" : "destructive"}>
-                {user.isActive !== false ? t("common.work") : t("common.shutDown")}
+                {user.isActive !== false ? t("common.active") : t("common.inactive")}
               </Badge>
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-1">
-                {onViewProfile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onViewDetail(user)}
+                  className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  title={t("common.userDetail") || "View Details"}>
+                  <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                </Button>
+                {onViewProfile && user.role !== "STAFF" && user.role !== "ADMIN" && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -112,16 +128,18 @@ export function UserTable({
                     <User className="h-4 w-4 text-purple-600" />
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onUploadCV(user)}
-                  className="h-8 w-8 p-0 hover:bg-green-50"
-                  title={user.cvUrl ? t("common.updateCv") : t("common.uploadCv")}>
-                  <FileText
-                    className={`h-4 w-4 ${user.cvUrl ? "text-green-600" : "text-gray-400"}`}
-                  />
-                </Button>
+                {user.role !== "STAFF" && user.role !== "ADMIN" && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onUploadCV(user)}
+                    className="h-8 w-8 p-0 hover:bg-green-50"
+                    title={user.cvUrl ? t("common.updateCv") : t("common.uploadCv")}>
+                    <FileText
+                      className={`h-4 w-4 ${user.cvUrl ? "text-green-600" : "text-gray-400"}`}
+                    />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"

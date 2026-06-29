@@ -17,9 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMajorOptions } from "@/constants/majors";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
-import { ExternalLink, ImageIcon, X } from "lucide-react";
+import { ExternalLink, Image as ImageIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { User, UserFormData } from "../types";
@@ -61,7 +60,6 @@ export function UserFormDialog({
   selectedUser,
 }: UserFormDialogProps) {
   const { t } = useTranslation();
-  const majorOptions = useMajorOptions();
   // State for local file previews (blob URLs for new file uploads)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -219,57 +217,9 @@ export function UserFormDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="USER">{t("common.user")}</SelectItem>
-                <SelectItem value="ADMIN">{t("common.admin")}</SelectItem>
                 <SelectItem value="STAFF">{t("common.staff")}</SelectItem>
-                <SelectItem value="MENTOR">{t("common.mentor")}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="university">{t("common.university")}</Label>
-              <Input
-                id="university"
-                value={
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (formData as any).university || ""
-                }
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    // @ts-expect-error: Backend Swagger schema mismatch - university not in ExtendedUserFormData
-                    university: e.target.value,
-                  })
-                }
-                placeholder={t("adminUsermanagement.universityName")}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="major">{t("authSignuppage.specialized")}</Label>
-              <Select
-                value={
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (formData as any).major || ""
-                }
-                onValueChange={(value) =>
-                  onFormChange({
-                    ...formData,
-                    // @ts-expect-error: Backend Swagger schema mismatch - major not in ExtendedUserFormData
-                    major: value,
-                  })
-                }>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("common.chooseAMajor")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {majorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           {/* File Upload Section - Avatar Only */}
           {/* Note: CV upload is handled separately via dedicated button in UserTable */}
