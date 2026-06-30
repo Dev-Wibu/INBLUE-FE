@@ -10,16 +10,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useMajorOptions } from "@/constants/majors";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
-import { ExternalLink, ImageIcon, X } from "lucide-react";
+import {
+  Camera,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  Shield,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { User, UserFormData } from "../types";
@@ -29,10 +31,6 @@ import type { User, UserFormData } from "../types";
  * Based on schema-from-be.d.ts createUser operation which requires:
  * - data: UserInfo (JSON)
  * - avatar?: File (binary)
- *
- * Note: CV upload is handled separately via dedicated /api/users/upload-cv endpoint
- * which returns CandidateProfile data, avoiding conflicts with general user update operations.
- * See CVUploadModal component.
  */
 interface ExtendedUserFormData extends Partial<UserFormData> {
   avatar?: File;
@@ -61,7 +59,6 @@ export function UserFormDialog({
   selectedUser,
 }: UserFormDialogProps) {
   const { t } = useTranslation();
-  const majorOptions = useMajorOptions();
   // State for local file previews (blob URLs for new file uploads)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -116,10 +113,14 @@ export function UserFormDialog({
       ...formData,
       avatar: undefined,
     });
+    // Reset file input value
+    const fileInput = document.getElementById("avatar-upload") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
 
   // Get the display image URL - prioritize new upload preview over existing URL
   const displayAvatarUrl = avatarPreview || selectedUser?.avatarUrl;
+
   const handlePreviewAvatar = () => {
     if (!displayAvatarUrl) {
       return;
@@ -142,196 +143,177 @@ export function UserFormDialog({
     ]);
     setViewerOpen(true);
   };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="name">{t("common.fullName1")}</Label>
+
+        <div className="grid grid-cols-1 gap-8 py-4 md:grid-cols-3">
+          {/* Avatar Section (Left) */}
+          <div className="flex flex-col items-center space-y-4 md:col-span-1">
+            <div className="group relative mx-auto h-40 w-40 cursor-pointer overflow-hidden rounded-full border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500">
+              {displayAvatarUrl ? (
+                <img
+                  src={displayAvatarUrl}
+                  alt={t("adminUsermanagement.previewYourProfilePicture")}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-slate-400">
+                  <UserIcon className="h-16 w-16 opacity-50" />
+                </div>
+              )}
+
+              {/* Hover Overlay */}
+              <label
+                htmlFor="avatar-upload"
+                className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+                <Camera className="mb-2 h-8 w-8 text-white" />
+                <span className="text-sm font-medium text-white">{t("common.avatar")}</span>
+              </label>
+
+              {/* Hidden File Input */}
               <Input
-                id="name"
-                value={formData.name || ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    name: e.target.value,
-                  })
-                }
-                placeholder={t("adminUsermanagement.enterTheUserSFull")}
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="email">{t("common.email")} *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email || ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    email: e.target.value,
-                  })
-                }
-                placeholder={t("common.emailPlaceholder")}
-              />
+
+            {/* Action buttons under avatar */}
+            <div className="flex w-full flex-col items-center gap-2 text-sm">
+              {avatarPreview ? (
+                <div className="flex flex-col items-center">
+                  <span className="mb-1 text-xs text-green-600">{t("common.newFileSelected")}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearAvatar}
+                    className="h-8 text-red-500">
+                    <X className="mr-1 h-3 w-3" /> {t("adminUsermanagement.deleteNewAvatar")}
+                  </Button>
+                </div>
+              ) : displayAvatarUrl ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePreviewAvatar}
+                  className="h-8 text-blue-500 dark:text-blue-400">
+                  <ExternalLink className="mr-1 h-3 w-3" /> {t("common.seeFullPhoto")}
+                </Button>
+              ) : (
+                <span className="flex items-center text-xs text-slate-400">
+                  <ImageIcon className="mr-1 h-3 w-3" />{" "}
+                  {t("common.noProfilePictureHasBeenSelectedYet")}
+                </span>
+              )}
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="password">{t("adminUsermanagement.passwordLeaveBlankIfNot")}</Label>
-            <div className="flex gap-2">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={formData.password || ""}
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    password: e.target.value,
-                  })
-                }
-                placeholder={t("adminUsermanagement.enterThePasswordForThe")}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? t("adminUsermanagement.hide") : t("adminUsermanagement.presently")}
-              </Button>
+
+          {/* Form Fields Section (Right) */}
+          <div className="space-y-4 md:col-span-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="name">{t("common.fullName1")}</Label>
+                <Input
+                  id="name"
+                  value={formData.name || ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder={t("adminUsermanagement.enterTheUserSFull")}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="email">{t("common.email")} *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email || ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder={t("common.emailPlaceholder")}
+                />
+              </div>
             </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="role">{t("common.role")}</Label>
-            <Select
-              value={formData.role || ""}
-              onValueChange={(value) =>
-                onFormChange({
-                  ...formData,
-                  role: value as "ADMIN" | "STAFF" | "MENTOR" | "USER",
-                })
-              }>
-              <SelectTrigger>
-                <SelectValue placeholder={t("adminUsermanagement.selectRole")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USER">{t("common.user")}</SelectItem>
-                <SelectItem value="ADMIN">{t("common.admin")}</SelectItem>
-                <SelectItem value="STAFF">{t("common.staff")}</SelectItem>
-                <SelectItem value="MENTOR">{t("common.mentor")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+
             <div className="space-y-1.5">
-              <Label htmlFor="university">{t("common.university")}</Label>
-              <Input
-                id="university"
-                value={
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (formData as any).university || ""
-                }
-                onChange={(e) =>
-                  onFormChange({
-                    ...formData,
-                    // @ts-expect-error: Backend Swagger schema mismatch - university not in ExtendedUserFormData
-                    university: e.target.value,
-                  })
-                }
-                placeholder={t("adminUsermanagement.universityName")}
-              />
+              <Label htmlFor="password">{t("adminUsermanagement.passwordLeaveBlankIfNot")}</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password || ""}
+                  onChange={(e) =>
+                    onFormChange({
+                      ...formData,
+                      password: e.target.value,
+                    })
+                  }
+                  placeholder={t("adminUsermanagement.enterThePasswordForThe")}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="major">{t("authSignuppage.specialized")}</Label>
-              <Select
-                value={
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (formData as any).major || ""
-                }
+
+            <div className="space-y-2 pt-2">
+              <Label>{t("common.role")}</Label>
+              <RadioGroup
+                value={formData.role || "USER"}
                 onValueChange={(value) =>
                   onFormChange({
                     ...formData,
-                    // @ts-expect-error: Backend Swagger schema mismatch - major not in ExtendedUserFormData
-                    major: value,
+                    role: value as "STAFF" | "USER",
                   })
-                }>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("common.chooseAMajor")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {majorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                }
+                className="grid grid-cols-2 gap-3">
+                <div>
+                  <RadioGroupItem value="USER" id="role-user" className="peer sr-only" />
+                  <Label
+                    htmlFor="role-user"
+                    className="flex cursor-pointer flex-col items-center justify-between rounded-xl border-2 border-slate-200 bg-transparent p-4 transition-all peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:text-blue-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:peer-data-[state=checked]:border-blue-600 dark:peer-data-[state=checked]:bg-blue-900/20 dark:peer-data-[state=checked]:text-blue-400 dark:hover:bg-slate-800 dark:hover:text-slate-50">
+                    <UserIcon className="mb-2 h-6 w-6" />
+                    <span className="text-sm font-semibold">{t("common.user")}</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="STAFF" id="role-staff" className="peer sr-only" />
+                  <Label
+                    htmlFor="role-staff"
+                    className="flex cursor-pointer flex-col items-center justify-between rounded-xl border-2 border-slate-200 bg-transparent p-4 transition-all peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:text-blue-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:peer-data-[state=checked]:border-blue-600 dark:peer-data-[state=checked]:bg-blue-900/20 dark:peer-data-[state=checked]:text-blue-400 dark:hover:bg-slate-800 dark:hover:text-slate-50">
+                    <Shield className="mb-2 h-6 w-6" />
+                    <span className="text-sm font-semibold">{t("common.staff")}</span>
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
           </div>
-          {/* File Upload Section - Avatar Only */}
-          {/* Note: CV upload is handled separately via dedicated button in UserTable */}
-          <div className="space-y-1.5">
-            <Label htmlFor="avatar">{t("common.avatar")}</Label>
-            {/* Image Preview - Show either new upload or existing avatar */}
-            {displayAvatarUrl && (
-              <div className="relative mb-2 rounded-lg border bg-slate-50 p-2 dark:bg-slate-800">
-                <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-full">
-                  <img
-                    src={displayAvatarUrl}
-                    alt={t("adminUsermanagement.previewYourProfilePicture")}
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      // Hide image on error
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                </div>
-                <div className="mt-2 flex items-center justify-center gap-2">
-                  {avatarPreview ? (
-                    <>
-                      <span className="text-xs text-green-600">{t("common.newFileSelected")}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
-                        onClick={handleClearAvatar}
-                        title={t("adminUsermanagement.deleteNewAvatar")}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handlePreviewAvatar}
-                      className="flex items-center gap-1 bg-transparent p-0 text-xs text-blue-600 hover:underline dark:text-blue-400">
-                      <span>{t("common.seeFullPhoto")}</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-            {/* File Input */}
-            <Input
-              id="avatar"
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="cursor-pointer"
-            />
-            {!displayAvatarUrl && (
-              <p className="text-muted-foreground flex items-center gap-1 text-xs">
-                <ImageIcon className="h-3 w-3" />
-                {t("common.noProfilePictureHasBeenSelectedYet")}
-              </p>
-            )}
-          </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-4 border-t pt-4">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             {t("general.cancel")}
           </Button>

@@ -78,19 +78,19 @@ export function HomepageHeader() {
   const linkColorClass = showScrolledStyle
     ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
     : isHomepage
-      ? "text-slate-700 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
+      ? "text-slate-200 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
       : "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]";
 
   const underlineColorClass = showScrolledStyle
     ? "bg-[#0047AB] dark:bg-[#66B2FF]"
     : isHomepage
-      ? "bg-[#0047AB] dark:bg-[#66B2FF]"
+      ? "bg-white dark:bg-[#66B2FF]"
       : "bg-[#0047AB] dark:bg-[#66B2FF]";
 
   const toggleColorClass = showScrolledStyle
     ? "text-slate-700 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
     : isHomepage
-      ? "text-slate-700 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
+      ? "text-slate-200 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
       : "text-slate-700 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]";
 
   return (
@@ -104,7 +104,9 @@ export function HomepageHeader() {
             className={`hidden text-lg font-bold transition-colors duration-300 min-[400px]:inline-block min-[400px]:text-xl ${
               showScrolledStyle
                 ? "text-[#0047AB] dark:text-[#66B2FF]"
-                : "text-[#0047AB] dark:text-[#66B2FF]"
+                : isHomepage
+                  ? "text-white dark:text-[#66B2FF]"
+                  : "text-[#0047AB] dark:text-[#66B2FF]"
             }`}>
             INBLUE AI
           </span>
@@ -191,7 +193,7 @@ export function HomepageHeader() {
                   showScrolledStyle
                     ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
                     : isHomepage
-                      ? "text-slate-700 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
+                      ? "text-slate-200 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
                       : "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
                 }`}>
                 <Bell className="h-5 w-5" />
@@ -251,7 +253,7 @@ export function HomepageHeader() {
                   showScrolledStyle
                     ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
                     : isHomepage
-                      ? "text-slate-700 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
+                      ? "text-slate-200 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
                       : "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
                 }`}
                 asChild>
@@ -263,7 +265,7 @@ export function HomepageHeader() {
               <Button
                 className="rounded-full border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] px-3 text-white shadow-sm hover:text-white hover:shadow-md sm:px-6"
                 asChild>
-                <Link to="/signup">
+                <Link to="/select-role">
                   <Rocket className="h-4 w-4 text-white sm:mr-2" />
                   <span className="hidden sm:inline">{t("common.register")}</span>
                 </Link>
@@ -282,7 +284,7 @@ export function HomepageHeader() {
                     showScrolledStyle
                       ? "text-slate-800 dark:text-slate-200"
                       : isHomepage
-                        ? "text-slate-700 dark:text-slate-200"
+                        ? "text-slate-200 hover:text-slate-800 dark:text-slate-200"
                         : "text-slate-800 dark:text-slate-200"
                   }`}>
                   <Menu className="h-6 w-6" />
@@ -400,7 +402,7 @@ export function HomepageHeader() {
                         <Button
                           className="h-9 w-full justify-center rounded-xl border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] py-4 text-xs text-white shadow-sm hover:shadow-md"
                           asChild>
-                          <Link to="/signup">
+                          <Link to="/select-role">
                             <Rocket className="mr-1.5 h-3.5 w-3.5" />
                             {t("common.register")}
                           </Link>

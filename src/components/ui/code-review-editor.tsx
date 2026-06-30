@@ -1,6 +1,7 @@
 "use client";
 import i18n from "@/lib/i18n";
-const t = i18n.t.bind(i18n);
+const t = (k: string, opts?: string | Record<string, unknown>): string =>
+  i18n.t(k, opts as string) as unknown as string;
 
 import {
   AlertTriangle,
