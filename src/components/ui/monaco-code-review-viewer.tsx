@@ -146,13 +146,22 @@ export function MonacoCodeReviewViewer({
                 <span style="background-color: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">${issue.severity}</span>
                 <span style="font-size: 12px; font-weight: 500; color: #cbd5e1;">Issue on line ${issue.lineNumber}</span>
               </div>
-              <p style="font-size: 13px; color: ${textColor}; line-height: 1.5; margin: 0; padding-right: 16px;">${escapeHtml(issue.description)}</p>
+              <p style="font-size: 13px; color: ${textColor}; line-height: 1.5; margin: 0; padding-right: 16px; white-space: pre-wrap; word-break: break-word;">${escapeHtml(issue.description)}</p>
             </div>
           `;
 
+          // Estimate height dynamically based on description length
+          const charsPerLine = 90; // Approximate chars per line in editor
+          const descLines = Math.ceil(issue.description.length / charsPerLine);
+          const headerPx = 36; // padding + header + gap
+          const descPx = descLines * 20; // 13px font * 1.5 line height
+          const totalPx = headerPx + descPx + 16; // + bottom padding
+          const editorLineHeight = 19; // Default editor line height
+          const estimatedLines = Math.max(4, Math.ceil(totalPx / editorLineHeight));
+
           const zoneId = changeAccessor.addZone({
             afterLineNumber: issue.lineNumber,
-            heightInLines: 4,
+            heightInLines: estimatedLines,
             domNode: domNode,
             marginDomNode: null,
           });
