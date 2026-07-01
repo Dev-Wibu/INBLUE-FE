@@ -324,7 +324,7 @@ export function DashboardChromeTabs({
             )}>
             <span
               className={cn(
-                "max-w-32 truncate transition-colors duration-200",
+                "truncate text-sm transition-colors duration-200",
                 tab.id === activeTabId
                   ? "font-semibold text-slate-900 dark:text-white"
                   : "font-medium text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200"

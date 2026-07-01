@@ -265,11 +265,11 @@ export function StaffDashboardPage() {
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-600">
           <LayoutDashboard className="h-6 w-6 text-white" />
         </div>
-        <div>
-          <h1 className="font-semibold text-gray-900 dark:text-white">
+        <div className="min-w-0 flex-shrink-0">
+          <h1 className="truncate font-semibold text-gray-900 dark:text-white">
             {t("staffStaffdashboard.staffPanel")}
           </h1>
-          <p className="text-xs text-gray-500 dark:text-slate-400">
+          <p className="truncate text-xs text-gray-500 dark:text-slate-400">
             {t("staffStaffdashboard.staffAdministration")}
           </p>
         </div>
