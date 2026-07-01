@@ -835,7 +835,7 @@ function ApplicationDetailPanel({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { id } = application;
+  const { id, status } = application;
   const rounds = useMemo(() => application.rounds ?? [], [application.rounds]);
   const totalRounds = rounds.length;
 
@@ -1003,36 +1003,40 @@ function ApplicationDetailPanel({
       }
       const hasSubmission = !!detail || !!optimistic;
 
-      // A round is completed ONLY when there is a real submission (detail from BE or optimistic placeholder).
-      // Application status and currentRoundOrder are informational only and should NOT override
-      // the presence/absence of a submission. This prevents CODING rounds from being marked
-      // completed when BE auto-advances after AI scoring a previous round.
-      const isCompleted = hasSubmission;
+      // This round is completed if:
+      // 1. Overall application is PASSED/FAILED/SOFT_FAILED, OR
+      // 2. BE says this round is before current round (roundOrder < currentRoundOrder)
+      // Note: AI_EVALUATED status alone does NOT mark a round as completed for user-facing UI
+      // because HR review may still be pending. A round only "completes" when:
+      //   - Application is overall PASSED, OR
+      //   - Application is overall FAILED/SOFT_FAILED, OR
+      //   - This round's roundOrder is strictly before currentRoundOrder (BE has officially advanced)
+      const isCompleted =
+        status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED"
+          ? true
+          : (round.roundOrder ?? 0) < apiCurrentRoundOrder;
 
-      // This round is current (show Enter Room button) if:
-      // 1. No submission yet (user hasn't done this round)
-      // 2. All rounds before this one have submissions (they are done)
-      // Note: we allow entering even if application is PASSED/FAILED/SOFT_FAILED because
-      // BE may have prematurely marked application complete before user finished all rounds.
-      const roundsBefore = sortedRounds.slice(
-        0,
-        sortedRounds.findIndex((r) => r.id === round.id)
-      );
-      const allBeforeCompleted = roundsBefore.every((r) => {
-        const d = detailsData.find((detail) => detail.roundId === r.id);
-        const o = optimisticDetails.find((opt) => opt.roundId === r.id);
-        return !!d || !!o;
-      });
-      const isCurrent = !hasSubmission && allBeforeCompleted;
+      // This round is current if:
+      // 1. Application is still IN_PROGRESS
+      // 2. No submission yet
+      // 3. BE says this is the current round (roundOrder === currentRoundOrder)
+      const isCurrent =
+        status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED"
+          ? false
+          : hasSubmission
+            ? false // already submitted
+            : round.roundOrder === apiCurrentRoundOrder;
 
       // This round is locked if:
-      // 1. No submission yet
-      // 2. Some round before this one is still missing submission (gaps)
-      const isLocked = !hasSubmission && !allBeforeCompleted;
+      // 1. Application still active
+      // 2. This round's roundOrder is after the BE's current round
+      const isLocked =
+        !(status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED") &&
+        (round.roundOrder ?? 0) > apiCurrentRoundOrder;
 
       return { round, detail, optimistic, isCompleted, isCurrent, isLocked };
     });
-  }, [rounds, detailsData, optimisticDetails]);
+  }, [rounds, detailsData, optimisticDetails, apiCurrentRoundOrder, status]);
 
   const handleEnterRoom = (round: JdRound, detail?: ApplicationDetail) => {
     // If this is a QUIZ round, navigate to the quiz page
