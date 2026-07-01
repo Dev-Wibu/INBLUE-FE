@@ -10,7 +10,7 @@ import {
   type CodeReviewProblem,
   type ExpectedIssue,
 } from "@/services/code-review-problem.manager";
-import Editor from "@monaco-editor/react";
+import Editor, { useMonaco } from "@monaco-editor/react";
 import {
   Bug,
   ChevronDown,
@@ -27,6 +27,10 @@ import * as React from "react";
 import { toast } from "sonner";
 const t = (k: string, opts?: string | Record<string, unknown>): string =>
   i18n.t(k, opts as string) as unknown as string;
+
+const plusIconSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>`;
+const eyeIconSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%238b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const eyeOffIconSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%238b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`;
 
 function StyledSelect({
   value,
@@ -64,7 +68,20 @@ export function CodeReviewProblemBuilder({
   const monacoTheme = useMonacoTheme();
   const [creationMode, setCreationMode] = React.useState<"ai" | "manual">("manual");
   const [aiGeneratedLoaded, setAiGeneratedLoaded] = React.useState(true);
-  const [createTabMode, setCreateTabMode] = React.useState<"code" | "issues">("code");
+  const monaco = useMonaco();
+
+  // Monaco builder states
+  const [editorInstance, setEditorInstance] = React.useState<any | null>(null);
+  const [expandedIssues, setExpandedIssues] = React.useState<Record<number, boolean>>({});
+  const hoveredLineRef = React.useRef<number | null>(null);
+  const viewZonesRef = React.useRef<Record<number, string>>({});
+  const decorationsRef = React.useRef<string[]>([]);
+  const activeFileIdxRef = React.useRef<number>(0);
+
+  // Issue dialog state
+  const [issueModalOpen, setIssueModalOpen] = React.useState(false);
+  const [issueModalData, setIssueModalData] = React.useState<Partial<ExpectedIssue>>({});
+  const [editingIssueIndex, setEditingIssueIndex] = React.useState<number | null>(null);
 
   const [createActiveFileIdx, setCreateActiveFileIdx] = React.useState<number>(0);
 
@@ -86,6 +103,15 @@ export function CodeReviewProblemBuilder({
     expectedIssues: initialData?.expectedIssues || [],
   });
 
+  const issuesRef = React.useRef<ExpectedIssue[]>(newProblem.expectedIssues);
+  React.useEffect(() => {
+    issuesRef.current = newProblem.expectedIssues;
+  }, [newProblem.expectedIssues]);
+
+  React.useEffect(() => {
+    activeFileIdxRef.current = createActiveFileIdx;
+  }, [createActiveFileIdx]);
+
   // AI states
   const [aiTopic, setAiTopic] = React.useState("");
   const [aiLevel, setAiLevel] = React.useState("Junior");
@@ -94,6 +120,279 @@ export function CodeReviewProblemBuilder({
   const [aiRequirement, setAiRequirement] = React.useState("");
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!document.getElementById("monaco-builder-styles")) {
+      const style = document.createElement("style");
+      style.id = "monaco-builder-styles";
+      style.innerHTML = `
+        .bug-glyph-margin-icon {
+          background-image: url('${eyeIconSvg}');
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 14px 14px;
+          cursor: pointer;
+          opacity: 0.8;
+          transition: opacity 0.2s;
+        }
+        .bug-glyph-margin-icon:hover {
+          opacity: 1;
+        }
+        .bug-glyph-margin-icon-expanded {
+          background-image: url('${eyeOffIconSvg}');
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 14px 14px;
+          cursor: pointer;
+        }
+        .bug-add-glyph-icon {
+          background-image: url('${plusIconSvg}');
+          background-color: #6366f1;
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 10px 10px;
+          border-radius: 4px;
+          cursor: pointer;
+          opacity: 0.8;
+          transition: opacity 0.2s;
+          margin-top: 2px;
+          height: 14px !important;
+          width: 14px !important;
+          margin-left: 2px;
+        }
+        .bug-add-glyph-icon:hover {
+          background-color: #4f46e5;
+          opacity: 1;
+        }
+        .monaco-issue-zone-container {
+          padding: 12px 16px 12px 24px;
+          border-top: 1px solid rgba(239, 68, 68, 0.15);
+          border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+          background-color: rgba(239, 68, 68, 0.08);
+          box-shadow: inset 3px 0 0 #ef4444;
+          z-index: 10;
+        }
+        .monaco-issue-zone-container.warning {
+          border-top-color: rgba(245, 158, 11, 0.15);
+          border-bottom-color: rgba(245, 158, 11, 0.15);
+          background-color: rgba(245, 158, 11, 0.08);
+          box-shadow: inset 3px 0 0 #f59e0b;
+        }
+        .monaco-issue-zone-container.info {
+          border-top-color: rgba(59, 130, 246, 0.15);
+          border-bottom-color: rgba(59, 130, 246, 0.15);
+          background-color: rgba(59, 130, 246, 0.08);
+          box-shadow: inset 3px 0 0 #3b82f6;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
+
+  const updateDecorations = React.useCallback(() => {
+    if (!editorInstance || !monaco) return;
+
+    const activeFile = newProblem.files[createActiveFileIdx]?.filename || "";
+    const fileIssues = issuesRef.current.filter((i) => i.filename === activeFile);
+
+    const newDecorations = fileIssues.map((issue) => {
+      const isExpanded = expandedIssues[issue.lineNumber];
+      return {
+        range: new monaco.Range(issue.lineNumber, 1, issue.lineNumber, 1),
+        options: {
+          isWholeLine: false,
+          glyphMarginClassName: isExpanded
+            ? "bug-glyph-margin-icon-expanded"
+            : "bug-glyph-margin-icon",
+          glyphMarginHoverMessage: { value: "Click to view/edit issue" },
+        },
+      };
+    });
+
+    if (hoveredLineRef.current) {
+      const hasIssue = fileIssues.some((i) => i.lineNumber === hoveredLineRef.current);
+      if (!hasIssue) {
+        newDecorations.push({
+          range: new monaco.Range(hoveredLineRef.current, 1, hoveredLineRef.current, 1),
+          options: {
+            isWholeLine: false,
+            glyphMarginClassName: "bug-add-glyph-icon",
+            glyphMarginHoverMessage: { value: "Click to add an expected issue here" },
+          },
+        });
+      }
+    }
+
+    const decs = editorInstance.deltaDecorations(decorationsRef.current, newDecorations);
+    decorationsRef.current = decs;
+  }, [editorInstance, monaco, createActiveFileIdx, expandedIssues, newProblem.files]);
+
+  const escapeHtml = (unsafe: string) => {
+    if (!unsafe) return "";
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
+  const updateViewZones = React.useCallback(() => {
+    if (!editorInstance) return;
+
+    const activeFile = newProblem.files[createActiveFileIdx]?.filename || "";
+    const fileIssues = issuesRef.current.filter((i) => i.filename === activeFile);
+
+    editorInstance.changeViewZones((changeAccessor: any) => {
+      Object.values(viewZonesRef.current).forEach((id) => {
+        changeAccessor.removeZone(id);
+      });
+      viewZonesRef.current = {};
+
+      fileIssues.forEach((issue) => {
+        if (expandedIssues[issue.lineNumber]) {
+          const domNode = document.createElement("div");
+
+          let severityClass = "critical";
+          let badgeColor = "#ef4444";
+          let textColor = "#fca5a5";
+
+          if (issue.severity === "WARNING") {
+            severityClass = "warning";
+            badgeColor = "#f59e0b";
+            textColor = "#fde68a";
+          } else if (issue.severity === "INFO") {
+            severityClass = "info";
+            badgeColor = "#3b82f6";
+            textColor = "#bfdbfe";
+          }
+
+          domNode.className = `monaco-issue-zone-container ${severityClass}`;
+
+          const issueIndex = issuesRef.current.findIndex(
+            (i) => i.filename === activeFile && i.lineNumber === issue.lineNumber
+          );
+
+          domNode.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 8px; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="background-color: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">${issue.severity}</span>
+                  <span style="font-size: 12px; font-weight: 500; color: #cbd5e1;">Issue on line ${issue.lineNumber}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; padding-right: 16px;">
+                   <button id="edit-btn-${issue.lineNumber}" style="font-size: 11px; color: #818cf8; font-weight: 600; cursor: pointer; background: none; border: none; outline: none;">EDIT</button>
+                   <button id="del-btn-${issue.lineNumber}" style="font-size: 11px; color: #f87171; font-weight: 600; cursor: pointer; background: none; border: none; outline: none;">DELETE</button>
+                </div>
+              </div>
+              <p style="font-size: 13px; color: ${textColor}; line-height: 1.5; margin: 0; padding-right: 16px; white-space: pre-wrap; word-break: break-word;">${escapeHtml(issue.description)}</p>
+            </div>
+          `;
+
+          domNode.querySelector(`#edit-btn-${issue.lineNumber}`)?.addEventListener("click", () => {
+            setIssueModalData({ ...issue });
+            setEditingIssueIndex(issueIndex);
+            setIssueModalOpen(true);
+          });
+
+          domNode.querySelector(`#del-btn-${issue.lineNumber}`)?.addEventListener("click", () => {
+            setNewProblem((prev) => ({
+              ...prev,
+              expectedIssues: prev.expectedIssues.filter((_, i) => i !== issueIndex),
+            }));
+          });
+
+          const charsPerLine = 90;
+          const descLines = Math.ceil(issue.description.length / charsPerLine);
+          const headerPx = 36;
+          const descPx = descLines * 20;
+          const totalPx = headerPx + descPx + 16;
+          const editorLineHeight = 19;
+          const estimatedLines = Math.max(4, Math.ceil(totalPx / editorLineHeight));
+
+          const zoneId = changeAccessor.addZone({
+            afterLineNumber: issue.lineNumber,
+            heightInLines: estimatedLines,
+            domNode: domNode,
+            marginDomNode: null,
+          });
+
+          viewZonesRef.current[issue.lineNumber] = zoneId;
+        }
+      });
+    });
+  }, [editorInstance, createActiveFileIdx, expandedIssues, newProblem.files]);
+
+  React.useEffect(() => {
+    updateDecorations();
+    updateViewZones();
+  }, [
+    expandedIssues,
+    newProblem.expectedIssues,
+    editorInstance,
+    monaco,
+    createActiveFileIdx,
+    updateDecorations,
+    updateViewZones,
+  ]);
+
+  const handleEditorDidMount = (editor: any, monacoInstance: any) => {
+    setEditorInstance(editor);
+
+    editor.onMouseMove((e: any) => {
+      if (
+        e.target.type === monacoInstance.editor.MouseTargetType.GUTTER_GLYPH_MARGIN ||
+        e.target.type === monacoInstance.editor.MouseTargetType.GUTTER_LINE_NUMBERS
+      ) {
+        const line = e.target.position?.lineNumber;
+        if (line && line !== hoveredLineRef.current) {
+          hoveredLineRef.current = line;
+          updateDecorations();
+        }
+      } else {
+        if (hoveredLineRef.current !== null) {
+          hoveredLineRef.current = null;
+          updateDecorations();
+        }
+      }
+    });
+
+    editor.onMouseLeave(() => {
+      if (hoveredLineRef.current !== null) {
+        hoveredLineRef.current = null;
+        updateDecorations();
+      }
+    });
+
+    editor.onMouseDown((e: any) => {
+      if (e.target.type === monacoInstance.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+        const lineNumber = e.target.position?.lineNumber;
+        if (lineNumber) {
+          const activeFile = newProblem.files[activeFileIdxRef.current]?.filename || "";
+          const hasIssue = issuesRef.current.some(
+            (iss) => iss.filename === activeFile && iss.lineNumber === lineNumber
+          );
+
+          if (hasIssue) {
+            setExpandedIssues((prev) => ({
+              ...prev,
+              [lineNumber]: !prev[lineNumber],
+            }));
+          } else {
+            // Open modal to add new issue
+            setIssueModalData({
+              filename: activeFile,
+              lineNumber: lineNumber,
+              severity: "CRITICAL",
+              description: "",
+            });
+            setEditingIssueIndex(null);
+            setIssueModalOpen(true);
+          }
+        }
+      }
+    });
+  };
 
   const handleAddFile = () => {
     const ext = newProblem.language === "Java" ? "java" : newProblem.language.toLowerCase();
@@ -556,6 +855,7 @@ export function CodeReviewProblemBuilder({
                               }
                               theme={monacoTheme}
                               value={newProblem.files[createActiveFileIdx].content}
+                              onMount={handleEditorDidMount}
                               onChange={(val) => {
                                 const files = [...newProblem.files];
                                 files[createActiveFileIdx].content = val || "";
@@ -568,6 +868,7 @@ export function CodeReviewProblemBuilder({
                                 scrollBeyondLastLine: false,
                                 wordWrap: "on",
                                 automaticLayout: true,
+                                glyphMargin: true,
                               }}
                             />
                           </div>
