@@ -3002,8 +3002,8 @@
     "permanentProcessing": "Xử lý thường trực",
     "postModeration": "Duyệt bài viết",
     "processMentorRegistration": "Xử lý đăng ký mentor",
-    "staffAdministration": "Quản trị viên",
-    "staffPanel": "Staff Panel"
+    "staffAdministration": "Quản trị Staff",
+    "staffPanel": "Bảng điều khiển Staff"
   },
   "userAccount": {
     "alreadyTt": "Đã TT",

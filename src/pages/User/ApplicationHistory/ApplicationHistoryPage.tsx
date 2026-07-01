@@ -19,6 +19,7 @@ import { useCurrentRound } from "@/hooks/useRound";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
+import { applicationService } from "@/services/application.manager";
 import {
   Briefcase,
   Check,
@@ -222,7 +223,7 @@ function SubmissionPreview({
   onViewEmailSubmission,
 }: {
   detail: ApplicationDetail;
-  onViewEmailSubmission?: (emailSubmissionId: number) => void;
+  onViewEmailSubmission?: (_emailSubmissionId: number) => void;
 }) {
   const { t } = useTranslation();
   const sd = detail.submissionData;
@@ -641,7 +642,7 @@ function RoundTimelineItem({
   isCurrent: boolean;
   isLocked: boolean;
   onEnterRoom?: () => void;
-  onViewEmailSubmission?: (emailSubmissionId: number) => void;
+  onViewEmailSubmission?: (_emailSubmissionId: number) => void;
   isPolling?: boolean;
   optimistic?: { isOptimistic: true; roundId: number; status: "SUBMITTED"; submittedAt: string };
 }) {
@@ -1309,10 +1310,10 @@ export function ApplicationHistoryPage() {
     if (showRefetching) setRefetching(true);
     else setAppsLoading(true);
     try {
-      const result = await fetchClient.GET("/api/applications/me");
-      if (result.response?.ok) {
-        const data = result.data;
-        setApps(Array.isArray(data) ? (data as Application[]) : []);
+      const result = await applicationService.getMyApplications();
+      if (result.success) {
+        setApps(result.data ?? []);
+        setAppsError(false);
       } else {
         setAppsError(true);
       }

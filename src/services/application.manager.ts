@@ -127,6 +127,7 @@ class ApplicationService {
   /**
    * Get all applications for current user
    * GET /api/applications/me
+   * Falls back to GET /api/applications + client-side filter by userId on 403
    */
   async getMyApplications(): Promise<ApiResponse<Application[]>> {
     try {
@@ -140,7 +141,36 @@ class ApplicationService {
         data: response.data,
       };
     } catch (error) {
-      console.error("[ApplicationService] GetMyApplications error:", error);
+      console.warn("[ApplicationService] getMyApplications /me failed, trying fallback:", error);
+      const errorStatus =
+        (error as { status?: number }).status ??
+        (error as { response?: { status?: number } }).response?.status;
+      if (errorStatus === 403) {
+        try {
+          const all = await fetchClient.GET("/api/applications", {}).then((res) => res.data);
+          if (all && Array.isArray(all)) {
+            // userId on Application matches the backend user.id (number)
+            // AuthStore user.id is number from schema-from-be User type
+            const { useAuthStore } = await import("@/stores/authStore");
+            const currentUserId = useAuthStore.getState().user?.id;
+            const filtered = (all as Application[]).filter((a) => a.userId === currentUserId);
+            console.log(
+              "[ApplicationService] getMyApplications fallback: fetched",
+              all.length,
+              "apps, filtered to",
+              filtered.length,
+              "for userId",
+              currentUserId
+            );
+            return { success: true, data: filtered };
+          }
+        } catch (fallbackError) {
+          console.error(
+            "[ApplicationService] getMyApplications fallback also failed:",
+            fallbackError
+          );
+        }
+      }
       return {
         success: false,
         error: this.extractErrorMessage(error),
