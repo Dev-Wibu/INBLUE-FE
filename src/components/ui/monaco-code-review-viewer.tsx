@@ -32,6 +32,11 @@ export function MonacoCodeReviewViewer({
   // Ref to hold the current zones so we can remove them
   const viewZonesRef = useRef<Record<number, string>>({});
   const decorationsRef = useRef<string[]>([]);
+  const issuesRef = useRef<CodeIssue[]>(issues);
+
+  useEffect(() => {
+    issuesRef.current = issues;
+  }, [issues]);
 
   // Ensure the CSS classes for glyphs exist
   useEffect(() => {
@@ -122,7 +127,7 @@ export function MonacoCodeReviewViewer({
           let severityClass = "critical";
           let badgeColor = "#ef4444";
           let textColor = "#fca5a5";
-          
+
           if (issue.severity === "WARNING") {
             severityClass = "warning";
             badgeColor = "#f59e0b"; // amber-500
@@ -182,7 +187,7 @@ export function MonacoCodeReviewViewer({
         const lineNumber = e.target.position?.lineNumber;
         if (lineNumber) {
           // Check if there is an issue at this line
-          const hasIssue = issues.some((iss) => iss.lineNumber === lineNumber);
+          const hasIssue = issuesRef.current.some((iss) => iss.lineNumber === lineNumber);
           if (hasIssue) {
             setExpandedIssues((prev) => ({
               ...prev,
