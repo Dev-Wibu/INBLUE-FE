@@ -199,32 +199,6 @@ export function CodeReviewProblemManagementPage() {
   if (view.mode === "create") {
     return (
       <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-        <div className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex h-12 items-center gap-2 text-sm">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBack}
-                className="h-8 px-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
-                <ChevronRight className="mr-1 h-3 w-3 rotate-180" />
-                {t("general.back")}
-              </Button>
-              <Separator orientation="vertical" className="mx-2 h-4" />
-              <nav className="flex items-center gap-2 text-xs text-slate-500">
-                <span
-                  className="cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
-                  onClick={handleBack}>
-                  {t("adminCodeReviewProblem.pageTitle")}
-                </span>
-                <ChevronRight className="h-3 w-3" />
-                <span className="font-medium text-slate-900 dark:text-slate-200">
-                  {t("adminCodeReviewProblem.createNew", "Create new")}
-                </span>
-              </nav>
-            </div>
-          </div>
-        </div>
 
         <div className="flex-1 overflow-hidden">
           <CodeReviewProblemBuilder
@@ -242,36 +216,6 @@ export function CodeReviewProblemManagementPage() {
   if (view.mode === "edit") {
     return (
       <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-        <div className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
-          <div className="px-4 sm:px-6 lg:px-8">
-            <div className="flex h-12 items-center gap-2 text-sm">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBack}
-                className="h-8 px-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
-                <ChevronRight className="mr-1 h-3 w-3 rotate-180" />
-                {t("general.back")}
-              </Button>
-              <Separator orientation="vertical" className="mx-2 h-4" />
-              <nav className="flex items-center gap-2 text-xs text-slate-500">
-                <span
-                  className="cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
-                  onClick={handleBack}>
-                  {t("adminCodeReviewProblem.pageTitle")}
-                </span>
-                <ChevronRight className="h-3 w-3" />
-                <span className="font-medium text-slate-900 dark:text-slate-200">
-                  {view.problem.title}
-                </span>
-                <ChevronRight className="h-3 w-3" />
-                <span className="font-medium text-indigo-600 dark:text-indigo-400">
-                  {t("general.edit")}
-                </span>
-              </nav>
-            </div>
-          </div>
-        </div>
 
         <div className="flex-1 overflow-hidden">
           <CodeReviewProblemBuilder

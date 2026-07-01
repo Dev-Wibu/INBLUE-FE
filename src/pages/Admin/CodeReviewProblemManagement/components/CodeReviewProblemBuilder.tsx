@@ -10,6 +10,13 @@ import {
   type CodeReviewProblem,
   type ExpectedIssue,
 } from "@/services/code-review-problem.manager";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import {
   ChevronDown,
@@ -849,6 +856,58 @@ export function CodeReviewProblemBuilder({
           )}
         </div>
       </div>
+      </div>
+
+      <Dialog open={issueModalOpen} onOpenChange={setIssueModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingIssueIndex !== null ? "Edit Issue" : "Add Issue"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Severity</Label>
+              <StyledSelect
+                value={issueModalData.severity || "CRITICAL"}
+                onChange={(val) => setIssueModalData({ ...issueModalData, severity: val as any })}>
+                <option value="CRITICAL">CRITICAL</option>
+                <option value="WARNING">WARNING</option>
+                <option value="INFO">INFO</option>
+              </StyledSelect>
+            </div>
+            <div className="grid gap-2">
+              <Label>Description</Label>
+              <textarea
+                rows={4}
+                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+                placeholder="Issue description"
+                value={issueModalData.description || ""}
+                onChange={(e) => setIssueModalData({ ...issueModalData, description: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIssueModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                const updated = { ...newProblem };
+                if (editingIssueIndex !== null) {
+                  updated.expectedIssues[editingIssueIndex] = {
+                    ...updated.expectedIssues[editingIssueIndex],
+                    ...issueModalData,
+                  };
+                } else {
+                  updated.expectedIssues.push(issueModalData as any);
+                }
+                setNewProblem(updated);
+                setIssueModalOpen(false);
+              }}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
