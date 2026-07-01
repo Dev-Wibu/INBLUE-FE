@@ -1,4 +1,4 @@
-﻿import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMonacoTheme } from "@/hooks/useMonacoTheme";
@@ -12,9 +12,7 @@ import {
 } from "@/services/code-review-problem.manager";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import {
-  Bug,
   ChevronDown,
-  Code2,
   FileCode2,
   Loader2,
   Plus,
@@ -726,297 +724,124 @@ export function CodeReviewProblemBuilder({
             </div>
           ) : (
             <div className="flex flex-1 flex-col overflow-hidden bg-slate-950/60">
-              <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/40 px-3">
-                <div className="flex gap-1.5 font-sans">
-                  <button
-                    type="button"
-                    onClick={() => setCreateTabMode("code")}
-                    className={cn(
-                      "px-3 py-2 text-xs font-bold transition-all",
-                      createTabMode === "code"
-                        ? "border-b-2 border-b-indigo-500 text-indigo-400"
-                        : "text-slate-400 hover:text-slate-200"
-                    )}>
-                    <Code2 className="mr-1 inline-block h-3.5 w-3.5" />{" "}
-                    {t("adminCodeReviewProblem.codeFilesCount", { count: newProblem.files.length })}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCreateTabMode("issues")}
-                    className={cn(
-                      "px-3 py-2 text-xs font-bold transition-all",
-                      createTabMode === "issues"
-                        ? "border-b-2 border-b-indigo-500 text-indigo-400"
-                        : "text-slate-400 hover:text-slate-200"
-                    )}>
-                    <Bug className="mr-1 inline-block h-3.5 w-3.5" />{" "}
-                    {t("adminCodeReviewProblem.issuesToCatchCount", {
-                      count: newProblem.expectedIssues.length,
-                    })}
-                  </button>
-                </div>
-              </div>
-
               <div className="flex-1 overflow-y-auto">
-                {createTabMode === "code" ? (
-                  <div className="flex h-full flex-col">
-                    <div className="flex items-center gap-1 border-b border-slate-800 bg-slate-900/80 px-2 py-1.5">
-                      <div className="flex flex-1 overflow-x-auto">
-                        {newProblem.files.map((f, fIdx) => (
-                          <div
-                            key={fIdx}
-                            className={cn(
-                              "group flex items-center gap-1.5 border-r border-slate-800 px-3 py-1.5 transition-colors",
-                              createActiveFileIdx === fIdx
-                                ? "bg-slate-800/80 text-white"
-                                : "text-slate-500 hover:bg-slate-800/40 hover:text-slate-300"
-                            )}>
+                <div className="flex h-full flex-col">
+                  <div className="flex items-center gap-1 border-b border-slate-800 bg-slate-900/80 px-2 py-1.5">
+                    <div className="flex flex-1 overflow-x-auto">
+                      {newProblem.files.map((f, fIdx) => (
+                        <div
+                          key={fIdx}
+                          className={cn(
+                            "group flex items-center gap-1.5 border-r border-slate-800 px-3 py-1.5 transition-colors",
+                            createActiveFileIdx === fIdx
+                              ? "bg-slate-800/80 text-white"
+                              : "text-slate-500 hover:bg-slate-800/40 hover:text-slate-300"
+                          )}>
+                          <button
+                            type="button"
+                            onClick={() => setCreateActiveFileIdx(fIdx)}
+                            className="flex items-center gap-1.5 text-xs font-medium">
+                            <FileCode2
+                              className={cn(
+                                "h-3.5 w-3.5",
+                                createActiveFileIdx === fIdx ? "text-indigo-400" : ""
+                              )}
+                            />
+                            {f.filename || "Untitled"}
+                          </button>
+                          {newProblem.files.length > 1 && (
                             <button
                               type="button"
-                              onClick={() => setCreateActiveFileIdx(fIdx)}
-                              className="flex items-center gap-1.5 text-xs font-medium">
-                              <FileCode2
-                                className={cn(
-                                  "h-3.5 w-3.5",
-                                  createActiveFileIdx === fIdx ? "text-indigo-400" : ""
-                                )}
-                              />
-                              {f.filename || "Untitled"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setNewProblem((prev) => ({
+                                  ...prev,
+                                  files: prev.files.filter((_, idx) => idx !== fIdx),
+                                }));
+                                if (createActiveFileIdx >= fIdx && createActiveFileIdx > 0) {
+                                  setCreateActiveFileIdx(createActiveFileIdx - 1);
+                                }
+                              }}
+                              className="ml-1 rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-700">
+                              <Trash2 className="h-3 w-3 text-slate-400 hover:text-red-400" />
                             </button>
-                            {newProblem.files.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setNewProblem((prev) => ({
-                                    ...prev,
-                                    files: prev.files.filter((_, idx) => idx !== fIdx),
-                                  }));
-                                  if (createActiveFileIdx >= fIdx && createActiveFileIdx > 0) {
-                                    setCreateActiveFileIdx(createActiveFileIdx - 1);
-                                  }
-                                }}
-                                className="ml-1 rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-700">
-                                <Trash2 className="h-3 w-3 text-slate-400 hover:text-red-400" />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleAddFile}
-                        className="h-7 w-7 shrink-0 text-slate-400 hover:bg-slate-800 hover:text-white">
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                          )}
+                        </div>
+                      ))}
                     </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleAddFile}
+                      className="h-7 w-7 shrink-0 text-slate-400 hover:bg-slate-800 hover:text-white">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
 
-                    <div className="flex flex-1 flex-col">
-                      {newProblem.files[createActiveFileIdx] && (
-                        <div className="flex flex-1 flex-col p-4">
-                          <div className="mb-3 grid grid-cols-2 gap-4">
-                            <div>
-                              <Label className="text-[10px] font-bold text-slate-500 uppercase">
-                                {t("adminCodeReviewProblem.fileName")}
-                              </Label>
-                              <Input
-                                value={newProblem.files[createActiveFileIdx].filename}
-                                onChange={(e) => {
-                                  const files = [...newProblem.files];
-                                  files[createActiveFileIdx].filename = e.target.value;
-                                  setNewProblem({ ...newProblem, files });
-                                }}
-                                className="mt-1 h-8 border-slate-800 bg-slate-900 text-xs text-white focus-visible:ring-indigo-500"
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-[10px] font-bold text-slate-500 uppercase">
-                                {t("adminCodeReviewProblem.highlightLanguage")}
-                              </Label>
-                              <Input
-                                value={newProblem.files[createActiveFileIdx].language}
-                                onChange={(e) => {
-                                  const files = [...newProblem.files];
-                                  files[createActiveFileIdx].language = e.target.value;
-                                  setNewProblem({ ...newProblem, files });
-                                }}
-                                className="mt-1 h-8 border-slate-800 bg-slate-900 text-xs text-white focus-visible:ring-indigo-500"
-                              />
-                            </div>
-                          </div>
-                          <div className="relative flex-1 rounded-md border border-slate-800 bg-slate-950">
-                            <Editor
-                              height="100%"
-                              language={
-                                newProblem.files[createActiveFileIdx].language?.toLowerCase() ||
-                                "csharp"
-                              }
-                              theme={monacoTheme}
-                              value={newProblem.files[createActiveFileIdx].content}
-                              onMount={handleEditorDidMount}
-                              onChange={(val) => {
+                  <div className="flex flex-1 flex-col">
+                    {newProblem.files[createActiveFileIdx] && (
+                      <div className="flex flex-1 flex-col p-4">
+                        <div className="mb-3 grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-[10px] font-bold text-slate-500 uppercase">
+                              {t("adminCodeReviewProblem.fileName")}
+                            </Label>
+                            <Input
+                              value={newProblem.files[createActiveFileIdx].filename}
+                              onChange={(e) => {
                                 const files = [...newProblem.files];
-                                files[createActiveFileIdx].content = val || "";
+                                files[createActiveFileIdx].filename = e.target.value;
                                 setNewProblem({ ...newProblem, files });
                               }}
-                              options={{
-                                minimap: { enabled: false },
-                                fontSize: 13,
-                                lineNumbers: "on",
-                                scrollBeyondLastLine: false,
-                                wordWrap: "on",
-                                automaticLayout: true,
-                                glyphMargin: true,
+                              className="mt-1 h-8 border-slate-800 bg-slate-900 text-xs text-white focus-visible:ring-indigo-500"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[10px] font-bold text-slate-500 uppercase">
+                              {t("adminCodeReviewProblem.highlightLanguage")}
+                            </Label>
+                            <Input
+                              value={newProblem.files[createActiveFileIdx].language}
+                              onChange={(e) => {
+                                const files = [...newProblem.files];
+                                files[createActiveFileIdx].language = e.target.value;
+                                setNewProblem({ ...newProblem, files });
                               }}
+                              className="mt-1 h-8 border-slate-800 bg-slate-900 text-xs text-white focus-visible:ring-indigo-500"
                             />
                           </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-semibold text-white">
-                          {t("problem.expectedIssuesList")}
-                        </h4>
-                        <p className="text-xs text-slate-400">{t("problem.defineIssuesToFind")}</p>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() =>
-                          setNewProblem({
-                            ...newProblem,
-                            expectedIssues: [
-                              ...newProblem.expectedIssues,
-                              {
-                                filename: newProblem.files[0]?.filename || "Solution.java",
-                                lineNumber: 1,
-                                severity: "CRITICAL",
-                                description: "",
-                              },
-                            ],
-                          })
-                        }
-                        className="h-8 bg-indigo-600 text-xs hover:bg-indigo-700">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        {/*Thêm*/} {t("common.error")} {/*Mẫu*/}
-                      </Button>
-                    </div>
-
-                    <div className="space-y-4">
-                      {newProblem.expectedIssues.map((issue, idx) => (
-                        <div
-                          key={idx}
-                          className="relative rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setNewProblem({
-                                ...newProblem,
-                                expectedIssues: newProblem.expectedIssues.filter(
-                                  (_, i) => i !== idx
-                                ),
-                              });
+                        <div className="relative flex-1 rounded-md border border-slate-800 bg-slate-950">
+                          <Editor
+                            height="100%"
+                            language={
+                              newProblem.files[createActiveFileIdx].language?.toLowerCase() ||
+                              "csharp"
+                            }
+                            theme={monacoTheme}
+                            value={newProblem.files[createActiveFileIdx].content}
+                            onMount={handleEditorDidMount}
+                            onChange={(val) => {
+                              const files = [...newProblem.files];
+                              files[createActiveFileIdx].content = val || "";
+                              setNewProblem({ ...newProblem, files });
                             }}
-                            className="absolute top-2 right-2 rounded p-1.5 text-slate-500 hover:bg-red-950/40 hover:text-red-400">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-
-                          <div className="mb-3 flex items-center gap-2">
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-[10px] font-bold text-slate-400">
-                              {idx + 1}
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-12 gap-4">
-                            <div className="col-span-12 sm:col-span-5">
-                              <Label className="text-[10px] font-bold text-slate-500 uppercase">
-                                {t("adminCodeReviewProblem.fileName")}
-                              </Label>
-                              <StyledSelect
-                                value={issue.filename || ""}
-                                className="mt-1"
-                                onChange={(v) => {
-                                  const next = [...newProblem.expectedIssues];
-                                  next[idx].filename = v;
-                                  setNewProblem({ ...newProblem, expectedIssues: next });
-                                }}>
-                                {newProblem.files.map((f, fi) => (
-                                  <option key={fi} value={f.filename || ""}>
-                                    {f.filename || `File ${fi + 1}`}
-                                  </option>
-                                ))}
-                              </StyledSelect>
-                            </div>
-                            <div className="col-span-6 sm:col-span-3">
-                              <Label className="text-[10px] font-bold text-slate-500 uppercase">
-                                {t("general.lineNumber")}
-                              </Label>
-                              <Input
-                                type="number"
-                                min={1}
-                                value={issue.lineNumber}
-                                onChange={(e) => {
-                                  const next = [...newProblem.expectedIssues];
-                                  next[idx].lineNumber = Number(e.target.value);
-                                  setNewProblem({ ...newProblem, expectedIssues: next });
-                                }}
-                                className="mt-1 h-9 border-slate-800 bg-slate-950 text-xs text-white"
-                              />
-                            </div>
-                            <div className="col-span-6 sm:col-span-4">
-                              <Label className="text-[10px] font-bold text-slate-500 uppercase">
-                                {t("problem.severity")}
-                              </Label>
-                              <StyledSelect
-                                value={issue.severity || ""}
-                                className="mt-1"
-                                onChange={(v) => {
-                                  const next = [...newProblem.expectedIssues];
-                                  next[idx].severity = v as "CRITICAL" | "WARNING" | "INFO";
-                                  setNewProblem({ ...newProblem, expectedIssues: next });
-                                }}>
-                                <option value="CRITICAL">CRITICAL</option>
-                                <option value="WARNING">WARNING</option>
-                                <option value="INFO">INFO</option>
-                              </StyledSelect>
-                            </div>
-                            <div className="col-span-12">
-                              <Label className="text-[10px] font-bold text-slate-500 uppercase">
-                                {t("problem.issueDescription")}
-                              </Label>
-                              <textarea
-                                value={issue.description}
-                                onChange={(e) => {
-                                  const next = [...newProblem.expectedIssues];
-                                  next[idx].description = e.target.value;
-                                  setNewProblem({ ...newProblem, expectedIssues: next });
-                                }}
-                                rows={2}
-                                className="mt-1 w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none"
-                                placeholder={t("problem.explainIssueAndFix")}
-                              />
-                            </div>
-                          </div>
+                            options={{
+                              minimap: { enabled: false },
+                              fontSize: 13,
+                              lineNumbers: "on",
+                              scrollBeyondLastLine: false,
+                              wordWrap: "on",
+                              automaticLayout: true,
+                              glyphMargin: true,
+                            }}
+                          />
                         </div>
-                      ))}
-                      {newProblem.expectedIssues.length === 0 && (
-                        <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center text-slate-500">
-                          <Bug className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                          <p className="text-sm">{t("problem.noSampleIssuesDefined")}</p>
-                          <p className="mt-1 text-xs">
-                            {/*Hãy nhấn "Thêm*/} {t("common.error")} {/*Mẫu" để bắt đầu.*/}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           )}
