@@ -9,6 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { MonacoCodeReviewViewer } from "@/components/ui/monaco-code-review-viewer";
 import {
   Select,
   SelectContent,
@@ -28,15 +29,10 @@ import {
   type CodeReviewProblem,
 } from "@/services/code-review-problem.manager";
 import { useThemeStore } from "@/stores/themeStore";
-import Editor from "@monaco-editor/react";
-import { MonacoCodeReviewViewer } from "@/components/ui/monaco-code-review-viewer";
 import {
   AlertTriangle,
   Bot,
-  Bug,
   ChevronRight,
-  Eye,
-  EyeOff,
   FileCode2,
   Lightbulb,
   Loader2,
@@ -527,16 +523,17 @@ export function CodeReviewProblemManagementPage() {
                     <div className="relative flex-1 overflow-hidden">
                       <MonacoCodeReviewViewer
                         content={selectedProblem.files[viewActiveFileIdx]?.content || ""}
-                        language={(selectedProblem.files[viewActiveFileIdx]?.language || "java").toLowerCase()}
+                        language={(
+                          selectedProblem.files[viewActiveFileIdx]?.language || "java"
+                        ).toLowerCase()}
                         issues={(selectedProblem.expectedIssues || []).filter(
-                          (iss) => iss.filename === selectedProblem.files[viewActiveFileIdx]?.filename
+                          (iss) =>
+                            iss.filename === selectedProblem.files[viewActiveFileIdx]?.filename
                         )}
                         theme={monacoTheme}
                       />
                     </div>
                   </div>
-
-
                 </div>
               )}
             </div>
