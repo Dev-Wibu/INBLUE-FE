@@ -64,6 +64,7 @@ import { QuestionMajorManagementPage } from "../QuestionMajorManagement";
 import { ReviewManagementPage } from "../ReviewManagement";
 import { SessionManagementPage } from "../SessionManagement";
 import { UserManagementPage } from "../UserManagement";
+import { CodingProblemManagementPage } from "../CodingProblemManagement";
 type TabType =
   | "dashboard"
   | "users"
@@ -84,7 +85,8 @@ type TabType =
   | "grading-detail"
   | "gradingTemplates"
   | "practiceExam"
-  | "codeReviewProblems";
+  | "codeReviewProblems"
+  | "codingProblems";
 
 const VALID_TAB_TYPES: TabType[] = [
   "dashboard",
@@ -107,6 +109,7 @@ const VALID_TAB_TYPES: TabType[] = [
   "gradingTemplates",
   "practiceExam",
   "codeReviewProblems",
+  "codingProblems",
 ];
 
 const isValidTabType = (value: string): value is TabType => {
@@ -198,6 +201,10 @@ const getAvailableTabs = (
     type: "codeReviewProblems",
     label: "Code Review Problems",
   },
+  {
+    type: "codingProblems",
+    label: "Vòng Coding",
+  },
 ];
 const TAB_ICONS: Record<TabType, React.ElementType> = {
   dashboard: LayoutDashboard,
@@ -220,6 +227,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   practiceExam: ClipboardCheck,
   "grading-detail": ClipboardCheck,
   codeReviewProblems: Code2,
+  codingProblems: Code2,
 };
 const TAB_COLORS: Record<TabType, string> = {
   dashboard: "text-indigo-600",
@@ -242,6 +250,7 @@ const TAB_COLORS: Record<TabType, string> = {
   practiceExam: "text-rose-600",
   "grading-detail": "text-rose-600",
   codeReviewProblems: "text-violet-600",
+  codingProblems: "text-emerald-500",
 };
 const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup[] => [
   {
@@ -335,6 +344,12 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         label: "Code Review Problems",
         icon: Code2,
         iconColor: "text-violet-600",
+      },
+      {
+        type: "codingProblems",
+        label: "Vòng Coding",
+        icon: Code2,
+        iconColor: "text-emerald-500",
       },
     ],
   },
@@ -441,6 +456,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             icon: Code2,
             label: "Code Review Problems",
             color: "text-violet-600",
+          },
+          {
+            type: "codingProblems",
+            icon: Code2,
+            label: "Vòng Coding",
+            color: "text-emerald-500",
           },
         ],
       },
@@ -721,6 +742,8 @@ export function AdminDashboardPage() {
         return <ApplicationGradingDetailPage appId={gradingAppId} />;
       case "codeReviewProblems":
         return <CodeReviewProblemManagementPage />;
+      case "codingProblems":
+        return <CodingProblemManagementPage />;
       default:
         return <div>{t("common.invalidTabType")}</div>;
     }
