@@ -28,7 +28,6 @@ import {
   Plus,
   Save,
   Settings2,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -87,13 +86,9 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiTopic, setAiTopic] = useState("");
-  const [aiDifficulty, setAiDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
   const [activeLang, setActiveLang] = useState("JAVA");
   const [expandedTc, setExpandedTc] = useState<number | null>(null);
 
-  const isEditing = !!initialData?.id;
   const paramCount = formData.paramTypes?.length || 0;
 
   useEffect(() => {
@@ -125,17 +120,6 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
       else toast.error(res.error || t("general.addFailed"));
     } catch { toast.error(t("compCodingSubmissionModal.errorOccurred")); }
     finally { setIsSubmitting(false); }
-  };
-
-  const handleGenerateAI = async () => {
-    if (!aiTopic.trim()) { toast.error(t("general.pleaseFillAllRequiredFields")); return; }
-    setAiLoading(true);
-    try {
-      const res = await codingProblemManager.generate({ topic: aiTopic, difficulty: aiDifficulty, targetLevel: "INTERMEDIATE" });
-      if (res.success && res.data) { setFormData((p) => ({ ...p, ...res.data })); toast.success(t("ai.generationSuccess")); }
-      else toast.error(res.error || t("ai.generationFailed"));
-    } catch { toast.error(t("compCodingSubmissionModal.errorOccurred")); }
-    finally { setAiLoading(false); }
   };
 
   const getMonacoLang = (k: string) =>
@@ -220,29 +204,6 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
             {/* LEFT: Markdown editor (primary, takes most space) */}
             <div className="flex flex-1 flex-col overflow-y-auto border-r border-slate-200 dark:border-slate-800">
-              {/* AI banner */}
-              {!isEditing && (
-                <div className="flex items-center gap-2 border-b border-indigo-100 bg-indigo-50/80 px-4 py-2 dark:border-indigo-900/30 dark:bg-indigo-950/30">
-                  <Sparkles className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
-                  <Input placeholder="Chủ đề để AI sinh đề bài…"
-                    value={aiTopic} onChange={(e) => setAiTopic(e.target.value)}
-                    className="h-7 flex-1 border-0 bg-transparent p-0 text-xs shadow-none focus-visible:ring-0 placeholder:text-indigo-300 dark:placeholder:text-indigo-700" />
-                  <Select value={aiDifficulty} onValueChange={(v: "EASY"|"MEDIUM"|"HARD") => setAiDifficulty(v)}>
-                    <SelectTrigger className="h-7 w-24 border-indigo-200 bg-white text-xs dark:border-indigo-800 dark:bg-slate-900"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EASY">EASY</SelectItem>
-                      <SelectItem value="MEDIUM">MEDIUM</SelectItem>
-                      <SelectItem value="HARD">HARD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button size="sm" onClick={handleGenerateAI} disabled={aiLoading}
-                    className="h-7 bg-indigo-600 px-3 text-xs hover:bg-indigo-700">
-                    {aiLoading && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}Tạo
-                  </Button>
-                </div>
-              )}
-
-              {/* Markdown area — fills all remaining height */}
               <div className="flex flex-1 flex-col">
                 <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-2 dark:border-slate-800 dark:bg-slate-900/50">
                   <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Nội dung đề bài (Markdown)</span>

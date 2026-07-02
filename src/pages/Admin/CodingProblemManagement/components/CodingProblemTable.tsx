@@ -1,25 +1,24 @@
 import type { CodingProblem } from "@/services/coding-problem.manager";
 import { format, formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { Switch } from "@/components/ui/switch";
 import {
   BookOpen,
-  CheckCircle2,
   Clock,
   Code2,
   Cpu,
   Edit2,
   Eye,
   FlaskConical,
-  MoreHorizontal,
   RefreshCw,
   Trash2,
-  XCircle,
 } from "lucide-react";
 
 interface CodingProblemTableProps {
   problems: CodingProblem[];
   onEdit: (problem: CodingProblem) => void;
   onDelete?: (problem: CodingProblem) => void;
+  onToggleStatus?: (problem: CodingProblem, isActive: boolean) => void;
 }
 
 const DIFF_CONFIG = {
@@ -61,7 +60,7 @@ function timeAgo(s?: string) {
   }
 }
 
-export function CodingProblemTable({ problems, onEdit, onDelete }: CodingProblemTableProps) {
+export function CodingProblemTable({ problems, onEdit, onDelete, onToggleStatus }: CodingProblemTableProps) {
   if (problems.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
@@ -74,9 +73,9 @@ export function CodingProblemTable({ problems, onEdit, onDelete }: CodingProblem
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       {/* Table header */}
-      <div className="grid grid-cols-[56px_1fr_120px_180px_140px_140px_100px] items-center border-b border-slate-100 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-800/50">
-        {["ID", "Bài tập", "Độ khó", "Tests & Limits", "Ngày tạo", "Cập nhật", ""].map((h, i) => (
-          <div key={i} className={`text-[10px] font-bold uppercase tracking-wider text-slate-400 ${i === 6 ? "text-right" : ""}`}>
+      <div className="grid grid-cols-[56px_1fr_100px_160px_90px_120px_120px_70px] items-center border-b border-slate-100 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-800/50">
+        {["ID", "Bài tập", "Độ khó", "Tests & Limits", "Trạng thái", "Ngày tạo", "Cập nhật", ""].map((h, i) => (
+          <div key={i} className={`text-[10px] font-bold uppercase tracking-wider text-slate-400 ${i === 7 ? "text-right" : ""}`}>
             {h}
           </div>
         ))}
@@ -88,13 +87,13 @@ export function CodingProblemTable({ problems, onEdit, onDelete }: CodingProblem
           const diff = DIFF_CONFIG[p.difficulty] ?? DIFF_CONFIG.MEDIUM;
           const totalPoints = p.hiddenTestCases?.reduce((s, tc) => s + (tc.weightPoints || 0), 0) ?? 0;
           const langs = p.codeStubs ? Object.keys(p.codeStubs) : [];
-          const isDeleted = !!p.isDeleted;
+          const isActive = !p.isDeleted;
 
           return (
             <div
               key={p.id}
-              className={`group grid grid-cols-[56px_1fr_120px_180px_140px_140px_100px] items-center px-4 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${
-                isDeleted ? "opacity-50" : ""
+              className={`group grid grid-cols-[56px_1fr_100px_160px_90px_120px_120px_70px] items-center px-4 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${
+                !isActive ? "opacity-60" : ""
               }`}>
               {/* ID */}
               <div className="flex items-center gap-2">
@@ -104,11 +103,6 @@ export function CodingProblemTable({ problems, onEdit, onDelete }: CodingProblem
               {/* Title + metadata */}
               <div className="min-w-0 space-y-1 pr-4">
                 <div className="flex items-center gap-2">
-                  {isDeleted ? (
-                    <XCircle className="h-3.5 w-3.5 shrink-0 text-rose-400" />
-                  ) : (
-                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                  )}
                   <span className="truncate font-semibold text-slate-900 dark:text-slate-100">
                     {p.title}
                   </span>
@@ -151,29 +145,43 @@ export function CodingProblemTable({ problems, onEdit, onDelete }: CodingProblem
               {/* Tests + Limits */}
               <div className="space-y-1.5 pr-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400">
-                    <FlaskConical className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+                    <FlaskConical className="h-3 w-3" />
                     <span>{p.hiddenTestCases?.length ?? 0} hidden</span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-500">
-                    <Eye className="h-3.5 w-3.5" />
-                    <span>{p.visibleExamples?.length ?? 0} visible</span>
+                  <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                    <Eye className="h-3 w-3" />
+                    <span>{p.visibleExamples?.length ?? 0} vis</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
-                    <Clock className="h-3 w-3" />
+                  <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                    <Clock className="h-2.5 w-2.5" />
                     <span>{p.executionTimeLimitMs ?? 2000}ms</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
-                    <Cpu className="h-3 w-3" />
-                    <span>{p.memoryLimitMb ?? 256}MB</span>
+                  <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                    <Cpu className="h-2.5 w-2.5" />
+                    <span>{p.memoryLimitMb ?? 256}M</span>
                   </div>
                   {totalPoints > 0 && (
-                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                       {totalPoints}đ
                     </span>
                   )}
+                </div>
+              </div>
+
+              {/* Status Toggle */}
+              <div className="pr-4">
+                <div className="flex flex-col gap-1">
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={(val) => onToggleStatus?.(p, val)}
+                    className="data-[state=checked]:bg-emerald-500"
+                  />
+                  <span className={`text-[10px] font-semibold ${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"}`}>
+                    {isActive ? "Đang bật" : "Đã tắt"}
+                  </span>
                 </div>
               </div>
 
@@ -237,7 +245,7 @@ export function CodingProblemTable({ problems, onEdit, onDelete }: CodingProblem
           {problems.some((p) => p.isDeleted) && (
             <>
               {" · "}
-              <strong className="text-rose-500">{problems.filter((p) => p.isDeleted).length}</strong> đã xoá
+              <strong className="text-rose-500">{problems.filter((p) => p.isDeleted).length}</strong> đã tắt
             </>
           )}
         </p>

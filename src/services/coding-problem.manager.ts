@@ -101,6 +101,33 @@ export class CodingProblemManager {
   }
 
   /**
+   * Update a coding problem
+   * PUT /api/coding-problems/{id}
+   */
+  async update(id: number, data: Partial<CodingProblem>): Promise<ApiResponse<CodingProblem>> {
+    try {
+      const response = await fetchClient
+        // @ts-expect-error: Backend might not have this typed properly yet
+        .PUT("/api/coding-problems/{id}", {
+          params: { path: { id } },
+          body: data as never,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      // @ts-expect-error: Backend Swagger schema mismatch
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Cập nhật bài tập thất bại",
+      };
+    }
+  }
+
+  /**
    * Generate a coding problem using AI
    * POST /api/coding-problems/generate
    */

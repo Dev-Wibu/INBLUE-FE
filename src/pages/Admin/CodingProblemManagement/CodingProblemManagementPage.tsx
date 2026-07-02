@@ -7,6 +7,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { codingProblemManager, type CodingProblem } from "@/services/coding-problem.manager";
 import {
   BookOpen,
@@ -16,6 +22,7 @@ import {
   RefreshCw,
   Search,
   SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,6 +48,12 @@ export function CodingProblemManagementPage() {
   const [difficulty, setDifficulty] = useState<Difficulty>("ALL");
   const [sort, setSort] = useState<SortKey>("newest");
 
+  // AI Modal state
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiDifficulty, setAiDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
+  const [aiLoading, setAiLoading] = useState(false);
+
   useEffect(() => {
     fetchProblems();
   }, []);
@@ -57,6 +70,59 @@ export function CodingProblemManagementPage() {
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
+    }
+  };
+
+  const handleToggleStatus = async (problem: CodingProblem, isActive: boolean) => {
+    // Optimistic UI update
+    setProblems((prev) =>
+      prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: !isActive } : p))
+    );
+    try {
+      // isDeleted is the opposite of isActive
+      const res = await codingProblemManager.update(problem.id, { isDeleted: !isActive });
+      if (!res.success) {
+        toast.error(res.error || "Không thể cập nhật trạng thái");
+        // Revert on failure
+        setProblems((prev) =>
+          prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: problem.isDeleted } : p))
+        );
+      } else {
+        toast.success(`Đã ${isActive ? "bật" : "tắt"} bài tập`);
+      }
+    } catch {
+      toast.error("Lỗi xảy ra khi cập nhật trạng thái");
+      setProblems((prev) =>
+        prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: problem.isDeleted } : p))
+      );
+    }
+  };
+
+  const handleGenerateAI = async () => {
+    if (!aiTopic.trim()) {
+      toast.error("Vui lòng nhập chủ đề bài tập");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await codingProblemManager.generate({
+        topic: aiTopic,
+        difficulty: aiDifficulty,
+        targetLevel: "INTERMEDIATE",
+      });
+      if (res.success && res.data) {
+        toast.success("Tạo tự động thành công!");
+        setIsAiModalOpen(false);
+        // Start authoring with AI generated data
+        setEditingProblem(res.data);
+        setIsAuthoring(true);
+      } else {
+        toast.error(res.error || "Tạo thất bại");
+      }
+    } catch {
+      toast.error("Lỗi xảy ra trong quá trình tạo");
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -136,12 +202,21 @@ export function CodingProblemManagementPage() {
               className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600">
               <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             </button>
-            <Button
-              onClick={() => { setEditingProblem(null); setIsAuthoring(true); }}
-              className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Thêm Bài Tập
-            </Button>
+            <div className="flex items-center gap-1.5 ml-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsAiModalOpen(true)}
+                className="h-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40">
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                Tạo AI
+              </Button>
+              <Button
+                onClick={() => { setEditingProblem(null); setIsAuthoring(true); }}
+                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                Thêm Bài Tập
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -149,7 +224,7 @@ export function CodingProblemManagementPage() {
         <div className="mt-4 flex items-center gap-3">
           {[
             { label: "Tổng cộng", value: stats.total, cls: "text-slate-700 dark:text-slate-300", bg: "bg-slate-100 dark:bg-slate-800" },
-            { label: "Hoạt động", value: stats.active, cls: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+            { label: "Đang bật", value: stats.active, cls: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
             { label: "Easy", value: stats.easy, cls: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
             { label: "Medium", value: stats.medium, cls: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20" },
             { label: "Hard", value: stats.hard, cls: "text-rose-700 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-900/20" },
@@ -241,10 +316,77 @@ export function CodingProblemManagementPage() {
               problems={filteredProblems}
               onEdit={(p) => { setEditingProblem(p); setIsAuthoring(true); }}
               onDelete={undefined}
+              onToggleStatus={handleToggleStatus}
             />
           </div>
         )}
       </div>
+
+      {/* ── AI GENERATE MODAL ───────────────────────────────────────────────── */}
+      <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-indigo-500" />
+              Tạo bài tập tự động với AI
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-2 space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">Chủ đề bài toán</label>
+              <Input
+                placeholder="Ví dụ: Sắp xếp mảng hai chiều, quy hoạch động, cây nhị phân..."
+                value={aiTopic}
+                onChange={(e) => setAiTopic(e.target.value)}
+                className="h-9 border-slate-200 focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">Độ khó mong muốn</label>
+              <Select value={aiDifficulty} onValueChange={(v: "EASY" | "MEDIUM" | "HARD") => setAiDifficulty(v)}>
+                <SelectTrigger className="h-9 border-slate-200 dark:border-slate-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EASY">EASY (Dễ)</SelectItem>
+                  <SelectItem value="MEDIUM">MEDIUM (Trung bình)</SelectItem>
+                  <SelectItem value="HARD">HARD (Khó)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="mt-2 rounded-lg bg-indigo-50 p-3 text-xs text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+              Hệ thống sẽ tự động sinh tiêu đề, nội dung, bộ test case và các cấu hình liên quan dựa trên chủ đề bạn yêu cầu.
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsAiModalOpen(false)}
+                disabled={aiLoading}
+                className="h-9 px-4 text-xs">
+                Hủy
+              </Button>
+              <Button
+                onClick={handleGenerateAI}
+                disabled={aiLoading}
+                className="h-9 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">
+                {aiLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Đang tạo...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Tạo Tự Động
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
