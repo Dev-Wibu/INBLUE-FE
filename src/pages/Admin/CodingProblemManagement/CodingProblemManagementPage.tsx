@@ -188,103 +188,53 @@ export function CodingProblemManagementPage() {
   return (
     <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
 
-      {/* ── PAGE HEADER ───────────────────────────────────────────────────────── */}
-      <div className="border-b border-slate-200 bg-white px-6 py-5 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 shadow-sm shadow-indigo-500/30">
-              <BookOpen className="h-4.5 w-4.5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold text-slate-900 dark:text-white">
-                Quản lý Bài thi Coding
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Danh sách bài tập thuật toán dùng trong vòng đánh giá lập trình
-              </p>
-            </div>
+      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
+        
+        {/* Left: Search & Filters */}
+        <div className="flex items-center gap-4">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Tìm kiếm bài tập..."
+              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+            />
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => fetchProblems(true)}
-              disabled={isRefreshing}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600">
-              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-            </button>
-            <div className="flex items-center gap-1.5 ml-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsAiModalOpen(true)}
-                className="h-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40">
-                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                Tạo AI
-              </Button>
-              <Button
-                onClick={() => { setEditingProblem(null); setIsAuthoring(true); }}
-                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                Thêm Bài Tập
-              </Button>
-            </div>
+
+          <div className="flex items-center gap-1 border-l border-slate-200 pl-4 dark:border-slate-700">
+            {(["ALL", "EASY", "MEDIUM", "HARD"] as Difficulty[]).map((d) => {
+              const count = d === "ALL" ? problems.length : problems.filter(p => p.difficulty === d).length;
+              const isActive = difficulty === d;
+              return (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                    isActive
+                      ? d === "ALL" ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                        : d === "EASY" ? "bg-emerald-600 text-white"
+                        : d === "MEDIUM" ? "bg-amber-500 text-white"
+                        : "bg-rose-600 text-white"
+                      : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}>
+                  {d === "ALL" ? "Tất cả" : d}
+                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] ${
+                    isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* ── Stats row ── */}
-        <div className="mt-4 flex items-center gap-3">
-          {[
-            { label: "Tổng cộng", value: stats.total, cls: "text-slate-700 dark:text-slate-300", bg: "bg-slate-100 dark:bg-slate-800" },
-            { label: "Đang bật", value: stats.active, cls: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-            { label: "Easy", value: stats.easy, cls: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
-            { label: "Medium", value: stats.medium, cls: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20" },
-            { label: "Hard", value: stats.hard, cls: "text-rose-700 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-900/20" },
-          ].map((s) => (
-            <div key={s.label} className={`flex items-center gap-2 rounded-lg border border-transparent px-3 py-1.5 ${s.bg}`}>
-              <span className={`text-base font-bold tabular-nums ${s.cls}`}>{s.value}</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">{s.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── FILTER BAR ────────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Tìm kiếm theo tên bài tập…"
-            className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-xs text-slate-500">Lọc:</span>
-        </div>
-
-        {/* Difficulty filter — pill buttons */}
-        <div className="flex items-center gap-1">
-          {(["ALL", "EASY", "MEDIUM", "HARD"] as Difficulty[]).map((d) => (
-            <button
-              key={d}
-              onClick={() => setDifficulty(d)}
-              className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition-colors ${
-                difficulty === d
-                  ? d === "ALL" ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                    : d === "EASY" ? "bg-emerald-600 text-white"
-                    : d === "MEDIUM" ? "bg-amber-500 text-white"
-                    : "bg-rose-600 text-white"
-                  : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-              }`}>
-              {d === "ALL" ? "Tất cả" : d}
-            </button>
-          ))}
-        </div>
-
-        <div className="ml-auto">
+        {/* Right: Sort & Actions */}
+        <div className="flex items-center gap-3">
           <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-            <SelectTrigger className="h-8 w-44 border-slate-200 text-xs dark:border-slate-700">
+            <SelectTrigger className="h-8 w-[140px] border-slate-200 text-xs dark:border-slate-700">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -294,6 +244,30 @@ export function CodingProblemManagementPage() {
               <SelectItem value="title_desc" className="text-xs">Tiêu đề Z → A</SelectItem>
             </SelectContent>
           </Select>
+
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => fetchProblems(true)}
+              disabled={isRefreshing}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600">
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            </button>
+            <Button
+              variant="outline"
+              onClick={() => setIsAiModalOpen(true)}
+              className="h-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+              Tạo AI
+            </Button>
+            <Button
+              onClick={() => { setEditingProblem(null); setIsAuthoring(true); }}
+              className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Thêm Bài Tập
+            </Button>
+          </div>
         </div>
       </div>
 
