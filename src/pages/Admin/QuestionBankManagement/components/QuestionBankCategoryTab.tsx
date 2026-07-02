@@ -207,7 +207,7 @@ export function QuestionBankCategoryTab({
     );
 
     return (
-      <div className="flex h-full flex-col space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="animate-in fade-in slide-in-from-right-4 flex h-full flex-col space-y-4 duration-300">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -249,7 +249,7 @@ export function QuestionBankCategoryTab({
 
   // --- Render Folders Grid View ---
   return (
-    <div className="flex h-full flex-col space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+    <div className="animate-in fade-in slide-in-from-left-4 flex h-full flex-col space-y-6 duration-300">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -333,7 +333,7 @@ export function QuestionBankCategoryTab({
 
               {/* Action Buttons (Visible on Hover) */}
               {editingId !== cat.id && (
-                <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+                <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                   <Button
                     variant="ghost"
                     size="icon"

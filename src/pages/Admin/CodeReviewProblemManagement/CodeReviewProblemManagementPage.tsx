@@ -26,7 +26,16 @@ import {
   type CodeReviewProblem,
 } from "@/services/code-review-problem.manager";
 import { useThemeStore } from "@/stores/themeStore";
-import { AlertTriangle, ChevronLeft, FileCode2, Lightbulb, Pencil, Plus, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  FileCode2,
+  Lightbulb,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -119,7 +128,7 @@ export function CodeReviewProblemManagementPage() {
 
   const processedData = useMemo(() => {
     // 1. Sort override based on SortKey
-    let sorted = [...sortedData];
+    const sorted = [...sortedData];
     switch (sort) {
       case "newest":
         sorted.sort((a, b) => b.createdAtSortValue - a.createdAtSortValue);
@@ -168,7 +177,10 @@ export function CodeReviewProblemManagementPage() {
       prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: !isActive } : p))
     );
     try {
-      const res = await codeReviewProblemManager.update(problem.id, { ...problem, isDeleted: !isActive });
+      const res = await codeReviewProblemManager.update(problem.id, {
+        ...problem,
+        isDeleted: !isActive,
+      });
       if (!res.success) {
         toast.error(res.error || "Không thể cập nhật trạng thái");
         setProblems((prev) =>
@@ -264,10 +276,7 @@ export function CodeReviewProblemManagementPage() {
         {/* IDE-like File Viewer Section */}
         {selectedProblem.files && selectedProblem.files.length > 0 ? (
           <div
-            className={cn(
-              "flex flex-1 overflow-hidden",
-              isDark ? "bg-slate-950" : "bg-slate-100"
-            )}>
+            className={cn("flex flex-1 overflow-hidden", isDark ? "bg-slate-950" : "bg-slate-100")}>
             <div className="relative flex min-w-0 flex-1 flex-col">
               {/* File Tabs */}
               <div
@@ -315,8 +324,7 @@ export function CodeReviewProblemManagementPage() {
                     selectedProblem.files[viewActiveFileIdx]?.language || "java"
                   ).toLowerCase()}
                   issues={(selectedProblem.expectedIssues || []).filter(
-                    (iss) =>
-                      iss.filename === selectedProblem.files[viewActiveFileIdx]?.filename
+                    (iss) => iss.filename === selectedProblem.files[viewActiveFileIdx]?.filename
                   )}
                   theme={monacoTheme}
                 />
@@ -339,7 +347,7 @@ export function CodeReviewProblemManagementPage() {
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-4">
           <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <Input
               value={searchQuery}
               onChange={(e) => {
@@ -353,7 +361,8 @@ export function CodeReviewProblemManagementPage() {
 
           <div className="flex items-center gap-1 border-l border-slate-200 pl-4 dark:border-slate-700">
             {(["ALL", "EASY", "MEDIUM", "HARD"] as Difficulty[]).map((d) => {
-              const count = d === "ALL" ? problems.length : problems.filter(p => p.difficulty === d).length;
+              const count =
+                d === "ALL" ? problems.length : problems.filter((p) => p.difficulty === d).length;
               const isActive = difficultyFilter === d;
               return (
                 <button
@@ -364,16 +373,22 @@ export function CodeReviewProblemManagementPage() {
                   }}
                   className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-bold transition-colors ${
                     isActive
-                      ? d === "ALL" ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                        : d === "EASY" ? "bg-emerald-600 text-white"
-                        : d === "MEDIUM" ? "bg-amber-500 text-white"
-                        : "bg-rose-600 text-white"
+                      ? d === "ALL"
+                        ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                        : d === "EASY"
+                          ? "bg-emerald-600 text-white"
+                          : d === "MEDIUM"
+                            ? "bg-amber-500 text-white"
+                            : "bg-rose-600 text-white"
                       : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                   }`}>
                   {d === "ALL" ? "Tất cả" : d}
-                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] ${
-                    isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400 dark:bg-slate-800"
-                  }`}>
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[9px] ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+                    }`}>
                     {count}
                   </span>
                 </button>
@@ -383,18 +398,28 @@ export function CodeReviewProblemManagementPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Select value={sort} onValueChange={(v) => {
-            setSort(v as SortKey);
-            pagination.goToFirstPage();
-          }}>
+          <Select
+            value={sort}
+            onValueChange={(v) => {
+              setSort(v as SortKey);
+              pagination.goToFirstPage();
+            }}>
             <SelectTrigger className="h-8 w-[140px] border-slate-200 text-xs dark:border-slate-700">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest" className="text-xs">Mới nhất trước</SelectItem>
-              <SelectItem value="oldest" className="text-xs">Cũ nhất trước</SelectItem>
-              <SelectItem value="title_asc" className="text-xs">Tiêu đề A → Z</SelectItem>
-              <SelectItem value="title_desc" className="text-xs">Tiêu đề Z → A</SelectItem>
+              <SelectItem value="newest" className="text-xs">
+                Mới nhất trước
+              </SelectItem>
+              <SelectItem value="oldest" className="text-xs">
+                Cũ nhất trước
+              </SelectItem>
+              <SelectItem value="title_asc" className="text-xs">
+                Tiêu đề A → Z
+              </SelectItem>
+              <SelectItem value="title_desc" className="text-xs">
+                Tiêu đề Z → A
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -438,7 +463,7 @@ export function CodeReviewProblemManagementPage() {
               onEdit={handleEditProblem}
               onToggleStatus={handleToggleStatus}
             />
-            
+
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
               <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 Hiển thị {pageItems.length} / {processedData.length} kết quả

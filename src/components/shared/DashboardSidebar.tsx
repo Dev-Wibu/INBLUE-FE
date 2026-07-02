@@ -366,7 +366,9 @@ export function DashboardSidebar({
           <div
             className={cn(
               "grid transition-all duration-300 ease-in-out",
-              isExpandedDropdownOpen ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+              isExpandedDropdownOpen
+                ? "mt-1 grid-rows-[1fr] opacity-100"
+                : "pointer-events-none mt-0 grid-rows-[0fr] opacity-0"
             )}>
             <div className="overflow-hidden">
               <div className="ml-6 space-y-1 border-l border-slate-200 pl-3 dark:border-slate-700/80">
@@ -387,7 +389,9 @@ export function DashboardSidebar({
                       <child.icon
                         className={cn(
                           "h-4 w-4 shrink-0",
-                          isChildActive && theme.flyoutActiveIcon ? theme.flyoutActiveIcon : child.color
+                          isChildActive && theme.flyoutActiveIcon
+                            ? theme.flyoutActiveIcon
+                            : child.color
                         )}
                       />
                       <span className="truncate">{child.label}</span>

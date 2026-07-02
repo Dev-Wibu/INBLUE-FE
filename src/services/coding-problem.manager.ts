@@ -58,13 +58,15 @@ export class CodingProblemManager {
    */
   async getById(id: number | string): Promise<ApiResponse<CodingProblem>> {
     try {
-      const response = await fetchClient.GET("/api/coding-problems/{id}", {
-        params: { path: { id: Number(id) } },
-      }).then((res) => ({
-        data: res.data,
-        status: res.response?.status,
-        headers: res.response?.headers,
-      }));
+      const response = await fetchClient
+        .GET("/api/coding-problems/{id}", {
+          params: { path: { id: Number(id) } },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data: response.data };
     } catch (error) {

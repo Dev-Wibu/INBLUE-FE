@@ -1,11 +1,4 @@
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -15,6 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { questionBankManager } from "@/services/question-bank.manager";
 import { Loader2, Plus, Sparkles, Trash2, Wand2 } from "lucide-react";
@@ -62,9 +62,9 @@ export function QuestionBankFormDialog({
   // Simple Markdown Parser for Code Blocks
   const renderMarkdown = (rawText: string) => {
     if (!rawText) return null;
-    
+
     // Normalize literal "\n" strings (often returned by raw AI responses) into actual newlines
-    const text = rawText.replace(/\\n/g, '\n');
+    const text = rawText.replace(/\\n/g, "\n");
 
     const parts = text.split(/(```[\s\S]*?```)/g);
     return parts.map((part, index) => {
@@ -73,20 +73,24 @@ export function QuestionBankFormDialog({
         const code = match ? match[2] : part.slice(3, -3);
         const lang = match && match[1] ? match[1].trim() : "";
         return (
-          <div key={index} className="relative my-3 overflow-hidden rounded-lg border border-slate-800 bg-slate-900">
+          <div
+            key={index}
+            className="relative my-3 overflow-hidden rounded-lg border border-slate-800 bg-slate-900">
             {lang && (
-              <div className="border-b border-slate-700/50 bg-slate-800/50 px-3 py-1 text-xs font-mono text-slate-400">
+              <div className="border-b border-slate-700/50 bg-slate-800/50 px-3 py-1 font-mono text-xs text-slate-400">
                 {lang}
               </div>
             )}
-            <pre className="overflow-x-auto p-3 text-[13px] font-mono leading-relaxed text-slate-100">
+            <pre className="overflow-x-auto p-3 font-mono text-[13px] leading-relaxed text-slate-100">
               <code>{code}</code>
             </pre>
           </div>
         );
       }
       return (
-        <p key={index} className="whitespace-pre-wrap text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">
+        <p
+          key={index}
+          className="text-[15px] leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
           {part}
         </p>
       );
@@ -159,7 +163,7 @@ export function QuestionBankFormDialog({
     const opts = [...(formData.options || [])];
     const oldValue = opts[index];
     opts[index] = value;
-    
+
     // Sync correct answer if the edited option is the currently selected correct answer
     if (formData.correctAnswer && formData.correctAnswer === oldValue && oldValue !== "") {
       onFormChange({ ...formData, options: opts, correctAnswer: value });
@@ -185,7 +189,7 @@ export function QuestionBankFormDialog({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col overflow-y-auto border-l border-slate-200 bg-slate-50 p-0 dark:border-slate-800 dark:bg-[#0F172A] sm:max-w-xl md:max-w-2xl">
+      <SheetContent className="flex w-full flex-col overflow-y-auto border-l border-slate-200 bg-slate-50 p-0 sm:max-w-xl md:max-w-2xl dark:border-slate-800 dark:bg-[#0F172A]">
         <div className="flex-1 space-y-8 p-6 md:p-8">
           <SheetHeader className="space-y-2">
             <SheetTitle className="text-xl font-semibold tracking-tight">{title}</SheetTitle>
@@ -348,31 +352,32 @@ export function QuestionBankFormDialog({
 
             {/* Manual Fields (Hidden when AI Panel is active) */}
             {!showAI && (
-              <div className="space-y-8 animate-in fade-in">
+              <div className="animate-in fade-in space-y-8">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                      {t("adminPracticequestionmanagement.enterQuestionContent", "Nội dung câu hỏi")}
+                      {t(
+                        "adminPracticequestionmanagement.enterQuestionContent",
+                        "Nội dung câu hỏi"
+                      )}
                     </Label>
                     <div className="flex rounded-md bg-slate-100 p-0.5 dark:bg-slate-800/80">
-                      <button 
+                      <button
                         type="button"
-                        onClick={() => setTextTab('write')}
-                        className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${textTab === 'write' ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                      >
+                        onClick={() => setTextTab("write")}
+                        className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${textTab === "write" ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"}`}>
                         Write
                       </button>
-                      <button 
+                      <button
                         type="button"
-                        onClick={() => setTextTab('preview')}
-                        className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${textTab === 'preview' ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                      >
+                        onClick={() => setTextTab("preview")}
+                        className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${textTab === "preview" ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"}`}>
                         Preview
                       </button>
                     </div>
                   </div>
-                  
-                  {textTab === 'write' ? (
+
+                  {textTab === "write" ? (
                     <Textarea
                       placeholder={t("adminPracticequestionmanagement.enterQuestionContent")}
                       rows={5}
@@ -382,8 +387,12 @@ export function QuestionBankFormDialog({
                     />
                   ) : (
                     <div className="min-h-[126px] rounded-md border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
-                      {formData.questionText ? renderMarkdown(formData.questionText) : (
-                        <span className="text-sm font-medium italic text-slate-400">Nothing to preview</span>
+                      {formData.questionText ? (
+                        renderMarkdown(formData.questionText)
+                      ) : (
+                        <span className="text-sm font-medium text-slate-400 italic">
+                          Nothing to preview
+                        </span>
                       )}
                     </div>
                   )}
@@ -407,17 +416,17 @@ export function QuestionBankFormDialog({
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {(formData.options || []).map((opt, idx) => {
                       const optLetter = String.fromCharCode(65 + idx);
-                      const isCorrect = 
+                      const isCorrect =
                         (formData.correctAnswer === opt && opt.trim() !== "") ||
-                        (formData.correctAnswer?.trim().toUpperCase() === optLetter);
-                        
+                        formData.correctAnswer?.trim().toUpperCase() === optLetter;
+
                       return (
                         <div key={idx} className="group relative">
                           <button
                             type="button"
                             onClick={() => toggleCorrectAnswer(opt)}
                             title={t("question.markAsCorrect")}
-                            className={`absolute left-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[11px] font-bold transition-all ${
+                            className={`absolute top-1/2 left-2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[11px] font-bold transition-all ${
                               isCorrect
                                 ? "bg-emerald-500 text-white shadow-md ring-4 ring-emerald-500/20"
                                 : "bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-emerald-900/30"
@@ -428,15 +437,17 @@ export function QuestionBankFormDialog({
                             value={opt}
                             onChange={(e) => updateOption(idx, e.target.value)}
                             placeholder={`Nhập đáp án...`}
-                            className={`h-11 pl-11 pr-9 transition-colors focus-visible:ring-indigo-500 ${
-                              isCorrect ? "border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20" : ""
+                            className={`h-11 pr-9 pl-11 transition-colors focus-visible:ring-indigo-500 ${
+                              isCorrect
+                                ? "border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20"
+                                : ""
                             }`}
                           />
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 focus-visible:opacity-100 group-hover:opacity-100"
+                            className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-500 focus-visible:opacity-100"
                             onClick={() => removeOption(idx)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>

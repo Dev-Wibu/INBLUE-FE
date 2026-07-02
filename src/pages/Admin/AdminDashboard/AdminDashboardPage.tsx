@@ -1,19 +1,19 @@
-import { type SidebarMenuGroup } from "@/components/shared";
-import { DashboardSidebar, getInitialSidebarCollapsed } from "@/components/shared";
+import {
+  DashboardSidebar,
+  getInitialSidebarCollapsed,
+  type SidebarMenuGroup,
+} from "@/components/shared";
 import { AdminGradingTabProvider } from "@/contexts/AdminGradingTabContext";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
   Bell,
-  BookOpen,
   BrainCircuit,
   Briefcase,
   Building2,
   ClipboardCheck,
   Code2,
   Database,
-  FileQuestion,
   FileText,
-  GraduationCap,
   LayoutDashboard,
   LayoutTemplate,
   Library,
@@ -74,7 +74,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             label: t("adminAdmindashboard.instructor"),
             color: "text-slate-400",
           },
-          { type: "companies", icon: Building2, label: t("common.company"), color: "text-slate-400" },
+          {
+            type: "companies",
+            icon: Building2,
+            label: t("common.company"),
+            color: "text-slate-400",
+          },
           {
             type: "notifications",
             icon: Bell,
@@ -176,7 +181,7 @@ export function AdminDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
-  
+
   const sidebarMenuGroups = useMemo(() => getSidebarMenuGroups(t), [t]);
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() =>
@@ -231,7 +236,7 @@ export function AdminDashboardPage() {
     ),
     [t]
   );
-  
+
   const ADMIN_SIDEBAR_LOGO_COLLAPSED = useMemo(
     () => (
       <div className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
@@ -269,12 +274,14 @@ export function AdminDashboardPage() {
             "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-6 px-3",
           divider: "",
           itemPy: "py-2.5",
-          activeItem: "bg-indigo-500/10 text-indigo-400 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20",
+          activeItem:
+            "bg-indigo-500/10 text-indigo-400 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20",
           inactiveItem:
             "text-slate-400 rounded-xl hover:bg-slate-800/60 hover:text-slate-200 transition-all",
           activeIconOverride: "text-indigo-400",
           flyoutActiveItem: "bg-indigo-500/10 text-indigo-400 font-semibold rounded-lg",
-          flyoutInactiveItem: "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-all rounded-lg",
+          flyoutInactiveItem:
+            "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-all rounded-lg",
           flyoutActiveIcon: "text-indigo-400",
           flyoutBorder: "border-slate-700/80",
           footerBorder: "border-t border-slate-800",
@@ -290,12 +297,12 @@ export function AdminDashboardPage() {
       />
 
       <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
-        <AdminHeader 
+        <AdminHeader
           title={currentTitle}
           onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isSidebarCollapsed={isSidebarCollapsed}
         />
-        
+
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <AdminGradingTabProvider openGradingTab={() => {}}>
             <Routes>
@@ -314,8 +321,24 @@ export function AdminDashboardPage() {
               <Route path="companies" element={<CompanyManagementPage isActive={true} />} />
               <Route path="candidateProfiles" element={<CandidateProfileManagementPage />} />
               <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
-              <Route path="applicationGrading" element={<ApplicationGradingPage onOpenGradingDetail={(appId) => navigate(`/admin/grading-detail?appId=${appId}`)} />} />
-              <Route path="grading-detail" element={<ApplicationGradingDetailPage appId={new URLSearchParams(location.search).get('appId') || ""} />} />
+              <Route
+                path="applicationGrading"
+                element={
+                  <ApplicationGradingPage
+                    onOpenGradingDetail={(appId) =>
+                      navigate(`/admin/grading-detail?appId=${appId}`)
+                    }
+                  />
+                }
+              />
+              <Route
+                path="grading-detail"
+                element={
+                  <ApplicationGradingDetailPage
+                    appId={new URLSearchParams(location.search).get("appId") || ""}
+                  />
+                }
+              />
               <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
               <Route path="codingProblems" element={<CodingProblemManagementPage />} />
             </Routes>

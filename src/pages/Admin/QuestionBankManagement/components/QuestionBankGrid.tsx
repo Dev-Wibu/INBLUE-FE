@@ -25,7 +25,10 @@ export function QuestionBankGrid({ questions, onEdit, onDelete }: QuestionBankGr
 
   const stripMarkdown = (text: string) => {
     if (!text) return "";
-    return text.replace(/```\w*\n/g, "").replace(/```/g, "").trim();
+    return text
+      .replace(/```\w*\n/g, "")
+      .replace(/```/g, "")
+      .trim();
   };
 
   return (
@@ -34,7 +37,6 @@ export function QuestionBankGrid({ questions, onEdit, onDelete }: QuestionBankGr
         <div
           key={q.id}
           className="group relative flex h-[240px] flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800/80 dark:bg-slate-950/50 dark:hover:border-slate-700 dark:hover:bg-slate-900/80">
-          
           {/* Minimalist Header */}
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -46,14 +48,15 @@ export function QuestionBankGrid({ questions, onEdit, onDelete }: QuestionBankGr
                 {q.questionCategory?.categoryName || "Chưa phân loại"}
               </span>
             </div>
-            
-            <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 ${
-              q.questionLevel === "EASY"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
-                : q.questionLevel === "MEDIUM"
-                  ? "border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400"
-                  : "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400"
-            }`}>
+
+            <div
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 ${
+                q.questionLevel === "EASY"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
+                  : q.questionLevel === "MEDIUM"
+                    ? "border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400"
+                    : "border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400"
+              }`}>
               <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
               <span className="text-[10px] font-bold tracking-widest uppercase">
                 {q.questionLevel}
@@ -62,7 +65,7 @@ export function QuestionBankGrid({ questions, onEdit, onDelete }: QuestionBankGr
           </div>
 
           {/* Body */}
-          <p className="flex-1 line-clamp-4 text-[15px] font-medium leading-relaxed text-slate-700 dark:text-slate-300">
+          <p className="line-clamp-4 flex-1 text-[15px] leading-relaxed font-medium text-slate-700 dark:text-slate-300">
             {stripMarkdown(q.questionText || "")}
           </p>
 
@@ -72,7 +75,7 @@ export function QuestionBankGrid({ questions, onEdit, onDelete }: QuestionBankGr
               variant="outline"
               size="sm"
               onClick={() => onEdit(q)}
-              className="h-8 translate-y-2 rounded-lg opacity-0 transition-all duration-300 focus-visible:translate-y-0 focus-visible:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="h-8 translate-y-2 rounded-lg opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100 dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
               title={t("general.edit")}>
               <Edit className="mr-1.5 h-3.5 w-3.5" />
               <span className="text-xs">{t("general.edit")}</span>
@@ -81,7 +84,7 @@ export function QuestionBankGrid({ questions, onEdit, onDelete }: QuestionBankGr
               variant="outline"
               size="sm"
               onClick={() => onDelete(q)}
-              className="h-8 translate-y-2 rounded-lg border-rose-200 text-rose-600 opacity-0 transition-all duration-300 delay-75 hover:bg-rose-50 hover:text-rose-700 focus-visible:translate-y-0 focus-visible:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 dark:border-rose-900/50 dark:text-rose-400 dark:hover:bg-rose-900/30 dark:hover:text-rose-300"
+              className="h-8 translate-y-2 rounded-lg border-rose-200 text-rose-600 opacity-0 transition-all delay-75 duration-300 group-hover:translate-y-0 group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-700 focus-visible:translate-y-0 focus-visible:opacity-100 dark:border-rose-900/50 dark:text-rose-400 dark:hover:bg-rose-900/30 dark:hover:text-rose-300"
               title={t("general.delete")}>
               <Trash2 className="mr-1.5 h-3.5 w-3.5" />
               <span className="text-xs">{t("general.delete")}</span>

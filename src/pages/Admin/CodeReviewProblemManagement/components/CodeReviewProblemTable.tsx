@@ -1,14 +1,7 @@
+import { Switch } from "@/components/ui/switch";
 import type { CodeReviewProblem } from "@/services/code-review-problem.manager";
 import { format } from "date-fns";
-import { Switch } from "@/components/ui/switch";
-import {
-  BookOpen,
-  Circle,
-  FileCode2,
-  Bug,
-  Edit2,
-  Trash2,
-} from "lucide-react";
+import { BookOpen, Bug, Circle, Edit2, FileCode2, Trash2 } from "lucide-react";
 
 interface CodeReviewProblemTableProps {
   problems: CodeReviewProblem[];
@@ -45,7 +38,13 @@ function formatDate(s?: string) {
   }
 }
 
-export function CodeReviewProblemTable({ problems, onViewDetail, onEdit, onDelete, onToggleStatus }: CodeReviewProblemTableProps) {
+export function CodeReviewProblemTable({
+  problems,
+  onViewDetail,
+  onEdit,
+  onDelete,
+  onToggleStatus,
+}: CodeReviewProblemTableProps) {
   if (problems.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
@@ -60,16 +59,19 @@ export function CodeReviewProblemTable({ problems, onViewDetail, onEdit, onDelet
   const GRID_COLS = "grid-cols-[60px_minmax(0,2fr)_110px_minmax(180px,1fr)_90px_130px_130px_80px]";
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       {/* Table header */}
-      <div className={`grid ${GRID_COLS} items-center border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/50`}>
-        {["ID", "Bài tập", "Độ khó", "Cấu hình", "Bật/Tắt", "Ngày tạo", "Cập nhật", ""].map((h, i) => (
-          <div key={i} className={`text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 
-            ${i === 4 ? "text-center" : ""} 
-            ${i === 7 ? "text-right" : ""}`}>
-            {h}
-          </div>
-        ))}
+      <div
+        className={`grid ${GRID_COLS} items-center border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/50`}>
+        {["ID", "Bài tập", "Độ khó", "Cấu hình", "Bật/Tắt", "Ngày tạo", "Cập nhật", ""].map(
+          (h, i) => (
+            <div
+              key={i}
+              className={`text-[11px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400 ${i === 4 ? "text-center" : ""} ${i === 7 ? "text-right" : ""}`}>
+              {h}
+            </div>
+          )
+        )}
       </div>
 
       {/* Rows */}
@@ -77,12 +79,12 @@ export function CodeReviewProblemTable({ problems, onViewDetail, onEdit, onDelet
         {problems.map((p) => {
           const diff = DIFF_CONFIG[p.difficulty || "MEDIUM"] ?? DIFF_CONFIG.MEDIUM;
           const isActive = p.isDeleted === false || p.isDeleted === undefined;
-          
+
           return (
             <div
               key={p.id}
               onClick={() => onViewDetail(p)}
-              className={`group grid ${GRID_COLS} items-center px-4 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer ${
+              className={`group grid ${GRID_COLS} cursor-pointer items-center px-4 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${
                 !isActive ? "opacity-60 grayscale-[30%]" : ""
               }`}>
               {/* ID */}
@@ -92,7 +94,9 @@ export function CodeReviewProblemTable({ problems, onViewDetail, onEdit, onDelet
 
               {/* Title + metadata */}
               <div className="min-w-0 pr-6">
-                <p className="truncate text-[14px] font-semibold text-slate-900 dark:text-slate-100" title={p.title}>
+                <p
+                  className="truncate text-[14px] font-semibold text-slate-900 dark:text-slate-100"
+                  title={p.title}>
                   {p.title}
                 </p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
@@ -130,10 +134,11 @@ export function CodeReviewProblemTable({ problems, onViewDetail, onEdit, onDelet
                   <Switch
                     checked={isActive}
                     onCheckedChange={(val) => onToggleStatus(p, val)}
-                    className="data-[state=checked]:bg-emerald-500 shadow-sm"
+                    className="shadow-sm data-[state=checked]:bg-emerald-500"
                   />
                 ) : (
-                  <span className={`text-xs font-semibold ${isActive ? "text-emerald-500" : "text-slate-400"}`}>
+                  <span
+                    className={`text-xs font-semibold ${isActive ? "text-emerald-500" : "text-slate-400"}`}>
                     {isActive ? "Bật" : "Tắt"}
                   </span>
                 )}
@@ -162,7 +167,9 @@ export function CodeReviewProblemTable({ problems, onViewDetail, onEdit, onDelet
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => onEdit(p)}
                   className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/40 dark:hover:text-indigo-400">
