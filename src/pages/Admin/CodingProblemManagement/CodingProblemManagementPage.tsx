@@ -80,7 +80,8 @@ export function CodingProblemManagementPage() {
     );
     try {
       // isDeleted is the opposite of isActive
-      const res = await codingProblemManager.update(problem.id, { isDeleted: !isActive });
+      // Send the full object since it shares the main update endpoint
+      const res = await codingProblemManager.update(problem.id, { ...problem, isDeleted: !isActive });
       if (!res.success) {
         toast.error(res.error || "Không thể cập nhật trạng thái");
         // Revert on failure
