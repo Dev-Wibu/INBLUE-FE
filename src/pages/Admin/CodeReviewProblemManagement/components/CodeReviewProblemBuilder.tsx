@@ -76,6 +76,7 @@ export function CodeReviewProblemBuilder({
   const monaco = useMonaco();
 
   // Monaco builder states
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editorInstance, setEditorInstance] = React.useState<any | null>(null);
   const [expandedIssues, setExpandedIssues] = React.useState<Record<number, boolean>>({});
   const hoveredLineRef = React.useRef<number | null>(null);
@@ -248,6 +249,7 @@ export function CodeReviewProblemBuilder({
     const activeFile = newProblem.files[createActiveFileIdx]?.filename || "";
     const fileIssues = issuesRef.current.filter((i) => i.filename === activeFile);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     editorInstance.changeViewZones((changeAccessor: any) => {
       Object.values(viewZonesRef.current).forEach((id) => {
         changeAccessor.removeZone(id);
@@ -347,9 +349,11 @@ export function CodeReviewProblemBuilder({
     updateViewZones,
   ]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEditorDidMount = (editor: any, monacoInstance: any) => {
     setEditorInstance(editor);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     editor.onMouseMove((e: any) => {
       if (
         e.target.type === monacoInstance.editor.MouseTargetType.GUTTER_GLYPH_MARGIN ||
@@ -375,6 +379,7 @@ export function CodeReviewProblemBuilder({
       }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     editor.onMouseDown((e: any) => {
       if (e.target.type === monacoInstance.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
         const lineNumber = e.target.position?.lineNumber;
@@ -871,7 +876,13 @@ export function CodeReviewProblemBuilder({
               <Label>Severity</Label>
               <StyledSelect
                 value={issueModalData.severity || "CRITICAL"}
-                onChange={(val) => setIssueModalData({ ...issueModalData, severity: val as any })}>
+                onChange={(val) =>
+                  setIssueModalData({
+                    ...issueModalData,
+                    severity:
+                      val as any /* eslint-disable-line @typescript-eslint/no-explicit-any */,
+                  })
+                }>
                 <option value="CRITICAL">CRITICAL</option>
                 <option value="WARNING">WARNING</option>
                 <option value="INFO">INFO</option>
@@ -903,7 +914,9 @@ export function CodeReviewProblemBuilder({
                     ...issueModalData,
                   };
                 } else {
-                  updated.expectedIssues.push(issueModalData as any);
+                  updated.expectedIssues.push(
+                    issueModalData as any /* eslint-disable-line @typescript-eslint/no-explicit-any */
+                  );
                 }
                 setNewProblem(updated);
                 setIssueModalOpen(false);

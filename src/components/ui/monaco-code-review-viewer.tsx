@@ -26,6 +26,7 @@ export function MonacoCodeReviewViewer({
   theme,
 }: MonacoCodeReviewViewerProps) {
   const monaco = useMonaco();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editorInstance, setEditorInstance] = useState<any | null>(null);
   const [expandedIssues, setExpandedIssues] = useState<Record<number, boolean>>({});
 
@@ -187,6 +188,7 @@ export function MonacoCodeReviewViewer({
     updateViewZones();
   }, [expandedIssues, issues, editorInstance, monaco]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEditorDidMount = (editor: any, monacoInstance: any) => {
     setEditorInstance(editor);
 
