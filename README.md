@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎙️ EXE_FE — AI Interview Platform
+# 🎙️ INBLUE-FE — AI Interview Platform
 
 **Production-grade SPA for AI-powered interview preparation with multi-role dashboards, real-time video calls, and intelligent feedback.**
 
@@ -62,7 +62,7 @@
 
 ## Overview
 
-**EXE_FE** is the frontend for an AI-powered interview preparation platform built with React 19, TypeScript 5.9, and Vite 7. It serves four distinct user roles — each with its own dashboard shell, navigation paradigm, and feature set.
+**INBLUE-FE** is the frontend for an AI-powered interview preparation platform built with React 19, TypeScript 5.9, and Vite 7. It serves four distinct user roles — each with its own dashboard shell, navigation paradigm, and feature set.
 
 | Role                | Route       | Navigation           | Tabs | Focus                                             |
 | ------------------- | ----------- | -------------------- | ---- | ------------------------------------------------- |
@@ -198,7 +198,7 @@ The backend is a Spring Boot application at `https://api.kdz.asia` with an OpenA
 
 ```bash
 git clone <repository-url>
-cd EXE_FE
+cd INBLUE-FE
 
 pnpm install
 
@@ -242,7 +242,7 @@ pnpm dev                       # start dev server (auto-runs generate-schema via
 ## Project Structure
 
 ```
-EXE_FE/
+INBLUE-FE/
 ├── .github/
 │   └── copilot-instructions.md     # AI agent rules (canonical source of truth)
 ├── cypress/                        # E2E tests (Cypress)

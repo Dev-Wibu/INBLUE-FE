@@ -1,7 +1,7 @@
 import type { Notification } from "@/services/notification.manager";
 
-const BROADCAST_CHANNEL_NAME = "exe-fe:notification-alerts";
-const STORAGE_EVENT_KEY = "exe-fe:notification-alert";
+const BROADCAST_CHANNEL_NAME = "inblue-fe:notification-alerts";
+const STORAGE_EVENT_KEY = "inblue-fe:notification-alert";
 
 const isNotificationPayload = (value: unknown): value is Notification => {
   return typeof value === "object" && value !== null;

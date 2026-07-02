@@ -818,14 +818,14 @@ flowchart TD
     N --> O[Filter by STORAGE_EVENT_KEY]
 ```
 
-- **Primary path**: `BroadcastChannel("exe-fe:notification-alerts")` — direct postMessage, no serialization
+- **Primary path**: `BroadcastChannel("inblue-fe:notification-alerts")` — direct postMessage, no serialization
 - **Fallback path**: `localStorage` set/remove trick — fires `storage` event in other tabs
 
 ### Broadcast Implementation
 
 ```typescript
-const BROADCAST_CHANNEL_NAME = "exe-fe:notification-alerts";
-const STORAGE_EVENT_KEY = "exe-fe:notification-alert";
+const BROADCAST_CHANNEL_NAME = "inblue-fe:notification-alerts";
+const STORAGE_EVENT_KEY = "inblue-fe:notification-alert";
 
 export function broadcastNotificationCreated(notification: Notification): void {
   // Primary: BroadcastChannel

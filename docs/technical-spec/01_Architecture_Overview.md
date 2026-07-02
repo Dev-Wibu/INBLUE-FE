@@ -1,6 +1,6 @@
 # 01 — Architecture Overview
 
-> **Project:** `exe-fe` — AI Interview Platform Frontend  
+> **Project:** `inblue-fe` — AI Interview Platform Frontend  
 > **Stack:** React 19 · Vite 7 · TypeScript 5.9 · TailwindCSS 4 · Zustand · React Query · shadcn/ui  
 > **Last Synced:** 2026-06-05
 
@@ -55,7 +55,7 @@
 ## 2. Project Directory Structure
 
 ```
-exe-fe/
+inblue-fe/
 ├── .github/
 │   └── copilot-instructions.md          # AI agent rules (canonical)
 ├── .husky/

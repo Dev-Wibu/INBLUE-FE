@@ -1,6 +1,6 @@
 {
-  "project": "EXE_FE",
-  "description": "AI agent permission manifest for the EXE_FE frontend project.",
+  "project": "INBLUE-FE",
+  "description": "AI agent permission manifest for the INBLUE-FE frontend project.",
   "security": {
     "mode": "full_access",
     "terminal": {
