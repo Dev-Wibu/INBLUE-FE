@@ -9,6 +9,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { codingProblemManager, type CodingProblem } from "@/services/coding-problem.manager";
 import Editor from "@monaco-editor/react";
 import {
@@ -23,7 +29,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -33,29 +39,29 @@ interface CodingProblemEditorProps {
   onSaved: () => void;
 }
 
-type TabKey = "general" | "testcases" | "codestubs" | "settings";
+type TabKey = "general" | "testcases" | "codestubs";
 
 export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProblemEditorProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>("general");
+  const [isLoadingData, setIsLoadingData] = useState(!!initialData?.id);
 
-  const [formData, setFormData] = useState<Partial<CodingProblem>>(
-    initialData || {
-      title: "",
-      difficulty: "MEDIUM",
-      problemStatement: "",
-      rulesAndConstraints: [],
-      paramTypes: [],
-      returnType: "",
-      visibleExamples: [],
-      hiddenTestCases: [],
-      executionTimeLimitMs: 1000,
-      memoryLimitMb: 256,
-      codeStubs: {},
-    }
-  );
+  const [formData, setFormData] = useState<Partial<CodingProblem>>({
+    title: "",
+    difficulty: "MEDIUM",
+    problemStatement: "",
+    rulesAndConstraints: [],
+    paramTypes: [],
+    returnType: "",
+    visibleExamples: [],
+    hiddenTestCases: [],
+    executionTimeLimitMs: 1000,
+    memoryLimitMb: 256,
+    codeStubs: {},
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // AI
   const [aiLoading, setAiLoading] = useState(false);
@@ -67,6 +73,32 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
   // Master-Detail State for Testcases
   const [selectedTcIndex, setSelectedTcIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (initialData?.id) {
+      fetchDetails(initialData.id);
+    } else {
+      setFormData((prev) => ({ ...prev, ...initialData }));
+    }
+  }, [initialData]);
+
+  const fetchDetails = async (id: number | string) => {
+    setIsLoadingData(true);
+    try {
+      const res = await codingProblemManager.getById(id);
+      if (res.success && res.data) {
+        setFormData(res.data);
+      } else {
+        toast.error(res.error || "Không thể tải chi tiết bài tập.");
+        onBack();
+      }
+    } catch {
+      toast.error("Lỗi hệ thống khi tải dữ liệu.");
+      onBack();
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   const handleFormChange = (updates: Partial<CodingProblem>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -119,35 +151,18 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
     }
   };
 
-  const renderMarkdown = (rawText: string) => {
-    if (!rawText) return null;
-    const text = rawText.replace(/\\n/g, "\n");
-    const parts = text.split(/(```[\s\S]*?```)/g);
-    return parts.map((part, index) => {
-      if (part.startsWith("```") && part.endsWith("```")) {
-        const match = part.match(/```([^\n]*)\n([\s\S]*?)```/);
-        const code = match ? match[2] : part.slice(3, -3);
-        const lang = match && match[1] ? match[1].trim() : "";
-        return (
-          <div key={index} className="relative my-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-            {lang && (
-              <div className="border-b border-slate-200/50 bg-slate-100/50 px-3 py-1 text-xs font-mono text-slate-500 dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-slate-400">
-                {lang}
-              </div>
-            )}
-            <pre className="overflow-x-auto p-3 text-[13px] font-mono leading-relaxed text-slate-800 dark:text-slate-100">
-              <code>{code}</code>
-            </pre>
-          </div>
-        );
-      }
-      return (
-        <p key={index} className="whitespace-pre-wrap text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">
-          {part}
-        </p>
-      );
-    });
-  };
+  if (isLoadingData) {
+    return (
+      <div className="flex h-full items-center justify-center bg-gray-50 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <p className="text-sm text-slate-500">Đang tải dữ liệu bài tập...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isEditing = !!initialData?.id;
 
   return (
     <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
@@ -194,7 +209,6 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
             { id: "general", label: "Đề bài", icon: FileText },
             { id: "testcases", label: "Test Cases", icon: PlaySquare },
             { id: "codestubs", label: "Code Stubs", icon: Code2 },
-            { id: "settings", label: "Cài đặt", icon: Settings2 },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -218,33 +232,74 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
       {/* 3. MAIN WORKSPACE */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="mx-auto max-w-7xl h-full">
+        <div className="mx-auto max-w-5xl h-full">
           
-          {/* TAB: GENERAL (SPLIT VIEW) */}
+          {/* TAB: GENERAL */}
           {activeTab === "general" && (
             <div className="flex h-full flex-col space-y-6 animate-in fade-in slide-in-from-bottom-2">
-              <div className="grid grid-cols-[1fr_200px] gap-6 items-end">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Tiêu đề (Title)
-                  </Label>
-                  <Input
-                    value={formData.title || ""}
-                    onChange={(e) => handleFormChange({ title: e.target.value })}
-                    className="h-12 text-lg font-bold focus-visible:ring-indigo-500 shadow-sm"
-                    placeholder="Ví dụ: Two Sum"
-                  />
+              <div className="flex items-end justify-between">
+                <div className="grid flex-1 grid-cols-[1fr_200px] gap-6 items-end">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Tiêu đề (Title)
+                    </Label>
+                    <Input
+                      value={formData.title || ""}
+                      onChange={(e) => handleFormChange({ title: e.target.value })}
+                      className="h-12 text-lg font-bold focus-visible:ring-indigo-500 shadow-sm"
+                      placeholder="Ví dụ: Two Sum"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      Độ khó
+                    </Label>
+                    <Select
+                      value={formData.difficulty || "MEDIUM"}
+                      onValueChange={(val: "EASY" | "MEDIUM" | "HARD") =>
+                        handleFormChange({ difficulty: val })
+                      }>
+                      <SelectTrigger className="h-12 font-medium focus:ring-indigo-500 shadow-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="EASY">EASY</SelectItem>
+                        <SelectItem value="MEDIUM">MEDIUM</SelectItem>
+                        <SelectItem value="HARD">HARD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Độ khó
-                  </Label>
+                <div className="ml-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="h-12 shadow-sm border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900"
+                  >
+                    <Settings2 className="mr-2 h-4 w-4 text-slate-500" />
+                    Cài đặt
+                  </Button>
+                </div>
+              </div>
+
+              {/* AI Magic Generator (Only when creating new) */}
+              {!isEditing && (
+                <div className="flex items-center gap-4 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 shadow-sm dark:border-indigo-900/50 dark:bg-indigo-950/20">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
+                    <Sparkles className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Gõ chủ đề vào đây (VD: Sắp xếp mảng) để AI tự động sinh Đề bài & Test Cases..."
+                      value={aiTopic}
+                      onChange={(e) => setAiTopic(e.target.value)}
+                      className="h-10 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 px-0 text-indigo-900 placeholder:text-indigo-300 dark:text-indigo-100 dark:placeholder:text-indigo-700/50 font-medium"
+                    />
+                  </div>
                   <Select
-                    value={formData.difficulty || "MEDIUM"}
-                    onValueChange={(val: "EASY" | "MEDIUM" | "HARD") =>
-                      handleFormChange({ difficulty: val })
-                    }>
-                    <SelectTrigger className="h-12 font-medium focus:ring-indigo-500 shadow-sm">
+                    value={aiDifficulty}
+                    onValueChange={(val: "EASY" | "MEDIUM" | "HARD") => setAiDifficulty(val)}>
+                    <SelectTrigger className="w-[120px] h-10 bg-white dark:bg-slate-900 shadow-sm border-indigo-200 dark:border-indigo-800">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -253,70 +308,27 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       <SelectItem value="HARD">HARD</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Button
+                    className="h-10 bg-indigo-600 hover:bg-indigo-700 px-6 shadow-sm"
+                    onClick={handleGenerateAI}
+                    disabled={aiLoading}>
+                    {aiLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Tạo tự động
+                  </Button>
                 </div>
-              </div>
+              )}
 
-              {/* AI Magic Generator */}
-              <div className="flex items-center gap-4 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 shadow-sm dark:border-indigo-900/50 dark:bg-indigo-950/20">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
-                  <Sparkles className="h-5 w-5" />
+              {/* Markdown Editor (Single Frame) */}
+              <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950 min-h-[500px]">
+                <div className="border-b border-slate-100 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                  Nội dung Đề bài (Markdown)
                 </div>
-                <div className="flex-1">
-                  <Input
-                    placeholder="Gõ chủ đề vào đây (VD: Sắp xếp mảng) để AI tự động sinh Đề bài & Test Cases..."
-                    value={aiTopic}
-                    onChange={(e) => setAiTopic(e.target.value)}
-                    className="h-10 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 px-0 text-indigo-900 placeholder:text-indigo-300 dark:text-indigo-100 dark:placeholder:text-indigo-700/50 font-medium"
-                  />
-                </div>
-                <Select
-                  value={aiDifficulty}
-                  onValueChange={(val: "EASY" | "MEDIUM" | "HARD") => setAiDifficulty(val)}>
-                  <SelectTrigger className="w-[120px] h-10 bg-white dark:bg-slate-900 shadow-sm border-indigo-200 dark:border-indigo-800">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EASY">EASY</SelectItem>
-                    <SelectItem value="MEDIUM">MEDIUM</SelectItem>
-                    <SelectItem value="HARD">HARD</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  className="h-10 bg-indigo-600 hover:bg-indigo-700 px-6 shadow-sm"
-                  onClick={handleGenerateAI}
-                  disabled={aiLoading}>
-                  {aiLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Tạo tự động
-                </Button>
-              </div>
-
-              {/* Split Editor */}
-              <div className="flex flex-1 gap-6 min-h-[500px]">
-                <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950">
-                  <div className="border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900">
-                    Markdown Source
-                  </div>
-                  <Textarea
-                    placeholder="Gõ Markdown tại đây..."
-                    value={formData.problemStatement || ""}
-                    onChange={(e) => handleFormChange({ problemStatement: e.target.value })}
-                    className="flex-1 resize-none rounded-none border-0 p-6 font-mono text-[14px] leading-relaxed focus-visible:ring-0 shadow-none bg-transparent"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950">
-                  <div className="border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-900">
-                    Preview Realtime
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30 dark:bg-slate-900/10">
-                    {formData.problemStatement ? (
-                      renderMarkdown(formData.problemStatement)
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-slate-400 italic text-sm">
-                        Chưa có nội dung để hiển thị
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <Textarea
+                  placeholder="Gõ Markdown tại đây..."
+                  value={formData.problemStatement || ""}
+                  onChange={(e) => handleFormChange({ problemStatement: e.target.value })}
+                  className="flex-1 resize-none rounded-none border-0 p-6 font-mono text-[15px] leading-relaxed focus-visible:ring-0 shadow-none bg-transparent"
+                />
               </div>
             </div>
           )}
@@ -368,7 +380,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           handleFormChange({ hiddenTestCases: newTc });
                           if (selectedTcIndex === idx) setSelectedTcIndex(null);
                         }}
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500">
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-opacity">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </button>
@@ -384,63 +396,67 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
               {/* Detail Form */}
               <div className="flex-1 rounded-xl border border-slate-200 bg-white shadow-sm p-8 dark:border-slate-800 dark:bg-slate-950">
                 {selectedTcIndex !== null && formData.hiddenTestCases?.[selectedTcIndex] ? (
-                  <div className="space-y-6 max-w-2xl">
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
-                      Chi tiết Hidden Test #{selectedTcIndex + 1}
-                    </h2>
+                  <div className="space-y-6 max-w-2xl animate-in fade-in">
+                    <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                        Thiết lập Test Case #{selectedTcIndex + 1}
+                      </h2>
+                    </div>
                     
-                    <div className="space-y-3">
-                      <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Đầu vào (Inputs - JSON Array format)
-                      </Label>
-                      <Input
-                        value={formData.hiddenTestCases[selectedTcIndex].inputs ? JSON.stringify(formData.hiddenTestCases[selectedTcIndex].inputs) : "[]"}
-                        onChange={(e) => {
-                          try {
-                            const arr = JSON.parse(e.target.value);
-                            if (Array.isArray(arr)) {
-                              const newTc = [...(formData.hiddenTestCases || [])];
-                              newTc[selectedTcIndex].inputs = arr.map(String);
-                              handleFormChange({ hiddenTestCases: newTc });
-                            }
-                          } catch {}
-                        }}
-                        className="h-12 font-mono text-sm shadow-sm"
-                        placeholder='Ví dụ: ["1", "2"] hoặc ["[1,2,3]", "4"]'
-                      />
-                      <p className="text-xs text-slate-500">Mỗi phần tử trong mảng đại diện cho một tham số truyền vào hàm.</p>
-                    </div>
+                    <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900/30 space-y-6">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                          Tham số Đầu vào (Input Array)
+                        </Label>
+                        <Input
+                          value={formData.hiddenTestCases[selectedTcIndex].inputs ? JSON.stringify(formData.hiddenTestCases[selectedTcIndex].inputs) : "[]"}
+                          onChange={(e) => {
+                            try {
+                              const arr = JSON.parse(e.target.value);
+                              if (Array.isArray(arr)) {
+                                const newTc = [...(formData.hiddenTestCases || [])];
+                                newTc[selectedTcIndex].inputs = arr.map(String);
+                                handleFormChange({ hiddenTestCases: newTc });
+                              }
+                            } catch {}
+                          }}
+                          className="h-12 font-mono text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
+                          placeholder='VD: ["1", "2"] hoặc ["[1,2,3]", "4"]'
+                        />
+                        <p className="text-xs text-slate-500 mt-1">Định dạng JSON Array. Mỗi phần tử tương ứng một tham số của hàm.</p>
+                      </div>
 
-                    <div className="space-y-3">
-                      <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Kết quả kỳ vọng (Expected Output)
-                      </Label>
-                      <Input
-                        value={formData.hiddenTestCases[selectedTcIndex].expectedOutput || ""}
-                        onChange={(e) => {
-                          const newTc = [...(formData.hiddenTestCases || [])];
-                          newTc[selectedTcIndex].expectedOutput = e.target.value;
-                          handleFormChange({ hiddenTestCases: newTc });
-                        }}
-                        className="h-12 font-mono text-sm shadow-sm"
-                        placeholder="Kết quả hàm trả về (string format)"
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                          Kết quả kỳ vọng (Expected Output)
+                        </Label>
+                        <Input
+                          value={formData.hiddenTestCases[selectedTcIndex].expectedOutput || ""}
+                          onChange={(e) => {
+                            const newTc = [...(formData.hiddenTestCases || [])];
+                            newTc[selectedTcIndex].expectedOutput = e.target.value;
+                            handleFormChange({ hiddenTestCases: newTc });
+                          }}
+                          className="h-12 font-mono text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
+                          placeholder="Chuỗi kết quả trả về"
+                        />
+                      </div>
 
-                    <div className="space-y-3">
-                      <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Trọng số điểm (Weight Points)
-                      </Label>
-                      <Input
-                        type="number"
-                        value={formData.hiddenTestCases[selectedTcIndex].weightPoints || 0}
-                        onChange={(e) => {
-                          const newTc = [...(formData.hiddenTestCases || [])];
-                          newTc[selectedTcIndex].weightPoints = parseInt(e.target.value) || 0;
-                          handleFormChange({ hiddenTestCases: newTc });
-                        }}
-                        className="h-12 max-w-[200px] text-sm shadow-sm"
-                      />
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                          Điểm số (Points)
+                        </Label>
+                        <Input
+                          type="number"
+                          value={formData.hiddenTestCases[selectedTcIndex].weightPoints || 0}
+                          onChange={(e) => {
+                            const newTc = [...(formData.hiddenTestCases || [])];
+                            newTc[selectedTcIndex].weightPoints = parseInt(e.target.value) || 0;
+                            handleFormChange({ hiddenTestCases: newTc });
+                          }}
+                          className="h-12 w-32 text-sm font-bold bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
+                        />
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -448,7 +464,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900">
                       <PlaySquare className="h-8 w-8 text-slate-300 dark:text-slate-700" />
                     </div>
-                    <p className="text-slate-500 font-medium">Chọn một Test Case bên trái để bắt đầu chỉnh sửa</p>
+                    <p className="text-slate-500 font-medium">Chọn một Test Case bên trái để thiết lập</p>
                   </div>
                 )}
               </div>
@@ -466,7 +482,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                   <p className="text-sm text-slate-500">Mã nguồn ban đầu hiển thị cho thí sinh trên trình biên dịch.</p>
                 </div>
                 <Select value={activeLang} onValueChange={setActiveLang}>
-                  <SelectTrigger className="w-[200px] h-10 font-semibold shadow-sm bg-white dark:bg-slate-950">
+                  <SelectTrigger className="w-[200px] h-10 font-semibold shadow-sm bg-white dark:bg-slate-950 focus:ring-indigo-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -504,88 +520,89 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
               </div>
             </div>
           )}
+        </div>
+      </div>
 
-          {/* TAB: SETTINGS */}
-          {activeTab === "settings" && (
-            <div className="animate-in fade-in max-w-3xl space-y-8">
-              <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-                <h2 className="mb-6 text-xl font-bold text-slate-900 dark:text-slate-100 border-b border-slate-100 pb-4 dark:border-slate-800">
-                  Giới hạn Môi trường Thực thi (Execution Limits)
-                </h2>
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Thời gian chạy tối đa (Time Limit)
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        value={formData.executionTimeLimitMs || 1000}
-                        onChange={(e) => handleFormChange({ executionTimeLimitMs: parseInt(e.target.value) || 1000 })}
-                        className="h-12 pl-4 pr-12 text-lg focus-visible:ring-indigo-500 shadow-sm font-mono"
-                      />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">ms</span>
-                    </div>
-                    <p className="text-sm text-slate-500">Khuyến nghị: 1000ms cho C++, 2000ms cho Java/Python</p>
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Bộ nhớ tối đa (Memory Limit)
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        value={formData.memoryLimitMb || 256}
-                        onChange={(e) => handleFormChange({ memoryLimitMb: parseInt(e.target.value) || 256 })}
-                        className="h-12 pl-4 pr-12 text-lg focus-visible:ring-indigo-500 shadow-sm font-mono"
-                      />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">MB</span>
-                    </div>
-                    <p className="text-sm text-slate-500">Khuyến nghị: 256MB hoặc 512MB</p>
+      {/* SETTINGS MODAL */}
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-xl font-bold">Cài đặt Bài tập</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2 dark:border-slate-800">
+                Môi trường Thực thi (Execution Limits)
+              </h3>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Thời gian tối đa</Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      value={formData.executionTimeLimitMs || 1000}
+                      onChange={(e) => handleFormChange({ executionTimeLimitMs: parseInt(e.target.value) || 1000 })}
+                      className="h-10 pl-3 pr-12 font-mono"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">ms</span>
                   </div>
                 </div>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-                <h2 className="mb-6 text-xl font-bold text-slate-900 dark:text-slate-100 border-b border-slate-100 pb-4 dark:border-slate-800">
-                  Cấu hình Hàm Chính (Main Function Signature)
-                </h2>
-                <div className="space-y-6">
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Kiểu trả về (Return Type)
-                    </Label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Bộ nhớ tối đa</Label>
+                  <div className="relative">
                     <Input
-                      value={formData.returnType || ""}
-                      onChange={(e) => handleFormChange({ returnType: e.target.value })}
-                      className="h-12 font-mono shadow-sm"
-                      placeholder="VD: int[], boolean, String..."
+                      type="number"
+                      value={formData.memoryLimitMb || 256}
+                      onChange={(e) => handleFormChange({ memoryLimitMb: parseInt(e.target.value) || 256 })}
+                      className="h-10 pl-3 pr-12 font-mono"
                     />
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Danh sách tham số (Param Types - JSON Array)
-                    </Label>
-                    <Input
-                      value={formData.paramTypes ? JSON.stringify(formData.paramTypes) : "[]"}
-                      onChange={(e) => {
-                        try {
-                          const arr = JSON.parse(e.target.value);
-                          if (Array.isArray(arr)) {
-                            handleFormChange({ paramTypes: arr.map(String) });
-                          }
-                        } catch {}
-                      }}
-                      className="h-12 font-mono shadow-sm"
-                      placeholder='VD: ["int[]", "int"]'
-                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">MB</span>
                   </div>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
+
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2 dark:border-slate-800">
+                Hàm Chính (Main Function)
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Kiểu trả về (Return Type)</Label>
+                  <Input
+                    value={formData.returnType || ""}
+                    onChange={(e) => handleFormChange({ returnType: e.target.value })}
+                    className="h-10 font-mono"
+                    placeholder="VD: int[], boolean..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Danh sách tham số (Param Types - JSON Array)</Label>
+                  <Input
+                    value={formData.paramTypes ? JSON.stringify(formData.paramTypes) : "[]"}
+                    onChange={(e) => {
+                      try {
+                        const arr = JSON.parse(e.target.value);
+                        if (Array.isArray(arr)) {
+                          handleFormChange({ paramTypes: arr.map(String) });
+                        }
+                      } catch {}
+                    }}
+                    className="h-10 font-mono"
+                    placeholder='VD: ["int[]", "int"]'
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <Button onClick={() => setIsSettingsOpen(false)} className="bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900">
+                Xong
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

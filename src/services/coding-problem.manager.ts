@@ -51,6 +51,30 @@ export class CodingProblemManager {
       };
     }
   }
+
+  /**
+   * Get a coding problem by ID
+   * GET /api/coding-problems/{id}
+   */
+  async getById(id: number | string): Promise<ApiResponse<CodingProblem>> {
+    try {
+      const response = await fetchClient.GET("/api/coding-problems/{id}", {
+        params: { path: { id: Number(id) } },
+      }).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      // @ts-expect-error: Backend Swagger schema mismatch
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to load coding problem details.",
+      };
+    }
+  }
+
   /**
    * Create a coding problem
    * POST /api/coding-problems
