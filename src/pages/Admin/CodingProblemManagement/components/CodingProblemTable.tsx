@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import type { CodingProblem } from "@/services/coding-problem.manager";
-import { Clock, Cpu, Edit2, PlayCircle, Trash2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
+import { Calendar, Clock, Cpu, Edit2, PlayCircle, Trash2 } from "lucide-react";
 
 interface CodingProblemTableProps {
   problems: CodingProblem[];
@@ -29,6 +31,7 @@ export function CodingProblemTable({ problems, onEdit, onDelete }: CodingProblem
               <th className="px-6 py-4 font-medium">Tiêu đề (Title)</th>
               <th className="px-6 py-4 font-medium">Limits</th>
               <th className="px-6 py-4 font-medium">Tests</th>
+              <th className="px-6 py-4 font-medium">Ngày tạo</th>
               <th className="px-6 py-4 text-right font-medium">Hành động</th>
             </tr>
           </thead>
@@ -70,9 +73,21 @@ export function CodingProblemTable({ problems, onEdit, onDelete }: CodingProblem
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400">
-                    <PlayCircle className="h-4 w-4" />
-                    {p.hiddenTestCases?.length || 0} Hidden
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                      <PlayCircle className="h-4 w-4" />
+                      {p.hiddenTestCases?.length || 0} Hidden
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      <PlayCircle className="h-3.5 w-3.5 opacity-50" />
+                      {p.visibleExamples?.length || 0} Visible
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <Calendar className="h-4 w-4" />
+                    {p.createdAt ? formatDistanceToNow(new Date(p.createdAt), { addSuffix: true, locale: vi }) : "N/A"}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">

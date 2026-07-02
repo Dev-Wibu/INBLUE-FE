@@ -71,8 +71,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
   // Monaco Editor State
   const [activeLang, setActiveLang] = useState("JAVA");
 
-  // Master-Detail State for Testcases
-  const [testCaseMode, setTestCaseMode] = useState<"hidden" | "visible">("visible");
+  // Testcases Master-Detail
   const [selectedTcIndex, setSelectedTcIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -152,7 +151,6 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
     }
   };
 
-  // Helper to map UPPERCASE keys to monaco supported languages
   const getMonacoLanguage = (langKey: string) => {
     switch (langKey) {
       case "JAVA": return "java";
@@ -181,6 +179,9 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
   }
 
   const isEditing = !!initialData?.id;
+
+  // Number of expected parameters
+  const paramCount = formData.paramTypes?.length || 0;
 
   return (
     <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
@@ -225,7 +226,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
         <div className="flex px-6 space-x-8">
           {[
             { id: "general", label: "Đề bài", icon: FileText },
-            { id: "testcases", label: "Test Cases", icon: PlaySquare },
+            { id: "testcases", label: "Test Cases Ẩn", icon: PlaySquare },
             { id: "codestubs", label: "Code Stubs", icon: Code2 },
           ].map((tab) => (
             <button
@@ -243,7 +244,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
               {tab.label}
               {tab.id === "testcases" && (
                 <span className="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800">
-                  {(formData.hiddenTestCases?.length || 0) + (formData.visibleExamples?.length || 0)}
+                  {formData.hiddenTestCases?.length || 0}
                 </span>
               )}
             </button>
@@ -253,74 +254,33 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
       {/* 3. MAIN WORKSPACE */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="mx-auto max-w-5xl h-full">
-          
-          {/* TAB: GENERAL */}
-          {activeTab === "general" && (
-            <div className="flex h-full flex-col space-y-6 animate-in fade-in slide-in-from-bottom-2">
-              <div className="flex items-end justify-between">
-                <div className="grid flex-1 grid-cols-[1fr_200px] gap-6 items-end">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Tiêu đề (Title)
-                    </Label>
-                    <Input
-                      value={formData.title || ""}
-                      onChange={(e) => handleFormChange({ title: e.target.value })}
-                      className="h-12 text-lg font-bold focus-visible:ring-indigo-500 shadow-sm"
-                      placeholder="Ví dụ: Two Sum"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Độ khó
-                    </Label>
-                    <Select
-                      value={formData.difficulty || "MEDIUM"}
-                      onValueChange={(val: "EASY" | "MEDIUM" | "HARD") =>
-                        handleFormChange({ difficulty: val })
-                      }>
-                      <SelectTrigger className="h-12 font-medium focus:ring-indigo-500 shadow-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="EASY">EASY</SelectItem>
-                        <SelectItem value="MEDIUM">MEDIUM</SelectItem>
-                        <SelectItem value="HARD">HARD</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+        {/* TAB: GENERAL (Full layout) */}
+        {activeTab === "general" && (
+          <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-2 pb-20">
+            {/* Header Form */}
+            <div className="flex items-end justify-between">
+              <div className="grid flex-1 grid-cols-[1fr_200px] gap-6 items-end">
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Tiêu đề (Title)
+                  </Label>
+                  <Input
+                    value={formData.title || ""}
+                    onChange={(e) => handleFormChange({ title: e.target.value })}
+                    className="h-12 text-lg font-bold focus-visible:ring-indigo-500 shadow-sm"
+                    placeholder="Ví dụ: Two Sum"
+                  />
                 </div>
-                <div className="ml-6">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="h-12 shadow-sm border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900"
-                  >
-                    <Settings2 className="mr-2 h-4 w-4 text-slate-500" />
-                    Cài đặt
-                  </Button>
-                </div>
-              </div>
-
-              {/* AI Magic Generator (Only when creating new) */}
-              {!isEditing && (
-                <div className="flex items-center gap-4 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 shadow-sm dark:border-indigo-900/50 dark:bg-indigo-950/20">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
-                    <Sparkles className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Gõ chủ đề vào đây (VD: Sắp xếp mảng) để AI tự động sinh Đề bài & Test Cases..."
-                      value={aiTopic}
-                      onChange={(e) => setAiTopic(e.target.value)}
-                      className="h-10 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 px-0 text-indigo-900 placeholder:text-indigo-300 dark:text-indigo-100 dark:placeholder:text-indigo-700/50 font-medium"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    Độ khó
+                  </Label>
                   <Select
-                    value={aiDifficulty}
-                    onValueChange={(val: "EASY" | "MEDIUM" | "HARD") => setAiDifficulty(val)}>
-                    <SelectTrigger className="w-[120px] h-10 bg-white dark:bg-slate-900 shadow-sm border-indigo-200 dark:border-indigo-800">
+                    value={formData.difficulty || "MEDIUM"}
+                    onValueChange={(val: "EASY" | "MEDIUM" | "HARD") =>
+                      handleFormChange({ difficulty: val })
+                    }>
+                    <SelectTrigger className="h-12 font-medium focus:ring-indigo-500 shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -329,333 +289,437 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       <SelectItem value="HARD">HARD</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button
-                    className="h-10 bg-indigo-600 hover:bg-indigo-700 px-6 shadow-sm"
-                    onClick={handleGenerateAI}
-                    disabled={aiLoading}>
-                    {aiLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    Tạo tự động
-                  </Button>
                 </div>
-              )}
+              </div>
+              <div className="ml-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="h-12 shadow-sm border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900"
+                >
+                  <Settings2 className="mr-2 h-4 w-4 text-slate-500" />
+                  Cài đặt Params & Limits
+                </Button>
+              </div>
+            </div>
 
-              {/* Markdown Editor (Single Frame) */}
-              <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950 min-h-[500px]">
-                <div className="border-b border-slate-100 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                  Nội dung Đề bài (Markdown)
+            {/* AI Magic Generator */}
+            {!isEditing && (
+              <div className="flex items-center gap-4 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 shadow-sm dark:border-indigo-900/50 dark:bg-indigo-950/20">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <Input
+                    placeholder="Gõ chủ đề vào đây (VD: Sắp xếp mảng) để AI tự động sinh Đề bài & Test Cases..."
+                    value={aiTopic}
+                    onChange={(e) => setAiTopic(e.target.value)}
+                    className="h-10 border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 px-0 text-indigo-900 placeholder:text-indigo-300 dark:text-indigo-100 dark:placeholder:text-indigo-700/50 font-medium"
+                  />
+                </div>
+                <Select
+                  value={aiDifficulty}
+                  onValueChange={(val: "EASY" | "MEDIUM" | "HARD") => setAiDifficulty(val)}>
+                  <SelectTrigger className="w-[120px] h-10 bg-white dark:bg-slate-900 shadow-sm border-indigo-200 dark:border-indigo-800">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EASY">EASY</SelectItem>
+                    <SelectItem value="MEDIUM">MEDIUM</SelectItem>
+                    <SelectItem value="HARD">HARD</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  className="h-10 bg-indigo-600 hover:bg-indigo-700 px-6 shadow-sm"
+                  onClick={handleGenerateAI}
+                  disabled={aiLoading}>
+                  {aiLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Tạo tự động
+                </Button>
+              </div>
+            )}
+
+            {/* Full Layout: Statement -> Examples -> Constraints */}
+            <div className="flex flex-col space-y-8 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              
+              {/* 1. Problem Statement */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Nội dung Đề bài (Markdown)</h3>
                 </div>
                 <Textarea
                   placeholder="Gõ Markdown tại đây..."
                   value={formData.problemStatement || ""}
                   onChange={(e) => handleFormChange({ problemStatement: e.target.value })}
-                  className="flex-1 resize-none rounded-none border-0 p-6 font-mono text-[15px] leading-relaxed focus-visible:ring-0 shadow-none bg-transparent"
+                  className="min-h-[300px] resize-y rounded-xl border border-slate-200 p-6 font-mono text-[15px] leading-relaxed focus-visible:ring-indigo-500 bg-slate-50 dark:bg-slate-900 dark:border-slate-800"
                 />
               </div>
-            </div>
-          )}
 
-          {/* TAB: TEST CASES (MASTER-DETAIL) */}
-          {activeTab === "testcases" && (
-            <div className="flex h-[700px] gap-6 animate-in fade-in slide-in-from-bottom-2">
-              {/* Master List */}
-              <div className="flex w-[320px] flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950">
-                <div className="flex flex-col border-b border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <h3 className="font-bold text-slate-700 dark:text-slate-300">Test Cases</h3>
+              {/* 2. Visible Examples */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Ví dụ Mẫu (Visible Examples)</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newTc = [...(formData.visibleExamples || []), { inputs: Array(paramCount).fill(""), output: "", explanation: "" }];
+                      handleFormChange({ visibleExamples: newTc });
+                    }}
+                    className="h-8 shadow-sm text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:border-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
+                    <Plus className="mr-1 h-4 w-4" /> Thêm Ví dụ
+                  </Button>
+                </div>
+                
+                <div className="space-y-6">
+                  {formData.visibleExamples?.map((ex, exIdx) => (
+                    <div key={exIdx} className="relative rounded-xl border border-slate-200 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900/30">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newTc = [...(formData.visibleExamples || [])];
+                          newTc.splice(exIdx, 1);
+                          handleFormChange({ visibleExamples: newTc });
+                        }}
+                        className="absolute right-4 top-4 h-8 w-8 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-4">Example {exIdx + 1}</h4>
+                      
+                      <div className="grid gap-6">
+                        {/* Inputs Dynamic */}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold text-slate-600 dark:text-slate-400">Tham số Đầu vào (Input)</Label>
+                          {paramCount === 0 ? (
+                            <p className="text-sm italic text-slate-400">Vui lòng thiết lập Param Types trong phần Cài đặt.</p>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {formData.paramTypes?.map((paramType, pIdx) => (
+                                <div key={pIdx} className="space-y-1">
+                                  <div className="text-xs font-mono text-slate-500">Param {pIdx + 1} <span className="text-indigo-500">({paramType})</span></div>
+                                  <Input
+                                    value={ex.inputs?.[pIdx] || ""}
+                                    onChange={(e) => {
+                                      const newTc = [...(formData.visibleExamples || [])];
+                                      if (!newTc[exIdx].inputs) newTc[exIdx].inputs = Array(paramCount).fill("");
+                                      newTc[exIdx].inputs[pIdx] = e.target.value;
+                                      handleFormChange({ visibleExamples: newTc });
+                                    }}
+                                    className="font-mono bg-white dark:bg-slate-950"
+                                    placeholder={`Giá trị cho ${paramType}`}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Expected Output */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+                            Kết quả (Output) <span className="text-xs font-normal text-slate-400">- Kiểu {formData.returnType || "?"}</span>
+                          </Label>
+                          <Input
+                            value={ex.output || ""}
+                            onChange={(e) => {
+                              const newTc = [...(formData.visibleExamples || [])];
+                              newTc[exIdx].output = e.target.value;
+                              handleFormChange({ visibleExamples: newTc });
+                            }}
+                            className="font-mono bg-white dark:bg-slate-950 max-w-md"
+                            placeholder="Giá trị trả về"
+                          />
+                        </div>
+
+                        {/* Explanation */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-slate-600 dark:text-slate-400">Giải thích (Explanation)</Label>
+                          <Textarea
+                            value={ex.explanation || ""}
+                            onChange={(e) => {
+                              const newTc = [...(formData.visibleExamples || [])];
+                              newTc[exIdx].explanation = e.target.value;
+                              handleFormChange({ visibleExamples: newTc });
+                            }}
+                            className="resize-none h-20 bg-white dark:bg-slate-950"
+                            placeholder="Giải thích vì sao có kết quả này..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {(!formData.visibleExamples || formData.visibleExamples.length === 0) && (
+                    <div className="rounded-xl border border-dashed border-slate-300 py-12 text-center dark:border-slate-800">
+                      <p className="text-sm text-slate-500">Chưa có ví dụ mẫu nào.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 3. Rules & Constraints */}
+              <div className="space-y-4 pt-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Điều kiện & Giới hạn (Constraints)</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleFormChange({ rulesAndConstraints: [...(formData.rulesAndConstraints || []), ""] });
+                    }}
+                    className="h-8 shadow-sm text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:border-emerald-900/50 dark:text-emerald-400 dark:hover:bg-emerald-900/30">
+                    <Plus className="mr-1 h-4 w-4" /> Thêm Điều kiện
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {formData.rulesAndConstraints?.map((rule, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 font-mono text-sm font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        {idx + 1}
+                      </div>
+                      <Input
+                        value={rule}
+                        onChange={(e) => {
+                          const newRules = [...(formData.rulesAndConstraints || [])];
+                          newRules[idx] = e.target.value;
+                          handleFormChange({ rulesAndConstraints: newRules });
+                        }}
+                        className="font-mono bg-slate-50 dark:bg-slate-900"
+                        placeholder="VD: 2 <= nums.length <= 10^4"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newRules = [...(formData.rulesAndConstraints || [])];
+                          newRules.splice(idx, 1);
+                          handleFormChange({ rulesAndConstraints: newRules });
+                        }}
+                        className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(!formData.rulesAndConstraints || formData.rulesAndConstraints.length === 0) && (
+                    <div className="py-6 text-center text-sm italic text-slate-400">Chưa có điều kiện nào.</div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* TAB: TEST CASES (Hidden only) */}
+        {activeTab === "testcases" && (
+          <div className="flex h-[750px] gap-6 animate-in fade-in slide-in-from-bottom-2">
+            {/* Master List */}
+            <div className="flex w-[320px] flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950">
+              <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                <h3 className="font-bold text-slate-700 dark:text-slate-300">Test Cases Ẩn</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    const newTc = [...(formData.hiddenTestCases || []), { inputs: Array(paramCount).fill(""), expectedOutput: "", weightPoints: 10 }];
+                    handleFormChange({ hiddenTestCases: newTc });
+                    setSelectedTcIndex(newTc.length - 1);
+                  }}
+                  className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                {formData.hiddenTestCases?.map((tc, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedTcIndex(idx)}
+                    className={`group flex w-full items-center justify-between rounded-lg px-3 py-3 text-left transition-colors ${
+                      selectedTcIndex === idx
+                        ? "bg-indigo-50 ring-1 ring-indigo-200 dark:bg-indigo-900/30 dark:ring-indigo-800"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-900"
+                    }`}>
+                    <div>
+                      <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                        Hidden Test #{idx + 1}
+                      </div>
+                      <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1">
+                        {tc.weightPoints} Điểm
+                      </div>
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => {
-                        if (testCaseMode === "hidden") {
-                          const newTc = [...(formData.hiddenTestCases || []), { inputs: [""], expectedOutput: "", weightPoints: 10 }];
-                          handleFormChange({ hiddenTestCases: newTc });
-                          setSelectedTcIndex(newTc.length - 1);
-                        } else {
-                          const newTc = [...(formData.visibleExamples || []), { inputs: [""], output: "", explanation: "" }];
-                          handleFormChange({ visibleExamples: newTc });
-                          setSelectedTcIndex(newTc.length - 1);
-                        }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newTc = [...(formData.hiddenTestCases || [])];
+                        newTc.splice(idx, 1);
+                        handleFormChange({ hiddenTestCases: newTc });
+                        if (selectedTcIndex === idx) setSelectedTcIndex(null);
                       }}
-                      className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
-                      <Plus className="h-4 w-4" />
+                      className="h-7 w-7 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-opacity">
+                      <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                  {/* Toggle Mode */}
-                  <div className="flex px-2 pb-2">
-                    <div className="flex w-full rounded-md bg-slate-200/50 p-1 dark:bg-slate-800/50">
-                      <button
-                        onClick={() => { setTestCaseMode("visible"); setSelectedTcIndex(null); }}
-                        className={`flex-1 rounded text-xs font-semibold py-1.5 transition-all ${
-                          testCaseMode === "visible" ? "bg-white shadow-sm text-slate-900 dark:bg-slate-700 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
-                        }`}>
-                        Ví dụ mẫu ({formData.visibleExamples?.length || 0})
-                      </button>
-                      <button
-                        onClick={() => { setTestCaseMode("hidden"); setSelectedTcIndex(null); }}
-                        className={`flex-1 rounded text-xs font-semibold py-1.5 transition-all ${
-                          testCaseMode === "hidden" ? "bg-white shadow-sm text-slate-900 dark:bg-slate-700 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
-                        }`}>
-                        Test Ẩn ({formData.hiddenTestCases?.length || 0})
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                  {testCaseMode === "hidden" && formData.hiddenTestCases?.map((tc, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedTcIndex(idx)}
-                      className={`group flex w-full items-center justify-between rounded-lg px-3 py-3 text-left transition-colors ${
-                        selectedTcIndex === idx
-                          ? "bg-indigo-50 ring-1 ring-indigo-200 dark:bg-indigo-900/30 dark:ring-indigo-800"
-                          : "hover:bg-slate-50 dark:hover:bg-slate-900"
-                      }`}>
-                      <div>
-                        <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-                          Hidden Test #{idx + 1}
-                        </div>
-                        <div className="text-xs text-slate-500 mt-0.5 line-clamp-1 font-mono">
-                          {tc.inputs ? JSON.stringify(tc.inputs) : "[]"}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newTc = [...(formData.hiddenTestCases || [])];
-                          newTc.splice(idx, 1);
-                          handleFormChange({ hiddenTestCases: newTc });
-                          if (selectedTcIndex === idx) setSelectedTcIndex(null);
-                        }}
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </button>
-                  ))}
-
-                  {testCaseMode === "visible" && formData.visibleExamples?.map((tc, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedTcIndex(idx)}
-                      className={`group flex w-full items-center justify-between rounded-lg px-3 py-3 text-left transition-colors ${
-                        selectedTcIndex === idx
-                          ? "bg-indigo-50 ring-1 ring-indigo-200 dark:bg-indigo-900/30 dark:ring-indigo-800"
-                          : "hover:bg-slate-50 dark:hover:bg-slate-900"
-                      }`}>
-                      <div>
-                        <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-                          Example #{idx + 1}
-                        </div>
-                        <div className="text-xs text-slate-500 mt-0.5 line-clamp-1 font-mono">
-                          {tc.inputs ? JSON.stringify(tc.inputs) : "[]"}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const newTc = [...(formData.visibleExamples || [])];
-                          newTc.splice(idx, 1);
-                          handleFormChange({ visibleExamples: newTc });
-                          if (selectedTcIndex === idx) setSelectedTcIndex(null);
-                        }}
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-opacity">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </button>
-                  ))}
-
-                  {testCaseMode === "hidden" && (!formData.hiddenTestCases || formData.hiddenTestCases.length === 0) && (
-                    <div className="py-8 text-center text-sm italic text-slate-400">Chưa có Test Case Ẩn</div>
-                  )}
-                  {testCaseMode === "visible" && (!formData.visibleExamples || formData.visibleExamples.length === 0) && (
-                    <div className="py-8 text-center text-sm italic text-slate-400">Chưa có Ví dụ Mẫu</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Detail Form */}
-              <div className="flex-1 rounded-xl border border-slate-200 bg-white shadow-sm p-8 dark:border-slate-800 dark:bg-slate-950">
-                {selectedTcIndex !== null ? (
-                  <div className="space-y-6 max-w-2xl animate-in fade-in">
-                    <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                        {testCaseMode === "hidden" ? `Thiết lập Hidden Test #${selectedTcIndex + 1}` : `Thiết lập Example #${selectedTcIndex + 1}`}
-                      </h2>
-                    </div>
-                    
-                    <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900/30 space-y-6">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                          Tham số Đầu vào (Input Array)
-                        </Label>
-                        <Input
-                          value={
-                            testCaseMode === "hidden"
-                              ? formData.hiddenTestCases?.[selectedTcIndex]?.inputs ? JSON.stringify(formData.hiddenTestCases[selectedTcIndex].inputs) : "[]"
-                              : formData.visibleExamples?.[selectedTcIndex]?.inputs ? JSON.stringify(formData.visibleExamples[selectedTcIndex].inputs) : "[]"
-                          }
-                          onChange={(e) => {
-                            try {
-                              const arr = JSON.parse(e.target.value);
-                              if (Array.isArray(arr)) {
-                                if (testCaseMode === "hidden") {
-                                  const newTc = [...(formData.hiddenTestCases || [])];
-                                  if (newTc[selectedTcIndex]) newTc[selectedTcIndex].inputs = arr.map(String);
-                                  handleFormChange({ hiddenTestCases: newTc });
-                                } else {
-                                  const newTc = [...(formData.visibleExamples || [])];
-                                  if (newTc[selectedTcIndex]) newTc[selectedTcIndex].inputs = arr.map(String);
-                                  handleFormChange({ visibleExamples: newTc });
-                                }
-                              }
-                            } catch {}
-                          }}
-                          className="h-12 font-mono text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
-                          placeholder='VD: ["1", "2"]'
-                        />
-                        <p className="text-xs text-slate-500 mt-1">Định dạng JSON Array. Mỗi phần tử tương ứng một tham số của hàm.</p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                          Kết quả kỳ vọng (Expected Output)
-                        </Label>
-                        <Input
-                          value={
-                            testCaseMode === "hidden"
-                              ? formData.hiddenTestCases?.[selectedTcIndex]?.expectedOutput || ""
-                              : formData.visibleExamples?.[selectedTcIndex]?.output || ""
-                          }
-                          onChange={(e) => {
-                            if (testCaseMode === "hidden") {
-                              const newTc = [...(formData.hiddenTestCases || [])];
-                              if (newTc[selectedTcIndex]) newTc[selectedTcIndex].expectedOutput = e.target.value;
-                              handleFormChange({ hiddenTestCases: newTc });
-                            } else {
-                              const newTc = [...(formData.visibleExamples || [])];
-                              if (newTc[selectedTcIndex]) newTc[selectedTcIndex].output = e.target.value;
-                              handleFormChange({ visibleExamples: newTc });
-                            }
-                          }}
-                          className="h-12 font-mono text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
-                          placeholder="Chuỗi kết quả trả về"
-                        />
-                      </div>
-
-                      {testCaseMode === "hidden" ? (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            Điểm số (Points)
-                          </Label>
-                          <Input
-                            type="number"
-                            value={formData.hiddenTestCases?.[selectedTcIndex]?.weightPoints || 0}
-                            onChange={(e) => {
-                              const newTc = [...(formData.hiddenTestCases || [])];
-                              if (newTc[selectedTcIndex]) newTc[selectedTcIndex].weightPoints = parseInt(e.target.value) || 0;
-                              handleFormChange({ hiddenTestCases: newTc });
-                            }}
-                            className="h-12 w-32 text-sm font-bold bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
-                          />
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            Giải thích (Explanation)
-                          </Label>
-                          <Textarea
-                            value={formData.visibleExamples?.[selectedTcIndex]?.explanation || ""}
-                            onChange={(e) => {
-                              const newTc = [...(formData.visibleExamples || [])];
-                              if (newTc[selectedTcIndex]) newTc[selectedTcIndex].explanation = e.target.value;
-                              handleFormChange({ visibleExamples: newTc });
-                            }}
-                            className="resize-none h-24 text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
-                            placeholder="Giải thích vì sao có kết quả này để thí sinh hiểu rõ hơn..."
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center space-y-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900">
-                      <PlaySquare className="h-8 w-8 text-slate-300 dark:text-slate-700" />
-                    </div>
-                    <p className="text-slate-500 font-medium">Chọn một mục bên trái để thiết lập</p>
+                  </button>
+                ))}
+                {(!formData.hiddenTestCases || formData.hiddenTestCases.length === 0) && (
+                  <div className="py-8 text-center text-sm italic text-slate-400">
+                    Chưa có Test Case Ẩn
                   </div>
                 )}
               </div>
             </div>
-          )}
 
-          {/* TAB: CODE STUBS */}
-          {activeTab === "codestubs" && (
-            <div className="animate-in fade-in flex h-[700px] flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950">
-              <div className="flex items-center justify-between bg-slate-50 px-6 py-4 border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                    Mã nguồn Mẫu (Code Stubs)
-                  </h2>
-                  <p className="text-sm text-slate-500">Mã nguồn ban đầu hiển thị cho thí sinh trên trình biên dịch.</p>
+            {/* Detail Form */}
+            <div className="flex-1 rounded-xl border border-slate-200 bg-white shadow-sm p-8 dark:border-slate-800 dark:bg-slate-950">
+              {selectedTcIndex !== null && formData.hiddenTestCases?.[selectedTcIndex] ? (
+                <div className="space-y-6 animate-in fade-in max-w-4xl">
+                  <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                      Thiết lập Hidden Test #{selectedTcIndex + 1}
+                    </h2>
+                  </div>
+                  
+                  <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900/30 space-y-8">
+                    
+                    {/* Inputs Dynamic */}
+                    <div className="space-y-4">
+                      <Label className="text-base font-bold text-slate-700 dark:text-slate-300">Tham số Đầu vào (Input)</Label>
+                      {paramCount === 0 ? (
+                        <p className="text-sm italic text-slate-400">Vui lòng thiết lập Param Types trong phần Cài đặt.</p>
+                      ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {formData.paramTypes?.map((paramType, pIdx) => (
+                            <div key={pIdx} className="space-y-2">
+                              <div className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+                                Tham số {pIdx + 1} <span className="font-mono text-indigo-500 ml-1 bg-indigo-50 px-1.5 py-0.5 rounded dark:bg-indigo-900/30">{paramType}</span>
+                              </div>
+                              <Textarea
+                                value={formData.hiddenTestCases![selectedTcIndex].inputs?.[pIdx] || ""}
+                                onChange={(e) => {
+                                  const newTc = [...(formData.hiddenTestCases || [])];
+                                  if (!newTc[selectedTcIndex].inputs) newTc[selectedTcIndex].inputs = Array(paramCount).fill("");
+                                  newTc[selectedTcIndex].inputs[pIdx] = e.target.value;
+                                  handleFormChange({ hiddenTestCases: newTc });
+                                }}
+                                className="font-mono bg-white dark:bg-slate-950 resize-y h-24"
+                                placeholder={`Dữ liệu cho ${paramType}`}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+                      <div className="space-y-2">
+                        <Label className="text-base font-bold text-slate-700 dark:text-slate-300">
+                          Kết quả kỳ vọng (Expected Output)
+                        </Label>
+                        <Input
+                          value={formData.hiddenTestCases[selectedTcIndex].expectedOutput || ""}
+                          onChange={(e) => {
+                            const newTc = [...(formData.hiddenTestCases || [])];
+                            newTc[selectedTcIndex].expectedOutput = e.target.value;
+                            handleFormChange({ hiddenTestCases: newTc });
+                          }}
+                          className="h-12 font-mono text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
+                          placeholder={`Kiểu dữ liệu: ${formData.returnType || "?"}`}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-base font-bold text-slate-700 dark:text-slate-300">
+                          Điểm số (Points)
+                        </Label>
+                        <Input
+                          type="number"
+                          value={formData.hiddenTestCases[selectedTcIndex].weightPoints || 0}
+                          onChange={(e) => {
+                            const newTc = [...(formData.hiddenTestCases || [])];
+                            newTc[selectedTcIndex].weightPoints = parseInt(e.target.value) || 0;
+                            handleFormChange({ hiddenTestCases: newTc });
+                          }}
+                          className="h-12 w-full text-sm font-bold bg-white dark:bg-slate-950 focus-visible:ring-indigo-500 text-emerald-600 dark:text-emerald-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Select value={activeLang} onValueChange={setActiveLang}>
-                  <SelectTrigger className="w-[200px] h-10 font-semibold shadow-sm bg-white dark:bg-slate-950 focus:ring-indigo-500">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="JAVA">Java</SelectItem>
-                    <SelectItem value="PYTHON">Python</SelectItem>
-                    <SelectItem value="CPP">C++</SelectItem>
-                    <SelectItem value="JS">JavaScript</SelectItem>
-                    <SelectItem value="TYPESCRIPT">TypeScript</SelectItem>
-                    <SelectItem value="GO">Go</SelectItem>
-                    <SelectItem value="CSHARP">C#</SelectItem>
-                    <SelectItem value="SCALA">Scala</SelectItem>
-                    <SelectItem value="SWIFT">Swift</SelectItem>
-                    <SelectItem value="KOTLIN">Kotlin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1 relative">
-                <Editor
-                  height="100%"
-                  language={getMonacoLanguage(activeLang)}
-                  theme="vs-dark"
-                  value={formData.codeStubs?.[activeLang] || ""}
-                  onChange={(val) => {
-                    handleFormChange({
-                      codeStubs: { ...formData.codeStubs, [activeLang]: val || "" },
-                    });
-                  }}
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 15,
-                    lineHeight: 26,
-                    padding: { top: 24 },
-                    fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
-                    scrollBeyondLastLine: false,
-                    smoothScrolling: true,
-                    cursorBlinking: "smooth",
-                    cursorSmoothCaretAnimation: "on",
-                    formatOnPaste: true,
-                  }}
-                />
-              </div>
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center space-y-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900">
+                    <PlaySquare className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+                  </div>
+                  <p className="text-slate-500 font-medium">Chọn một Test Case bên trái để thiết lập</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* TAB: CODE STUBS */}
+        {activeTab === "codestubs" && (
+          <div className="animate-in fade-in flex h-[750px] flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950">
+            <div className="flex items-center justify-between bg-slate-50 px-6 py-4 border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  Mã nguồn Mẫu (Code Stubs)
+                </h2>
+                <p className="text-sm text-slate-500">Mã nguồn ban đầu hiển thị cho thí sinh trên trình biên dịch.</p>
+              </div>
+              <Select value={activeLang} onValueChange={setActiveLang}>
+                <SelectTrigger className="w-[200px] h-10 font-semibold shadow-sm bg-white dark:bg-slate-950 focus:ring-indigo-500">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="JAVA">Java</SelectItem>
+                  <SelectItem value="PYTHON">Python</SelectItem>
+                  <SelectItem value="CPP">C++</SelectItem>
+                  <SelectItem value="JS">JavaScript</SelectItem>
+                  <SelectItem value="TYPESCRIPT">TypeScript</SelectItem>
+                  <SelectItem value="GO">Go</SelectItem>
+                  <SelectItem value="CSHARP">C#</SelectItem>
+                  <SelectItem value="SCALA">Scala</SelectItem>
+                  <SelectItem value="SWIFT">Swift</SelectItem>
+                  <SelectItem value="KOTLIN">Kotlin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1 relative">
+              <Editor
+                height="100%"
+                language={getMonacoLanguage(activeLang)}
+                theme="vs-dark"
+                value={formData.codeStubs?.[activeLang] || ""}
+                onChange={(val) => {
+                  handleFormChange({
+                    codeStubs: { ...formData.codeStubs, [activeLang]: val || "" },
+                  });
+                }}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 15,
+                  lineHeight: 26,
+                  padding: { top: 24 },
+                  fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
+                  scrollBeyondLastLine: false,
+                  smoothScrolling: true,
+                  cursorBlinking: "smooth",
+                  cursorSmoothCaretAnimation: "on",
+                  formatOnPaste: true,
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* SETTINGS MODAL */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader className="mb-4">
-            <DialogTitle className="text-xl font-bold">Cài đặt Bài tập</DialogTitle>
+            <DialogTitle className="text-xl font-bold">Cài đặt Môi trường & Hàm</DialogTitle>
           </DialogHeader>
           <div className="space-y-8">
             <div className="space-y-4">
@@ -694,54 +758,66 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
               <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2 dark:border-slate-800">
                 Hàm Chính (Main Function)
               </h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Kiểu trả về (Return Type)</Label>
-                  <Input
-                    value={formData.returnType || ""}
-                    onChange={(e) => handleFormChange({ returnType: e.target.value })}
-                    className="h-10 font-mono"
-                    placeholder="VD: int[], boolean..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Danh sách tham số (JSON Array)</Label>
-                  <Input
-                    value={formData.paramTypes ? JSON.stringify(formData.paramTypes) : "[]"}
-                    onChange={(e) => {
-                      try {
-                        const arr = JSON.parse(e.target.value);
-                        if (Array.isArray(arr)) {
-                          handleFormChange({ paramTypes: arr.map(String) });
-                        }
-                      } catch {}
-                    }}
-                    className="h-10 font-mono"
-                    placeholder='VD: ["int[]", "int"]'
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2 dark:border-slate-800">
-                Quy tắc & Giới hạn (Rules & Constraints)
-              </h3>
+              
               <div className="space-y-2">
-                <Label className="text-sm font-semibold">Danh sách quy tắc (JSON Array)</Label>
-                <Textarea
-                  value={formData.rulesAndConstraints ? JSON.stringify(formData.rulesAndConstraints, null, 2) : "[]"}
-                  onChange={(e) => {
-                    try {
-                      const arr = JSON.parse(e.target.value);
-                      if (Array.isArray(arr)) {
-                        handleFormChange({ rulesAndConstraints: arr.map(String) });
-                      }
-                    } catch {}
-                  }}
-                  className="h-32 font-mono"
-                  placeholder='VD: ["2 <= nums.length <= 10^4", "Chỉ tồn tại duy nhất một đáp án"]'
+                <Label className="text-sm font-semibold">Kiểu trả về (Return Type)</Label>
+                <Input
+                  value={formData.returnType || ""}
+                  onChange={(e) => handleFormChange({ returnType: e.target.value })}
+                  className="h-10 font-mono w-1/2"
+                  placeholder="VD: int[], boolean..."
                 />
+              </div>
+
+              <div className="space-y-3 pt-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">Danh sách tham số (Param Types)</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleFormChange({ paramTypes: [...(formData.paramTypes || []), ""] });
+                    }}
+                    className="h-8 shadow-sm">
+                    <Plus className="mr-1 h-4 w-4" /> Thêm Tham số
+                  </Button>
+                </div>
+                
+                <div className="grid gap-3">
+                  {formData.paramTypes?.map((param, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="flex h-10 items-center px-3 rounded-lg bg-slate-100 text-sm font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400 whitespace-nowrap">
+                        Param {idx + 1}
+                      </div>
+                      <Input
+                        value={param}
+                        onChange={(e) => {
+                          const newParams = [...(formData.paramTypes || [])];
+                          newParams[idx] = e.target.value;
+                          handleFormChange({ paramTypes: newParams });
+                        }}
+                        className="font-mono bg-slate-50 dark:bg-slate-900"
+                        placeholder="VD: int[], String"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newParams = [...(formData.paramTypes || [])];
+                          newParams.splice(idx, 1);
+                          handleFormChange({ paramTypes: newParams });
+                        }}
+                        className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(!formData.paramTypes || formData.paramTypes.length === 0) && (
+                    <div className="py-4 text-center text-sm italic text-slate-400 border border-dashed border-slate-200 rounded-lg dark:border-slate-800">
+                      Chưa có tham số nào. Bấm "Thêm Tham số" để tạo.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
