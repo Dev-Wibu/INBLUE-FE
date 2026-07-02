@@ -1,5 +1,4 @@
 import { PaginationControl } from "@/components/shared";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,18 +20,18 @@ import { SpinnerBlock } from "@/components/ui/spinner";
 import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
-import { formatDate } from "@/lib/formatting";
 import { cn, extractDataArray } from "@/lib/utils";
 import {
   codeReviewProblemManager,
   type CodeReviewProblem,
 } from "@/services/code-review-problem.manager";
 import { useThemeStore } from "@/stores/themeStore";
-import { AlertTriangle, Bot, FileCode2, Lightbulb, Loader2, Pencil, Plus } from "lucide-react";
+import { AlertTriangle, ChevronLeft, FileCode2, Lightbulb, Pencil, Plus, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { CodeReviewProblemBuilder } from "./components/CodeReviewProblemBuilder";
+import { CodeReviewProblemTable } from "./components/CodeReviewProblemTable";
 
 type ViewState =
   | { mode: "list" }
@@ -47,6 +46,9 @@ type SortableProblem = CodeReviewProblem & {
   createdAtSortValue: number;
 };
 
+type Difficulty = "ALL" | "EASY" | "MEDIUM" | "HARD";
+type SortKey = "newest" | "oldest" | "title_asc" | "title_desc";
+
 export function CodeReviewProblemManagementPage() {
   const { t } = useTranslation();
   const monacoTheme = useMonacoTheme();
@@ -57,12 +59,13 @@ export function CodeReviewProblemManagementPage() {
   const [view, setView] = useState<ViewState>({ mode: "list" });
   const [problems, setProblems] = useState<CodeReviewProblem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [, setIsReloading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [difficultyFilter, setDifficultyFilter] = useState<Difficulty>("ALL");
+  const [sort, setSort] = useState<SortKey>("newest");
   const [selectedProblem, setSelectedProblem] = useState<CodeReviewProblem | null>(null);
   const [viewActiveFileIdx, setViewActiveFileIdx] = useState<number>(0);
-  const [expandedIssues, setExpandedIssues] = useState<Record<string, boolean>>({});
+  const [, setExpandedIssues] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (selectedProblem) {
@@ -72,12 +75,10 @@ export function CodeReviewProblemManagementPage() {
   }, [selectedProblem]);
 
   const loadProblems = useCallback(
-    async (showReloading = false) => {
-      if (showReloading) {
-        setIsReloading(true);
-      } else {
-        setIsLoading(true);
-      }
+    async (showRefreshing = false) => {
+      if (showRefreshing) setIsRefreshing(true);
+      else setIsLoading(true);
+
       try {
         const response = await codeReviewProblemManager.getAll();
         if (response.success && response.data) {
@@ -89,11 +90,8 @@ export function CodeReviewProblemManagementPage() {
       } catch {
         toast.error(t("common.unableToLoadArticleList"));
       } finally {
-        if (showReloading) {
-          setIsReloading(false);
-        } else {
-          setIsLoading(false);
-        }
+        if (showRefreshing) setIsRefreshing(false);
+        else setIsLoading(false);
       }
     },
     [t]
@@ -119,20 +117,26 @@ export function CodeReviewProblemManagementPage() {
     tieBreaker: { key: "idSortValue", direction: "desc" },
   });
 
-  const [pageSize, setPageSize] = useHybridPageSize({
-    key: "src_pages_admin_codereviewproblemmanagement_page_pagesize",
-    defaultPageSize: 10,
-  });
-
-  const pagination = usePagination({ totalCount: sortedData.length, pageSize });
-  const pageItems = useMemo(
-    () => sortedData.slice(pagination.startIndex, pagination.endIndex + 1),
-    [pagination.endIndex, pagination.startIndex, sortedData]
-  );
-
-  const filteredProblems = useMemo(() => {
-    return problems.filter((problem) => {
-      if (difficultyFilter !== "all" && problem.difficulty !== difficultyFilter) {
+  const processedData = useMemo(() => {
+    // 1. Sort override based on SortKey
+    let sorted = [...sortedData];
+    switch (sort) {
+      case "newest":
+        sorted.sort((a, b) => b.createdAtSortValue - a.createdAtSortValue);
+        break;
+      case "oldest":
+        sorted.sort((a, b) => a.createdAtSortValue - b.createdAtSortValue);
+        break;
+      case "title_asc":
+        sorted.sort((a, b) => a.titleSortValue.localeCompare(b.titleSortValue));
+        break;
+      case "title_desc":
+        sorted.sort((a, b) => b.titleSortValue.localeCompare(a.titleSortValue));
+        break;
+    }
+    // 2. Filter
+    return sorted.filter((problem) => {
+      if (difficultyFilter !== "ALL" && problem.difficulty !== difficultyFilter) {
         return false;
       }
       if (searchQuery) {
@@ -145,52 +149,60 @@ export function CodeReviewProblemManagementPage() {
       }
       return true;
     });
-  }, [problems, searchQuery, difficultyFilter]);
+  }, [sortedData, sort, difficultyFilter, searchQuery]);
 
-  const getDifficultyBadge = (difficulty?: string) => {
-    switch (difficulty) {
-      case "EASY":
-        return {
-          label: t("common.easy"),
-          className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-        };
-      case "MEDIUM":
-        return {
-          label: t("common.medium"),
-          className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-        };
-      case "HARD":
-        return {
-          label: t("common.hard"),
-          className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-        };
-      default:
-        return {
-          label: difficulty || "-",
-          className: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
-        };
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_admin_codereviewproblemmanagement_page_pagesize",
+    defaultPageSize: 10,
+  });
+
+  const pagination = usePagination({ totalCount: processedData.length, pageSize });
+  const pageItems = useMemo(
+    () => processedData.slice(pagination.startIndex, pagination.endIndex + 1),
+    [pagination.endIndex, pagination.startIndex, processedData]
+  );
+
+  const handleToggleStatus = async (problem: CodeReviewProblem, isActive: boolean) => {
+    // Optimistic UI update
+    setProblems((prev) =>
+      prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: !isActive } : p))
+    );
+    try {
+      const res = await codeReviewProblemManager.update(problem.id, { ...problem, isDeleted: !isActive });
+      if (!res.success) {
+        toast.error(res.error || "Không thể cập nhật trạng thái");
+        setProblems((prev) =>
+          prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: isActive } : p))
+        );
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi");
+      setProblems((prev) =>
+        prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: isActive } : p))
+      );
     }
   };
 
   const handleViewDetail = (problem: CodeReviewProblem) => {
     setSelectedProblem(problem);
+    setView({ mode: "detail", problemId: problem.id });
   };
 
   const handleBack = () => {
+    setSelectedProblem(null);
     setView({ mode: "list" });
   };
 
-  const handleEditProblem = () => {
-    if (selectedProblem) {
-      setView({ mode: "edit", problem: selectedProblem });
-    }
+  const handleEditProblem = (problem: CodeReviewProblem) => {
+    setView({ mode: "edit", problem });
   };
 
-  if (view.mode === "create") {
+  if (view.mode === "create" || view.mode === "edit") {
     return (
       <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         <div className="flex-1 overflow-hidden">
           <CodeReviewProblemBuilder
+            initialData={view.mode === "edit" ? view.problem : undefined}
             onSuccess={() => {
               handleBack();
               void loadProblems(true);
@@ -202,290 +214,246 @@ export function CodeReviewProblemManagementPage() {
     );
   }
 
-  if (view.mode === "edit") {
+  if (view.mode === "detail" && selectedProblem) {
     return (
-      <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-        <div className="flex-1 overflow-hidden">
-          <CodeReviewProblemBuilder
-            initialData={view.problem}
-            onSuccess={() => {
-              handleBack();
-              void loadProblems(true);
-            }}
-            onCancel={handleBack}
-          />
-        </div>
-      </div>
-    );
-  }
+      <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white p-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleBack}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              {selectedProblem.title}
+            </h2>
+          </div>
 
-  return (
-    <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
-      {/* Header & Toolbar */}
-      <div className="z-10 shrink-0 border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              <Bot className="h-5 w-5 text-indigo-500" />
-              {t("adminCodeReviewProblem.pageTitle") || t("adminCodeReviewProblem.pageTitle")}
-            </h1>
+          <div className="flex items-center gap-2">
+            {selectedProblem.problemStatement && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20">
+                    <Lightbulb className="h-4 w-4" />
+                    Đề bài
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-xl">
+                      <Lightbulb className="h-5 w-5 text-amber-500" />
+                      Yêu cầu Code Review
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="prose prose-sm dark:prose-invert mt-4 max-w-none font-sans whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                    {selectedProblem.problemStatement}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+            <button
+              type="button"
+              onClick={() => handleEditProblem(selectedProblem)}
+              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700">
+              <Pencil className="h-4 w-4" />
+              Chỉnh sửa
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Main Split Content */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        {/* Left Pane: List */}
-        <div className="flex w-[400px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30">
-          <div className="flex flex-col gap-3 border-b border-slate-200 bg-white/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
-            {/* The toolbar */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Input
-                  placeholder={
-                    t("adminCodeReviewProblem.searchPlaceholder") ||
-                    t("adminCodeReviewProblem.searchPlaceholder")
-                  }
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    pagination.goToFirstPage();
-                  }}
-                  className="h-9 w-full border-slate-200 bg-slate-100/50 text-xs focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800/50"
+        {/* IDE-like File Viewer Section */}
+        {selectedProblem.files && selectedProblem.files.length > 0 ? (
+          <div
+            className={cn(
+              "flex flex-1 overflow-hidden",
+              isDark ? "bg-slate-950" : "bg-slate-100"
+            )}>
+            <div className="relative flex min-w-0 flex-1 flex-col">
+              {/* File Tabs */}
+              <div
+                className={cn(
+                  "flex items-center justify-between border-b px-2",
+                  isDark ? "border-slate-800 bg-slate-950" : "border-slate-200 bg-slate-50"
+                )}>
+                <div className="flex overflow-x-auto">
+                  {(selectedProblem.files || []).map((f, fIdx) => (
+                    <button
+                      key={fIdx}
+                      onClick={() => setViewActiveFileIdx(fIdx)}
+                      className={cn(
+                        "flex items-center gap-2 border-r px-4 py-3 text-sm font-semibold transition-all",
+                        isDark ? "border-slate-800" : "border-slate-200",
+                        viewActiveFileIdx === fIdx
+                          ? isDark
+                            ? "border-b-2 border-b-indigo-500 text-indigo-400"
+                            : "border-b-2 border-b-indigo-600 text-indigo-700"
+                          : isDark
+                            ? "text-slate-500 hover:bg-slate-900 hover:text-slate-300"
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
+                      )}>
+                      <FileCode2
+                        className={cn(
+                          "h-4 w-4",
+                          viewActiveFileIdx === fIdx
+                            ? isDark
+                              ? "text-indigo-400"
+                              : "text-indigo-600"
+                            : ""
+                        )}
+                      />
+                      {f.filename || "Untitled"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Monaco Editor */}
+              <div className="relative flex-1 overflow-hidden">
+                <MonacoCodeReviewViewer
+                  content={selectedProblem.files[viewActiveFileIdx]?.content || ""}
+                  language={(
+                    selectedProblem.files[viewActiveFileIdx]?.language || "java"
+                  ).toLowerCase()}
+                  issues={(selectedProblem.expectedIssues || []).filter(
+                    (iss) =>
+                      iss.filename === selectedProblem.files[viewActiveFileIdx]?.filename
+                  )}
+                  theme={monacoTheme}
                 />
               </div>
-              <Select
-                value={difficultyFilter}
-                onValueChange={(value) => {
-                  setDifficultyFilter(value);
-                  pagination.goToFirstPage();
-                }}>
-                <SelectTrigger className="h-9 w-24 shrink-0 border-slate-200 bg-slate-100/50 text-xs dark:border-slate-700 dark:bg-slate-800/50">
-                  <SelectValue placeholder={t("common.difficulty")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("common.all")}</SelectItem>
-                  <SelectItem value="EASY">{t("common.difficultyEasy")}</SelectItem>
-                  <SelectItem value="MEDIUM">{t("common.difficultyMedium")}</SelectItem>
-                  <SelectItem value="HARD">{t("common.difficultyHard")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                className="h-9 w-9 shrink-0 bg-indigo-600 p-0 text-white shadow-sm hover:bg-indigo-700"
-                onClick={() => setView({ mode: "create" })}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex items-center justify-end">
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                <span>
-                  {filteredProblems.length} {t("common.exercises", t("common.exercises"))}
-                </span>
-                {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
-              </div>
             </div>
           </div>
-
-          <div className="flex-1 space-y-2 overflow-y-auto p-3">
-            {isLoading ? (
-              <div className="flex justify-center py-12">
-                <SpinnerBlock size="sm" />
-              </div>
-            ) : filteredProblems.length === 0 ? (
-              <div className="px-4 py-16 text-center">
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                  <AlertTriangle className="h-5 w-5 text-slate-400" />
-                </div>
-                <h3 className="text-sm font-medium text-slate-900 dark:text-white">
-                  {t("adminDashboardoverview.noDataAvailable")}
-                </h3>
-                <p className="mt-1 text-xs text-slate-500">
-                  {/*Thử thay đổi bộ lọc hoặc tạo*/} {t("common.exercises")} {/*mới.*/}
-                </p>
-              </div>
-            ) : (
-              pageItems.map((problem) => {
-                const difficultyBadge = getDifficultyBadge(problem.difficulty);
-                const isSelected = selectedProblem?.id === problem.id;
-
-                return (
-                  <div
-                    key={problem.id}
-                    onClick={() => handleViewDetail(problem)}
-                    className={`group relative cursor-pointer rounded-xl border p-4 transition-all ${
-                      isSelected
-                        ? "border-indigo-500/50 bg-white shadow-md ring-1 ring-indigo-500/20 dark:border-indigo-400/50 dark:bg-slate-800"
-                        : "border-slate-200 bg-white/60 hover:border-indigo-300 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-800"
-                    }`}>
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                      <h4
-                        className={`line-clamp-2 text-sm font-semibold ${isSelected ? "text-indigo-700 dark:text-indigo-400" : "text-slate-900 dark:text-slate-100"}`}>
-                        {problem.title}
-                      </h4>
-                      <Badge
-                        variant="outline"
-                        className={`shrink-0 text-[10px] ${difficultyBadge.className} ${isSelected ? "border-current bg-transparent" : "bg-transparent"}`}>
-                        {difficultyBadge.label}
-                      </Badge>
-                    </div>
-
-                    <p className="mb-3 line-clamp-2 h-8 text-xs text-slate-500 dark:text-slate-400">
-                      {problem.problemStatement || t("general.noDescription")}
-                    </p>
-
-                    <div className="flex items-center justify-between text-xs text-slate-400">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-md bg-slate-100/80 px-1.5 py-0.5 font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {problem.language || "N/A"}
-                        </span>
-                        <span>#{problem.id}</span>
-                      </div>
-                      <span className="tabular-nums">
-                        {problem.createdAt ? formatDate(problem.createdAt) : ""}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+        ) : (
+          <div className="flex flex-1 items-center justify-center p-8">
+            <p className="text-slate-500">Chưa có mã nguồn để review.</p>
           </div>
+        )}
+      </div>
+    );
+  }
 
-          <div className="border-t border-slate-200 bg-white/50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
-            <PaginationControl
-              pagination={pagination}
-              onPageSizeChange={(nextPageSize) => {
-                setPageSize(nextPageSize);
+  // LIST MODE
+  return (
+    <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
+      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-4">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
                 pagination.goToFirstPage();
               }}
-              pageSizeOptions={[10, 20, 50]}
+              placeholder="Tìm kiếm bài tập..."
+              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
             />
+          </div>
+
+          <div className="flex items-center gap-1 border-l border-slate-200 pl-4 dark:border-slate-700">
+            {(["ALL", "EASY", "MEDIUM", "HARD"] as Difficulty[]).map((d) => {
+              const count = d === "ALL" ? problems.length : problems.filter(p => p.difficulty === d).length;
+              const isActive = difficultyFilter === d;
+              return (
+                <button
+                  key={d}
+                  onClick={() => {
+                    setDifficultyFilter(d);
+                    pagination.goToFirstPage();
+                  }}
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                    isActive
+                      ? d === "ALL" ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                        : d === "EASY" ? "bg-emerald-600 text-white"
+                        : d === "MEDIUM" ? "bg-amber-500 text-white"
+                        : "bg-rose-600 text-white"
+                      : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}>
+                  {d === "ALL" ? "Tất cả" : d}
+                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] ${
+                    isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Pane: Detail View */}
-        <div className="relative flex flex-1 flex-col overflow-hidden bg-white dark:bg-slate-950">
-          {selectedProblem ? (
-            <div className="flex min-h-0 flex-1 flex-col">
-              {/* Header Section */}
-              <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-950">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                  {selectedProblem.title}
-                </h2>
+        <div className="flex items-center gap-3">
+          <Select value={sort} onValueChange={(v) => {
+            setSort(v as SortKey);
+            pagination.goToFirstPage();
+          }}>
+            <SelectTrigger className="h-8 w-[140px] border-slate-200 text-xs dark:border-slate-700">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest" className="text-xs">Mới nhất trước</SelectItem>
+              <SelectItem value="oldest" className="text-xs">Cũ nhất trước</SelectItem>
+              <SelectItem value="title_asc" className="text-xs">Tiêu đề A → Z</SelectItem>
+              <SelectItem value="title_desc" className="text-xs">Tiêu đề Z → A</SelectItem>
+            </SelectContent>
+          </Select>
 
-                <div className="flex items-center gap-2">
-                  {selectedProblem.problemStatement && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20">
-                          <Lightbulb className="h-4 w-4" />
-                          {t("common.exercises")}
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2 text-xl">
-                            <Lightbulb className="h-5 w-5 text-amber-500" />
-                            {t("common.exercises")}
-                          </DialogTitle>
-                        </DialogHeader>
-                        <div className="prose prose-sm dark:prose-invert mt-4 max-w-none font-sans whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                          {selectedProblem.problemStatement}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                  <button
-                    type="button"
-                    onClick={handleEditProblem}
-                    className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20">
-                    <Pencil className="h-4 w-4" />
-                    {t("general.edit")}
-                  </button>
-                </div>
-              </div>
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
 
-              {/* IDE-like File Viewer Section */}
-              {selectedProblem.files && selectedProblem.files.length > 0 && (
-                <div
-                  className={cn(
-                    "flex flex-1 overflow-hidden",
-                    isDark ? "bg-slate-950" : "bg-slate-200"
-                  )}>
-                  {/* Monaco Editor Pane */}
-                  <div className="relative flex min-w-0 flex-1 flex-col">
-                    {/* File Tabs */}
-                    <div
-                      className={cn(
-                        "flex items-center justify-between border-b px-2",
-                        isDark ? "border-slate-800 bg-slate-950" : "border-slate-300 bg-slate-200"
-                      )}>
-                      <div className="flex overflow-x-auto">
-                        {(selectedProblem.files || []).map((f, fIdx) => (
-                          <button
-                            key={fIdx}
-                            onClick={() => setViewActiveFileIdx(fIdx)}
-                            className={cn(
-                              "flex items-center gap-1.5 border-r px-3 py-2.5 text-xs font-semibold transition-all",
-                              isDark ? "border-slate-800" : "border-slate-300",
-                              viewActiveFileIdx === fIdx
-                                ? isDark
-                                  ? "border-b-2 border-b-indigo-500 text-indigo-400"
-                                  : "border-b-2 border-b-indigo-600 text-indigo-700"
-                                : isDark
-                                  ? "text-slate-500 hover:bg-slate-900 hover:text-slate-300"
-                                  : "text-slate-600 hover:bg-slate-300 hover:text-slate-800"
-                            )}>
-                            <FileCode2
-                              className={cn(
-                                "h-3.5 w-3.5",
-                                viewActiveFileIdx === fIdx
-                                  ? isDark
-                                    ? "text-indigo-400"
-                                    : "text-indigo-600"
-                                  : ""
-                              )}
-                            />
-                            {f.filename || "Untitled"}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Monaco Editor */}
-                    <div className="relative flex-1 overflow-hidden">
-                      <MonacoCodeReviewViewer
-                        content={selectedProblem.files[viewActiveFileIdx]?.content || ""}
-                        language={(
-                          selectedProblem.files[viewActiveFileIdx]?.language || "java"
-                        ).toLowerCase()}
-                        issues={(selectedProblem.expectedIssues || []).filter(
-                          (iss) =>
-                            iss.filename === selectedProblem.files[viewActiveFileIdx]?.filename
-                        )}
-                        theme={monacoTheme}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-              <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-                <Bot className="h-10 w-10 text-slate-300 dark:text-slate-600" />
-              </div>
-              <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
-                {t("common.exercises")}
-              </h3>
-              <p className="max-w-sm text-slate-500 dark:text-slate-400">
-                {t(
-                  "adminCodeReviewProblem.selectFromList",
-                  "Select an exercise from the list to view details"
-                )}
-              </p>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => loadProblems(true)}
+              disabled={isRefreshing}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600">
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            </button>
+            <Button
+              onClick={() => setView({ mode: "create" })}
+              className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Thêm Bài Tập
+            </Button>
+          </div>
         </div>
+      </div>
+
+      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto p-4 sm:p-6">
+        {isLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <SpinnerBlock size="sm" />
+          </div>
+        ) : processedData.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50">
+            <AlertTriangle className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+            <p className="text-sm font-medium text-slate-500">
+              Không tìm thấy bài tập code review nào.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <CodeReviewProblemTable
+              problems={pageItems}
+              onViewDetail={handleViewDetail}
+              onEdit={handleEditProblem}
+              onToggleStatus={handleToggleStatus}
+            />
+            
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+              <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Hiển thị {pageItems.length} / {processedData.length} kết quả
+              </div>
+              <PaginationControl
+                pagination={pagination}
+                onPageSizeChange={(nextPageSize) => {
+                  setPageSize(nextPageSize);
+                  pagination.goToFirstPage();
+                }}
+                pageSizeOptions={[10, 20, 50]}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
