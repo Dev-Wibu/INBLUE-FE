@@ -1352,7 +1352,9 @@
     "minutes": "分",
     "goBack": "戻る",
     "userDetail": "ユーザー詳細",
-    "inactive": "非アクティブ"
+    "inactive": "非アクティブ",
+    "loading": "読み込み中...",
+    "invalidId": "無効なIDです。"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -1678,7 +1680,8 @@
     "sortByColumn": "{{column}}で並べ替え",
     "sortByColumnAscending": "{{column}}で昇順並べ替え",
     "sortByColumnDescending": "{{column}}で降順並べ替え",
-    "uploading": "アップロード中..."
+    "uploading": "アップロード中...",
+    "submitting": "提出中..."
   },
   "compVideoCall": {
     "accountName": "アカウント名",
@@ -3341,7 +3344,7 @@
     "noApplicationsYet": "まだ応募はありません",
     "noTitle": "タイトルなし",
     "company": "企業",
-    "result": "結果",
+    "result": "結果 (Result)",
     "status": "ステータス",
     "round": "ラウンド",
     "rounds": "ラウンド",
@@ -3448,7 +3451,6 @@
     "taskHint": "面接での目標とタスクを説明してください。",
     "action": "アクション (Action)",
     "actionHint": "メンターがあなたを助けたことを説明してください。",
-    "result": "結果 (Result)",
     "resultHint": "面接からの結果と教訓。",
     "additionalFeedback": "追加フィードバック",
     "strength": "強み",
@@ -3464,7 +3466,8 @@
     "reviewSubmittedSuccessfully": "メンターへのレビューが正常に提出されました！",
     "aiInterviewRound": "AIインタビュー ラウンド",
     "aiInterviewCompleted": "AIインタビューが完了しました",
-    "redirectingToInterview": "インタビューにリダイレクトしています..."
+    "redirectingToInterview": "インタビューにリダイレクトしています...",
+    "mentor": "メンター"
   },
   "emailPreview": {
     "title": "提出済みメール",
@@ -4356,7 +4359,9 @@
     "deleted": "質問が削除されました",
     "updateQuestion": "質問を更新",
     "editInfoInstructions": "質問情報を編集します。変更はすぐに更新されます。",
-    "createOrAi": "新しい質問を作成するか、AIを使用して質問を自動的に生成します。"
+    "createOrAi": "新しい質問を作成するか、AIを使用して質問を自動的に生成します。",
+    "questions": "質問",
+    "markAsCorrect": "正解とする"
   },
   "category": {
     "loadListFailed": "カテゴリリストの読み込みに失敗しました",

@@ -1382,7 +1382,9 @@
     "minutes": "minutes",
     "goBack": "Go back",
     "userDetail": "User Detail",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "loading": "Loading...",
+    "invalidId": "Invalid ID."
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -1708,7 +1710,8 @@
     "slide": "slide",
     "sortByColumn": "Sort by {{column}}",
     "sortByColumnAscending": "Sort by {{column}} ascending",
-    "sortByColumnDescending": "Sort by {{column}} descending"
+    "sortByColumnDescending": "Sort by {{column}} descending",
+    "submitting": "Submitting..."
   },
   "compVideoCall": {
     "accountName": "Account name",
@@ -3445,7 +3448,6 @@
     "taskHint": "Describe your goals and tasks in the interview.",
     "action": "Action",
     "actionHint": "Describe what the mentor did to help you.",
-    "result": "Result",
     "resultHint": "The results and lessons learned from the interview.",
     "additionalFeedback": "Additional Feedback",
     "strength": "Strengths",
@@ -3461,7 +3463,8 @@
     "reviewSubmittedSuccessfully": "Mentor review submitted successfully!",
     "aiInterviewRound": "AI Interview Round",
     "aiInterviewCompleted": "AI Interview Completed",
-    "redirectingToInterview": "Redirecting to interview..."
+    "redirectingToInterview": "Redirecting to interview...",
+    "mentor": "Mentor"
   },
   "emailPreview": {
     "title": "Submitted Email",
@@ -4350,7 +4353,9 @@
     "deleted": "Question deleted",
     "updateQuestion": "Update Question",
     "editInfoInstructions": "Edit question information. Changes will be updated immediately.",
-    "createOrAi": "Create a new question or use AI to automatically generate questions."
+    "createOrAi": "Create a new question or use AI to automatically generate questions.",
+    "questions": "questions",
+    "markAsCorrect": "Mark as correct"
   },
   "category": {
     "loadListFailed": "Failed to load category list",

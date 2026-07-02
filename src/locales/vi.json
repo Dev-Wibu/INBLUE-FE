@@ -1382,7 +1382,9 @@
     "minutes": "phút",
     "goBack": "Quay lại",
     "userDetail": "Chi tiết người dùng",
-    "inactive": "Không hoạt động"
+    "inactive": "Không hoạt động",
+    "loading": "Đang tải...",
+    "invalidId": "ID không hợp lệ."
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -1708,7 +1710,8 @@
     "slide": "trang trình bày",
     "sortByColumn": "Sắp xếp theo {{column}}",
     "sortByColumnAscending": "Sắp xếp theo {{column}} tăng dần",
-    "sortByColumnDescending": "Sắp xếp theo {{column}} giảm dần"
+    "sortByColumnDescending": "Sắp xếp theo {{column}} giảm dần",
+    "submitting": "Đang nộp..."
   },
   "compVideoCall": {
     "accountName": "Tên tài khoản",
@@ -3311,7 +3314,7 @@
     "noApplicationsYet": "Chưa có đơn ứng tuyển",
     "noTitle": "Không có tiêu đề",
     "company": "Công ty",
-    "result": "Kết quả",
+    "result": "Kết quả (Result)",
     "status": "Trạng thái",
     "round": "Vòng",
     "rounds": "vòng",
@@ -3422,7 +3425,6 @@
     "taskHint": "Mô tả nhiệm vụ và mục tiêu của bạn trong buổi phỏng vấn.",
     "action": "Hành động (Action)",
     "actionHint": "Mô tả những gì mentor đã làm để giúp bạn.",
-    "result": "Kết quả (Result)",
     "resultHint": "Kết quả và những gì bạn đã học được từ buổi phỏng vấn.",
     "additionalFeedback": "Phản hồi bổ sung",
     "strength": "Điểm mạnh",
@@ -3438,7 +3440,8 @@
     "reviewSubmittedSuccessfully": "Đánh giá mentor đã được nộp thành công!",
     "aiInterviewRound": "Vòng Phỏng vấn AI",
     "aiInterviewCompleted": "Phỏng vấn AI hoàn thành",
-    "redirectingToInterview": "Đang chuyển hướng đến buổi phỏng vấn..."
+    "redirectingToInterview": "Đang chuyển hướng đến buổi phỏng vấn...",
+    "mentor": "Mentor"
   },
   "emailPreview": {
     "title": "Email đã nộp",
@@ -4327,7 +4330,9 @@
     "deleted": "Đã xóa câu hỏi",
     "updateQuestion": "Cập nhật câu hỏi",
     "editInfoInstructions": "Chỉnh sửa thông tin câu hỏi. Các thay đổi sẽ được cập nhật ngay.",
-    "createOrAi": "Tạo câu hỏi mới hoặc sử dụng AI để tự động tạo câu hỏi."
+    "createOrAi": "Tạo câu hỏi mới hoặc sử dụng AI để tự động tạo câu hỏi.",
+    "questions": "câu hỏi",
+    "markAsCorrect": "Đánh dấu đáp án đúng"
   },
   "category": {
     "loadListFailed": "Không thể tải danh sách chuyên mục",
