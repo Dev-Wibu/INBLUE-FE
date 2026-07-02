@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { CodingProblemGrid } from "./components/CodingProblemGrid";
+import { CodingProblemTable } from "./components/CodingProblemTable";
 import { CodingProblemEditor } from "./components/editor/CodingProblemEditor";
 
 export function CodingProblemManagementPage() {
@@ -106,7 +106,7 @@ export function CodingProblemManagementPage() {
           </div>
         ) : (
           <div className="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <CodingProblemGrid problems={problems} onEdit={handleEdit} />
+            <CodingProblemTable problems={problems} onEdit={handleEdit} />
           </div>
         )}
       </div>
