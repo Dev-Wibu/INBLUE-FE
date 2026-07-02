@@ -70,7 +70,7 @@ describe("broadcastNotificationCreated", () => {
       expect(mockPostMessage).toHaveBeenCalledWith(mockNotification);
       // Verify localStorage.setItem was called with the correct payload structure
       expect(mockSetItem).toHaveBeenCalledWith(
-        "exe-fe:notification-alert",
+        "inblue-fe:notification-alert",
         expect.stringContaining("notification-created")
       );
       // Verify the notification data is in the payload
@@ -79,7 +79,7 @@ describe("broadcastNotificationCreated", () => {
       expect(payload.type).toBe("notification-created");
       expect(typeof payload.timestamp).toBe("number");
       // Verify localStorage.removeItem cleans up the event key
-      expect(mockRemoveItem).toHaveBeenCalledWith("exe-fe:notification-alert");
+      expect(mockRemoveItem).toHaveBeenCalledWith("inblue-fe:notification-alert");
       expect(mockClose).toHaveBeenCalled();
     } finally {
       // Restore real localStorage for subsequent tests
@@ -138,7 +138,7 @@ describe("subscribeToNotificationCreated", () => {
     subscribeToNotificationCreated(handler);
 
     const storageEvent = new StorageEvent("storage", {
-      key: "exe-fe:notification-alert",
+      key: "inblue-fe:notification-alert",
       newValue: JSON.stringify({
         type: "notification-created",
         notification: mockNotification,
@@ -173,7 +173,7 @@ describe("subscribeToNotificationCreated", () => {
     subscribeToNotificationCreated(handler);
 
     const storageEvent = new StorageEvent("storage", {
-      key: "exe-fe:notification-alert",
+      key: "inblue-fe:notification-alert",
       newValue: null,
     });
     window.dispatchEvent(storageEvent);
@@ -185,7 +185,7 @@ describe("subscribeToNotificationCreated", () => {
     subscribeToNotificationCreated(handler);
 
     const storageEvent = new StorageEvent("storage", {
-      key: "exe-fe:notification-alert",
+      key: "inblue-fe:notification-alert",
       newValue: "not-valid-json{{{",
     });
     window.dispatchEvent(storageEvent);
@@ -197,7 +197,7 @@ describe("subscribeToNotificationCreated", () => {
     subscribeToNotificationCreated(handler);
 
     const storageEvent = new StorageEvent("storage", {
-      key: "exe-fe:notification-alert",
+      key: "inblue-fe:notification-alert",
       newValue: JSON.stringify({ type: "notification-created", notification: "not-an-object" }),
     });
     window.dispatchEvent(storageEvent);

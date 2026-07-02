@@ -3,7 +3,7 @@
 > **Audit Date:** 2026-06-06
 > **Last Updated:** 2026-06-06 (eighth verification pass — added §10.2 Missing HTTP Security Headers, §6.2 SRI note, updated §12 summary)
 > **Auditor:** AI Agent (automated)
-> **Scope:** Full `src/` directory of `EXE_FE` React/Vite application
+> **Scope:** Full `src/` directory of `INBLUE-FE` React/Vite application
 > **Methodology:** Follows `docs/Frontend_Security_Audit_Plan.md`
 > **Note:** All 70 dependency vulnerabilities are in **devDependencies** (nx, cypress, vite, vitest, eslint, openapi-typescript). None ship to production bundles.
 

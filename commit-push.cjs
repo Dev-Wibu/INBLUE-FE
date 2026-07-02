@@ -1,5 +1,5 @@
 const { execSync } = require("child_process");
-process.chdir("D:/Capstone/EXE_FE");
+process.chdir("D:/Capstone/INBLUE-FE");
 try {
   execSync(
     'git add . && git commit -m "chore: remove hardcoded fallback values in company components"',

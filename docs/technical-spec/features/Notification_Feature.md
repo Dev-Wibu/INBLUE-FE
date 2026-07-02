@@ -128,7 +128,7 @@ flowchart LR
     F --> D
 ```
 
-- **Primary**: `BroadcastChannel("exe-fe:notification-alerts")`
+- **Primary**: `BroadcastChannel("inblue-fe:notification-alerts")`
 - **Fallback**: `localStorage` set/remove event (for browsers without BroadcastChannel)
 
 ### useNotificationAlerts Hook
