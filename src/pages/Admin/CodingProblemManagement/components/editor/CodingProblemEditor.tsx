@@ -69,9 +69,10 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
   const [aiDifficulty, setAiDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
 
   // Monaco Editor State
-  const [activeLang, setActiveLang] = useState("java");
+  const [activeLang, setActiveLang] = useState("JAVA");
 
   // Master-Detail State for Testcases
+  const [testCaseMode, setTestCaseMode] = useState<"hidden" | "visible">("visible");
   const [selectedTcIndex, setSelectedTcIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -151,6 +152,23 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
     }
   };
 
+  // Helper to map UPPERCASE keys to monaco supported languages
+  const getMonacoLanguage = (langKey: string) => {
+    switch (langKey) {
+      case "JAVA": return "java";
+      case "PYTHON": return "python";
+      case "CPP": return "cpp";
+      case "JS": return "javascript";
+      case "TYPESCRIPT": return "typescript";
+      case "GO": return "go";
+      case "CSHARP": return "csharp";
+      case "SCALA": return "scala";
+      case "SWIFT": return "swift";
+      case "KOTLIN": return "kotlin";
+      default: return "plaintext";
+    }
+  };
+
   if (isLoadingData) {
     return (
       <div className="flex h-full items-center justify-center bg-gray-50 dark:bg-slate-950">
@@ -212,7 +230,10 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as TabKey)}
+              onClick={() => {
+                setActiveTab(tab.id as TabKey);
+                if (tab.id === "testcases") setSelectedTcIndex(null);
+              }}
               className={`flex items-center gap-2 border-b-2 py-3 text-sm font-semibold transition-colors ${
                 activeTab === tab.id
                   ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
@@ -338,22 +359,50 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
             <div className="flex h-[700px] gap-6 animate-in fade-in slide-in-from-bottom-2">
               {/* Master List */}
               <div className="flex w-[320px] flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-950">
-                <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                  <h3 className="font-bold text-slate-700 dark:text-slate-300">Danh sách Test Cases</h3>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      const newTc = [...(formData.hiddenTestCases || []), { inputs: [""], expectedOutput: "", weightPoints: 10 }];
-                      handleFormChange({ hiddenTestCases: newTc });
-                      setSelectedTcIndex(newTc.length - 1);
-                    }}
-                    className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                <div className="flex flex-col border-b border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <h3 className="font-bold text-slate-700 dark:text-slate-300">Test Cases</h3>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        if (testCaseMode === "hidden") {
+                          const newTc = [...(formData.hiddenTestCases || []), { inputs: [""], expectedOutput: "", weightPoints: 10 }];
+                          handleFormChange({ hiddenTestCases: newTc });
+                          setSelectedTcIndex(newTc.length - 1);
+                        } else {
+                          const newTc = [...(formData.visibleExamples || []), { inputs: [""], output: "", explanation: "" }];
+                          handleFormChange({ visibleExamples: newTc });
+                          setSelectedTcIndex(newTc.length - 1);
+                        }
+                      }}
+                      className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {/* Toggle Mode */}
+                  <div className="flex px-2 pb-2">
+                    <div className="flex w-full rounded-md bg-slate-200/50 p-1 dark:bg-slate-800/50">
+                      <button
+                        onClick={() => { setTestCaseMode("visible"); setSelectedTcIndex(null); }}
+                        className={`flex-1 rounded text-xs font-semibold py-1.5 transition-all ${
+                          testCaseMode === "visible" ? "bg-white shadow-sm text-slate-900 dark:bg-slate-700 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                        }`}>
+                        Ví dụ mẫu ({formData.visibleExamples?.length || 0})
+                      </button>
+                      <button
+                        onClick={() => { setTestCaseMode("hidden"); setSelectedTcIndex(null); }}
+                        className={`flex-1 rounded text-xs font-semibold py-1.5 transition-all ${
+                          testCaseMode === "hidden" ? "bg-white shadow-sm text-slate-900 dark:bg-slate-700 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                        }`}>
+                        Test Ẩn ({formData.hiddenTestCases?.length || 0})
+                      </button>
+                    </div>
+                  </div>
                 </div>
+                
                 <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                  {formData.hiddenTestCases?.map((tc, idx) => (
+                  {testCaseMode === "hidden" && formData.hiddenTestCases?.map((tc, idx) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedTcIndex(idx)}
@@ -385,21 +434,56 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       </Button>
                     </button>
                   ))}
-                  {(!formData.hiddenTestCases || formData.hiddenTestCases.length === 0) && (
-                    <div className="py-8 text-center text-sm italic text-slate-400">
-                      Chưa có Test Case nào
-                    </div>
+
+                  {testCaseMode === "visible" && formData.visibleExamples?.map((tc, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedTcIndex(idx)}
+                      className={`group flex w-full items-center justify-between rounded-lg px-3 py-3 text-left transition-colors ${
+                        selectedTcIndex === idx
+                          ? "bg-indigo-50 ring-1 ring-indigo-200 dark:bg-indigo-900/30 dark:ring-indigo-800"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-900"
+                      }`}>
+                      <div>
+                        <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                          Example #{idx + 1}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-0.5 line-clamp-1 font-mono">
+                          {tc.inputs ? JSON.stringify(tc.inputs) : "[]"}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newTc = [...(formData.visibleExamples || [])];
+                          newTc.splice(idx, 1);
+                          handleFormChange({ visibleExamples: newTc });
+                          if (selectedTcIndex === idx) setSelectedTcIndex(null);
+                        }}
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-opacity">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </button>
+                  ))}
+
+                  {testCaseMode === "hidden" && (!formData.hiddenTestCases || formData.hiddenTestCases.length === 0) && (
+                    <div className="py-8 text-center text-sm italic text-slate-400">Chưa có Test Case Ẩn</div>
+                  )}
+                  {testCaseMode === "visible" && (!formData.visibleExamples || formData.visibleExamples.length === 0) && (
+                    <div className="py-8 text-center text-sm italic text-slate-400">Chưa có Ví dụ Mẫu</div>
                   )}
                 </div>
               </div>
 
               {/* Detail Form */}
               <div className="flex-1 rounded-xl border border-slate-200 bg-white shadow-sm p-8 dark:border-slate-800 dark:bg-slate-950">
-                {selectedTcIndex !== null && formData.hiddenTestCases?.[selectedTcIndex] ? (
+                {selectedTcIndex !== null ? (
                   <div className="space-y-6 max-w-2xl animate-in fade-in">
                     <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
                       <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                        Thiết lập Test Case #{selectedTcIndex + 1}
+                        {testCaseMode === "hidden" ? `Thiết lập Hidden Test #${selectedTcIndex + 1}` : `Thiết lập Example #${selectedTcIndex + 1}`}
                       </h2>
                     </div>
                     
@@ -409,19 +493,29 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           Tham số Đầu vào (Input Array)
                         </Label>
                         <Input
-                          value={formData.hiddenTestCases[selectedTcIndex].inputs ? JSON.stringify(formData.hiddenTestCases[selectedTcIndex].inputs) : "[]"}
+                          value={
+                            testCaseMode === "hidden"
+                              ? formData.hiddenTestCases?.[selectedTcIndex]?.inputs ? JSON.stringify(formData.hiddenTestCases[selectedTcIndex].inputs) : "[]"
+                              : formData.visibleExamples?.[selectedTcIndex]?.inputs ? JSON.stringify(formData.visibleExamples[selectedTcIndex].inputs) : "[]"
+                          }
                           onChange={(e) => {
                             try {
                               const arr = JSON.parse(e.target.value);
                               if (Array.isArray(arr)) {
-                                const newTc = [...(formData.hiddenTestCases || [])];
-                                newTc[selectedTcIndex].inputs = arr.map(String);
-                                handleFormChange({ hiddenTestCases: newTc });
+                                if (testCaseMode === "hidden") {
+                                  const newTc = [...(formData.hiddenTestCases || [])];
+                                  if (newTc[selectedTcIndex]) newTc[selectedTcIndex].inputs = arr.map(String);
+                                  handleFormChange({ hiddenTestCases: newTc });
+                                } else {
+                                  const newTc = [...(formData.visibleExamples || [])];
+                                  if (newTc[selectedTcIndex]) newTc[selectedTcIndex].inputs = arr.map(String);
+                                  handleFormChange({ visibleExamples: newTc });
+                                }
                               }
                             } catch {}
                           }}
                           className="h-12 font-mono text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
-                          placeholder='VD: ["1", "2"] hoặc ["[1,2,3]", "4"]'
+                          placeholder='VD: ["1", "2"]'
                         />
                         <p className="text-xs text-slate-500 mt-1">Định dạng JSON Array. Mỗi phần tử tương ứng một tham số của hàm.</p>
                       </div>
@@ -431,32 +525,60 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                           Kết quả kỳ vọng (Expected Output)
                         </Label>
                         <Input
-                          value={formData.hiddenTestCases[selectedTcIndex].expectedOutput || ""}
+                          value={
+                            testCaseMode === "hidden"
+                              ? formData.hiddenTestCases?.[selectedTcIndex]?.expectedOutput || ""
+                              : formData.visibleExamples?.[selectedTcIndex]?.output || ""
+                          }
                           onChange={(e) => {
-                            const newTc = [...(formData.hiddenTestCases || [])];
-                            newTc[selectedTcIndex].expectedOutput = e.target.value;
-                            handleFormChange({ hiddenTestCases: newTc });
+                            if (testCaseMode === "hidden") {
+                              const newTc = [...(formData.hiddenTestCases || [])];
+                              if (newTc[selectedTcIndex]) newTc[selectedTcIndex].expectedOutput = e.target.value;
+                              handleFormChange({ hiddenTestCases: newTc });
+                            } else {
+                              const newTc = [...(formData.visibleExamples || [])];
+                              if (newTc[selectedTcIndex]) newTc[selectedTcIndex].output = e.target.value;
+                              handleFormChange({ visibleExamples: newTc });
+                            }
                           }}
                           className="h-12 font-mono text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
                           placeholder="Chuỗi kết quả trả về"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                          Điểm số (Points)
-                        </Label>
-                        <Input
-                          type="number"
-                          value={formData.hiddenTestCases[selectedTcIndex].weightPoints || 0}
-                          onChange={(e) => {
-                            const newTc = [...(formData.hiddenTestCases || [])];
-                            newTc[selectedTcIndex].weightPoints = parseInt(e.target.value) || 0;
-                            handleFormChange({ hiddenTestCases: newTc });
-                          }}
-                          className="h-12 w-32 text-sm font-bold bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
-                        />
-                      </div>
+                      {testCaseMode === "hidden" ? (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            Điểm số (Points)
+                          </Label>
+                          <Input
+                            type="number"
+                            value={formData.hiddenTestCases?.[selectedTcIndex]?.weightPoints || 0}
+                            onChange={(e) => {
+                              const newTc = [...(formData.hiddenTestCases || [])];
+                              if (newTc[selectedTcIndex]) newTc[selectedTcIndex].weightPoints = parseInt(e.target.value) || 0;
+                              handleFormChange({ hiddenTestCases: newTc });
+                            }}
+                            className="h-12 w-32 text-sm font-bold bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            Giải thích (Explanation)
+                          </Label>
+                          <Textarea
+                            value={formData.visibleExamples?.[selectedTcIndex]?.explanation || ""}
+                            onChange={(e) => {
+                              const newTc = [...(formData.visibleExamples || [])];
+                              if (newTc[selectedTcIndex]) newTc[selectedTcIndex].explanation = e.target.value;
+                              handleFormChange({ visibleExamples: newTc });
+                            }}
+                            className="resize-none h-24 text-sm bg-white dark:bg-slate-950 focus-visible:ring-indigo-500"
+                            placeholder="Giải thích vì sao có kết quả này để thí sinh hiểu rõ hơn..."
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -464,7 +586,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900">
                       <PlaySquare className="h-8 w-8 text-slate-300 dark:text-slate-700" />
                     </div>
-                    <p className="text-slate-500 font-medium">Chọn một Test Case bên trái để thiết lập</p>
+                    <p className="text-slate-500 font-medium">Chọn một mục bên trái để thiết lập</p>
                   </div>
                 )}
               </div>
@@ -486,17 +608,23 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="java">Java</SelectItem>
-                    <SelectItem value="python">Python</SelectItem>
-                    <SelectItem value="cpp">C++</SelectItem>
-                    <SelectItem value="javascript">JavaScript</SelectItem>
+                    <SelectItem value="JAVA">Java</SelectItem>
+                    <SelectItem value="PYTHON">Python</SelectItem>
+                    <SelectItem value="CPP">C++</SelectItem>
+                    <SelectItem value="JS">JavaScript</SelectItem>
+                    <SelectItem value="TYPESCRIPT">TypeScript</SelectItem>
+                    <SelectItem value="GO">Go</SelectItem>
+                    <SelectItem value="CSHARP">C#</SelectItem>
+                    <SelectItem value="SCALA">Scala</SelectItem>
+                    <SelectItem value="SWIFT">Swift</SelectItem>
+                    <SelectItem value="KOTLIN">Kotlin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex-1 relative">
                 <Editor
                   height="100%"
-                  language={activeLang === "cpp" ? "cpp" : activeLang}
+                  language={getMonacoLanguage(activeLang)}
                   theme="vs-dark"
                   value={formData.codeStubs?.[activeLang] || ""}
                   onChange={(val) => {
@@ -566,7 +694,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
               <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2 dark:border-slate-800">
                 Hàm Chính (Main Function)
               </h3>
-              <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold">Kiểu trả về (Return Type)</Label>
                   <Input
@@ -577,7 +705,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Danh sách tham số (Param Types - JSON Array)</Label>
+                  <Label className="text-sm font-semibold">Danh sách tham số (JSON Array)</Label>
                   <Input
                     value={formData.paramTypes ? JSON.stringify(formData.paramTypes) : "[]"}
                     onChange={(e) => {
@@ -592,6 +720,28 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                     placeholder='VD: ["int[]", "int"]'
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2 dark:border-slate-800">
+                Quy tắc & Giới hạn (Rules & Constraints)
+              </h3>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Danh sách quy tắc (JSON Array)</Label>
+                <Textarea
+                  value={formData.rulesAndConstraints ? JSON.stringify(formData.rulesAndConstraints, null, 2) : "[]"}
+                  onChange={(e) => {
+                    try {
+                      const arr = JSON.parse(e.target.value);
+                      if (Array.isArray(arr)) {
+                        handleFormChange({ rulesAndConstraints: arr.map(String) });
+                      }
+                    } catch {}
+                  }}
+                  className="h-32 font-mono"
+                  placeholder='VD: ["2 <= nums.length <= 10^4", "Chỉ tồn tại duy nhất một đáp án"]'
+                />
               </div>
             </div>
 
