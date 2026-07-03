@@ -388,7 +388,6 @@ export function MentorFormDialog({
           </div>
           {/* File Upload Section with Previews */}
           <div className="mt-2 border-t pt-4">
-            <h4 className="mb-3 text-sm font-medium">{t("common.avatar")}</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="avatar">{t("common.avatar")}</Label>

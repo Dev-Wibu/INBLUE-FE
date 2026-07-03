@@ -159,6 +159,7 @@ export function UserFormDialog({
           <div className="flex flex-col items-center space-y-4 md:col-span-1">
             <UniversalMediaUploader
               preset="single-image"
+              hideFileList={true}
               onFilesChange={(files) => handleAvatarChange(files[0])}
               customTrigger={
                 <div className="group relative mx-auto h-40 w-40 cursor-pointer overflow-hidden rounded-full border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500">
