@@ -867,6 +867,7 @@ export function InterviewTemplateManagementPage() {
                   difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
                 };
               }) ?? [],
+            codeReviewIds: r.configData?.codeReviewProblemsId || [],
             codeReviewProblems:
               r.configData?.codeReviewProblemsId?.map((id) => {
                 const cp = r.configData?.codeReviewProblems?.find(
