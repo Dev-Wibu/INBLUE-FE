@@ -1,4 +1,8 @@
-import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
+import {
+  MediaLightboxDialog,
+  UniversalMediaUploader,
+  type MediaViewerItem,
+} from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
-import { ExternalLink, Eye, EyeOff, FileText, ImageIcon, X } from "lucide-react";
+import { ExternalLink, Eye, EyeOff, FileText, ImageIcon, Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Mentor, MentorFormData } from "../types";
@@ -170,8 +174,7 @@ export function MentorFormDialog({
   };
 
   // Handle file input changes with preview
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleAvatarChange = (file?: File) => {
     if (file) {
       if (avatarPreview?.startsWith("blob:")) URL.revokeObjectURL(avatarPreview);
       setAvatarPreview(URL.createObjectURL(file));
@@ -179,6 +182,8 @@ export function MentorFormDialog({
         ...formData,
         avatar: file,
       });
+    } else {
+      handleClearAvatar();
     }
   };
   const handleClearAvatar = () => {
@@ -402,12 +407,15 @@ export function MentorFormDialog({
                   label={t("common.avatar")}
                   fileName={formData.avatar?.name}
                 />
-                <Input
-                  id="avatar"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="cursor-pointer"
+                <UniversalMediaUploader
+                  preset="single-image"
+                  onFilesChange={(files) => handleAvatarChange(files[0])}
+                  customTrigger={
+                    <Button type="button" variant="outline" className="w-full">
+                      <Upload className="mr-2 h-4 w-4" />
+                      {t("common.uploadFile")}
+                    </Button>
+                  }
                 />
                 {!displayAvatarUrl && (
                   <p className="text-muted-foreground flex items-center gap-1 text-xs">

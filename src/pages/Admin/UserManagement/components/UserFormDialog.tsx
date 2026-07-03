@@ -1,4 +1,8 @@
-import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
+import {
+  MediaLightboxDialog,
+  UniversalMediaUploader,
+  type MediaViewerItem,
+} from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -87,8 +91,7 @@ export function UserFormDialog({
   };
 
   // Handle file input change for avatar
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleAvatarChange = (file?: File) => {
     if (file) {
       // Create preview URL for the selected file
       if (avatarPreview?.startsWith("blob:")) {
@@ -100,6 +103,8 @@ export function UserFormDialog({
         ...formData,
         avatar: file,
       });
+    } else {
+      handleClearAvatar();
     }
   };
 
@@ -113,9 +118,6 @@ export function UserFormDialog({
       ...formData,
       avatar: undefined,
     });
-    // Reset file input value
-    const fileInput = document.getElementById("avatar-upload") as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
   };
 
   // Get the display image URL - prioritize new upload preview over existing URL
@@ -155,39 +157,34 @@ export function UserFormDialog({
         <div className="grid grid-cols-1 gap-8 py-4 md:grid-cols-3">
           {/* Avatar Section (Left) */}
           <div className="flex flex-col items-center space-y-4 md:col-span-1">
-            <div className="group relative mx-auto h-40 w-40 cursor-pointer overflow-hidden rounded-full border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500">
-              {displayAvatarUrl ? (
-                <img
-                  src={displayAvatarUrl}
-                  alt={t("adminUsermanagement.previewYourProfilePicture")}
-                  className="h-full w-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-slate-400">
-                  <UserIcon className="h-16 w-16 opacity-50" />
+            <UniversalMediaUploader
+              preset="single-image"
+              onFilesChange={(files) => handleAvatarChange(files[0])}
+              customTrigger={
+                <div className="group relative mx-auto h-40 w-40 cursor-pointer overflow-hidden rounded-full border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500">
+                  {displayAvatarUrl ? (
+                    <img
+                      src={displayAvatarUrl}
+                      alt={t("adminUsermanagement.previewYourProfilePicture")}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-slate-400">
+                      <UserIcon className="h-16 w-16 opacity-50" />
+                    </div>
+                  )}
+
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Camera className="mb-2 h-8 w-8 text-white" />
+                    <span className="text-sm font-medium text-white">{t("common.avatar")}</span>
+                  </div>
                 </div>
-              )}
-
-              {/* Hover Overlay */}
-              <label
-                htmlFor="avatar-upload"
-                className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
-                <Camera className="mb-2 h-8 w-8 text-white" />
-                <span className="text-sm font-medium text-white">{t("common.avatar")}</span>
-              </label>
-
-              {/* Hidden File Input */}
-              <Input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
-            </div>
+              }
+            />
 
             {/* Action buttons under avatar */}
             <div className="flex w-full flex-col items-center gap-2 text-sm">
