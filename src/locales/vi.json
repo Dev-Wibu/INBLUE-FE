@@ -1307,6 +1307,7 @@
     "updatedInformationSuccessfully": "Cập nhật thông tin thành công!",
     "uploadCvFailed": "Upload CV thất bại",
     "uploadCvSuccessfully": "Upload CV thành công!",
+    "uploadFile": "Tải lên tệp",
     "user": "Người dùng",
     "userManagement": "Người dùng",
     "var0Min": "{{var_0}} / phút",

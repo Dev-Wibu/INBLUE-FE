@@ -60,6 +60,10 @@ export interface UniversalMediaUploaderProps {
   // ── Data
   initialFiles?: InitialFileItem[];
 
+  // ── Custom UI
+  triggerClassName?: string;
+  customTrigger?: React.ReactNode;
+
   // ── Callbacks
   onFilesChange?: (_files: File[]) => void;
 }
@@ -90,6 +94,8 @@ export function UniversalMediaUploader({
   enableWebcam = false,
   enableScreenCapture = false,
   themeVariant = "default",
+  triggerClassName,
+  customTrigger,
   initialFiles,
   onFilesChange,
 }: UniversalMediaUploaderProps) {
@@ -157,6 +163,8 @@ export function UniversalMediaUploader({
       className={className}
       t={t}
       resolved={resolved}
+      triggerClassName={triggerClassName}
+      customTrigger={customTrigger}
     />
   );
 }
@@ -169,9 +177,18 @@ interface SubModeProps {
   className?: string;
   t: (_key: string) => string;
   resolved?: ReturnType<typeof resolvePresetConfig>;
+  triggerClassName?: string;
+  customTrigger?: React.ReactNode;
 }
 
-function ModalMode({ uppy, themeClass, className, t }: SubModeProps) {
+function ModalMode({
+  uppy,
+  themeClass,
+  className,
+  t,
+  triggerClassName,
+  customTrigger,
+}: SubModeProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [lightboxIndex, setLightboxIndex] = React.useState(-1);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -348,7 +365,8 @@ function ModalMode({ uppy, themeClass, className, t }: SubModeProps) {
             "group flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-5 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0047AB]",
             isDragging
               ? "scale-[1.02] border-[#0047AB] bg-[#0047AB]/5 dark:border-[#66B2FF] dark:bg-[#66B2FF]/10"
-              : "border-slate-300 bg-white/80 hover:border-[#0047AB]/60 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-[#66B2FF]/70 dark:hover:bg-slate-900"
+              : "border-slate-300 bg-white/80 hover:border-[#0047AB]/60 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-[#66B2FF]/70 dark:hover:bg-slate-900",
+            triggerClassName
           )}
           onClick={() => setIsOpen(true)}
           role="button"
@@ -357,10 +375,16 @@ function ModalMode({ uppy, themeClass, className, t }: SubModeProps) {
             if (e.key === "Enter" || e.key === " ") setIsOpen(true);
           }}>
           <Upload className="mb-2 h-6 w-6 text-slate-400 group-hover:text-[#0047AB] dark:group-hover:text-[#66B2FF]" />
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {t("compShared.clickToOpenUploader")}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">{t("compShared.supportsAdvancedFeatures")}</p>
+          {customTrigger || (
+            <>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                {t("compShared.clickToOpenUploader")}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                {t("compShared.supportsAdvancedFeatures")}
+              </p>
+            </>
+          )}
         </div>
       ) : (
         /* ── File list ─────────────────────────────────────────────────── */
