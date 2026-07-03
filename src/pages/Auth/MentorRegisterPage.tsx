@@ -1,4 +1,5 @@
 import { Footer, Header } from "@/components/layouts";
+import { UniversalMediaUploader } from "@/components/shared/media/UniversalMediaUploader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
-import { AlertCircle, ArrowLeft, CheckCircle2, UploadCloud, User } from "lucide-react";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 import { useCallback, useState } from "react";
-import { type FileRejection, useDropzone } from "react-dropzone";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
+
 type MentorFormData = {
   name: string;
   email: string;
@@ -23,19 +24,7 @@ type MentorFormData = {
   currentCompany: string;
 };
 type MentorFieldKey = keyof MentorFormData | "avatarFile";
-interface FileUploadProps {
-  label: string;
-  required?: boolean;
-  acceptedTypes: string;
-  maxSize: string;
-  icon: React.ReactNode;
-  onFileSelect: (_file: File | null) => void;
-  selectedFile: File | null;
-  accept?: Record<string, string[]>;
-  maxSizeBytes?: number;
-  errorText?: string;
-  onClearError?: () => void;
-}
+
 const FIELD_KEY_ALIASES: Record<string, MentorFieldKey> = {
   name: "name",
   fullname: "name",
@@ -72,128 +61,7 @@ const normalizeFieldErrors = (
     {}
   );
 };
-const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) {
-    return `${bytes} B`;
-  }
-  const kb = bytes / 1024;
-  if (kb < 1024) {
-    return `${kb.toFixed(1)} KB`;
-  }
-  return `${(kb / 1024).toFixed(2)} MB`;
-};
-function FileUploadBox({
-  label,
-  required,
-  acceptedTypes,
-  maxSize,
-  icon,
-  onFileSelect,
-  selectedFile,
-  accept,
-  maxSizeBytes = 5 * 1024 * 1024,
-  errorText,
-  onClearError,
-}: FileUploadProps) {
-  const { t } = useTranslation();
-  const [dropError, setDropError] = useState("");
-  const onDropAccepted = useCallback(
-    (acceptedFiles: File[]) => {
-      if (acceptedFiles.length === 0) {
-        return;
-      }
-      setDropError("");
-      onClearError?.();
-      onFileSelect(acceptedFiles[0]);
-    },
-    [onClearError, onFileSelect]
-  );
-  const onDropRejected = useCallback(
-    (fileRejections: readonly FileRejection[]) => {
-      const firstErrorCode = fileRejections[0]?.errors[0]?.code;
-      if (firstErrorCode === "file-too-large") {
-        setDropError(
-          t("general.fileExceedsPleaseSelectA", {
-            var_0: maxSize,
-          })
-        );
-        return;
-      }
-      if (firstErrorCode === "file-invalid-type") {
-        setDropError(
-          t("general.invalidFormatOnlySupports", {
-            var_0: acceptedTypes,
-          })
-        );
-        return;
-      }
-      setDropError(t("authMentorregisterpage.thisFileCouldNotBe"));
-    },
-    [acceptedTypes, maxSize, t]
-  );
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDropAccepted,
-    onDropRejected,
-    multiple: false,
-    accept,
-    maxSize: maxSizeBytes,
-  });
-  const activeError = errorText || dropError;
-  return (
-    <div className="space-y-2">
-      <div
-        {...getRootProps()}
-        className={cn(
-          "group flex min-h-40 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-5 text-center transition-all",
-          "bg-white/80 hover:bg-slate-50 dark:bg-slate-900/60 dark:hover:bg-slate-900",
-          activeError
-            ? "border-red-300 hover:border-red-400 dark:border-red-700 dark:hover:border-red-600"
-            : isDragActive
-              ? "border-[#0047AB] bg-[#0047AB]/10 dark:border-[#66B2FF] dark:bg-[#66B2FF]/15"
-              : "border-slate-300 hover:border-[#0047AB]/60 dark:border-slate-700 dark:hover:border-[#66B2FF]/70"
-        )}>
-        <input {...getInputProps()} />
 
-        {selectedFile ? (
-          <>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-            <p className="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-100">{label}</p>
-            <p className="mt-1 line-clamp-1 text-xs font-medium text-[#0047AB] dark:text-[#66B2FF]">
-              {selectedFile.name}
-            </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {formatFileSize(selectedFile.size)} {t("authMentorregisterpage.clickToChangeFile")}
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-              {icon}
-            </div>
-            <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
-              {label} {required && <span className="text-red-500">*</span>}
-            </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {t("authMentorregisterpage.dragDropOrClick")}
-            </p>
-            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#0047AB]/10 px-3 py-1 text-xs font-medium text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]">
-              <UploadCloud className="h-3.5 w-3.5" />
-              {acceptedTypes} {t("authMentorregisterpage.max")} {maxSize}
-            </div>
-          </>
-        )}
-      </div>
-
-      {activeError && (
-        <p className="text-xs font-medium text-red-600 dark:text-red-400" role="alert">
-          {activeError}
-        </p>
-      )}
-    </div>
-  );
-}
 export function MentorRegisterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -522,28 +390,38 @@ export function MentorRegisterPage() {
                 </section>
 
                 <section className="space-y-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/40">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    {t("common.avatar")}
-                  </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FileUploadBox
-                      label={t("common.avatar")}
-                      acceptedTypes="JPG, PNG"
-                      maxSize="5MB"
-                      icon={<User className="h-5 w-5" />}
-                      onFileSelect={(file) => {
-                        setAvatarFile(file);
-                        clearFieldError("avatarFile");
-                      }}
-                      selectedFile={avatarFile}
-                      accept={{
-                        "image/jpeg": [".jpg", ".jpeg"],
-                        "image/png": [".png"],
-                      }}
-                      maxSizeBytes={5 * 1024 * 1024}
-                      errorText={fieldErrors.avatarFile}
-                      onClearError={() => clearFieldError("avatarFile")}
-                    />
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {t("common.avatar")}
+                      </Label>
+                      <UniversalMediaUploader
+                        preset="single-image"
+                        initialFiles={
+                          avatarFile
+                            ? [
+                                {
+                                  name: avatarFile.name,
+                                  src: URL.createObjectURL(avatarFile),
+                                  type: avatarFile.type,
+                                },
+                              ]
+                            : undefined
+                        }
+                        onFilesChange={(files) => {
+                          setAvatarFile(files[0] || null);
+                          clearFieldError("avatarFile");
+                        }}
+                        triggerClassName={
+                          fieldErrors.avatarFile
+                            ? "border-red-500 hover:border-red-600 focus-visible:ring-red-500"
+                            : ""
+                        }
+                      />
+                      {fieldErrors.avatarFile && (
+                        <p className={helperTextClass}>{fieldErrors.avatarFile}</p>
+                      )}
+                    </div>
                   </div>
                 </section>
 
