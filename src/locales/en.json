@@ -1307,6 +1307,7 @@
     "updatedInformationSuccessfully": "Updated information successfully!",
     "uploadCvFailed": "Upload CV failed",
     "uploadCvSuccessfully": "Upload CV successfully!",
+    "uploadFile": "Upload File",
     "user": "User",
     "userManagement": "Users",
     "var0Min": "{{var_0}} / min",

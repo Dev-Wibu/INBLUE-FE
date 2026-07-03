@@ -1274,6 +1274,7 @@
     "uploadCv": "CVをアップロード",
     "uploadCvFailed": "CVアップロードに失敗しました",
     "uploadCvSuccessfully": "CVアップロードが完了しました！",
+    "uploadFile": "ファイルをアップロード",
     "user": "ユーザー",
     "userManagement": "ユーザー",
     "var0Min": "{{var_0}} / 分",

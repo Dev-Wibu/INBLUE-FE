@@ -1,4 +1,8 @@
-import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
+import {
+  MediaLightboxDialog,
+  UniversalMediaUploader,
+  type MediaViewerItem,
+} from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +24,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
-import { ExternalLink, ImageIcon, X } from "lucide-react";
+import { ExternalLink, ImageIcon, Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Company, CompanyFormData, CompanyStatus } from "../types";
@@ -73,9 +77,9 @@ export function CompanyFormDialog({
     }
     onOpenChange(open);
   };
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleLogoChange = (file?: File) => {
     if (!file) {
+      handleClearLogo();
       return;
     }
     if (logoPreview?.startsWith("blob:")) {
@@ -87,9 +91,9 @@ export function CompanyFormDialog({
       logo: file,
     });
   };
-  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleBannerChange = (file?: File) => {
     if (!file) {
+      handleClearBanner();
       return;
     }
     if (bannerPreview?.startsWith("blob:")) {
@@ -263,7 +267,16 @@ export function CompanyFormDialog({
                   </div>
                 )}
               </div>
-              <Input id="company-logo" type="file" accept="image/*" onChange={handleLogoChange} />
+              <UniversalMediaUploader
+                preset="single-image"
+                onFilesChange={(files) => handleLogoChange(files[0])}
+                customTrigger={
+                  <Button type="button" variant="outline" className="mt-2 w-full">
+                    <Upload className="mr-2 h-4 w-4" />
+                    {t("common.uploadFile")}
+                  </Button>
+                }
+              />
             </div>
 
             <div className="space-y-2">
@@ -320,11 +333,15 @@ export function CompanyFormDialog({
                   </div>
                 )}
               </div>
-              <Input
-                id="company-banner"
-                type="file"
-                accept="image/*"
-                onChange={handleBannerChange}
+              <UniversalMediaUploader
+                preset="single-image"
+                onFilesChange={(files) => handleBannerChange(files[0])}
+                customTrigger={
+                  <Button type="button" variant="outline" className="mt-2 w-full">
+                    <Upload className="mr-2 h-4 w-4" />
+                    {t("common.uploadFile")}
+                  </Button>
+                }
               />
             </div>
           </div>

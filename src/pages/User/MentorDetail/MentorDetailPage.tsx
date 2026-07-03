@@ -94,7 +94,7 @@ export function MentorDetailPage() {
   const [mentor, setMentor] = useState<SchemaMentorResponse | null>(null);
   const [allMentors, setAllMentors] = useState<SchemaMentorResponse[]>([]);
   const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerItems] = useState<MediaViewerItem[]>([]);
+  const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
   const [mentorUnavailableReason, setMentorUnavailableReason] = useState<
     "inactive" | "not-found" | null
   >(null);
@@ -278,6 +278,20 @@ export function MentorDetailPage() {
           ratingText={ratingText}
           priceText={priceText}
           onBack={() => navigate("/user?tab=mentors")}
+          onAvatarClick={() => {
+            if (mentor.avatarUrl) {
+              setViewerItems([
+                {
+                  id: "mentor-avatar",
+                  name: t("common.avatar"),
+                  src: mentor.avatarUrl,
+                  alt: mentor.name,
+                  kind: "image",
+                },
+              ]);
+              setViewerOpen(true);
+            }
+          }}
         />
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">

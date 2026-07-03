@@ -1,8 +1,11 @@
+import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/formatting";
+import { cn } from "@/lib/utils";
 import { Briefcase, Building2, Code, Hash, Mail, MessageCircle } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Mentor } from "../types";
 
@@ -14,6 +17,8 @@ interface MentorDetailModalProps {
 
 export function MentorDetailModal({ mentor, isOpen, onOpenChange }: MentorDetailModalProps) {
   const { t } = useTranslation();
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
 
   if (!mentor) return null;
 
@@ -27,7 +32,25 @@ export function MentorDetailModal({ mentor, isOpen, onOpenChange }: MentorDetail
         </DialogHeader>
 
         <div className="flex flex-col items-center justify-center space-y-4 py-4">
-          <Avatar className="h-24 w-24 border-4 border-slate-100 shadow-sm dark:border-slate-800">
+          <Avatar
+            className={cn(
+              "h-24 w-24 border-4 border-slate-100 shadow-sm dark:border-slate-800",
+              mentor.avatarUrl ? "cursor-pointer transition-transform hover:scale-105" : ""
+            )}
+            onClick={() => {
+              if (mentor.avatarUrl) {
+                setViewerItems([
+                  {
+                    id: "mentor-avatar",
+                    name: t("common.avatar"),
+                    src: mentor.avatarUrl,
+                    alt: mentor.name,
+                    kind: "image",
+                  },
+                ]);
+                setViewerOpen(true);
+              }
+            }}>
             <AvatarImage src={mentor.avatarUrl} alt={mentor.name} className="object-cover" />
             <AvatarFallback className="bg-orange-100 text-3xl text-orange-700 dark:bg-orange-900 dark:text-orange-300">
               {mentor.name?.charAt(0)?.toUpperCase()}
@@ -151,6 +174,7 @@ export function MentorDetailModal({ mentor, isOpen, onOpenChange }: MentorDetail
           </div>
         </div>
       </DialogContent>
+      <MediaLightboxDialog open={viewerOpen} onOpenChange={setViewerOpen} items={viewerItems} />
     </Dialog>
   );
 }
