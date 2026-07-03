@@ -63,6 +63,7 @@ export interface UniversalMediaUploaderProps {
   // ── Custom UI
   triggerClassName?: string;
   customTrigger?: React.ReactNode;
+  hideFileList?: boolean;
 
   // ── Callbacks
   onFilesChange?: (_files: File[]) => void;
@@ -96,6 +97,7 @@ export function UniversalMediaUploader({
   themeVariant = "default",
   triggerClassName,
   customTrigger,
+  hideFileList = false,
   initialFiles,
   onFilesChange,
 }: UniversalMediaUploaderProps) {
@@ -165,6 +167,7 @@ export function UniversalMediaUploader({
       resolved={resolved}
       triggerClassName={triggerClassName}
       customTrigger={customTrigger}
+      hideFileList={hideFileList}
     />
   );
 }
@@ -179,6 +182,7 @@ interface SubModeProps {
   resolved?: ReturnType<typeof resolvePresetConfig>;
   triggerClassName?: string;
   customTrigger?: React.ReactNode;
+  hideFileList?: boolean;
 }
 
 function ModalMode({
@@ -188,6 +192,7 @@ function ModalMode({
   t,
   triggerClassName,
   customTrigger,
+  hideFileList,
 }: SubModeProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [lightboxIndex, setLightboxIndex] = React.useState(-1);
@@ -312,24 +317,53 @@ function ModalMode({
 
   const isPdf = (type: string) => type === "application/pdf" || type === "application/x-pdf";
 
-  const modalContent = (
-    <DashboardModal
-      uppy={uppy}
-      open={isOpen}
-      theme={uppyTheme}
-      onRequestClose={() => setIsOpen(false)}
-      closeModalOnClickOutside
-      browserBackButtonClose={true}
-      disablePageScrollWhenModalOpen={true}
-      proudlyDisplayPoweredByUppy={false}
-      hideProgressDetails={true}
-      showSelectedFiles
-      showRemoveButtonAfterComplete
-      hidePauseResumeButton={true}
-      hideUploadButton={true}
-      doneButtonHandler={() => setIsOpen(false)}
-    />
-  );
+  const portalRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const el = portalRef.current;
+    if (!el) return;
+    const stop = (e: Event) => e.stopPropagation();
+    el.addEventListener("pointerdown", stop);
+    el.addEventListener("mousedown", stop);
+    el.addEventListener("click", stop);
+    return () => {
+      el.removeEventListener("pointerdown", stop);
+      el.removeEventListener("mousedown", stop);
+      el.removeEventListener("click", stop);
+    };
+  }, [isOpen]);
+
+  const modalContent =
+    typeof document !== "undefined"
+      ? createPortal(
+          <div
+            ref={portalRef}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            className={themeClass}
+            style={{ pointerEvents: "auto" }}>
+            <DashboardModal
+              uppy={uppy}
+              open={isOpen}
+              theme={uppyTheme}
+              onRequestClose={() => setIsOpen(false)}
+              closeModalOnClickOutside
+              browserBackButtonClose={true}
+              disablePageScrollWhenModalOpen={true}
+              proudlyDisplayPoweredByUppy={false}
+              hideProgressDetails={true}
+              showSelectedFiles
+              showRemoveButtonAfterComplete
+              hidePauseResumeButton={true}
+              hideUploadButton={true}
+              doneButtonHandler={() => setIsOpen(false)}
+              plugins={["ImageEditor"]}
+            />
+          </div>,
+          document.body
+        )
+      : null;
 
   return (
     <div
@@ -339,12 +373,7 @@ function ModalMode({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onPaste={handlePaste}>
-      {/* 
-        Render DashboardModal into a Portal attached directly to document.body.
-        This isolates the `position: fixed` element from any parent components (like <Card>)
-        that use `backdrop-blur` or `transform` which create new containing blocks.
-      */}
-      {typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent}
+      {modalContent}
 
       {/* Lightbox for full-size preview */}
       {lightboxItems.length > 0 && lightboxIndex >= 0 && (
@@ -358,34 +387,43 @@ function ModalMode({
         />
       )}
 
-      {files.length === 0 ? (
+      {files.length === 0 || hideFileList ? (
         /* ── Empty state trigger ───────────────────────────────────────── */
-        <div
-          className={cn(
-            "group flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-5 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0047AB]",
-            isDragging
-              ? "scale-[1.02] border-[#0047AB] bg-[#0047AB]/5 dark:border-[#66B2FF] dark:bg-[#66B2FF]/10"
-              : "border-slate-300 bg-white/80 hover:border-[#0047AB]/60 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-[#66B2FF]/70 dark:hover:bg-slate-900",
-            triggerClassName
-          )}
-          onClick={() => setIsOpen(true)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") setIsOpen(true);
-          }}>
-          <Upload className="mb-2 h-6 w-6 text-slate-400 group-hover:text-[#0047AB] dark:group-hover:text-[#66B2FF]" />
-          {customTrigger || (
-            <>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                {t("compShared.clickToOpenUploader")}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                {t("compShared.supportsAdvancedFeatures")}
-              </p>
-            </>
-          )}
-        </div>
+        customTrigger ? (
+          <div
+            onClick={() => setIsOpen(true)}
+            role="button"
+            tabIndex={0}
+            className={cn("cursor-pointer", triggerClassName)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") setIsOpen(true);
+            }}>
+            {customTrigger}
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "group flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-5 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0047AB]",
+              isDragging
+                ? "scale-[1.02] border-[#0047AB] bg-[#0047AB]/5 dark:border-[#66B2FF] dark:bg-[#66B2FF]/10"
+                : "border-slate-300 bg-white/80 hover:border-[#0047AB]/60 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900/60 dark:hover:border-[#66B2FF]/70 dark:hover:bg-slate-900",
+              triggerClassName
+            )}
+            onClick={() => setIsOpen(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") setIsOpen(true);
+            }}>
+            <Upload className="mb-2 h-6 w-6 text-slate-400 group-hover:text-[#0047AB] dark:group-hover:text-[#66B2FF]" />
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              {t("compShared.clickToOpenUploader")}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {t("compShared.supportsAdvancedFeatures")}
+            </p>
+          </div>
+        )
       ) : (
         /* ── File list ─────────────────────────────────────────────────── */
         <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">

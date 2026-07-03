@@ -172,6 +172,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
             ) : (
               <UniversalMediaUploader
                 preset="single-image"
+                enableWebcam={true}
                 onFilesChange={handleCoverFilesChange}
                 customTrigger={
                   <div className="border-muted hover:bg-muted/50 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors">
