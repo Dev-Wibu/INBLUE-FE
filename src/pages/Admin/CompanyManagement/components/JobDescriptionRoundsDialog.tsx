@@ -982,6 +982,9 @@ export function JobDescriptionRoundsDialog({
         })),
       };
 
+      // DEBUG: log payload sent to BE
+      console.log("[DEBUG handleSave] payload:", JSON.stringify(payload, null, 2));
+
       let response;
       if (hasExistingRounds) {
         response = await roundManager.updateForJd(
