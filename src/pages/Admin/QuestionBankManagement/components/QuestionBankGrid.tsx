@@ -23,14 +23,6 @@ export function QuestionBankGrid({ questions, onEdit, onDelete }: QuestionBankGr
     );
   }
 
-  const stripMarkdown = (text: string) => {
-    if (!text) return "";
-    return text
-      .replace(/```\w*\n/g, "")
-      .replace(/```/g, "")
-      .trim();
-  };
-
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {questions.map((q) => (
@@ -66,7 +58,7 @@ export function QuestionBankGrid({ questions, onEdit, onDelete }: QuestionBankGr
 
           {/* Body */}
           <p className="line-clamp-4 flex-1 text-[15px] leading-relaxed font-medium text-slate-700 dark:text-slate-300">
-            {stripMarkdown(q.questionText || "")}
+            {q.questionText || "Chưa có nội dung"}
           </p>
 
           {/* Hover-only Actions */}

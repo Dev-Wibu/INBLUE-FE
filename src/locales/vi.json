@@ -3442,7 +3442,21 @@
     "aiInterviewRound": "Vòng Phỏng vấn AI",
     "aiInterviewCompleted": "Phỏng vấn AI hoàn thành",
     "redirectingToInterview": "Đang chuyển hướng đến buổi phỏng vấn...",
-    "mentor": "Mentor"
+    "mentor": "Mentor",
+    "noMentorAssigned": "Chưa có Mentor được chỉ định",
+    "mentorWillBeAssignedSoon": "Mentor sẽ được chỉ định trong thời gian sớm nhất.",
+    "paymentRequiredNote": "Bạn cần thanh toán để xác nhận lịch hẹn với mentor trước khi vào phòng.",
+    "paymentRequired": "Yêu cầu thanh toán",
+    "paymentRequiredDesc": "Thanh toán để xác nhận lịch phỏng vấn với mentor.",
+    "preparingSession": "Đang chuẩn bị phiên phỏng vấn...",
+    "paymentSuccessful": "Thanh toán thành công!",
+    "readyToJoinRoom": "Bạn đã sẵn sàng tham gia phỏng vấn với mentor.",
+    "joinRoomNow": "Vào phòng ngay",
+    "interviewInProgress": "Buổi phỏng vấn đang diễn ra",
+    "interviewInProgressDesc": "Bạn có thể quay lại phòng phỏng vấn bất kỳ lúc nào.",
+    "rejoinRoom": " Quay lại phòng",
+    "thankYouForYourFeedback": "Cảm ơn bạn đã gửi phản hồi!",
+    "proceedToPayment": "Tiến hành thanh toán"
   },
   "emailPreview": {
     "title": "Email đã nộp",

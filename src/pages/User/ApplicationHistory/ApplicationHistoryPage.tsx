@@ -1045,7 +1045,8 @@ function ApplicationDetailPanel({
     }
 
     // If this is a MENTOR_REVIEW round, navigate to mentor review page
-    if (round.roundType === "MENTOR_REVIEW") {
+    // Note: BE may send "MENTROR_REVIEW" (typo) or "MENTOR_REVIEW"
+    if (round.roundType === "MENTOR_REVIEW" || round.roundType === "MENTROR_REVIEW") {
       navigate(`/user/application/${application.id}/mentor-review?roundId=${round.id}`);
       return;
     }
