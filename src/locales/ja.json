@@ -3468,7 +3468,21 @@
     "aiInterviewRound": "AIインタビュー ラウンド",
     "aiInterviewCompleted": "AIインタビューが完了しました",
     "redirectingToInterview": "インタビューにリダイレクトしています...",
-    "mentor": "メンター"
+    "mentor": "メンター",
+    "noMentorAssigned": "まだメンターが割り当てられていません",
+    "mentorWillBeAssignedSoon": "まもなくメンターが割り当てられます。",
+    "paymentRequiredNote": "メンターとの約束を確定するには、先に支払いを完了する必要があります。",
+    "paymentRequired": "支払いが必要",
+    "paymentRequiredDesc": "メンターとのインタビュー予約を確定するには支払いが必要です。",
+    "preparingSession": "インタビューセッションを準備中...",
+    "paymentSuccessful": "支払い成功！",
+    "readyToJoinRoom": "メンターとのインタビューに参加する準備ができました。",
+    "joinRoomNow": "今すぐルームに参加",
+    "interviewInProgress": "インタビュー進行中",
+    "interviewInProgressDesc": "いつでもインタビュー部屋に再参加できます。",
+    "rejoinRoom": "ルームに再参加",
+    "thankYouForYourFeedback": "フィードバックをありがとうございます！",
+    "proceedToPayment": "支払いに進む"
   },
   "emailPreview": {
     "title": "提出済みメール",

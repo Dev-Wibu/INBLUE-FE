@@ -6,6 +6,7 @@ const t = (k: string, opts?: string | Record<string, unknown>): string =>
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import { cn } from "@/lib/utils";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import Editor from "@monaco-editor/react";
@@ -43,7 +44,7 @@ const DEFAULT_CODE: Record<string, string> = {
 
 export interface CodingSubmissionModalProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
   applicationId: number;
   roundId: number;
   roundName?: string;
@@ -51,7 +52,7 @@ export interface CodingSubmissionModalProps {
   codingProblemsId?: number[];
   instruction?: string;
   timeLimitMinutes?: number;
-  onSuccess?: (message?: string) => void;
+  onSuccess?: (_message?: string) => void;
 }
 
 export function CodingSubmissionModal({
@@ -70,6 +71,8 @@ export function CodingSubmissionModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [problems, setProblems] = useState<CodingProblemSnapshot[]>(codingProblems);
+  const monacoTheme = useMonacoTheme();
+  const isDark = monacoTheme === "vs-dark";
 
   // Initialize / fetch problems
   useEffect(() => {
@@ -410,12 +413,24 @@ export function CodingSubmissionModal({
           </div>
 
           {/* Center — Monaco Editor */}
-          <div className="flex flex-1 flex-col overflow-hidden bg-[#1e1e1e]">
+          <div
+            className={cn(
+              "flex flex-1 flex-col overflow-hidden",
+              isDark ? "bg-[#1e1e1e]" : "bg-white"
+            )}>
             {/* Editor toolbar */}
-            <div className="flex h-11 shrink-0 items-center justify-between border-b border-white/10 bg-[#252526] px-4">
+            <div
+              className={cn(
+                "flex h-11 shrink-0 items-center justify-between border-b px-4",
+                isDark ? "border-white/10 bg-[#252526]" : "border-slate-200 bg-slate-50"
+              )}>
               <div className="flex items-center gap-2">
                 <FileCode2 className="h-4 w-4 text-orange-400" />
-                <span className="font-mono text-xs font-semibold text-slate-300">
+                <span
+                  className={cn(
+                    "font-mono text-xs font-semibold",
+                    isDark ? "text-slate-300" : "text-slate-700"
+                  )}>
                   {activeProblem?.title ?? `submission_${activeProblemIdx + 1}`}
                 </span>
                 {activeProblem && (
@@ -430,7 +445,12 @@ export function CodingSubmissionModal({
                   value={language}
                   onChange={(e) => handleLanguageChange(e.target.value)}
                   disabled={isSubmitting}
-                  className="h-7 rounded border border-white/20 bg-[#3c3c3c] px-2 text-xs font-medium text-slate-200 focus:border-blue-500 focus:outline-none">
+                  className={cn(
+                    "h-7 rounded border px-2 text-xs font-medium focus:border-blue-500 focus:outline-none",
+                    isDark
+                      ? "border-white/20 bg-[#3c3c3c] text-slate-200"
+                      : "border-slate-300 bg-white text-slate-700"
+                  )}>
                   {LANGUAGES.map((l) => (
                     <option key={l.value} value={l.value}>
                       {l.label}
@@ -448,7 +468,7 @@ export function CodingSubmissionModal({
                 language={monacoLang}
                 value={activeCode}
                 onChange={handleCodeChange}
-                theme="vs-dark"
+                theme={monacoTheme}
                 options={{
                   minimap: { enabled: false },
                   scrollBeyondLastLine: false,

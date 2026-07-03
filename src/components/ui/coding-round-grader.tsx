@@ -1,6 +1,7 @@
 "use client";
 import { useTranslation } from "react-i18next";
 
+import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import { useRoundConfig } from "@/hooks/useRoundConfig";
 import { cn } from "@/lib/utils";
 import Editor from "@monaco-editor/react";
@@ -60,6 +61,8 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
   const { t } = useTranslation();
   const [activeProblemIdx, setActiveProblemIdx] = useState(0);
   const [activeRightTab, setActiveRightTab] = useState<"problem" | "test-results">("problem");
+  const monacoTheme = useMonacoTheme();
+  const isDark = monacoTheme === "vs-dark";
 
   const applicationId = detail.applicationId;
 
@@ -217,21 +220,37 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
 
         {/* CENTER: Monaco Editor */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-700 bg-slate-900 px-4 py-2">
+          <div
+            className={cn(
+              "flex items-center justify-between border-b px-4 py-2",
+              isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-slate-50"
+            )}>
             <div className="flex items-center gap-2">
               <FileCode2 className="h-3.5 w-3.5 text-orange-400" />
-              <span className="font-mono text-xs font-semibold text-slate-200">
+              <span
+                className={cn(
+                  "font-mono text-xs font-semibold",
+                  isDark ? "text-slate-200" : "text-slate-700"
+                )}>
                 {activeProblem?.title ?? `submission_${activeProblemIdx + 1}.java`}
               </span>
               {embeddedLanguage && (
-                <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+                <span
+                  className={cn(
+                    "rounded px-1.5 py-0.5 text-[10px] font-medium",
+                    isDark ? "bg-slate-800 text-slate-400" : "bg-slate-200 text-slate-500"
+                  )}>
                   {embeddedLanguage}
                 </span>
               )}
             </div>
             {totalTests > 0 && (
               <div className="flex items-center gap-1.5">
-                <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-700">
+                <div
+                  className={cn(
+                    "h-2 w-24 overflow-hidden rounded-full",
+                    isDark ? "bg-slate-700" : "bg-slate-200"
+                  )}>
                   <div
                     className={cn(
                       "h-full rounded-full transition-all",
@@ -253,7 +272,7 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
                 height="100%"
                 language={getMonacoLang(embeddedLanguage || "java")}
                 value={activeSubmission.sourceCode.join("\n")}
-                theme="vs-dark"
+                theme={monacoTheme}
                 options={{
                   readOnly: true,
                   minimap: { enabled: false },
@@ -279,7 +298,11 @@ export function CodingRoundGrader({ detail }: CodingRoundGraderProps) {
                 }}
               />
             ) : (
-              <div className="flex h-full flex-col items-center justify-center bg-slate-950">
+              <div
+                className={cn(
+                  "flex h-full flex-col items-center justify-center",
+                  isDark ? "bg-slate-950" : "bg-slate-50"
+                )}>
                 <FileCode2 className="h-12 w-12 text-slate-600" />
                 <p className="mt-3 text-sm font-medium text-slate-400">
                   {t("adminCodingProblem.noSubmission")}

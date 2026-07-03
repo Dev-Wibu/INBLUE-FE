@@ -3465,7 +3465,21 @@
     "aiInterviewRound": "AI Interview Round",
     "aiInterviewCompleted": "AI Interview Completed",
     "redirectingToInterview": "Redirecting to interview...",
-    "mentor": "Mentor"
+    "mentor": "Mentor",
+    "noMentorAssigned": "No mentor assigned yet",
+    "mentorWillBeAssignedSoon": "A mentor will be assigned shortly.",
+    "paymentRequiredNote": "You need to pay to confirm your appointment with the mentor before entering the room.",
+    "paymentRequired": "Payment required",
+    "paymentRequiredDesc": "Pay to confirm your interview appointment with the mentor.",
+    "preparingSession": "Preparing interview session...",
+    "paymentSuccessful": "Payment successful!",
+    "readyToJoinRoom": "You are ready to join the interview with the mentor.",
+    "joinRoomNow": "Join room now",
+    "interviewInProgress": "Interview in progress",
+    "interviewInProgressDesc": "You can rejoin the interview room at any time.",
+    "rejoinRoom": " Rejoin room",
+    "thankYouForYourFeedback": "Thank you for your feedback!",
+    "proceedToPayment": "Proceed to payment"
   },
   "emailPreview": {
     "title": "Submitted Email",

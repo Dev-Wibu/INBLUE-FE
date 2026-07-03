@@ -6,16 +6,16 @@ import { useAuthStore } from "@/stores/authStore";
 import { ArrowLeft, Bot, Clock } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export function ApplicationAIInterviewPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const params = useParams();
   const user = useAuthStore((s) => s.user);
 
-  const applicationId = Number(searchParams.get("applicationId"));
+  const applicationId = Number(params.applicationId);
 
   // Fetch current round config for instruction + time limit
   const { data: currentRound, isLoading: roundLoading } = useCurrentRound(
@@ -40,7 +40,7 @@ export function ApplicationAIInterviewPage() {
       try {
         const body = {
           user_id: user.id,
-          candidate_profile: null,
+          application_id: applicationId,
           job_requirement: {
             basic_info: {
               job_title: "Application Interview",

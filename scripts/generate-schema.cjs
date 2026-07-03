@@ -27,10 +27,37 @@ console.log(`🚀 Đang tải schema từ Backend...`); // Ẩn bớt URL cụ t
 try {
   execSync(command, { stdio: "inherit" });
   console.log("✅ Schema generated successfully!");
+
+  // POST-PROCESS: Thêm các field cần thiết mà backend chưa có trong OpenAPI spec
+  patchSchema();
 } catch (error) {
   // 3. TÙY CHỌN: Nếu Backend sập hoặc mất mạng, bạn có muốn Husky chặn commit không?
   // Nếu KHÔNG muốn chặn (cho commit tiếp): Đổi thành process.exit(0);
   // Nếu MUỐN chặn (bắt buộc tải được mới cho commit): Giữ nguyên process.exit(1);
   console.error("❌ Failed to generate schema:", error.message);
   process.exit(0);
+}
+
+// Hàm patch schema để thêm các field cần thiết cho FE
+function patchSchema() {
+  const schemaPath = path.join(__dirname, "../schema-from-be.d.ts");
+  if (!fs.existsSync(schemaPath)) return;
+
+  let content = fs.readFileSync(schemaPath, "utf8");
+
+  // Field cần thêm vào RoundConfigDto (dùng cho request payload)
+  // Backend đã xử lý codeReviewIds nhưng chưa expose trong OpenAPI spec
+  const fieldToAdd = "            codeReviewIds?: number[];";
+
+  // Tìm RoundConfigDto và thêm field nếu chưa có
+  const roundConfigDtoRegex = /RoundConfigDto:\s*\{([^}]+)\}/g;
+  content = content.replace(roundConfigDtoRegex, (match, body) => {
+    // Kiểm tra đã có codeReviewIds chưa
+    if (body.includes("codeReviewIds")) return match;
+    // Thêm vào sau codingProblemsId
+    return match.replace(/(codingProblemsId\?:\s*number\[\];)/, `$1\n${fieldToAdd}`);
+  });
+
+  fs.writeFileSync(schemaPath, content);
+  console.log("✅ Schema patched with FE-required fields!");
 }

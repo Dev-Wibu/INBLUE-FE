@@ -1,3 +1,4 @@
+import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import { cn } from "@/lib/utils";
 import Editor from "@monaco-editor/react";
 import { CheckCircle2, Clock, Code2, Copy, Cpu } from "lucide-react";
@@ -68,6 +69,7 @@ export function CodeSubmissionViewer({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"code" | "test-results">("code");
+  const monacoTheme = useMonacoTheme();
 
   const codeLines = codeSubmission.sourceCode ?? [];
   const codeString = codeLines.join("\n");
@@ -226,7 +228,7 @@ export function CodeSubmissionViewer({
                 height="320px"
                 language={monacoLang}
                 value={codeString}
-                theme="vs-dark"
+                theme={monacoTheme}
                 options={{
                   readOnly: true,
                   minimap: { enabled: false },

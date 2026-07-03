@@ -965,6 +965,7 @@ export function JobDescriptionRoundsDialog({
                   difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
                 };
               }) ?? [],
+            codeReviewIds: r.configData?.codeReviewProblemsId || [],
             codeReviewProblems:
               r.configData?.codeReviewProblemsId?.map((id) => {
                 const cp = r.configData?.codeReviewProblems?.find(
@@ -980,6 +981,9 @@ export function JobDescriptionRoundsDialog({
           },
         })),
       };
+
+      // DEBUG: log payload sent to BE
+      console.log("[DEBUG handleSave] payload:", JSON.stringify(payload, null, 2));
 
       let response;
       if (hasExistingRounds) {
@@ -1004,45 +1008,43 @@ export function JobDescriptionRoundsDialog({
         if (shouldCloseParent) {
           onOpenChange(false);
         } else {
-          // If we are not closing, reload updated rounds with database IDs
-          const jdRes = await jobDescriptionManager.getById(jobDescription.id);
-          if (jdRes.success && jdRes.data) {
-            const fetchedRounds = jdRes.data.rounds ?? [];
-            const sortedRounds = [...fetchedRounds].sort(
-              (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
-            );
-            const uiRounds: UIRound[] = sortedRounds.map((r) => {
-              let parsedConfig = r.configData;
-              if (typeof r.configData === "string") {
-                try {
-                  parsedConfig = JSON.parse(r.configData);
-                } catch (e) {
-                  console.error("Failed to parse configData:", e);
-                }
+          // Use the response directly from save instead of re-fetching
+          // The save response contains the updated rounds with codeReviewProblems
+          const savedRounds = response.data ?? [];
+          const sortedRounds = [...savedRounds].sort(
+            (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
+          );
+          const uiRounds: UIRound[] = sortedRounds.map((r) => {
+            let parsedConfig = r.configData;
+            if (typeof r.configData === "string") {
+              try {
+                parsedConfig = JSON.parse(r.configData);
+              } catch (e) {
+                console.error("Failed to parse configData:", e);
               }
-              const configObj = (parsedConfig || {}) as UIRoundConfig;
-              return {
-                ...r,
-                roundType: r.roundType as RoundType,
-                reviewerId: (r as { reviewerId?: number | null }).reviewerId ?? null,
-                configData: {
-                  ...configObj,
-                  codingProblemsId:
-                    configObj.codingProblems
-                      ?.map((cp) => cp.problemId)
-                      .filter((id): id is number => id !== undefined) ?? [],
-                  codingProblems: configObj.codingProblems ?? [],
-                  codeReviewProblemsId:
-                    configObj.codeReviewProblems
-                      ?.map((cp) => cp.problemId)
-                      .filter((id): id is number => id !== undefined) ?? [],
-                  codeReviewProblems: configObj.codeReviewProblems ?? [],
-                },
-              };
-            });
-            setRounds(uiRounds);
-            setHasExistingRounds(fetchedRounds.length > 0);
-          }
+            }
+            const configObj = (parsedConfig || {}) as UIRoundConfig;
+            return {
+              ...r,
+              roundType: r.roundType as RoundType,
+              reviewerId: (r as { reviewerId?: number | null }).reviewerId ?? null,
+              configData: {
+                ...configObj,
+                codingProblemsId:
+                  configObj.codingProblems
+                    ?.map((cp) => cp.problemId)
+                    .filter((id): id is number => id !== undefined) ?? [],
+                codingProblems: configObj.codingProblems ?? [],
+                codeReviewProblemsId:
+                  configObj.codeReviewProblems
+                    ?.map((cp) => cp.problemId)
+                    .filter((id): id is number => id !== undefined) ?? [],
+                codeReviewProblems: configObj.codeReviewProblems ?? [],
+              },
+            };
+          });
+          setRounds(uiRounds);
+          setHasExistingRounds(savedRounds.length > 0);
         }
       } else {
         toast.error(response.error || t("adminCompanymanagement.unableToSaveProcessSetup"));
