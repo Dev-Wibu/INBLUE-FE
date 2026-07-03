@@ -1,3 +1,4 @@
+import { UniversalMediaUploader } from "@/components/shared/media/UniversalMediaUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +32,7 @@ interface MentorProfileSectionProps {
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onSaveProfile: () => void;
-  onAvatarChange: (_e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAvatarChange: (_files: File[]) => void;
   onClearAvatar: () => void;
   onInputChange: (_field: keyof MentorProfileData, _value: string | number) => void;
 }
@@ -68,18 +69,15 @@ export function MentorProfileSection({
           </div>
           {isEditing && (
             <>
-              <input
-                type="file"
-                id="avatar-upload"
-                accept="image/*"
-                onChange={onAvatarChange}
-                className="hidden"
+              <UniversalMediaUploader
+                preset="single-image"
+                onFilesChange={onAvatarChange}
+                customTrigger={
+                  <div className="absolute right-0 bottom-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-emerald-600 text-white hover:bg-emerald-700">
+                    <Camera className="h-5 w-5" />
+                  </div>
+                }
               />
-              <label
-                htmlFor="avatar-upload"
-                className="absolute right-0 bottom-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-emerald-600 text-white hover:bg-emerald-700">
-                <Camera className="h-5 w-5" />
-              </label>
               {avatarPreview && (
                 <button
                   onClick={onClearAvatar}

@@ -1,4 +1,5 @@
 import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
+import { UniversalMediaUploader } from "@/components/shared/media/UniversalMediaUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,8 +38,8 @@ interface ProfileTabProps {
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onSaveProfile: () => void;
-  onInputChange: (field: keyof UserProfileData, value: string) => void;
-  onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onInputChange: (_field: keyof UserProfileData, _value: string) => void;
+  onAvatarChange: (_files: File[]) => void;
   onClearAvatar: () => void;
   onOpenCvModal: () => void;
 }
@@ -176,18 +177,15 @@ export function ProfileTab({
               </p>
               {isEditing && (
                 <>
-                  <input
-                    type="file"
-                    id="avatar-upload"
-                    accept="image/*"
-                    onChange={onAvatarChange}
-                    className="hidden"
+                  <UniversalMediaUploader
+                    preset="single-image"
+                    onFilesChange={onAvatarChange}
+                    customTrigger={
+                      <div className="mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-[#c6c6cd] bg-white px-3 py-2 text-sm font-medium text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:bg-[#131b2e] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
+                        {t("userAccount.changePhoto")}
+                      </div>
+                    }
                   />
-                  <label
-                    htmlFor="avatar-upload"
-                    className="mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-[#c6c6cd] bg-white px-3 py-2 text-sm font-medium text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:bg-[#131b2e] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
-                    {t("userAccount.changePhoto")}
-                  </label>
                   {avatarPreview && (
                     <button
                       type="button"
