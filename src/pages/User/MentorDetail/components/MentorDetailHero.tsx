@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
+import { cn } from "@/lib/utils";
 import { ArrowLeft, Banknote, Briefcase, Sparkles, Star, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 interface MentorDetailHeroProps {
@@ -9,8 +10,15 @@ interface MentorDetailHeroProps {
   ratingText: string;
   priceText: string;
   onBack: () => void;
+  onAvatarClick?: () => void;
 }
-export function MentorDetailHero({ mentor, ratingText, priceText, onBack }: MentorDetailHeroProps) {
+export function MentorDetailHero({
+  mentor,
+  ratingText,
+  priceText,
+  onBack,
+  onAvatarClick,
+}: MentorDetailHeroProps) {
   const { t } = useTranslation();
   return (
     <div className="space-y-4 rounded-3xl border border-slate-200 bg-white/85 p-4 shadow-sm backdrop-blur-sm md:p-5 dark:border-slate-700/70 dark:bg-slate-900/55">
@@ -31,7 +39,18 @@ export function MentorDetailHero({ mentor, ratingText, priceText, onBack }: Ment
       </div>
 
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
-        <Avatar className="h-24 w-24 border-4 border-white shadow-lg dark:border-slate-800">
+        <Avatar
+          className={cn(
+            "h-24 w-24 border-4 border-white shadow-lg dark:border-slate-800",
+            onAvatarClick && mentor.avatarUrl
+              ? "cursor-pointer transition-transform hover:scale-105"
+              : ""
+          )}
+          onClick={() => {
+            if (onAvatarClick && mentor.avatarUrl) {
+              onAvatarClick();
+            }
+          }}>
           <AvatarImage src={mentor.avatarUrl || ""} alt={mentor.name || t("common.mentor")} />
           <AvatarFallback className="bg-slate-100 text-3xl font-black text-slate-500 dark:bg-slate-800 dark:text-cyan-100">
             {mentor.name?.charAt(0) || "M"}
