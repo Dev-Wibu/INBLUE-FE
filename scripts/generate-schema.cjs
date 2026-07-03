@@ -55,10 +55,7 @@ function patchSchema() {
     // Kiểm tra đã có codeReviewIds chưa
     if (body.includes("codeReviewIds")) return match;
     // Thêm vào sau codingProblemsId
-    return match.replace(
-      /(codingProblemsId\?:\s*number\[\];)/,
-      `$1\n${fieldToAdd}`
-    );
+    return match.replace(/(codingProblemsId\?:\s*number\[\];)/, `$1\n${fieldToAdd}`);
   });
 
   fs.writeFileSync(schemaPath, content);
