@@ -261,36 +261,38 @@ export function AdminDashboardPage() {
         collapsedLogo={ADMIN_SIDEBAR_LOGO_COLLAPSED}
         showSettings={false}
         theme={{
-          wrapper: "h-full bg-slate-900",
+          wrapper:
+            "h-full border-r border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900",
           expandedWidth: "w-64",
           collapsedWidth: "w-[72px]",
-          logoBorder: "border-b border-slate-800",
+          logoBorder: "border-b border-gray-200 dark:border-slate-800",
           logoExpandedPadding: "h-16 gap-3 px-5",
           logoCollapsedPadding: "h-16 justify-center px-2",
           navWrapper: "flex-1 space-y-1 overflow-y-auto px-4 py-5",
           navExpandedPadding: "p-0",
           navCollapsedPadding: "p-0",
           sectionLabel:
-            "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-6 px-3",
-          divider: "",
+            "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-6 px-3 dark:text-slate-400",
+          divider: "border-gray-200 dark:border-slate-800",
           itemPy: "py-2.5",
           activeItem:
-            "bg-indigo-500/10 text-indigo-400 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20",
+            "bg-indigo-50 text-indigo-700 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20",
           inactiveItem:
-            "text-slate-400 rounded-xl hover:bg-slate-800/60 hover:text-slate-200 transition-all",
-          activeIconOverride: "text-indigo-400",
-          flyoutActiveItem: "bg-indigo-500/10 text-indigo-400 font-semibold rounded-lg",
+            "text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
+          activeIconOverride: "text-indigo-600 dark:text-indigo-400",
+          flyoutActiveItem:
+            "bg-indigo-50 text-indigo-700 font-semibold rounded-lg dark:bg-indigo-500/10 dark:text-indigo-400",
           flyoutInactiveItem:
-            "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-all rounded-lg",
-          flyoutActiveIcon: "text-indigo-400",
-          flyoutBorder: "border-slate-700/80",
-          footerBorder: "border-t border-slate-800",
+            "text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all rounded-lg dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
+          flyoutActiveIcon: "text-indigo-600 dark:text-indigo-400",
+          flyoutBorder: "border-gray-200 dark:border-slate-700/80",
+          footerBorder: "border-t border-gray-200 dark:border-slate-800",
           footerExpandedPadding: "p-4",
           footerCollapsedPadding: "p-3",
           logoutExpandedBtn:
-            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-400",
+            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
           logoutCollapsedBtn:
-            "flex items-center justify-center rounded-xl p-2.5 text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-400",
+            "flex items-center justify-center rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
           logoutIcon: "",
           logoutLabel: t("common.logout"),
         }}
