@@ -8,9 +8,12 @@ import type { Company } from "@/services/company.manager";
 import { motion } from "framer-motion";
 import { Building2, Globe, MapPin, Users } from "lucide-react";
 
+import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface CompanyHeroSectionProps {
   company: Company;
@@ -18,6 +21,8 @@ interface CompanyHeroSectionProps {
 
 export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
   const { t } = useTranslation();
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
   const bannerUrl =
     company.bannerUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80";
 
@@ -33,14 +38,32 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
   return (
     <section className="relative w-full pt-16">
       {/* Banner Image */}
-      <div className="h-64 w-full overflow-hidden md:h-80">
+      <div
+        className={cn(
+          "group relative h-64 w-full overflow-hidden md:h-80",
+          bannerUrl ? "cursor-pointer" : ""
+        )}
+        onClick={() => {
+          if (bannerUrl) {
+            setViewerItems([
+              {
+                id: "company-banner",
+                name: t("common.coverPhoto") || "Cover Photo",
+                src: bannerUrl,
+                alt: `${company.name} banner`,
+                kind: "image",
+              },
+            ]);
+            setViewerOpen(true);
+          }
+        }}>
         <motion.img
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           src={bannerUrl}
           alt={`${company.name} banner`}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
       </div>
@@ -58,7 +81,25 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
                 {/* Logo */}
                 <div className="relative -mt-16 sm:-mt-12">
-                  <div className="flex h-28 w-28 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-[#0047AB] to-[#007BFF] shadow-lg sm:h-32 sm:w-32 dark:border-slate-800 dark:from-[#0047AB] dark:to-[#003366]">
+                  <div
+                    className={cn(
+                      "flex h-28 w-28 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-[#0047AB] to-[#007BFF] shadow-lg sm:h-32 sm:w-32 dark:border-slate-800 dark:from-[#0047AB] dark:to-[#003366]",
+                      logoUrl ? "cursor-pointer transition-transform hover:scale-105" : ""
+                    )}
+                    onClick={() => {
+                      if (logoUrl) {
+                        setViewerItems([
+                          {
+                            id: "company-logo",
+                            name: t("common.logo") || "Logo",
+                            src: logoUrl,
+                            alt: company.name,
+                            kind: "image",
+                          },
+                        ]);
+                        setViewerOpen(true);
+                      }
+                    }}>
                     {logoUrl ? (
                       <Avatar className="h-full w-full rounded-xl">
                         <AvatarImage src={logoUrl} alt={company.name} className="object-cover" />
@@ -168,6 +209,8 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
           </div>
         </motion.div>
       </div>
+
+      <MediaLightboxDialog open={viewerOpen} onOpenChange={setViewerOpen} items={viewerItems} />
     </section>
   );
 }
