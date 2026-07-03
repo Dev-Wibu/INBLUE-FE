@@ -1858,6 +1858,7 @@
     "youNeedToLogIn": "You need to log in to access this page. Please log in and try again."
   },
   "general": {
+    "pleaseFillAllRequiredFields": "Please fill all required fields",
     "accompaniedSessionsWithStudentsOf": "Accompanied {{var_0}} sessions with students of various levels.",
     "accountHasBeenLocked": "Account has been locked",
     "achievements": "Achievements:",

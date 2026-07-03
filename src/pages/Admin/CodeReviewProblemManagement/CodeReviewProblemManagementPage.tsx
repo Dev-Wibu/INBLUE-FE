@@ -323,9 +323,20 @@ export function CodeReviewProblemManagementPage() {
                   language={(
                     selectedProblem.files[viewActiveFileIdx]?.language || "java"
                   ).toLowerCase()}
-                  issues={(selectedProblem.expectedIssues || []).filter(
-                    (iss) => iss.filename === selectedProblem.files[viewActiveFileIdx]?.filename
-                  )}
+                  issues={(selectedProblem.expectedIssues || [])
+                    .filter(
+                      (iss) =>
+                        iss.filename === selectedProblem.files?.[viewActiveFileIdx]?.filename &&
+                        iss.lineNumber !== undefined &&
+                        iss.severity !== undefined &&
+                        iss.description !== undefined
+                    )
+                    .map((iss) => ({
+                      filename: iss.filename || "",
+                      lineNumber: iss.lineNumber as number,
+                      severity: iss.severity as string,
+                      description: iss.description as string,
+                    }))}
                   theme={monacoTheme}
                 />
               </div>

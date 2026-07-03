@@ -747,7 +747,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                               {String(idx + 1).padStart(2, "0")}
                             </td>
                             {paramCount > 0 ? (
-                              formData.paramTypes?.map((pt, pIdx) => (
+                              formData.paramTypes?.map((_pt, pIdx) => (
                                 <td key={pIdx} className="px-4 py-4 align-top">
                                   <Textarea
                                     value={tc.inputs?.[pIdx] || ""}

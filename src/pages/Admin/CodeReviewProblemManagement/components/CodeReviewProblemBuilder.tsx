@@ -199,7 +199,9 @@ export function CodeReviewProblemBuilder({
     if (!editorInstance || !monaco) return;
 
     const activeFile = newProblem.files[createActiveFileIdx]?.filename || "";
-    const fileIssues = issuesRef.current.filter((i) => i.filename === activeFile);
+    const fileIssues = issuesRef.current.filter(
+      (i) => i.filename === activeFile && i.lineNumber !== undefined
+    ) as (ExpectedIssue & { lineNumber: number })[];
 
     const newDecorations = fileIssues.map((issue) => {
       const isExpanded = expandedIssues[issue.lineNumber];
@@ -247,7 +249,9 @@ export function CodeReviewProblemBuilder({
     if (!editorInstance) return;
 
     const activeFile = newProblem.files[createActiveFileIdx]?.filename || "";
-    const fileIssues = issuesRef.current.filter((i) => i.filename === activeFile);
+    const fileIssues = issuesRef.current.filter(
+      (i) => i.filename === activeFile && i.lineNumber !== undefined && i.description !== undefined
+    ) as (ExpectedIssue & { lineNumber: number; description: string })[];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     editorInstance.changeViewZones((changeAccessor: any) => {
@@ -448,7 +452,6 @@ export function CodeReviewProblemBuilder({
         });
         setAiGeneratedLoaded(true);
         setCreationMode("manual");
-        setCreateTabMode("code");
 
         setCreateActiveFileIdx(0);
         toast.success(t("problem.codeReviewGenerated"));

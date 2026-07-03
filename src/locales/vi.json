@@ -1858,6 +1858,7 @@
     "youNeedToLogIn": "Bạn cần đăng nhập để truy cập trang này. Vui lòng đăng nhập và thử lại."
   },
   "general": {
+    "pleaseFillAllRequiredFields": "Vui lòng điền tất cả các trường bắt buộc",
     "accompaniedSessionsWithStudentsOf": "Đã đồng hành {{var_0}} phiên cùng học viên ở nhiều cấp độ.",
     "accountHasBeenLocked": "Tài khoản đã bị khóa",
     "achievements": "Thành tích:",

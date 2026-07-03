@@ -1,4 +1,4 @@
-import Editor, { useMonaco } from "@monaco-editor/react";
+import Editor, { type OnMount, useMonaco } from "@monaco-editor/react";
 import { useEffect, useRef, useState } from "react";
 
 export interface CodeIssue {
@@ -26,8 +26,7 @@ export function MonacoCodeReviewViewer({
   theme,
 }: MonacoCodeReviewViewerProps) {
   const monaco = useMonaco();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [editorInstance, setEditorInstance] = useState<any | null>(null);
+  const [editorInstance, setEditorInstance] = useState<Parameters<OnMount>[0] | null>(null);
   const [expandedIssues, setExpandedIssues] = useState<Record<number, boolean>>({});
 
   // Ref to hold the current zones so we can remove them
@@ -113,35 +112,36 @@ export function MonacoCodeReviewViewer({
   const updateViewZones = () => {
     if (!editorInstance) return;
 
-    editorInstance.changeViewZones((changeAccessor) => {
-      // Remove all existing zones
-      Object.values(viewZonesRef.current).forEach((id) => {
-        changeAccessor.removeZone(id);
-      });
-      viewZonesRef.current = {};
+    editorInstance.changeViewZones(
+      (changeAccessor: Parameters<Parameters<typeof editorInstance.changeViewZones>[0]>[0]) => {
+        // Remove all existing zones
+        Object.values(viewZonesRef.current).forEach((id) => {
+          changeAccessor.removeZone(id);
+        });
+        viewZonesRef.current = {};
 
-      // Add expanded zones
-      issues.forEach((issue) => {
-        if (expandedIssues[issue.lineNumber]) {
-          const domNode = document.createElement("div");
+        // Add expanded zones
+        issues.forEach((issue) => {
+          if (expandedIssues[issue.lineNumber]) {
+            const domNode = document.createElement("div");
 
-          let severityClass = "critical";
-          let badgeColor = "#ef4444";
-          let textColor = "#fca5a5";
+            let severityClass = "critical";
+            let badgeColor = "#ef4444";
+            let textColor = "#fca5a5";
 
-          if (issue.severity === "WARNING") {
-            severityClass = "warning";
-            badgeColor = "#f59e0b"; // amber-500
-            textColor = "#fde68a"; // amber-200
-          } else if (issue.severity === "INFO") {
-            severityClass = "info";
-            badgeColor = "#3b82f6"; // blue-500
-            textColor = "#bfdbfe"; // blue-200
-          }
+            if (issue.severity === "WARNING") {
+              severityClass = "warning";
+              badgeColor = "#f59e0b"; // amber-500
+              textColor = "#fde68a"; // amber-200
+            } else if (issue.severity === "INFO") {
+              severityClass = "info";
+              badgeColor = "#3b82f6"; // blue-500
+              textColor = "#bfdbfe"; // blue-200
+            }
 
-          domNode.className = `monaco-issue-zone-container ${severityClass}`;
+            domNode.className = `monaco-issue-zone-container ${severityClass}`;
 
-          domNode.innerHTML = `
+            domNode.innerHTML = `
             <div style="display: flex; flex-direction: column; gap: 8px; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="background-color: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">${issue.severity}</span>
@@ -151,26 +151,27 @@ export function MonacoCodeReviewViewer({
             </div>
           `;
 
-          // Estimate height dynamically based on description length
-          const charsPerLine = 90; // Approximate chars per line in editor
-          const descLines = Math.ceil(issue.description.length / charsPerLine);
-          const headerPx = 36; // padding + header + gap
-          const descPx = descLines * 20; // 13px font * 1.5 line height
-          const totalPx = headerPx + descPx + 16; // + bottom padding
-          const editorLineHeight = 19; // Default editor line height
-          const estimatedLines = Math.max(4, Math.ceil(totalPx / editorLineHeight));
+            // Estimate height dynamically based on description length
+            const charsPerLine = 90; // Approximate chars per line in editor
+            const descLines = Math.ceil(issue.description.length / charsPerLine);
+            const headerPx = 36; // padding + header + gap
+            const descPx = descLines * 20; // 13px font * 1.5 line height
+            const totalPx = headerPx + descPx + 16; // + bottom padding
+            const editorLineHeight = 19; // Default editor line height
+            const estimatedLines = Math.max(4, Math.ceil(totalPx / editorLineHeight));
 
-          const zoneId = changeAccessor.addZone({
-            afterLineNumber: issue.lineNumber,
-            heightInLines: estimatedLines,
-            domNode: domNode,
-            marginDomNode: null,
-          });
+            const zoneId = changeAccessor.addZone({
+              afterLineNumber: issue.lineNumber,
+              heightInLines: estimatedLines,
+              domNode: domNode,
+              marginDomNode: null,
+            });
 
-          viewZonesRef.current[issue.lineNumber] = zoneId;
-        }
-      });
-    });
+            viewZonesRef.current[issue.lineNumber] = zoneId;
+          }
+        });
+      }
+    );
   };
 
   // Safe HTML escaping for description
@@ -188,8 +189,7 @@ export function MonacoCodeReviewViewer({
     updateViewZones();
   }, [expandedIssues, issues, editorInstance, monaco]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEditorDidMount = (editor: any, monacoInstance: any) => {
+  const handleEditorDidMount: OnMount = (editor, monacoInstance) => {
     setEditorInstance(editor);
 
     // Listen for clicks on the glyph margin

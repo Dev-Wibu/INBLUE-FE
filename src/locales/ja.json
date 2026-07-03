@@ -1849,6 +1849,7 @@
     "cannotDeleteCompany": "会社を削除できません"
   },
   "general": {
+    "pleaseFillAllRequiredFields": "すべての必須フィールドに入力してください",
     "accompaniedSessionsWithStudentsOf": "様々なレベルの学生と {{var_0}} 件のセッションを伴奏しました。",
     "accountHasBeenLocked": "アカウントがロックされました",
     "achievements": "成果:",
