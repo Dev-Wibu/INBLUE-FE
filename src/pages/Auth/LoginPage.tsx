@@ -209,7 +209,10 @@ export function LoginPage() {
           </div>
 
           <div className="text-right">
-            <Link to="#" className="text-sm text-[#0047AB] hover:underline dark:text-[#66B2FF]">
+            <Link
+              to="/forgot-password"
+              state={{ prefillEmail: email }}
+              className="text-sm text-[#0047AB] hover:underline dark:text-[#66B2FF]">
               {t("authLoginpage.forgotPassword")}
             </Link>
           </div>

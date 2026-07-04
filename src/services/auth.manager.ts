@@ -119,6 +119,14 @@ export interface SignupData {
   email: string;
   password: string;
 }
+export interface ForgotPasswordData {
+  email: string;
+}
+export interface ResetPasswordData {
+  email: string;
+  otp: string;
+  newPassword: string;
+}
 export interface MentorRegisterData {
   name: string;
   email: string;
@@ -637,6 +645,124 @@ export class AuthManager {
         error: getNormalizedErrorMessage(error, t("common.registrationFailed")),
       };
     }
+  }
+
+  /**
+   * Request a password-reset OTP for the given email.
+   * Backend may return either a plain text message or a JSON-wrapped message.
+   * Returns ApiResponse so callers can show success/error to the user.
+   */
+  async forgotPassword(data: ForgotPasswordData): Promise<ApiResponse<{ message: string }>> {
+    try {
+      const { data: responseData, error } = await fetchClient.POST("/api/auth/forgot-password", {
+        body: { email: data.email.trim() },
+        parseAs: "text",
+      });
+      if (error) {
+        const httpStatus = this.extractHttpStatus(error);
+        const rawMessage = this.extractErrorMessage(error);
+        return {
+          success: false,
+          error: this.mapPasswordResetError(httpStatus, rawMessage, "forgot"),
+        };
+      }
+      const normalized = this.normalizeLoginResponseData(responseData);
+      const message =
+        (typeof normalized === "string" && normalized.trim().length > 0
+          ? normalized.trim()
+          : undefined) ||
+        (isRecord(normalized) ? extractApiErrorMessage(normalized) : undefined) ||
+        t("authForgotpasswordpage.otpSentDefault");
+      return {
+        success: true,
+        data: { message },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: getNormalizedErrorMessage(error, t("authForgotpasswordpage.sendOtpFailed")),
+      };
+    }
+  }
+
+  /**
+   * Submit the OTP + new password to complete the reset.
+   */
+  async resetPassword(data: ResetPasswordData): Promise<ApiResponse<{ message: string }>> {
+    try {
+      const { data: responseData, error } = await fetchClient.POST("/api/auth/reset-password", {
+        body: {
+          email: data.email.trim(),
+          otp: data.otp.trim(),
+          newPassword: data.newPassword,
+        },
+        parseAs: "text",
+      });
+      if (error) {
+        const httpStatus = this.extractHttpStatus(error);
+        const rawMessage = this.extractErrorMessage(error);
+        return {
+          success: false,
+          error: this.mapPasswordResetError(httpStatus, rawMessage, "reset"),
+        };
+      }
+      const normalized = this.normalizeLoginResponseData(responseData);
+      const message =
+        (typeof normalized === "string" && normalized.trim().length > 0
+          ? normalized.trim()
+          : undefined) ||
+        (isRecord(normalized) ? extractApiErrorMessage(normalized) : undefined) ||
+        t("authResetpasswordpage.resetSuccessDefault");
+      return {
+        success: true,
+        data: { message },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: getNormalizedErrorMessage(error, t("authResetpasswordpage.resetFailed")),
+      };
+    }
+  }
+
+  private mapPasswordResetError(
+    httpStatus: number | undefined,
+    rawMessage: string | undefined,
+    phase: "forgot" | "reset"
+  ): string {
+    const normalizedMessage = rawMessage?.toLowerCase() || "";
+    if (
+      normalizedMessage.includes("expired") ||
+      normalizedMessage.includes("invalid otp") ||
+      normalizedMessage.includes("wrong otp") ||
+      normalizedMessage.includes("otp") ||
+      normalizedMessage.includes("mã xác nhận") ||
+      normalizedMessage.includes("mã otp")
+    ) {
+      return t("authResetpasswordpage.invalidOrExpiredOtp");
+    }
+    if (normalizedMessage.includes("not found") || normalizedMessage.includes("không tồn tại")) {
+      return t("authForgotpasswordpage.emailNotFound");
+    }
+    if (
+      normalizedMessage.includes("too many") ||
+      normalizedMessage.includes("rate limit") ||
+      httpStatus === 429
+    ) {
+      return t("authForgotpasswordpage.tooManyRequests");
+    }
+    if (
+      httpStatus === 400 &&
+      (normalizedMessage.includes("password") || normalizedMessage.includes("mật khẩu"))
+    ) {
+      return t("authResetpasswordpage.passwordTooWeak");
+    }
+    return (
+      rawMessage ||
+      (phase === "forgot"
+        ? t("authForgotpasswordpage.sendOtpFailed")
+        : t("authResetpasswordpage.resetFailed"))
+    );
   }
 
   /**
