@@ -1,4 +1,5 @@
 import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
+import { UniversalMediaUploader } from "@/components/shared/media/UniversalMediaUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useMajorOptions } from "@/constants/majors";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
+import { cn } from "@/lib/utils";
 import {
   BookOpen,
   ExternalLink,
@@ -37,8 +39,8 @@ interface ProfileTabProps {
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onSaveProfile: () => void;
-  onInputChange: (field: keyof UserProfileData, value: string) => void;
-  onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onInputChange: (_field: keyof UserProfileData, _value: string) => void;
+  onAvatarChange: (_files: File[]) => void;
   onClearAvatar: () => void;
   onOpenCvModal: () => void;
 }
@@ -150,7 +152,27 @@ export function ProfileTab({
             {/* Avatar Card */}
             <div className="flex flex-col items-center rounded-xl border border-[rgba(15,23,42,0.1)] bg-[#f8f9ff] p-4 text-center dark:border-[rgba(255,255,255,0.1)] dark:bg-[#1a2a3a]">
               <div className="relative">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white/70 dark:bg-[#131b2e] dark:ring-[#131b2e]/80">
+                <div
+                  className={cn(
+                    "flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white/70 dark:bg-[#131b2e] dark:ring-[#131b2e]/80",
+                    !isEditing && (avatarPreview || userProfile.avatar)
+                      ? "cursor-pointer transition-transform hover:scale-105"
+                      : ""
+                  )}
+                  onClick={() => {
+                    if (!isEditing && (avatarPreview || userProfile.avatar)) {
+                      setViewerItems([
+                        {
+                          id: "profile-avatar",
+                          name: t("common.avatar"),
+                          src: (avatarPreview || userProfile.avatar) as string,
+                          alt: userProfile.name,
+                          kind: "image",
+                        },
+                      ]);
+                      setViewerOpen(true);
+                    }
+                  }}>
                   {avatarPreview || userProfile.avatar ? (
                     <img
                       src={avatarPreview || userProfile.avatar || ""}
@@ -176,18 +198,16 @@ export function ProfileTab({
               </p>
               {isEditing && (
                 <>
-                  <input
-                    type="file"
-                    id="avatar-upload"
-                    accept="image/*"
-                    onChange={onAvatarChange}
-                    className="hidden"
+                  <UniversalMediaUploader
+                    preset="single-image"
+                    enableWebcam={true}
+                    onFilesChange={onAvatarChange}
+                    customTrigger={
+                      <div className="mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-[#c6c6cd] bg-white px-3 py-2 text-sm font-medium text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:bg-[#131b2e] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
+                        {t("userAccount.changePhoto")}
+                      </div>
+                    }
                   />
-                  <label
-                    htmlFor="avatar-upload"
-                    className="mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-[#c6c6cd] bg-white px-3 py-2 text-sm font-medium text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:bg-[#131b2e] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
-                    {t("userAccount.changePhoto")}
-                  </label>
                   {avatarPreview && (
                     <button
                       type="button"

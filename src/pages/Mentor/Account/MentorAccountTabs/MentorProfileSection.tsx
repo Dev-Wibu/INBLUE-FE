@@ -1,9 +1,12 @@
+import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
+import { UniversalMediaUploader } from "@/components/shared/media/UniversalMediaUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency, formatDate } from "@/lib/formatting";
 import { openUrlInNewTab } from "@/lib/media-file-utils";
+import { cn } from "@/lib/utils";
 import {
   Award,
   BookOpen,
@@ -19,6 +22,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MentorProfileData } from "./types";
 interface MentorProfileSectionProps {
@@ -31,7 +35,7 @@ interface MentorProfileSectionProps {
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onSaveProfile: () => void;
-  onAvatarChange: (_e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAvatarChange: (_files: File[]) => void;
   onClearAvatar: () => void;
   onInputChange: (_field: keyof MentorProfileData, _value: string | number) => void;
 }
@@ -50,12 +54,34 @@ export function MentorProfileSection({
   onInputChange,
 }: MentorProfileSectionProps) {
   const { t } = useTranslation();
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
   return (
     <>
       {/* Avatar Section */}
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-emerald-100 bg-linear-to-b from-emerald-50/80 to-white p-8 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:border-emerald-900/40 dark:from-emerald-900/20 dark:to-slate-900 dark:shadow-slate-900/50">
         <div className="relative">
-          <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white/80 dark:bg-slate-900 dark:ring-slate-900/80">
+          <div
+            className={cn(
+              "flex h-32 w-32 items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white/80 dark:bg-slate-900 dark:ring-slate-900/80",
+              !isEditing && (avatarPreview || mentorProfile.avatar)
+                ? "cursor-pointer transition-transform hover:scale-105"
+                : ""
+            )}
+            onClick={() => {
+              if (!isEditing && (avatarPreview || mentorProfile.avatar)) {
+                setViewerItems([
+                  {
+                    id: "mentor-avatar",
+                    name: t("common.avatar"),
+                    src: (avatarPreview || mentorProfile.avatar) as string,
+                    alt: mentorProfile.name,
+                    kind: "image",
+                  },
+                ]);
+                setViewerOpen(true);
+              }
+            }}>
             {avatarPreview || mentorProfile.avatar ? (
               <img
                 src={avatarPreview || mentorProfile.avatar || ""}
@@ -68,18 +94,16 @@ export function MentorProfileSection({
           </div>
           {isEditing && (
             <>
-              <input
-                type="file"
-                id="avatar-upload"
-                accept="image/*"
-                onChange={onAvatarChange}
-                className="hidden"
+              <UniversalMediaUploader
+                preset="single-image"
+                enableWebcam={true}
+                onFilesChange={onAvatarChange}
+                customTrigger={
+                  <div className="absolute right-0 bottom-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-emerald-600 text-white hover:bg-emerald-700">
+                    <Camera className="h-5 w-5" />
+                  </div>
+                }
               />
-              <label
-                htmlFor="avatar-upload"
-                className="absolute right-0 bottom-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-emerald-600 text-white hover:bg-emerald-700">
-                <Camera className="h-5 w-5" />
-              </label>
               {avatarPreview && (
                 <button
                   onClick={onClearAvatar}
@@ -397,6 +421,8 @@ export function MentorProfileSection({
           </div>
         </div>
       </div>
+
+      <MediaLightboxDialog open={viewerOpen} onOpenChange={setViewerOpen} items={viewerItems} />
     </>
   );
 }

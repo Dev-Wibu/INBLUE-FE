@@ -121,8 +121,8 @@ export function MentorAccountPage() {
     setAvatarPreview(null);
     setIsEditing(false);
   };
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleAvatarChange = (files: File[]) => {
+    const file = files[0];
     if (file) {
       if (avatarPreview?.startsWith("blob:")) {
         URL.revokeObjectURL(avatarPreview);

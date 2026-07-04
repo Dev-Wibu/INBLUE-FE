@@ -147,13 +147,13 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
           {
             type: "codeReviewProblems",
             icon: Code2,
-            label: "Code Review Problems",
+            label: t("adminAdmindashboard.codeReviewProblems"),
             color: "text-slate-400",
           },
           {
             type: "codingProblems",
             icon: Code2,
-            label: "Vòng Coding",
+            label: t("adminAdmindashboard.codingProblems"),
             color: "text-slate-400",
           },
         ],
@@ -321,6 +321,10 @@ export function AdminDashboardPage() {
               <Route path="practiceQuestions" element={<PracticeQuestionManagementPage />} />
               <Route path="posts" element={<PostManagementPage />} />
               <Route path="companies" element={<CompanyManagementPage isActive={true} />} />
+              <Route
+                path="companies/:companyId"
+                element={<CompanyManagementPage isActive={true} />}
+              />
               <Route path="candidateProfiles" element={<CandidateProfileManagementPage />} />
               <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
               <Route

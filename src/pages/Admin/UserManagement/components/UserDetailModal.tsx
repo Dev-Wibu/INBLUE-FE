@@ -1,7 +1,10 @@
+import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { Briefcase, Hash, Mail } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { UserRole, User as UserType } from "../types";
 
@@ -26,6 +29,8 @@ const getRoleBadgeClass = (role?: UserRole): string => {
 
 export function UserDetailModal({ user, isOpen, onOpenChange }: UserDetailModalProps) {
   const { t } = useTranslation();
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
 
   if (!user) return null;
 
@@ -39,7 +44,25 @@ export function UserDetailModal({ user, isOpen, onOpenChange }: UserDetailModalP
         </DialogHeader>
 
         <div className="flex flex-col items-center justify-center space-y-4 py-4">
-          <Avatar className="h-24 w-24 border-4 border-slate-100 shadow-sm dark:border-slate-800">
+          <Avatar
+            className={cn(
+              "h-24 w-24 border-4 border-slate-100 shadow-sm dark:border-slate-800",
+              user.avatarUrl ? "cursor-pointer transition-transform hover:scale-105" : ""
+            )}
+            onClick={() => {
+              if (user.avatarUrl) {
+                setViewerItems([
+                  {
+                    id: "user-avatar",
+                    name: t("common.avatar"),
+                    src: user.avatarUrl,
+                    alt: user.name,
+                    kind: "image",
+                  },
+                ]);
+                setViewerOpen(true);
+              }
+            }}>
             <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
             <AvatarFallback className="bg-blue-100 text-3xl text-blue-700 dark:bg-blue-900 dark:text-blue-300">
               {user.name?.charAt(0)?.toUpperCase()}
@@ -91,6 +114,7 @@ export function UserDetailModal({ user, isOpen, onOpenChange }: UserDetailModalP
           </div>
         </div>
       </DialogContent>
+      <MediaLightboxDialog open={viewerOpen} onOpenChange={setViewerOpen} items={viewerItems} />
     </Dialog>
   );
 }

@@ -542,7 +542,7 @@ export class PostManager implements BaseManager<Post> {
           endpoint,
           {
             params: {
-              status,
+              query: { status },
             },
           }
         )

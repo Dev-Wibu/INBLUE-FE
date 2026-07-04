@@ -1,3 +1,4 @@
+import { UniversalMediaUploader } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { PostStatus } from "@/interfaces/schema.types";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -60,13 +61,15 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
     };
     void fetchPost();
   }, [postId, onCancel, t]);
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (file?: File) => {
     if (file) {
       setCoverFile(file);
       const reader = new FileReader();
       reader.onload = () => setCoverPreview(reader.result as string);
       reader.readAsDataURL(file);
+    } else {
+      setCoverFile(null);
+      setCoverPreview(null);
     }
   };
   const addTag = () => {
@@ -164,7 +167,16 @@ export function PostEditForm({ postId, onSuccess, onCancel }: PostEditFormProps)
 
             <div className="space-y-2">
               <Label htmlFor="cover">{t("common.coverPhoto")}</Label>
-              <Input id="cover" type="file" accept="image/*" onChange={handleFileChange} />
+              <UniversalMediaUploader
+                preset="single-image"
+                onFilesChange={(files) => handleFileChange(files[0])}
+                customTrigger={
+                  <Button type="button" variant="outline" className="w-full">
+                    <Upload className="mr-2 h-4 w-4" />
+                    {t("common.uploadFile")}
+                  </Button>
+                }
+              />
               {coverPreview && (
                 <img
                   src={coverPreview}

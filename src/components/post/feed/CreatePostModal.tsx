@@ -1,3 +1,4 @@
+import { UniversalMediaUploader } from "@/components/shared/media/UniversalMediaUploader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { ImagePlus, Send, Tag, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 interface CreatePostModalProps {
@@ -29,7 +30,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const authorName = user?.name ?? t("common.friend");
   const authorInitials = authorName
     .split(" ")
@@ -44,7 +44,15 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
     setTagInput("");
     setTags([]);
     setCoverFile(null);
+    if (coverPreview) URL.revokeObjectURL(coverPreview);
     setCoverPreview(null);
+  };
+  const handleCoverFilesChange = (files: File[]) => {
+    const file = files[0];
+    if (!file) return;
+    if (coverPreview) URL.revokeObjectURL(coverPreview);
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
   };
   const handleAddTag = () => {
     const tag = tagInput.trim();
@@ -56,14 +64,7 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   const handleRemoveTag = (tag: string) => {
     setTags((prev) => prev.filter((t) => t !== tag));
   };
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCoverFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setCoverPreview(reader.result as string);
-    reader.readAsDataURL(file);
-  };
+
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim() || !user?.id) return;
     setSubmitting(true);
@@ -150,13 +151,6 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
           </div>
 
           <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
             {coverPreview ? (
               <div className="relative overflow-hidden rounded-lg">
                 <img
@@ -169,19 +163,26 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
                   className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
                   onClick={() => {
                     setCoverFile(null);
+                    if (coverPreview) URL.revokeObjectURL(coverPreview);
                     setCoverPreview(null);
                   }}>
                   <X className="h-4 w-4" />
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                className="border-muted hover:bg-muted/50 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors"
-                onClick={() => fileInputRef.current?.click()}>
-                <ImagePlus className="h-6 w-6 text-slate-400" />
-                <span className="text-muted-foreground text-sm">{t("compPost.addCoverPhoto")}</span>
-              </button>
+              <UniversalMediaUploader
+                preset="single-image"
+                enableWebcam={true}
+                onFilesChange={handleCoverFilesChange}
+                customTrigger={
+                  <div className="border-muted hover:bg-muted/50 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed py-8 transition-colors">
+                    <ImagePlus className="h-6 w-6 text-slate-400" />
+                    <span className="text-muted-foreground text-sm">
+                      {t("compPost.addCoverPhoto")}
+                    </span>
+                  </div>
+                }
+              />
             )}
           </div>
 

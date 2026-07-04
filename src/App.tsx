@@ -15,8 +15,10 @@ import { QueryProvider } from "@/contexts/QueryProvider";
 import { AdminDashboardPage } from "@/pages/Admin";
 import { ApplicationGradingDetailPage } from "@/pages/Admin/ApplicationGrading";
 import {
+  ForgotPasswordPage,
   LoginPage,
   MentorRegisterPage,
+  ResetPasswordPage,
   SelectRolePage,
   SignupPage,
   WaitingAcceptMentorPage,
@@ -151,6 +153,8 @@ function App() {
               <Route element={<AuthLayout />}>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
               </Route>
             </Route>
 

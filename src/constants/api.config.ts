@@ -22,6 +22,8 @@ export const API_ENDPOINTS = {
     REFRESH: "/auth/refresh",
     MENTOR_REGISTER: "/auth/mentor-register",
     CHECK_STATUS: "/auth/mentor-status",
+    FORGOT_PASSWORD: "/api/auth/forgot-password",
+    RESET_PASSWORD: "/api/auth/reset-password",
   },
 
   // User endpoints (for current user)
@@ -414,6 +416,8 @@ const PUBLIC_AUTH_POST_ENDPOINTS = new Set<string>([
   API_ENDPOINTS.AUTH.LOGIN_WITH_GOOGLE,
   API_ENDPOINTS.AUTH.SIGNUP,
   API_ENDPOINTS.AUTH.MENTOR_REGISTER,
+  API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+  API_ENDPOINTS.AUTH.RESET_PASSWORD,
 ]);
 
 const PUBLIC_REGISTRATION_POST_ENDPOINTS = new Set<string>([
