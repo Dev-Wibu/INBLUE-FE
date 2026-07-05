@@ -305,7 +305,7 @@ export function QuestionBankFormDialog({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowAI(!showAI)}
-                className={`h-7 px-2 text-[11px] font-medium transition-colors ${showAI ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400" : "text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400"}`}>
+                className={`h-7 px-2 text-[11px] font-medium transition-colors ${showAI ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300" : "text-slate-600 hover:text-indigo-700 dark:text-slate-400 dark:hover:text-indigo-400"}`}>
                 <Wand2 className="mr-1.5 h-3.5 w-3.5" />
                 AI Magic
               </Button>
@@ -429,7 +429,7 @@ export function QuestionBankFormDialog({
                             className={`absolute top-1/2 left-2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[11px] font-bold transition-all ${
                               isCorrect
                                 ? "bg-emerald-500 text-white shadow-md ring-4 ring-emerald-500/20"
-                                : "bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-emerald-900/30"
+                                : "bg-slate-100 text-slate-600 hover:bg-emerald-100 hover:text-emerald-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-emerald-900/40 dark:hover:text-emerald-300"
                             }`}>
                             {String.fromCharCode(65 + idx)}
                           </button>
@@ -447,7 +447,7 @@ export function QuestionBankFormDialog({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-500 focus-visible:opacity-100"
+                            className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 text-slate-500 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 hover:text-rose-600 focus-within:opacity-100 dark:text-slate-400 dark:hover:text-rose-500"
                             onClick={() => removeOption(idx)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>

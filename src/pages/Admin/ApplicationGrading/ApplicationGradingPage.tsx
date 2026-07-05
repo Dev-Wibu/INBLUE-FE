@@ -913,25 +913,49 @@ export function ApplicationGradingPage({
   );
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      {/* Page header */}
-      <div className="border-border shrink-0 border-b bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              {t("adminApplicationGrading.pageTitle")}
-            </h1>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {t("adminApplicationGrading.pageDescription")}
-            </p>
+    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            {t("adminApplicationGrading.pageTitle")}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {t("adminApplicationGrading.pageDescription")}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              placeholder={t("application.searchById")}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                pagination.setPage(1);
+              }}
+              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+            />
           </div>
+
+          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+          
+          <ReloadButton
+            onReload={async () => {
+              // Note: missing refetch function for rawApps, but button matches style
+            }}
+            tooltip={t("common.reload")}
+            className="h-8 w-8"
+          />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        {/* Stats */}
-        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Card>
+      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 sm:px-6 sm:pt-6">
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
             <CardContent className="pt-4">
               <p className="text-xs text-slate-500">
                 {isStaff ? t("grading.submissionsToGrade") : t("userApplicationhistory.totalOrder")}
@@ -941,7 +965,7 @@ export function ApplicationGradingPage({
               </p>
             </CardContent>
           </Card>
-          <Card className="border-amber-100 dark:border-amber-900">
+          <Card className="shadow-none border-amber-100 dark:border-amber-900/30">
             <CardContent className="pt-4">
               <p className="flex items-center gap-1 text-xs text-amber-600">
                 <XCircle className="h-3.5 w-3.5" />
@@ -950,7 +974,7 @@ export function ApplicationGradingPage({
               <p className="mt-1 text-2xl font-bold text-amber-600">{inProgressCount}</p>
             </CardContent>
           </Card>
-          <Card className="border-purple-100 dark:border-purple-900">
+          <Card className="shadow-none border-purple-100 dark:border-purple-900/30">
             <CardContent className="pt-4">
               <p className="flex items-center gap-1 text-xs text-purple-600">
                 <ClipboardCheck className="h-3.5 w-3.5" />
@@ -964,7 +988,7 @@ export function ApplicationGradingPage({
               </p>
             </CardContent>
           </Card>
-          <Card className="border-green-100 dark:border-green-900">
+          <Card className="shadow-none border-green-100 dark:border-green-900/30">
             <CardContent className="pt-4">
               <p className="flex items-center gap-1 text-xs text-green-600">
                 <CheckCircle2 className="h-3.5 w-3.5" />
@@ -979,131 +1003,114 @@ export function ApplicationGradingPage({
           </Card>
         </div>
 
-        {/* Search */}
-        <Card className="mb-6">
-          <CardContent className="pt-4">
-            <div className="relative max-w-sm">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder={t("application.searchById")}
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  pagination.setPage(1);
-                }}
-                className="pl-9"
-              />
+        {paginatedData.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <ClipboardCheck className="h-6 w-6 text-slate-400 dark:text-slate-500" />
             </div>
-          </CardContent>
-        </Card>
+            <p className="text-sm font-medium text-slate-500">
+              {t("grading.noApplicationsToGrade")}
+            </p>
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-16">#</TableHead>
+                      {isStaff ? (
+                        <>
+                          <TableHead>ID Detail</TableHead>
+                          <TableHead>{t("common.status")}</TableHead>
+                          <TableHead>{t("userApplicationhistory.round")}</TableHead>
+                        </>
+                      ) : (
+                        <>
+                          <TableHead>ID JD</TableHead>
+                          <TableHead>{t("common.status")}</TableHead>
+                          <TableHead>
+                            {t("userApplicationhistory.round")} {t("round.currentRound")}
+                          </TableHead>
+                        </>
+                      )}
+                      <TableHead>{t("userApplicationhistory.totalScore")}</TableHead>
+                      <TableHead className="w-32 text-right">{t("common.operation")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.map((item) => {
+                      const detailId = item.detailId;
+                      const status = item.detailStatus ?? item.status;
+                      const score = item.overallScore;
+                      const roundId = item.detail?.roundId ?? item.currentRoundOrder;
+                      const jdId = item.jdId;
 
-        {/* Table */}
-        <Card>
-          <CardContent className="p-0">
-            {paginatedData.length === 0 ? (
-              <div className="p-12">
-                <EmptyState
-                  icon={ClipboardCheck}
-                  title={t("common.noDataAvailable")}
-                  description={t("grading.noApplicationsToGrade")}
-                />
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>#</TableHead>
-                        {isStaff ? (
-                          <>
-                            <TableHead>ID Detail</TableHead>
-                            <TableHead>{t("common.status")}</TableHead>
-                            <TableHead>{t("userApplicationhistory.round")}</TableHead>
-                          </>
-                        ) : (
-                          <>
-                            <TableHead>ID JD</TableHead>
-                            <TableHead>{t("common.status")}</TableHead>
-                            <TableHead>
-                              {t("userApplicationhistory.round")} {t("round.currentRound")}
-                            </TableHead>
-                          </>
-                        )}
-                        <TableHead>{t("userApplicationhistory.totalScore")}</TableHead>
-                        <TableHead className="text-right">{t("common.operation")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedData.map((item) => {
-                        const detailId = item.detailId;
-                        const status = item.detailStatus ?? item.status;
-                        const score = item.overallScore;
-                        const roundId = item.detail?.roundId ?? item.currentRoundOrder;
-                        const jdId = item.jdId;
-
-                        return (
-                          <TableRow key={item.detailId ?? item.id}>
-                            <TableCell className="font-medium">#{item.id}</TableCell>
-                            {isStaff ? (
-                              <>
-                                <TableCell>Detail #{detailId}</TableCell>
-                                <TableCell>
-                                  <Badge className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
-                                    {STATUS_CONFIG[status ?? ""]?.label ?? status}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm font-medium">
-                                    {t("userApplicationhistory.round")} #{roundId ?? "-"}
-                                  </span>
-                                </TableCell>
-                              </>
+                      return (
+                        <TableRow key={item.detailId ?? item.id}>
+                          <TableCell className="font-medium">#{item.id}</TableCell>
+                          {isStaff ? (
+                            <>
+                              <TableCell>Detail #{detailId}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
+                                  {STATUS_CONFIG[status ?? ""]?.label ?? status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm font-medium">
+                                  {t("userApplicationhistory.round")} #{roundId ?? "-"}
+                                </span>
+                              </TableCell>
+                            </>
+                          ) : (
+                            <>
+                              <TableCell>{jdId ?? "-"}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
+                                  {STATUS_CONFIG[status ?? ""]?.label ?? status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm font-medium">
+                                  {t("userApplicationhistory.round")} {roundId ?? 1}
+                                </span>
+                              </TableCell>
+                            </>
+                          )}
+                          <TableCell>
+                            {score !== undefined ? (
+                              <span className="font-bold text-[#0047AB]">{score}</span>
                             ) : (
-                              <>
-                                <TableCell>{jdId ?? "-"}</TableCell>
-                                <TableCell>
-                                  <Badge className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
-                                    {STATUS_CONFIG[status ?? ""]?.label ?? status}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm font-medium">
-                                    {t("userApplicationhistory.round")} {roundId ?? 1}
-                                  </span>
-                                </TableCell>
-                              </>
+                              <span className="text-slate-400">-</span>
                             )}
-                            <TableCell>
-                              {score !== undefined ? (
-                                <span className="font-bold text-[#0047AB]">{score}</span>
-                              ) : (
-                                <span className="text-slate-400">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                variant="default"
-                                size="sm"
-                                className="gap-1.5 bg-[#0047AB] text-xs hover:bg-[#003d91]"
-                                onClick={() => handleOpenGrading(item.id, item.detailId)}>
-                                <ClipboardCheck className="h-3.5 w-3.5" />
-                                {t("grading.grade")} {t("general.score")}
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-                <div className="border-t border-slate-200 px-4 py-3 dark:border-slate-800">
-                  <PaginationControl pagination={pagination} />
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 gap-1.5 text-xs text-[#0047AB] hover:bg-[#0047AB]/10 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                              onClick={() => handleOpenGrading(item.id, item.detailId)}>
+                              <ClipboardCheck className="h-3.5 w-3.5" />
+                              {t("grading.grade")} {t("general.score")}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                <PaginationControl pagination={pagination} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

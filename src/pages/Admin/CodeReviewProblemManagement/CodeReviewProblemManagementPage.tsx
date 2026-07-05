@@ -353,7 +353,7 @@ export function CodeReviewProblemManagementPage() {
 
   // LIST MODE
   return (
-    <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-4">
@@ -454,7 +454,7 @@ export function CodeReviewProblemManagementPage() {
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6">
+      <div className="flex-1 overflow-auto">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="sm" />
@@ -468,14 +468,17 @@ export function CodeReviewProblemManagementPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <CodeReviewProblemTable
-              problems={pageItems}
-              onViewDetail={handleViewDetail}
-              onEdit={handleEditProblem}
-              onToggleStatus={handleToggleStatus}
-            />
+            <div>
+              <CodeReviewProblemTable
+                problems={pageItems}
+                onViewDetail={handleViewDetail}
+                onEdit={handleEditProblem}
+                onToggleStatus={handleToggleStatus}
+              />
+            </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
               <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 Hiển thị {pageItems.length} / {processedData.length} kết quả
               </div>
@@ -487,6 +490,7 @@ export function CodeReviewProblemManagementPage() {
                 }}
                 pageSizeOptions={[10, 20, 50]}
               />
+              </div>
             </div>
           </div>
         )}

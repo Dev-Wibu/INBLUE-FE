@@ -11,12 +11,13 @@ import { toast } from "sonner";
 import { DeleteQuestionBankDialog } from "./components/DeleteQuestionBankDialog";
 import { QuestionBankCategoryTab } from "./components/QuestionBankCategoryTab";
 import { QuestionBankFormDialog } from "./components/QuestionBankFormDialog";
-import { QuestionBankGrid } from "./components/QuestionBankGrid";
+import { QuestionBankTable } from "./components/QuestionBankTable";
 import type { QuestionBank, QuestionBankFormData, QuestionCategory } from "./types";
 
 export function QuestionBankManagementPage() {
   const { t } = useTranslation();
 
+  const [activeTab, setActiveTab] = useState("questions");
   const [questions, setQuestions] = useState<QuestionBank[]>([]);
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -137,70 +138,70 @@ export function QuestionBankManagementPage() {
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-b bg-white px-6 py-5 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-start justify-between">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col -m-4 md:-m-6 lg:-m-8">
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <FolderOpen className="h-5 w-5" />
+          </div>
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/50">
-                <FolderOpen className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {t("common.questionBank", t("adminCodingProblem.problemBank"))}
-              </h1>
-            </div>
-            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+              {t("common.questionBank", t("adminCodingProblem.problemBank"))}
+            </h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               {t("adminQuestionbankmanagement.description")}
             </p>
           </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-auto bg-slate-50 p-6 dark:bg-slate-900/50">
-        <Tabs defaultValue="questions" className="flex h-full flex-col">
-          <TabsList className="mb-4 w-fit">
-            <TabsTrigger value="questions">
+        <div className="flex flex-wrap items-center gap-3">
+          <TabsList className="h-8">
+            <TabsTrigger value="questions" className="text-xs">
               {t("adminQuestionbankmanagement.questionList")}
             </TabsTrigger>
-            <TabsTrigger value="categories">
+            <TabsTrigger value="categories" className="text-xs">
               {t("adminQuestionbankmanagement.categoryManagement")}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="questions" className="mt-0 flex-1">
-            <div className="flex h-full flex-col space-y-4">
-              <div className="flex justify-end">
-                <Button
-                  onClick={handleCreate}
-                  className="bg-indigo-600 text-white hover:bg-indigo-700">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t("adminQuestionbankmanagement.addQuestion", t("general.addNew"))}
-                </Button>
-              </div>
-              {isLoading ? (
-                <div className="flex h-64 items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-                </div>
-              ) : (
-                <div className="pt-2">
-                  <QuestionBankGrid
-                    questions={questions}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
-                  />
-                </div>
-              )}
-            </div>
-          </TabsContent>
+          {activeTab === "questions" && (
+            <>
+              <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+              <Button
+                onClick={handleCreate}
+                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                {t("adminQuestionbankmanagement.addQuestion", t("general.addNew"))}
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
 
-          <TabsContent value="categories" className="mt-0 flex-1">
-            <QuestionBankCategoryTab
+      <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950">
+        <TabsContent value="questions" className="m-0 h-full">
+          {isLoading ? (
+            <div className="flex h-64 flex-col items-center justify-center gap-3">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+              <p className="text-sm text-slate-500">Đang tải danh sách câu hỏi…</p>
+            </div>
+          ) : (
+            <QuestionBankTable
               questions={questions}
-              onEditQuestion={handleEdit}
-              onDeleteQuestion={handleDeleteClick}
+              categories={categories}
+              onEdit={handleEdit}
+              onDelete={handleDeleteClick}
             />
-          </TabsContent>
-        </Tabs>
+          )}
+        </TabsContent>
+
+        <TabsContent value="categories" className="m-0 h-full">
+          <QuestionBankCategoryTab
+            questions={questions}
+            onEditQuestion={handleEdit}
+            onDeleteQuestion={handleDeleteClick}
+          />
+        </TabsContent>
       </div>
 
       <QuestionBankFormDialog
@@ -230,6 +231,6 @@ export function QuestionBankManagementPage() {
         question={editingQuestion}
         onConfirm={handleDeleteConfirm}
       />
-    </div>
+    </Tabs>
   );
 }

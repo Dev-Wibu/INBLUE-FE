@@ -172,7 +172,7 @@ export function CodingProblemManagementPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
         {/* Left: Search & Filters */}
@@ -274,7 +274,7 @@ export function CodingProblemManagementPage() {
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto">
         {isLoading ? (
           <div className="flex h-64 flex-col items-center justify-center gap-3">
             <Loader2 className="h-7 w-7 animate-spin text-indigo-500" />
@@ -302,15 +302,17 @@ export function CodingProblemManagementPage() {
                 </button>
               </div>
             )}
-            <CodingProblemTable
-              problems={filteredProblems}
-              onEdit={(p) => {
-                setEditingProblem(p);
-                setIsAuthoring(true);
-              }}
-              onDelete={undefined}
-              onToggleStatus={handleToggleStatus}
-            />
+            <div>
+              <CodingProblemTable
+                problems={filteredProblems}
+                onEdit={(p) => {
+                  setEditingProblem(p);
+                  setIsAuthoring(true);
+                }}
+                onDelete={undefined}
+                onToggleStatus={handleToggleStatus}
+              />
+            </div>
           </div>
         )}
       </div>

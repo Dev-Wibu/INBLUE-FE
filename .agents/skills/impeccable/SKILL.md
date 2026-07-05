@@ -4,7 +4,7 @@ description: Use when the user wants to design, redesign, shape, critique, audit
 version: 3.9.0
 ---
 
-Designs and iterates production-grade frontend interfaces. Real working code, committed design choices, exceptional craft.
+Designs and iterates production-grade frontend interfaces. Real working code, comdmitted design choices, exceptional craft.
 
 ## Setup
 

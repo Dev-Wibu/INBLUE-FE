@@ -123,165 +123,164 @@ export function ReviewManagementPage() {
     }
   };
   return (
-    <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
-      {/* Header */}
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
+    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             {t("common.reviewsFromMentors")}
           </h1>
-          <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("adminReviewmanagement.seeTheListOfMentor")}
           </p>
         </div>
-        <ReloadButton
-          onReload={async () => {
-            await refetch();
-          }}
-          isLoading={isRefetching}
-          tooltip={t("common.reloadReviewList")}
-          showLabel
-          hideTooltip
-        />
-      </div>
 
-      {/* Stats */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.totalRating")}</CardDescription>
-            <CardTitle className="text-2xl">{reviews.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.averageScore")}</CardDescription>
-            <CardTitle className="text-2xl text-emerald-600">{avgRating.toFixed(1)}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.fiveStars")}</CardDescription>
-            <CardTitle className="text-2xl text-[#FFD700]">
-              {reviews.filter((r: MentorReview) => r.rating === 5).length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.oneToTwoStars")}</CardDescription>
-            <CardTitle className="text-2xl text-red-500">
-              {reviews.filter((r: MentorReview) => (r.rating || 0) <= 2).length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-
-      {/* Stats Chart */}
-      {reviews.length > 0 && <ReviewStats reviews={reviews} className="mb-6" />}
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">{t("common.filter")}</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
-            <div className="relative w-full min-w-0">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder={t("adminReviewmanagement.searchByMentorNameCandidate")}
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  pagination.goToFirstPage();
-                }}
-                className="pl-9"
-              />
-            </div>
-            <Select
-              value={ratingFilter}
-              onValueChange={(value) => {
-                setRatingFilter(value);
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              placeholder={t("adminReviewmanagement.searchByMentorNameCandidate")}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
                 pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="w-full lg:w-[170px]">
-                <SelectValue placeholder={t("common.numberOfStars")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("general.all")}</SelectItem>
-                <SelectItem value="5">{t("common.fiveStars")}</SelectItem>
-                <SelectItem value="4">{t("common.fourStars")}</SelectItem>
-                <SelectItem value="3">{t("common.threeStars")}</SelectItem>
-                <SelectItem value="2">{t("common.twoStars")}</SelectItem>
-                <SelectItem value="1">{t("common.oneStar")}</SelectItem>
-              </SelectContent>
-            </Select>
+              }}
+              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+            />
+          </div>
 
+          <Select
+            value={ratingFilter}
+            onValueChange={(value) => {
+              setRatingFilter(value);
+              pagination.goToFirstPage();
+            }}>
+            <SelectTrigger className="h-8 w-32 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
+              <SelectValue placeholder={t("common.numberOfStars")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("general.all")}</SelectItem>
+              <SelectItem value="5">{t("common.fiveStars")}</SelectItem>
+              <SelectItem value="4">{t("common.fourStars")}</SelectItem>
+              <SelectItem value="3">{t("common.threeStars")}</SelectItem>
+              <SelectItem value="2">{t("common.twoStars")}</SelectItem>
+              <SelectItem value="1">{t("common.oneStar")}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setSearchQuery("");
+                setRatingFilter("all");
+                pagination.goToFirstPage();
+              }}
+              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
+              {t("common.clearFilter")}
+            </Button>
+          )}
+
+          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+
+          <ReloadButton
+            onReload={async () => {
+              await refetch();
+            }}
+            isLoading={isRefetching}
+            tooltip={t("common.reloadReviewList")}
+            className="h-8 w-8"
+          />
+        </div>
+      </div>
+
+      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:pt-6 xl:grid-cols-4">
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.totalRating")}</CardDescription>
+              <CardTitle className="text-2xl">{reviews.length}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.averageScore")}</CardDescription>
+              <CardTitle className="text-2xl text-emerald-600">{avgRating.toFixed(1)}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.fiveStars")}</CardDescription>
+              <CardTitle className="text-2xl text-[#FFD700]">
+                {reviews.filter((r: MentorReview) => r.rating === 5).length}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.oneToTwoStars")}</CardDescription>
+              <CardTitle className="text-2xl text-red-500">
+                {reviews.filter((r: MentorReview) => (r.rating || 0) <= 2).length}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {reviews.length > 0 && <div className="px-4 sm:px-6 mb-4"><ReviewStats reviews={reviews} className="shadow-none border-slate-200 dark:border-slate-800" /></div>}
+
+        {isLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <SpinnerBlock size="lg" label={t("common.loading")} />
+          </div>
+        ) : pageData.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <Star className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+            </div>
+            <p className="text-sm font-medium text-slate-500">
+              {t("adminReviewmanagement.noReviewsFoundMatchingThe")}
+            </p>
             {hasActiveFilters && (
-              <div className="flex items-center justify-start lg:justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setRatingFilter("all");
-                    pagination.goToFirstPage();
-                  }}>
-                  {t("common.clearFilter")}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setRatingFilter("all");
+                  pagination.goToFirstPage();
+                }}>
+                {t("common.clearFilter")}
+              </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Review List */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-[#FFD700]" />
-            <CardTitle>{t("common.reviewList")}</CardTitle>
-          </div>
-          <CardDescription>
-            {t("common.show")} {filteredReviews.length} / {reviews.length}{" "}
-            {t("compReview.evaluate")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <LoadingCardList count={5} />
-          ) : pageData.length === 0 ? (
-            <EmptyState
-              icon={Star}
-              title={t("common.thereAreNoReviews")}
-              description={t("adminReviewmanagement.noReviewsFoundMatchingThe")}
-            />
-          ) : (
-            <>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("common.id")}</TableHead>
+                    <TableHead className="w-16">{t("common.id")}</TableHead>
                     <TableHead>{t("common.mentorSent")}</TableHead>
                     <TableHead>{t("common.candidatesAreEvaluated")}</TableHead>
-                    <TableHead>{t("common.session")}</TableHead>
-                    <TableHead>
+                    <TableHead className="w-32">{t("common.session")}</TableHead>
+                    <TableHead className="w-36">
                       <SortButton {...getSortProps("rating" as keyof MentorReview)}>
                         {t("common.evaluate")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="text-right">{t("common.operation")}</TableHead>
+                    <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pageData.map((review: MentorReview) => (
                     <TableRow key={review.id}>
-                      <TableCell>#{review.id}</TableCell>
+                      <TableCell className="font-medium">#{review.id}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={review.mentor?.avatarUrl} />
-                            <AvatarFallback>{review.mentor?.name?.charAt(0) || "M"}</AvatarFallback>
+                            <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">{review.mentor?.name?.charAt(0) || "M"}</AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
                             {review.mentor?.name || t("common.noDataAvailable")}
@@ -292,28 +291,30 @@ export function ReviewManagementPage() {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={review.user?.avatarUrl} />
-                            <AvatarFallback>{review.user?.name?.charAt(0) || "U"}</AvatarFallback>
+                            <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">{review.user?.name?.charAt(0) || "U"}</AvatarFallback>
                           </Avatar>
-                          <span>{review.user?.name || t("common.noDataAvailable")}</span>
+                          <span className="font-medium">{review.user?.name || t("common.noDataAvailable")}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">#{review.session?.id}</Badge>
+                        <Badge variant="outline">#{review.session?.id}</Badge>
                       </TableCell>
                       <TableCell>
                         <StarRating value={review.rating || 0} readOnly size="sm" />
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
                             onClick={() => handleViewDetail(review)}>
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                             onClick={() => handleDeleteClick(review)}>
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -323,9 +324,10 @@ export function ReviewManagementPage() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
 
-              {/* Pagination */}
-              {sortedData.length > 0 && (
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
                 <PaginationControl
                   pagination={pagination}
                   onPageSizeChange={(nextPageSize) => {
@@ -333,11 +335,11 @@ export function ReviewManagementPage() {
                     pagination.goToFirstPage();
                   }}
                 />
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* View Detail Dialog */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>

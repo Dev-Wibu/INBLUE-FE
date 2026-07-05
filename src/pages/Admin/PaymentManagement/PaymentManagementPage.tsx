@@ -157,196 +157,219 @@ export function PaymentManagementPage() {
     paymentPurposeFilter !== "all";
 
   return (
-    <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <h1 className="font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             {t("adminTransactionpaymentmanagement.managePayments")}
           </h1>
-          <p className="mt-2 font-['Inter'] text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("adminTransactionpaymentmanagement.monitorAndLookUpPayments")}
           </p>
         </div>
-        <ReloadButton
-          onReload={() => loadData(true)}
-          isLoading={isReloading}
-          tooltip={t("adminTransactionpaymentmanagement.reloadPaymentData")}
-          showLabel
-          hideTooltip
-        />
-      </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
-          <p className="font-['Inter'] text-xs text-slate-500 dark:text-slate-400">
-            {t("adminTransactionpaymentmanagement.totalPayment")}
-          </p>
-          <p className="mt-1 font-['Poppins'] text-2xl font-bold text-slate-800 dark:text-white">
-            {visiblePaymentCount}
-          </p>
-          <p className="font-['Inter'] text-xs text-slate-500 dark:text-slate-400">
-            / {paymentCount} {t("adminTransactionpaymentmanagement.record")}
-          </p>
-        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              placeholder={t("adminTransactionpaymentmanagement.searchByTransactionCodeOr")}
+              value={searchKeyword}
+              onChange={(event) => {
+                setSearchKeyword(event.target.value);
+                paymentPagination.goToFirstPage();
+              }}
+              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+            />
+          </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
-          <p className="font-['Inter'] text-xs text-slate-500 dark:text-slate-400">
-            {t("adminTransactionpaymentmanagement.totalPayment1")}
-          </p>
-          <p className="mt-1 font-['Poppins'] text-lg font-bold text-slate-800 dark:text-white">
-            {formatCurrency(totalPaymentAmount)}
-          </p>
-        </div>
-      </div>
-
-      <div className="mb-4 grid gap-3 xl:grid-cols-[minmax(260px,1fr)_auto_auto_auto]">
-        <input
-          value={searchKeyword}
-          onChange={(event) => {
-            setSearchKeyword(event.target.value);
-            paymentPagination.goToFirstPage();
-          }}
-          placeholder={t("adminTransactionpaymentmanagement.searchByTransactionCodeOr")}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 font-['Inter'] text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-        />
-
-        <select
-          value={paymentStatusFilter}
-          onChange={(event) => {
-            setPaymentStatusFilter(event.target.value as PaymentStatusFilter);
-            paymentPagination.goToFirstPage();
-          }}
-          className="rounded-lg border border-slate-300 px-3 py-2 font-['Inter'] text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-          <option value="all">{t("common.allStatus")}</option>
-          <option value="PENDING">{t("common.processing1")}</option>
-          <option value="COMPLETED">{t("common.completed")}</option>
-          <option value="FAILED">{t("general.failed1")}</option>
-        </select>
-
-        <select
-          value={paymentPurposeFilter}
-          onChange={(event) => {
-            setPaymentPurposeFilter(event.target.value as PaymentPurposeFilter);
-            paymentPagination.goToFirstPage();
-          }}
-          className="rounded-lg border border-slate-300 px-3 py-2 font-['Inter'] text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-          <option value="all">{t("adminTransactionpaymentmanagement.allPurpose")}</option>
-          <option value="FULLY_PAID">
-            {t("adminTransactionpaymentmanagement.buyMembershipPackage")}
-          </option>
-          <option value="MENTOR_INTERVIEW">{t("common.payForMentorSessions")}</option>
-        </select>
-
-        {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={() => {
-              setSearchKeyword("");
-              setPaymentStatusFilter("all");
-              setPaymentPurposeFilter("all");
+          <Select
+            value={paymentStatusFilter}
+            onValueChange={(value) => {
+              setPaymentStatusFilter(value as PaymentStatusFilter);
               paymentPagination.goToFirstPage();
-            }}
-            className="rounded-lg border border-slate-300 px-3 py-2 font-['Inter'] text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-            {t("common.clearFilter")}
-          </button>
-        )}
+            }}>
+            <SelectTrigger className="h-8 w-[140px] border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
+              <SelectValue placeholder={t("common.status")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+              <SelectItem value="PENDING">{t("common.processing1")}</SelectItem>
+              <SelectItem value="COMPLETED">{t("common.completed")}</SelectItem>
+              <SelectItem value="FAILED">{t("general.failed1")}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={paymentPurposeFilter}
+            onValueChange={(value) => {
+              setPaymentPurposeFilter(value as PaymentPurposeFilter);
+              paymentPagination.goToFirstPage();
+            }}>
+            <SelectTrigger className="h-8 w-[160px] border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
+              <SelectValue placeholder={t("adminTransactionpaymentmanagement.purpose")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("adminTransactionpaymentmanagement.allPurpose")}</SelectItem>
+              <SelectItem value="FULLY_PAID">
+                {t("adminTransactionpaymentmanagement.buyMembershipPackage")}
+              </SelectItem>
+              <SelectItem value="MENTOR_INTERVIEW">{t("common.payForMentorSessions")}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setSearchKeyword("");
+                setPaymentStatusFilter("all");
+                setPaymentPurposeFilter("all");
+                paymentPagination.goToFirstPage();
+              }}
+              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
+              {t("common.clearFilter")}
+            </Button>
+          )}
+
+          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+
+          <ReloadButton
+            onReload={() => loadData(true)}
+            isLoading={isReloading}
+            tooltip={t("adminTransactionpaymentmanagement.reloadPaymentData")}
+            className="h-8 w-8"
+          />
+        </div>
       </div>
 
+      {/* ── ERROR MESSAGE ─────────────────────────────────────────────────────── */}
       {error && (
-        <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 font-['Inter'] text-sm text-amber-700 dark:border-amber-800/40 dark:bg-amber-900/10 dark:text-amber-300">
+        <div className="mx-4 mt-4 sm:mx-6 rounded-xl border border-amber-300 bg-amber-50 p-4 font-['Inter'] text-sm text-amber-700 dark:border-amber-800/40 dark:bg-amber-900/10 dark:text-amber-300">
           {error}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
-        {isInitialLoading ? (
-          <SpinnerBlock
-            size="lg"
-            label={t("adminTransactionpaymentmanagement.loadingPaymentData")}
-          />
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                <thead className="bg-slate-50 dark:bg-slate-900">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                      <SortButton {...getPaymentSortProps("transactionCodeSortValue")}>
-                        {t("common.transactionCode")}
-                      </SortButton>
-                    </th>
-                    <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                      <SortButton {...getPaymentSortProps("descriptionSortValue")}>
-                        {t("common.describe")}
-                      </SortButton>
-                    </th>
-                    <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                      <SortButton {...getPaymentSortProps("amountSortValue")}>
-                        {t("common.amount")}
-                      </SortButton>
-                    </th>
-                    <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                      <SortButton {...getPaymentSortProps("statusSortValue")}>
-                        {t("common.status")}
-                      </SortButton>
-                    </th>
-                    <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                      <SortButton {...getPaymentSortProps("paymentPurposeSortValue")}>
-                        {t("adminTransactionpaymentmanagement.purpose")}
-                      </SortButton>
-                    </th>
-                    <th className="px-4 py-3 text-left font-['Inter'] text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
-                      <SortButton {...getPaymentSortProps("createdAtSortValue")}>
-                        {t("common.creationDate")}
-                      </SortButton>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
-                  {paymentPageData.map((payment) => (
-                    <tr key={`${payment.transactionCode}-${payment.id}`}>
-                      <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                        {payment.transactionCode || "-"}
-                      </td>
-                      <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                        {payment.description || "-"}
-                      </td>
-                      <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                        {formatCurrency(payment.amount || 0)}
-                      </td>
-                      <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                        {paymentStatusLabel(payment.status, t)}
-                      </td>
-                      <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                        {paymentPurposeLabel(payment.paymentPurpose, t)}
-                      </td>
-                      <td className="px-4 py-3 font-['Inter'] text-sm text-slate-700 dark:text-slate-200">
-                        {formatDateTime(payment.createdAt)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:pt-6">
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("adminTransactionpaymentmanagement.totalPayment")}</CardDescription>
+              <CardTitle className="flex items-baseline gap-1 text-2xl">
+                {visiblePaymentCount}
+                <span className="text-sm font-normal text-slate-500">
+                  / {paymentCount} {t("adminTransactionpaymentmanagement.record")}
+                </span>
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("adminTransactionpaymentmanagement.totalPayment1")}</CardDescription>
+              <CardTitle className="text-2xl text-emerald-600">
+                {formatCurrency(totalPaymentAmount)}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
 
-              {sortedPayments.length > 0 && (
-                <div className="border-t border-slate-200 dark:border-slate-800">
-                  <PaginationControl
-                    pagination={paymentPagination}
-                    onPageSizeChange={(nextPageSize) => {
-                      setPaymentPageSize(nextPageSize);
-                      paymentPagination.goToFirstPage();
-                    }}
-                  />
-                </div>
-              )}
+        {isInitialLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <SpinnerBlock
+              size="lg"
+              label={t("adminTransactionpaymentmanagement.loadingPaymentData")}
+            />
+          </div>
+        ) : paymentPageData.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <Search className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+            </div>
+            <p className="text-sm font-medium text-slate-500">
+              {t("adminTransactionpaymentmanagement.thereAreNoPaymentsThat")}
+            </p>
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                  <thead className="bg-slate-50 dark:bg-slate-900">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        <SortButton {...getPaymentSortProps("transactionCodeSortValue")}>
+                          {t("common.transactionCode")}
+                        </SortButton>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        <SortButton {...getPaymentSortProps("descriptionSortValue")}>
+                          {t("common.describe")}
+                        </SortButton>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        <SortButton {...getPaymentSortProps("amountSortValue")}>
+                          {t("common.amount")}
+                        </SortButton>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        <SortButton {...getPaymentSortProps("statusSortValue")}>
+                          {t("common.status")}
+                        </SortButton>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        <SortButton {...getPaymentSortProps("paymentPurposeSortValue")}>
+                          {t("adminTransactionpaymentmanagement.purpose")}
+                        </SortButton>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase dark:text-slate-300">
+                        <SortButton {...getPaymentSortProps("createdAtSortValue")}>
+                          {t("common.creationDate")}
+                        </SortButton>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
+                    {paymentPageData.map((payment) => (
+                      <tr key={`${payment.transactionCode}-${payment.id}`}>
+                        <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-200 font-medium">
+                          {payment.transactionCode || "-"}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+                          {payment.description || "-"}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          {formatCurrency(payment.amount || 0)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+                          {paymentStatusLabel(payment.status, t)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+                          {paymentPurposeLabel(payment.paymentPurpose, t)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+                          {formatDateTime(payment.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            {paymentPageData.length === 0 && (
-              <div className="px-4 py-8 text-center font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
-                {t("adminTransactionpaymentmanagement.thereAreNoPaymentsThat")}
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                <PaginationControl
+                  pagination={paymentPagination}
+                  onPageSizeChange={(nextPageSize) => {
+                    setPaymentPageSize(nextPageSize);
+                    paymentPagination.goToFirstPage();
+                  }}
+                />
               </div>
-            )}
-          </>
+            </div>
+          </div>
         )}
       </div>
     </div>

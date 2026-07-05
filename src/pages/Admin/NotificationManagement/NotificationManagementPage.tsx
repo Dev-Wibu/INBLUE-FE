@@ -362,228 +362,221 @@ export function NotificationManagementPage() {
     );
   };
   return (
-    <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
-      {/* Header */}
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
+    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             {t("adminNotificationmanagement.notificationManagement")}
           </h1>
-          <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("adminNotificationmanagement.viewAllNotificationsAndSend")}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              placeholder={t("adminNotificationmanagement.searchByTitleContentRecipient")}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                pagination.goToFirstPage();
+              }}
+              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+            />
+          </div>
+
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value);
+              pagination.goToFirstPage();
+            }}>
+            <SelectTrigger className="h-8 w-32 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
+              <SelectValue placeholder={t("common.status")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("general.all")}</SelectItem>
+              <SelectItem value="unread">{t("common.haventReadYet")}</SelectItem>
+              <SelectItem value="read">{t("common.read")}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+                pagination.goToFirstPage();
+              }}
+              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
+              {t("common.clearFilter")}
+            </Button>
+          )}
+
+          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+
           <ReloadButton
             onReload={handleReload}
             isLoading={isReloading}
             tooltip={t("adminNotificationmanagement.reloadNotificationData")}
-            showLabel
-            hideTooltip
+            className="h-8 w-8"
           />
-          <Button onClick={handleCreateOpen} className="gap-2">
-            <Plus className="h-4 w-4" />
+
+          <Button
+            onClick={handleCreateOpen}
+            className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
             {t("adminNotificationmanagement.sendNotification")}
           </Button>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.generalAnnouncement")}</CardDescription>
-            <CardTitle className="text-2xl">{totalNotifications}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.haventReadYet")}</CardDescription>
-            <CardTitle className="text-2xl text-amber-600">{unreadNotifications}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.read")}</CardDescription>
-            <CardTitle className="text-2xl text-green-600">
-              {totalNotifications - unreadNotifications}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.today")}</CardDescription>
-            <CardTitle className="text-2xl text-blue-600">{todayNotifications}</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:py-6 xl:grid-cols-4">
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.generalAnnouncement")}</CardDescription>
+              <CardTitle className="text-2xl">{totalNotifications}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.haventReadYet")}</CardDescription>
+              <CardTitle className="text-2xl text-amber-600">{unreadNotifications}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.read")}</CardDescription>
+              <CardTitle className="text-2xl text-green-600">
+                {totalNotifications - unreadNotifications}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.today")}</CardDescription>
+              <CardTitle className="text-2xl text-blue-600">{todayNotifications}</CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
 
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">{t("common.filter")}</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
-            <div className="relative w-full min-w-0">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder={t("adminNotificationmanagement.searchByTitleContentRecipient")}
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  pagination.goToFirstPage();
-                }}
-                className="pl-9"
-              />
+        {isLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <SpinnerBlock size="lg" label={t("common.loading")} />
+          </div>
+        ) : pageData.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <Bell className="h-6 w-6 text-slate-400 dark:text-slate-500" />
             </div>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => {
-                setStatusFilter(value);
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="w-full lg:w-[170px]">
-                <SelectValue placeholder={t("common.status")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("general.all")}</SelectItem>
-                <SelectItem value="unread">{t("common.haventReadYet")}</SelectItem>
-                <SelectItem value="read">{t("common.read")}</SelectItem>
-              </SelectContent>
-            </Select>
-
+            <p className="text-sm font-medium text-slate-500">
+              {t("adminNotificationmanagement.noNotifications")}
+            </p>
             {hasActiveFilters && (
-              <div className="flex items-center justify-start lg:justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setStatusFilter("all");
-                    pagination.goToFirstPage();
-                  }}>
-                  {t("common.clearFilter")}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                  pagination.goToFirstPage();
+                }}>
+                {t("common.clearFilter")}
+              </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Notification List */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-emerald-600" />
-            <CardTitle>{t("common.notificationList")}</CardTitle>
-          </div>
-          <CardDescription>
-            {t("common.show")} {filteredNotifications.length} / {allNotifications.length}{" "}
-            {t("common.notification1")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <LoadingCardList count={5} />
-          ) : pageData.length === 0 ? (
-            <EmptyState
-              icon={Bell}
-              title={t("adminNotificationmanagement.noNotifications")}
-              description={t("adminNotificationmanagement.noMessagesWereFoundThat")}
-              action={
-                hasActiveFilters ? (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setStatusFilter("all");
-                      pagination.goToFirstPage();
-                    }}>
-                    {t("common.clearFilter")}
-                  </Button>
-                ) : undefined
-              }
-            />
-          ) : (
-            <>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("common.id")}</TableHead>
+                    <TableHead className="w-16">{t("common.id")}</TableHead>
                     <TableHead>{t("general.recipient")}</TableHead>
                     <TableHead>{t("common.title")}</TableHead>
                     <TableHead>{t("common.content")}</TableHead>
-                    <TableHead>
+                    <TableHead className="w-24">
                       <SortButton {...getSortProps("isRead" as keyof Notification)}>
                         {t("common.status")}
                       </SortButton>
                     </TableHead>
-                    <TableHead>
+                    <TableHead className="w-40">
                       <SortButton {...getSortProps("createAt" as keyof Notification)}>
                         {t("common.time")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="text-right">{t("common.operation")}</TableHead>
+                    <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pageData.map((notification: Notification) => (
                     <TableRow key={notification.id}>
-                      <TableCell>#{notification.id}</TableCell>
+                      <TableCell className="font-medium">#{notification.id}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={notification.user?.avatarUrl} />
-                            <AvatarFallback>
+                            <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                               {notification.user?.name?.charAt(0) || "U"}
                             </AvatarFallback>
                           </Avatar>
-                          <span>{notification.user?.name || t("common.noDataAvailable")}</span>
+                          <span className="font-medium">{notification.user?.name || t("common.noDataAvailable")}</span>
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{notification.title}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">
+                      <TableCell className="max-w-[200px] truncate text-slate-500">
                         {notification.message}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={notification.isRead ? "secondary" : "default"}>
+                        <Badge variant={notification.isRead ? "secondary" : "default"} className={notification.isRead ? "" : "bg-blue-600 text-white"}>
                           {notification.isRead ? t("common.read") : t("common.haventReadYet")}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-slate-500">
                         {notification.createAt ? (
                           <TimeAgo date={notification.createAt} />
                         ) : (
-                          <span className="text-sm text-slate-500">—</span>
+                          <span>—</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
                           onClick={() => handleViewDetail(notification)}>
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                         </Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+            </div>
 
-              {/* Pagination */}
+            {/* Pagination & Empty State */}
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
               {sortedData.length > 0 && (
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(nextPageSize) => {
-                    setPageSize(nextPageSize);
-                    pagination.goToFirstPage();
-                  }}
-                />
+                <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                </div>
               )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* View Detail Dialog */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>

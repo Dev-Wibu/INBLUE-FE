@@ -502,23 +502,113 @@ export function PostManagementPage() {
     );
   }
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <h1 className="text-2xl font-bold">{t("common.articlesCommunity")}</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            {t("common.articlesCommunity")}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("adminPostmanagement.manageContentModerationAndEngagement")}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              placeholder={t("adminPostmanagement.searchByTitleContentAuthor")}
+              value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                pagination.goToFirstPage();
+              }}
+              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+            />
+          </div>
+
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value as StatusFilter);
+              pagination.goToFirstPage();
+            }}>
+            <SelectTrigger className="h-8 w-[140px] border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
+              <SelectValue placeholder={t("common.status")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+              <SelectItem value="DRAFT">{t("common.draft")}</SelectItem>
+              <SelectItem value="PUBLISHED">{t("common.published")}</SelectItem>
+              <SelectItem value="ARCHIVED">{t("common.archived")}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={tagFilter}
+            onValueChange={(value) => {
+              setTagFilter(value);
+              pagination.goToFirstPage();
+            }}>
+            <SelectTrigger className="h-8 w-[140px] border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
+              <SelectValue placeholder={t("adminPostmanagement.card")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("adminPostmanagement.allCards")}</SelectItem>
+              {allTags.map((tag) => (
+                <SelectItem key={tag} value={tag}>
+                  {tag}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+                setTagFilter("all");
+                pagination.goToFirstPage();
+              }}
+              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
+              {t("common.clearFilter")}
+            </Button>
+          )}
+
+          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+
+          <div className="flex items-center gap-1 rounded-md border border-slate-200 p-0.5 dark:border-slate-700">
+            <Button
+              variant={layout === "table" ? "secondary" : "ghost"}
+              size="sm"
+              className={layout === "table" ? "h-7 shadow-sm" : "h-7"}
+              onClick={() => setLayout("table")}>
+              <Columns2 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={layout === "grid" ? "secondary" : "ghost"}
+              size="sm"
+              className={layout === "grid" ? "h-7 shadow-sm" : "h-7"}
+              onClick={() => setLayout("grid")}>
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+
           <ReloadButton
             onReload={() => loadPosts(true)}
             isLoading={isReloading}
             tooltip={t("common.reloadArticleList")}
-            showLabel
-            hideTooltip
+            className="h-8 w-8"
           />
           <Button
+            size="sm"
+            className="h-8 text-xs font-medium"
             onClick={() =>
               setView({
                 mode: "create",
@@ -529,140 +619,67 @@ export function PostManagementPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              {t("adminPostmanagement.totalArticle")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{statusCounts.total}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              {t("common.draft")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-amber-600">{statusCounts.draft}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              {t("common.published")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-emerald-600">{statusCounts.published}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              {t("common.archived")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-slate-600">{statusCounts.archived}</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 sm:px-6 sm:pt-6">
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">
+                {t("adminPostmanagement.totalArticle")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{statusCounts.total}</p>
+            </CardContent>
+          </Card>
+          <Card className="shadow-none border-amber-100 dark:border-amber-900/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">
+                {t("common.draft")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-amber-600">{statusCounts.draft}</p>
+            </CardContent>
+          </Card>
+          <Card className="shadow-none border-green-100 dark:border-green-900/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">
+                {t("common.published")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-emerald-600">{statusCounts.published}</p>
+            </CardContent>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-slate-500">
+                {t("common.archived")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-slate-600 dark:text-slate-400">{statusCounts.archived}</p>
+            </CardContent>
+          </Card>
+        </div>
 
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <div className="flex flex-wrap gap-3">
-            <div className="relative min-w-[220px] flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <Input
-                placeholder={t("adminPostmanagement.searchByTitleContentAuthor")}
-                value={searchQuery}
-                onChange={(event) => {
-                  setSearchQuery(event.target.value);
-                  pagination.goToFirstPage();
-                }}
-                className="pl-9"
-              />
-            </div>
-
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => {
-                setStatusFilter(value as StatusFilter);
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("common.status")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-                <SelectItem value="DRAFT">{t("common.draft")}</SelectItem>
-                <SelectItem value="PUBLISHED">{t("common.published")}</SelectItem>
-                <SelectItem value="ARCHIVED">{t("common.archived")}</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={tagFilter}
-              onValueChange={(value) => {
-                setTagFilter(value);
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("adminPostmanagement.card")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("adminPostmanagement.allCards")}</SelectItem>
-                {allTags.map((tag) => (
-                  <SelectItem key={tag} value={tag}>
-                    {tag}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <Button
-                variant={layout === "table" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setLayout("table")}>
-                <Columns2 className="mr-1 h-4 w-4" />
-                {t("adminPostmanagement.board")}
-              </Button>
-              <Button
-                variant={layout === "grid" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setLayout("grid")}>
-                <LayoutGrid className="mr-1 h-4 w-4" />
-                {t("adminPostmanagement.net")}
-              </Button>
-              {hasActiveFilters && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setStatusFilter("all");
-                    setTagFilter("all");
-                    pagination.goToFirstPage();
-                  }}>
-                  {t("common.clearFilter")}
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {isInitialLoading ? (
+        {isInitialLoading ? (
+          <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" />
-          ) : pageItems.length === 0 ? (
-            <p className="text-muted-foreground py-8 text-center">
+          </div>
+        ) : pageItems.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <Search className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+            </div>
+            <p className="text-sm font-medium text-slate-500">
               {t("adminPostmanagement.thereAreNoMatchingArticles")}
             </p>
-          ) : layout === "table" ? (
-            <div className="rounded-md border">
+          </div>
+        ) : layout === "table" ? (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -697,6 +714,7 @@ export function PostManagementPage() {
                             <Button
                               size="sm"
                               variant="ghost"
+                              className="h-8 w-8 p-0"
                               onClick={() =>
                                 setView({
                                   mode: "detail",
@@ -706,26 +724,13 @@ export function PostManagementPage() {
                               <Eye className="h-4 w-4" />
                             </Button>
                           )}
-                          {/* Edit functionality temporarily disabled on BE
-                          {post.postId && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() =>
-                                setView({
-                                  mode: "edit",
-                                  postId: post.postId!,
-                                })
-                              }>
-                              <PenSquare className="h-4 w-4" />
-                            </Button>
-                          )} */}
+                          {/* Edit functionality temporarily disabled on BE */}
                           {post.postId && post.status === "DRAFT" && (
                             <>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                                className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                                 onClick={() =>
                                   void updateStatus(
                                     post.postId!,
@@ -739,7 +744,7 @@ export function PostManagementPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                                 onClick={() =>
                                   void updateStatus(
                                     post.postId!,
@@ -759,10 +764,25 @@ export function PostManagementPage() {
                 </TableBody>
               </Table>
             </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                <PaginationControl
+                  pagination={pagination}
+                  onPageSizeChange={(nextPageSize) => {
+                    setPageSize(nextPageSize);
+                    pagination.goToFirstPage();
+                  }}
+                  pageSizeOptions={[6, 9, 10, 20]}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="grid gap-4 px-4 pb-4 sm:grid-cols-2 sm:px-6 xl:grid-cols-3">
               {pageItems.map((post, index) => (
-                <Card key={getPostKey(post, index)} className="flex flex-col">
+                <Card key={getPostKey(post, index)} className="flex flex-col shadow-sm">
                   {post.coverImgUrl && (
                     <div className="aspect-video w-full overflow-hidden rounded-t-lg">
                       <img
@@ -807,7 +827,7 @@ export function PostManagementPage() {
                       </div>
                     </div>
 
-                    <div className="mt-auto flex flex-wrap gap-2">
+                    <div className="mt-auto flex flex-wrap gap-2 pt-2">
                       {post.postId && (
                         <Button
                           size="sm"
@@ -853,18 +873,22 @@ export function PostManagementPage() {
                 </Card>
               ))}
             </div>
-          )}
-
-          <PaginationControl
-            pagination={pagination}
-            onPageSizeChange={(nextPageSize) => {
-              setPageSize(nextPageSize);
-              pagination.goToFirstPage();
-            }}
-            pageSizeOptions={[6, 9, 10, 20]}
-          />
-        </CardContent>
-      </Card>
+            
+            <div className="px-4 pb-4 sm:px-6">
+              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                <PaginationControl
+                  pagination={pagination}
+                  onPageSizeChange={(nextPageSize) => {
+                    setPageSize(nextPageSize);
+                    pagination.goToFirstPage();
+                  }}
+                  pageSizeOptions={[6, 9, 10, 20]}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

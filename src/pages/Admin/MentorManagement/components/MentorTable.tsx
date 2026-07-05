@@ -34,17 +34,20 @@ export function MentorTable({
   const { t } = useTranslation();
   if (mentors.length === 0) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center gap-4">
-        <Search className="h-12 w-12 text-gray-400" />
-        <p className="font-['Inter'] text-lg text-gray-500">
+      <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+          <Search className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+        </div>
+        <p className="text-sm font-medium text-slate-500">
           {t("adminMentormanagement.noMentorsFound")}
         </p>
       </div>
     );
   }
   return (
-    <Table>
-      <TableHeader>
+    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Table>
+        <TableHeader>
         <TableRow>
           <TableHead className="w-16">{t("common.id")}</TableHead>
           <TableHead>
@@ -141,6 +144,7 @@ export function MentorTable({
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+      </Table>
+    </div>
   );
 }

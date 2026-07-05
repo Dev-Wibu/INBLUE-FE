@@ -128,166 +128,165 @@ export function FeedbackManagementPage() {
     }
   };
   return (
-    <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
-      {/* Header */}
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
+    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             {t("adminFeedbackmanagement.candidateResponse")}
           </h1>
-          <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {t("adminFeedbackmanagement.seeTheListOfResponses")}
           </p>
         </div>
-        <ReloadButton
-          onReload={async () => {
-            await refetch();
-          }}
-          isLoading={isRefetching}
-          tooltip={t("common.reloadTheResponseList")}
-          showLabel
-          hideTooltip
-        />
-      </div>
 
-      {/* Stats */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.totalResponse")}</CardDescription>
-            <CardTitle className="text-2xl">{feedbacks.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.averageScore")}</CardDescription>
-            <CardTitle className="text-2xl text-emerald-600">{avgRating.toFixed(1)}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.fiveStars")}</CardDescription>
-            <CardTitle className="text-2xl text-[#FFD700]">
-              {feedbacks.filter((f: MentorFeedback) => f.rating === 5).length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>{t("common.oneToTwoStars")}</CardDescription>
-            <CardTitle className="text-2xl text-red-500">
-              {feedbacks.filter((f: MentorFeedback) => (f.rating || 0) <= 2).length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-
-      {/* Stats Chart */}
-      {feedbacks.length > 0 && <FeedbackStats feedbacks={feedbacks} className="mb-6" />}
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">{t("common.filter")}</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
-            <div className="relative w-full min-w-0">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder={t("adminFeedbackmanagement.searchByCandidateNameMentor")}
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  pagination.goToFirstPage();
-                }}
-                className="pl-9"
-              />
-            </div>
-            <Select
-              value={ratingFilter}
-              onValueChange={(value) => {
-                setRatingFilter(value);
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              placeholder={t("adminFeedbackmanagement.searchByCandidateNameMentor")}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
                 pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="w-full lg:w-[170px]">
-                <SelectValue placeholder={t("common.numberOfStars")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("general.all")}</SelectItem>
-                <SelectItem value="5">{t("common.fiveStars")}</SelectItem>
-                <SelectItem value="4">{t("common.fourStars")}</SelectItem>
-                <SelectItem value="3">{t("common.threeStars")}</SelectItem>
-                <SelectItem value="2">{t("common.twoStars")}</SelectItem>
-                <SelectItem value="1">{t("common.oneStar")}</SelectItem>
-              </SelectContent>
-            </Select>
+              }}
+              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+            />
+          </div>
 
+          <Select
+            value={ratingFilter}
+            onValueChange={(value) => {
+              setRatingFilter(value);
+              pagination.goToFirstPage();
+            }}>
+            <SelectTrigger className="h-8 w-32 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
+              <SelectValue placeholder={t("common.numberOfStars")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("general.all")}</SelectItem>
+              <SelectItem value="5">{t("common.fiveStars")}</SelectItem>
+              <SelectItem value="4">{t("common.fourStars")}</SelectItem>
+              <SelectItem value="3">{t("common.threeStars")}</SelectItem>
+              <SelectItem value="2">{t("common.twoStars")}</SelectItem>
+              <SelectItem value="1">{t("common.oneStar")}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setSearchQuery("");
+                setRatingFilter("all");
+                pagination.goToFirstPage();
+              }}
+              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
+              {t("common.clearFilter")}
+            </Button>
+          )}
+
+          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+
+          <ReloadButton
+            onReload={async () => {
+              await refetch();
+            }}
+            isLoading={isRefetching}
+            tooltip={t("common.reloadTheResponseList")}
+            className="h-8 w-8"
+          />
+        </div>
+      </div>
+
+      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:pt-6 xl:grid-cols-4">
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.totalResponse")}</CardDescription>
+              <CardTitle className="text-2xl">{feedbacks.length}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.averageScore")}</CardDescription>
+              <CardTitle className="text-2xl text-emerald-600">{avgRating.toFixed(1)}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.fiveStars")}</CardDescription>
+              <CardTitle className="text-2xl text-[#FFD700]">
+                {feedbacks.filter((f: MentorFeedback) => f.rating === 5).length}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <CardDescription>{t("common.oneToTwoStars")}</CardDescription>
+              <CardTitle className="text-2xl text-red-500">
+                {feedbacks.filter((f: MentorFeedback) => (f.rating || 0) <= 2).length}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {feedbacks.length > 0 && <div className="px-4 sm:px-6 mb-4"><FeedbackStats feedbacks={feedbacks} className="shadow-none border-slate-200 dark:border-slate-800" /></div>}
+
+        {isLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <SpinnerBlock size="lg" label={t("common.loading")} />
+          </div>
+        ) : pageData.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+              <MessageSquare className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+            </div>
+            <p className="text-sm font-medium text-slate-500">
+              {t("adminFeedbackmanagement.noResponsesFoundMatchingThe")}
+            </p>
             {hasActiveFilters && (
-              <div className="flex items-center justify-start lg:justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setRatingFilter("all");
-                    pagination.goToFirstPage();
-                  }}>
-                  {t("common.clearFilter")}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setRatingFilter("all");
+                  pagination.goToFirstPage();
+                }}>
+                {t("common.clearFilter")}
+              </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Feedback List */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-emerald-600" />
-            <CardTitle>{t("common.responseList")}</CardTitle>
-          </div>
-          <CardDescription>
-            {t("common.show")} {filteredFeedbacks.length} / {feedbacks.length}{" "}
-            {t("common.feedback")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <LoadingCardList count={5} />
-          ) : pageData.length === 0 ? (
-            <EmptyState
-              icon={MessageSquare}
-              title={t("common.noResponse")}
-              description={t("adminFeedbackmanagement.noResponsesFoundMatchingThe")}
-            />
-          ) : (
-            <>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("common.id")}</TableHead>
+                    <TableHead className="w-16">{t("common.id")}</TableHead>
                     <TableHead>{t("common.mentorAccepted")}</TableHead>
                     <TableHead>{t("common.candidateSubmits")}</TableHead>
-                    <TableHead>{t("common.session")}</TableHead>
-                    <TableHead>
+                    <TableHead className="w-32">{t("common.session")}</TableHead>
+                    <TableHead className="w-36">
                       <SortButton {...getSortProps("rating" as keyof MentorFeedback)}>
                         {t("common.evaluate")}
                       </SortButton>
                     </TableHead>
                     <TableHead>{t("common.comment")}</TableHead>
-                    <TableHead className="text-right">{t("common.operation")}</TableHead>
+                    <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pageData.map((feedback: MentorFeedback) => (
                     <TableRow key={feedback.id}>
-                      <TableCell>#{feedback.id}</TableCell>
+                      <TableCell className="font-medium">#{feedback.id}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={feedback.mentor?.avatarUrl} />
-                            <AvatarFallback>
+                            <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
                               {feedback.mentor?.name?.charAt(0) || "M"}
                             </AvatarFallback>
                           </Avatar>
@@ -300,31 +299,33 @@ export function FeedbackManagementPage() {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={feedback.user?.avatarUrl} />
-                            <AvatarFallback>{feedback.user?.name?.charAt(0) || "U"}</AvatarFallback>
+                            <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">{feedback.user?.name?.charAt(0) || "U"}</AvatarFallback>
                           </Avatar>
-                          <span>{feedback.user?.name || t("common.noDataAvailable")}</span>
+                          <span className="font-medium">{feedback.user?.name || t("common.noDataAvailable")}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">#{feedback.session?.id}</Badge>
+                        <Badge variant="outline">#{feedback.session?.id}</Badge>
                       </TableCell>
                       <TableCell>
                         <StarRating value={feedback.rating || 0} readOnly size="sm" />
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate">
+                      <TableCell className="max-w-[200px] truncate text-slate-500">
                         {feedback.comment || t("common.noComments")}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
                             onClick={() => handleViewDetail(feedback)}>
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
                             onClick={() => handleDeleteClick(feedback)}>
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -334,9 +335,10 @@ export function FeedbackManagementPage() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
 
-              {/* Pagination */}
-              {sortedData.length > 0 && (
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
                 <PaginationControl
                   pagination={pagination}
                   onPageSizeChange={(nextPageSize) => {
@@ -344,11 +346,11 @@ export function FeedbackManagementPage() {
                     pagination.goToFirstPage();
                   }}
                 />
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* View Detail Dialog */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
