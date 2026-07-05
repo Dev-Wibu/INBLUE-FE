@@ -1,5 +1,4 @@
 export { CandidateProfileModal } from "./CandidateProfileModal";
-export { DeleteUserDialog } from "./DeleteUserDialog";
-export { UserDetailModal } from "./UserDetailModal";
-export { UserFormDialog } from "./UserFormDialog";
+export { UserDetailView } from "./UserDetailView";
+export { UserEditForm } from "./UserEditForm";
 export { UserTable } from "./UserTable";

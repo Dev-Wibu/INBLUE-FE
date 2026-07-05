@@ -347,6 +347,7 @@ export function PracticeQuestionManagementPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
                   <TableHead
                     className="cursor-pointer"
                     onClick={() => toggleSort("title" as keyof PracticeQuestion)}>
@@ -373,6 +374,7 @@ export function PracticeQuestionManagementPage() {
                 ) : (
                   pageData.map((question) => (
                     <TableRow key={question.questionId}>
+                      <TableCell className="font-medium">#{question.questionId}</TableCell>
                       <TableCell className="font-medium">{question.title}</TableCell>
                       <TableCell>
                         <Badge

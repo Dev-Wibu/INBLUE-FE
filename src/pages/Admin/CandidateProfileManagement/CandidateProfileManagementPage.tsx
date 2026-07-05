@@ -234,6 +234,7 @@ export function CandidateProfileManagementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
                     <TableHead>
                       <SortButton {...getSortProps("nameSortValue")}>{t("common.name")}</SortButton>
                     </TableHead>
@@ -259,6 +260,7 @@ export function CandidateProfileManagementPage() {
                 <TableBody>
                   {pageData.map((profile) => (
                     <TableRow key={profile.id}>
+                      <TableCell className="font-medium">#{profile.id}</TableCell>
                       <TableCell className="font-medium">{profile.user?.name || "—"}</TableCell>
                       <TableCell className="text-slate-500">{profile.user?.email || "—"}</TableCell>
                       <TableCell>{profile.targetRole || "—"}</TableCell>

@@ -2,7 +2,7 @@ import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { CodingRoundGrader } from "@/components/ui/coding-round-grader";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -892,10 +892,6 @@ export function ApplicationGradingPage({
     [sortedData, pagination.startIndex, pagination.endIndex]
   );
 
-  const inProgressCount = isStaff
-    ? reviewerDetails.filter((d) => d.status !== "COMPLETED").length
-    : applications.filter((a) => a.status === "IN_PROGRESS").length;
-
   const handleOpenGrading = useCallback(
     (_appId: number, detailId?: number) => {
       if (onOpenGradingDetail) {
@@ -955,55 +951,6 @@ export function ApplicationGradingPage({
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 sm:px-6 sm:pt-6">
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardContent className="pt-4">
-              <p className="text-xs text-slate-500">
-                {isStaff ? t("grading.submissionsToGrade") : t("userApplicationhistory.totalOrder")}
-              </p>
-              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {isStaff ? reviewerDetails.length : applications.length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-amber-100 shadow-none dark:border-amber-900/30">
-            <CardContent className="pt-4">
-              <p className="flex items-center gap-1 text-xs text-amber-600">
-                <XCircle className="h-3.5 w-3.5" />
-                {t("common.processing1")}
-              </p>
-              <p className="mt-1 text-2xl font-bold text-amber-600">{inProgressCount}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-purple-100 shadow-none dark:border-purple-900/30">
-            <CardContent className="pt-4">
-              <p className="flex items-center gap-1 text-xs text-purple-600">
-                <ClipboardCheck className="h-3.5 w-3.5" />
-                {t("common.completed1")}
-              </p>
-              <p className="mt-1 text-2xl font-bold text-purple-600">
-                {isStaff
-                  ? reviewerDetails.filter((d) => d.status === "COMPLETED").length
-                  : applications.filter((a) => a.status === "PASSED" || a.status === "FAILED")
-                      .length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-green-100 shadow-none dark:border-green-900/30">
-            <CardContent className="pt-4">
-              <p className="flex items-center gap-1 text-xs text-green-600">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {t("userApplicationhistory.passed")}
-              </p>
-              <p className="mt-1 text-2xl font-bold text-green-600">
-                {isStaff
-                  ? reviewerDetails.filter((d) => d.finalResult === "PASSED").length
-                  : applications.filter((a) => a.status === "PASSED").length}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {paginatedData.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -1020,7 +967,7 @@ export function ApplicationGradingPage({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-16">#</TableHead>
+                      <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
                       {isStaff ? (
                         <>
                           <TableHead>ID Detail</TableHead>

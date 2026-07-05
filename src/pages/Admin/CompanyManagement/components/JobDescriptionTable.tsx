@@ -1,9 +1,24 @@
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge, getJobDescriptionStatusBadge } from "@/lib/status-utils";
-import { Calendar, Coins, Edit, Power, Search, Workflow } from "lucide-react";
+import { Briefcase, MoreHorizontal } from "lucide-react";
+import { type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
 
@@ -63,125 +78,130 @@ export function JobDescriptionTable({
     });
   };
 
-  if (jobDescriptions.length === 0) {
+  if (!jobDescriptions.length) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center gap-4">
-        <Search className="text-muted-foreground/40 h-12 w-12" />
+      <div className="border-border/50 bg-background/50 flex flex-1 flex-col items-center justify-center rounded-2xl border p-12 text-center shadow-sm">
+        <div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+          <Briefcase className="text-muted-foreground h-8 w-8 opacity-50" />
+        </div>
         <p className="text-muted-foreground text-lg">{t("adminCompanymanagement.noJdYet")}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex w-full min-w-0 flex-col">
-      {/* Modern Sorting Controls */}
-      {getSortProps && (
-        <div className="border-border/50 bg-muted/20 flex flex-wrap items-center gap-2 border-b px-6 py-2.5 text-xs">
-          <span className="text-muted-foreground mr-2 text-[10px] font-semibold tracking-wider uppercase">
-            {t("adminCompanymanagement.sortBy")}
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            <SortButton {...getSortProps("idSortValue")}>{t("common.id")}</SortButton>
-            <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
-            <SortButton {...getSortProps("levelSortValue")}>{t("common.level")}</SortButton>
-            <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
-            <SortButton {...getSortProps("salaryMinSortValue")}>
-              {t("adminCompanymanagement.wage")}
-            </SortButton>
-            <SortButton {...getSortProps("updatedAtSortValue")}>{t("general.update")}</SortButton>
-          </div>
-        </div>
-      )}
-
-      {/* Compact Cards Grid */}
-      <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-        {jobDescriptions.map((job) => (
-          <div
-            key={job.id}
-            onClick={() => onView?.(job)}
-            className="group border-border/50 bg-card/30 hover:border-primary/30 hover:bg-card/60 flex cursor-pointer flex-col justify-between gap-3 rounded-xl border p-4 shadow-sm transition-all duration-300 hover:shadow-md">
-            {/* Top Row: Title, ID & Actions */}
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground/60 shrink-0 font-mono text-[10px] font-semibold">
-                    #{job.id}
-                  </span>
-                  <h4 className="text-foreground group-hover:text-primary truncate text-sm leading-snug font-bold transition-colors">
-                    {job.title || "—"}
-                  </h4>
-                </div>
-                <div className="mt-1.5 flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
-                  {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
-                  <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
-                </div>
-              </div>
-
-              {/* Compact Actions Group */}
-              <div
-                className="flex shrink-0 items-center gap-0.5"
-                onClick={(e) => e.stopPropagation()}>
-                {onConfigureRounds && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onConfigureRounds(job)}
-                    className="h-7 w-7 rounded-lg text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950"
-                    title={t("adminCompanymanagement.configureRecruitmentProcess")}>
-                    <Workflow className="h-4 w-4" />
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onEdit(job)}
-                  className="h-7 w-7 rounded-lg text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
-                  title={t("general.edit")}>
-                  <Edit className="h-4 w-4" />
-                </Button>
-                {job.status === "OPEN" ? (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(job)}
-                    className="h-7 w-7 rounded-lg text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
-                    title={t("adminCompanymanagement.closeJd")}>
-                    <Power className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onToggleStatus && onToggleStatus(job, "OPEN")}
-                    className="h-7 w-7 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950"
-                    title={t("adminCompanymanagement.openJd", t("recruitment.openRecruitment"))}>
-                    <Power className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Bottom Row: Salary & Deadline */}
-            <div className="border-border/20 flex items-center justify-between gap-2 border-t pt-2.5 text-xs">
-              {/* Salary */}
-              <div className="text-muted-foreground flex items-center gap-1.5">
-                <Coins className="h-3.5 w-3.5 shrink-0 text-green-500/80" />
-                <span className="text-foreground font-semibold">
-                  {formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
-                </span>
-              </div>
-
-              {/* Deadline */}
-              <div className="text-muted-foreground/80 flex shrink-0 items-center gap-1 font-medium">
-                <Calendar className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                <span>
-                  {t("adminCompanymanagement.deadline")} {formatDate(job.deadlineAt)}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-16">
+              {getSortProps ? (
+                <SortButton {...getSortProps("idSortValue")}>{t("common.id", "ID")}</SortButton>
+              ) : (
+                t("common.id", "ID")
+              )}
+            </TableHead>
+            <TableHead>
+              {getSortProps ? (
+                <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
+              ) : (
+                t("common.title")
+              )}
+            </TableHead>
+            <TableHead>
+              {getSortProps ? (
+                <SortButton {...getSortProps("levelSortValue")}>{t("common.level")}</SortButton>
+              ) : (
+                t("common.level")
+              )}
+            </TableHead>
+            <TableHead>
+              {getSortProps ? (
+                <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
+              ) : (
+                t("common.status")
+              )}
+            </TableHead>
+            <TableHead>
+              {getSortProps ? (
+                <SortButton {...getSortProps("salaryMinSortValue")}>
+                  {t("adminCompanymanagement.wage")}
+                </SortButton>
+              ) : (
+                t("adminCompanymanagement.wage")
+              )}
+            </TableHead>
+            <TableHead>
+              {getSortProps ? (
+                <SortButton {...getSortProps("updatedAtSortValue")}>
+                  {t("adminCompanymanagement.deadline")}
+                </SortButton>
+              ) : (
+                t("adminCompanymanagement.deadline")
+              )}
+            </TableHead>
+            <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {jobDescriptions.map((job) => (
+            <TableRow
+              key={job.id}
+              onClick={() => onView?.(job)}
+              className="cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+              <TableCell className="font-medium">#{job.id}</TableCell>
+              <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
+                {job.title || "—"}
+              </TableCell>
+              <TableCell>
+                {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
+              </TableCell>
+              <TableCell>
+                <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
+              </TableCell>
+              <TableCell className="text-slate-500">
+                {formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
+              </TableCell>
+              <TableCell className="text-slate-500">{formatDate(job.deadlineAt)}</TableCell>
+              <TableCell className="text-right" onClick={(e: MouseEvent) => e.stopPropagation()}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onView?.(job)}>
+                      {t("common.detail")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEdit(job)}>
+                      {t("general.edit")}
+                    </DropdownMenuItem>
+                    {onConfigureRounds && (
+                      <DropdownMenuItem onClick={() => onConfigureRounds(job)}>
+                        {t("adminCompanymanagement.configureRecruitmentProcess")}
+                      </DropdownMenuItem>
+                    )}
+                    {job.status === "OPEN" ? (
+                      <DropdownMenuItem
+                        onClick={() => onDelete(job)}
+                        className="text-red-600 focus:bg-red-50 focus:text-red-700">
+                        {t("adminCompanymanagement.closeJd")}
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => onToggleStatus && onToggleStatus(job, "OPEN")}
+                        className="text-emerald-600 focus:bg-emerald-50 focus:text-emerald-700">
+                        {t("adminCompanymanagement.openJd", t("recruitment.openRecruitment"))}
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }

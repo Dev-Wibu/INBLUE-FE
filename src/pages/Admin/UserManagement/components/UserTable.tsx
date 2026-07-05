@@ -3,6 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
+import {
   Table,
   TableBody,
   TableCell,
@@ -10,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Edit, Eye, FileText, Power, Search, User } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UserRole, User as UserType } from "../types";
 
@@ -23,8 +30,6 @@ interface UserTableProps {
   users: UserType[];
   onEdit: (user: UserType) => void;
   onDelete: (user: UserType) => void;
-  onUploadCV: (user: UserType) => void;
-  onViewProfile?: (user: UserType) => void;
   onViewDetail: (user: UserType) => void;
   getSortProps?: (key: keyof UserType) => SortProps;
 }
@@ -42,15 +47,7 @@ const getRoleBadgeClass = (role?: UserRole): string => {
   }
 };
 
-export function UserTable({
-  users,
-  onEdit,
-  onDelete,
-  onUploadCV,
-  onViewProfile,
-  onViewDetail,
-  getSortProps,
-}: UserTableProps) {
+export function UserTable({ users, onEdit, onDelete, onViewDetail, getSortProps }: UserTableProps) {
   const { t } = useTranslation();
 
   if (users.length === 0) {
@@ -108,61 +105,31 @@ export function UserTable({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={user.isActive !== false ? "default" : "destructive"}>
-                    {user.isActive !== false ? t("common.active") : t("common.inactive")}
-                  </Badge>
+                  <Switch
+                    checked={user.isActive !== false}
+                    onCheckedChange={() => onDelete(user)}
+                    aria-label="Toggle user status"
+                  />
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onViewDetail(user)}
-                      className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
-                      title={t("common.userDetail") || "View Details"}>
-                      <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                    </Button>
-                    {onViewProfile && user.role !== "STAFF" && user.role !== "ADMIN" && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onViewProfile(user)}
-                        className="h-8 w-8 p-0 hover:bg-purple-50"
-                        title={t("adminUsermanagement.viewCandidateProfile")}>
-                        <User className="h-4 w-4 text-purple-600" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    )}
-                    {user.role !== "STAFF" && user.role !== "ADMIN" && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onUploadCV(user)}
-                        className="h-8 w-8 p-0 hover:bg-green-50"
-                        title={user.cvUrl ? t("common.updateCv") : t("common.uploadCv")}>
-                        <FileText
-                          className={`h-4 w-4 ${user.cvUrl ? "text-green-600" : "text-gray-400"}`}
-                        />
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(user)}
-                      className="h-8 w-8 p-0 hover:bg-blue-50"
-                      title={t("general.edit")}>
-                      <Edit className="h-4 w-4 text-blue-600" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(user)}
-                      className={`h-8 w-8 p-0 ${user.isActive !== false ? "hover:bg-red-50" : "hover:bg-green-50"}`}
-                      title={user.isActive !== false ? t("common.disable") : t("common.activate")}>
-                      <Power
-                        className={`h-4 w-4 ${user.isActive !== false ? "text-red-600" : "text-green-600"}`}
-                      />
-                    </Button>
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onViewDetail(user)}>
+                        <Eye className="mr-2 h-4 w-4 text-slate-500" />
+                        {t("common.userDetail") || "View Details"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEdit(user)}>
+                        <Edit className="mr-2 h-4 w-4 text-blue-500" />
+                        {t("general.edit")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

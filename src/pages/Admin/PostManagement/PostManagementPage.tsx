@@ -581,6 +581,7 @@ export function PostManagementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
                     <TableHead>{t("common.title")}</TableHead>
                     <TableHead>{t("adminPostmanagement.author")}</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
@@ -593,6 +594,7 @@ export function PostManagementPage() {
                 <TableBody>
                   {pageItems.map((post, index) => (
                     <TableRow key={getPostKey(post, index)}>
+                      <TableCell className="font-medium">#{post.postId}</TableCell>
                       <TableCell className="max-w-[260px]">
                         <p className="truncate font-medium">{post.title || "—"}</p>
                         <p className="text-muted-foreground truncate text-xs">

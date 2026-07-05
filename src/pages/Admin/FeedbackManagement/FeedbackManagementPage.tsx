@@ -4,12 +4,11 @@ import { useTranslation } from "react-i18next";
  * Allows admin to view and moderate all candidate feedbacks for mentors
  */
 
-import { FeedbackStats } from "@/components/feedback";
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
   Dialog,
   DialogContent,
@@ -101,12 +100,6 @@ export function FeedbackManagementPage() {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
-  // Calculate stats
-  const avgRating =
-    feedbacks.length > 0
-      ? feedbacks.reduce((sum: number, f: MentorFeedback) => sum + (f.rating || 0), 0) /
-        feedbacks.length
-      : 0;
   const handleViewDetail = (feedback: MentorFeedback) => {
     setSelectedFeedback(feedback);
     setIsDetailOpen(true);
@@ -201,46 +194,6 @@ export function FeedbackManagementPage() {
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:pt-6 xl:grid-cols-4">
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.totalResponse")}</CardDescription>
-              <CardTitle className="text-2xl">{feedbacks.length}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.averageScore")}</CardDescription>
-              <CardTitle className="text-2xl text-emerald-600">{avgRating.toFixed(1)}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.fiveStars")}</CardDescription>
-              <CardTitle className="text-2xl text-[#FFD700]">
-                {feedbacks.filter((f: MentorFeedback) => f.rating === 5).length}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.oneToTwoStars")}</CardDescription>
-              <CardTitle className="text-2xl text-red-500">
-                {feedbacks.filter((f: MentorFeedback) => (f.rating || 0) <= 2).length}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {feedbacks.length > 0 && (
-          <div className="mb-4 px-4 sm:px-6">
-            <FeedbackStats
-              feedbacks={feedbacks}
-              className="border-slate-200 shadow-none dark:border-slate-800"
-            />
-          </div>
-        )}
-
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" label={t("common.loading")} />

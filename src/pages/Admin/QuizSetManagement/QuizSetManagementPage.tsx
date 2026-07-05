@@ -194,6 +194,7 @@ export function QuizSetManagementPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
                   <TableHead
                     className="cursor-pointer"
                     onClick={() => toggleSort("quizName" as keyof QuizSet)}>
@@ -226,6 +227,7 @@ export function QuizSetManagementPage() {
                 ) : (
                   pageData.map((quizSet) => (
                     <TableRow key={quizSet.quizId}>
+                      <TableCell className="font-medium">#{quizSet.quizId}</TableCell>
                       <TableCell className="font-medium">{quizSet.quizName}</TableCell>
                       <TableCell>{quizSet.score !== undefined ? quizSet.score : "—"}</TableCell>
                       <TableCell>{quizSet.practiceSet?.practiceSetName || "—"}</TableCell>

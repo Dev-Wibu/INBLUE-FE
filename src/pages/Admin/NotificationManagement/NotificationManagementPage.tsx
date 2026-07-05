@@ -18,7 +18,7 @@ import { PaginationControl, ReloadButton, SortButton } from "@/components/shared
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
   Command,
   CommandEmpty,
@@ -60,7 +60,7 @@ import { TimeAgo } from "@/components/ui/time-ago";
 import { useCreateNotification, type Notification } from "@/hooks/useNotification";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
-import { toVietnamDateKey } from "@/lib/formatting";
+
 import { cn } from "@/lib/utils";
 import { notificationManager } from "@/services/notification.manager";
 import { usersAdminManager } from "@/services/users-admin.manager";
@@ -319,14 +319,6 @@ export function NotificationManagementPage() {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
-  // Calculate stats
-  const totalNotifications = allNotifications.length;
-  const unreadNotifications = allNotifications.filter((n: Notification) => !n.isRead).length;
-  const todayNotifications = allNotifications.filter((n: Notification) => {
-    if (!n.createAt) return false;
-    const todayKey = toVietnamDateKey(new Date());
-    return !!todayKey && toVietnamDateKey(n.createAt) === todayKey;
-  }).length;
   const handleViewDetail = (notification: Notification) => {
     setSelectedNotification(notification);
     setIsDetailOpen(true);
@@ -437,35 +429,6 @@ export function NotificationManagementPage() {
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:py-6 xl:grid-cols-4">
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.generalAnnouncement")}</CardDescription>
-              <CardTitle className="text-2xl">{totalNotifications}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.haventReadYet")}</CardDescription>
-              <CardTitle className="text-2xl text-amber-600">{unreadNotifications}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.read")}</CardDescription>
-              <CardTitle className="text-2xl text-green-600">
-                {totalNotifications - unreadNotifications}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.today")}</CardDescription>
-              <CardTitle className="text-2xl text-blue-600">{todayNotifications}</CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" label={t("common.loading")} />
