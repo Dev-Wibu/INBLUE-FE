@@ -447,7 +447,7 @@ export function QuestionBankFormDialog({
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 text-slate-500 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 hover:text-rose-600 focus-within:opacity-100 dark:text-slate-400 dark:hover:text-rose-500"
+                            className="absolute top-1/2 right-1 h-8 w-8 -translate-y-1/2 text-slate-500 opacity-100 focus-within:opacity-100 hover:text-rose-600 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 dark:text-slate-400 dark:hover:text-rose-500"
                             onClick={() => removeOption(idx)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>

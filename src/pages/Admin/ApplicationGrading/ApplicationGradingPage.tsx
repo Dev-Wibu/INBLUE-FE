@@ -1,3 +1,4 @@
+import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -913,7 +914,7 @@ export function ApplicationGradingPage({
   );
 
   return (
-    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
@@ -940,8 +941,8 @@ export function ApplicationGradingPage({
             />
           </div>
 
-          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
-          
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+
           <ReloadButton
             onReload={async () => {
               // Note: missing refetch function for rawApps, but button matches style
@@ -955,7 +956,7 @@ export function ApplicationGradingPage({
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 sm:px-6 sm:pt-6">
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardContent className="pt-4">
               <p className="text-xs text-slate-500">
                 {isStaff ? t("grading.submissionsToGrade") : t("userApplicationhistory.totalOrder")}
@@ -965,7 +966,7 @@ export function ApplicationGradingPage({
               </p>
             </CardContent>
           </Card>
-          <Card className="shadow-none border-amber-100 dark:border-amber-900/30">
+          <Card className="border-amber-100 shadow-none dark:border-amber-900/30">
             <CardContent className="pt-4">
               <p className="flex items-center gap-1 text-xs text-amber-600">
                 <XCircle className="h-3.5 w-3.5" />
@@ -974,7 +975,7 @@ export function ApplicationGradingPage({
               <p className="mt-1 text-2xl font-bold text-amber-600">{inProgressCount}</p>
             </CardContent>
           </Card>
-          <Card className="shadow-none border-purple-100 dark:border-purple-900/30">
+          <Card className="border-purple-100 shadow-none dark:border-purple-900/30">
             <CardContent className="pt-4">
               <p className="flex items-center gap-1 text-xs text-purple-600">
                 <ClipboardCheck className="h-3.5 w-3.5" />
@@ -988,7 +989,7 @@ export function ApplicationGradingPage({
               </p>
             </CardContent>
           </Card>
-          <Card className="shadow-none border-green-100 dark:border-green-900/30">
+          <Card className="border-green-100 shadow-none dark:border-green-900/30">
             <CardContent className="pt-4">
               <p className="flex items-center gap-1 text-xs text-green-600">
                 <CheckCircle2 className="h-3.5 w-3.5" />
@@ -1054,7 +1055,9 @@ export function ApplicationGradingPage({
                             <>
                               <TableCell>Detail #{detailId}</TableCell>
                               <TableCell>
-                                <Badge variant="outline" className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
+                                <Badge
+                                  variant="outline"
+                                  className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
                                   {STATUS_CONFIG[status ?? ""]?.label ?? status}
                                 </Badge>
                               </TableCell>
@@ -1068,7 +1071,9 @@ export function ApplicationGradingPage({
                             <>
                               <TableCell>{jdId ?? "-"}</TableCell>
                               <TableCell>
-                                <Badge variant="outline" className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
+                                <Badge
+                                  variant="outline"
+                                  className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
                                   {STATUS_CONFIG[status ?? ""]?.label ?? status}
                                 </Badge>
                               </TableCell>

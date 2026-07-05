@@ -9,7 +9,7 @@ import { PaginationControl, ReloadButton, SortButton } from "@/components/shared
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,9 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { LoadingCardList } from "@/components/ui/loading-card";
 import {
   Select,
   SelectContent,
@@ -28,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SpinnerBlock } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import {
   Table,
@@ -128,7 +127,7 @@ export function FeedbackManagementPage() {
     }
   };
   return (
-    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
@@ -187,7 +186,7 @@ export function FeedbackManagementPage() {
             </Button>
           )}
 
-          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 
           <ReloadButton
             onReload={async () => {
@@ -203,19 +202,19 @@ export function FeedbackManagementPage() {
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:pt-6 xl:grid-cols-4">
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.totalResponse")}</CardDescription>
               <CardTitle className="text-2xl">{feedbacks.length}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.averageScore")}</CardDescription>
               <CardTitle className="text-2xl text-emerald-600">{avgRating.toFixed(1)}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.fiveStars")}</CardDescription>
               <CardTitle className="text-2xl text-[#FFD700]">
@@ -223,7 +222,7 @@ export function FeedbackManagementPage() {
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.oneToTwoStars")}</CardDescription>
               <CardTitle className="text-2xl text-red-500">
@@ -233,7 +232,14 @@ export function FeedbackManagementPage() {
           </Card>
         </div>
 
-        {feedbacks.length > 0 && <div className="px-4 sm:px-6 mb-4"><FeedbackStats feedbacks={feedbacks} className="shadow-none border-slate-200 dark:border-slate-800" /></div>}
+        {feedbacks.length > 0 && (
+          <div className="mb-4 px-4 sm:px-6">
+            <FeedbackStats
+              feedbacks={feedbacks}
+              className="border-slate-200 shadow-none dark:border-slate-800"
+            />
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
@@ -299,9 +305,13 @@ export function FeedbackManagementPage() {
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={feedback.user?.avatarUrl} />
-                            <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">{feedback.user?.name?.charAt(0) || "U"}</AvatarFallback>
+                            <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                              {feedback.user?.name?.charAt(0) || "U"}
+                            </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium">{feedback.user?.name || t("common.noDataAvailable")}</span>
+                          <span className="font-medium">
+                            {feedback.user?.name || t("common.noDataAvailable")}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>

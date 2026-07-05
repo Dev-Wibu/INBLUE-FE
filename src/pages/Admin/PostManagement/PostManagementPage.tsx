@@ -502,7 +502,7 @@ export function PostManagementPage() {
     );
   }
   return (
-    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
@@ -579,7 +579,7 @@ export function PostManagementPage() {
             </Button>
           )}
 
-          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 
           <div className="flex items-center gap-1 rounded-md border border-slate-200 p-0.5 dark:border-slate-700">
             <Button
@@ -598,7 +598,7 @@ export function PostManagementPage() {
             </Button>
           </div>
 
-          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 
           <ReloadButton
             onReload={() => loadPosts(true)}
@@ -622,7 +622,7 @@ export function PostManagementPage() {
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 sm:px-6 sm:pt-6">
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-500">
                 {t("adminPostmanagement.totalArticle")}
@@ -632,7 +632,7 @@ export function PostManagementPage() {
               <p className="text-2xl font-bold">{statusCounts.total}</p>
             </CardContent>
           </Card>
-          <Card className="shadow-none border-amber-100 dark:border-amber-900/30">
+          <Card className="border-amber-100 shadow-none dark:border-amber-900/30">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-500">
                 {t("common.draft")}
@@ -642,7 +642,7 @@ export function PostManagementPage() {
               <p className="text-2xl font-bold text-amber-600">{statusCounts.draft}</p>
             </CardContent>
           </Card>
-          <Card className="shadow-none border-green-100 dark:border-green-900/30">
+          <Card className="border-green-100 shadow-none dark:border-green-900/30">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-500">
                 {t("common.published")}
@@ -652,14 +652,16 @@ export function PostManagementPage() {
               <p className="text-2xl font-bold text-emerald-600">{statusCounts.published}</p>
             </CardContent>
           </Card>
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-500">
                 {t("common.archived")}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-slate-600 dark:text-slate-400">{statusCounts.archived}</p>
+              <p className="text-2xl font-bold text-slate-600 dark:text-slate-400">
+                {statusCounts.archived}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -764,7 +766,7 @@ export function PostManagementPage() {
                 </TableBody>
               </Table>
             </div>
-            
+
             <div className="px-4 pb-4 sm:px-6 sm:pb-6">
               <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
                 <PaginationControl
@@ -873,7 +875,7 @@ export function PostManagementPage() {
                 </Card>
               ))}
             </div>
-            
+
             <div className="px-4 pb-4 sm:px-6">
               <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
                 <PaginationControl

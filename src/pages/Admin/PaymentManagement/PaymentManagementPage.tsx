@@ -1,10 +1,21 @@
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { PaymentEntity, PaymentPurpose } from "@/interfaces";
 import { formatCurrency, formatDateTime, toTimestamp } from "@/lib/formatting";
 import { paymentManager } from "@/services/payment.manager";
+import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -157,7 +168,7 @@ export function PaymentManagementPage() {
     paymentPurposeFilter !== "all";
 
   return (
-    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
@@ -176,7 +187,7 @@ export function PaymentManagementPage() {
               type="text"
               placeholder={t("adminTransactionpaymentmanagement.searchByTransactionCodeOr")}
               value={searchKeyword}
-              onChange={(event) => {
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 setSearchKeyword(event.target.value);
                 paymentPagination.goToFirstPage();
               }}
@@ -186,7 +197,7 @@ export function PaymentManagementPage() {
 
           <Select
             value={paymentStatusFilter}
-            onValueChange={(value) => {
+            onValueChange={(value: string) => {
               setPaymentStatusFilter(value as PaymentStatusFilter);
               paymentPagination.goToFirstPage();
             }}>
@@ -203,7 +214,7 @@ export function PaymentManagementPage() {
 
           <Select
             value={paymentPurposeFilter}
-            onValueChange={(value) => {
+            onValueChange={(value: string) => {
               setPaymentPurposeFilter(value as PaymentPurposeFilter);
               paymentPagination.goToFirstPage();
             }}>
@@ -211,7 +222,9 @@ export function PaymentManagementPage() {
               <SelectValue placeholder={t("adminTransactionpaymentmanagement.purpose")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("adminTransactionpaymentmanagement.allPurpose")}</SelectItem>
+              <SelectItem value="all">
+                {t("adminTransactionpaymentmanagement.allPurpose")}
+              </SelectItem>
               <SelectItem value="FULLY_PAID">
                 {t("adminTransactionpaymentmanagement.buyMembershipPackage")}
               </SelectItem>
@@ -233,7 +246,7 @@ export function PaymentManagementPage() {
             </Button>
           )}
 
-          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 
           <ReloadButton
             onReload={() => loadData(true)}
@@ -246,7 +259,7 @@ export function PaymentManagementPage() {
 
       {/* ── ERROR MESSAGE ─────────────────────────────────────────────────────── */}
       {error && (
-        <div className="mx-4 mt-4 sm:mx-6 rounded-xl border border-amber-300 bg-amber-50 p-4 font-['Inter'] text-sm text-amber-700 dark:border-amber-800/40 dark:bg-amber-900/10 dark:text-amber-300">
+        <div className="mx-4 mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 font-['Inter'] text-sm text-amber-700 sm:mx-6 dark:border-amber-800/40 dark:bg-amber-900/10 dark:text-amber-300">
           {error}
         </div>
       )}
@@ -254,9 +267,11 @@ export function PaymentManagementPage() {
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:pt-6">
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
-              <CardDescription>{t("adminTransactionpaymentmanagement.totalPayment")}</CardDescription>
+              <CardDescription>
+                {t("adminTransactionpaymentmanagement.totalPayment")}
+              </CardDescription>
               <CardTitle className="flex items-baseline gap-1 text-2xl">
                 {visiblePaymentCount}
                 <span className="text-sm font-normal text-slate-500">
@@ -265,9 +280,11 @@ export function PaymentManagementPage() {
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
-              <CardDescription>{t("adminTransactionpaymentmanagement.totalPayment1")}</CardDescription>
+              <CardDescription>
+                {t("adminTransactionpaymentmanagement.totalPayment1")}
+              </CardDescription>
               <CardTitle className="text-2xl text-emerald-600">
                 {formatCurrency(totalPaymentAmount)}
               </CardTitle>
@@ -333,7 +350,7 @@ export function PaymentManagementPage() {
                   <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-950">
                     {paymentPageData.map((payment) => (
                       <tr key={`${payment.transactionCode}-${payment.id}`}>
-                        <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-200 font-medium">
+                        <td className="px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200">
                           {payment.transactionCode || "-"}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">

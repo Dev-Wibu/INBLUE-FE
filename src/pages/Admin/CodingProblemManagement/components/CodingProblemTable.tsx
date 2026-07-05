@@ -91,7 +91,9 @@ export function CodingProblemTable({
             <TableHead className="w-[110px] font-medium text-slate-500">Độ khó</TableHead>
             <TableHead className="w-[180px] font-medium text-slate-500">Cấu hình</TableHead>
             <TableHead className="w-[90px] text-center font-medium text-slate-500">Điểm</TableHead>
-            <TableHead className="w-[90px] text-center font-medium text-slate-500">Bật/Tắt</TableHead>
+            <TableHead className="w-[90px] text-center font-medium text-slate-500">
+              Bật/Tắt
+            </TableHead>
             <TableHead className="w-[130px] font-medium text-slate-500">Ngày tạo</TableHead>
             <TableHead className="w-[130px] font-medium text-slate-500">Cập nhật</TableHead>
             <TableHead className="w-[80px] text-right font-medium text-slate-500"></TableHead>

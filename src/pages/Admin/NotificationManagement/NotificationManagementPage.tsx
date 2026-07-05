@@ -18,7 +18,7 @@ import { PaginationControl, ReloadButton, SortButton } from "@/components/shared
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Command,
   CommandEmpty,
@@ -35,10 +35,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LoadingCardList } from "@/components/ui/loading-card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
@@ -48,6 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { SpinnerBlock } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -362,7 +361,7 @@ export function NotificationManagementPage() {
     );
   };
   return (
-    <div className="flex h-[calc(100%+32px)] md:h-[calc(100%+48px)] lg:h-[calc(100%+64px)] flex-col bg-slate-50 dark:bg-slate-950 -m-4 md:-m-6 lg:-m-8">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
@@ -418,7 +417,7 @@ export function NotificationManagementPage() {
             </Button>
           )}
 
-          <div className="hidden h-4 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 
           <ReloadButton
             onReload={handleReload}
@@ -439,19 +438,19 @@ export function NotificationManagementPage() {
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:px-6 sm:py-6 xl:grid-cols-4">
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.generalAnnouncement")}</CardDescription>
               <CardTitle className="text-2xl">{totalNotifications}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.haventReadYet")}</CardDescription>
               <CardTitle className="text-2xl text-amber-600">{unreadNotifications}</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.read")}</CardDescription>
               <CardTitle className="text-2xl text-green-600">
@@ -459,7 +458,7 @@ export function NotificationManagementPage() {
               </CardTitle>
             </CardHeader>
           </Card>
-          <Card className="shadow-none border-slate-200 dark:border-slate-800">
+          <Card className="border-slate-200 shadow-none dark:border-slate-800">
             <CardHeader className="pb-2">
               <CardDescription>{t("common.today")}</CardDescription>
               <CardTitle className="text-2xl text-blue-600">{todayNotifications}</CardTitle>
@@ -526,7 +525,9 @@ export function NotificationManagementPage() {
                               {notification.user?.name?.charAt(0) || "U"}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium">{notification.user?.name || t("common.noDataAvailable")}</span>
+                          <span className="font-medium">
+                            {notification.user?.name || t("common.noDataAvailable")}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{notification.title}</TableCell>
@@ -534,7 +535,9 @@ export function NotificationManagementPage() {
                         {notification.message}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={notification.isRead ? "secondary" : "default"} className={notification.isRead ? "" : "bg-blue-600 text-white"}>
+                        <Badge
+                          variant={notification.isRead ? "secondary" : "default"}
+                          className={notification.isRead ? "" : "bg-blue-600 text-white"}>
                           {notification.isRead ? t("common.read") : t("common.haventReadYet")}
                         </Badge>
                       </TableCell>

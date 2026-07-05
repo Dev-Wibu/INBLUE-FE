@@ -11,4 +11,5 @@ Whenever you are asked to create, modify, or interact with ANY Frontend code (in
 ## Standard UI Patterns
 
 ### Table Components
+
 Always use shadcn/ui <Table> components (Table, TableHeader, TableBody, TableRow, TableCell, TableHead) instead of custom grid div tables. For row actions, ALWAYS use a <DropdownMenu> (with a MoreHorizontal icon trigger) instead of inline hover-only buttons (opacity-0) to ensure accessibility, touch-friendliness, and UI consistency.

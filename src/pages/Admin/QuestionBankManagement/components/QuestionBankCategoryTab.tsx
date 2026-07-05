@@ -255,7 +255,7 @@ export function QuestionBankCategoryTab({
 
   // --- Render Folders Grid View ---
   return (
-    <div className="animate-in fade-in slide-in-from-left-4 flex h-full flex-col space-y-6 p-4 sm:p-6 duration-300">
+    <div className="animate-in fade-in slide-in-from-left-4 flex h-full flex-col space-y-6 p-4 duration-300 sm:p-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">
