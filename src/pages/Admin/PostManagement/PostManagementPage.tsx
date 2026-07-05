@@ -40,9 +40,7 @@ import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
   CheckCircle2,
-  Columns2,
   Eye,
-  LayoutGrid,
   MessageSquare,
   Search,
   ThumbsUp,
@@ -54,7 +52,6 @@ import { toast } from "sonner";
 import { PostCreateForm } from "./components/PostCreateForm";
 import { PostEditForm } from "./components/PostEditForm";
 type StatusFilter = "all" | PostStatus;
-type ListLayout = "table" | "grid";
 type ViewState =
   | {
       mode: "list";
@@ -90,7 +87,6 @@ export function PostManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [tagFilter, setTagFilter] = useState("all");
-  const [layout, setLayout] = useState<ListLayout>("table");
   const [likesOpen, setLikesOpen] = useState(false);
   const [commentToDeleteId, setCommentToDeleteId] = useState<number | null>(null);
   const [deletingComment, setDeletingComment] = useState(false);
@@ -190,14 +186,6 @@ export function PostManagementPage() {
     () => filteredPosts.slice(pagination.startIndex, pagination.endIndex + 1),
     [filteredPosts, pagination.startIndex, pagination.endIndex]
   );
-  const statusCounts = useMemo(() => {
-    return {
-      total: posts.length,
-      draft: posts.filter((post) => post.status === "DRAFT").length,
-      published: posts.filter((post) => post.status === "PUBLISHED").length,
-      archived: posts.filter((post) => post.status === "ARCHIVED").length,
-    };
-  }, [posts]);
   const hasActiveFilters =
     searchQuery.trim().length > 0 || statusFilter !== "all" || tagFilter !== "all";
   const detailPost = detailData?.post;
@@ -254,222 +242,194 @@ export function PostManagementPage() {
   };
   if (view.mode === "create") {
     return (
-      <div className="space-y-4 p-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            setView({
-              mode: "list",
-            })
-          }>
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          {t("common.backToTheList")}
-        </Button>
-        <PostCreateForm
-          onSuccess={() => {
-            setView({
-              mode: "list",
-            });
-            void loadPosts();
-          }}
-          onCancel={() =>
-            setView({
-              mode: "list",
-            })
-          }
-        />
+      <div className="-m-4 flex h-[calc(100%+32px)] flex-col overflow-hidden bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+        <div className="flex flex-none items-center gap-4 border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+          <button
+            onClick={() => setView({ mode: "list" })}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            {t("common.createArticles")}
+          </h2>
+        </div>
+        <div className="flex-1 overflow-auto p-6">
+          <PostCreateForm
+            onSuccess={() => {
+              setView({ mode: "list" });
+              void loadPosts();
+            }}
+            onCancel={() => setView({ mode: "list" })}
+          />
+        </div>
       </div>
     );
   }
   if (view.mode === "edit") {
     return (
-      <div className="space-y-4 p-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            setView({
-              mode: "list",
-            })
-          }>
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          {t("common.backToTheList")}
-        </Button>
-        <PostEditForm
-          postId={view.postId}
-          onSuccess={() => {
-            setView({
-              mode: "list",
-            });
-            void loadPosts();
-          }}
-          onCancel={() =>
-            setView({
-              mode: "list",
-            })
-          }
-        />
+      <div className="-m-4 flex h-[calc(100%+32px)] flex-col overflow-hidden bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+        <div className="flex flex-none items-center gap-4 border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+          <button
+            onClick={() => setView({ mode: "list" })}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t("general.edit")}</h2>
+        </div>
+        <div className="flex-1 overflow-auto p-6">
+          <PostEditForm
+            postId={view.postId}
+            onSuccess={() => {
+              setView({ mode: "list" });
+              void loadPosts();
+            }}
+            onCancel={() => setView({ mode: "list" })}
+          />
+        </div>
       </div>
     );
   }
   if (view.mode === "detail") {
     return (
-      <div className="space-y-4 p-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            setView({
-              mode: "list",
-            })
-          }>
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          {t("common.backToTheList")}
-        </Button>
+      <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+        <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setView({ mode: "list" })}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              {t("adminPostmanagement.articleDetails")}
+            </h2>
+          </div>
 
-        {detailLoading ? (
-          <SpinnerBlock size="lg" />
-        ) : !detailPost ? (
-          <p className="text-muted-foreground">{t("common.noArticlesFound")}</p>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-semibold">{t("adminPostmanagement.articleDetails")}</h2>
-                <p className="text-muted-foreground text-sm">
-                  {t("adminPostmanagement.trackEngagementAndModerateComments")}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {/* Edit functionality temporarily disabled on BE
-                {detailPost.postId && (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      setView({
-                        mode: "edit",
-                        postId: detailPost.postId!,
-                      })
-                    }>
-                    <PenSquare className="mr-1 h-4 w-4" />
-                    {t("general.edit")}
-                  </Button>
-                )} */}
-                {detailPost.postId && detailPost.status === "DRAFT" && (
-                  <>
-                    <Button
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                      onClick={() =>
-                        void updateStatus(
-                          detailPost.postId!,
-                          "PUBLISHED",
-                          t("adminPostmanagement.theArticleHasBeenApproved")
-                        )
-                      }
-                      disabled={statusUpdatingId === detailPost.postId}>
-                      <CheckCircle2 className="mr-1 h-4 w-4" />
-                      {t("common.browse")}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() =>
-                        void updateStatus(detailPost.postId!, "ARCHIVED", t("common.postRejected"))
-                      }
-                      disabled={statusUpdatingId === detailPost.postId}>
-                      <XCircle className="mr-1 h-4 w-4" />
-                      {t("common.refuse")}
-                    </Button>
-                  </>
-                )}
-              </div>
+          {detailPost?.postId && detailPost.status === "DRAFT" && (
+            <div className="flex items-center gap-2">
+              <Button
+                className="h-8 bg-emerald-600 px-4 text-xs font-semibold hover:bg-emerald-700"
+                onClick={() =>
+                  void updateStatus(
+                    detailPost.postId!,
+                    "PUBLISHED",
+                    t("adminPostmanagement.theArticleHasBeenApproved")
+                  )
+                }
+                disabled={statusUpdatingId === detailPost.postId}>
+                <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                {t("common.browse")}
+              </Button>
+              <Button
+                variant="destructive"
+                className="h-8 px-4 text-xs font-semibold"
+                onClick={() =>
+                  void updateStatus(detailPost.postId!, "ARCHIVED", t("common.postRejected"))
+                }
+                disabled={statusUpdatingId === detailPost.postId}>
+                <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                {t("common.refuse")}
+              </Button>
             </div>
+          )}
+        </div>
 
-            <Card>
-              {detailPost.coverImgUrl && (
-                <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-                  <img
-                    src={detailPost.coverImgUrl}
-                    alt={detailPost.title}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              )}
-              <CardHeader className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <StatusBadge {...getPostStatusBadge(detailPost.status)} />
-                  {detailPost.tags?.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-                <CardTitle className="text-2xl">{detailPost.title}</CardTitle>
-                <div className="text-muted-foreground text-sm">
-                  <span className="text-foreground font-medium">
-                    {detailPost.author?.name || t("common.anonymous")}
-                  </span>
-                  <span className="mx-2">•</span>
-                  <span>{formatDate(detailPost.creationDate)}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {detailPost.summary && (
-                  <p className="text-muted-foreground italic">{detailPost.summary}</p>
-                )}
-                {detailPost.content && <p className="whitespace-pre-wrap">{detailPost.content}</p>}
-
-                <div className="flex flex-wrap items-center gap-4 border-t pt-4">
-                  <div className="text-muted-foreground flex items-center gap-1 text-sm">
-                    <ThumbsUp className="h-4 w-4" />
-                    {detailLikeCount} {t("general.likes")}
-                  </div>
-                  <div className="text-muted-foreground flex items-center gap-1 text-sm">
-                    <MessageSquare className="h-4 w-4" />
-                    {detailCommentCount} {t("general.comments")}
-                  </div>
-
-                  {user?.id && detailPost.postId && (
-                    <LikeButton
-                      postId={detailPost.postId}
-                      userId={user.id}
-                      externalLikeCount={detailLikeCount}
-                      onLikeChange={() => invalidatePostDetail(detailPost.postId!)}
+        <div className="flex-1 overflow-auto">
+          {detailLoading ? (
+            <div className="flex h-64 items-center justify-center">
+              <SpinnerBlock size="lg" />
+            </div>
+          ) : !detailPost ? (
+            <div className="flex h-64 items-center justify-center">
+              <p className="text-muted-foreground">{t("common.noArticlesFound")}</p>
+            </div>
+          ) : (
+            <div className="mx-auto max-w-3xl space-y-4 p-6">
+              <Card>
+                {detailPost.coverImgUrl && (
+                  <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+                    <img
+                      src={detailPost.coverImgUrl}
+                      alt={detailPost.title}
+                      className="h-full w-full object-cover"
                     />
+                  </div>
+                )}
+                <CardHeader className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    <StatusBadge {...getPostStatusBadge(detailPost.status)} />
+                    {detailPost.tags?.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                  <CardTitle className="text-2xl">{detailPost.title}</CardTitle>
+                  <div className="text-muted-foreground text-sm">
+                    <span className="text-foreground font-medium">
+                      {detailPost.author?.name || t("common.anonymous")}
+                    </span>
+                    <span className="mx-2">•</span>
+                    <span>{formatDate(detailPost.creationDate)}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {detailPost.summary && (
+                    <p className="text-muted-foreground italic">{detailPost.summary}</p>
+                  )}
+                  {detailPost.content && (
+                    <p className="whitespace-pre-wrap">{detailPost.content}</p>
                   )}
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground"
-                    disabled={detailLikes.length === 0}
-                    onClick={() => setLikesOpen(true)}>
-                    {t("adminPostmanagement.viewListOfLikes")}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {detailPost.postId && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    {t("adminPostmanagement.commentsFeedback")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CommentSection
-                    postId={detailPost.postId}
-                    externalComments={detailComments}
-                    onExternalInvalidate={() => invalidatePostDetail(detailPost.postId!)}
-                    allowDelete
-                    onDeleteComment={setCommentToDeleteId}
-                  />
+                  <div className="flex flex-wrap items-center gap-4 border-t pt-4">
+                    <div className="text-muted-foreground flex items-center gap-1 text-sm">
+                      <ThumbsUp className="h-4 w-4" />
+                      {detailLikeCount} {t("general.likes")}
+                    </div>
+                    <div className="text-muted-foreground flex items-center gap-1 text-sm">
+                      <MessageSquare className="h-4 w-4" />
+                      {detailCommentCount} {t("general.comments")}
+                    </div>
+                    {user?.id && detailPost.postId && (
+                      <LikeButton
+                        postId={detailPost.postId}
+                        userId={user.id}
+                        externalLikeCount={detailLikeCount}
+                        onLikeChange={() => invalidatePostDetail(detailPost.postId!)}
+                      />
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground"
+                      disabled={detailLikes.length === 0}
+                      onClick={() => setLikesOpen(true)}>
+                      {t("adminPostmanagement.viewListOfLikes")}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
-            )}
-          </div>
-        )}
+
+              {detailPost.postId && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      {t("adminPostmanagement.commentsFeedback")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CommentSection
+                      postId={detailPost.postId}
+                      externalComments={detailComments}
+                      onExternalInvalidate={() => invalidatePostDetail(detailPost.postId!)}
+                      allowDelete
+                      onDeleteComment={setCommentToDeleteId}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </div>
 
         <LikeListModal likes={detailLikes} open={likesOpen} onOpenChange={setLikesOpen} />
 
@@ -581,25 +541,6 @@ export function PostManagementPage() {
 
           <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 
-          <div className="flex items-center gap-1 rounded-md border border-slate-200 p-0.5 dark:border-slate-700">
-            <Button
-              variant={layout === "table" ? "secondary" : "ghost"}
-              size="sm"
-              className={layout === "table" ? "h-7 shadow-sm" : "h-7"}
-              onClick={() => setLayout("table")}>
-              <Columns2 className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant={layout === "grid" ? "secondary" : "ghost"}
-              size="sm"
-              className={layout === "grid" ? "h-7 shadow-sm" : "h-7"}
-              onClick={() => setLayout("grid")}>
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-
-          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-
           <ReloadButton
             onReload={() => loadPosts(true)}
             isLoading={isReloading}
@@ -621,51 +562,6 @@ export function PostManagementPage() {
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 sm:px-6 sm:pt-6">
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">
-                {t("adminPostmanagement.totalArticle")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{statusCounts.total}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-amber-100 shadow-none dark:border-amber-900/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">
-                {t("common.draft")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-amber-600">{statusCounts.draft}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-green-100 shadow-none dark:border-green-900/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">
-                {t("common.published")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-emerald-600">{statusCounts.published}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-slate-200 shadow-none dark:border-slate-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">
-                {t("common.archived")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-slate-600 dark:text-slate-400">
-                {statusCounts.archived}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {isInitialLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" />
@@ -679,7 +575,7 @@ export function PostManagementPage() {
               {t("adminPostmanagement.thereAreNoMatchingArticles")}
             </p>
           </div>
-        ) : layout === "table" ? (
+        ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
@@ -768,115 +664,6 @@ export function PostManagementPage() {
             </div>
 
             <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(nextPageSize) => {
-                    setPageSize(nextPageSize);
-                    pagination.goToFirstPage();
-                  }}
-                  pageSizeOptions={[6, 9, 10, 20]}
-                />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="grid gap-4 px-4 pb-4 sm:grid-cols-2 sm:px-6 xl:grid-cols-3">
-              {pageItems.map((post, index) => (
-                <Card key={getPostKey(post, index)} className="flex flex-col shadow-sm">
-                  {post.coverImgUrl && (
-                    <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-                      <img
-                        src={post.coverImgUrl}
-                        alt={post.title}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <CardHeader className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <StatusBadge {...getPostStatusBadge(post.status)} />
-                      <span className="text-muted-foreground text-xs">
-                        {formatDate(post.creationDate)}
-                      </span>
-                    </div>
-                    <CardTitle className="line-clamp-2 text-base">
-                      {post.title || t("common.noTitle")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex flex-1 flex-col gap-3">
-                    <p className="text-muted-foreground line-clamp-3 text-sm">
-                      {post.summary || post.content || t("adminPostmanagement.noContent")}
-                    </p>
-
-                    <div className="flex flex-wrap gap-1">
-                      {post.tags?.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    <div className="text-muted-foreground flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="h-4 w-4" />
-                        {post.likeCount ?? 0}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-4 w-4" />
-                        {post.commentCount ?? 0}
-                      </div>
-                    </div>
-
-                    <div className="mt-auto flex flex-wrap gap-2 pt-2">
-                      {post.postId && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            setView({
-                              mode: "detail",
-                              postId: post.postId!,
-                            })
-                          }>
-                          <Eye className="mr-1 h-4 w-4" />
-                          {t("common.detail")}
-                        </Button>
-                      )}
-                      {post.postId && post.status === "DRAFT" && (
-                        <>
-                          <Button
-                            size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-700"
-                            onClick={() =>
-                              void updateStatus(
-                                post.postId!,
-                                "PUBLISHED",
-                                t("adminPostmanagement.theArticleHasBeenApproved")
-                              )
-                            }
-                            disabled={statusUpdatingId === post.postId}>
-                            {t("common.browse")}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() =>
-                              void updateStatus(post.postId!, "ARCHIVED", t("common.postRejected"))
-                            }
-                            disabled={statusUpdatingId === post.postId}>
-                            {t("common.refuse")}
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <div className="px-4 pb-4 sm:px-6">
               <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
                 <PaginationControl
                   pagination={pagination}

@@ -106,7 +106,7 @@ export function CompanyManagementPage({ isActive: propActive }: CompanyManagemen
   };
   const hasDetail = !!detailCompanyId;
   return (
-    <div className="border-border/50 bg-background/50 flex h-[calc(100vh-6rem)] min-h-0 w-full overflow-hidden rounded-2xl border shadow-sm">
+    <div className="-m-4 flex h-[calc(100%+32px)] overflow-hidden md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
       {/*
        * Responsive layout:
        * - Mobile: Sidebar visible only when no company is selected. Detail visible only when company is selected.
@@ -121,7 +121,7 @@ export function CompanyManagementPage({ isActive: propActive }: CompanyManagemen
       />
 
       <main
-        className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${hasDetail ? "flex" : "hidden md:flex"}`}>
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto border-l border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 ${hasDetail ? "flex" : "hidden md:flex"}`}>
         {detailCompanyId ? (
           <CompanyDetailView
             companyId={detailCompanyId}
