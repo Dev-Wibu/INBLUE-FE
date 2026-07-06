@@ -1,4 +1,5 @@
-import { CVUploadModal } from "@/components/ui/cv-upload-modal";
+import { Card } from "@/components/ui/card";
+import CVUploadModal from "@/components/ui/cv-upload-modal";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { normalizeMajor, useMajorOptions } from "@/constants/majors";
 import type { User as UserType } from "@/interfaces/schema.types";
@@ -15,21 +16,22 @@ import {
   GraduationCap,
   Lock,
   Mail,
+  Settings,
   Share2,
   User,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ProfileTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
-type AccountSubTab = "profile" | "candidateProfile";
+type AccountSubTab = "profile" | "candidateProfile" | "settings";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
-  if (value === "profile" || value === "candidateProfile") {
+  if (value === "profile" || value === "candidateProfile" || value === "settings") {
     return value as AccountSubTab;
   }
   return null;
@@ -40,6 +42,7 @@ export function AccountPage() {
   const authUser = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const authUserId = authUser?.id;
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -280,6 +283,33 @@ export function AccountPage() {
         ) : null;
       case "candidateProfile":
         return <CandidateProfileTab />;
+      case "settings":
+        return (
+          <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              {t("userSettings.title")}
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {t("userSettings.subtitle")}
+            </p>
+            <div className="mt-4 space-y-3">
+              <button
+                type="button"
+                onClick={() => navigate("/user/settings")}
+                className="flex w-full items-center justify-between rounded-lg border border-slate-200 p-3 text-left transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+                <div>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                    {t("userSettings.openSettings")}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {t("userSettings.openSettingsDescription")}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-slate-500" />
+              </button>
+            </div>
+          </Card>
+        );
       default:
         return userProfile ? (
           <ProfileTab
@@ -332,6 +362,12 @@ export function AccountPage() {
       label: t("common.candidateProfile"),
       description: t("userAccount.managePersonalRecruitmentRecords"),
       icon: FileText,
+    },
+    {
+      id: "settings",
+      label: t("common.settings"),
+      description: t("userAccount.managePreferencesAndSecurity"),
+      icon: Settings,
     },
   ];
 
@@ -398,6 +434,11 @@ export function AccountPage() {
                 className="flex items-center gap-2 rounded-lg bg-[#0058be] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#0047a8]">
                 <Edit className="h-4 w-4" />
                 {t("general.edit")}
+              </button>
+              <button
+                onClick={() => navigate("/user/settings")}
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#c6c6cd] text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
+                <Settings className="h-4 w-4" />
               </button>
               <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#c6c6cd] text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
                 <Share2 className="h-4 w-4" />
@@ -529,7 +570,9 @@ export function AccountPage() {
 
                 {/* Change Password */}
                 <li>
-                  <button className="flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors hover:bg-[#eff4ff] dark:hover:bg-[#1a2a3a]">
+                  <button
+                    onClick={() => navigate("/user/account/change-password")}
+                    className="flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors hover:bg-[#eff4ff] dark:hover:bg-[#1a2a3a]">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400">
                         <Lock className="h-4 w-4" />
