@@ -69,6 +69,7 @@ import {
   ApplicationMentorReviewPage,
   ApplicationQuizPage,
   BookingSuccessPage,
+  ChangePasswordPage,
   FeedbackDetailPage,
   MentorDetailPage,
   MockInterviewSchedulePage,
@@ -78,6 +79,7 @@ import {
   QuizResultPage,
   SessionDetailPage,
   SessionRoomPage,
+  SettingsPage,
   UserDashboardPage,
   WriteReviewPage,
 } from "@/pages/User";
@@ -200,6 +202,8 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
               <Route element={<UserAccountLayout />}>
                 <Route path="/user/account" element={<AccountPage />} />
+                <Route path="/user/account/change-password" element={<ChangePasswordPage />} />
+                <Route path="/user/settings" element={<SettingsPage />} />
               </Route>
             </Route>
 

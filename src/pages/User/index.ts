@@ -25,7 +25,10 @@ export {
 } from "./MockInterview";
 
 // Account exports
-export { AccountPage } from "./Account";
+export { AccountPage, ChangePasswordPage } from "./Account";
+
+// Settings exports
+export { SettingsPage } from "./Settings/SettingsPage";
 
 // Feedback exports
 export { FeedbackDetailPage, UserFeedbackListPage } from "./Feedback";

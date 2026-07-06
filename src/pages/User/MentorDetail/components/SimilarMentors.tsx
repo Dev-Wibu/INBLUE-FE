@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
+import { cn } from "@/lib/utils";
 import { ArrowUpRight, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 interface SimilarMentorsProps {
@@ -14,8 +15,8 @@ export function SimilarMentors({ mentors, onViewProfile }: SimilarMentorsProps) 
   const activeMentors = mentors.filter((mentor) => mentor.active === true);
   if (activeMentors.length === 0) {
     return (
-      <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+      <Card className="border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
           {t("userMentordetail.similarMentors")}
         </h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
@@ -25,8 +26,8 @@ export function SimilarMentors({ mentors, onViewProfile }: SimilarMentorsProps) 
     );
   }
   return (
-    <Card className="space-y-4 border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
-      <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+    <Card className="space-y-4 border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+      <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
         {t("userMentordetail.similarMentors")}
       </h2>
 
@@ -50,7 +51,9 @@ export function SimilarMentors({ mentors, onViewProfile }: SimilarMentorsProps) 
                 <p className="truncate text-xs font-medium text-slate-600 dark:text-slate-300">
                   {mentor.expertise || t("common.professionalMentor")}
                 </p>
-                <Badge className="rounded-full border border-amber-300/40 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700 dark:border-amber-300/20 dark:bg-amber-400/15 dark:text-amber-200">
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
                   <Star className="mr-1 h-3 w-3 fill-current" />
                   {typeof mentor.averageRating === "number"
                     ? mentor.averageRating.toFixed(1)
@@ -62,7 +65,11 @@ export function SimilarMentors({ mentors, onViewProfile }: SimilarMentorsProps) 
             <Button
               type="button"
               size="sm"
-              className="mt-3 h-9 w-full bg-linear-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
+              variant="outline"
+              className={cn(
+                "mt-3 h-9 w-full border-slate-200 text-slate-700 hover:bg-slate-100",
+                "dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              )}
               onClick={() => onViewProfile(mentor)}>
               <ArrowUpRight className="mr-1.5 h-4 w-4" />
               {t("userMentordetail.viewProfile")}

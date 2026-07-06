@@ -1,10 +1,13 @@
 import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useMentorFeedbacksByMentor } from "@/hooks/useMentorFeedback";
 import type { SchemaMentorResponse } from "@/interfaces/schema.types";
 import { formatCurrency } from "@/lib/formatting";
 import { chatManager } from "@/services/chat.manager";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -126,8 +129,7 @@ export function MentorDetailPage() {
         if (listRes.success && listRes.data) {
           setAllMentors(listRes.data.filter(isActiveMentor));
         }
-      } catch (error) {
-        console.error("Error fetching mentor data:", error);
+      } catch {
         setMentorUnavailableReason("not-found");
         toast.error(t("userMentordetail.anErrorOccurredWhileLoading"));
       } finally {
@@ -138,17 +140,20 @@ export function MentorDetailPage() {
   }, [isMentorIdValid, parsedMentorId, t]);
   const ratingText = useMemo(() => {
     const raw = mentor?.averageRating;
-    return typeof raw === "number" ? raw.toFixed(1) : "0.0";
+    if (typeof raw !== "number" || Number.isNaN(raw)) {
+      return null;
+    }
+    return raw.toFixed(1);
   }, [mentor?.averageRating]);
+  const hasRating = ratingText !== null;
   const priceText = useMemo(() => {
     const pricePerMinute = mentor?.pricePerMinute;
     if (typeof pricePerMinute !== "number" || pricePerMinute <= 0) {
-      return t("userMentordetail.priceNotUpdatedYet");
+      return null;
     }
-    return t("general.min", {
-      var_0: formatCurrency(pricePerMinute),
-    });
-  }, [mentor?.pricePerMinute, t]);
+    return formatCurrency(pricePerMinute);
+  }, [mentor?.pricePerMinute]);
+  const hasPrice = priceText !== null;
   const totalSessions = useMemo(() => {
     const raw = mentor?.totalSession;
     if (typeof raw !== "number" || raw <= 0) {
@@ -268,15 +273,10 @@ export function MentorDetailPage() {
     );
   }
   return (
-    <section className="relative h-full overflow-y-auto rounded-3xl border border-slate-200/80 bg-linear-to-br from-blue-50 via-white to-cyan-50/60 p-5 text-slate-900 md:p-6 dark:border-slate-800 dark:from-slate-950 dark:via-[#0a1a4f] dark:to-slate-900 dark:text-slate-100">
-      <div className="pointer-events-none absolute -top-16 right-16 h-64 w-64 rounded-full bg-cyan-300/35 blur-3xl dark:bg-cyan-500/20" />
-      <div className="pointer-events-none absolute -bottom-20 -left-10 h-72 w-72 rounded-full bg-indigo-200/35 blur-3xl dark:bg-indigo-500/25" />
-
-      <div className="relative z-10 space-y-5">
+    <section className="h-full overflow-y-auto rounded-3xl border border-slate-200 bg-white p-5 text-slate-900 md:p-6 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
+      <div className="space-y-5">
         <MentorDetailHero
           mentor={mentor}
-          ratingText={ratingText}
-          priceText={priceText}
           onBack={() => navigate("/user?tab=mentors")}
           onAvatarClick={() => {
             if (mentor.avatarUrl) {
@@ -296,8 +296,8 @@ export function MentorDetailPage() {
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-5">
-            <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            <Card className="border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                 {t("common.introduce")}
               </h2>
               <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-200">
@@ -309,12 +309,16 @@ export function MentorDetailPage() {
               highlights={highlights}
               slaEstimate={slaEstimate}
               ratingText={ratingText}
+              hasRating={hasRating}
               totalSessions={totalSessions}
               priceText={priceText}
+              hasPrice={hasPrice}
               expertiseTags={expertiseTags}
             />
 
             <SimilarMentors mentors={similarMentors} onViewProfile={handleViewSimilarProfile} />
+
+            <MentorReviewsSection mentorId={parsedMentorId} />
           </div>
 
           <MentorActionPanel
@@ -332,5 +336,66 @@ export function MentorDetailPage() {
         initialIndex={0}
       />
     </section>
+  );
+}
+
+function MentorReviewsSection({ mentorId }: { mentorId: number }) {
+  const { t } = useTranslation();
+  const { data, isLoading } = useMentorFeedbacksByMentor(mentorId);
+  const feedbacks = data || [];
+
+  if (!mentorId) {
+    return null;
+  }
+
+  return (
+    <Card className="border border-slate-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-950">
+      <h2 className="text-lg font-semibold text-balance text-slate-900 dark:text-white">
+        {t("common.reviewsFromStudents")}
+      </h2>
+      {isLoading ? (
+        <div className="mt-5 space-y-4" aria-busy="true" aria-label={t("common.loading")}>
+          <Skeleton className="h-24 rounded-xl" />
+          <Skeleton className="h-24 rounded-xl" />
+          <Skeleton className="h-24 rounded-xl" />
+        </div>
+      ) : feedbacks.length > 0 ? (
+        <ul className="mt-5 space-y-4" role="list" aria-label={t("common.reviewsFromStudents")}>
+          {feedbacks.map((feedback, index) => (
+            <li
+              key={feedback.id}
+              className={[
+                "group rounded-xl border border-slate-200 bg-white p-4 transition-colors focus-within:border-[#0047AB] focus-within:ring-1 focus-within:ring-[#0047AB]/40 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-800/60",
+                index !== feedbacks.length - 1 ? "mb-4" : "",
+              ].join(" ")}>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={feedback.user?.avatarUrl} />
+                  <AvatarFallback>{(feedback.user?.name || "?").charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
+                    {feedback.user?.name}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <Star className="h-4 w-4 text-[#FFD700]" aria-hidden="true" />
+                  <span>{feedback.rating}/5</span>
+                </div>
+              </div>
+              {feedback.comment ? (
+                <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  {feedback.comment}
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-5 text-sm text-slate-500 dark:text-slate-400" role="status">
+          {t("common.noReviewsYet")}
+        </p>
+      )}
+    </Card>
   );
 }
