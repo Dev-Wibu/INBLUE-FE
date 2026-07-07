@@ -11,6 +11,7 @@ export type SchemaMentor = components["schemas"]["Mentor"];
 export type SchemaMentorResponse = components["schemas"]["MentorResponse"];
 export type SchemaUserInfo = components["schemas"]["UserInfo"];
 export type SchemaMentorInfo = components["schemas"]["MentorInfo"];
+export type SchemaMentorInterviewDto = components["schemas"]["MentorInterviewDto"];
 /** MemberShipPlan is no longer in schema-from-be; defined locally to match expected BE shape */
 export type SchemaMembershipPlan = {
   id?: number;

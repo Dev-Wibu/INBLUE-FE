@@ -14,14 +14,20 @@ const userDetailViewPath = path.join(
 let content = fs.readFileSync(userDetailViewPath, "utf-8").replace(/\r\n/g, "\n");
 
 // Remove MediaLightboxDialog import
-content = content.replace(/import \{ MediaLightboxDialog, type MediaViewerItem \} from "@\/components\/shared";\n/, "");
+content = content.replace(
+  /import \{ MediaLightboxDialog, type MediaViewerItem \} from "@\/components\/shared";\n/,
+  ""
+);
 
 // Remove cn import
 content = content.replace(/import \{ cn \} from "@\/lib\/utils";\n/, "");
 
 // Remove unused variables in UserDetailView
 content = content.replace(/  const \[viewerOpen, setViewerOpen\] = useState\(false\);\n/, "");
-content = content.replace(/  const \[viewerItems, setViewerItems\] = useState<MediaViewerItem\[\]>\(\[\]\);\n/, "");
+content = content.replace(
+  /  const \[viewerItems, setViewerItems\] = useState<MediaViewerItem\[\]>\(\[\]\);\n/,
+  ""
+);
 
 // Remove MediaLightboxDialog usage at the bottom
 content = content.replace(
@@ -30,7 +36,8 @@ content = content.replace(
 );
 
 // Remove getRoleBadgeClass
-const roleBadgeClassRegex = /const getRoleBadgeClass = \(role\?: UserRole\): string => {[\s\S]*?};\n\n/;
+const roleBadgeClassRegex =
+  /const getRoleBadgeClass = \(role\?: UserRole\): string => {[\s\S]*?};\n\n/;
 content = content.replace(roleBadgeClassRegex, "");
 
 fs.writeFileSync(userDetailViewPath, content, "utf-8");

@@ -14,6 +14,7 @@ import { Briefcase, Building2, DollarSign, MapPin, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+
 export function JobSearchSection() {
   const { t } = useTranslation();
   const [keyword, setKeyword] = useState("");
@@ -23,6 +24,7 @@ export function JobSearchSection() {
   const [isSearching, setIsSearching] = useState(false);
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+
   const handleSearch = async () => {
     setIsSearching(true);
     setHasSearched(true);
@@ -54,45 +56,32 @@ export function JobSearchSection() {
       if (result.success && result.data) {
         setJobs(result.data);
       } else {
-        console.error("[JobSearchSection] Search error:", result.error);
         setJobs([]);
       }
-    } catch (error) {
-      console.error("[JobSearchSection] Search error:", error);
+    } catch {
       setJobs([]);
     } finally {
       setIsSearching(false);
     }
   };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
+
   const formatSalary = (min?: number, max?: number, currency?: string) => {
-    const format = (num: number) => {
-      if (num >= 1000000) {
-        return `${(num / 1000000).toFixed(0)}M`;
-      }
+    const fmt = (num: number) => {
+      if (num >= 1000000) return `${(num / 1000000).toFixed(0)}M`;
       return `${(num / 1000).toFixed(0)}K`;
     };
-    if (min && max) {
-      return `${format(min)} - ${format(max)} ${currency || "VND"}`;
-    }
-    if (min) {
-      return t("common.fromVar0Var1", {
-        var_0: format(min),
-        var_1: currency || "VND",
-      });
-    }
-    if (max) {
-      return t("common.toVar0Var1", {
-        var_0: format(max),
-        var_1: currency || "VND",
-      });
-    }
+    if (min && max) return `${fmt(min)} - ${fmt(max)} ${currency || "VND"}`;
+    if (min) return `${t("common.fromVar0Var1", { var_0: fmt(min), var_1: currency || "VND" })}`;
+    if (max) return `${t("common.toVar0Var1", { var_0: fmt(max), var_1: currency || "VND" })}`;
     return t("common.agree");
   };
+
   const getLevelBadgeColor = (level?: string) => {
     switch (level?.toUpperCase()) {
       case "INTERN":
@@ -107,27 +96,28 @@ export function JobSearchSection() {
         return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
     }
   };
+
   return (
-    <section className="mx-auto max-w-7xl px-6 py-12">
+    <section className="mx-auto max-w-7xl px-6 py-16">
       {/* Search Card */}
-      <div className="rounded-2xl border border-slate-200/50 bg-white/70 p-6 shadow-lg backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-900/70">
+      <div className="rounded-xl border border-slate-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/80">
         <div className="mb-6">
-          <h2 className="mb-1 text-2xl font-bold text-slate-900 dark:text-white">
+          <h2 className="mb-1 text-xl font-bold text-slate-900 sm:text-2xl dark:text-white">
             {t("compHomepageRedesign.searchForCareerOpportunities")}
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {t("compHomepageRedesign.exploreVacanciesThatFitYour")}
           </p>
         </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
           {/* Search Input */}
           <div className="relative w-full">
-            <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <input
+            <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
               type="text"
               placeholder={t("compHomepageRedesign.searchForPositionsSkillsOr")}
-              className="h-12 w-full rounded-xl border border-slate-200/50 bg-slate-50/50 pr-4 pl-12 text-sm text-slate-700 transition-all placeholder:text-slate-400 focus:border-[#0047AB]/50 focus:ring-2 focus:ring-[#0047AB]/20 focus:outline-none dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-slate-200"
+              className="h-11 w-full pr-4 pl-11 text-sm"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -137,26 +127,23 @@ export function JobSearchSection() {
           {/* Filters Row */}
           <div className="flex flex-wrap items-end gap-3">
             {/* Level Filter */}
-            <div className="min-w-[140px] flex-1 sm:max-w-[200px] sm:min-w-[160px]">
-              <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
-                {t("common.rank")}
-              </label>
+            <div className="w-full min-[480px]:flex-1 sm:max-w-[200px]">
               <Select value={level} onValueChange={setLevel}>
-                <SelectTrigger className="h-10 w-full">
+                <SelectTrigger className="h-10 w-full text-sm">
                   <SelectValue placeholder={t("general.all")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("general.all")}</SelectItem>
-                  <SelectItem value="intern">{"Intern"}</SelectItem>
+                  <SelectItem value="intern">Intern</SelectItem>
                   <SelectItem value="fresher">Fresher</SelectItem>
-                  <SelectItem value="junior">{"Junior"}</SelectItem>
-                  <SelectItem value="middle">{"Middle"}</SelectItem>
+                  <SelectItem value="junior">Junior</SelectItem>
+                  <SelectItem value="middle">Middle</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Salary Min Input */}
-            <div className="min-w-[120px] flex-1 sm:max-w-[160px] sm:min-w-[120px]">
+            {/* Salary Min */}
+            <div className="w-full min-[480px]:flex-1 sm:max-w-[160px]">
               <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
                 {t("adminCompanymanagement.minimumWage")}
               </label>
@@ -171,7 +158,7 @@ export function JobSearchSection() {
                     const raw = e.target.value.replace(/[^\d]/g, "");
                     setSalaryMin(raw);
                   }}
-                  className="h-10 w-full pr-12 pl-9 text-sm"
+                  className="h-10 w-full pr-10 pl-9 text-sm"
                 />
                 <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">
                   {t("general.million")}
@@ -179,8 +166,8 @@ export function JobSearchSection() {
               </div>
             </div>
 
-            {/* Salary Max Input */}
-            <div className="min-w-[120px] flex-1 sm:max-w-[160px] sm:min-w-[120px]">
+            {/* Salary Max */}
+            <div className="w-full min-[480px]:flex-1 sm:max-w-[160px]">
               <label className="mb-1.5 block text-xs font-medium text-slate-500 dark:text-slate-400">
                 {t("adminCompanymanagement.maximumSalary")}
               </label>
@@ -195,7 +182,7 @@ export function JobSearchSection() {
                     const raw = e.target.value.replace(/[^\d]/g, "");
                     setSalaryMax(raw);
                   }}
-                  className="h-10 w-full pr-12 pl-9 text-sm"
+                  className="h-10 w-full pr-10 pl-9 text-sm"
                 />
                 <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">
                   {t("general.million")}
@@ -207,7 +194,7 @@ export function JobSearchSection() {
             <Button
               onClick={handleSearch}
               disabled={isSearching}
-              className="h-10 gap-2 bg-[#0047AB] px-6 hover:bg-[#003d8f]">
+              className="h-10 gap-2 bg-[#0047AB] px-6 text-sm font-medium hover:bg-[#003d8f] dark:bg-[#66B2FF] dark:text-slate-950 dark:hover:bg-[#7AB8FF]">
               {isSearching ? (
                 <>
                   <Search className="h-4 w-4 animate-spin" />
@@ -228,8 +215,8 @@ export function JobSearchSection() {
       {hasSearched && (
         <div className="mt-8">
           {/* Results Count */}
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+          <div className="mb-5 flex items-center justify-between">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               {isSearching ? (
                 t("common.searching")
               ) : (
@@ -251,51 +238,51 @@ export function JobSearchSection() {
 
           {/* Jobs Grid */}
           {!isSearching && jobs.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {jobs.slice(0, 9).map((job) => (
                 <Link key={job.id} to={`/enterprise/job/${job.id}`} className="block">
-                  <Card className="group h-full cursor-pointer border-slate-200 transition-all hover:border-[#0047AB]/50 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                  <Card className="group h-full cursor-pointer border-slate-200 transition-all duration-200 hover:border-[#0047AB]/40 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                     <CardContent className="p-5">
-                      <div className="mb-3 flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0047AB]/10">
-                            <Briefcase className="h-6 w-6 text-[#0047AB]" />
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#0047AB]/10">
+                            <Briefcase className="h-5 w-5 text-[#0047AB] dark:text-[#66B2FF]" />
                           </div>
-                          <div>
-                            <h3 className="line-clamp-1 text-base font-semibold text-slate-900 transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
+                          <div className="min-w-0">
+                            <h3 className="truncate text-sm font-semibold text-slate-900 transition-colors group-hover:text-[#0047AB] dark:text-white dark:group-hover:text-[#66B2FF]">
                               {job.title}
                             </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                               {job.companyName || t("common.company")}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="mb-4 space-y-2">
-                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                          <DollarSign className="h-4 w-4 shrink-0" />
+                      <div className="mb-4 space-y-1.5">
+                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                          <DollarSign className="h-3.5 w-3.5 shrink-0" />
                           <span>{formatSalary(job.salaryMin, job.salaryMax, job.currency)}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                          <MapPin className="h-4 w-4 shrink-0" />
+                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                          <MapPin className="h-3.5 w-3.5 shrink-0" />
                           <span>{job.location || t("common.hoChiMinh")}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                          <Building2 className="h-4 w-4 shrink-0" />
+                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                          <Building2 className="h-3.5 w-3.5 shrink-0" />
                           <span>{job.workType || t("compHomepageRedesign.fullTime")}</span>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        <Badge className={`text-xs ${getLevelBadgeColor(job.level)}`}>
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge className={`text-[10px] ${getLevelBadgeColor(job.level)}`}>
                           {job.level || t("common.notDetermined")}
                         </Badge>
                         {job.skills?.slice(0, 2).map((skill, idx) => (
                           <Badge
                             key={idx}
                             variant="outline"
-                            className="text-xs dark:border-slate-600 dark:text-slate-400">
+                            className="text-[10px] dark:border-slate-600 dark:text-slate-400">
                             {skill}
                           </Badge>
                         ))}
@@ -312,13 +299,13 @@ export function JobSearchSection() {
             <div className="rounded-xl border border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-800">
               <div className="mb-4 flex justify-center">
                 <div className="rounded-full bg-slate-100 p-4 dark:bg-slate-700">
-                  <Search className="h-8 w-8 text-slate-400" />
+                  <Search className="h-7 w-7 text-slate-400" />
                 </div>
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="mb-2 text-base font-semibold text-slate-900 dark:text-white">
                 {t("compHomepageRedesign.noLocationsFound")}
               </h3>
-              <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 {t("compHomepageRedesign.tryAdjustingYourSearchKeywords")}
               </p>
             </div>

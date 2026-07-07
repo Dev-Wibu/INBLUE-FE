@@ -200,9 +200,12 @@ export function UserEditForm({
                 <RadioGroup
                   value={formData.role || "USER"}
                   onValueChange={(value) =>
-                    onFormChange({ ...formData, role: value as "STAFF" | "USER" })
+                    onFormChange({
+                      ...formData,
+                      role: value as "STAFF" | "MENTOR" | "ADMIN" | "USER",
+                    })
                   }
-                  className="grid grid-cols-2 gap-3">
+                  className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div>
                     <RadioGroupItem value="USER" id="role-user" className="peer sr-only" />
                     <Label
@@ -210,6 +213,15 @@ export function UserEditForm({
                       className="flex cursor-pointer flex-col items-center justify-between rounded-xl border-2 border-slate-200 bg-transparent p-4 transition-all peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 peer-data-[state=checked]:text-blue-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:peer-data-[state=checked]:border-blue-600 dark:peer-data-[state=checked]:bg-blue-900/20 dark:peer-data-[state=checked]:text-blue-400 dark:hover:bg-slate-800 dark:hover:text-slate-50">
                       <UserIcon className="mb-2 h-6 w-6" />
                       <span className="text-sm font-semibold">{t("common.user")}</span>
+                    </Label>
+                  </div>
+                  <div>
+                    <RadioGroupItem value="MENTOR" id="role-mentor" className="peer sr-only" />
+                    <Label
+                      htmlFor="role-mentor"
+                      className="flex cursor-pointer flex-col items-center justify-between rounded-xl border-2 border-slate-200 bg-transparent p-4 transition-all peer-data-[state=checked]:border-green-500 peer-data-[state=checked]:bg-green-50 peer-data-[state=checked]:text-green-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:peer-data-[state=checked]:border-green-600 dark:peer-data-[state=checked]:bg-green-900/20 dark:peer-data-[state=checked]:text-green-400 dark:hover:bg-slate-800 dark:hover:text-slate-50">
+                      <Shield className="mb-2 h-6 w-6" />
+                      <span className="text-sm font-semibold">{t("common.mentor")}</span>
                     </Label>
                   </div>
                   <div>
@@ -221,6 +233,15 @@ export function UserEditForm({
                       <span className="text-sm font-semibold">
                         {t("adminAdmindashboard.staff")}
                       </span>
+                    </Label>
+                  </div>
+                  <div>
+                    <RadioGroupItem value="ADMIN" id="role-admin" className="peer sr-only" />
+                    <Label
+                      htmlFor="role-admin"
+                      className="flex cursor-pointer flex-col items-center justify-between rounded-xl border-2 border-slate-200 bg-transparent p-4 transition-all peer-data-[state=checked]:border-red-500 peer-data-[state=checked]:bg-red-50 peer-data-[state=checked]:text-red-700 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:peer-data-[state=checked]:border-red-600 dark:peer-data-[state=checked]:bg-red-900/20 dark:peer-data-[state=checked]:text-red-400 dark:hover:bg-slate-800 dark:hover:text-slate-50">
+                      <Shield className="mb-2 h-6 w-6" />
+                      <span className="text-sm font-semibold">{t("common.admin")}</span>
                     </Label>
                   </div>
                 </RadioGroup>
