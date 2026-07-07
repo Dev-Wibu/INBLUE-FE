@@ -56,7 +56,13 @@ type RoundType =
   | "AI_INTERVIEW";
 
 type ApplicationStatus = "IN_PROGRESS" | "PASSED" | "FAILED" | "SOFT_FAILED";
-type RoundDetailStatus = "PENDING" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED" | "ERROR";
+type RoundDetailStatus =
+  | "PENDING"
+  | "IN_PROGRESS"
+  | "SUBMITTED"
+  | "AI_EVALUATED"
+  | "COMPLETED"
+  | "ERROR";
 
 interface JdRound {
   id?: number;
@@ -171,6 +177,10 @@ function ApplicationStatusBadge({
 function RoundStatusBadge({ status }: { status: RoundDetailStatus }) {
   const { t } = useTranslation();
   const config: Record<RoundDetailStatus, { label: string; className: string }> = {
+    IN_PROGRESS: {
+      label: t("userApplicationhistory.roundInProgress"),
+      className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+    },
     PENDING: {
       label: t("userApplicationhistory.roundPending"),
       className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",

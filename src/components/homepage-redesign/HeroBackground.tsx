@@ -308,10 +308,25 @@ export function HeroBackground({ className }: HeroBackgroundProps) {
     window.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseleave", handleMouseLeave);
 
+    // Re-detect theme when dark/light mode changes
+    const observer = new MutationObserver(() => {
+      dotsRef.current = buildDots(
+        canvas.getBoundingClientRect().width,
+        canvas.getBoundingClientRect().height,
+        spacing,
+        getTheme() === "dark"
+      );
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       window.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseleave", handleMouseLeave);
+      observer.disconnect();
     };
   }, []);
 

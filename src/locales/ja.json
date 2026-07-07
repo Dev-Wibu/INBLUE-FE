@@ -2,6 +2,7 @@
   "adminAdmindashboard": {
     "admindashboardpageThePlusTabMenu": "[AdminDashboardPage] プラスタブメニューの設定が同期されていません",
     "administration": "管理",
+    "staff": "スタッフ",
     "administrator": "管理者",
     "companyManagement": "企業",
     "instructor": "メンター",
@@ -3412,6 +3413,7 @@
     "enterRoom": "入室する",
     "viewDetails": "詳細を見る",
     "roundPending": "保留中",
+    "roundInProgress": "進行中",
     "roundSubmitting": "提出中",
     "roundAiEvaluated": "AI評価済み",
     "roundCompleted": "完了",

@@ -32,6 +32,7 @@
   "adminAdmindashboard": {
     "admindashboardpageThePlusTabMenu": "[AdminDashboardPage] Cấu hình menu tab dấu cộng chưa đồng bộ",
     "administration": "Quản trị",
+    "staff": "Nhân viên",
     "administrator": "Quản trị viên",
     "companyManagement": "Công ty",
     "instructor": "Mentor",
@@ -3409,6 +3410,7 @@
     "enterRoom": "Vào phòng",
     "viewDetails": "Xem chi tiết",
     "roundPending": "Chờ xử lý",
+    "roundInProgress": "Đang diễn ra",
     "roundSubmitting": "Đang nộp",
     "roundAiEvaluated": "Đã chấm AI",
     "roundCompleted": "Hoàn thành",

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserSessions } from "@/hooks/useSession";
 import { formatDateTime, toVietnamDateKey } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
 import { enUS, vi } from "date-fns/locale";
 import { Calendar, ChevronLeft, ChevronRight, Clock, Filter, Target, Video } from "lucide-react";
@@ -19,37 +20,39 @@ import {
   type UserCalendarSession,
   buildUserCalendarSessions,
   formatCalendarTime,
+  getSessionStatusConfig,
   groupUserCalendarByDate,
 } from "./userSchedule.utils";
+
 const MAX_VISIBLE_SESSIONS = 2;
 const MOBILE_VIEW_AGENDA = "agenda";
 const MOBILE_VIEW_CALENDAR = "calendar";
-const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
 const getDaysInMonth = (year: number, month: number): number => {
   return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 };
-const toDateKeyFromParts = (year: number, month: number, day: number) => {
+
+const toDateKeyFromParts = (year: number, month: number, day: number): string => {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 };
+
 const getFirstDayOfMonth = (year: number, month: number): number => {
   return new Date(Date.UTC(year, month, 1)).getUTCDay();
 };
+
 const toFilterDateKey = (value?: Date): string | undefined => {
-  if (!value) {
-    return undefined;
-  }
+  if (!value) return undefined;
   return toVietnamDateKey(value) || undefined;
 };
+
 const isDateKeyInRange = (dateKey: string, fromKey?: string, toKey?: string) => {
-  if (fromKey && dateKey < fromKey) {
-    return false;
-  }
-  if (toKey && dateKey > toKey) {
-    return false;
-  }
+  if (fromKey && dateKey < fromKey) return false;
+  if (toKey && dateKey > toKey) return false;
   return true;
 };
+
+const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+
 function AgendaSessionItem({
   item,
   onOpenDetail,
@@ -62,62 +65,23 @@ function AgendaSessionItem({
   onWriteReview: (_sessionId?: number) => void;
 }) {
   const { t } = useTranslation();
-  const statusConfig: Record<string, { label: string; dot: string; badgeClass: string }> = {
-    DRAFT: {
-      label: t("common.waitingForApproval"),
-      dot: "bg-amber-500",
-      badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    },
-    SCHEDULED: {
-      label: t("common.comingSoon"),
-      dot: "bg-blue-500",
-      badgeClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    },
-    PAID: {
-      label: t("common.paid"),
-      dot: "bg-emerald-500",
-      badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    },
-    ONGOING: {
-      label: t("common.ongoing"),
-      dot: "bg-green-500",
-      badgeClass: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    },
-    COMPLETED: {
-      label: t("general.completed"),
-      dot: "bg-slate-500",
-      badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-    },
-    REJECTED: {
-      label: t("common.rejected"),
-      dot: "bg-red-500",
-      badgeClass: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    },
-    CANCELED: {
-      label: t("common.canceled"),
-      dot: "bg-rose-500",
-      badgeClass: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-    },
-  };
-  const status = statusConfig[item.session.status || "SCHEDULED"] || statusConfig.SCHEDULED;
+  const status = getSessionStatusConfig(item.session.status);
   const canJoinRoom =
     (item.session.status === "PAID" || item.session.status === "ONGOING") && !!item.session.roomUrl;
   const canWriteReview = item.session.status === "COMPLETED";
+
   return (
-    <div className="space-y-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors dark:border-slate-800 dark:bg-slate-950/40">
+    <div className="space-y-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/40 dark:hover:border-slate-700">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-            {item.session.roomName ||
-              t("common.sessionVar0", {
-                var_0: item.session.id,
-              })}
+            {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {t("common.mentorWithId", { id: item.session.userId2 || "-" })}
           </p>
         </div>
-        <Badge className={cn("border-0", status.badgeClass)}>{status.label}</Badge>
+        <Badge className={cn("shrink-0 border-0", status.badgeClass)}>{status.label}</Badge>
       </div>
 
       <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -146,6 +110,7 @@ function AgendaSessionItem({
     </div>
   );
 }
+
 function CalendarSessionEntry({
   item,
   onOpen,
@@ -154,57 +119,18 @@ function CalendarSessionEntry({
   onOpen: (_sessionId?: number) => void;
 }) {
   const { t } = useTranslation();
-  const statusConfig: Record<string, { label: string; dot: string; badgeClass: string }> = {
-    DRAFT: {
-      label: t("common.waitingForApproval"),
-      dot: "bg-amber-500",
-      badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    },
-    SCHEDULED: {
-      label: t("common.comingSoon"),
-      dot: "bg-blue-500",
-      badgeClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    },
-    PAID: {
-      label: t("common.paid"),
-      dot: "bg-emerald-500",
-      badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    },
-    ONGOING: {
-      label: t("common.ongoing"),
-      dot: "bg-green-500",
-      badgeClass: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    },
-    COMPLETED: {
-      label: t("general.completed"),
-      dot: "bg-slate-500",
-      badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-    },
-    REJECTED: {
-      label: t("common.rejected"),
-      dot: "bg-red-500",
-      badgeClass: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    },
-    CANCELED: {
-      label: t("common.canceled"),
-      dot: "bg-rose-500",
-      badgeClass: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-    },
-  };
-  const status = statusConfig[item.session.status || "SCHEDULED"] || statusConfig.SCHEDULED;
+  const status = getSessionStatusConfig(item.session.status);
+
   return (
     <button
       onClick={() => onOpen(item.session.id)}
       className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors">
-      <span className={`h-2 w-2 shrink-0 rounded-full ${status.dot}`} />
+      <span className={cn("h-2 w-2 shrink-0 rounded-full", status.dot)} />
       <span className="text-muted-foreground shrink-0">
         {formatCalendarTime(item.session.joinTime)}
       </span>
       <span className="text-foreground flex-1 truncate font-medium">
-        {item.session.roomName ||
-          t("common.sessionVar0", {
-            var_0: item.session.id,
-          })}
+        {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
       </span>
       <Badge className={cn("border-0 px-1.5 py-0 text-[10px]", status.badgeClass)}>
         {status.label}
@@ -212,8 +138,12 @@ function CalendarSessionEntry({
     </button>
   );
 }
+
 export function OverviewPage() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions();
 
   const MONTH_NAMES = [
     t("common.january"),
@@ -230,47 +160,6 @@ export function OverviewPage() {
     t("common.december"),
   ];
 
-  const statusConfig: Record<string, { label: string; dot: string; badgeClass: string }> = {
-    DRAFT: {
-      label: t("common.waitingForApproval"),
-      dot: "bg-amber-500",
-      badgeClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    },
-    SCHEDULED: {
-      label: t("common.comingSoon"),
-      dot: "bg-blue-500",
-      badgeClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    },
-    PAID: {
-      label: t("common.paid"),
-      dot: "bg-emerald-500",
-      badgeClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    },
-    ONGOING: {
-      label: t("common.ongoing"),
-      dot: "bg-green-500",
-      badgeClass: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    },
-    COMPLETED: {
-      label: t("general.completed"),
-      dot: "bg-slate-500",
-      badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-    },
-    REJECTED: {
-      label: t("common.rejected"),
-      dot: "bg-red-500",
-      badgeClass: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    },
-    CANCELED: {
-      label: t("common.canceled"),
-      dot: "bg-rose-500",
-      badgeClass: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-    },
-  };
-  const defaultStatusConfig = statusConfig.SCHEDULED;
-
-  const navigate = useNavigate();
-  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions();
   const now = new Date();
   const nowTimestamp = now.getTime();
   const fallbackTodayKey = toDateKeyFromParts(now.getFullYear(), now.getMonth(), now.getDate());
@@ -278,6 +167,7 @@ export function OverviewPage() {
   const [todayYearRaw = "", todayMonthRaw = ""] = todayKey.split("-");
   const initialYear = Number.parseInt(todayYearRaw, 10);
   const initialMonth = Number.parseInt(todayMonthRaw, 10) - 1;
+
   const [currentYear, setCurrentYear] = useState(
     Number.isFinite(initialYear) ? initialYear : now.getFullYear()
   );
@@ -289,9 +179,8 @@ export function OverviewPage() {
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [mobileView, setMobileView] = useState<string>(MOBILE_VIEW_AGENDA);
-  const calendarItems = useMemo(() => {
-    return buildUserCalendarSessions(sessions);
-  }, [sessions]);
+
+  const calendarItems = useMemo(() => buildUserCalendarSessions(sessions), [sessions]);
   const fromKey = useMemo(() => toFilterDateKey(fromDate), [fromDate]);
   const toKey = useMemo(() => toFilterDateKey(toDate), [toDate]);
   const filteredCalendarItems = useMemo(() => {
@@ -300,16 +189,17 @@ export function OverviewPage() {
       return selectedStatuses.includes(status) && isDateKeyInRange(item.dateKey, fromKey, toKey);
     });
   }, [calendarItems, selectedStatuses, fromKey, toKey]);
-  const sessionsByDate = useMemo(() => {
-    return groupUserCalendarByDate(filteredCalendarItems);
-  }, [filteredCalendarItems]);
+  const sessionsByDate = useMemo(
+    () => groupUserCalendarByDate(filteredCalendarItems),
+    [filteredCalendarItems]
+  );
+
   const totalInterviews = sessions.length;
-  const completedInterviews = sessions.filter((session) => session.status === "COMPLETED").length;
+  const completedInterviews = sessions.filter((s) => s.status === "COMPLETED").length;
   const upcomingInterviews = sessions.filter(
-    (session) =>
-      session.status === "SCHEDULED" || session.status === "PAID" || session.status === "ONGOING"
+    (s) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
   ).length;
-  const pendingInterviews = sessions.filter((session) => session.status === "DRAFT").length;
+  const pendingInterviews = sessions.filter((s) => s.status === "DRAFT").length;
   const upcomingScheduleItems = filteredCalendarItems
     .filter(
       (item) =>
@@ -322,14 +212,13 @@ export function OverviewPage() {
   const selectedDayItems = sessionsByDate.get(selectedDateKey) || [];
   const selectedDateDisplay = useMemo(() => {
     const [year, month, day] = selectedDateKey.split("-").map(Number);
-    if (!year || !month || !day) {
-      return t("common.selectedDate");
-    }
+    if (!year || !month || !day) return t("common.selectedDate");
     const dateFnsLocale = i18n.language === "en" ? enUS : vi;
     return formatDateFn(new Date(year, month - 1, day), "EEEE, dd/MM/yyyy", {
       locale: dateFnsLocale,
     });
   }, [selectedDateKey, t, i18n]);
+
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
   const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
@@ -347,61 +236,67 @@ export function OverviewPage() {
   for (let index = 0; index < calendarDays.length; index += 7) {
     weeks.push(calendarDays.slice(index, index + 7));
   }
+
   const handlePrevMonth = () => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
-      setCurrentYear((prevYear) => prevYear - 1);
-      return;
+      setCurrentYear((p) => p - 1);
+    } else {
+      setCurrentMonth((p) => p - 1);
     }
-    setCurrentMonth((prevMonth) => prevMonth - 1);
   };
+
   const handleNextMonth = () => {
     if (currentMonth === 11) {
       setCurrentMonth(0);
-      setCurrentYear((prevYear) => prevYear + 1);
-      return;
+      setCurrentYear((p) => p + 1);
+    } else {
+      setCurrentMonth((p) => p + 1);
     }
-    setCurrentMonth((prevMonth) => prevMonth + 1);
   };
+
   const handleOpenSessionDetail = (sessionId?: number) => {
     if (typeof sessionId === "number") {
       navigate(`/user/mock-interview/history/${sessionId}`);
     }
   };
+
   const handleOpenSessionRoom = (sessionId?: number) => {
     if (typeof sessionId === "number") {
       navigate(`/user/mock-interview/room/${sessionId}`);
     }
   };
+
   const handleWriteReview = (sessionId?: number) => {
     if (typeof sessionId === "number") {
       navigate(`/user/mock-interview/history/${sessionId}/feedback`);
     }
   };
+
   const toggleStatus = (status: string) => {
-    setSelectedStatuses((current) => {
-      if (current.includes(status)) {
-        return current.filter((item) => item !== status);
-      }
-      return [...current, status];
-    });
+    setSelectedStatuses((current) =>
+      current.includes(status) ? current.filter((s) => s !== status) : [...current, status]
+    );
   };
+
   const resetFilters = () => {
     setSelectedStatuses([...USER_CALENDAR_STATUSES]);
     setFromDate(undefined);
     setToDate(undefined);
   };
+
   const jumpToToday = () => {
     setCurrentYear(Number.isFinite(initialYear) ? initialYear : now.getFullYear());
     setCurrentMonth(Number.isFinite(initialMonth) ? initialMonth : now.getMonth());
     setSelectedDateKey(todayKey);
   };
+
   const renderCalendarContent = () => (
     <Card className="border-slate-200/80 dark:border-slate-800">
       <CardHeader className="gap-4 pb-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <CardTitle className="text-xl font-bold uppercase">
+            <CardTitle className="text-xl font-bold tracking-tight dark:text-white">
               {MONTH_NAMES[currentMonth]} {currentYear}
             </CardTitle>
             <CardDescription>{t("userOverview.yourMonthlyActivityCalendar")}</CardDescription>
@@ -429,12 +324,12 @@ export function OverviewPage() {
 
         <div className="flex flex-wrap items-center gap-3 text-xs">
           {USER_CALENDAR_STATUSES.map((status) => {
-            const cfg = statusConfig[status] || defaultStatusConfig;
+            const cfg = getSessionStatusConfig(status);
             return (
               <span
                 key={status}
-                className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
-                <span className={`h-2.5 w-2.5 rounded-full ${cfg.dot}`} />
+                className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                <span className={cn("h-2.5 w-2.5 rounded-full", cfg.dot)} />
                 {cfg.label}
               </span>
             );
@@ -447,7 +342,7 @@ export function OverviewPage() {
           {WEEK_DAYS.map((day) => (
             <div
               key={day}
-              className="text-center text-xs font-semibold tracking-wide text-slate-500 uppercase">
+              className="text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
               {day}
             </div>
           ))}
@@ -460,7 +355,7 @@ export function OverviewPage() {
                 if (day === null) {
                   return (
                     <div
-                      key={`${weekIndex}-${dayIndex}`}
+                      key={`empty-${weekIndex}-${dayIndex}`}
                       className="min-h-32 rounded-xl border border-slate-200/80 bg-slate-50/50 p-3 opacity-50 dark:border-slate-800 dark:bg-slate-900/20"
                     />
                   );
@@ -471,6 +366,7 @@ export function OverviewPage() {
                 const overflowCount = dayItems.length - MAX_VISIBLE_SESSIONS;
                 const isToday = dateKey === todayKey;
                 const isSelected = dateKey === selectedDateKey;
+
                 return (
                   <div
                     key={`${weekIndex}-${dayIndex}`}
@@ -496,9 +392,7 @@ export function OverviewPage() {
                               ? "bg-indigo-600 text-white"
                               : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                         )}
-                        aria-label={t("general.selectDate", {
-                          var_0: day,
-                        })}>
+                        aria-label={t("general.selectDate", { var_0: day })}>
                         {String(day).padStart(2, "0")}
                       </button>
                       {dayItems.length > 0 && (
@@ -511,8 +405,7 @@ export function OverviewPage() {
                     {dayItems.length > 0 && (
                       <div className="space-y-1">
                         {visibleItems.map((item) => {
-                          const cfg =
-                            statusConfig[item.session.status || "SCHEDULED"] || defaultStatusConfig;
+                          const cfg = getSessionStatusConfig(item.session.status);
                           return (
                             <button
                               key={item.session.id}
@@ -575,6 +468,7 @@ export function OverviewPage() {
       </CardContent>
     </Card>
   );
+
   const renderAgendaContent = () => (
     <Card className="border-slate-200/80 dark:border-slate-800">
       <CardHeader className="space-y-4 pb-4">
@@ -591,7 +485,7 @@ export function OverviewPage() {
 
           <div className="flex flex-wrap gap-2">
             {USER_CALENDAR_STATUSES.map((status) => {
-              const cfg = statusConfig[status] || defaultStatusConfig;
+              const cfg = getSessionStatusConfig(status);
               const active = selectedStatuses.includes(status);
               return (
                 <Button
@@ -600,7 +494,7 @@ export function OverviewPage() {
                   variant={active ? "default" : "outline"}
                   onClick={() => toggleStatus(status)}
                   className={cn("h-8", active && "bg-blue-600 hover:bg-blue-700")}>
-                  <span className={`mr-1.5 h-2 w-2 rounded-full ${cfg.dot}`} />
+                  <span className={cn("mr-1.5 h-2 w-2 rounded-full", cfg.dot)} />
                   {cfg.label}
                 </Button>
               );
@@ -612,15 +506,12 @@ export function OverviewPage() {
               value={fromDate}
               onChange={(value) => {
                 setFromDate(value || undefined);
-                if (value && toDate && value > toDate) {
-                  setToDate(undefined);
-                }
+                if (value && toDate && value > toDate) setToDate(undefined);
               }}
               showTime={false}
               themeVariant="user"
               placeholder={t("common.fromDate")}
             />
-
             <DateTimePicker
               value={toDate}
               onChange={(value) => setToDate(value || undefined)}
@@ -685,7 +576,7 @@ export function OverviewPage() {
           ) : (
             <div className="space-y-2">
               {upcomingScheduleItems.map((item) => {
-                const cfg = statusConfig[item.session.status || "SCHEDULED"] || defaultStatusConfig;
+                const cfg = getSessionStatusConfig(item.session.status);
                 return (
                   <button
                     key={item.session.id}
@@ -694,15 +585,13 @@ export function OverviewPage() {
                     <div className="min-w-0">
                       <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200">
                         {item.session.roomName ||
-                          t("common.sessionVar0", {
-                            var_0: item.session.id,
-                          })}
+                          t("common.sessionVar0", { var_0: item.session.id })}
                       </p>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400">
                         {formatDateTime(item.session.joinTime)}
                       </p>
                     </div>
-                    <Badge className={cn("border-0", cfg.badgeClass)}>{cfg.label}</Badge>
+                    <Badge className={cn("shrink-0 border-0", cfg.badgeClass)}>{cfg.label}</Badge>
                   </button>
                 );
               })}
@@ -732,15 +621,26 @@ export function OverviewPage() {
       </CardContent>
     </Card>
   );
+
+  const userName = user?.name?.split(" ").pop() || t("general.you");
+  const greetingTime = now.getHours();
+  const greetingLabel =
+    greetingTime < 12
+      ? t("common.goodMorning")
+      : greetingTime < 18
+        ? t("common.goodAfternoon")
+        : t("common.goodEvening");
+
   return (
     <div className="flex flex-col gap-6">
-      <Card className="border-blue-200/70 bg-white dark:border-blue-900/50 dark:bg-slate-950">
+      {/* Greeting Card */}
+      <Card className="border-blue-200/70 bg-gradient-to-r from-blue-50 to-indigo-50 dark:border-blue-900/50 dark:bg-slate-950 dark:from-[#0c1654]/30 dark:to-indigo-950/30">
         <CardContent className="flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
-              {t("userOverview.userDashboard")}
+              {greetingLabel}, {userName} 👋
             </p>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {t("userOverview.interviewOverview")}
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -753,6 +653,7 @@ export function OverviewPage() {
         </CardContent>
       </Card>
 
+      {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card className="border-slate-200/80 dark:border-slate-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -823,6 +724,7 @@ export function OverviewPage() {
         </Card>
       </div>
 
+      {/* Calendar + Agenda */}
       <div className="xl:hidden">
         <Tabs value={mobileView} onValueChange={setMobileView}>
           <TabsList className="mb-3 grid w-full grid-cols-2">

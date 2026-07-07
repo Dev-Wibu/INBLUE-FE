@@ -150,15 +150,23 @@ export function CompanyGridSection() {
             {t("compHomepageRedesign.participateInApplyingForProfessional")}
           </p>
         </div>
-        <Button
-          asChild
-          variant="ghost"
-          className="group gap-1 text-[#0047AB] hover:text-[#0047AB] dark:text-[#66B2FF] dark:hover:text-[#66B2FF]">
-          <Link to="/enterprise/companies">
-            {t("common.seeAll")} {companies.length} {t("compHomepageRedesign.partner")}
-            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </Button>
+        {!isLoading && (
+          <Button
+            asChild
+            variant="ghost"
+            className="group gap-1 text-[#0047AB] hover:text-[#0047AB] dark:text-[#66B2FF] dark:hover:text-[#66B2FF]">
+            <Link to="/enterprise/companies">
+              {t("common.seeAll")}
+              {companies.length > 0 && (
+                <span className="text-xs text-slate-400 dark:text-slate-500">
+                  {" "}
+                  {companies.length} {t("compHomepageRedesign.partner")}
+                </span>
+              )}
+              <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* Loading State */}

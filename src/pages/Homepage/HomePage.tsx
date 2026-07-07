@@ -6,7 +6,6 @@ import {
   HomepageHero,
   JobSearchSection,
 } from "@/components/homepage-redesign";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TestimonialCarousel } from "@/components/ui/testimonial-carousel";
 import { useHomepageInterviewModes } from "@/constants/homepage";
@@ -33,39 +32,32 @@ export function HomePage() {
       <EnhancedStatsSection />
 
       {/* Interview Styles Section */}
-      <section className="relative w-full bg-white py-16 dark:bg-slate-950">
+      <section className="relative w-full bg-slate-50 py-20 dark:bg-slate-900/50">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-10 text-center">
-            <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              {t("common.interviewMode")}
-            </Badge>
-            <h2 className="mb-3 text-2xl font-bold tracking-tight text-slate-900 lg:text-3xl dark:text-white">
+          <div className="mb-12 text-center">
+            <h2 className="mb-3 text-3xl font-bold tracking-tight text-slate-900 lg:text-4xl dark:text-white">
               {t("homepageHomepage.chooseYourInterviewStyle")}
             </h2>
-            <p className="mx-auto max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+            <p className="mx-auto max-w-2xl text-base leading-relaxed text-slate-500 dark:text-slate-400">
               {t("homepageHomepage.practiceInterviewingInTheWay")}
             </p>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {homepageInterviewModes.map((mode) => (
               <Card
                 key={mode.id}
-                className="group cursor-pointer transition-all hover:border-[#007BFF]/50 hover:shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                className="group cursor-pointer border-slate-200 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:border-[#0047AB]/30 hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
                 <CardHeader className="pb-3">
-                  <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-xl bg-[#DCEEFF] transition-colors group-hover:bg-[#A5C8F2] dark:bg-[#0047AB]/30 dark:group-hover:bg-[#0047AB]/50">
-                    {mode.icon === "text" && (
-                      <FileText className="h-7 w-7 text-[#0047AB] dark:text-[#66B2FF]" />
-                    )}
-                    {mode.icon === "mic" && (
-                      <Mic className="h-7 w-7 text-[#0047AB] dark:text-[#66B2FF]" />
-                    )}
-                    {mode.icon === "video" && (
-                      <Video className="h-7 w-7 text-[#0047AB] dark:text-[#66B2FF]" />
-                    )}
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#DCEEFF] text-[#0047AB] transition-colors duration-300 group-hover:bg-[#0047AB] group-hover:text-white dark:bg-[#0047AB]/20 dark:text-[#66B2FF] dark:group-hover:bg-[#66B2FF] dark:group-hover:text-slate-950">
+                    {mode.icon === "text" && <FileText className="h-6 w-6" />}
+                    {mode.icon === "mic" && <Mic className="h-6 w-6" />}
+                    {mode.icon === "video" && <Video className="h-6 w-6" />}
                   </div>
-                  <CardTitle className="text-lg dark:text-white">{mode.title}</CardTitle>
-                  <CardDescription className="text-xs dark:text-slate-400">
+                  <CardTitle className="text-base font-semibold dark:text-white">
+                    {mode.title}
+                  </CardTitle>
+                  <CardDescription className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                     {mode.description}
                   </CardDescription>
                 </CardHeader>
@@ -74,8 +66,8 @@ export function HomePage() {
                     {mode.benefits.map((benefit, index) => (
                       <li
                         key={index}
-                        className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+                        className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                         {benefit}
                       </li>
                     ))}
@@ -88,13 +80,10 @@ export function HomePage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="relative w-full bg-slate-50 py-16 dark:bg-slate-900/50">
+      <section className="relative w-full bg-slate-50 py-20 dark:bg-slate-900/50">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-10 text-center">
-            <Badge variant="outline" className="mb-4 dark:border-slate-700 dark:text-slate-300">
-              {t("common.evaluate")}
-            </Badge>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 lg:text-3xl dark:text-white">
+          <div className="mb-12 text-center">
+            <h2 className="mb-3 text-3xl font-bold tracking-tight text-slate-900 lg:text-4xl dark:text-white">
               {t("homepageHomepage.whatDoPeopleSayAbout")}
             </h2>
           </div>

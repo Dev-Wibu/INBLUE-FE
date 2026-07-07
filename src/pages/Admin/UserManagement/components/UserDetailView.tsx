@@ -2,10 +2,20 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CandidateProfile } from "@/interfaces/schema.types";
-import { ChevronLeft, Code, Target, BookOpen, Wrench, Briefcase, FolderOpen, GraduationCap, Award } from "lucide-react";
+import { formatDate } from "@/lib/formatting";
+import {
+  Award,
+  BookOpen,
+  Briefcase,
+  ChevronLeft,
+  Code,
+  FolderOpen,
+  GraduationCap,
+  Target,
+  Wrench,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { formatDate } from "@/lib/formatting";
 import type { User as UserType } from "../types";
 
 interface UserDetailViewProps {

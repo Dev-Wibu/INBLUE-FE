@@ -32,6 +32,7 @@
   "adminAdmindashboard": {
     "admindashboardpageThePlusTabMenu": "[AdminDashboardPage] The plus tab menu configuration is not synchronized",
     "administration": "Administration",
+    "staff": "Staff",
     "administrator": "Administrator",
     "companyManagement": "Companies",
     "instructor": "Mentors",
@@ -3409,6 +3410,7 @@
     "enterRoom": "Enter Room",
     "viewDetails": "View Details",
     "roundPending": "Pending",
+    "roundInProgress": "In Progress",
     "roundSubmitting": "Submitting",
     "roundAiEvaluated": "AI Evaluated",
     "roundCompleted": "Completed",
