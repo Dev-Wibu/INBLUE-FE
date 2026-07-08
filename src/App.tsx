@@ -83,6 +83,13 @@ import {
   UserDashboardPage,
   WriteReviewPage,
 } from "@/pages/User";
+import {
+  KioskBookingListPage,
+  KioskBookingSuccessPage,
+  KioskJoinRoomPage,
+  KioskListPage,
+  KioskSlotsPage,
+} from "@/pages/User/Kiosk";
 
 /** Preserves the path suffix after a given prefix when redirecting /dashboard/* → /user/* */
 function DashboardSubRedirect({ prefix }: { prefix: string }) {
@@ -196,6 +203,11 @@ function App() {
                 <Route path="feedback/:id" element={<FeedbackDetailPage />} />
                 <Route path="mentors/:mentorId" element={<MentorDetailPage />} />
                 <Route path="application-history" element={<ApplicationHistoryPage />} />
+                <Route path="kiosk" element={<KioskListPage />} />
+                <Route path="kiosk/:kioskId/slots" element={<KioskSlotsPage />} />
+                <Route path="kiosk/booking-success" element={<KioskBookingSuccessPage />} />
+                <Route path="kiosk/booking/:bookingId/join" element={<KioskJoinRoomPage />} />
+                <Route path="kiosk/bookings" element={<KioskBookingListPage />} />
               </Route>
             </Route>
             {/* Standalone account page — full page, no sidebar */}

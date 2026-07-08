@@ -19,7 +19,7 @@ import { useUserSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate, formatTime, toTimestamp } from "@/lib/formatting";
 import { getMockInterviewStatusBadge } from "@/lib/status-utils";
-import { Calendar, Clock, LogIn, Search, User as UserIcon, Users, Video } from "lucide-react";
+import { Calendar, Clock, LogIn, Monitor, Search, User as UserIcon, Users, Video } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -160,6 +160,14 @@ export function MockInterviewListPage() {
               onClick={() => navigate("/user/mock-interview/schedule")}>
               <Video className="mr-2 h-5 w-5" />
               {t("userMockinterview.scheduleANewInterview")}
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              className="mt-2 w-fit"
+              onClick={() => navigate("/user/kiosk")}>
+              <Monitor className="mr-2 h-5 w-5" />
+              {t("userKiosk.bookNewKiosk")}
             </Button>
           </div>
           <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
