@@ -22,25 +22,25 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 
 ### `BookingStatus` (trạng thái của lịch phỏng vấn)
 
-| Giá trị | Ý nghĩa | Ghi chú |
-|---|---|---|
-| `AWAITING_MENTOR` | Đã đặt lịch, đang chờ Admin gán Mentor | |
-| `MENTOR_ASSIGNED` | **Đã gán Mentor** | Hiện **KHÔNG được sử dụng** trong code |
-| `ROOM_CREATED` | Đã tạo phòng Daily.co, đã gửi notification | |
-| `IN_PROGRESS` | Ứng viên đã xác thực tại Kiosk | |
-| `COMPLETED` | Cuộc họp kết thúc (cả 2 người đã rời phòng) | |
-| `CANCELLED` | Đã hủy | |
+| Giá trị           | Ý nghĩa                                     | Ghi chú                                |
+| ----------------- | ------------------------------------------- | -------------------------------------- |
+| `AWAITING_MENTOR` | Đã đặt lịch, đang chờ Admin gán Mentor      |                                        |
+| `MENTOR_ASSIGNED` | **Đã gán Mentor**                           | Hiện **KHÔNG được sử dụng** trong code |
+| `ROOM_CREATED`    | Đã tạo phòng Daily.co, đã gửi notification  |                                        |
+| `IN_PROGRESS`     | Ứng viên đã xác thực tại Kiosk              |                                        |
+| `COMPLETED`       | Cuộc họp kết thúc (cả 2 người đã rời phòng) |                                        |
+| `CANCELLED`       | Đã hủy                                      |                                        |
 
 ### `ApplicationDetailStatus` (trạng thái vòng thi tuyển dụng)
 
-| Giá trị | Ý nghĩa |
-|---|---|
-| `PENDING` | Ứng viên đang làm bài |
-| `SLOT_PICKED` | Ứng viên đã chọn slot, đang chờ phỏng vấn / gán mentor |
-| `SUBMITTED` | Đã nộp bài, hệ thống đang gọi AI |
-| `AI_EVALUATED` | AI đã chấm điểm xong, đang chờ HR duyệt |
-| `COMPLETED` | HR đã chốt kết quả |
-| `ERROR` | Lỗi gọi AI |
+| Giá trị        | Ý nghĩa                                                |
+| -------------- | ------------------------------------------------------ |
+| `PENDING`      | Ứng viên đang làm bài                                  |
+| `SLOT_PICKED`  | Ứng viên đã chọn slot, đang chờ phỏng vấn / gán mentor |
+| `SUBMITTED`    | Đã nộp bài, hệ thống đang gọi AI                       |
+| `AI_EVALUATED` | AI đã chấm điểm xong, đang chờ HR duyệt                |
+| `COMPLETED`    | HR đã chốt kết quả                                     |
+| `ERROR`        | Lỗi gọi AI                                             |
 
 ---
 
@@ -73,6 +73,7 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 ```
 
 **Validation phía Backend:**
+
 - `name` và `location`: Không được null hoặc empty.
 - Không có ràng buộc unique trên name/location.
 
@@ -103,6 +104,7 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 - **Tự động cộng thêm 15 phút nghỉ** giữa các slot ở phía backend.
 
 **Validation phía Backend:**
+
 - `kioskId` phải tồn tại trong bảng `Kiosk`. Trả về `404 NOT_FOUND` nếu không tìm thấy.
 
 **Response mẫu (HTTP 200):**
@@ -161,6 +163,7 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 - Format ngày: `YYYY-MM-DD` (ISO, ví dụ: `2026-07-10`).
 
 **Validation phía Backend:**
+
 - `kioskId` phải tồn tại. Trả về `404 NOT FOUND` nếu không tìm thấy.
 - Nếu ngày đó Kiosk không có lịch hoạt động (không có `KioskSchedule` cho `dayOfWeek` tương ứng), trả về **mảng rỗng `[]`**.
 
@@ -215,11 +218,11 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 
 **Validation phía Backend (nhiều bước, rất quan trọng):**
 
-| # | Điều kiện | HTTP Status khi lỗi |
-|---|---|---|
-| 1 | `applicationDetailId` phải tồn tại trong bảng `ApplicationDetail` | `404 NOT FOUND` |
-| 2 | `kioskId` phải tồn tại trong bảng `Kiosk` | `404 NOT FOUND` |
-| 3 | Slot không được trùng với booking đã tồn tại của Kiosk đó (trừ `CANCELLED`) | `409 CONFLICT` ("Selected slot is already booked") |
+| #   | Điều kiện                                                                   | HTTP Status khi lỗi                                |
+| --- | --------------------------------------------------------------------------- | -------------------------------------------------- |
+| 1   | `applicationDetailId` phải tồn tại trong bảng `ApplicationDetail`           | `404 NOT FOUND`                                    |
+| 2   | `kioskId` phải tồn tại trong bảng `Kiosk`                                   | `404 NOT FOUND`                                    |
+| 3   | Slot không được trùng với booking đã tồn tại của Kiosk đó (trừ `CANCELLED`) | `409 CONFLICT` ("Selected slot is already booked") |
 
 > **FE cần xử lý:** Luôn fetch lại danh sách slots ở Bước 3.2 trước khi gửi request pick-slot để tránh race condition (2 người cùng chọn 1 slot).
 
@@ -301,12 +304,12 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 
 **Validation phía Backend (4 bước tuần tự):**
 
-| # | Điều kiện | HTTP Status | Message |
-|---|---|---|---|
-| 1 | `bookingId` tồn tại | `404 NOT FOUND` | "Booking not found" |
-| 2 | Booking phải có `status = AWAITING_MENTOR` | `400 BAD_REQUEST` | "Booking is not in AWAITING_MENTOR status" |
-| 3 | Mentor không có booking trùng giờ (trừ `CANCELLED`) | `409 CONFLICT` | "Mentor has another interview booking at this time" |
-| 4 | Gọi Daily.co tạo phòng phải thành công | `500 INTERNAL_SERVER_ERROR` | "Error creating Daily.co session: ..." |
+| #   | Điều kiện                                           | HTTP Status                 | Message                                             |
+| --- | --------------------------------------------------- | --------------------------- | --------------------------------------------------- |
+| 1   | `bookingId` tồn tại                                 | `404 NOT FOUND`             | "Booking not found"                                 |
+| 2   | Booking phải có `status = AWAITING_MENTOR`          | `400 BAD_REQUEST`           | "Booking is not in AWAITING_MENTOR status"          |
+| 3   | Mentor không có booking trùng giờ (trừ `CANCELLED`) | `409 CONFLICT`              | "Mentor has another interview booking at this time" |
+| 4   | Gọi Daily.co tạo phòng phải thành công              | `500 INTERNAL_SERVER_ERROR` | "Error creating Daily.co session: ..."              |
 
 **Những gì xảy ra phía Backend khi thành công (9 bước):**
 
@@ -353,6 +356,7 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 ```
 
 **Notification được gửi cho Ứng viên:**
+
 - Title: `"Lịch phỏng vấn Mentor Interview"`
 - Message: `"Bạn đã được xếp lịch phỏng vấn tại Kiosk {kioskId} vào lúc {scheduledStart}. Session Key để vào phòng là: {sessionKey}"`
 
@@ -375,13 +379,13 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 
 **Validation phía Backend (5 bước tuần tự):**
 
-| # | Điều kiện | HTTP Status | Message |
-|---|---|---|---|
-| 1 | `sessionKey` phải tồn tại trong bảng Session | `400 BAD_REQUEST` | "Invalid session key" |
-| 2 | `sessionKey` phải có booking tương ứng | `404 NOT FOUND` | "Booking not found for this session key" |
-| 3 | Booking không được `CANCELLED` | `400 BAD_REQUEST` | "Booking has been cancelled" |
-| 4 | `kioskId` phải khớp với `booking.kioskId` | `400 BAD_REQUEST` | "Session key is registered for Kiosk {booking.kioskId}" |
-| 5 | Thời gian hiện tại phải trong khoảng **±15 phút** so với `scheduledStart` | `400 BAD_REQUEST` | "You can only enter the Kiosk within 15 minutes of your scheduled start time ({scheduledStart})" |
+| #   | Điều kiện                                                                 | HTTP Status       | Message                                                                                          |
+| --- | ------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------ |
+| 1   | `sessionKey` phải tồn tại trong bảng Session                              | `400 BAD_REQUEST` | "Invalid session key"                                                                            |
+| 2   | `sessionKey` phải có booking tương ứng                                    | `404 NOT FOUND`   | "Booking not found for this session key"                                                         |
+| 3   | Booking không được `CANCELLED`                                            | `400 BAD_REQUEST` | "Booking has been cancelled"                                                                     |
+| 4   | `kioskId` phải khớp với `booking.kioskId`                                 | `400 BAD_REQUEST` | "Session key is registered for Kiosk {booking.kioskId}"                                          |
+| 5   | Thời gian hiện tại phải trong khoảng **±15 phút** so với `scheduledStart` | `400 BAD_REQUEST` | "You can only enter the Kiosk within 15 minutes of your scheduled start time ({scheduledStart})" |
 
 **Những gì xảy ra phía Backend khi thành công:**
 
@@ -426,12 +430,12 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 
 **Validation phía Backend:**
 
-| # | Điều kiện | HTTP Status | Message |
-|---|---|---|---|
-| 1 | `sessionName` phải tồn tại trong bảng Session | `404 NOT FOUND` | "Không tìm thấy phòng họp !!" |
-| 2 | Session không được ở trạng thái `DRAFT` | `409 CONFLICT` | "Phòng họp chưa được duyệt" |
-| 3 | Nếu `isMentor = true`: `userId` phải khớp với `session.userId2` (mentor ID) | `403 FORBIDDEN` | "Mentor ID không khớp với Session" |
-| 4 | Nếu `isMentor = false`: `userId` phải khớp với `session.userId` (ứng viên ID) | `403 FORBIDDEN` | "User ID không khớp với Session" |
+| #   | Điều kiện                                                                     | HTTP Status     | Message                            |
+| --- | ----------------------------------------------------------------------------- | --------------- | ---------------------------------- |
+| 1   | `sessionName` phải tồn tại trong bảng Session                                 | `404 NOT FOUND` | "Không tìm thấy phòng họp !!"      |
+| 2   | Session không được ở trạng thái `DRAFT`                                       | `409 CONFLICT`  | "Phòng họp chưa được duyệt"        |
+| 3   | Nếu `isMentor = true`: `userId` phải khớp với `session.userId2` (mentor ID)   | `403 FORBIDDEN` | "Mentor ID không khớp với Session" |
+| 4   | Nếu `isMentor = false`: `userId` phải khớp với `session.userId` (ứng viên ID) | `403 FORBIDDEN` | "User ID không khớp với Session"   |
 
 **Những gì xảy ra phía Backend:**
 
@@ -456,6 +460,7 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 **Trigger:** Khi Daily.co phát sự kiện `participant.left`.
 
 **Logic phía Backend:**
+
 - Tìm Session theo `roomName` trong payload.
 - Ghi nhận `endTime` và `durationSeconds` cho người vừa rời.
 - **Nếu cả 2 người đều đã rời** (cả `endTime1` và `endTime2` đều khác null): `session.status = COMPLETED`, đồng thời publish event `FeatureUsageLogDto` để tính phí sử dụng tính năng `MENTOR_INTERVIEW`.
@@ -472,12 +477,12 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 
 **Validation phía Backend:**
 
-| # | Điều kiện | HTTP Status |
-|---|---|---|
-| 1 | Booking tồn tại | `404 NOT FOUND` |
-| 2 | Nếu gọi bởi ứng viên: `applicantUserId` phải khớp với userId từ JWT | `401 UNAUTHORIZED` |
-| 3 | Nếu gọi bởi người khác: phải có role ADMIN hoặc STAFF | `401 UNAUTHORIZED` |
-| 4 | Booking không được `COMPLETED` hoặc `CANCELLED` | `400 BAD_REQUEST` |
+| #   | Điều kiện                                                           | HTTP Status        |
+| --- | ------------------------------------------------------------------- | ------------------ |
+| 1   | Booking tồn tại                                                     | `404 NOT FOUND`    |
+| 2   | Nếu gọi bởi ứng viên: `applicantUserId` phải khớp với userId từ JWT | `401 UNAUTHORIZED` |
+| 3   | Nếu gọi bởi người khác: phải có role ADMIN hoặc STAFF               | `401 UNAUTHORIZED` |
+| 4   | Booking không được `COMPLETED` hoặc `CANCELLED`                     | `400 BAD_REQUEST`  |
 
 **Những gì xảy ra phía Backend khi thành công:**
 
@@ -493,19 +498,19 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 
 ## TÓM TẮT DANH SÁCH API ĐẦY ĐỦ
 
-| # | Phương thức | URL | Quyền | Mô tả |
-|---|---|---|---|---|
-| 1 | `POST` | `/api/kiosks` | Admin | Tạo Kiosk |
-| 2 | `GET` | `/api/kiosks` | Công khai | Lấy danh sách Kiosk hoạt động |
-| 3 | `POST` | `/api/kiosks/schedule` | Admin | Tạo lịch hoạt động của Kiosk |
-| 4 | `GET` | `/api/kiosks/{kioskId}/slots?date=YYYY-MM-DD` | Công khai | Lấy slots trống |
-| 5 | `POST` | `/api/mentor-bookings/pick-slot` | Ứng viên | Đặt lịch phỏng vấn |
-| 6 | `GET` | `/api/admin/mentor-bookings` | Admin | Lấy danh sách booking theo status |
-| 7 | `POST` | `/api/admin/mentor-bookings/{bookingId}/assign-mentor` | Admin | Gán Mentor & tạo phòng |
-| 8 | `DELETE` | `/api/mentor-bookings/{bookingId}` | Ứng viên / Admin | Hủy / đổi lịch |
-| 9 | `POST` | `/api/kiosk/enter` | Công khai | Xác thực tại Kiosk, lấy roomUrl |
-| 10 | `POST` | `/api/sessions/join-session` | Ứng viên / Mentor | Ghi nhận tham gia phòng |
-| 11 | `POST` | `/api/sessions/webhooks/dailyco` | Daily.co webhook | Xử lý sự kiện rời phòng |
+| #   | Phương thức | URL                                                    | Quyền             | Mô tả                             |
+| --- | ----------- | ------------------------------------------------------ | ----------------- | --------------------------------- |
+| 1   | `POST`      | `/api/kiosks`                                          | Admin             | Tạo Kiosk                         |
+| 2   | `GET`       | `/api/kiosks`                                          | Công khai         | Lấy danh sách Kiosk hoạt động     |
+| 3   | `POST`      | `/api/kiosks/schedule`                                 | Admin             | Tạo lịch hoạt động của Kiosk      |
+| 4   | `GET`       | `/api/kiosks/{kioskId}/slots?date=YYYY-MM-DD`          | Công khai         | Lấy slots trống                   |
+| 5   | `POST`      | `/api/mentor-bookings/pick-slot`                       | Ứng viên          | Đặt lịch phỏng vấn                |
+| 6   | `GET`       | `/api/admin/mentor-bookings`                           | Admin             | Lấy danh sách booking theo status |
+| 7   | `POST`      | `/api/admin/mentor-bookings/{bookingId}/assign-mentor` | Admin             | Gán Mentor & tạo phòng            |
+| 8   | `DELETE`    | `/api/mentor-bookings/{bookingId}`                     | Ứng viên / Admin  | Hủy / đổi lịch                    |
+| 9   | `POST`      | `/api/kiosk/enter`                                     | Công khai         | Xác thực tại Kiosk, lấy roomUrl   |
+| 10  | `POST`      | `/api/sessions/join-session`                           | Ứng viên / Mentor | Ghi nhận tham gia phòng           |
+| 11  | `POST`      | `/api/sessions/webhooks/dailyco`                       | Daily.co webhook  | Xử lý sự kiện rời phòng           |
 
 ---
 
@@ -516,6 +521,7 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 **Nguyên nhân:** Booking đã được assign mentor rồi (`status` đã là `ROOM_CREATED` hoặc cao hơn).
 
 **Cách xử lý:**
+
 - FE Admin: Refresh lại danh sách booking. Nếu booking đã chuyển sang `ROOM_CREATED`, tức là đã được assign trước đó bởi người khác.
 
 ### Lỗi 2: `Selected slot is already booked` (HTTP 409)
@@ -523,6 +529,7 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 **Nguyên nhân:** Slot đã bị đặt bởi ứng viên khác (race condition).
 
 **Cách xử lý:**
+
 - FE: Luôn fetch lại slots trước khi hiển thị cho ứng viên. Khi ứng viên bấm đặt, hiển thị loading và disable nút. Nếu lỗi, hiển thị thông báo "Slot này vừa được đặt, vui lòng chọn slot khác" và fetch lại slots.
 
 ### Lỗi 3: `Mentor has another interview booking at this time` (HTTP 409)
@@ -530,6 +537,7 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 **Nguyên nhân:** Mentor đã có booking khác trùng giờ (trừ các booking đã `CANCELLED`).
 
 **Cách xử lý:**
+
 - FE Admin: Hiển thị thông báo và đề xuất chọn mentor khác hoặc thời gian khác.
 
 ### Lỗi 4: `You can only enter the Kiosk within 15 minutes of your scheduled start time` (HTTP 400)
@@ -537,32 +545,35 @@ Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Ph
 **Nguyên nhân:** Ứng viên đến sớm hơn 15 phút hoặc muộn hơn 15 phút so với giờ hẹn.
 
 **Cách xử lý:**
+
 - FE Kiosk: Hiển thị đồng hồ đếm ngược và giới hạn thời gian vào. Ví dụ: "Vui lòng đợi đến khi còn X phút nữa" hoặc "Bạn đã đến muộn, không thể vào phòng".
 
 ---
 
 ## BẢNG TRẠNG THÁI QUAN HỆ GIỮA CÁC BẢNG
 
-| Stage | `MentorInterviewBooking.status` | `ApplicationDetail.status` | `Session.status` |
-|---|---|---|---|
-| `pickSlot` thành công | `AWAITING_MENTOR` | (unchanged) | n/a |
-| `assignMentor` thành công | `ROOM_CREATED` | `SLOT_PICKED` | `SCHEDULED` |
-| `enterKiosk` thành công | `IN_PROGRESS` | (unchanged) | `ONGOING` |
-| Cả 2 người rời phòng | (unchanged) | (unchanged) | `COMPLETED` |
-| `cancelBooking` | `CANCELLED` | `PENDING` | `CANCELED` + phòng Daily.co bị xóa |
+| Stage                     | `MentorInterviewBooking.status` | `ApplicationDetail.status` | `Session.status`                   |
+| ------------------------- | ------------------------------- | -------------------------- | ---------------------------------- |
+| `pickSlot` thành công     | `AWAITING_MENTOR`               | (unchanged)                | n/a                                |
+| `assignMentor` thành công | `ROOM_CREATED`                  | `SLOT_PICKED`              | `SCHEDULED`                        |
+| `enterKiosk` thành công   | `IN_PROGRESS`                   | (unchanged)                | `ONGOING`                          |
+| Cả 2 người rời phòng      | (unchanged)                     | (unchanged)                | `COMPLETED`                        |
+| `cancelBooking`           | `CANCELLED`                     | `PENDING`                  | `CANCELED` + phòng Daily.co bị xóa |
 
 ---
 
 ## VỀ DAILY.CO EXPIRATION
 
-| Giá trị `exp` | Ý nghĩa |
-|---|---|
+| Giá trị `exp`               | Ý nghĩa                                      |
+| --------------------------- | -------------------------------------------- |
 | `scheduledEnd epoch + 3600` | Phòng hết hạn 1 giờ sau giờ kết thúc dự kiến |
 
 **Logic tính exp (trong `SessionServiceImpl.createSession`):**
+
 ```
 exp = joinTime epoch + 3600 giây
 ```
+
 Trong đó `joinTime` = `scheduledStart` (thời gian bắt đầu phỏng vấn) theo múi giờ Asia/Ho_Chi_Minh.
 
 **FE cần lưu ý:** Phòng Daily.co sẽ tự động hết hạn sau 1 giờ tính từ thời điểm kết thúc slot. Nếu cuộc họp kéo dài quá, phòng vẫn hoạt động bình thường nhưng sẽ không thể tạo link mới sau khi exp.
@@ -588,6 +599,7 @@ Trong đó `joinTime` = `scheduledStart` (thời gian bắt đầu phỏng vấn
 **API URL:** `GET /api/kiosks/{kioskId}/schedules`
 
 **Response mẫu:**
+
 ```json
 [
   {
