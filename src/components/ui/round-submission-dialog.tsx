@@ -44,7 +44,7 @@ export interface RoundSubmissionDialogProps {
   onSuccess?: (_result: { status?: string; message?: string; detail?: ApplicationDetail }) => void;
 }
 
-const SYSTEM_EMAIL = "tuyendung@inblue.org";
+const SYSTEM_EMAIL = "hanptse184261@fpt.edu.vn";
 
 export function RoundSubmissionDialog({
   open,
