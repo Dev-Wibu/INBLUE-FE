@@ -40,12 +40,18 @@ const STATUS_CONFIG: Record<
 };
 
 const STATUS_STYLE: Record<NonNullable<KioskBookingStatus>, string> = {
-  AWAITING_MENTOR: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
-  MENTOR_ASSIGNED: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
-  ROOM_CREATED: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
-  IN_PROGRESS: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
-  COMPLETED: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
-  CANCELLED: "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800",
+  AWAITING_MENTOR:
+    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+  MENTOR_ASSIGNED:
+    "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+  ROOM_CREATED:
+    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+  IN_PROGRESS:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
+  COMPLETED:
+    "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+  CANCELLED:
+    "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800",
 };
 
 export function BookingTable({
@@ -74,8 +80,7 @@ export function BookingTable({
             className="h-6 w-6 text-slate-400 dark:text-slate-500"
             fill="none"
             viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+            stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -84,9 +89,7 @@ export function BookingTable({
             />
           </svg>
         </div>
-        <p className="text-sm font-medium text-slate-500">
-          {t("adminKiosk.noBookingsFound")}
-        </p>
+        <p className="text-sm font-medium text-slate-500">{t("adminKiosk.noBookingsFound")}</p>
       </div>
     );
   }
@@ -112,19 +115,21 @@ export function BookingTable({
             const statusConfig = STATUS_CONFIG[statusKey] || STATUS_CONFIG.AWAITING_MENTOR;
             const statusStyle = STATUS_STYLE[statusKey] || STATUS_STYLE.AWAITING_MENTOR;
             return (
-              <TableRow key={booking.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+              <TableRow
+                key={booking.id}
+                className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                 <TableCell className="font-medium">{booking.id}</TableCell>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="font-medium">{booking.userName || `User #${booking.applicantUserId}`}</span>
+                    <span className="font-medium">
+                      {booking.userName || `User #${booking.applicantUserId}`}
+                    </span>
                     {booking.userEmail && (
-                      <span className="text-xs text-muted-foreground">{booking.userEmail}</span>
+                      <span className="text-muted-foreground text-xs">{booking.userEmail}</span>
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="max-w-[200px] truncate">
-                  {booking.jobTitle || "-"}
-                </TableCell>
+                <TableCell className="max-w-[200px] truncate">{booking.jobTitle || "-"}</TableCell>
                 <TableCell className="max-w-[160px] truncate">
                   {booking.companyName || "-"}
                 </TableCell>
@@ -132,7 +137,7 @@ export function BookingTable({
                   <div className="flex flex-col">
                     <span className="font-medium">{booking.kioskName || `-`}</span>
                     {booking.kioskLocation && (
-                      <span className="text-xs text-muted-foreground">{booking.kioskLocation}</span>
+                      <span className="text-muted-foreground text-xs">{booking.kioskLocation}</span>
                     )}
                   </div>
                 </TableCell>
@@ -153,8 +158,7 @@ export function BookingTable({
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        aria-label={t("common.openMenu")}
-                      >
+                        aria-label={t("common.openMenu")}>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -164,8 +168,7 @@ export function BookingTable({
                           className="mr-2 h-4 w-4"
                           fill="none"
                           viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
+                          stroke="currentColor">
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -189,8 +192,7 @@ export function BookingTable({
                               className="mr-2 h-4 w-4"
                               fill="none"
                               viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
+                              stroke="currentColor">
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"

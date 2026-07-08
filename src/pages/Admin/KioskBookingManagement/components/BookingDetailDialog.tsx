@@ -31,19 +31,21 @@ const STATUS_CONFIG: Record<
 };
 
 const STATUS_STYLE: Record<NonNullable<KioskBookingStatus>, string> = {
-  AWAITING_MENTOR: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
-  MENTOR_ASSIGNED: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
-  ROOM_CREATED: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
-  IN_PROGRESS: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
-  COMPLETED: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
-  CANCELLED: "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800",
+  AWAITING_MENTOR:
+    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+  MENTOR_ASSIGNED:
+    "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+  ROOM_CREATED:
+    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+  IN_PROGRESS:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
+  COMPLETED:
+    "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+  CANCELLED:
+    "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800",
 };
 
-export function BookingDetailDialog({
-  open,
-  onOpenChange,
-  booking,
-}: BookingDetailDialogProps) {
+export function BookingDetailDialog({ open, onOpenChange, booking }: BookingDetailDialogProps) {
   const { t } = useTranslation();
   if (!booking) return null;
 
@@ -56,9 +58,7 @@ export function BookingDetailDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("adminKiosk.bookingDetails")}</DialogTitle>
-          <DialogDescription>
-            {t("adminKiosk.bookingCode", { id: booking.id })}
-          </DialogDescription>
+          <DialogDescription>{t("adminKiosk.bookingCode", { id: booking.id })}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
@@ -96,24 +96,33 @@ export function BookingDetailDialog({
 
           {/* Job Info */}
           <div className="space-y-3">
-              <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
-                <svg className="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                {t("adminKiosk.jobInfo")}
-              </div>
-              <div className="rounded-lg border bg-slate-50 p-4 dark:bg-slate-800">
-                <div className="grid gap-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("adminKiosk.position")}</span>
-                    <span className="font-medium">{booking.jobTitle || "-"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("adminKiosk.company")}</span>
-                    <span className="font-medium">{booking.companyName || "-"}</span>
-                  </div>
+            <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
+              <svg
+                className="h-4 w-4 text-indigo-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              {t("adminKiosk.jobInfo")}
+            </div>
+            <div className="rounded-lg border bg-slate-50 p-4 dark:bg-slate-800">
+              <div className="grid gap-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("adminKiosk.position")}</span>
+                  <span className="font-medium">{booking.jobTitle || "-"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("adminKiosk.company")}</span>
+                  <span className="font-medium">{booking.companyName || "-"}</span>
                 </div>
               </div>
+            </div>
           </div>
 
           {/* Kiosk Info */}
@@ -174,8 +183,17 @@ export function BookingDetailDialog({
           {(booking.mentorId || booking.mentorName) && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
-                <svg className="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg
+                  className="h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
                 {t("adminKiosk.mentorInfo")}
               </div>
@@ -187,7 +205,9 @@ export function BookingDetailDialog({
                   </div>
                   {booking.mentorExpertise && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t("adminKiosk.specialization")}</span>
+                      <span className="text-muted-foreground">
+                        {t("adminKiosk.specialization")}
+                      </span>
                       <span className="font-medium">{booking.mentorExpertise}</span>
                     </div>
                   )}
@@ -200,8 +220,17 @@ export function BookingDetailDialog({
           {booking.notes && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
-                <svg className="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                <svg
+                  className="h-4 w-4 text-indigo-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
                 </svg>
                 {t("adminKiosk.notes")}
               </div>

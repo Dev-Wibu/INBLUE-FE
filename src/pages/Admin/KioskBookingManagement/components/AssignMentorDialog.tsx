@@ -78,12 +78,14 @@ export function AssignMentorDialog({
                 </p>
                 {booking?.userName && (
                   <p>
-                    <span className="font-medium">{t("adminKiosk.candidate")}:</span> {booking.userName}
+                    <span className="font-medium">{t("adminKiosk.candidate")}:</span>{" "}
+                    {booking.userName}
                   </p>
                 )}
                 {booking?.jobTitle && (
                   <p>
-                    <span className="font-medium">{t("adminKiosk.position")}:</span> {booking.jobTitle}
+                    <span className="font-medium">{t("adminKiosk.position")}:</span>{" "}
+                    {booking.jobTitle}
                   </p>
                 )}
               </div>
@@ -101,9 +103,7 @@ export function AssignMentorDialog({
                       <div className="flex flex-col">
                         <span className="font-medium">{mentor.name}</span>
                         {mentor.expertise && (
-                          <span className="text-xs text-muted-foreground">
-                            {mentor.expertise}
-                          </span>
+                          <span className="text-muted-foreground text-xs">{mentor.expertise}</span>
                         )}
                       </div>
                     </SelectItem>
@@ -129,8 +129,7 @@ export function AssignMentorDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
+              disabled={isLoading}>
               {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading}>

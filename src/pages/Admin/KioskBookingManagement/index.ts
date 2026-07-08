@@ -1,10 +1,10 @@
 export { KioskBookingManagementPage } from "./KioskBookingManagementPage";
 export type {
+  AssignMentorPayload,
   EnrichedKioskBooking,
+  Kiosk,
   KioskBooking,
   KioskBookingStatus,
   Mentor,
-  Kiosk,
-  AssignMentorPayload,
   StatusFilter,
 } from "./types";

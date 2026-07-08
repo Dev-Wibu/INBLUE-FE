@@ -7,19 +7,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePagination } from "@/hooks/usePagination";
 import { kioskBookingManager } from "@/services/kiosk-booking.manager";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { AssignMentorDialog, BookingDetailDialog, BookingTable } from "./components";
-import { usePagination } from "@/hooks/usePagination";
-import type {
-  EnrichedKioskBooking,
-  KioskBooking,
-  Mentor,
-  StatusFilter,
-} from "./types";
+import type { EnrichedKioskBooking, KioskBooking, Mentor, StatusFilter } from "./types";
 
 export function KioskBookingManagementPage() {
   const { t } = useTranslation();
@@ -76,36 +71,39 @@ export function KioskBookingManagementPage() {
     return filteredBookings.slice(start, start + pagination.pageSize);
   }, [filteredBookings, pagination.currentPage, pagination.pageSize]);
 
-  const loadData = useCallback(async (showReloading = false) => {
-    if (showReloading) {
-      setIsReloading(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-
-    try {
-      const [bookingsRes, mentorsRes] = await Promise.all([
-        kioskBookingManager.getAllBookings(),
-        kioskBookingManager.getMentors(),
-      ]);
-
-      if (bookingsRes.success && bookingsRes.data) {
-        setBookings(bookingsRes.data);
+  const loadData = useCallback(
+    async (showReloading = false) => {
+      if (showReloading) {
+        setIsReloading(true);
       } else {
-        toast.error(bookingsRes.error || t("adminKiosk.unableToLoadBookings"));
+        setIsInitialLoading(true);
       }
 
-      if (mentorsRes.success && mentorsRes.data) {
-        setMentors(mentorsRes.data);
+      try {
+        const [bookingsRes, mentorsRes] = await Promise.all([
+          kioskBookingManager.getAllBookings(),
+          kioskBookingManager.getMentors(),
+        ]);
+
+        if (bookingsRes.success && bookingsRes.data) {
+          setBookings(bookingsRes.data);
+        } else {
+          toast.error(bookingsRes.error || t("adminKiosk.unableToLoadBookings"));
+        }
+
+        if (mentorsRes.success && mentorsRes.data) {
+          setMentors(mentorsRes.data);
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        toast.error(t("adminKiosk.unableToLoadBookings"));
+      } finally {
+        setIsInitialLoading(false);
+        setIsReloading(false);
       }
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast.error(t("adminKiosk.unableToLoadBookings"));
-    } finally {
-      setIsInitialLoading(false);
-      setIsReloading(false);
-    }
-  }, [t]);
+    },
+    [t]
+  );
 
   useEffect(() => {
     void loadData();
@@ -118,7 +116,7 @@ export function KioskBookingManagementPage() {
       return;
     }
 
-      const enriched: EnrichedKioskBooking[] = bookings.map((booking) => ({
+    const enriched: EnrichedKioskBooking[] = bookings.map((booking) => ({
       ...booking,
       userName: `User #${booking.applicantUserId}`,
       userEmail: undefined,
@@ -179,15 +177,13 @@ export function KioskBookingManagementPage() {
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             {t("adminKiosk.bookingRequests")}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("adminKiosk.managingBookingRequests")}
-          </p>
+          <p className="text-muted-foreground text-sm">{t("adminKiosk.managingBookingRequests")}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               type="search"
               placeholder={t("adminKiosk.searchByUserOrJob")}
@@ -200,8 +196,7 @@ export function KioskBookingManagementPage() {
           {/* Status Filter */}
           <Select
             value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value as StatusFilter)}
-          >
+            onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder={t("common.status")} />
             </SelectTrigger>
@@ -217,11 +212,7 @@ export function KioskBookingManagementPage() {
           </Select>
 
           {/* Reload */}
-          <ReloadButton
-            onReload={() => void loadData(true)}
-            isLoading={isReloading}
-            size="sm"
-          />
+          <ReloadButton onReload={() => void loadData(true)} isLoading={isReloading} size="sm" />
         </div>
       </div>
 

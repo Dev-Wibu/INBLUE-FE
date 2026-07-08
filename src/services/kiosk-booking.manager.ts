@@ -1,16 +1,14 @@
-import { fetchClient } from "@/lib/api";
 import type { ApiResponse } from "@/interfaces";
+import { fetchClient } from "@/lib/api";
 import type { KioskBooking, Mentor } from "@/pages/Admin/KioskBookingManagement/types";
 
 export class KioskBookingManager {
   async getAllBookings(): Promise<ApiResponse<KioskBooking[]>> {
     try {
-      const response = await fetchClient
-        .GET("/api/admin/mentor-bookings", {})
-        .then((res) => ({
-          data: res.data,
-          status: res.response?.status,
-        }));
+      const response = await fetchClient.GET("/api/admin/mentor-bookings", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+      }));
       if (response.data) {
         return { success: true, data: response.data };
       }
@@ -26,12 +24,10 @@ export class KioskBookingManager {
 
   async getBookingsByUser(userId: number): Promise<ApiResponse<KioskBooking[]>> {
     try {
-      const response = await fetchClient
-        .GET("/api/admin/mentor-bookings", {})
-        .then((res) => ({
-          data: res.data,
-          status: res.response?.status,
-        }));
+      const response = await fetchClient.GET("/api/admin/mentor-bookings", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+      }));
       if (response.data) {
         const filtered = response.data.filter((b) => b.applicantUserId === userId);
         return { success: true, data: filtered };
@@ -48,12 +44,10 @@ export class KioskBookingManager {
 
   async getMentors(): Promise<ApiResponse<Mentor[]>> {
     try {
-      const response = await fetchClient
-        .GET("/api/mentors", {})
-        .then((res) => ({
-          data: res.data,
-          status: res.response?.status,
-        }));
+      const response = await fetchClient.GET("/api/mentors", {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+      }));
       if (response.data) {
         return { success: true, data: response.data };
       }

@@ -10,10 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { applicationService } from "@/services/application.manager";
-import { fetchClient } from "@/lib/api";
 import { useKioskSlots, usePickKioskSlot } from "@/hooks/useKiosk";
+import { fetchClient } from "@/lib/api";
 import { formatDateTime, formatTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { applicationService } from "@/services/application.manager";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -48,9 +48,13 @@ export function KioskSlotsPage() {
   const [selectedSlot, setSelectedSlot] = useState<KioskSlot | null>(null);
   const [applicationDetailId, setApplicationDetailId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
-  const [myApplications, setMyApplications] = useState<Array<{ id: number; jdId?: number; companyName?: string; jobTitle?: string }>>([]);
+  const [myApplications, setMyApplications] = useState<
+    Array<{ id: number; jdId?: number; companyName?: string; jobTitle?: string }>
+  >([]);
   const [myAppsLoading, setMyAppsLoading] = useState(true);
-  const [jdMap, setJdMap] = useState<Map<number, { title?: string; companyName?: string }>>(new Map());
+  const [jdMap, setJdMap] = useState<Map<number, { title?: string; companyName?: string }>>(
+    new Map()
+  );
 
   const { data: slots = [], isLoading, error } = useKioskSlots(kioskId, selectedDate, !!kioskId);
   const pickSlotMutation = usePickKioskSlot();
@@ -76,7 +80,11 @@ export function KioskSlotsPage() {
               if (!r.response?.ok) return null;
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const extra = r.data as any;
-              return { id, title: (r.data as { title?: string }).title, companyName: extra.companyName };
+              return {
+                id,
+                title: (r.data as { title?: string }).title,
+                companyName: extra.companyName,
+              };
             })
           );
           const map = new Map<number, { title?: string; companyName?: string }>();
@@ -159,20 +167,18 @@ export function KioskSlotsPage() {
               {myAppsLoading ? (
                 <Input disabled placeholder={t("common.loading")} />
               ) : myApplications.length === 0 ? (
-                <div className="flex flex-col gap-1 rounded-md border border-dashed p-3 text-center text-sm text-muted-foreground">
+                <div className="text-muted-foreground flex flex-col gap-1 rounded-md border border-dashed p-3 text-center text-sm">
                   <p>{t("userKiosk.noApplicationsFound")}</p>
                   <Button
                     variant="link"
                     size="sm"
-                    className="mx-auto h-auto p-0 text-primary"
+                    className="text-primary mx-auto h-auto p-0"
                     onClick={() => navigate("/user?tab=applicationHistory")}>
                     {t("userKiosk.goToApplicationHistory")}
                   </Button>
                 </div>
               ) : (
-                <Select
-                  value={applicationDetailId}
-                  onValueChange={setApplicationDetailId}>
+                <Select value={applicationDetailId} onValueChange={setApplicationDetailId}>
                   <SelectTrigger id="applicationDetailId">
                     <SelectValue placeholder={t("userKiosk.selectApplication")} />
                   </SelectTrigger>
@@ -187,7 +193,7 @@ export function KioskSlotsPage() {
                             <span className="font-medium">
                               {companyName} — {jobTitle}
                             </span>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-muted-foreground text-xs">
                               {t("userKiosk.applicationId", { var_0: app.id })}
                             </span>
                           </div>
@@ -240,10 +246,7 @@ export function KioskSlotsPage() {
           <Button
             onClick={handleBook}
             disabled={
-              !selectedSlot ||
-              !applicationDetailId ||
-              submitting ||
-              pickSlotMutation.isPending
+              !selectedSlot || !applicationDetailId || submitting || pickSlotMutation.isPending
             }
             className="w-full">
             {submitting || pickSlotMutation.isPending
