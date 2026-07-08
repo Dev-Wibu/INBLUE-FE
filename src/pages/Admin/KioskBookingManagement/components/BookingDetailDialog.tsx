@@ -45,7 +45,11 @@ const STATUS_STYLE: Record<NonNullable<KioskBookingStatus>, string> = {
     "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800",
 };
 
-export function BookingDetailDialog({ open, onOpenChange, booking }: BookingDetailDialogProps) {
+export function BookingDetailDialog({
+  open: _open,
+  onOpenChange,
+  booking,
+}: BookingDetailDialogProps) {
   const { t } = useTranslation();
   if (!booking) return null;
 
