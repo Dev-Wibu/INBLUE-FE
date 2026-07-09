@@ -87,6 +87,27 @@ export class KioskBookingManager {
       return { success: false, error: String(error) };
     }
   }
+
+  async cancelBooking(bookingId: number): Promise<ApiResponse<unknown>> {
+    try {
+      const response = await fetchClient
+        .DELETE("/api/mentor-bookings/{bookingId}", {
+          params: { path: { bookingId } },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+        }));
+      return {
+        success: response.status === 204 || response.status === 200,
+        data: response.data,
+        error: response.status === 204 || response.status === 200 ? "" : String(response.data),
+      };
+    } catch (error) {
+      console.error("[KioskBookingManager] cancelBooking error:", error);
+      return { success: false, error: String(error) };
+    }
+  }
 }
 
 export const kioskBookingManager = new KioskBookingManager();

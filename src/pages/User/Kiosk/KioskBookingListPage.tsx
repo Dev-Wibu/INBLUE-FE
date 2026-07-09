@@ -1,18 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingCardList } from "@/components/ui/loading-card";
-import { useKioskUserBookings } from "@/hooks/useKiosk";
+import { useCancelKioskBooking, useKioskUserBookings } from "@/hooks/useKiosk";
+import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
-import { Calendar, MapPin, Video } from "lucide-react";
+import { Calendar, MapPin, Video, XCircle } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export function KioskBookingListPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const { data: bookings = [], isLoading, error } = useKioskUserBookings(user?.id);
+  const cancelMutation = useCancelKioskBooking();
 
   useEffect(() => {
     if (!user?.id) {
@@ -41,6 +44,21 @@ export function KioskBookingListPage() {
       default:
         return status ?? "-";
     }
+  };
+
+  const handleCancel = async (bookingId: number) => {
+    try {
+      await cancelMutation.mutateAsync(bookingId);
+      toast.success(t("userKiosk.bookingCancelledSuccessfully"));
+    } catch {
+      // toast handled in hook
+    }
+  };
+
+  const canCancel = (status?: string) => {
+    return (
+      status === "AWAITING_MENTOR" || status === "MENTOR_ASSIGNED" || status === "ROOM_CREATED"
+    );
   };
 
   return (
@@ -89,9 +107,14 @@ export function KioskBookingListPage() {
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
                     {booking.scheduledStart
-                      ? new Date(booking.scheduledStart).toLocaleString()
+                      ? formatDateTime(treatZuluAsVietnamLocal(booking.scheduledStart))
                       : "-"}
                   </span>
+                  {booking.scheduledEnd && (
+                    <span className="text-muted-foreground text-xs">
+                      {formatDateTime(treatZuluAsVietnamLocal(booking.scheduledEnd))}
+                    </span>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
@@ -104,13 +127,25 @@ export function KioskBookingListPage() {
                     {t("userKiosk.sessionKey")}: {booking.sessionKey}
                   </div>
                 )}
-                <Button
-                  variant="outline"
-                  onClick={() => navigate(`/user/kiosk/booking/${booking.id}/join`)}
-                  className="gap-2">
-                  <Video className="h-4 w-4" />
-                  {t("userKiosk.joinRoom")}
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/user/kiosk/booking/${booking.id}/join`)}
+                    className="gap-2">
+                    <Video className="h-4 w-4" />
+                    {t("userKiosk.joinRoom")}
+                  </Button>
+                  {canCancel(booking.status) && (
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleCancel(booking.id)}
+                      disabled={cancelMutation.isPending}
+                      className="gap-2">
+                      <XCircle className="h-4 w-4" />
+                      {t("userKiosk.cancelBooking")}
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

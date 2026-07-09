@@ -128,3 +128,24 @@ export const useKioskUserBookings = (userId: number | undefined) => {
     staleTime: 30_000,
   });
 };
+
+export const useCancelKioskBooking = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (bookingId: number) => {
+      const result = await kioskBookingManager.cancelBooking(bookingId);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return bookingId;
+    },
+    onSuccess: (_data, bookingId) => {
+      toast.success(t("userKiosk.bookingCancelledSuccessfully"));
+      queryClient.invalidateQueries({ queryKey: ["kiosk-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["kiosk-booking", bookingId] });
+    },
+    onError: (error: Error) => {
+      toast.error(getNormalizedErrorMessage(error, t("userKiosk.unableToCancelBooking")));
+    },
+  });
+};

@@ -46,7 +46,8 @@ export function KioskSlotsPage() {
     new Date().toISOString().slice(0, 10)
   );
   const [selectedSlot, setSelectedSlot] = useState<KioskSlot | null>(null);
-  const [applicationDetailId, setApplicationDetailId] = useState<string>("");
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string>("");
+  const [selectedApplicationDetailId, setSelectedApplicationDetailId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [myApplications, setMyApplications] = useState<
     Array<{ id: number; jdId?: number; companyName?: string; jobTitle?: string }>
@@ -55,6 +56,10 @@ export function KioskSlotsPage() {
   const [jdMap, setJdMap] = useState<Map<number, { title?: string; companyName?: string }>>(
     new Map()
   );
+  const [applicationDetails, setApplicationDetails] = useState<
+    Array<{ id: number; roundId?: number; status?: string; finalScore?: number }>
+  >([]);
+  const [applicationDetailsLoading, setApplicationDetailsLoading] = useState(false);
 
   const { data: slots = [], isLoading, error } = useKioskSlots(kioskId, selectedDate, !!kioskId);
   const pickSlotMutation = usePickKioskSlot();
@@ -69,7 +74,6 @@ export function KioskSlotsPage() {
           }))
         );
 
-        // Enrich with JD data
         const jdIds = [...new Set(result.data.map((a) => a.jdId).filter(Boolean))] as number[];
         if (jdIds.length > 0) {
           const jdResults = await Promise.allSettled(
@@ -100,6 +104,56 @@ export function KioskSlotsPage() {
     });
   }, []);
 
+  useEffect(() => {
+    const appId = Number(selectedApplicationId);
+    if (!Number.isFinite(appId) || appId <= 0) {
+      setApplicationDetails([]);
+      setSelectedApplicationDetailId("");
+      return;
+    }
+
+    let cancelled = false;
+    setApplicationDetailsLoading(true);
+    setApplicationDetails([]);
+    setSelectedApplicationDetailId("");
+
+    fetchClient
+      .GET("/api/application-details/application/{applicationId}", {
+        params: { path: { applicationId: appId } },
+      })
+      .then((r) => {
+        if (!r.response?.ok || !Array.isArray(r.data)) {
+          throw new Error("Failed to load application details");
+        }
+        const details = (
+          r.data as Array<{ id: number; roundId?: number; status?: string; finalScore?: number }>
+        ).map((item) => ({
+          id: item.id,
+          roundId: item.roundId,
+          status: item.status,
+          finalScore: item.finalScore,
+        }));
+        if (!cancelled) {
+          setApplicationDetails(details);
+        }
+      })
+      .catch((err) => {
+        console.error("[KioskSlotsPage] load application details error:", err);
+        if (!cancelled) {
+          setApplicationDetails([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setApplicationDetailsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedApplicationId]);
+
   const availableSlots = useMemo(() => (slots ?? []).filter((slot) => slot.available), [slots]);
   const parsedKioskId = Number.isFinite(kioskId) ? kioskId : null;
 
@@ -111,7 +165,7 @@ export function KioskSlotsPage() {
 
   const handleBook = async () => {
     if (!parsedKioskId || !selectedSlot) return;
-    const detailId = Number(applicationDetailId);
+    const detailId = Number(selectedApplicationDetailId);
     if (!Number.isFinite(detailId) || detailId <= 0) {
       toast.error(t("userKiosk.invalidApplicationDetailId"));
       return;
@@ -163,7 +217,7 @@ export function KioskSlotsPage() {
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="applicationDetailId">{t("userKiosk.applicationDetailId")}</Label>
+              <Label htmlFor="applicationId">{t("userKiosk.application")}</Label>
               {myAppsLoading ? (
                 <Input disabled placeholder={t("common.loading")} />
               ) : myApplications.length === 0 ? (
@@ -178,8 +232,8 @@ export function KioskSlotsPage() {
                   </Button>
                 </div>
               ) : (
-                <Select value={applicationDetailId} onValueChange={setApplicationDetailId}>
-                  <SelectTrigger id="applicationDetailId">
+                <Select value={selectedApplicationId} onValueChange={setSelectedApplicationId}>
+                  <SelectTrigger id="applicationId">
                     <SelectValue placeholder={t("userKiosk.selectApplication")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -200,6 +254,45 @@ export function KioskSlotsPage() {
                         </SelectItem>
                       );
                     })}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="applicationDetailId">{t("userKiosk.applicationDetail")}</Label>
+              {applicationDetailsLoading ? (
+                <Input disabled placeholder={t("common.loading")} />
+              ) : applicationDetails.length === 0 ? (
+                <Input
+                  disabled
+                  placeholder={
+                    selectedApplicationId
+                      ? t("userKiosk.noApplicationDetailsFound")
+                      : t("userKiosk.selectApplicationFirst")
+                  }
+                />
+              ) : (
+                <Select
+                  value={selectedApplicationDetailId}
+                  onValueChange={setSelectedApplicationDetailId}>
+                  <SelectTrigger id="applicationDetailId">
+                    <SelectValue placeholder={t("userKiosk.selectApplicationDetail")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {applicationDetails.map((detail) => (
+                      <SelectItem key={detail.id} value={String(detail.id)}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {t("userKiosk.round")} #{detail.roundId ?? "-"}
+                          </span>
+                          <span className="text-muted-foreground text-xs">
+                            {detail.status ?? "-"}
+                            {typeof detail.finalScore === "number" ? ` • ${detail.finalScore}` : ""}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               )}
@@ -246,7 +339,10 @@ export function KioskSlotsPage() {
           <Button
             onClick={handleBook}
             disabled={
-              !selectedSlot || !applicationDetailId || submitting || pickSlotMutation.isPending
+              !selectedSlot ||
+              !selectedApplicationDetailId ||
+              submitting ||
+              pickSlotMutation.isPending
             }
             className="w-full">
             {submitting || pickSlotMutation.isPending
