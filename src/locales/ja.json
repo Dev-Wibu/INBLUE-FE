@@ -3848,6 +3848,7 @@
     "selectApplicationFirst": "先に応募を選択してください。",
     "selectApplicationDetail": "応募詳細を選択",
     "noApplicationDetailsFound": "選択した応募に詳細がありません。",
+    "round": "ラウンド",
     "noApplicationsFound": "応募が見つかりません。まず求人に応募してください。",
     "goToApplicationHistory": "応募履歴へ",
     "applicationId": "ID: {{var_0}}",

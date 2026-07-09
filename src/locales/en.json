@@ -3846,6 +3846,7 @@
     "selectApplicationFirst": "Select an application first.",
     "selectApplicationDetail": "Select application detail",
     "noApplicationDetailsFound": "No application details found for the selected application.",
+    "round": "Round",
     "noApplicationsFound": "No applications found. Apply for a job first.",
     "goToApplicationHistory": "Go to Application History",
     "applicationId": "ID: {{var_0}}",

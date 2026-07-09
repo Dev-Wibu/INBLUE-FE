@@ -3843,6 +3843,7 @@
     "selectApplicationFirst": "Vui lòng chọn đơn ứng tuyển trước.",
     "selectApplicationDetail": "Chọn chi tiết đơn ứng tuyển",
     "noApplicationDetailsFound": "Không tìm thấy chi tiết đơn ứng tuyển cho đơn đã chọn.",
+    "round": "Vòng",
     "noApplicationsFound": "Không tìm thấy đơn ứng tuyển. Hãy ứng tuyển công việc trước.",
     "goToApplicationHistory": "Đi tới Lịch sử Đơn ứng tuyển",
     "applicationId": "ID: {{var_0}}",
