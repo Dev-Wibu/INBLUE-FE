@@ -86,8 +86,7 @@ export function KioskEntryPage() {
     setRoomUrl("");
     setSessionKey("");
     setKioskId("");
-    setPrefillSessionKey("");
-    setPrefillKioskId(0);
+    setDisplayName("");
     setHasConfirmedDevices(false);
   };
 
