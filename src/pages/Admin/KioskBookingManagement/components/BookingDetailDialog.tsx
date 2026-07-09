@@ -13,8 +13,7 @@ import { useTranslation } from "react-i18next";
 import type { EnrichedKioskBooking, KioskBookingStatus } from "../types";
 
 interface BookingDetailDialogProps {
-  _open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
   booking: EnrichedKioskBooking | null;
 }
 
@@ -45,11 +44,7 @@ const STATUS_STYLE: Record<NonNullable<KioskBookingStatus>, string> = {
     "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800",
 };
 
-export function BookingDetailDialog({
-  open: _open,
-  onOpenChange,
-  booking,
-}: BookingDetailDialogProps) {
+export function BookingDetailDialog({ onOpenChange, booking }: BookingDetailDialogProps) {
   const { t } = useTranslation();
   if (!booking) return null;
 
@@ -58,7 +53,7 @@ export function BookingDetailDialog({
   const statusStyle = STATUS_STYLE[statusKey] || STATUS_STYLE.AWAITING_MENTOR;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("adminKiosk.bookingDetails")}</DialogTitle>

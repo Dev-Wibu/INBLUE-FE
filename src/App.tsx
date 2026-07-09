@@ -86,6 +86,7 @@ import {
 import {
   KioskBookingListPage,
   KioskBookingSuccessPage,
+  KioskEntryPage,
   KioskJoinRoomPage,
   KioskListPage,
   KioskSlotsPage,
@@ -207,6 +208,8 @@ function App() {
                 <Route path="kiosk/:kioskId/slots" element={<KioskSlotsPage />} />
                 <Route path="kiosk/booking-success" element={<KioskBookingSuccessPage />} />
                 <Route path="kiosk/booking/:bookingId/join" element={<KioskJoinRoomPage />} />
+                <Route path="kiosk/join" element={<KioskJoinRoomPage />} />
+                <Route path="kiosk/entry" element={<KioskEntryPage />} />
                 <Route path="kiosk/bookings" element={<KioskBookingListPage />} />
               </Route>
             </Route>

@@ -967,6 +967,14 @@
     "feedbackFromCandidates": "候補者のフィードバック",
     "feedbackFromMentors": "メンターからのフィードバック",
     "myKioskBookings": "私の面接予約",
+    "joinInterview": "面接に参加",
+    "mentorKiosk": {
+      "joinSessionTitle": "面接セッションに参加",
+      "joinSessionDescription": "セッション詳細を入力して面接に参加してください",
+      "enterSessionDetails": "セッション詳細",
+      "enterSessionDetailsDescription": "提供されたセッションキーとキオスクIDを入力してください",
+      "readyToJoin": "準備完了 — 参加をクリックして入場"
+    },
     "filter": "フィルター",
     "filterByLevel": "レベルでフィルター",
     "filterByScore": "スコアでフィルター",
@@ -3911,7 +3919,16 @@
     "getRoomUrl": "ルームURLを取得",
     "unableToBookKioskSlot": "キオスクスロットの予約ができません。",
     "roomUrlRetrievedSuccessfully": "ルームURLの取得に成功しました",
-    "unableToGetRoomUrl": "ルームURLを取得できません。"
+    "unableToGetRoomUrl": "ルームURLを取得できません。",
+    "kioskEntryDescription": "予約面接に参加するか、セッションキーで入場してください。",
+    "yourUpcomingInterviews": "今後の面接",
+    "iHaveSessionKey": "セッションキーを持っています",
+    "iHaveSessionKeyDescription": "メールまたは電話で送信されたセッションキーを入力してください。",
+    "bookNewKiosk": "新規キオスク予約",
+    "bookNewKioskDescription": "お近くのキオスクで新しい面接を予約してください。",
+    "joinInterview": "面接に参加",
+    "noScheduledTime": "予定時間なし",
+    "startsIn": "{{minutes}}分後に開始"
   },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingCardList } from "@/components/ui/loading-card";
 import { useActiveKiosks } from "@/hooks/useKiosk";
-import { ArrowLeft, MapPin, Monitor } from "lucide-react";
+import { ArrowLeft, MapPin, Monitor, Video } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -57,17 +57,23 @@ export function KioskListPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/user?tab=applicationHistory")}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">{t("userKiosk.selectKioskTitle")}</h1>
-          <p className="text-muted-foreground text-sm">{t("userKiosk.selectKioskDescription")}</p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/user?tab=applicationHistory")}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{t("userKiosk.selectKioskTitle")}</h1>
+            <p className="text-muted-foreground text-sm">{t("userKiosk.selectKioskDescription")}</p>
+          </div>
         </div>
+        <Button variant="outline" onClick={() => navigate("/user/kiosk/entry")} className="gap-2">
+          <Video className="h-4 w-4" />
+          {t("userKiosk.joinInterview")}
+        </Button>
       </div>
 
       {kiosks.length === 0 ? (

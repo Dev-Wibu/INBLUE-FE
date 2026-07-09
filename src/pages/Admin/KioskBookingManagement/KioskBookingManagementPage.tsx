@@ -27,8 +27,8 @@ export function KioskBookingManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
-  // Dialog states
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  // Dialog states — state managed by parent (setter passed as onOpenChange)
+  const [, setIsViewDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<EnrichedKioskBooking | null>(null);
 
@@ -241,11 +241,7 @@ export function KioskBookingManagementPage() {
       )}
 
       {/* Detail Dialog */}
-      <BookingDetailDialog
-        open={isViewDialogOpen}
-        onOpenChange={setIsViewDialogOpen}
-        booking={selectedBooking}
-      />
+      <BookingDetailDialog onOpenChange={setIsViewDialogOpen} booking={selectedBooking} />
 
       {/* Assign Mentor Dialog */}
       <AssignMentorDialog

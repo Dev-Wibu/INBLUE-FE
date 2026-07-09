@@ -994,6 +994,14 @@
     "feedbackFromCandidates": "Phản hồi của ứng viên",
     "feedbackFromMentors": "Đánh giá từ Mentor",
     "myKioskBookings": "Lịch Phỏng vấn Của Tôi",
+    "joinInterview": "Tham gia phỏng vấn",
+    "mentorKiosk": {
+      "joinSessionTitle": "Tham Gia Phiên Phỏng vấn",
+      "joinSessionDescription": "Nhập thông tin phiên để tham gia phỏng vấn",
+      "enterSessionDetails": "Chi Tiết Phiên",
+      "enterSessionDetailsDescription": "Nhập session key và kiosk ID đã được cung cấp cho bạn",
+      "readyToJoin": "Phòng đã sẵn sàng — bấm tham gia để vào"
+    },
     "filter": "Bộ lọc",
     "filterByLevel": "Lọc theo cấp độ",
     "filterByScore": "Lọc theo điểm",
@@ -3906,7 +3914,16 @@
     "getRoomUrl": "Lấy đường dẫn phòng",
     "unableToBookKioskSlot": "Không thể đặt khung giờ kiosk.",
     "roomUrlRetrievedSuccessfully": "Lấy đường dẫn phòng thành công",
-    "unableToGetRoomUrl": "Không thể lấy đường dẫn phòng."
+    "unableToGetRoomUrl": "Không thể lấy đường dẫn phòng.",
+    "kioskEntryDescription": "Tham gia buổi phỏng vấn đã đặt hoặc nhập mã phiên để vào phòng.",
+    "yourUpcomingInterviews": "Buổi phỏng vấn sắp tới",
+    "iHaveSessionKey": "Tôi có mã phiên",
+    "iHaveSessionKeyDescription": "Nhập mã phiên đã được gửi đến email hoặc điện thoại của bạn.",
+    "bookNewKiosk": "Đặt Kiosk Mới",
+    "bookNewKioskDescription": "Đặt lịch phỏng vấn mới tại kiosk gần bạn.",
+    "joinInterview": "Tham gia phỏng vấn",
+    "noScheduledTime": "Chưa có giờ hẹn",
+    "startsIn": "Bắt đầu sau {{minutes}} phút"
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

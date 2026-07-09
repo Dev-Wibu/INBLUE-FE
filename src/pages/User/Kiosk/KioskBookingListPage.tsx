@@ -130,7 +130,7 @@ export function KioskBookingListPage() {
                 <div className="flex flex-col gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => navigate(`/user/kiosk/booking/${booking.id}/join`)}
+                    onClick={() => navigate("/user/kiosk/entry")}
                     className="gap-2">
                     <Video className="h-4 w-4" />
                     {t("userKiosk.joinRoom")}
@@ -138,7 +138,7 @@ export function KioskBookingListPage() {
                   {canCancel(booking.status) && (
                     <Button
                       variant="destructive"
-                      onClick={() => handleCancel(booking.id)}
+                      onClick={() => booking.id != null && handleCancel(booking.id)}
                       disabled={cancelMutation.isPending}
                       className="gap-2">
                       <XCircle className="h-4 w-4" />

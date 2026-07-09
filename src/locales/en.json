@@ -997,6 +997,14 @@
     "feedbackFromCandidates": "Candidate feedback",
     "feedbackFromMentors": "Feedback from Mentors",
     "myKioskBookings": "My Interview Bookings",
+    "joinInterview": "Join Interview",
+    "mentorKiosk": {
+      "joinSessionTitle": "Join Interview Session",
+      "joinSessionDescription": "Enter your session details to join the interview",
+      "enterSessionDetails": "Session Details",
+      "enterSessionDetailsDescription": "Enter the session key and kiosk ID provided to you",
+      "readyToJoin": "Room ready — click join to enter"
+    },
     "filter": "Filter",
     "filterByLevel": "Filter by level",
     "filterByScore": "Filter by score",
@@ -3909,7 +3917,16 @@
     "getRoomUrl": "Get Room URL",
     "unableToBookKioskSlot": "Unable to book kiosk slot.",
     "roomUrlRetrievedSuccessfully": "Room URL retrieved successfully",
-    "unableToGetRoomUrl": "Unable to get room URL."
+    "unableToGetRoomUrl": "Unable to get room URL.",
+    "kioskEntryDescription": "Join your scheduled interview or enter with a session key.",
+    "yourUpcomingInterviews": "Your Upcoming Interviews",
+    "iHaveSessionKey": "I have a session key",
+    "iHaveSessionKeyDescription": "Enter the session key sent to your email or phone.",
+    "bookNewKiosk": "Book a New Kiosk",
+    "bookNewKioskDescription": "Schedule a new interview session at a kiosk near you.",
+    "joinInterview": "Join Interview",
+    "noScheduledTime": "No scheduled time",
+    "startsIn": "Starts in {{minutes}} min"
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",

@@ -22,6 +22,7 @@ interface RoleConfig {
 }
 type DashboardRouteVariant = "practiceQuiz" | "practiceQuizResult";
 type DynamicResourceType =
+  | "booking"
   | "session"
   | "mentor"
   | "practiceSet"
