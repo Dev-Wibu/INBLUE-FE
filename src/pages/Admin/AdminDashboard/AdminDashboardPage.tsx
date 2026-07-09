@@ -10,6 +10,7 @@ import {
   BrainCircuit,
   Briefcase,
   Building2,
+  CalendarClock,
   ClipboardCheck,
   Code2,
   Database,
@@ -40,6 +41,7 @@ import { CompanyManagementPage } from "../CompanyManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
 import { InterviewTemplateManagementPage } from "../InterviewTemplateManagement/InterviewTemplateManagementPage";
+import { KioskBookingManagementPage } from "../KioskBookingManagement";
 import { MentorManagementPage } from "../MentorManagement";
 import { NotificationManagementPage } from "../NotificationManagement";
 import { PostManagementPage } from "../PostManagement";
@@ -128,6 +130,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             type: "applicationGrading",
             icon: ClipboardCheck,
             label: t("adminAdmindashboard.candidateGrading"),
+            color: "text-slate-400",
+          },
+          {
+            type: "kiosk-bookings",
+            icon: CalendarClock,
+            label: t("adminKiosk.bookingRequests"),
             color: "text-slate-400",
           },
         ],
@@ -345,6 +353,7 @@ export function AdminDashboardPage() {
                   />
                 }
               />
+              <Route path="kiosk-bookings" element={<KioskBookingManagementPage />} />
               <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
               <Route path="codingProblems" element={<CodingProblemManagementPage />} />
             </Routes>

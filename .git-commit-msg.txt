@@ -1,0 +1,11 @@
+feat(kiosk): complete user booking flow - entry, join room, session key form redesign
+
+- Add KioskEntryPage: standalone entry form for entering kiosk without booking
+- Redesign SessionKeyFlow in KioskJoinRoomPage: hero section, 2-column inputs, badges, helper text, error alert
+- Add MentorKioskEntryPage: mentor-side form with same design system
+- Fix VideoCallRoom: remove Card wrapper, use div with bg-slate-900 to prevent white border overflow
+- Update i18n (EN/JA/VI) with new keys for kiosk entry pages
+- Add frontend-api-guide.md documenting kiosk booking and AI interview APIs
+- Add KioskBookingListPage: user's booking history with status badges and countdown
+- Update sidebar navigation for user kiosk section
+- Update BookingDetailDialog: show mentor name/expertise when assigned

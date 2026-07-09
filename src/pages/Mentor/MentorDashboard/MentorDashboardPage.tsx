@@ -24,6 +24,7 @@ import {
   Star,
   User,
   Users,
+  Video,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -31,6 +32,7 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { MentorAccountPage } from "../Account";
 import { GivenFeedbackListPage } from "../Feedback";
 import { MentorHomeFeedPage } from "../HomeFeed";
+import { MentorKioskEntryPage } from "../MentorKioskEntryPage";
 import { MessengerPage } from "../Messenger";
 import { MentorNotificationsPage } from "../Notifications";
 import { MentorOverviewPage } from "../Overview";
@@ -44,6 +46,7 @@ type TabType =
   | "students"
   | "reviews"
   | "feedback"
+  | "kioskEntry"
   | "notifications"
   | "messenger"
   | "account";
@@ -55,6 +58,7 @@ const VALID_TAB_TYPES: TabType[] = [
   "students",
   "reviews",
   "feedback",
+  "kioskEntry",
   "notifications",
   "messenger",
   "account",
@@ -64,49 +68,53 @@ const isValidTabType = (value: string): value is TabType => {
   return VALID_TAB_TYPES.includes(value as TabType);
 };
 const getAvailableTabs = (
-  t: (key: string) => string
+  _t: (_key: string) => string
 ): Array<{
   type: TabType;
   label: string;
 }> => [
   {
     type: "homeFeed",
-    label: t("common.home"),
+    label: _t("common.home"),
   },
   {
     type: "overview",
-    label: t("common.overview"),
+    label: _t("common.overview"),
   },
   {
     type: "sessions",
-    label: t("common.interviewSession"),
+    label: _t("common.interviewSession"),
   },
   {
     type: "students",
-    label: t("common.students"),
+    label: _t("common.students"),
   },
   {
     type: "reviews",
-    label: t("mentorMentordashboard.reviewSent"),
+    label: _t("mentorMentordashboard.reviewSent"),
   },
   {
     type: "feedback",
-    label: t("common.responseReceived"),
+    label: _t("common.responseReceived"),
+  },
+  {
+    type: "kioskEntry",
+    label: _t("common.joinInterview"),
   },
   {
     type: "notifications",
-    label: t("common.notification"),
+    label: _t("common.notification"),
   },
   {
     type: "messenger",
-    label: t("common.messages"),
+    label: _t("common.messages"),
   },
   {
     type: "account",
-    label: t("common.account"),
+    label: _t("common.account"),
   },
 ];
-const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] => [
+const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] => [
   {
     label: t("common.home"),
     items: [
@@ -150,6 +158,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         icon: MessageSquare,
         label: t("common.responseReceived"),
         color: "text-cyan-600",
+      },
+      {
+        type: "kioskEntry",
+        icon: Video,
+        label: t("common.joinInterview"),
+        color: "text-rose-600",
       },
     ],
   },
@@ -270,6 +284,8 @@ export function MentorDashboardPage() {
         return <MentorReviewsPage />;
       case "feedback":
         return <GivenFeedbackListPage />;
+      case "kioskEntry":
+        return <MentorKioskEntryPage />;
       case "notifications":
         return <MentorNotificationsPage />;
       case "messenger":

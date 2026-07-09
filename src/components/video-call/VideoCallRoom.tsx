@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { AlertCircle, RefreshCw, XCircle } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
@@ -94,12 +93,16 @@ export function VideoCallRoom({
   if (roomState === "error") {
     if (isRoomUnavailableError) {
       return (
-        <Card className={cn("border-destructive/30 bg-destructive/5 w-full", className)}>
-          <CardContent className="flex min-h-[420px] flex-col items-center justify-center p-8 text-center">
-            <div className="bg-destructive/10 mb-5 rounded-full p-4">
-              <XCircle className="text-destructive h-10 w-10" />
+        <div
+          className={cn(
+            "w-full rounded-xl border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950",
+            className
+          )}>
+          <div className="flex min-h-[420px] flex-col items-center justify-center p-8 text-center">
+            <div className="mb-5 rounded-full bg-red-100 p-4 dark:bg-red-900">
+              <XCircle className="h-10 w-10 text-red-600 dark:text-red-400" />
             </div>
-            <h3 className="text-foreground text-xl font-semibold">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
               {t("compVideoCall.meetingRoomsAreNoLonger")}
             </h3>
             <p className="text-muted-foreground mt-2 max-w-xl text-sm leading-relaxed">
@@ -119,13 +122,17 @@ export function VideoCallRoom({
             <p className="text-muted-foreground mt-4 text-xs">
               {t("compVideoCall.ifTheErrorPersistsPlease")}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       );
     }
     return (
-      <Card className={cn("w-full", className)}>
-        <CardContent className="flex flex-col items-center justify-center p-8">
+      <div
+        className={cn(
+          "border-border w-full rounded-xl border bg-white dark:border-slate-700 dark:bg-slate-900",
+          className
+        )}>
+        <div className="flex flex-col items-center justify-center p-8">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{t("compVideoCall.connectionError")}</AlertTitle>
@@ -143,30 +150,34 @@ export function VideoCallRoom({
               {t("general.back")}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   // Render left state
   if (roomState === "left") {
     return (
-      <Card className={cn("w-full", className)}>
-        <CardContent className="flex flex-col items-center justify-center gap-4 p-8">
+      <div
+        className={cn(
+          "border-border w-full rounded-xl border bg-white dark:border-slate-700 dark:bg-slate-900",
+          className
+        )}>
+        <div className="flex flex-col items-center justify-center gap-4 p-8">
           <p className="text-muted-foreground text-lg">
             {t("compVideoCall.youHaveLeftTheMeeting")}
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
   return (
-    <Card className={cn("flex h-full w-full flex-col overflow-hidden", className)}>
-      <CardContent className="relative flex-1 p-0">
-        {/* Daily.co iframe container - matches VideoCall-Fe #video-container */}
-        {/* Daily.co iframe handles its own pre-call lobby, device settings, and call controls */}
-        <div ref={containerRef} className="h-full min-h-[600px] w-full" />
-      </CardContent>
-    </Card>
+    <div
+      className={cn(
+        "border-border relative flex h-full w-full flex-col overflow-hidden rounded-xl border bg-slate-900",
+        className
+      )}>
+      <div ref={containerRef} className="relative flex-1 overflow-hidden" />
+    </div>
   );
 }

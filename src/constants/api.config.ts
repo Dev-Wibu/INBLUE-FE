@@ -395,6 +395,34 @@ export const API_ENDPOINTS = {
     START: "/api/v1/interview/start/:sessionKey",
     SUBMIT: "/api/v1/interview/submit",
   },
+
+  // Kiosk endpoints - Based on schema-from-be.d.ts
+  // GET /api/kiosks - getActiveKiosks
+  // POST /api/kiosks - createKiosk (admin)
+  // GET /api/kiosks/{id} - getKioskById (admin)
+  // PUT /api/kiosks - updateKiosk (admin)
+  // POST /api/kiosks/schedule - createSchedule (admin)
+  // GET /api/kiosks/{kioskId}/slots?date=YYYY-MM-DD - getAvailableSlots
+  // GET /api/kiosks/{kioskId}/schedules - getSchedulesByKiosk
+  // POST /api/kiosk/enter - enterKiosk
+  // POST /api/mentor-bookings/pick-slot - pickSlot
+  // GET /api/mentor-bookings/{bookingId} - getBookingById (from schema)
+  // POST /api/admin/mentor-bookings/{bookingId}/assign-mentor - assignMentor (admin)
+  // GET /api/admin/mentor-bookings - list bookings (admin)
+  KIOSK: {
+    LIST: "/api/kiosks",
+    DETAIL: "/api/kiosks/{id}",
+    SCHEDULE_CREATE: "/api/kiosks/schedule",
+    SCHEDULES_BY_KIOSK: "/api/kiosks/{kioskId}/schedules",
+    SLOTS: "/api/kiosks/{kioskId}/slots",
+    ENTER: "/api/kiosk/enter",
+  },
+  MENTOR_BOOKINGS: {
+    PICK_SLOT: "/api/mentor-bookings/pick-slot",
+    DETAIL: "/api/mentor-bookings/{bookingId}",
+    ASSIGN_MENTOR: "/api/admin/mentor-bookings/{bookingId}/assign-mentor",
+    LIST_ADMIN: "/api/admin/mentor-bookings",
+  },
 } as const;
 
 /**
