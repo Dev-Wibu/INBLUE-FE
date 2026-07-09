@@ -49,6 +49,7 @@ import { AIInterviewListPage } from "../AIInterview";
 import { ApplicationHistoryPage } from "../ApplicationHistory";
 import { UserFeedbackListPage } from "../Feedback";
 import { HomeFeedPage } from "../HomeFeed";
+import { KioskBookingListPage } from "../Kiosk/KioskBookingListPage";
 import { MentorListPage } from "../MentorList/MentorListPage";
 import { MessengerPage } from "../Messenger";
 import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
@@ -63,6 +64,7 @@ type TabType =
   | "interviewHistory"
   | "applicationHistory"
   | "feedback"
+  | "kioskBookings"
   | "aiInterview"
   | "practice"
   | "practiceQuestions"
@@ -77,6 +79,7 @@ const isValidTabType = (value: string): value is TabType => {
     "interviewHistory",
     "applicationHistory",
     "feedback",
+    "kioskBookings",
     "aiInterview",
     "practice",
     "practiceQuestions",
@@ -117,6 +120,10 @@ const getAvailableTabs = (
   {
     type: "feedback",
     label: t("common.feedbackFromMentors"),
+  },
+  {
+    type: "kioskBookings",
+    label: t("common.myKioskBookings"),
   },
   {
     type: "aiInterview",
@@ -189,6 +196,12 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
         icon: MessageSquare,
         label: t("common.feedbackFromMentors"),
         color: "text-cyan-600",
+      },
+      {
+        type: "kioskBookings",
+        icon: History,
+        label: t("common.myKioskBookings"),
+        color: "text-emerald-600",
       },
     ],
   },
@@ -349,6 +362,8 @@ export function UserDashboardPage() {
         return <ApplicationHistoryPage />;
       case "feedback":
         return <UserFeedbackListPage />;
+      case "kioskBookings":
+        return <KioskBookingListPage />;
       case "aiInterview":
         return <AIInterviewListPage />;
       case "practice":

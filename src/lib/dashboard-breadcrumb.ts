@@ -252,6 +252,32 @@ function getMentorRouteRules(t: TFunction): RouteLabelRule[] {
         prefix: t("common.students"),
       },
     },
+    // User kiosk routes
+    {
+      pattern: /^\/user\/kiosk$/,
+      label: t("userKiosk.kioskSchedule"),
+      tabType: "kioskBookings",
+    },
+    {
+      pattern: /^\/user\/kiosk\/bookings$/,
+      label: t("userKiosk.myBookingsTitle"),
+      tabType: "kioskBookings",
+    },
+    {
+      pattern: /^\/user\/kiosk\/booking\/(?<bookingId>[^/]+)\/join$/,
+      label: t("userKiosk.joinRoomTitle"),
+      tabType: "kioskBookings",
+      dynamic: {
+        resource: "booking",
+        idParam: "bookingId",
+        prefix: t("userKiosk.booking"),
+      },
+    },
+    {
+      pattern: /^\/user\/kiosk\/booking-success$/,
+      label: t("userKiosk.bookingSuccessTitle"),
+      tabType: "kioskBookings",
+    },
   ];
 }
 const USER_SEGMENT_TO_TAB: Record<string, string> = {
@@ -260,6 +286,7 @@ const USER_SEGMENT_TO_TAB: Record<string, string> = {
   "mock-interview": "mockInterview",
   practice: "practice",
   feedback: "feedback",
+  kiosk: "kioskBookings",
   messenger: "messenger",
 };
 const MENTOR_SEGMENT_TO_TAB: Record<string, string> = {
