@@ -1,1250 +1,1083 @@
-# Backend API Guide for AI Frontend
+# Frontend API Guide — Luồng tạo Kiosk & Lịch Kiosk (Inblue Backend)
 
-> Mục tiêu: AI/FE đọc file này là hiểu luồng nghiệp vụ, biết endpoint, request body, response, quy tắc đặc biệt và tự code được 100% frontend mà không cần hỏi lại backend.
-
----
-
-## MỤC LỤC
-
-1. [Tổng quan hệ thống](#1-tổng-quan-hệ-thống)
-2. [Quy ước chung](#2-quy-ước-chung)
-3. [Tổng quan luồng Kiosk Scheduling & Mentor Interview](#3-tổng-quan-luồng-kiosk-scheduling--mentor-interview)
-4. [Enums quan trọng](#4-enums-quan-trọng)
-5. [Models](#5-models)
-6. [AUTH](#6-auth)
-7. [KIOSK](#7-kiosk)
-8. [MENTOR BOOKING](#8-mentor-booking)
-9. [SESSION](#9-session)
-10. [APPLICATION + SUBMISSION](#10-application--submission)
-11. [JD + ROUND](#11-jd--round)
-12. [USER + COMPANY](#12-user--company)
-13. [POST/FEED](#13-postfeed)
-14. [NOTIFICATION + MESSAGE](#14-notification--message)
-15. [QUESTION BANK](#15-question-bank)
-16. [MENTOR FEEDBACK](#16-mentor-feedback)
-17. [PAYMENT](#17-payment)
-18. [MAIL + EMAIL SUBMISSION](#18-mail--email-submission)
-19. [INTERVIEW AI](#19-interview-ai)
-20. [PROCTORING](#20-proctoring)
-21. [TEST/DEBUG](#21-testdebug)
-22. [Lỗi thường gặp](#22-lỗi-thường-gặp)
-23. [Thứ tự build frontend](#23-thứ-tự-build-frontend)
+> File này là **tài liệu duy nhất** dành cho AI Front-end để tự động code 100% UI/UX cho luồng **Tạo Kiosk** và **Tạo Lịch (Schedule) cho Kiosk**. Mọi endpoint, request body, response body, enum, status, error đều được mô tả chính xác theo code backend `master` mới nhất.
+>
+> **Repo:** https://github.com/Kdz198/Inblue
+> **Base URL (mặc định):** `http://localhost:8080` (dev) hoặc `https://api.kdz.asia` (prod)
+> **Auth:** JWT Bearer Token (trừ các endpoint `/api/auth/**`, `/api/kiosks/**`, `/api/mentors`, `/api/users`, `/api/job-descriptions`, `/api/rounds`, `/api/companies`, `/api/posts`, `/api/payments/webhook/**` — xem chi tiết trong mục "Phân quyền").
 
 ---
 
-## 1. Tổng quan hệ thống
+## 0. Quy ước chung cho mọi API call
 
-| Thành phần | Chi tiết                      |
-| ---------- | ----------------------------- |
-| Framework  | Spring Boot 4.0.0, Java 21    |
-| Database   | Spring Data JPA (PostgreSQL)  |
-| Auth       | JWT + OAuth2 (Google)         |
-| API style  | RESTful + WebSocket           |
-| Docs       | Swagger UI `/swagger-ui.html` |
-| Payment    | PayOS                         |
-| Media      | Cloudinary                    |
-| Video      | Daily.co                      |
-| AI         | AnythingLLM + Python service  |
-| Base path  | `/api/**`                     |
-
----
-
-## 2. Quy ước chung
-
-- **Header**: `Authorization: Bearer <token>` cho các request cần auth.
-- Một số endpoint đang `permitAll` (không cần token) trong `SecurityConfig`.
-- Thời gian: `LocalDateTime` ISO string. Backend dùng múi giờ `Asia/Ho_Chi_Minh`.
-- `isDeleted` dùng để soft delete.
-- Upload: nhiều endpoint dùng `multipart/form-data`, quy ước `data` = JSON, file riêng.
-- Lỗi: trả về `CustomException` với message + HTTP status code.
-- Validation lỗi trả về HTTP 400/404/409/500 kèm message mô tả rõ ràng.
-
----
-
-## 3. Tổng quan luồng Kiosk Scheduling & Mentor Interview
-
-### 3.1 Sơ đồ luồng
-
-```
-Ứng viên chọn Kiosk → Chọn Slot → Tạo Booking (AWAITING_MENTOR)
-       ↓
-Admin duyệt danh sách Booking chờ → Gán Mentor → Tự động tạo Phòng Daily.co + Gửi Notification
-       ↓
-Ứng viên đến Kiosk vật lý → Nhập sessionKey → Nhận roomUrl → Vào phòng Daily.co
-       ↓
-Ứng viên & Mentor tham gia → FE gọi join-session → Daily.co webhook ghi nhận leave → Session hoàn tất
+### 0.1. Header bắt buộc
+```http
+Content-Type: application/json
+Authorization: Bearer <JWT_TOKEN>      # Bắt buộc cho hầu hết API trừ permitAll
+Accept: application/json
 ```
 
-### 3.2 Bảng trạng thái quan hệ giữa các bảng
+### 0.2. Format response thành công (do `SuccessResponseHandler` bọc lại)
 
-| Stage                     | `MentorInterviewBooking.status` | `ApplicationDetail.status` | `Session.status`                   |
-| ------------------------- | ------------------------------- | -------------------------- | ---------------------------------- |
-| `pickSlot` thành công     | `AWAITING_MENTOR`               | (unchanged)                | n/a                                |
-| `assignMentor` thành công | `ROOM_CREATED`                  | `SLOT_PICKED`              | `SCHEDULED`                        |
-| `enterKiosk` thành công   | `IN_PROGRESS`                   | (unchanged)                | `ONGOING`                          |
-| Cả 2 người rời phòng      | (unchanged)                     | (unchanged)                | `COMPLETED`                        |
-| `cancelBooking`           | `CANCELLED`                     | `PENDING`                  | `CANCELED` + phòng Daily.co bị xóa |
+Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ được **bọc thêm `traceId`**.
 
-### 3.3 Đã fix lỗi gì
+- Nếu backend trả về **1 object** → response thành các field của object + 1 field `traceId` ở root:
+  ```json
+  {
+    "id": 1,
+    "name": "Kiosk A",
+    "traceId": "abc-xyz-123"
+  }
+  ```
+- Nếu backend trả về **List/Array** → response được bọc thành `{ traceId, data: [...] }`:
+  ```json
+  {
+    "traceId": "abc-xyz-123",
+    "data": [ { "id": 1, "name": "Kiosk A" }, { "id": 2, "name": "Kiosk B" } ]
+  }
+  ```
+- String thuần / bytes → **không bọc**, trả về nguyên xi.
 
-- **Lỗi**: `violates check constraint "applicationdetail_status_check"` khi admin assign mentor.
-- **Nguyên nhân**: backend thêm enum `SLOT_PICKED` vào `ApplicationDetailStatus` nhưng DB constraint chưa cập nhật.
-- **Fix**: đã thêm `SLOT_PICKED` vào enum và áp dụng đúng trong `assignMentor()`.
-- **Lưu ý**: cần đảm bảo DB đã migrate constraint để chấp nhận `SLOT_PICKED`.
+> ⚠️ Frontend **PHẢI** biết cách unwrap: với List thì đọc `.data`, với object thì đọc trực tiếp các field (kèm có `traceId` thừa).
 
----
-
-## 4. Enums quan trọng
-
-### 4.1 ApplicationDetailStatus
-
-| Giá trị        | Ý nghĩa                                                |
-| -------------- | ------------------------------------------------------ |
-| `PENDING`      | Ứng viên đang làm bài                                  |
-| `SLOT_PICKED`  | Ứng viên đã chọn slot, đang chờ phỏng vấn / gán mentor |
-| `SUBMITTED`    | Đã nộp bài, hệ thống đang gọi AI                       |
-| `AI_EVALUATED` | AI đã chấm điểm xong, đang chờ HR duyệt                |
-| `COMPLETED`    | HR đã chốt kết quả                                     |
-| `ERROR`        | Lỗi gọi AI                                             |
-
-### 4.2 BookingStatus
-
-| Giá trị           | Ý nghĩa                                            |
-| ----------------- | -------------------------------------------------- |
-| `AWAITING_MENTOR` | Đã đặt lịch, đang chờ Admin gán Mentor             |
-| `MENTOR_ASSIGNED` | Đã gán Mentor (hiện KHÔNG được sử dụng trong code) |
-| `ROOM_CREATED`    | Đã tạo phòng Daily.co, đã gửi notification         |
-| `IN_PROGRESS`     | Ứng viên đã xác thực tại Kiosk                     |
-| `COMPLETED`       | Cuộc họp kết thúc (cả 2 người đã rời phòng)        |
-| `CANCELLED`       | Đã hủy                                             |
-
-### 4.3 SessionStatus
-
-`DRAFT`, `SCHEDULED`, `PAID`, `REJECTED`, `ONGOING`, `COMPLETED`, `CANCELED`
-
-### 4.4 RoundType
-
-`CODE`, `QUIZ`, `CODING_REVIEW`, `EMAIL_SIMULATION`, `DB_DESIGN`, `AI_INTERVIEW`, `MENTOR_INTERVIEW`
-
-### 4.5 JobDescriptionStatus
-
-`OPEN`, `CLOSED`, `DRAFT`
-
-### 4.6 TargetLevel
-
-`Intern`, `Fresher`, `Junior`, `Middle`, `Senior`
-
-### 4.7 PostStatus
-
-`PUBLISHED`, `DRAFT`, `ARCHIVED`
-
-### 4.8 PaymentPurpose
-
-`CV_SCREENING`, `EMAIL_SIMULATOR`, `QUIZ`, `DB_DESIGN`, `AI_INTERVIEW`, `FULLY_PAID`, `MENTOR_INTERVIEW`
-
----
-
-## 5. Models
-
-### 5.1 Kiosk
+### 0.3. Format response lỗi (do `GlobalExceptionHandler` trả về)
 
 ```json
 {
-  "id": 1,
-  "name": "Kiosk A - Phòng 101",
-  "location": "Tầng 1 - Khu A",
-  "isActive": true,
-  "createdAt": "2026-07-08T10:30:00"
+  "error": "Mô tả lỗi bằng tiếng Anh / tiếng Việt",
+  "traceId": "abc-xyz-123"
 }
 ```
 
-### 5.2 KioskSchedule
+| HTTP Status | Khi nào xảy ra |
+|---|---|
+| 400 BAD_REQUEST | Validation fail, trùng slot, status không hợp lệ, sai thời gian |
+| 401 UNAUTHORIZED | Thiếu/không hợp lệ JWT, hoặc user gọi nhầm endpoint cần auth |
+| 403 FORBIDDEN | User không đủ quyền (vd: USER gọi API admin) |
+| 404 NOT_FOUND | Không tìm thấy Kiosk / KioskSchedule / Booking theo id |
+| 409 CONFLICT | Slot bị đặt, hoặc Mentor bị trùng lịch |
+| 500 INTERNAL_SERVER_ERROR | Lỗi hệ thống (gọi Daily.co thất bại, …) |
 
+### 0.4. Định dạng dữ liệu
+- `LocalDate` (chỉ ngày): `yyyy-MM-dd` (vd: `2026-07-15`)
+- `LocalTime` (chỉ giờ): `HH:mm:ss` hoặc `HH:mm` (vd: `09:00:00` hoặc `09:00`)
+- `LocalDateTime` (ngày + giờ): `yyyy-MM-ddTHH:mm:ss` (vd: `2026-07-15T09:00:00`)
+- `DayOfWeek` enum (gửi lên cho schedule): `MONDAY`, `TUESDAY`, `WEDNESDAY`, `THURSDAY`, `FRIDAY`, `SATURDAY`, `SUNDAY`
+- `BookingStatus` enum: `AWAITING_MENTOR` | `MENTOR_ASSIGNED` | `ROOM_CREATED` | `IN_PROGRESS` | `COMPLETED` | `CANCELLED`
+- `Role` enum: `USER` | `MENTOR` | `STAFF` | `ADMIN`
+
+### 0.5. Phân quyền (từ `SecurityConfig.java`)
+| Endpoint | Cần auth? | Role tối thiểu |
+|---|---|---|
+| `/api/auth/**` | ❌ Public | — |
+| `/api/kiosks/**` (xem/sửa kiosk) | ❌ Public (chưa có rule riêng) | — |
+| `/api/mentors` (GET) | ❌ Public | — |
+| `/api/mentor-bookings/pick-slot` | ✅ Cần JWT | USER (lấy từ token) |
+| `/api/mentor-bookings/{id}` (DELETE) | ✅ Cần JWT | USER sở hữu / ADMIN / STAFF |
+| `/api/admin/mentor-bookings/**` | ✅ Cần JWT | ADMIN / STAFF |
+| `/api/kiosk/enter` | ❌ Public (kiosk vật lý) | — |
+| `/api/applications/me` | ✅ Cần JWT | USER |
+| `/api/application-details/**` | ✅ Cần JWT | tuỳ endpoint |
+
+> Lưu ý thực tế: cấu hình hiện tại có `.anyRequest().permitAll()` nên về mặt kỹ thuật mọi API đều truy cập được nếu bỏ qua JWT, nhưng **CẦN gửi JWT** cho các endpoint yêu cầu `getCurrentUserId()` (vì nếu không có, server sẽ throw `Unauthorized` 401).
+
+---
+
+## 1. Tổng quan luồng tạo Kiosk & Lịch Kiosk
+
+### 1.1. Sơ đồ tổng quan
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    ADMIN TẠO KIOSK                              │
+│  POST /api/kiosks          → tạo máy trạm vật lý                │
+│  GET  /api/kiosks          → lấy danh sách kiosk đang active    │
+│  PUT  /api/kiosks/{id}     → cập nhật tên / vị trí / trạng thái │
+│                                                                  │
+│              ↓ Sau khi có kiosk, ADMIN TẠO LỊCH                 │
+│  POST /api/kiosks/schedule     → tạo lịch theo thứ             │
+│  GET  /api/kiosks/{id}/schedules → lấy danh sách lịch         │
+│  PUT  /api/kiosks/schedule/{id} → cập nhật lịch                │
+│                                                                  │
+│                  ↓ Sau đó ỨNG VIÊN dùng                         │
+│  GET  /api/kiosks/{id}/slots?date=YYYY-MM-DD → lấy slot trống  │
+│  POST /api/mentor-bookings/pick-slot  → đặt lịch               │
+│  POST /api/kiosk/enter               → kiosk xác thực sessionKey│
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 1.2. Thứ tự gọi API bắt buộc
+
+1. **Bước 1 (Admin)**: Tạo Kiosk → `POST /api/kiosks`
+2. **Bước 2 (Admin)**: Tạo Schedule cho Kiosk đó → `POST /api/kiosks/schedule`
+3. **Bước 3 (Ứng viên)**: Lấy danh sách kiosk active → `GET /api/kiosks`
+4. **Bước 4 (Ứng viên)**: Chọn kiosk + ngày → `GET /api/kiosks/{kioskId}/slots?date=YYYY-MM-DD`
+5. **Bước 5 (Ứng viên)**: Chọn 1 slot trống → `POST /api/mentor-bookings/pick-slot`
+6. **Bước 6 (Admin)**: Gán mentor cho booking → `POST /api/admin/mentor-bookings/{id}/assign-mentor`
+7. **Bước 7 (Ứng viên)**: Nhận notification có `sessionKey` (qua polling `GET /api/notifications/{userId}`)
+8. **Bước 8 (Kiosk vật lý)**: Khi ứng viên đến kiosk, nhập `sessionKey` → `POST /api/kiosk/enter` → trả về `roomUrl` (link Daily.co) để vào phòng.
+
+---
+
+## 2. Model / Enum dùng chung
+
+### 2.1. `Kiosk` (entity + response trả về)
+```json
+{
+  "id": 1,
+  "name": "Kiosk A - Tầng 1",
+  "location": "FPT Software, Tầng 1, Tòa nhà A",
+  "isActive": true,
+  "createdAt": "2026-07-10T09:00:00"
+}
+```
+
+| Field | Type | Bắt buộc khi POST/PUT? | Mô tả |
+|---|---|---|---|
+| `id` | Long | Tự sinh | ID tự tăng, bỏ qua khi tạo |
+| `name` | String | ✅ Có | Tên kiosk |
+| `location` | String | ✅ Có | Vị trí đặt máy |
+| `isActive` | boolean | ✅ Có | true = đang hoạt động, false = tạm dừng |
+| `createdAt` | LocalDateTime | Tự sinh | Thời gian tạo |
+
+### 2.2. `KioskSchedule` (entity + response)
 ```json
 {
   "id": 1,
   "kioskId": 1,
   "dayOfWeek": "MONDAY",
-  "openTime": "08:00:00",
+  "openTime": "09:00:00",
   "closeTime": "17:00:00",
-  "slotDurationMinutes": 45,
+  "slotDurationMinutes": 60,
   "isActive": true,
-  "createdAt": "2026-07-08T10:35:00"
+  "createdAt": "2026-07-10T09:00:00"
 }
 ```
 
-- `dayOfWeek`: enum Java `DayOfWeek` - dùng string như `"MONDAY"`, `"TUESDAY"`, `"WEDNESDAY"`, `"THURSDAY"`, `"FRIDAY"`, `"SATURDAY"`, `"SUNDAY"`.
-- `openTime`/`closeTime`: format `HH:mm:ss` (LocalTime).
+| Field | Type | Bắt buộc? | Mô tả |
+|---|---|---|---|
+| `id` | Long | Tự sinh | ID tự tăng |
+| `kioskId` | Long | ✅ Có | ID của kiosk (phải tồn tại) |
+| `dayOfWeek` | `DayOfWeek` enum | ✅ Có | `MONDAY`..`SUNDAY` |
+| `openTime` | LocalTime (`HH:mm:ss`) | ✅ Có | Giờ mở cửa |
+| `closeTime` | LocalTime | ✅ Có | Giờ đóng cửa |
+| `slotDurationMinutes` | int | ✅ Có | Độ dài 1 slot (phút) — ví dụ 30, 45, 60 |
+| `isActive` | boolean | ✅ Có | Lịch còn hiệu lực hay không |
+| `createdAt` | LocalDateTime | Tự sinh | Thời gian tạo |
 
-### 5.3 SlotDto
+> ⚠️ Logic backend: trong `KioskServiceImpl.getAvailableSlots`, giữa 2 slot liên tiếp sẽ tự động có **15 phút nghỉ** (`current.plusMinutes(duration + 15)`). Frontend **KHÔNG cần tự thêm 15 phút nghỉ** — server đã lo.
 
+### 2.3. `SlotDto` (response khi lấy slot trống)
 ```json
 {
-  "startTime": "2026-07-10T08:00:00",
-  "endTime": "2026-07-10T08:45:00",
+  "startTime": "2026-07-15T09:00:00",
+  "endTime": "2026-07-15T10:00:00",
   "available": true
 }
 ```
 
-- Logic backend: mỗi slot tự động cộng thêm **15 phút nghỉ** giữa các slot.
-- Slot `available = false` nếu chồng chéo với booking đã tồn tại (trừ `CANCELLED`).
+| Field | Type | Mô tả |
+|---|---|---|
+| `startTime` | LocalDateTime | Giờ bắt đầu slot |
+| `endTime` | LocalDateTime | Giờ kết thúc slot |
+| `available` | boolean | true = còn trống, false = đã có người đặt |
 
-### 5.4 MentorInterviewBooking
-
+### 2.4. `KioskEnterDtoRequest` (kiosk gửi khi xác thực)
 ```json
 {
-  "id": 55,
-  "applicationDetailId": 12,
-  "kioskId": 1,
-  "applicantUserId": 7,
-  "scheduledStart": "2026-07-10T10:00:00",
-  "scheduledEnd": "2026-07-10T10:45:00",
-  "mentorId": 5,
-  "sessionId": 88,
-  "status": "ROOM_CREATED",
-  "sessionKey": "e0e2d148-8df0-4bbf-b75b-ec86b5b5ee24",
-  "notes": "Phỏng vấn chuyên môn React & Spring Boot",
-  "createdAt": "2026-07-08T11:00:00",
-  "updatedAt": "2026-07-08T11:30:00"
-}
-```
-
-### 5.5 Session
-
-```json
-{
-  "id": 88,
-  "roomName": "session-1752012345678",
-  "userId": 7,
-  "participantId1": "p_abc123xyz",
-  "startTime1": "2026-07-10T10:00:00.000",
-  "endTime1": "2026-07-10T10:45:00.000",
-  "durationSeconds1": 2700,
-  "userId2": 5,
-  "participantId2": "p_def456uvw",
-  "startTime2": "2026-07-10T10:02:00.000",
-  "endTime2": "2026-07-10T10:48:00.000",
-  "durationSeconds2": 2760,
-  "roomUrl": "https://inblue.daily.co/session-1752012345678",
-  "joinTime": "2026-07-10T10:00:00.000",
-  "recordUrl": null,
-  "status": "COMPLETED",
-  "duration": 45,
-  "totalPrice": 0,
-  "transactionCode": null,
-  "sessionKey": "e0e2d148-8df0-4bbf-b75b-ec86b5b5ee24",
+  "sessionKey": "550e8400-e29b-41d4-a716-446655440000",
   "kioskId": 1
 }
 ```
 
-- `userId` = ứng viên (mentee)
-- `userId2` = mentor
-- `participantId1`/`participantId2` = ID từ Daily.co
-- `sessionKey` = UUID để ứng viên nhập tại Kiosk
-
-### 5.6 ApplicationDetail
-
+### 2.5. `KioskEnterDtoResponse` (response trả về)
 ```json
 {
-  "id": 39,
-  "applicationId": 12,
-  "roundId": 5,
-  "status": "SLOT_PICKED",
-  "finalScore": 90,
-  "submissionData": {
-    "textContent": null,
-    "fileUrl": null,
-    "quizAnswers": null,
-    "codeSubmissions": null,
-    "codeReviewSubmissions": null,
-    "emailSubmissionId": null
-  },
-  "aiScore": 90,
-  "aiFeedback": {
-    "generalComment": "...",
-    "strengths": ["..."],
-    "weaknesses": ["..."],
-    "extraMetrics": {}
-  },
-  "hrScore": 100,
-  "hrNote": "Văn hay chữ tốt",
-  "finalResult": "PASSED",
-  "startedAt": "2026-07-01T12:30:58.264745",
-  "completedAt": "2026-07-01T12:40:20.828749",
-  "mentorReview": null,
-  "sessionId": 88,
-  "bookingId": 43
+  "roomUrl": "https://inblue.daily.co/abc-xyz-123"
 }
 ```
 
-### 5.7 Other models
-
-- `User`: `id`, `name`, `email`, `password`, `role`, `isActive`, `avatarUrl`, `cvUrl`
-- `Company`: `id`, `name`, `logoUrl`, `bannerUrl`, `description`, `status`, `isDeleted`
-- `JobDescription`: `id`, `title`, `description`, `requirements`, `benefits`, `level`, `salaryMin`, `salaryMax`, `currency`, `status`, `deadlineAt`, `appliedCount`
-- `Round`: `id`, `name`, `roundOrder`, `roundType`, `passThreshold`, `configData(jsonb)`, `reviewerId`, `isAuto`
-- `Application`: `id`, `userId`, `jdId`, `currentRoundOrder`, `status`, `overallScore`
-- `Payment`: `id`, `amount`, `description`, `user`, `status`, `createdAt`, `transactionCode`, `paymentPurpose`
-- `Post`, `PostComment`, `PostLike`
-- `Mentor`, `MentorFeedback`
-- `QuestionBank`, `QuestionCategory`, `CodingProblem`, `CodeReviewProblem`
-- `EmailSubmission`, `Notification`
-
----
-
-## 6. AUTH
-
-### 6.1 Login
-
-- `POST /api/auth/login`
-- Request:
-
+### 2.6. `PickSlotDtoRequest` (ứng viên gửi khi đặt lịch)
 ```json
 {
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-- Response (HTTP 200): trả về JWT token string, kèm header `Authorization: Bearer <token>`
-
-### 6.2 Google OAuth2
-
-- `GET /api/auth/login-with-google` -> redirect `/oauth2/authorization/google`
-
-### 6.3 Forgot/Reset password
-
-- `POST /api/auth/forgot-password` body `{"email": "..."}`
-- `POST /api/auth/reset-password` body `{"email":"...", "otp":"...", "newPassword":"..."}`
-
----
-
-## 7. KIOSK
-
-### 7.1 Tạo Kiosk (Admin)
-
-- `POST /api/kiosks`
-- Request:
-
-```json
-{
-  "name": "Kiosk A - Phòng 101",
-  "location": "Tầng 1 - Khu A",
-  "isActive": true
-}
-```
-
-- Response (HTTP 200):
-
-```json
-{
-  "id": 1,
-  "name": "Kiosk A - Phòng 101",
-  "location": "Tầng 1 - Khu A",
-  "isActive": true,
-  "createdAt": "2026-07-08T10:30:00"
-}
-```
-
-- Validation: `name` và `location` không được null/empty. Trả `404` nếu không tìm thấy.
-
-### 7.2 Lấy danh sách Kiosk hoạt động
-
-- `GET /api/kiosks`
-- Response (HTTP 200):
-
-```json
-[
-  {
-    "id": 1,
-    "name": "Kiosk A - Phòng 101",
-    "location": "Tầng 1 - Khu A",
-    "isActive": true,
-    "createdAt": "2026-07-08T10:30:00"
-  }
-]
-```
-
-- **Quyền**: công khai (không cần token).
-
-### 7.3 Tạo lịch hoạt động của Kiosk (Admin)
-
-- `POST /api/kiosks/schedule`
-- Request:
-
-```json
-{
+  "applicationDetailId": 10,
   "kioskId": 1,
-  "dayOfWeek": "MONDAY",
-  "openTime": "08:00:00",
-  "closeTime": "17:00:00",
-  "slotDurationMinutes": 45,
-  "isActive": true
+  "scheduledStart": "2026-07-15T09:00:00",
+  "scheduledEnd": "2026-07-15T10:00:00"
 }
 ```
 
-- Response (HTTP 200):
-
+### 2.7. `MentorInterviewBooking` (response sau khi pickSlot thành công)
 ```json
 {
-  "id": 1,
-  "kioskId": 1,
-  "dayOfWeek": "MONDAY",
-  "openTime": "08:00:00",
-  "closeTime": "17:00:00",
-  "slotDurationMinutes": 45,
-  "isActive": true,
-  "createdAt": "2026-07-08T10:35:00"
-}
-```
-
-- Validation: `kioskId` phải tồn tại. `dayOfWeek` dùng string enum Java (`MONDAY`...`SUNDAY`).
-
-### 7.4 Lấy slots trống theo ngày
-
-- `GET /api/kiosks/{kioskId}/slots?date=YYYY-MM-DD`
-- Ví dụ: `GET /api/kiosks/1/slots?date=2026-07-10`
-- Response (HTTP 200):
-
-```json
-[
-  {
-    "startTime": "2026-07-10T08:00:00",
-    "endTime": "2026-07-10T08:45:00",
-    "available": true
-  },
-  {
-    "startTime": "2026-07-10T09:00:00",
-    "endTime": "2026-07-10T09:45:00",
-    "available": false
-  },
-  {
-    "startTime": "2026-07-10T10:00:00",
-    "endTime": "2026-07-10T10:45:00",
-    "available": true
-  }
-]
-```
-
-- **Quyền**: công khai.
-- Logic: backend tạo slot từ `openTime`, mỗi slot dài `slotDurationMinutes`, tự động cộng **15 phút nghỉ** giữa các slot. Slot `available = false` nếu trùng booking có status khác `CANCELLED`. Nếu không có lịch hoạt động cho ngày đó, trả về `[]`.
-
-### 7.5 Lấy lịch hoạt động của Kiosk
-
-- `GET /api/kiosks/{kioskId}/schedules`
-- Response (HTTP 200): `List<KioskSchedule>`
-
-### 7.6 Cập nhật thông tin Kiosk (Admin)
-
-- `PUT /api/kiosks/{id}`
-- Request:
-
-```json
-{
-  "name": "Kiosk A - Phòng 101 (Đã nâng cấp)",
-  "location": "Tầng 2 - Khu A",
-  "isActive": true
-}
-```
-
-- Response (HTTP 200): `Kiosk`
-
-### 7.7 Cập nhật lịch hoạt động (Admin)
-
-- `PUT /api/kiosks/schedule/{id}`
-- Request:
-
-```json
-{
-  "kioskId": 1,
-  "dayOfWeek": "MONDAY",
-  "openTime": "09:00:00",
-  "closeTime": "18:00:00",
-  "slotDurationMinutes": 60,
-  "isActive": true
-}
-```
-
-- Response (HTTP 200): `KioskSchedule`
-
----
-
-## 8. MENTOR BOOKING
-
-### 8.1 Đặt lịch phỏng vấn (Ứng viên pick slot)
-
-- `POST /api/mentor-bookings/pick-slot`
-- **Quyền**: Ứng viên đã đăng nhập (userId được lấy từ JWT token).
-- Request:
-
-```json
-{
-  "applicationDetailId": 12,
-  "kioskId": 1,
-  "scheduledStart": "2026-07-10T10:00:00",
-  "scheduledEnd": "2026-07-10T10:45:00"
-}
-```
-
-- Response (HTTP 200):
-
-```json
-{
-  "id": 55,
-  "applicationDetailId": 12,
+  "id": 5,
+  "applicationDetailId": 10,
   "kioskId": 1,
   "applicantUserId": 7,
-  "scheduledStart": "2026-07-10T10:00:00",
-  "scheduledEnd": "2026-07-10T10:45:00",
+  "scheduledStart": "2026-07-15T09:00:00",
+  "scheduledEnd": "2026-07-15T10:00:00",
   "mentorId": null,
   "sessionId": null,
   "status": "AWAITING_MENTOR",
   "sessionKey": null,
   "notes": null,
-  "createdAt": "2026-07-08T11:00:00",
-  "updatedAt": "2026-07-08T11:00:00"
+  "createdAt": "2026-07-10T09:00:00",
+  "updatedAt": "2026-07-10T09:00:00"
 }
 ```
 
-- **Validation (4 bước)**:
+| Field | Type | Ý nghĩa theo trạng thái |
+|---|---|---|
+| `status` | `BookingStatus` | `AWAITING_MENTOR` → `ROOM_CREATED` → `IN_PROGRESS` → `COMPLETED` (hoặc `CANCELLED`) |
+| `sessionKey` | String | UUID, chỉ sinh sau khi admin assign mentor |
+| `sessionId` | Integer | ID bản ghi Session, sinh sau assign mentor |
+| `mentorId` | Integer | ID mentor, sinh sau assign mentor |
 
-| #   | Điều kiện                                       | HTTP Status     | Message                           |
-| --- | ----------------------------------------------- | --------------- | --------------------------------- |
-| 1   | `applicationDetailId` tồn tại                   | `404 NOT FOUND` | "ApplicationDetail not found"     |
-| 2   | `kioskId` tồn tại                               | `404 NOT FOUND` | "Kiosk not found"                 |
-| 3   | Slot không trùng booking khác (trừ `CANCELLED`) | `409 CONFLICT`  | "Selected slot is already booked" |
-
-- **FE cần làm**: luôn fetch lại slots ở Bước 7.4 trước khi gửi pick-slot để tránh race condition.
-- **Những gì xảy ra khi thành công**:
-  1. Tạo `MentorInterviewBooking` với `status = AWAITING_MENTOR`.
-  2. Cập nhật `ApplicationDetail.bookingId = booking.id` (chỉ gán bookingId, **KHÔNG thay đổi status** của ApplicationDetail).
-  3. Trả về booking đã tạo.
-
-### 8.2 Lấy danh sách Booking theo status (Admin)
-
-- `GET /api/admin/mentor-bookings`
-- Query param: `status` (mặc định `AWAITING_MENTOR`).
-- Ví dụ: `GET /api/admin/mentor-bookings?status=ROOM_CREATED`
-- Response (HTTP 200): `List<MentorInterviewBooking>`
-
-### 8.3 Gán Mentor cho Booking (Admin)
-
-- `POST /api/admin/mentor-bookings/{bookingId}/assign-mentor`
-- **Quyền**: Admin.
-- Request:
-
+### 2.8. `AssignMentorDtoRequest`
 ```json
 {
-  "mentorId": 5,
-  "notes": "Phỏng vấn chuyên môn React & Spring Boot"
+  "mentorId": 3,
+  "notes": "Phỏng vấn vòng 2, tập trung vào system design"
 }
 ```
 
-- Response (HTTP 200):
+---
 
+## 3. CHI TIẾT ENDPOINT — LUỒNG TẠO KIOSK
+
+### 3.1. `GET /api/kiosks` — Lấy danh sách kiosk đang hoạt động
+
+**Ai dùng:** Public (Admin/Staff xem danh sách, Ứng viên xem để chọn)
+**Auth:** ❌ Không bắt buộc
+**Query:** Không có
+
+**Response 200:**
 ```json
 {
-  "id": 55,
-  "applicationDetailId": 12,
+  "traceId": "abc-xyz-123",
+  "data": [
+    {
+      "id": 1,
+      "name": "Kiosk A",
+      "location": "Tầng 1, Tòa A",
+      "isActive": true,
+      "createdAt": "2026-07-10T09:00:00"
+    }
+  ]
+}
+```
+
+**Logic UI:** Lưu vào state, hiển thị dropdown / list card để user chọn.
+
+---
+
+### 3.2. `POST /api/kiosks` — Tạo Kiosk mới
+
+**Ai dùng:** Admin
+**Auth:** ❌ (nên gửi JWT nếu có để track)
+
+**Request Body:**
+```json
+{
+  "name": "Kiosk A - Tầng 1",
+  "location": "FPT Software, Tầng 1, Tòa nhà A",
+  "isActive": true
+}
+```
+
+> Lưu ý: Field `isActive` dùng `boolean` (không phải `Boolean`), cần gửi đúng tên. Nếu dùng TypeScript:
+> ```ts
+> interface CreateKioskPayload {
+>   name: string;
+>   location: string;
+>   isActive: boolean;
+> }
+> ```
+
+**Response 200:**
+```json
+{
+  "id": 1,
+  "name": "Kiosk A - Tầng 1",
+  "location": "FPT Software, Tầng 1, Tòa nhà A",
+  "isActive": true,
+  "createdAt": "2026-07-10T09:00:00",
+  "traceId": "abc-xyz-123"
+}
+```
+
+**Lỗi có thể gặp:**
+- Không có lỗi validation cụ thể; chỉ fail nếu payload sai JSON.
+
+---
+
+### 3.3. `PUT /api/kiosks/{id}` — Cập nhật Kiosk
+
+**Path param:** `id` (Long) — ID kiosk cần sửa
+**Request Body:** (giống POST)
+```json
+{
+  "name": "Kiosk A - Tầng 1 (đã đổi tên)",
+  "location": "FPT Software, Tầng 1, Tòa nhà A",
+  "isActive": false
+}
+```
+
+**Response 200:**
+```json
+{
+  "id": 1,
+  "name": "Kiosk A - Tầng 1 (đã đổi tên)",
+  "location": "FPT Software, Tầng 1, Tòa nhà A",
+  "isActive": false,
+  "createdAt": "2026-07-10T09:00:00",
+  "traceId": "abc-xyz-123"
+}
+```
+
+**Lỗi 404:** `"Kiosk not found with id: {id}"`
+
+> ⚠️ Lưu ý: Backend **chỉ update** `name`, `location`, `isActive`. KHÔNG đụng vào `createdAt` và `id`.
+
+---
+
+## 4. CHI TIẾT ENDPOINT — LUỒNG TẠO LỊCH (SCHEDULE) CHO KIOSK
+
+### 4.1. `POST /api/kiosks/schedule` — Tạo lịch hoạt động định kỳ
+
+**Ai dùng:** Admin
+**Auth:** ❌ (nên gửi JWT nếu có)
+
+**Request Body:**
+```json
+{
+  "kioskId": 1,
+  "dayOfWeek": "MONDAY",
+  "openTime": "09:00:00",
+  "closeTime": "17:00:00",
+  "slotDurationMinutes": 60,
+  "isActive": true
+}
+```
+
+| Field | Kiểu TypeScript | Validate |
+|---|---|---|
+| `kioskId` | `number` | Phải tồn tại (ngược lại 404) |
+| `dayOfWeek` | `'MONDAY' \| 'TUESDAY' \| ... \| 'SUNDAY'` | Bắt buộc, đúng enum |
+| `openTime` | `string` (HH:mm:ss) | Bắt buộc, vd: `"09:00:00"` |
+| `closeTime` | `string` (HH:mm:ss) | Bắt buộc, **phải > openTime** (server không validate nhưng logic tạo slot sẽ rỗng) |
+| `slotDurationMinutes` | `number` | Bắt buộc, > 0 |
+| `isActive` | `boolean` | Bắt buộc |
+
+**Response 200:**
+```json
+{
+  "id": 1,
+  "kioskId": 1,
+  "dayOfWeek": "MONDAY",
+  "openTime": "09:00:00",
+  "closeTime": "17:00:00",
+  "slotDurationMinutes": 60,
+  "isActive": true,
+  "createdAt": "2026-07-10T09:00:00",
+  "traceId": "abc-xyz-123"
+}
+```
+
+**Lỗi 404:** `"Kiosk not found with id: {kioskId}"` — phải tạo kiosk trước khi tạo schedule.
+
+> 💡 Mẹo UI: Cho phép tạo nhiều schedule (1 cho mỗi thứ trong tuần). Server lấy schedule theo `dayOfWeek` tương ứng khi tính slot.
+
+---
+
+### 4.2. `GET /api/kiosks/{kioskId}/schedules` — Lấy danh sách lịch của 1 kiosk
+
+**Path param:** `kioskId` (Long)
+
+**Response 200:**
+```json
+{
+  "traceId": "abc-xyz-123",
+  "data": [
+    {
+      "id": 1,
+      "kioskId": 1,
+      "dayOfWeek": "MONDAY",
+      "openTime": "09:00:00",
+      "closeTime": "17:00:00",
+      "slotDurationMinutes": 60,
+      "isActive": true,
+      "createdAt": "2026-07-10T09:00:00"
+    },
+    {
+      "id": 2,
+      "kioskId": 1,
+      "dayOfWeek": "TUESDAY",
+      "openTime": "09:00:00",
+      "closeTime": "17:00:00",
+      "slotDurationMinutes": 60,
+      "isActive": true,
+      "createdAt": "2026-07-10T09:00:00"
+    }
+  ]
+}
+```
+
+---
+
+### 4.3. `PUT /api/kiosks/schedule/{id}` — Cập nhật lịch
+
+**Path param:** `id` (Long) — ID schedule
+**Request Body:** (giống POST)
+```json
+{
+  "kioskId": 1,
+  "dayOfWeek": "MONDAY",
+  "openTime": "08:00:00",
+  "closeTime": "18:00:00",
+  "slotDurationMinutes": 45,
+  "isActive": true
+}
+```
+
+**Response 200:**
+```json
+{
+  "id": 1,
+  "kioskId": 1,
+  "dayOfWeek": "MONDAY",
+  "openTime": "08:00:00",
+  "closeTime": "18:00:00",
+  "slotDurationMinutes": 45,
+  "isActive": true,
+  "createdAt": "2026-07-10T09:00:00",
+  "traceId": "abc-xyz-123"
+}
+```
+
+**Lỗi 404:** `"KioskSchedule not found with id: {id}"` hoặc `"Kiosk not found with id: {kioskId}"`
+
+---
+
+## 5. CHI TIẾT ENDPOINT — LUỒNG ỨNG VIÊN CHỌN SLOT (nối tiếp)
+
+### 5.1. `GET /api/kiosks/{kioskId}/slots?date=YYYY-MM-DD` — Lấy slot trống
+
+**Path param:** `kioskId` (Long)
+**Query param:** `date` (LocalDate, bắt buộc, format `yyyy-MM-dd`)
+
+**Ví dụ:**
+```
+GET /api/kiosks/1/slots?date=2026-07-15
+```
+
+**Response 200:**
+```json
+{
+  "traceId": "abc-xyz-123",
+  "data": [
+    { "startTime": "2026-07-15T09:00:00", "endTime": "2026-07-15T10:00:00", "available": true },
+    { "startTime": "2026-07-15T10:15:00", "endTime": "2026-07-15T11:15:00", "available": true },
+    { "startTime": "2026-07-15T11:30:00", "endTime": "2026-07-15T12:30:00", "available": false },
+    { "startTime": "2026-07-15T13:45:00", "endTime": "2026-07-15T14:45:00", "available": true }
+  ]
+}
+```
+
+> ⚠️ **Quan trọng:** Server tự cộng `slotDurationMinutes + 15 phút nghỉ` giữa các slot. UI **chỉ cần hiển thị** `startTime` - `endTime` lấy từ server, **không tự tính**.
+
+**Lỗi 404:** `"Kiosk not found with id: {kioskId}"` — Kiosk chưa tồn tại.
+**Trả về rỗng (`data: []`):** nếu ngày đó không có schedule (`schedules.isEmpty()`).
+
+---
+
+### 5.2. `POST /api/mentor-bookings/pick-slot` — Ứng viên đặt slot
+
+**Auth:** ✅ Cần JWT (lấy `userId` từ token)
+**Request Body:**
+```json
+{
+  "applicationDetailId": 10,
+  "kioskId": 1,
+  "scheduledStart": "2026-07-15T09:00:00",
+  "scheduledEnd": "2026-07-15T10:00:00"
+}
+```
+
+| Field | Bắt buộc | Mô tả |
+|---|---|---|
+| `applicationDetailId` | ✅ | Lấy từ `GET /api/applications/me` → `GET /api/application-details/application/{id}` |
+| `kioskId` | ✅ | ID kiosk |
+| `scheduledStart` | ✅ | Lấy nguyên từ `SlotDto.startTime` |
+| `scheduledEnd` | ✅ | Lấy nguyên từ `SlotDto.endTime` |
+
+**Response 200:**
+```json
+{
+  "id": 5,
+  "applicationDetailId": 10,
   "kioskId": 1,
   "applicantUserId": 7,
-  "scheduledStart": "2026-07-10T10:00:00",
-  "scheduledEnd": "2026-07-10T10:45:00",
-  "mentorId": 5,
-  "sessionId": 88,
-  "status": "ROOM_CREATED",
-  "sessionKey": "e0e2d148-8df0-4bbf-b75b-ec86b5b5ee24",
-  "notes": "Phỏng vấn chuyên môn React & Spring Boot",
-  "createdAt": "2026-07-08T11:00:00",
-  "updatedAt": "2026-07-08T11:30:00"
+  "scheduledStart": "2026-07-15T09:00:00",
+  "scheduledEnd": "2026-07-15T10:00:00",
+  "mentorId": null,
+  "sessionId": null,
+  "status": "AWAITING_MENTOR",
+  "sessionKey": null,
+  "notes": null,
+  "createdAt": "2026-07-10T09:00:00",
+  "updatedAt": "2026-07-10T09:00:00",
+  "traceId": "abc-xyz-123"
 }
 ```
 
-- **Validation (4 bước)**:
+**Lỗi:**
+- `404` `"ApplicationDetail not found"` — applicationDetailId sai
+- `404` `"Kiosk not found"` — kioskId sai
+- `409` `"Selected slot is already booked"` — có người vừa đặt trước (race condition)
+- `401` `"Unauthorized"` — thiếu JWT
 
-| #   | Điều kiện                                           | HTTP Status                 | Message                                             |
-| --- | --------------------------------------------------- | --------------------------- | --------------------------------------------------- |
-| 1   | `bookingId` tồn tại                                 | `404 NOT FOUND`             | "Booking not found"                                 |
-| 2   | Booking phải có `status = AWAITING_MENTOR`          | `400 BAD_REQUEST`           | "Booking is not in AWAITING_MENTOR status"          |
-| 3   | Mentor không có booking trùng giờ (trừ `CANCELLED`) | `409 CONFLICT`              | "Mentor has another interview booking at this time" |
-| 4   | Gọi Daily.co tạo phòng thành công                   | `500 INTERNAL_SERVER_ERROR` | "Error creating Daily.co session: ..."              |
+---
 
-- **Những gì xảy ra khi thành công (9 bước)**:
-  1. Tạo Session trên Daily.co (privacy: public, max_participants: 2, recording: cloud, exp = scheduledEnd + 3600s).
-  2. Lưu Session vào DB với `status = DRAFT`.
-  3. Cập nhật Session: `sessionKey = UUID.randomUUID()`, `kioskId`, `status = SCHEDULED`.
-  4. Cập nhật Booking: `mentorId`, `sessionId`, `sessionKey`, `status = ROOM_CREATED`, `notes`.
-  5. Cập nhật `ApplicationDetail`: `sessionId = session.id`, **`status = SLOT_PICKED`** (đây là bước đã được fix).
-  6. Gửi Notification cho Ứng viên (async): title `"Lịch phỏng vấn Mentor Interview"`, message chứa `sessionKey`.
+### 5.3. `GET /api/applications/me` — Lấy application của tôi (để lấy applicationDetailId)
 
-### 8.4 Hủy / đổi lịch (Ứng viên hoặc Admin)
+**Auth:** ✅ Cần JWT
 
-- `DELETE /api/mentor-bookings/{bookingId}`
-- **Quyền**: Ứng viên sở hữu booking HOẶC Admin/Staff.
-- Response: HTTP 200 (empty body)
-- Validation:
-
-| #   | Điều kiện                                       | HTTP Status        |
-| --- | ----------------------------------------------- | ------------------ |
-| 1   | Booking tồn tại                                 | `404 NOT FOUND`    |
-| 2   | Ứng viên: `applicantUserId` khớp userId từ JWT  | `401 UNAUTHORIZED` |
-| 3   | Người khác: role phải là ADMIN hoặc STAFF       | `401 UNAUTHORIZED` |
-| 4   | Booking không được `COMPLETED` hoặc `CANCELLED` | `400 BAD_REQUEST`  |
-
-- **Những gì xảy ra khi thành công**:
-  1. Nếu có `sessionId`: cập nhật `Session.status = CANCELED`, xóa phòng trên Daily.co.
-  2. Cập nhật `Booking.status = CANCELLED`.
-  3. Cập nhật `ApplicationDetail`: `status = PENDING`, `bookingId = null`, `sessionId = null`.
-- **FE cần làm**: sau khi hủy, ứng viên có thể quay lại bước 7.4 để chọn slot mới.
-
-### 8.5 Xác thực tại Kiosk để lấy link phòng
-
-- `POST /api/kiosk/enter`
-- **Quyền**: công khai.
-- Request:
-
+**Response 200:**
 ```json
 {
-  "sessionKey": "e0e2d148-8df0-4bbf-b75b-ec86b5b5ee24",
+  "traceId": "abc-xyz-123",
+  "data": [
+    {
+      "id": 1,
+      "userId": 7,
+      "jdId": 3,
+      "currentRoundOrder": 2,
+      "status": "IN_PROGRESS",
+      "overallScore": -1.0,
+      "isDeleted": false,
+      "createdAt": "2026-06-01T09:00:00",
+      "updatedAt": "2026-07-10T09:00:00"
+    }
+  ]
+}
+```
+
+### 5.4. `GET /api/application-details/application/{applicationId}` — Lấy các vòng thi
+
+**Response 200:**
+```json
+{
+  "traceId": "abc-xyz-123",
+  "data": [
+    {
+      "id": 10,
+      "applicationId": 1,
+      "roundId": 5,
+      "status": "PENDING",
+      "finalScore": null,
+      "aiScore": null,
+      "hrScore": null,
+      "hrNote": null,
+      "finalResult": null,
+      "sessionId": null,
+      "bookingId": null,
+      "startedAt": "2026-07-10T09:00:00",
+      "completedAt": null
+    }
+  ]
+}
+```
+
+> **Mẹo UI ứng viên:** Khi hiển thị form đặt lịch, lấy `applicationDetailId` từ `data` trả về (lọc theo vòng mà user được phép đặt kiosk).
+
+---
+
+## 6. CHI TIẾT ENDPOINT — LUỒNG ADMIN GÁN MENTOR + ỨNG VIÊN VÀO PHÒNG
+
+### 6.1. `GET /api/admin/mentor-bookings?status=AWAITING_MENTOR` — Lấy danh sách booking theo trạng thái
+
+**Auth:** ✅ Cần JWT (ADMIN/STAFF)
+**Query param:** `status` (mặc định `AWAITING_MENTOR`, có thể bỏ qua)
+
+**Response 200:**
+```json
+{
+  "traceId": "abc-xyz-123",
+  "data": [
+    {
+      "id": 5,
+      "applicationDetailId": 10,
+      "kioskId": 1,
+      "applicantUserId": 7,
+      "scheduledStart": "2026-07-15T09:00:00",
+      "scheduledEnd": "2026-07-15T10:00:00",
+      "mentorId": null,
+      "sessionId": null,
+      "status": "AWAITING_MENTOR",
+      "sessionKey": null,
+      "notes": null,
+      "createdAt": "2026-07-10T09:00:00",
+      "updatedAt": "2026-07-10T09:00:00"
+    }
+  ]
+}
+```
+
+### 6.2. `POST /api/admin/mentor-bookings/{bookingId}/assign-mentor` — Gán mentor
+
+**Auth:** ✅ Cần JWT (ADMIN)
+**Path param:** `bookingId` (Long)
+**Request Body:**
+```json
+{
+  "mentorId": 3,
+  "notes": "Phỏng vấn vòng 2"
+}
+```
+
+**Response 200:** (toàn bộ object `MentorInterviewBooking` đã update)
+```json
+{
+  "id": 5,
+  "applicationDetailId": 10,
+  "kioskId": 1,
+  "applicantUserId": 7,
+  "scheduledStart": "2026-07-15T09:00:00",
+  "scheduledEnd": "2026-07-15T10:00:00",
+  "mentorId": 3,
+  "sessionId": 12,
+  "status": "ROOM_CREATED",
+  "sessionKey": "550e8400-e29b-41d4-a716-446655440000",
+  "notes": "Phỏng vấn vòng 2",
+  "createdAt": "2026-07-10T09:00:00",
+  "updatedAt": "2026-07-10T09:00:00",
+  "traceId": "abc-xyz-123"
+}
+```
+
+**Lỗi:**
+- `400` `"Booking is not in AWAITING_MENTOR status"` — booking đã được xử lý
+- `409` `"Mentor has another interview booking at this time"` — mentor bận
+- `500` `"Error creating Daily.co session: ..."` — lỗi gọi Daily.co
+
+> Sau khi thành công, **server tự gửi Notification** cho ứng viên với message:
+> `"Bạn đã được xếp lịch phỏng vấn tại Kiosk {kioskId} vào lúc {scheduledStart}. Session Key để vào phòng là: {sessionKey}"`
+
+### 6.3. `GET /api/notifications/{userId}` — Ứng viên poll notification để lấy sessionKey
+
+**Response 200:**
+```json
+{
+  "traceId": "abc-xyz-123",
+  "data": [
+    {
+      "id": 1,
+      "user": { "id": 7, ... },
+      "title": "Lịch phỏng vấn Mentor Interview",
+      "message": "Bạn đã được xếp lịch phỏng vấn tại Kiosk 1 vào lúc 2026-07-15T09:00. Session Key để vào phòng là: 550e8400-e29b-41d4-a716-446655440000",
+      "isRead": false,
+      "createAt": "2026-07-10T09:00:00"
+    }
+  ]
+}
+```
+
+> **Mẹo FE:** Parse `message` để extract `sessionKey` (regex: `Session Key.+là:\s*([a-f0-9-]+)`).
+
+---
+
+### 6.4. `POST /api/kiosk/enter` — Kiosk vật lý xác thực sessionKey
+
+**Auth:** ❌ Public (kiosk vật lý gọi)
+**Request Body:**
+```json
+{
+  "sessionKey": "550e8400-e29b-41d4-a716-446655440000",
   "kioskId": 1
 }
 ```
 
-- Response (HTTP 200):
-
+**Response 200:**
 ```json
 {
-  "roomUrl": "https://inblue.daily.co/session-1752012345678"
+  "roomUrl": "https://inblue.daily.co/abc-xyz-123",
+  "traceId": "abc-xyz-123"
 }
 ```
 
-- **Validation (5 bước)**:
-
-| #   | Điều kiện                                                            | HTTP Status       | Message                                                                                          |
-| --- | -------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------ |
-| 1   | `sessionKey` tồn tại trong bảng Session                              | `400 BAD_REQUEST` | "Invalid session key"                                                                            |
-| 2   | `sessionKey` có booking tương ứng                                    | `404 NOT FOUND`   | "Booking not found for this session key"                                                         |
-| 3   | Booking không được `CANCELLED`                                       | `400 BAD_REQUEST` | "Booking has been cancelled"                                                                     |
-| 4   | `kioskId` phải khớp với `booking.kioskId`                            | `400 BAD_REQUEST` | "Session key is registered for Kiosk {booking.kioskId}"                                          |
-| 5   | Thời gian hiện tại trong khoảng **±15 phút** so với `scheduledStart` | `400 BAD_REQUEST` | "You can only enter the Kiosk within 15 minutes of your scheduled start time ({scheduledStart})" |
-
-- **Những gì xảy ra khi thành công**:
-  1. Cập nhật `Session.status = ONGOING`, `Session.startTime1 = now`.
-  2. Cập nhật `Booking.status = IN_PROGRESS`.
-  3. Trả về `roomUrl`.
-- **FE cần làm**: lấy `roomUrl` nhúng vào Daily.co iframe để ứng viên tham gia. Hiển thị đồng hồ đếm ngược nếu chưa đến giờ.
+**Lỗi:**
+- `400` `"Invalid session key"` — sessionKey không tồn tại
+- `400` `"Booking has been cancelled"` — booking đã hủy
+- `400` `"Session key is registered for Kiosk {kioskId}"` — kioskId không khớp
+- `400` `"You can only enter the Kiosk within 15 minutes of your scheduled start time (...)"` — ngoài khung giờ ±15 phút
+- `404` `"Booking not found for this session key"`
 
 ---
 
-## 9. SESSION
+## 7. Các endpoint phụ trợ cần dùng
 
-### 9.1 Lấy danh sách Session
+### 7.1. `POST /api/auth/login` — Đăng nhập (lấy JWT)
 
-- `GET /api/sessions` -> `List<Session>`
-
-### 9.2 Lấy Session theo ID
-
-- `GET /api/sessions/{id}` -> `Session`
-
-### 9.3 Lấy Sessions theo userId
-
-- `GET /api/sessions/{userId}/by-user` -> `List<Session>`
-
-### 9.4 Cập nhật Session
-
-- `PUT /api/sessions` body `Session` -> `Session`
-
-### 9.5 Tạo Session
-
-- `POST /api/sessions/create-session`
-- Request:
-
+**Request Body:**
 ```json
-{
-  "dailyCoCreationRequest": {
-    "name": "",
-    "privacy": "public",
-    "properties": {
-      "max_participants": 2,
-      "start_video_off": true,
-      "start_audio_off": true,
-      "enable_screenshare": true,
-      "exp": 120,
-      "enable_recording": "cloud"
-    }
-  },
-  "userId": 1,
-  "mentorId": 1
-}
+{ "email": "user@example.com", "password": "password123" }
 ```
 
-- Response: `SessionResponse`
-
-### 9.6 Ghi nhận tham gia phòng (Join Record)
-
-- `POST /api/sessions/join-session`
-- **Khi nào gọi**: Khi FE bắt được sự kiện participant tham gia thành công vào Daily.co room. Thông tin từ Daily.co SDK event.
-- Request:
-
+**Response 200:**
 ```json
-{
-  "sessionName": "session-1752012345678",
-  "userId": 7,
-  "participantId": "p_abc123xyz",
-  "isMentor": false
-}
+"<chuỗi JWT token thuần>"
 ```
+> Response trả về **chuỗi thuần**, **KHÔNG** bọc `{ traceId, data }` (vì là String).
 
-- `sessionName`: là `roomName` của phòng (ví dụ: `"session-1752012345678"`).
-- `isMentor = false`: ứng viên tham gia.
-- `isMentor = true`: mentor tham gia.
-- Response: HTTP 200 (empty body)
-- **Validation**:
+**Header trả về:** `Authorization: Bearer <token>`
 
-| #   | Điều kiện                                                   | HTTP Status     | Message                            |
-| --- | ----------------------------------------------------------- | --------------- | ---------------------------------- |
-| 1   | `sessionName` tồn tại trong bảng Session                    | `404 NOT FOUND` | "Không tìm thấy phòng họp !!"      |
-| 2   | Session không được ở trạng thái `DRAFT`                     | `409 CONFLICT`  | "Phòng họp chưa được duyệt"        |
-| 3   | Nếu `isMentor = true`: `userId` phải khớp `session.userId2` | `403 FORBIDDEN` | "Mentor ID không khớp với Session" |
-| 4   | Nếu `isMentor = false`: `userId` phải khớp `session.userId` | `403 FORBIDDEN` | "User ID không khớp với Session"   |
+### 7.2. `GET /api/mentors` — Lấy danh sách mentor (admin dùng để gán)
 
-- **Những gì xảy ra khi thành công**:
-  - Ứng viên (`isMentor = false`): `session.participantId1`, `session.status = ONGOING` (nếu chưa), `session.startTime1 = now`.
-  - Mentor (`isMentor = true`): `session.participantId2`, `session.startTime2 = now`.
-
-### 9.7 Daily.co Webhook
-
-- `POST /api/sessions/webhooks/dailyco`
-- **Trigger**: Daily.co phát sự kiện `participant.left`.
-- **FE không cần gọi** - đây là webhook server-to-server.
-- Logic: tìm Session theo `roomName`, ghi nhận `endTime`, tính `durationSeconds`. Nếu cả 2 người đều đã rời -> `session.status = COMPLETED`, publish event tính phí `MENTOR_INTERVIEW`.
-
-### 9.8 Cập nhật trạng thái Session
-
-- `GET /api/sessions/update-status?sessionId=&isApproved=` -> HTTP 200
-
-### 9.9 Tạo thanh toán Session
-
-- `GET /api/sessions/make-payment?sessionId=` -> `String paymentUrl`
-
----
-
-## 10. APPLICATION + SUBMISSION
-
-### 10.1 Tạo Application (Ứng viên ứng tuyển JD)
-
-- `POST /api/applications?jdId=...` -> `Application`
-
-### 10.2 Lấy tất cả Application
-
-- `GET /api/applications` -> `List<Application>`
-
-### 10.3 Lấy Application theo ID
-
-- `GET /api/applications/{id}` -> `Application`
-
-### 10.4 Lấy Applications của user hiện tại
-
-- `GET /api/applications/me` -> `List<Application>`
-- **Quyền**: hiện đang `permitAll` (nhưng nên dùng JWT).
-
-### 10.5 Nộp bài (Submit)
-
-- `POST /api/application-details/submit` (multipart/form-data)
-- Request:
-
-| Part             | Kiểu                   | Mô tả                                                                                              |
-| ---------------- | ---------------------- | -------------------------------------------------------------------------------------------------- |
-| `applicationId`  | Long                   | Bắt buộc                                                                                           |
-| `textContent`    | String                 | Dùng cho vòng tự luận, email                                                                       |
-| `file`           | MultipartFile          | Optional, dùng cho vòng upload file                                                                |
-| `quizAnswers`    | List\<String\>         | Dùng cho vòng QUIZ                                                                                 |
-| `compileRequest` | List\<CompileRequest\> | Dùng cho vòng Coding, mỗi item: `{"problemId":1,"language":"JAVA","sourceCode":"...","test":true}` |
-
-- Response: `SubmissionResult`
-- **Lưu ý**: frontend nên gửi từng object JSON hoàn chỉnh trong `compileRequest`, không phụ thuộc Swagger reassemble.
-
-### 10.6 Chấm bài Code Review
-
-- `POST /api/application-details/code-review/evaluate`
-- Request:
-
+**Response 200:** (List `MentorResponse`)
 ```json
 {
-  "applicationId": 1,
-  "roundId": 1,
-  "submissions": [
+  "traceId": "abc-xyz-123",
+  "data": [
     {
-      "filename": "Main.java",
-      "lineNumber": 10,
-      "severity": "CRITICAL",
-      "description": "..."
+      "id": 3,
+      "name": "Nguyễn Văn A",
+      "email": "a@example.com",
+      "bio": "Senior Backend Engineer",
+      "avatarUrl": "https://...",
+      "expertise": "Java, Spring Boot",
+      "yearsOfExperience": 8,
+      "linkedInUrl": "https://linkedin.com/in/...",
+      "currentCompany": "FPT",
+      "totalSession": 120,
+      "averageRating": 4.8,
+      "pricePerMinute": 1000,
+      "isActive": true,
+      "role": "MENTOR"
     }
   ]
 }
 ```
 
-- Response: `ApplicationDetail`
+### 7.3. `DELETE /api/mentor-bookings/{bookingId}` — Hủy booking
 
-### 10.7 HR chấm điểm
+**Auth:** ✅ Cần JWT (USER sở hữu hoặc ADMIN/STAFF)
 
-- `POST /api/application-details/hr-score?applicationDetailId=&isPass=&note=&score=`
-- Response: HTTP 200
+**Response 200:** Empty body
 
-### 10.8 Lấy ApplicationDetail
-
-- `GET /api/application-details/{id}` -> `ApplicationDetail`
-- `GET /api/application-details/application/{applicationId}` -> `List<ApplicationDetail>`
-- `GET /api/application-details/reviewer` -> `List<ApplicationDetail>` (lấy các vòng được gán cho staff hiện tại)
+**Lỗi:**
+- `400` `"Cannot cancel booking in current state"` — booking đã COMPLETED/CANCELLED
+- `401` `"Unauthorized to cancel this booking"` — không phải chủ booking
 
 ---
 
-## 11. JD + ROUND
+## 8. Bảng trạng thái & quy tắc UI
 
-### 11.1 Job Description
-
-#### Lấy tất cả JD
-
-- `GET /api/job-descriptions` -> `List<JobDescription>`
-
-#### Lấy JD theo ID
-
-- `GET /api/job-descriptions/{id}` -> `JobDescription`
-
-#### Lấy JD theo Company
-
-- `GET /api/job-descriptions/company/{companyId}` -> `List<JobDescription>`
-
-#### Tạo JD
-
-- `POST /api/job-descriptions`
-- Request:
-
-```json
-{
-  "title": "Senior Java Developer",
-  "description": "Mô tả công việc...",
-  "requirements": "Yêu cầu...",
-  "benefits": "Quyền lợi...",
-  "level": "Senior",
-  "salaryMin": 2000,
-  "salaryMax": 4000,
-  "currency": "USD",
-  "status": "OPEN",
-  "deadlineAt": "2026-12-31T23:59:59",
-  "companyId": 1
-}
+### 8.1. `BookingStatus` flow
+```
+AWAITING_MENTOR  (sau pickSlot)
+       ↓  admin gọi assignMentor
+ROOM_CREATED     (có sessionKey, có phòng Daily.co)
+       ↓  kiosk xác thực enterKiosk (±15 phút)
+IN_PROGRESS      (cuộc họp đang diễn ra)
+       ↓  daily.co webhook participant.left
+COMPLETED
+       
+Bất kỳ lúc nào (trừ COMPLETED/CANCELLED) → CANCELLED
 ```
 
-- Response: `JobDescription` (HTTP 201)
+### 8.2. UI gợi ý cho AI Frontend
 
-#### Cập nhật JD
+| Màn hình | Endpoint chính | Hành động |
+|---|---|---|
+| **Admin: Quản lý Kiosk** | `GET /api/kiosks` | Bảng liệt kê, có nút Edit (gọi `PUT`) |
+| **Admin: Tạo Kiosk** | `POST /api/kiosks` | Form: name, location, isActive (toggle) |
+| **Admin: Quản lý lịch Kiosk** | `GET /api/kiosks/{id}/schedules` | Bảng theo `dayOfWeek` |
+| **Admin: Tạo lịch Kiosk** | `POST /api/kiosks/schedule` | Form: kioskId (dropdown), dayOfWeek (select), openTime, closeTime (time picker), slotDurationMinutes (number input), isActive |
+| **Ứng viên: Chọn Kiosk** | `GET /api/kiosks` | Card / dropdown |
+| **Ứng viên: Chọn ngày & slot** | `GET /api/kiosks/{id}/slots?date=YYYY-MM-DD` | Date picker + grid slot, slot `available: false` disabled |
+| **Ứng viên: Xác nhận đặt lịch** | `POST /api/mentor-bookings/pick-slot` | Modal confirm, sau khi OK thì show trạng thái "Đang chờ xếp Mentor" |
+| **Admin: Gán Mentor** | `POST /api/admin/mentor-bookings/{id}/assign-mentor` | Dropdown chọn mentor từ `GET /api/mentors`, ô notes |
+| **Ứng viên: Chờ notification** | `GET /api/notifications/{userId}` (polling 10s) | Lấy `sessionKey` từ message |
+| **Kiosk vật lý: Nhập sessionKey** | `POST /api/kiosk/enter` | Form: sessionKey (text), kioskId (auto-fill từ máy), sau khi OK thì mở `roomUrl` trong iframe/new tab |
 
-- `PUT /api/job-descriptions` body tương tự POST có `id`
+---
 
-#### Xóa mềm JD
+## 9. Helper — gọi API từ Frontend (TypeScript mẫu)
 
-- `DELETE /api/job-descriptions/{id}/soft` -> `{"message":"Xóa mô tả công việc thành công"}`
+```ts
+// ===== TYPES =====
+type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+type BookingStatus = 'AWAITING_MENTOR' | 'MENTOR_ASSIGNED' | 'ROOM_CREATED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
-#### Tìm kiếm JD
-
-- `GET /api/job-descriptions/search?titleKeyword=&status=&level=&salaryMin=&salaryMax=`
-
-### 11.2 Round
-
-#### Thiết lập Rounds cho JD
-
-- `PUT /api/rounds/jd/{jdId}`
-- Request:
-
-```json
-{
-  "rounds": [
-    {
-      "name": "Technical Interview",
-      "roundOrder": 1,
-      "roundType": "CODE",
-      "passThreshold": 70,
-      "reviewerId": 1,
-      "configData": {
-        "instruction": "Hướng dẫn nộp bài",
-        "submissionFormat": "text",
-        "timeLimitMinutes": 60,
-        "maxScore": 100,
-        "aiSystemPrompt": "System prompt cho AI chấm điểm",
-        "evaluationCriteria": "Tiêu chí đánh giá",
-        "quizQuestions": [],
-        "codingProblemsId": [1, 2],
-        "codeReviewIds": [1]
-      }
-    }
-  ]
+interface Kiosk {
+  id: number;
+  name: string;
+  location: string;
+  isActive: boolean;
+  createdAt: string;
 }
+
+interface KioskSchedule {
+  id: number;
+  kioskId: number;
+  dayOfWeek: DayOfWeek;
+  openTime: string;       // "09:00:00"
+  closeTime: string;
+  slotDurationMinutes: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+interface SlotDto {
+  startTime: string;      // "2026-07-15T09:00:00"
+  endTime: string;
+  available: boolean;
+}
+
+interface MentorInterviewBooking {
+  id: number;
+  applicationDetailId: number;
+  kioskId: number;
+  applicantUserId: number;
+  scheduledStart: string;
+  scheduledEnd: string;
+  mentorId: number | null;
+  sessionId: number | null;
+  status: BookingStatus;
+  sessionKey: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApplicationDetail {
+  id: number;
+  applicationId: number;
+  roundId: number;
+  status: 'PENDING' | 'SLOT_PICKED' | 'SUBMITTED' | 'AI_EVALUATED' | 'COMPLETED' | 'ERROR';
+  bookingId: number | null;
+  sessionId: number | null;
+  // ... các field khác
+}
+
+// ===== FETCH HELPER =====
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = localStorage.getItem('jwt');
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init.headers,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  // Nếu response là List → unwrap data; nếu là object thì trả nguyên (có traceId thừa)
+  const json = await res.json();
+  return (json && Array.isArray(json.data)) ? json.data : json;
+}
+
+// ===== KIOSK APIs =====
+
+// Admin: lấy tất cả kiosk (kể cả inactive nếu cần, nhưng GET public chỉ trả active)
+export const getActiveKiosks = () =>
+  apiFetch<Kiosk[]>('/api/kiosks');
+
+// Admin: tạo kiosk
+export const createKiosk = (payload: { name: string; location: string; isActive: boolean }) =>
+  apiFetch<Kiosk>('/api/kiosks', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+// Admin: cập nhật kiosk
+export const updateKiosk = (id: number, payload: { name: string; location: string; isActive: boolean }) =>
+  apiFetch<Kiosk>(`/api/kiosks/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+// Admin: tạo schedule
+export const createSchedule = (payload: {
+  kioskId: number;
+  dayOfWeek: DayOfWeek;
+  openTime: string;
+  closeTime: string;
+  slotDurationMinutes: number;
+  isActive: boolean;
+}) =>
+  apiFetch<KioskSchedule>('/api/kiosks/schedule', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+// Lấy schedules theo kiosk
+export const getSchedulesByKiosk = (kioskId: number) =>
+  apiFetch<KioskSchedule[]>(`/api/kiosks/${kioskId}/schedules`);
+
+// Cập nhật schedule
+export const updateSchedule = (id: number, payload: {
+  kioskId: number;
+  dayOfWeek: DayOfWeek;
+  openTime: string;
+  closeTime: string;
+  slotDurationMinutes: number;
+  isActive: boolean;
+}) =>
+  apiFetch<KioskSchedule>(`/api/kiosks/schedule/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+// Ứng viên: lấy slot trống theo ngày
+export const getAvailableSlots = (kioskId: number, date: string /* YYYY-MM-DD */) =>
+  apiFetch<SlotDto[]>(`/api/kiosks/${kioskId}/slots?date=${date}`);
+
+// Ứng viên: đặt slot
+export const pickSlot = (payload: {
+  applicationDetailId: number;
+  kioskId: number;
+  scheduledStart: string;
+  scheduledEnd: string;
+}) =>
+  apiFetch<MentorInterviewBooking>('/api/mentor-bookings/pick-slot', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+// Ứng viên: lấy applications của tôi
+export const getMyApplications = () =>
+  apiFetch<{ id: number; userId: number; jdId: number; currentRoundOrder: number; status: string }[]>(
+    '/api/applications/me'
+  );
+
+// Lấy application details
+export const getApplicationDetails = (applicationId: number) =>
+  apiFetch<ApplicationDetail[]>(`/api/application-details/application/${applicationId}`);
+
+// Admin: lấy booking theo status
+export const getBookingsByStatus = (status: BookingStatus = 'AWAITING_MENTOR') =>
+  apiFetch<MentorInterviewBooking[]>(`/api/admin/mentor-bookings?status=${status}`);
+
+// Admin: gán mentor
+export const assignMentor = (bookingId: number, payload: { mentorId: number; notes: string }) =>
+  apiFetch<MentorInterviewBooking>(`/api/admin/mentor-bookings/${bookingId}/assign-mentor`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+// Kiosk: xác thực sessionKey
+export const enterKiosk = (payload: { sessionKey: string; kioskId: number }) =>
+  apiFetch<{ roomUrl: string }>('/api/kiosk/enter', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+// Lấy mentors (cho dropdown gán)
+export const getAllMentors = () =>
+  apiFetch<{ id: number; name: string; email: string; bio?: string; avatarUrl?: string }[]>(
+    '/api/mentors'
+  );
+
+// Ứng viên: lấy notification
+export const getMyNotifications = (userId: number) =>
+  apiFetch<{ id: number; title: string; message: string; isRead: boolean; createAt: string }[]>(
+    `/api/notifications/${userId}`
+  );
 ```
 
-#### Lấy danh sách RoundType
+---
 
-- `GET /api/rounds` -> `List<RoundType>`
+## 10. Checklist code Frontend cho AI
 
-#### Cập nhật Rounds
+Khi AI nhận yêu cầu "code UI quản lý kiosk + lịch kiosk", AI cần làm theo đúng các bước sau:
 
-- `PUT /api/rounds/jd/{jdId}/update` body tương tự setup
-
-#### Tạo câu hỏi whiteboard bằng AI
-
-- `POST /api/rounds/generate-whiteboard-question` body: `string hrIdea` -> `WhiteboardQuestionDto`
-
-#### Lấy Round theo application order
-
-- `GET /api/rounds/find-by-application-order/{applicationId}` -> `Round`
+1. **Setup base fetch** (xem Helper ở mục 9).
+2. **Trang Admin → Kiosk**:
+   - Bảng list (`getActiveKiosks`) + nút "Tạo Kiosk" mở modal form gọi `createKiosk`.
+   - Mỗi row có nút "Sửa" mở form prefill gọi `updateKiosk`.
+3. **Trang Admin → Schedule của 1 Kiosk**:
+   - Bảng list (`getSchedulesByKiosk(kioskId)`) + nút "Tạo lịch" mở form.
+   - Form: dropdown chọn `dayOfWeek`, time picker `openTime`/`closeTime`, number input `slotDurationMinutes`, toggle `isActive`. Submit gọi `createSchedule`.
+   - Mỗi row có nút "Sửa" gọi `updateSchedule(id, ...)`.
+4. **Trang Ứng viên → Đặt lịch phỏng vấn Mentor**:
+   - Bước 1: Gọi `getMyApplications` → `getApplicationDetails(applicationId)` → lưu `applicationDetailId` cho vòng mà user được phép đặt.
+   - Bước 2: Gọi `getActiveKiosks` → user chọn 1 kiosk.
+   - Bước 3: Date picker → gọi `getAvailableSlots(kioskId, date)` → render grid slot (slot `available: false` disabled).
+   - Bước 4: User click slot → confirm modal → gọi `pickSlot({ applicationDetailId, kioskId, scheduledStart, scheduledEnd })` → show trạng thái "Đang chờ xếp Mentor".
+5. **Trang Admin → Gán Mentor**:
+   - Bảng list `getBookingsByStatus('AWAITING_MENTOR')`.
+   - Mỗi row có dropdown chọn mentor (từ `getAllMentors`) + ô notes → gọi `assignMentor(bookingId, { mentorId, notes })`.
+6. **Trang Ứng viên → Lấy sessionKey** (polling 10s):
+   - Gọi `getMyNotifications(userId)` → tìm notification có title "Lịch phỏng vấn Mentor Interview" → extract `sessionKey` từ message.
+   - Hiển thị `sessionKey` cho ứng viên + hướng dẫn "Đem mã này đến kiosk".
+7. **Trang Kiosk vật lý → Nhập sessionKey**:
+   - Form: input `sessionKey`, `kioskId` (cố định trong config kiosk) → gọi `enterKiosk({ sessionKey, kioskId })` → nhận `roomUrl` → mở tab mới hoặc iframe để join Daily.co.
 
 ---
 
-## 12. USER + COMPANY
+## 11. Lỗi thường gặp & cách xử lý
 
-### 12.1 User
-
-#### Lấy tất cả User
-
-- `GET /api/users` -> `List<User>`
-
-#### Lấy User theo ID
-
-- `GET /api/users/{id}` -> `User`
-
-#### Lấy UserResponse theo userId
-
-- `GET /api/users/find-by-id/{userId}` -> `UserResponse`
-
-#### Tạo/Cập nhật User (multipart)
-
-- `POST /api/users` multipart:
-  - `data`: JSON `UserInfo`
-  - `avatar`: optional MultipartFile
-- Tạo: không có `id` trong data. Cập nhật: có `id` trong data.
-
-#### Upload CV
-
-- `POST /api/users/upload-cv` multipart:
-  - `userId`: int
-  - `cvFile`: MultipartFile (optional)
-- Response: `CandidateProfile`
-
-### 12.2 Company
-
-#### Tạo Company (multipart)
-
-- `POST /api/companies`:
-  - `data`: JSON
-  - `logo`: optional MultipartFile
-  - `banner`: optional MultipartFile
-- Response: `Company`
-
-#### Cập nhật Company
-
-- `PUT /api/companies` multipart tương tự
-
-#### Lấy Company
-
-- `GET /api/companies/{id}` -> `Company`
-- `GET /api/companies` -> `List<Company>`
-
-#### Xóa Company
-
-- `DELETE /api/companies/{id}` -> HTTP 204
+| Lỗi từ server | HTTP | Cách xử lý UI |
+|---|---|---|
+| `"Kiosk not found with id: {id}"` | 404 | Hiển thị "Kiosk không tồn tại" → refresh list |
+| `"KioskSchedule not found with id: {id}"` | 404 | Hiển thị "Lịch không tồn tại" → refresh |
+| `"ApplicationDetail not found"` | 404 | Hiển thị "Vòng thi không hợp lệ" |
+| `"Selected slot is already booked"` | 409 | Refresh lại slot, disable slot vừa chọn |
+| `"Booking is not in AWAITING_MENTOR status"` | 400 | Refresh lại bảng booking |
+| `"Mentor has another interview booking at this time"` | 409 | Hiển thị "Mentor bận, chọn mentor khác" |
+| `"Unauthorized"` | 401 | Redirect về trang login |
+| `"You can only enter the Kiosk within 15 minutes..."` | 400 | Hiển thị "Chưa đến giờ hoặc đã quá giờ" |
+| `"Invalid session key"` | 400 | Hiển thị "Mã không hợp lệ, kiểm tra lại" |
+| `"Booking has been cancelled"` | 400 | Hiển thị "Lịch đã bị hủy" |
+| `"Session key is registered for Kiosk {kioskId}"` | 400 | Hiển thị "Mã này không dành cho kiosk này" |
+| Lỗi `500` từ Daily.co | 500 | Hiển thị "Lỗi hệ thống, thử lại sau" |
 
 ---
 
-## 13. POST/FEED
+## 12. Tóm tắt endpoint theo hành động
 
-### 13.1 Tạo Post (multipart)
-
-- `POST /api/posts`:
-  - `title`: string
-  - `content`: string
-  - `summary`: string
-  - `authorId`: int
-  - `coverImg`: MultipartFile (optional)
-  - `tags`: List\<String\>
-  - `status`: `PUBLISHED` | `DRAFT` | `ARCHIVED`
-- Response: `Post`
-
-### 13.2 Lấy New Feed (có phân trang)
-
-- `GET /api/posts/feed?page=0&size=10` -> `Page<PostResponse>`
-
-### 13.3 Lấy Post theo ID
-
-- `GET /api/posts/{postId}` -> `PostResponse`
-
-### 13.4 Like Post
-
-- `POST /api/posts/likes` body `{"postId":1,"userId":1}` -> `PostLike`
-
-### 13.5 Unlike Post
-
-- `DELETE /api/posts/likes/{postId}/{userId}` -> `{"message":"Unlike thành công"}`
-
-### 13.6 Check liked
-
-- `GET /api/posts/likes/{postId}/check/{userId}` -> `{"isLiked":"true"}`
-
-### 13.7 Comment
-
-- `POST /api/posts/comments` body:
-
-```json
-{
-  "postId": 1,
-  "userId": 1,
-  "content": "Nội dung bình luận",
-  "parentCommentId": null
-}
-```
-
-- `parentCommentId = null`: comment gốc. Có giá trị: reply.
-- Response: `PostComment`
-
-### 13.8 Cập nhật / Xóa Comment
-
-- `PUT /api/posts/comments/{commentId}` body `{"content":"..."}` -> `PostComment`
-- `DELETE /api/posts/comments/{commentId}` -> HTTP 204
-
-### 13.9 Lấy tất cả / Published Posts
-
-- `GET /api/posts` -> `List<PostResponse>`
-- `GET /api/posts/published` -> `List<PostResponse>`
-
-### 13.10 Đổi trạng thái Post
-
-- `GET /api/posts/change-status/{postId}?status=PUBLISHED` -> `{"message":"..."}`
+| Hành động | Method | Endpoint | Auth |
+|---|---|---|---|
+| Tạo kiosk | `POST` | `/api/kiosks` | ❌ (gửi JWT nếu có) |
+| Lấy danh sách kiosk | `GET` | `/api/kiosks` | ❌ |
+| Sửa kiosk | `PUT` | `/api/kiosks/{id}` | ❌ |
+| Tạo lịch kiosk | `POST` | `/api/kiosks/schedule` | ❌ |
+| Lấy lịch kiosk | `GET` | `/api/kiosks/{kioskId}/schedules` | ❌ |
+| Sửa lịch kiosk | `PUT` | `/api/kiosks/schedule/{id}` | ❌ |
+| Lấy slot trống | `GET` | `/api/kiosks/{kioskId}/slots?date=YYYY-MM-DD` | ❌ |
+| Đặt slot (USER) | `POST` | `/api/mentor-bookings/pick-slot` | ✅ |
+| Hủy booking (USER) | `DELETE` | `/api/mentor-bookings/{bookingId}` | ✅ |
+| Lấy booking theo status (ADMIN) | `GET` | `/api/admin/mentor-bookings?status=...` | ✅ |
+| Gán mentor (ADMIN) | `POST` | `/api/admin/mentor-bookings/{id}/assign-mentor` | ✅ |
+| Kiosk xác thực sessionKey | `POST` | `/api/kiosk/enter` | ❌ |
+| Lấy application của tôi | `GET` | `/api/applications/me` | ✅ |
+| Lấy application details | `GET` | `/api/application-details/application/{id}` | ✅ |
+| Lấy danh sách mentor | `GET` | `/api/mentors` | ❌ |
+| Đăng nhập | `POST` | `/api/auth/login` | ❌ |
+| Lấy notification | `GET` | `/api/notifications/{userId}` | ✅ |
 
 ---
 
-## 14. NOTIFICATION + MESSAGE
+## 13. Ghi chú kỹ thuật quan trọng cho AI
 
-### 14.1 Notification
-
-- `GET /api/notifications/{userId}` -> `List<Notification>`
-- `POST /api/notifications` body `Notification` -> `Notification`
-- `GET /api/notifications/check-read/{notificationId}` -> `Boolean`
-
-### 14.2 Message (Chat)
-
-- `GET /api/messages/{currentFullId}/{recipientFullId}` -> `List<ChatMessage>`
-- `GET /api/messages/contacts?myId=&role=` -> `List<Integer>`
-
-### 14.3 WebSocket Chat
-
-- `WebSocket /ws-chat/**`
-- `MessageMapping /chat` payload `ChatDto`
+1. **Luôn unwrap `data`** nếu response là array, vì `SuccessResponseHandler` bọc list thành `{ traceId, data: [...] }`.
+2. **Không unwrap** nếu response là object đơn — chỉ cần bỏ qua field `traceId` thừa.
+3. **`isActive`** trong `Kiosk` và `KioskSchedule` dùng **snake_case JSON là `isActive`** (Lombok `@Data` tự sinh getter/setter `isActive()`/`setActive(...)` cho boolean). Khi gửi lên server cần JSON field là `isActive`. Nếu dùng TypeScript interface thì khai báo `isActive: boolean` là đúng.
+4. **`dayOfWeek`** phải gửi đúng enum string `MONDAY`/`TUESDAY`/.../`SUNDAY` (uppercase).
+5. **Thời gian**: ưu tiên dùng `HTMLInputElement type="time"` rồi pad `"HH:mm:00"` để ra `HH:mm:ss`.
+6. **Đừng tự tính slot** — luôn lấy từ `GET /api/kiosks/{id}/slots` (server đã lo logic 15 phút nghỉ).
+7. **Khi đặt slot**: gửi nguyên `startTime`/`endTime` từ `SlotDto` lên `pick-slot` (không tự sửa).
+8. **Trong `application.properties`** không có `server.servlet.context-path` → base URL là `http://host:port/` (không có prefix).
+9. **Khi nhận `sessionKey`** từ notification, dùng regex `Session Key.+là:\s*([a-f0-9-]{36})` để extract UUID.
+10. **Phòng Daily.co** sau khi `enterKiosk` thành công sẽ có `roomUrl` — mở tab mới cho ứng viên join.
 
 ---
 
-## 15. QUESTION BANK
-
-- `GET /api/question-banks` -> `List<QuestionBank>`
-- `GET /api/question-banks/{id}` -> `QuestionBank`
-- `POST /api/question-banks` body `CreateQuestionBankRequest` -> `QuestionBank`
-- `PUT /api/question-banks/{id}` body `UpdateQuestionBankRequest` -> `QuestionBank`
-- `DELETE /api/question-banks/{id}` -> HTTP 204
-- `POST /api/question-banks/generate` body `QuestionGenerateRequest` -> `QuestionGenerateResponse`
-
----
-
-## 16. MENTOR FEEDBACK
-
-- `GET /api/mentor-feedbacks/{id}` -> `MentorFeedback`
-- `GET /api/mentor-feedbacks` -> `List<MentorFeedback>`
-- `GET /api/mentor-feedbacks/mentor/{mentorId}` -> `List<MentorFeedback>`
-- `POST /api/mentor-feedbacks` body `CreateMentorFeedbackRequest` -> `MentorFeedback`
-- `PUT /api/mentor-feedbacks` body `UpdateMentorFeedbackRequest` -> `MentorFeedback`
-
----
-
-## 17. PAYMENT
-
-- `POST /api/payments/pay?amount=&userId=&paymentPurpose=`
-  - `paymentPurpose`: `CV_SCREENING`, `EMAIL_SIMULATOR`, `QUIZ`, `DB_DESIGN`, `AI_INTERVIEW`, `FULLY_PAID`, `MENTOR_INTERVIEW`
-- `GET /api/payments/{id}` -> `Payment`
-- `GET /api/payments` -> `List<Payment>`
-- `GET /api/payments/cancel?transactionCode=` -> `Payment`
-- `POST /api/payments/webhook` body PayOS `Webhook`
-
----
-
-## 18. MAIL + EMAIL SUBMISSION
-
-- `GET /api/mails/send?toEmail=&subject=&body=`
-- `POST /api/mails/send-generic` body `GenericEmailRequest`
-- `GET /api/email-submissions/{id}` -> `EmailSubmission`
-- `GET /api/email-submissions` -> `List<EmailSubmission>`
-
----
-
-## 19. INTERVIEW AI
-
-### 19.1 Interview session
-
-#### Tạo job requirement từ JD
-
-- `POST /api/interview-sessions/generate-job-requirement` body: string JD -> `JobRequirementData`
-
-#### Lấy config options
-
-- `GET /api/interview-sessions/config-options` -> `Map<String, Object>`
-
-#### Tạo Interview Session
-
-- `POST /api/interview-sessions/create-session` body:
-
-```json
-{
-  "user_id": 1,
-  "candidate_profile": {},
-  "job_requirement": {},
-  "session_config": {}
-}
-```
-
-- Response: `String sessionKey`
-
-#### Lấy Sessions theo user
-
-- `GET /api/interview-sessions/user/{userId}` -> `List<InterviewSession>`
-
-#### Lấy Session từ Redis cache
-
-- `GET /api/interview-sessions/cache/{sessionKey}` -> `InterviewSessionRedis`
-
-#### Lấy Session theo ID
-
-- `GET /api/interview-sessions/{sessionId}` -> `InterviewSession`
-
-### 19.2 Chat interview
-
-#### Bắt đầu / Lấy câu hỏi hiện tại
-
-- `GET /api/v1/interview/start/{sessionKey}` -> `QuestionResponse`:
-
-```json
-{
-  "sessionKey": "uuid",
-  "isFinished": false,
-  "phaseName": "Technical",
-  "currentQuestionIndex": 1,
-  "totalQuestionsInPhase": 10,
-  "questionContent": "Câu hỏi...",
-  "questionType": "BLUEPRINT"
-}
-```
-
-#### Submit câu trả lời
-
-- `POST /api/v1/interview/submit`
-- Request:
-
-```json
-{
-  "sessionKey": "uuid",
-  "answer": "Câu trả lời của ứng viên"
-}
-```
-
-- Response: `QuestionResponse`
-
----
-
-## 20. PROCTORING
-
-### 20.1 Track behavior
-
-- `POST /api/v1/proctoring/track`
-- Request:
-
-```json
-{
-  "sessionKey": "uuid",
-  "globalQuestionOrder": 1,
-  "imageBase64": "base64..."
-}
-```
-
-- Response: HTTP 200 hoặc 202 (empty body)
-- **Lưu ý**: đây là fire-and-forget, backend chủ động return 200/202 nên FE cứ gọi mỗi 2-3 giây mà không cần chờ response.
-
----
-
-## 21. TEST/DEBUG
-
-- `GET /api/test/hello` -> `"Hello, Inblue!"`
-- `GET /api/test/test` -> test traceId
-- `GET /api/test/status` -> `"Application is running smoothly."`
-- `GET /api/test/ping` -> `"pong"`
-- `GET /api/test/health` -> `"OK"`
-- `POST /api/test/food-test-hash` -> test Redis hash
-- `POST /api/test/python-test` multipart: `file` -> `CVParserResponse`
-- `POST /api/test/cv-evaluation-test` multipart: `cvFile`, `evaluationCriteria`, `jobDescription` -> `CvEvaluationResponse`
-
----
-
-## 22. LỖI THƯỜNG GẶP
-
-### Lỗi 1: `Booking is not in AWAITING_MENTOR status` (HTTP 400)
-
-- **Nguyên nhân**: Booking đã được assign mentor rồi (`status` đã là `ROOM_CREATED`).
-- **Xử lý**: FE Admin refresh lại danh sách booking. Nếu booking đã chuyển sang `ROOM_CREATED`, tức là đã được assign trước đó.
-
-### Lỗi 2: `Selected slot is already booked` (HTTP 409)
-
-- **Nguyên nhân**: Slot đã bị đặt bởi ứng viên khác (race condition).
-- **Xử lý**: FE luôn fetch lại slots trước khi hiển thị. Khi ứng viên bấm đặt, hiển thị loading và disable nút. Nếu lỗi, hiển thị "Slot này vừa được đặt, vui lòng chọn slot khác" và fetch lại slots.
-
-### Lỗi 3: `Mentor has another interview booking at this time` (HTTP 409)
-
-- **Nguyên nhân**: Mentor đã có booking khác trùng giờ (trừ các booking đã `CANCELLED`).
-- **Xử lý**: FE Admin hiển thị thông báo và đề xuất chọn mentor khác hoặc thời gian khác.
-
-### Lỗi 4: `You can only enter the Kiosk within 15 minutes of your scheduled start time` (HTTP 400)
-
-- **Nguyên nhân**: Ứng viên đến sớm hơn 15 phút hoặc muộn hơn 15 phút.
-- **Xử lý**: FE Kiosk hiển thị đồng hồ đếm ngược và giới hạn thời gian vào. Ví dụ: "Vui lòng đợi đến khi còn X phút nữa" hoặc "Bạn đã đến muộn, không thể vào phòng".
-
-### Lỗi 5: `violates check constraint "applicationdetail_status_check"` (SQL Error)
-
-- **Nguyên nhân**: DB constraint chưa được migrate để chấp nhận giá trị `SLOT_PICKED`.
-- **Xử lý**: Cần migrate DB thêm `SLOT_PICKED` vào CHECK constraint. Code backend đã đúng.
-
----
-
-## 23. THỨ TỰ BUILD FRONTEND
-
-1. **Auth + User** - Login, JWT, profile
-2. **Company + JD + Round** - CRUD JD, thiết lập vòng phỏng vấn
-3. **Application** - Ứng tuyển JD
-4. **Submission + QuestionBank** - Nộp bài, ngân hàng câu hỏi
-5. **Post/Feed** - Bài viết, bình luận, like
-6. **Mentor/Booking/Kiosk** - Đặt lịch, gán mentor, xác thực Kiosk ← **LUỒNG ĐÃ FIX**
-7. **Session + Payment** - Tạo phòng, thanh toán
-8. **Interview AI + Proctoring** - Phỏng vấn AI, theo dõi hành vi
-9. **Notification + Chat** - Thông báo, nhắn tin
-10. **Mail/Email submission** - Gửi mail, nộp bài qua email
-
----
-
-## FILE UPLOAD RULES
-
-- Nhiều endpoint dùng `multipart/form-data`.
-- Quy ước: `data` = JSON object, các file = `MultipartFile` riêng.
-- Upload media qua Cloudinary.
-- Max file size: 10MB.
-
-## WEBHOOKS
-
-- `POST /api/sessions/webhooks/dailyco` - Xử lý sự kiện rời phòng từ Daily.co
-- `POST /api/payments/webhook` - Xử lý thanh toán PayOS
-
-## DAILY.CO EXPIRATION
-
-- `exp = scheduledEnd epoch + 3600 giây` (phòng hết hạn 1 giờ sau giờ kết thúc).
-- Phòng sẽ tự động hết hạn sau 1 giờ tính từ thời điểm kết thúc slot.
+> **Tài liệu này được sinh tự động từ source code backend mới nhất trên branch `master` (commit `a01a57e`).** Nếu backend thay đổi endpoint, vui lòng cập nhật file này.

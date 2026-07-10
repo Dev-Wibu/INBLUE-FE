@@ -21,6 +21,8 @@ export { DateTimePicker } from "./DateTimePicker";
 export type { DateTimePickerProps, ThemeVariant } from "./DateTimePicker";
 export { Filter } from "./Filter";
 export type { FilterCriteria, FilterGroup, FilterOption, FilterProps } from "./Filter";
+export { KioskStatusBadge } from "./KioskStatusBadge";
+export type { KioskBookingStatus, KioskStatusBadgeProps } from "./KioskStatusBadge";
 export {
   FormMediaUploader,
   ImageZoomPreview,
@@ -49,6 +51,8 @@ export { ScrollToTop } from "./ScrollToTop";
 export { SessionExpiryGuard } from "./SessionExpiryGuard";
 export { SettingsModal } from "./SettingsModal";
 export { getInitialSidebarCollapsed } from "./sidebar-collapse";
+export { SlotCalendar } from "./SlotCalendar";
+export type { SlotCalendarProps, SlotCalendarSlot } from "./SlotCalendar";
 export { SocketStatusBadge } from "./SocketStatusBadge";
 export type { SocketConnectionState } from "./SocketStatusBadge";
 export { SortButton } from "./SortButton";
