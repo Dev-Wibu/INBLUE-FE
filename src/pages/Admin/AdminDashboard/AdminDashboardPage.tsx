@@ -11,6 +11,7 @@ import {
   Briefcase,
   Building2,
   CalendarClock,
+  CalendarDays,
   ClipboardCheck,
   Code2,
   Database,
@@ -42,6 +43,7 @@ import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
 import { InterviewTemplateManagementPage } from "../InterviewTemplateManagement/InterviewTemplateManagementPage";
 import { KioskBookingManagementPage } from "../KioskBookingManagement";
+import { KioskManagementPage, KioskSchedulePage } from "../KioskManagement";
 import { MentorManagementPage } from "../MentorManagement";
 import { NotificationManagementPage } from "../NotificationManagement";
 import { PostManagementPage } from "../PostManagement";
@@ -136,6 +138,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             type: "kiosk-bookings",
             icon: CalendarClock,
             label: t("adminKiosk.bookingRequests"),
+            color: "text-slate-400",
+          },
+          {
+            type: "kiosk-management",
+            icon: CalendarDays,
+            label: t("adminKioskManagement.title"),
             color: "text-slate-400",
           },
         ],
@@ -354,6 +362,8 @@ export function AdminDashboardPage() {
                 }
               />
               <Route path="kiosk-bookings" element={<KioskBookingManagementPage />} />
+              <Route path="kiosk-management" element={<KioskManagementPage />} />
+              <Route path="kiosk-management/:kioskId/schedules" element={<KioskSchedulePage />} />
               <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
               <Route path="codingProblems" element={<CodingProblemManagementPage />} />
             </Routes>
