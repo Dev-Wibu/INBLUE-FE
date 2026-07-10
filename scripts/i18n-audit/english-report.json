@@ -1,15 +1,207 @@
 [
   {
     "file": "src/components/homepage-redesign/HomepageFooter.tsx",
-    "line": 12,
-    "character": 82,
+    "line": 37,
+    "character": 32,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "INBLUE AI"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 39,
+    "character": 17,
     "type": "JsxText",
     "category": "english",
     "text": "INBLUE AI"
   },
   {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 46,
+    "character": 36,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Website"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 47,
+    "character": 36,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Facebook"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 48,
+    "character": 36,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "LinkedIn"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 49,
+    "character": 36,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Twitter"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 50,
+    "character": 36,
+    "type": "JsxAttribute[label]",
+    "category": "english",
+    "text": "Email"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 56,
+    "character": 87,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Platform"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 59,
+    "character": 57,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Interview"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 62,
+    "character": 61,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Mentor Interview"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 65,
+    "character": 56,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Companies"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 68,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Question Bank"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 75,
+    "character": 87,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Resources"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 78,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Blog"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 81,
+    "character": 49,
+    "type": "JsxText",
+    "category": "english",
+    "text": "FAQ"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 84,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Interview Tips"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 87,
+    "character": 57,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Getting Started"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 94,
+    "character": 87,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Legal"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 97,
+    "character": 36,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Privacy Policy"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 100,
+    "character": 36,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Terms of Service"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 103,
+    "character": 36,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Cookie Policy"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 106,
+    "character": 36,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Security"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 117,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "&copy;"
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 117,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "InBlue AI. All rights reserved."
+  },
+  {
+    "file": "src/components/homepage-redesign/HomepageFooter.tsx",
+    "line": 120,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Smart Interview Preparation Platform"
+  },
+  {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 139,
+    "line": 102,
     "character": 28,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -17,7 +209,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 146,
+    "line": 111,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -25,7 +217,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 247,
+    "line": 152,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -33,7 +225,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 377,
+    "line": 298,
     "character": 38,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -41,7 +233,7 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 378,
+    "line": 299,
     "character": 84,
     "type": "JsxText",
     "category": "english",
@@ -49,15 +241,55 @@
   },
   {
     "file": "src/components/homepage-redesign/HomepageHeader.tsx",
-    "line": 453,
+    "line": 332,
     "character": 29,
     "type": "JsxText",
     "category": "english",
     "text": "FAQ"
   },
   {
+    "file": "src/components/homepage-redesign/HomepageHero.tsx",
+    "line": 44,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI-Powered Interview Platform"
+  },
+  {
+    "file": "src/components/homepage-redesign/JobSearchSection.tsx",
+    "line": 137,
+    "character": 46,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Intern"
+  },
+  {
+    "file": "src/components/homepage-redesign/JobSearchSection.tsx",
+    "line": 138,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Fresher"
+  },
+  {
+    "file": "src/components/homepage-redesign/JobSearchSection.tsx",
+    "line": 139,
+    "character": 46,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Junior"
+  },
+  {
+    "file": "src/components/homepage-redesign/JobSearchSection.tsx",
+    "line": 140,
+    "character": 46,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Middle"
+  },
+  {
     "file": "src/components/layouts/Header.tsx",
-    "line": 132,
+    "line": 93,
     "character": 28,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -65,7 +297,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 134,
+    "line": 95,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -73,7 +305,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 235,
+    "line": 136,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -81,7 +313,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 346,
+    "line": 247,
     "character": 38,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -89,7 +321,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 347,
+    "line": 248,
     "character": 84,
     "type": "JsxText",
     "category": "english",
@@ -97,7 +329,7 @@
   },
   {
     "file": "src/components/layouts/Header.tsx",
-    "line": 422,
+    "line": 281,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -121,11 +353,683 @@
   },
   {
     "file": "src/components/shared/media/UniversalMediaUploader.tsx",
-    "line": 400,
+    "line": 469,
     "character": 89,
     "type": "JsxText",
     "category": "english",
     "text": "KB"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 722,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Java"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 723,
+    "character": 56,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Javascript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 724,
+    "character": 56,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TypeScript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 725,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Python"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 726,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "C#"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 727,
+    "character": 49,
+    "type": "JsxText",
+    "category": "english",
+    "text": "SQL"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 728,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Go"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1276,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Java"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1277,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Javascript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1278,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TypeScript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1279,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Python"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1280,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "C#"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1281,
+    "character": 51,
+    "type": "JsxText",
+    "category": "english",
+    "text": "SQL"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1282,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Go"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1293,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Intern"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1294,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Junior"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1295,
+    "character": 54,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Senior"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1339,
+    "character": 79,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Code Files ("
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1468,
+    "character": 39,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Highlight:"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1478,
+    "character": 60,
+    "type": "JsxText",
+    "category": "english",
+    "text": "java"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1479,
+    "character": 66,
+    "type": "JsxText",
+    "category": "english",
+    "text": "javascript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1480,
+    "character": 66,
+    "type": "JsxText",
+    "category": "english",
+    "text": "typescript"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1481,
+    "character": 62,
+    "type": "JsxText",
+    "category": "english",
+    "text": "python"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1482,
+    "character": 62,
+    "type": "JsxText",
+    "category": "english",
+    "text": "csharp"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1483,
+    "character": 59,
+    "type": "JsxText",
+    "category": "english",
+    "text": "sql"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1484,
+    "character": 59,
+    "type": "JsxText",
+    "category": "english",
+    "text": "xml"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1485,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "go"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1649,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🔴 Critical"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1652,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🟡 Warning"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 1654,
+    "character": 84,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🔵 Info"
+  },
+  {
+    "file": "src/components/ui/code-review-submission-modal.tsx",
+    "line": 706,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "L"
+  },
+  {
+    "file": "src/components/ui/code-review-submission-modal.tsx",
+    "line": 811,
+    "character": 29,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "e.g. 42"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 136,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI:"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 153,
+    "character": 44,
+    "type": "JsxText",
+    "category": "english",
+    "text": "passed"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 181,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Code ("
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 197,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Test Results ("
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 212,
+    "character": 17,
+    "type": "JsxAttribute[title]",
+    "category": "english",
+    "text": "Copy code"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 217,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Copied!"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 222,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Copy"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 264,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "passed"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 284,
+    "character": 91,
+    "type": "JsxText",
+    "category": "english",
+    "text": "limit"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 300,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Compilation / Runtime Error:"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 312,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Total execution time:"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 312,
+    "character": 68,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 379,
+    "character": 67,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms)"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 383,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input:"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 392,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input:"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 397,
+    "character": 56,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Expected:"
+  },
+  {
+    "file": "src/components/ui/code-submission-viewer.tsx",
+    "line": 402,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Got:"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 889,
+    "character": 79,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 893,
+    "character": 72,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MB"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 911,
+    "character": 43,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TC"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 911,
+    "character": 90,
+    "type": "JsxText",
+    "category": "english",
+    "text": "&rarr;"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1199,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🌱 Intern"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1200,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "⚡ Junior"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1201,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "🔥 Senior"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1576,
+    "character": 37,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1597,
+    "character": 37,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Output"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1653,
+    "character": 57,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1654,
+    "character": 57,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Expected Output"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 1655,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Pts"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 138,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI:"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 146,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "HR:"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 167,
+    "character": 56,
+    "type": "JsxText",
+    "category": "english",
+    "text": "passed"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 456,
+    "character": 30,
+    "type": "JsxText",
+    "category": "english",
+    "text": "passed"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 517,
+    "character": 28,
+    "type": "JsxText",
+    "category": "english",
+    "text": "passed"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 576,
+    "character": 38,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MB"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 584,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "max"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 629,
+    "character": 80,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input:"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 637,
+    "character": 80,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Output:"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 662,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Code stub"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 730,
+    "character": 40,
+    "type": "JsxText",
+    "category": "english",
+    "text": "passed"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 747,
+    "character": 27,
+    "type": "JsxText",
+    "category": "english",
+    "text": "% pass rate"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 751,
+    "character": 42,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 838,
+    "character": 79,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms)"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 850,
+    "character": 74,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input:"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 857,
+    "character": 72,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Expected:"
+  },
+  {
+    "file": "src/components/ui/coding-round-grader.tsx",
+    "line": 864,
+    "character": 74,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Got:"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 401,
+    "character": 58,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MB"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 460,
+    "character": 87,
+    "type": "JsxText",
+    "category": "english",
+    "text": "lines"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 552,
+    "character": 36,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MB"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 595,
+    "character": 80,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Input:"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 603,
+    "character": 80,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Output:"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 628,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Code stub"
   },
   {
     "file": "src/components/ui/cv-upload-modal.tsx",
@@ -144,16 +1048,720 @@
     "text": "Banner"
   },
   {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 298,
+    "character": 27,
+    "type": "JsxText",
+    "category": "english",
+    "text": "[INBLUE-APP-"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 307,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Copy"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 396,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "[INBLUE-APP-"
+  },
+  {
+    "file": "src/components/ui/round-submission-dialog.tsx",
+    "line": 465,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "KB"
+  },
+  {
+    "file": "src/pages/Admin/AdminDashboard/components/AdminHeader.tsx",
+    "line": 32,
+    "character": 81,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Admin"
+  },
+  {
+    "file": "src/pages/Admin/AdminDashboard/components/AdminHeader.tsx",
+    "line": 59,
+    "character": 15,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Quick search..."
+  },
+  {
+    "file": "src/pages/Admin/AdminDashboard/components/AdminHeader.tsx",
+    "line": 90,
+    "character": 68,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AD"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 233,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 239,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "HR:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 244,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Final:"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 455,
+    "character": 42,
+    "type": "JsxText",
+    "category": "english",
+    "text": "HR"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 702,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Overall"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 710,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Skills"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 718,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Experience"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 726,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Education"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 734,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Readability"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 973,
+    "character": 38,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID Detail"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 979,
+    "character": 38,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID JD"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
+    "line": 1003,
+    "character": 42,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Detail #"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 539,
+    "character": 40,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Java"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 540,
+    "character": 46,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Javascript"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 541,
+    "character": 46,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TypeScript"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 542,
+    "character": 42,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Python"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 543,
+    "character": 38,
+    "type": "JsxText",
+    "category": "english",
+    "text": "C#"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 544,
+    "character": 39,
+    "type": "JsxText",
+    "category": "english",
+    "text": "SQL"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 545,
+    "character": 38,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Go"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 700,
+    "character": 46,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Java"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 701,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Javascript"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 702,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TypeScript"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 703,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Python"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 704,
+    "character": 44,
+    "type": "JsxText",
+    "category": "english",
+    "text": "C#"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 705,
+    "character": 45,
+    "type": "JsxText",
+    "category": "english",
+    "text": "SQL"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 706,
+    "character": 44,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Go"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 717,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Intern"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 718,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Junior"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 719,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Senior"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 879,
+    "character": 22,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Severity"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 889,
+    "character": 42,
+    "type": "JsxText",
+    "category": "english",
+    "text": "CRITICAL"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 890,
+    "character": 41,
+    "type": "JsxText",
+    "category": "english",
+    "text": "WARNING"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 891,
+    "character": 38,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INFO"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 895,
+    "character": 22,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Description"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 899,
+    "character": 17,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Issue description"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 909,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Cancel"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
+    "line": 927,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Save"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemTable.tsx",
+    "line": 79,
+    "character": 72,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID"
+  },
+  {
+    "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemTable.tsx",
+    "line": 128,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "file"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/CodingProblemManagementPage.tsx",
+    "line": 398,
+    "character": 19,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "VD: Backend Developer, Data Engineer"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/CodingProblemTable.tsx",
+    "line": 89,
+    "character": 72,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/CodingProblemTable.tsx",
+    "line": 173,
+    "character": 63,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/CodingProblemTable.tsx",
+    "line": 177,
+    "character": 55,
+    "type": "JsxText",
+    "category": "english",
+    "text": "M"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/CodingProblemTable.tsx",
+    "line": 188,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "PTS"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 285,
+    "character": 21,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "VD: Two Sum"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 308,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "EASY"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 309,
+    "character": 52,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MEDIUM"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 310,
+    "character": 50,
+    "type": "JsxText",
+    "category": "english",
+    "text": "HARD"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 328,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ms"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 344,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MB"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 354,
+    "character": 76,
+    "type": "JsxText",
+    "category": "english",
+    "text": "solution("
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 402,
+    "character": 23,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "VD: TreeNode"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 424,
+    "character": 27,
+    "type": "JsxText",
+    "category": "english",
+    "text": "P"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 546,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Output"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 557,
+    "character": 29,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Output"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 618,
+    "character": 25,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "2 ≤ n ≤ 10⁴"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 664,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "test cases"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 774,
+    "character": 33,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Output..."
+  },
+  {
+    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionRoundsDialog.tsx",
+    "line": 1852,
+    "character": 39,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI System Prompt"
+  },
+  {
     "file": "src/pages/Admin/FeedbackManagement/FeedbackManagementPage.tsx",
-    "line": 364,
+    "line": 329,
     "character": 15,
     "type": "JsxText",
     "category": "english",
     "text": "mentor"
   },
   {
+    "file": "src/pages/Admin/InterviewTemplateManagement/InterviewTemplateManagementPage.tsx",
+    "line": 1050,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "&larr;"
+  },
+  {
+    "file": "src/pages/Admin/InterviewTemplateManagement/InterviewTemplateManagementPage.tsx",
+    "line": 1964,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI System Prompt"
+  },
+  {
+    "file": "src/pages/Admin/KioskManagement/components/ScheduleTable.tsx",
+    "line": 122,
+    "character": 59,
+    "type": "JsxText",
+    "category": "english",
+    "text": "min"
+  },
+  {
+    "file": "src/pages/Admin/MentorManagement/components/MentorDetailModal.tsx",
+    "line": 64,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "MENTOR"
+  },
+  {
+    "file": "src/pages/Admin/MentorManagement/components/MentorDetailModal.tsx",
+    "line": 72,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "at"
+  },
+  {
+    "file": "src/pages/Admin/PracticeSetManagement/components/PracticeSetFormDialog.tsx",
+    "line": 87,
+    "character": 47,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Fresher"
+  },
+  {
+    "file": "src/pages/Admin/PracticeSetManagement/PracticeSetManagementPage.tsx",
+    "line": 258,
+    "character": 43,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Fresher"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
+    "line": 295,
+    "character": 21,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "Enter name..."
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
+    "line": 335,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID:"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 290,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "(EASY)"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 291,
+    "character": 74,
+    "type": "JsxText",
+    "category": "english",
+    "text": "(MEDIUM)"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 292,
+    "character": 65,
+    "type": "JsxText",
+    "category": "english",
+    "text": "(HARD)"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 310,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Magic"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 321,
+    "character": 23,
+    "type": "JsxAttribute[placeholder]",
+    "category": "english",
+    "text": "VD: Spring Boot, AOP, Transactional..."
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 369,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Write"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 375,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Preview"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankFormDialog.tsx",
+    "line": 394,
+    "character": 27,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Nothing to preview"
+  },
+  {
+    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankTable.tsx",
+    "line": 70,
+    "character": 72,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ID"
+  },
+  {
+    "file": "src/pages/Admin/UserManagement/components/UserEditForm.tsx",
+    "line": 110,
+    "character": 25,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "Avatar Preview"
+  },
+  {
+    "file": "src/pages/Admin/UserManagement/components/UserTable.tsx",
+    "line": 118,
+    "character": 51,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Open menu"
+  },
+  {
+    "file": "src/pages/Auth/ForgotPasswordShell.tsx",
+    "line": 43,
+    "character": 13,
+    "type": "JsxText",
+    "category": "english",
+    "text": "IB"
+  },
+  {
+    "file": "src/pages/Auth/ForgotPasswordShell.tsx",
+    "line": 45,
+    "character": 64,
+    "type": "JsxText",
+    "category": "english",
+    "text": "INBLUE · AI Interview"
+  },
+  {
     "file": "src/pages/Auth/MentorRegisterPage.tsx",
-    "line": 386,
+    "line": 232,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -305,7 +1913,7 @@
   },
   {
     "file": "src/pages/Mentor/Account/MentorAccountTabs/MentorProfileSection.tsx",
-    "line": 98,
+    "line": 122,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -313,7 +1921,7 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 174,
+    "line": 189,
     "character": 20,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -321,7 +1929,7 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 182,
+    "line": 197,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -329,7 +1937,7 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 184,
+    "line": 199,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -360,6 +1968,62 @@
     "text": "EN"
   },
   {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 286,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Q"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 530,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Overall Match"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 538,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Skills Match"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 546,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Experience"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 554,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Education"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 562,
+    "character": 69,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Readability"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",
+    "line": 460,
+    "character": 62,
+    "type": "JsxText",
+    "category": "english",
+    "text": "VND"
+  },
+  {
     "file": "src/pages/User/MentorList/components/MentorListHero.tsx",
     "line": 29,
     "character": 26,
@@ -369,15 +2033,23 @@
   },
   {
     "file": "src/pages/User/MockInterview/MockInterviewListPage.tsx",
-    "line": 259,
+    "line": 276,
     "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "(ID:"
   },
   {
+    "file": "src/pages/User/Practice/PracticeSetsPage.tsx",
+    "line": 428,
+    "character": 43,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Fresher"
+  },
+  {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 239,
+    "line": 267,
     "character": 22,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -385,7 +2057,7 @@
   },
   {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 240,
+    "line": 268,
     "character": 72,
     "type": "JsxText",
     "category": "english",
@@ -393,7 +2065,7 @@
   },
   {
     "file": "src/pages/User/UserDashboard/UserDashboardPage.tsx",
-    "line": 244,
+    "line": 272,
     "character": 20,
     "type": "JsxAttribute[alt]",
     "category": "english",

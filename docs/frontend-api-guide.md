@@ -11,6 +11,7 @@
 ## 0. Quy ước chung cho mọi API call
 
 ### 0.1. Header bắt buộc
+
 ```http
 Content-Type: application/json
 Authorization: Bearer <JWT_TOKEN>      # Bắt buộc cho hầu hết API trừ permitAll
@@ -33,7 +34,10 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
   ```json
   {
     "traceId": "abc-xyz-123",
-    "data": [ { "id": 1, "name": "Kiosk A" }, { "id": 2, "name": "Kiosk B" } ]
+    "data": [
+      { "id": 1, "name": "Kiosk A" },
+      { "id": 2, "name": "Kiosk B" }
+    ]
   }
   ```
 - String thuần / bytes → **không bọc**, trả về nguyên xi.
@@ -49,16 +53,17 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 }
 ```
 
-| HTTP Status | Khi nào xảy ra |
-|---|---|
-| 400 BAD_REQUEST | Validation fail, trùng slot, status không hợp lệ, sai thời gian |
-| 401 UNAUTHORIZED | Thiếu/không hợp lệ JWT, hoặc user gọi nhầm endpoint cần auth |
-| 403 FORBIDDEN | User không đủ quyền (vd: USER gọi API admin) |
-| 404 NOT_FOUND | Không tìm thấy Kiosk / KioskSchedule / Booking theo id |
-| 409 CONFLICT | Slot bị đặt, hoặc Mentor bị trùng lịch |
-| 500 INTERNAL_SERVER_ERROR | Lỗi hệ thống (gọi Daily.co thất bại, …) |
+| HTTP Status               | Khi nào xảy ra                                                  |
+| ------------------------- | --------------------------------------------------------------- |
+| 400 BAD_REQUEST           | Validation fail, trùng slot, status không hợp lệ, sai thời gian |
+| 401 UNAUTHORIZED          | Thiếu/không hợp lệ JWT, hoặc user gọi nhầm endpoint cần auth    |
+| 403 FORBIDDEN             | User không đủ quyền (vd: USER gọi API admin)                    |
+| 404 NOT_FOUND             | Không tìm thấy Kiosk / KioskSchedule / Booking theo id          |
+| 409 CONFLICT              | Slot bị đặt, hoặc Mentor bị trùng lịch                          |
+| 500 INTERNAL_SERVER_ERROR | Lỗi hệ thống (gọi Daily.co thất bại, …)                         |
 
 ### 0.4. Định dạng dữ liệu
+
 - `LocalDate` (chỉ ngày): `yyyy-MM-dd` (vd: `2026-07-15`)
 - `LocalTime` (chỉ giờ): `HH:mm:ss` hoặc `HH:mm` (vd: `09:00:00` hoặc `09:00`)
 - `LocalDateTime` (ngày + giờ): `yyyy-MM-ddTHH:mm:ss` (vd: `2026-07-15T09:00:00`)
@@ -67,17 +72,18 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 - `Role` enum: `USER` | `MENTOR` | `STAFF` | `ADMIN`
 
 ### 0.5. Phân quyền (từ `SecurityConfig.java`)
-| Endpoint | Cần auth? | Role tối thiểu |
-|---|---|---|
-| `/api/auth/**` | ❌ Public | — |
-| `/api/kiosks/**` (xem/sửa kiosk) | ❌ Public (chưa có rule riêng) | — |
-| `/api/mentors` (GET) | ❌ Public | — |
-| `/api/mentor-bookings/pick-slot` | ✅ Cần JWT | USER (lấy từ token) |
-| `/api/mentor-bookings/{id}` (DELETE) | ✅ Cần JWT | USER sở hữu / ADMIN / STAFF |
-| `/api/admin/mentor-bookings/**` | ✅ Cần JWT | ADMIN / STAFF |
-| `/api/kiosk/enter` | ❌ Public (kiosk vật lý) | — |
-| `/api/applications/me` | ✅ Cần JWT | USER |
-| `/api/application-details/**` | ✅ Cần JWT | tuỳ endpoint |
+
+| Endpoint                             | Cần auth?                      | Role tối thiểu              |
+| ------------------------------------ | ------------------------------ | --------------------------- |
+| `/api/auth/**`                       | ❌ Public                      | —                           |
+| `/api/kiosks/**` (xem/sửa kiosk)     | ❌ Public (chưa có rule riêng) | —                           |
+| `/api/mentors` (GET)                 | ❌ Public                      | —                           |
+| `/api/mentor-bookings/pick-slot`     | ✅ Cần JWT                     | USER (lấy từ token)         |
+| `/api/mentor-bookings/{id}` (DELETE) | ✅ Cần JWT                     | USER sở hữu / ADMIN / STAFF |
+| `/api/admin/mentor-bookings/**`      | ✅ Cần JWT                     | ADMIN / STAFF               |
+| `/api/kiosk/enter`                   | ❌ Public (kiosk vật lý)       | —                           |
+| `/api/applications/me`               | ✅ Cần JWT                     | USER                        |
+| `/api/application-details/**`        | ✅ Cần JWT                     | tuỳ endpoint                |
 
 > Lưu ý thực tế: cấu hình hiện tại có `.anyRequest().permitAll()` nên về mặt kỹ thuật mọi API đều truy cập được nếu bỏ qua JWT, nhưng **CẦN gửi JWT** cho các endpoint yêu cầu `getCurrentUserId()` (vì nếu không có, server sẽ throw `Unauthorized` 401).
 
@@ -122,6 +128,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 ## 2. Model / Enum dùng chung
 
 ### 2.1. `Kiosk` (entity + response trả về)
+
 ```json
 {
   "id": 1,
@@ -132,15 +139,16 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 }
 ```
 
-| Field | Type | Bắt buộc khi POST/PUT? | Mô tả |
-|---|---|---|---|
-| `id` | Long | Tự sinh | ID tự tăng, bỏ qua khi tạo |
-| `name` | String | ✅ Có | Tên kiosk |
-| `location` | String | ✅ Có | Vị trí đặt máy |
-| `isActive` | boolean | ✅ Có | true = đang hoạt động, false = tạm dừng |
-| `createdAt` | LocalDateTime | Tự sinh | Thời gian tạo |
+| Field       | Type          | Bắt buộc khi POST/PUT? | Mô tả                                   |
+| ----------- | ------------- | ---------------------- | --------------------------------------- |
+| `id`        | Long          | Tự sinh                | ID tự tăng, bỏ qua khi tạo              |
+| `name`      | String        | ✅ Có                  | Tên kiosk                               |
+| `location`  | String        | ✅ Có                  | Vị trí đặt máy                          |
+| `isActive`  | boolean       | ✅ Có                  | true = đang hoạt động, false = tạm dừng |
+| `createdAt` | LocalDateTime | Tự sinh                | Thời gian tạo                           |
 
 ### 2.2. `KioskSchedule` (entity + response)
+
 ```json
 {
   "id": 1,
@@ -154,20 +162,21 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 }
 ```
 
-| Field | Type | Bắt buộc? | Mô tả |
-|---|---|---|---|
-| `id` | Long | Tự sinh | ID tự tăng |
-| `kioskId` | Long | ✅ Có | ID của kiosk (phải tồn tại) |
-| `dayOfWeek` | `DayOfWeek` enum | ✅ Có | `MONDAY`..`SUNDAY` |
-| `openTime` | LocalTime (`HH:mm:ss`) | ✅ Có | Giờ mở cửa |
-| `closeTime` | LocalTime | ✅ Có | Giờ đóng cửa |
-| `slotDurationMinutes` | int | ✅ Có | Độ dài 1 slot (phút) — ví dụ 30, 45, 60 |
-| `isActive` | boolean | ✅ Có | Lịch còn hiệu lực hay không |
-| `createdAt` | LocalDateTime | Tự sinh | Thời gian tạo |
+| Field                 | Type                   | Bắt buộc? | Mô tả                                   |
+| --------------------- | ---------------------- | --------- | --------------------------------------- |
+| `id`                  | Long                   | Tự sinh   | ID tự tăng                              |
+| `kioskId`             | Long                   | ✅ Có     | ID của kiosk (phải tồn tại)             |
+| `dayOfWeek`           | `DayOfWeek` enum       | ✅ Có     | `MONDAY`..`SUNDAY`                      |
+| `openTime`            | LocalTime (`HH:mm:ss`) | ✅ Có     | Giờ mở cửa                              |
+| `closeTime`           | LocalTime              | ✅ Có     | Giờ đóng cửa                            |
+| `slotDurationMinutes` | int                    | ✅ Có     | Độ dài 1 slot (phút) — ví dụ 30, 45, 60 |
+| `isActive`            | boolean                | ✅ Có     | Lịch còn hiệu lực hay không             |
+| `createdAt`           | LocalDateTime          | Tự sinh   | Thời gian tạo                           |
 
 > ⚠️ Logic backend: trong `KioskServiceImpl.getAvailableSlots`, giữa 2 slot liên tiếp sẽ tự động có **15 phút nghỉ** (`current.plusMinutes(duration + 15)`). Frontend **KHÔNG cần tự thêm 15 phút nghỉ** — server đã lo.
 
 ### 2.3. `SlotDto` (response khi lấy slot trống)
+
 ```json
 {
   "startTime": "2026-07-15T09:00:00",
@@ -176,13 +185,14 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 }
 ```
 
-| Field | Type | Mô tả |
-|---|---|---|
-| `startTime` | LocalDateTime | Giờ bắt đầu slot |
-| `endTime` | LocalDateTime | Giờ kết thúc slot |
-| `available` | boolean | true = còn trống, false = đã có người đặt |
+| Field       | Type          | Mô tả                                     |
+| ----------- | ------------- | ----------------------------------------- |
+| `startTime` | LocalDateTime | Giờ bắt đầu slot                          |
+| `endTime`   | LocalDateTime | Giờ kết thúc slot                         |
+| `available` | boolean       | true = còn trống, false = đã có người đặt |
 
 ### 2.4. `KioskEnterDtoRequest` (kiosk gửi khi xác thực)
+
 ```json
 {
   "sessionKey": "550e8400-e29b-41d4-a716-446655440000",
@@ -191,6 +201,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 ```
 
 ### 2.5. `KioskEnterDtoResponse` (response trả về)
+
 ```json
 {
   "roomUrl": "https://inblue.daily.co/abc-xyz-123"
@@ -198,6 +209,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 ```
 
 ### 2.6. `PickSlotDtoRequest` (ứng viên gửi khi đặt lịch)
+
 ```json
 {
   "applicationDetailId": 10,
@@ -208,6 +220,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 ```
 
 ### 2.7. `MentorInterviewBooking` (response sau khi pickSlot thành công)
+
 ```json
 {
   "id": 5,
@@ -226,14 +239,15 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 }
 ```
 
-| Field | Type | Ý nghĩa theo trạng thái |
-|---|---|---|
-| `status` | `BookingStatus` | `AWAITING_MENTOR` → `ROOM_CREATED` → `IN_PROGRESS` → `COMPLETED` (hoặc `CANCELLED`) |
-| `sessionKey` | String | UUID, chỉ sinh sau khi admin assign mentor |
-| `sessionId` | Integer | ID bản ghi Session, sinh sau assign mentor |
-| `mentorId` | Integer | ID mentor, sinh sau assign mentor |
+| Field        | Type            | Ý nghĩa theo trạng thái                                                             |
+| ------------ | --------------- | ----------------------------------------------------------------------------------- |
+| `status`     | `BookingStatus` | `AWAITING_MENTOR` → `ROOM_CREATED` → `IN_PROGRESS` → `COMPLETED` (hoặc `CANCELLED`) |
+| `sessionKey` | String          | UUID, chỉ sinh sau khi admin assign mentor                                          |
+| `sessionId`  | Integer         | ID bản ghi Session, sinh sau assign mentor                                          |
+| `mentorId`   | Integer         | ID mentor, sinh sau assign mentor                                                   |
 
 ### 2.8. `AssignMentorDtoRequest`
+
 ```json
 {
   "mentorId": 3,
@@ -252,6 +266,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 **Query:** Không có
 
 **Response 200:**
+
 ```json
 {
   "traceId": "abc-xyz-123",
@@ -277,6 +292,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 **Auth:** ❌ (nên gửi JWT nếu có để track)
 
 **Request Body:**
+
 ```json
 {
   "name": "Kiosk A - Tầng 1",
@@ -286,6 +302,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 ```
 
 > Lưu ý: Field `isActive` dùng `boolean` (không phải `Boolean`), cần gửi đúng tên. Nếu dùng TypeScript:
+>
 > ```ts
 > interface CreateKioskPayload {
 >   name: string;
@@ -295,6 +312,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 > ```
 
 **Response 200:**
+
 ```json
 {
   "id": 1,
@@ -307,6 +325,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 ```
 
 **Lỗi có thể gặp:**
+
 - Không có lỗi validation cụ thể; chỉ fail nếu payload sai JSON.
 
 ---
@@ -315,6 +334,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 
 **Path param:** `id` (Long) — ID kiosk cần sửa
 **Request Body:** (giống POST)
+
 ```json
 {
   "name": "Kiosk A - Tầng 1 (đã đổi tên)",
@@ -324,6 +344,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 ```
 
 **Response 200:**
+
 ```json
 {
   "id": 1,
@@ -349,6 +370,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 **Auth:** ❌ (nên gửi JWT nếu có)
 
 **Request Body:**
+
 ```json
 {
   "kioskId": 1,
@@ -360,16 +382,17 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 }
 ```
 
-| Field | Kiểu TypeScript | Validate |
-|---|---|---|
-| `kioskId` | `number` | Phải tồn tại (ngược lại 404) |
-| `dayOfWeek` | `'MONDAY' \| 'TUESDAY' \| ... \| 'SUNDAY'` | Bắt buộc, đúng enum |
-| `openTime` | `string` (HH:mm:ss) | Bắt buộc, vd: `"09:00:00"` |
-| `closeTime` | `string` (HH:mm:ss) | Bắt buộc, **phải > openTime** (server không validate nhưng logic tạo slot sẽ rỗng) |
-| `slotDurationMinutes` | `number` | Bắt buộc, > 0 |
-| `isActive` | `boolean` | Bắt buộc |
+| Field                 | Kiểu TypeScript                            | Validate                                                                           |
+| --------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `kioskId`             | `number`                                   | Phải tồn tại (ngược lại 404)                                                       |
+| `dayOfWeek`           | `'MONDAY' \| 'TUESDAY' \| ... \| 'SUNDAY'` | Bắt buộc, đúng enum                                                                |
+| `openTime`            | `string` (HH:mm:ss)                        | Bắt buộc, vd: `"09:00:00"`                                                         |
+| `closeTime`           | `string` (HH:mm:ss)                        | Bắt buộc, **phải > openTime** (server không validate nhưng logic tạo slot sẽ rỗng) |
+| `slotDurationMinutes` | `number`                                   | Bắt buộc, > 0                                                                      |
+| `isActive`            | `boolean`                                  | Bắt buộc                                                                           |
 
 **Response 200:**
+
 ```json
 {
   "id": 1,
@@ -395,6 +418,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 **Path param:** `kioskId` (Long)
 
 **Response 200:**
+
 ```json
 {
   "traceId": "abc-xyz-123",
@@ -429,6 +453,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 
 **Path param:** `id` (Long) — ID schedule
 **Request Body:** (giống POST)
+
 ```json
 {
   "kioskId": 1,
@@ -441,6 +466,7 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 ```
 
 **Response 200:**
+
 ```json
 {
   "id": 1,
@@ -467,11 +493,13 @@ Mọi response 2xx từ controller package `fpt.org.inblue.controller` sẽ đư
 **Query param:** `date` (LocalDate, bắt buộc, format `yyyy-MM-dd`)
 
 **Ví dụ:**
+
 ```
 GET /api/kiosks/1/slots?date=2026-07-15
 ```
 
 **Response 200:**
+
 ```json
 {
   "traceId": "abc-xyz-123",
@@ -495,6 +523,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 
 **Auth:** ✅ Cần JWT (lấy `userId` từ token)
 **Request Body:**
+
 ```json
 {
   "applicationDetailId": 10,
@@ -504,14 +533,15 @@ GET /api/kiosks/1/slots?date=2026-07-15
 }
 ```
 
-| Field | Bắt buộc | Mô tả |
-|---|---|---|
-| `applicationDetailId` | ✅ | Lấy từ `GET /api/applications/me` → `GET /api/application-details/application/{id}` |
-| `kioskId` | ✅ | ID kiosk |
-| `scheduledStart` | ✅ | Lấy nguyên từ `SlotDto.startTime` |
-| `scheduledEnd` | ✅ | Lấy nguyên từ `SlotDto.endTime` |
+| Field                 | Bắt buộc | Mô tả                                                                               |
+| --------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `applicationDetailId` | ✅       | Lấy từ `GET /api/applications/me` → `GET /api/application-details/application/{id}` |
+| `kioskId`             | ✅       | ID kiosk                                                                            |
+| `scheduledStart`      | ✅       | Lấy nguyên từ `SlotDto.startTime`                                                   |
+| `scheduledEnd`        | ✅       | Lấy nguyên từ `SlotDto.endTime`                                                     |
 
 **Response 200:**
+
 ```json
 {
   "id": 5,
@@ -532,6 +562,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ```
 
 **Lỗi:**
+
 - `404` `"ApplicationDetail not found"` — applicationDetailId sai
 - `404` `"Kiosk not found"` — kioskId sai
 - `409` `"Selected slot is already booked"` — có người vừa đặt trước (race condition)
@@ -544,6 +575,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 **Auth:** ✅ Cần JWT
 
 **Response 200:**
+
 ```json
 {
   "traceId": "abc-xyz-123",
@@ -566,6 +598,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ### 5.4. `GET /api/application-details/application/{applicationId}` — Lấy các vòng thi
 
 **Response 200:**
+
 ```json
 {
   "traceId": "abc-xyz-123",
@@ -601,6 +634,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 **Query param:** `status` (mặc định `AWAITING_MENTOR`, có thể bỏ qua)
 
 **Response 200:**
+
 ```json
 {
   "traceId": "abc-xyz-123",
@@ -629,6 +663,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 **Auth:** ✅ Cần JWT (ADMIN)
 **Path param:** `bookingId` (Long)
 **Request Body:**
+
 ```json
 {
   "mentorId": 3,
@@ -637,6 +672,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ```
 
 **Response 200:** (toàn bộ object `MentorInterviewBooking` đã update)
+
 ```json
 {
   "id": 5,
@@ -657,6 +693,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ```
 
 **Lỗi:**
+
 - `400` `"Booking is not in AWAITING_MENTOR status"` — booking đã được xử lý
 - `409` `"Mentor has another interview booking at this time"` — mentor bận
 - `500` `"Error creating Daily.co session: ..."` — lỗi gọi Daily.co
@@ -667,6 +704,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ### 6.3. `GET /api/notifications/{userId}` — Ứng viên poll notification để lấy sessionKey
 
 **Response 200:**
+
 ```json
 {
   "traceId": "abc-xyz-123",
@@ -691,6 +729,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 
 **Auth:** ❌ Public (kiosk vật lý gọi)
 **Request Body:**
+
 ```json
 {
   "sessionKey": "550e8400-e29b-41d4-a716-446655440000",
@@ -699,6 +738,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ```
 
 **Response 200:**
+
 ```json
 {
   "roomUrl": "https://inblue.daily.co/abc-xyz-123",
@@ -707,6 +747,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ```
 
 **Lỗi:**
+
 - `400` `"Invalid session key"` — sessionKey không tồn tại
 - `400` `"Booking has been cancelled"` — booking đã hủy
 - `400` `"Session key is registered for Kiosk {kioskId}"` — kioskId không khớp
@@ -720,14 +761,17 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ### 7.1. `POST /api/auth/login` — Đăng nhập (lấy JWT)
 
 **Request Body:**
+
 ```json
 { "email": "user@example.com", "password": "password123" }
 ```
 
 **Response 200:**
+
 ```json
 "<chuỗi JWT token thuần>"
 ```
+
 > Response trả về **chuỗi thuần**, **KHÔNG** bọc `{ traceId, data }` (vì là String).
 
 **Header trả về:** `Authorization: Bearer <token>`
@@ -735,6 +779,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ### 7.2. `GET /api/mentors` — Lấy danh sách mentor (admin dùng để gán)
 
 **Response 200:** (List `MentorResponse`)
+
 ```json
 {
   "traceId": "abc-xyz-123",
@@ -766,6 +811,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 **Response 200:** Empty body
 
 **Lỗi:**
+
 - `400` `"Cannot cancel booking in current state"` — booking đã COMPLETED/CANCELLED
 - `401` `"Unauthorized to cancel this booking"` — không phải chủ booking
 
@@ -774,6 +820,7 @@ GET /api/kiosks/1/slots?date=2026-07-15
 ## 8. Bảng trạng thái & quy tắc UI
 
 ### 8.1. `BookingStatus` flow
+
 ```
 AWAITING_MENTOR  (sau pickSlot)
        ↓  admin gọi assignMentor
@@ -782,24 +829,24 @@ ROOM_CREATED     (có sessionKey, có phòng Daily.co)
 IN_PROGRESS      (cuộc họp đang diễn ra)
        ↓  daily.co webhook participant.left
 COMPLETED
-       
+
 Bất kỳ lúc nào (trừ COMPLETED/CANCELLED) → CANCELLED
 ```
 
 ### 8.2. UI gợi ý cho AI Frontend
 
-| Màn hình | Endpoint chính | Hành động |
-|---|---|---|
-| **Admin: Quản lý Kiosk** | `GET /api/kiosks` | Bảng liệt kê, có nút Edit (gọi `PUT`) |
-| **Admin: Tạo Kiosk** | `POST /api/kiosks` | Form: name, location, isActive (toggle) |
-| **Admin: Quản lý lịch Kiosk** | `GET /api/kiosks/{id}/schedules` | Bảng theo `dayOfWeek` |
-| **Admin: Tạo lịch Kiosk** | `POST /api/kiosks/schedule` | Form: kioskId (dropdown), dayOfWeek (select), openTime, closeTime (time picker), slotDurationMinutes (number input), isActive |
-| **Ứng viên: Chọn Kiosk** | `GET /api/kiosks` | Card / dropdown |
-| **Ứng viên: Chọn ngày & slot** | `GET /api/kiosks/{id}/slots?date=YYYY-MM-DD` | Date picker + grid slot, slot `available: false` disabled |
-| **Ứng viên: Xác nhận đặt lịch** | `POST /api/mentor-bookings/pick-slot` | Modal confirm, sau khi OK thì show trạng thái "Đang chờ xếp Mentor" |
-| **Admin: Gán Mentor** | `POST /api/admin/mentor-bookings/{id}/assign-mentor` | Dropdown chọn mentor từ `GET /api/mentors`, ô notes |
-| **Ứng viên: Chờ notification** | `GET /api/notifications/{userId}` (polling 10s) | Lấy `sessionKey` từ message |
-| **Kiosk vật lý: Nhập sessionKey** | `POST /api/kiosk/enter` | Form: sessionKey (text), kioskId (auto-fill từ máy), sau khi OK thì mở `roomUrl` trong iframe/new tab |
+| Màn hình                          | Endpoint chính                                       | Hành động                                                                                                                     |
+| --------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Admin: Quản lý Kiosk**          | `GET /api/kiosks`                                    | Bảng liệt kê, có nút Edit (gọi `PUT`)                                                                                         |
+| **Admin: Tạo Kiosk**              | `POST /api/kiosks`                                   | Form: name, location, isActive (toggle)                                                                                       |
+| **Admin: Quản lý lịch Kiosk**     | `GET /api/kiosks/{id}/schedules`                     | Bảng theo `dayOfWeek`                                                                                                         |
+| **Admin: Tạo lịch Kiosk**         | `POST /api/kiosks/schedule`                          | Form: kioskId (dropdown), dayOfWeek (select), openTime, closeTime (time picker), slotDurationMinutes (number input), isActive |
+| **Ứng viên: Chọn Kiosk**          | `GET /api/kiosks`                                    | Card / dropdown                                                                                                               |
+| **Ứng viên: Chọn ngày & slot**    | `GET /api/kiosks/{id}/slots?date=YYYY-MM-DD`         | Date picker + grid slot, slot `available: false` disabled                                                                     |
+| **Ứng viên: Xác nhận đặt lịch**   | `POST /api/mentor-bookings/pick-slot`                | Modal confirm, sau khi OK thì show trạng thái "Đang chờ xếp Mentor"                                                           |
+| **Admin: Gán Mentor**             | `POST /api/admin/mentor-bookings/{id}/assign-mentor` | Dropdown chọn mentor từ `GET /api/mentors`, ô notes                                                                           |
+| **Ứng viên: Chờ notification**    | `GET /api/notifications/{userId}` (polling 10s)      | Lấy `sessionKey` từ message                                                                                                   |
+| **Kiosk vật lý: Nhập sessionKey** | `POST /api/kiosk/enter`                              | Form: sessionKey (text), kioskId (auto-fill từ máy), sau khi OK thì mở `roomUrl` trong iframe/new tab                         |
 
 ---
 
@@ -807,8 +854,14 @@ Bất kỳ lúc nào (trừ COMPLETED/CANCELLED) → CANCELLED
 
 ```ts
 // ===== TYPES =====
-type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-type BookingStatus = 'AWAITING_MENTOR' | 'MENTOR_ASSIGNED' | 'ROOM_CREATED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+type DayOfWeek = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+type BookingStatus =
+  | "AWAITING_MENTOR"
+  | "MENTOR_ASSIGNED"
+  | "ROOM_CREATED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED";
 
 interface Kiosk {
   id: number;
@@ -822,7 +875,7 @@ interface KioskSchedule {
   id: number;
   kioskId: number;
   dayOfWeek: DayOfWeek;
-  openTime: string;       // "09:00:00"
+  openTime: string; // "09:00:00"
   closeTime: string;
   slotDurationMinutes: number;
   isActive: boolean;
@@ -830,7 +883,7 @@ interface KioskSchedule {
 }
 
 interface SlotDto {
-  startTime: string;      // "2026-07-15T09:00:00"
+  startTime: string; // "2026-07-15T09:00:00"
   endTime: string;
   available: boolean;
 }
@@ -855,21 +908,21 @@ interface ApplicationDetail {
   id: number;
   applicationId: number;
   roundId: number;
-  status: 'PENDING' | 'SLOT_PICKED' | 'SUBMITTED' | 'AI_EVALUATED' | 'COMPLETED' | 'ERROR';
+  status: "PENDING" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED" | "ERROR";
   bookingId: number | null;
   sessionId: number | null;
   // ... các field khác
 }
 
 // ===== FETCH HELPER =====
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('jwt');
+  const token = localStorage.getItem("jwt");
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init.headers,
     },
@@ -880,26 +933,28 @@ async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   // Nếu response là List → unwrap data; nếu là object thì trả nguyên (có traceId thừa)
   const json = await res.json();
-  return (json && Array.isArray(json.data)) ? json.data : json;
+  return json && Array.isArray(json.data) ? json.data : json;
 }
 
 // ===== KIOSK APIs =====
 
 // Admin: lấy tất cả kiosk (kể cả inactive nếu cần, nhưng GET public chỉ trả active)
-export const getActiveKiosks = () =>
-  apiFetch<Kiosk[]>('/api/kiosks');
+export const getActiveKiosks = () => apiFetch<Kiosk[]>("/api/kiosks");
 
 // Admin: tạo kiosk
 export const createKiosk = (payload: { name: string; location: string; isActive: boolean }) =>
-  apiFetch<Kiosk>('/api/kiosks', {
-    method: 'POST',
+  apiFetch<Kiosk>("/api/kiosks", {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 
 // Admin: cập nhật kiosk
-export const updateKiosk = (id: number, payload: { name: string; location: string; isActive: boolean }) =>
+export const updateKiosk = (
+  id: number,
+  payload: { name: string; location: string; isActive: boolean }
+) =>
   apiFetch<Kiosk>(`/api/kiosks/${id}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(payload),
   });
 
@@ -912,8 +967,8 @@ export const createSchedule = (payload: {
   slotDurationMinutes: number;
   isActive: boolean;
 }) =>
-  apiFetch<KioskSchedule>('/api/kiosks/schedule', {
-    method: 'POST',
+  apiFetch<KioskSchedule>("/api/kiosks/schedule", {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 
@@ -922,16 +977,19 @@ export const getSchedulesByKiosk = (kioskId: number) =>
   apiFetch<KioskSchedule[]>(`/api/kiosks/${kioskId}/schedules`);
 
 // Cập nhật schedule
-export const updateSchedule = (id: number, payload: {
-  kioskId: number;
-  dayOfWeek: DayOfWeek;
-  openTime: string;
-  closeTime: string;
-  slotDurationMinutes: number;
-  isActive: boolean;
-}) =>
+export const updateSchedule = (
+  id: number,
+  payload: {
+    kioskId: number;
+    dayOfWeek: DayOfWeek;
+    openTime: string;
+    closeTime: string;
+    slotDurationMinutes: number;
+    isActive: boolean;
+  }
+) =>
   apiFetch<KioskSchedule>(`/api/kiosks/schedule/${id}`, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify(payload),
   });
 
@@ -946,43 +1004,43 @@ export const pickSlot = (payload: {
   scheduledStart: string;
   scheduledEnd: string;
 }) =>
-  apiFetch<MentorInterviewBooking>('/api/mentor-bookings/pick-slot', {
-    method: 'POST',
+  apiFetch<MentorInterviewBooking>("/api/mentor-bookings/pick-slot", {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 
 // Ứng viên: lấy applications của tôi
 export const getMyApplications = () =>
-  apiFetch<{ id: number; userId: number; jdId: number; currentRoundOrder: number; status: string }[]>(
-    '/api/applications/me'
-  );
+  apiFetch<
+    { id: number; userId: number; jdId: number; currentRoundOrder: number; status: string }[]
+  >("/api/applications/me");
 
 // Lấy application details
 export const getApplicationDetails = (applicationId: number) =>
   apiFetch<ApplicationDetail[]>(`/api/application-details/application/${applicationId}`);
 
 // Admin: lấy booking theo status
-export const getBookingsByStatus = (status: BookingStatus = 'AWAITING_MENTOR') =>
+export const getBookingsByStatus = (status: BookingStatus = "AWAITING_MENTOR") =>
   apiFetch<MentorInterviewBooking[]>(`/api/admin/mentor-bookings?status=${status}`);
 
 // Admin: gán mentor
 export const assignMentor = (bookingId: number, payload: { mentorId: number; notes: string }) =>
   apiFetch<MentorInterviewBooking>(`/api/admin/mentor-bookings/${bookingId}/assign-mentor`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(payload),
   });
 
 // Kiosk: xác thực sessionKey
 export const enterKiosk = (payload: { sessionKey: string; kioskId: number }) =>
-  apiFetch<{ roomUrl: string }>('/api/kiosk/enter', {
-    method: 'POST',
+  apiFetch<{ roomUrl: string }>("/api/kiosk/enter", {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 
 // Lấy mentors (cho dropdown gán)
 export const getAllMentors = () =>
   apiFetch<{ id: number; name: string; email: string; bio?: string; avatarUrl?: string }[]>(
-    '/api/mentors'
+    "/api/mentors"
   );
 
 // Ứng viên: lấy notification
@@ -1024,44 +1082,44 @@ Khi AI nhận yêu cầu "code UI quản lý kiosk + lịch kiosk", AI cần là
 
 ## 11. Lỗi thường gặp & cách xử lý
 
-| Lỗi từ server | HTTP | Cách xử lý UI |
-|---|---|---|
-| `"Kiosk not found with id: {id}"` | 404 | Hiển thị "Kiosk không tồn tại" → refresh list |
-| `"KioskSchedule not found with id: {id}"` | 404 | Hiển thị "Lịch không tồn tại" → refresh |
-| `"ApplicationDetail not found"` | 404 | Hiển thị "Vòng thi không hợp lệ" |
-| `"Selected slot is already booked"` | 409 | Refresh lại slot, disable slot vừa chọn |
-| `"Booking is not in AWAITING_MENTOR status"` | 400 | Refresh lại bảng booking |
-| `"Mentor has another interview booking at this time"` | 409 | Hiển thị "Mentor bận, chọn mentor khác" |
-| `"Unauthorized"` | 401 | Redirect về trang login |
-| `"You can only enter the Kiosk within 15 minutes..."` | 400 | Hiển thị "Chưa đến giờ hoặc đã quá giờ" |
-| `"Invalid session key"` | 400 | Hiển thị "Mã không hợp lệ, kiểm tra lại" |
-| `"Booking has been cancelled"` | 400 | Hiển thị "Lịch đã bị hủy" |
-| `"Session key is registered for Kiosk {kioskId}"` | 400 | Hiển thị "Mã này không dành cho kiosk này" |
-| Lỗi `500` từ Daily.co | 500 | Hiển thị "Lỗi hệ thống, thử lại sau" |
+| Lỗi từ server                                         | HTTP | Cách xử lý UI                                 |
+| ----------------------------------------------------- | ---- | --------------------------------------------- |
+| `"Kiosk not found with id: {id}"`                     | 404  | Hiển thị "Kiosk không tồn tại" → refresh list |
+| `"KioskSchedule not found with id: {id}"`             | 404  | Hiển thị "Lịch không tồn tại" → refresh       |
+| `"ApplicationDetail not found"`                       | 404  | Hiển thị "Vòng thi không hợp lệ"              |
+| `"Selected slot is already booked"`                   | 409  | Refresh lại slot, disable slot vừa chọn       |
+| `"Booking is not in AWAITING_MENTOR status"`          | 400  | Refresh lại bảng booking                      |
+| `"Mentor has another interview booking at this time"` | 409  | Hiển thị "Mentor bận, chọn mentor khác"       |
+| `"Unauthorized"`                                      | 401  | Redirect về trang login                       |
+| `"You can only enter the Kiosk within 15 minutes..."` | 400  | Hiển thị "Chưa đến giờ hoặc đã quá giờ"       |
+| `"Invalid session key"`                               | 400  | Hiển thị "Mã không hợp lệ, kiểm tra lại"      |
+| `"Booking has been cancelled"`                        | 400  | Hiển thị "Lịch đã bị hủy"                     |
+| `"Session key is registered for Kiosk {kioskId}"`     | 400  | Hiển thị "Mã này không dành cho kiosk này"    |
+| Lỗi `500` từ Daily.co                                 | 500  | Hiển thị "Lỗi hệ thống, thử lại sau"          |
 
 ---
 
 ## 12. Tóm tắt endpoint theo hành động
 
-| Hành động | Method | Endpoint | Auth |
-|---|---|---|---|
-| Tạo kiosk | `POST` | `/api/kiosks` | ❌ (gửi JWT nếu có) |
-| Lấy danh sách kiosk | `GET` | `/api/kiosks` | ❌ |
-| Sửa kiosk | `PUT` | `/api/kiosks/{id}` | ❌ |
-| Tạo lịch kiosk | `POST` | `/api/kiosks/schedule` | ❌ |
-| Lấy lịch kiosk | `GET` | `/api/kiosks/{kioskId}/schedules` | ❌ |
-| Sửa lịch kiosk | `PUT` | `/api/kiosks/schedule/{id}` | ❌ |
-| Lấy slot trống | `GET` | `/api/kiosks/{kioskId}/slots?date=YYYY-MM-DD` | ❌ |
-| Đặt slot (USER) | `POST` | `/api/mentor-bookings/pick-slot` | ✅ |
-| Hủy booking (USER) | `DELETE` | `/api/mentor-bookings/{bookingId}` | ✅ |
-| Lấy booking theo status (ADMIN) | `GET` | `/api/admin/mentor-bookings?status=...` | ✅ |
-| Gán mentor (ADMIN) | `POST` | `/api/admin/mentor-bookings/{id}/assign-mentor` | ✅ |
-| Kiosk xác thực sessionKey | `POST` | `/api/kiosk/enter` | ❌ |
-| Lấy application của tôi | `GET` | `/api/applications/me` | ✅ |
-| Lấy application details | `GET` | `/api/application-details/application/{id}` | ✅ |
-| Lấy danh sách mentor | `GET` | `/api/mentors` | ❌ |
-| Đăng nhập | `POST` | `/api/auth/login` | ❌ |
-| Lấy notification | `GET` | `/api/notifications/{userId}` | ✅ |
+| Hành động                       | Method   | Endpoint                                        | Auth                |
+| ------------------------------- | -------- | ----------------------------------------------- | ------------------- |
+| Tạo kiosk                       | `POST`   | `/api/kiosks`                                   | ❌ (gửi JWT nếu có) |
+| Lấy danh sách kiosk             | `GET`    | `/api/kiosks`                                   | ❌                  |
+| Sửa kiosk                       | `PUT`    | `/api/kiosks/{id}`                              | ❌                  |
+| Tạo lịch kiosk                  | `POST`   | `/api/kiosks/schedule`                          | ❌                  |
+| Lấy lịch kiosk                  | `GET`    | `/api/kiosks/{kioskId}/schedules`               | ❌                  |
+| Sửa lịch kiosk                  | `PUT`    | `/api/kiosks/schedule/{id}`                     | ❌                  |
+| Lấy slot trống                  | `GET`    | `/api/kiosks/{kioskId}/slots?date=YYYY-MM-DD`   | ❌                  |
+| Đặt slot (USER)                 | `POST`   | `/api/mentor-bookings/pick-slot`                | ✅                  |
+| Hủy booking (USER)              | `DELETE` | `/api/mentor-bookings/{bookingId}`              | ✅                  |
+| Lấy booking theo status (ADMIN) | `GET`    | `/api/admin/mentor-bookings?status=...`         | ✅                  |
+| Gán mentor (ADMIN)              | `POST`   | `/api/admin/mentor-bookings/{id}/assign-mentor` | ✅                  |
+| Kiosk xác thực sessionKey       | `POST`   | `/api/kiosk/enter`                              | ❌                  |
+| Lấy application của tôi         | `GET`    | `/api/applications/me`                          | ✅                  |
+| Lấy application details         | `GET`    | `/api/application-details/application/{id}`     | ✅                  |
+| Lấy danh sách mentor            | `GET`    | `/api/mentors`                                  | ❌                  |
+| Đăng nhập                       | `POST`   | `/api/auth/login`                               | ❌                  |
+| Lấy notification                | `GET`    | `/api/notifications/{userId}`                   | ✅                  |
 
 ---
 

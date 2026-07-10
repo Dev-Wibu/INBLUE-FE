@@ -61,6 +61,152 @@ export class KioskManager {
     }
   }
 
+  async createKiosk(body: {
+    name: string;
+    location: string;
+    isActive: boolean;
+  }): Promise<ApiResponse<Kiosk>> {
+    try {
+      const response = await fetchClient
+        .POST("/api/kiosks", {
+          body: body as never,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return {
+        success: true,
+        data: response.data as Kiosk,
+      };
+    } catch (error) {
+      console.error("[KioskManager] createKiosk error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  async updateKiosk(
+    id: number,
+    body: { name: string; location: string; isActive: boolean }
+  ): Promise<ApiResponse<Kiosk>> {
+    try {
+      const response = await fetchClient
+        .PUT("/api/kiosks/{id}", {
+          params: { path: { id } },
+          body: body as never,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return {
+        success: true,
+        data: response.data as Kiosk,
+      };
+    } catch (error) {
+      console.error("[KioskManager] updateKiosk error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  async getSchedulesByKiosk(kioskId: number): Promise<ApiResponse<KioskSchedule[]>> {
+    try {
+      const response = await fetchClient
+        .GET("/api/kiosks/{kioskId}/schedules", {
+          params: { path: { kioskId } },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return {
+        success: true,
+        data: (response.data ?? []) as KioskSchedule[],
+      };
+    } catch (error) {
+      console.error("[KioskManager] getSchedulesByKiosk error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  async createSchedule(body: {
+    kioskId: number;
+    dayOfWeek: KioskSchedule["dayOfWeek"];
+    openTime: string;
+    closeTime: string;
+    slotDurationMinutes: number;
+    isActive: boolean;
+  }): Promise<ApiResponse<KioskSchedule>> {
+    try {
+      const response = await fetchClient
+        .POST("/api/kiosks/schedule", {
+          body: body as never,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return {
+        success: true,
+        data: response.data as KioskSchedule,
+      };
+    } catch (error) {
+      console.error("[KioskManager] createSchedule error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  async updateSchedule(
+    id: number,
+    body: {
+      kioskId: number;
+      dayOfWeek: KioskSchedule["dayOfWeek"];
+      openTime: string;
+      closeTime: string;
+      slotDurationMinutes: number;
+      isActive: boolean;
+    }
+  ): Promise<ApiResponse<KioskSchedule>> {
+    try {
+      const response = await fetchClient
+        .PUT("/api/kiosks/schedule/{id}", {
+          params: { path: { id } },
+          body: body as never,
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return {
+        success: true,
+        data: response.data as KioskSchedule,
+      };
+    } catch (error) {
+      console.error("[KioskManager] updateSchedule error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
   async getAvailableSlots(kioskId: number, date: string): Promise<ApiResponse<SlotDto[]>> {
     try {
       const response = await fetchClient
