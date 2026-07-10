@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { CalendarDays, CheckCircle2, Clock4, MoreHorizontal, Pencil, PowerOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { DayOfWeek, KioskSchedule } from "../types";
+import type { KioskSchedule } from "../types";
 
 interface ScheduleTableProps {
   schedules: KioskSchedule[];
@@ -24,16 +24,6 @@ interface ScheduleTableProps {
   onEdit: (schedule: KioskSchedule) => void;
   onToggleStatus: (schedule: KioskSchedule) => void;
 }
-
-const DAY_LABELS: Record<DayOfWeek, string> = {
-  MONDAY: "common.mon",
-  TUESDAY: "common.tue",
-  WEDNESDAY: "common.wed",
-  THURSDAY: "common.thu",
-  FRIDAY: "common.fri",
-  SATURDAY: "common.sat",
-  SUNDAY: "common.sun",
-};
 
 const formatTime = (time: string | undefined): string => {
   if (!time) return "—";
@@ -107,7 +97,9 @@ export function ScheduleTable({
                     <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-md">
                       <CalendarDays className="h-3.5 w-3.5" />
                     </div>
-                    <span className="font-medium">{day ? t(DAY_LABELS[day]) : "—"}</span>
+                    <span className="font-medium">
+                      {day ? t(`adminKioskManagement.days.${day}`) : "—"}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
