@@ -641,6 +641,7 @@ function RoundTimelineItem({
   isCurrent,
   isLocked,
   onEnterRoom,
+  onEnterMentorReview,
   onViewEmailSubmission,
   isPolling,
   optimistic,
@@ -653,6 +654,7 @@ function RoundTimelineItem({
   isCurrent: boolean;
   isLocked: boolean;
   onEnterRoom?: () => void;
+  onEnterMentorReview?: () => void;
   onViewEmailSubmission?: (_emailSubmissionId: number) => void;
   isPolling?: boolean;
   optimistic?: { isOptimistic: true; roundId: number; status: "SUBMITTED"; submittedAt: string };
@@ -825,6 +827,19 @@ function RoundTimelineItem({
                   {t("userApplicationhistory.enterRoom")}
                 </Button>
               )}
+              {isCurrent &&
+                !isEvaluating &&
+                (round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
+                onEnterMentorReview && (
+                  <Button
+                    onClick={onEnterMentorReview}
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-950">
+                    <Star className="mr-1 h-4 w-4" />
+                    {t("userApplicationhistory.mentorReview")}
+                  </Button>
+                )}
             </div>
           </div>
         </div>
@@ -946,10 +961,12 @@ function ApplicationDetailPanel({
       const hasPendingDetails = details.some(
         (d: ApplicationDetail) => d.status === "SUBMITTED" || d.status === "PENDING"
       );
-      const hasResults = details.some(
-        (d: ApplicationDetail) =>
-          d.status === "AI_EVALUATED" || d.status === "COMPLETED" || d.status === "ERROR"
-      );
+      // Backend enum may evolve (e.g. "ERROR"). Use a string narrowing to stay
+      // forward-compatible with future statuses returned by the OpenAPI schema.
+      const hasResults = details.some((d: ApplicationDetail) => {
+        const status = d.status as string | undefined;
+        return status === "AI_EVALUATED" || status === "COMPLETED" || status === "ERROR";
+      });
 
       if (hasResults || !hasPendingDetails) {
         // AI done or no pending rounds → stop polling
@@ -1055,9 +1072,8 @@ function ApplicationDetailPanel({
     }
 
     // If this is a MENTOR_REVIEW round, navigate to mentor review page
-    // Note: BE may send "MENTROR_REVIEW" (typo) or "MENTOR_REVIEW"
     if (round.roundType === "MENTOR_REVIEW" || round.roundType === "MENTROR_REVIEW") {
-      navigate(`/user/application/${application.id}/mentor-review?roundId=${round.id}`);
+      navigate(`/user/application/${application.id}/mentor-review`);
       return;
     }
 
@@ -1215,6 +1231,13 @@ function ApplicationDetailPanel({
                 optimistic={item.optimistic}
                 onEnterRoom={
                   item.isCurrent ? () => handleEnterRoom(item.round, item.detail) : undefined
+                }
+                onEnterMentorReview={
+                  item.isCurrent &&
+                  (item.round?.roundType === "MENTOR_REVIEW" ||
+                    item.round?.roundType === "MENTROR_REVIEW")
+                    ? () => handleEnterRoom(item.round, item.detail)
+                    : undefined
                 }
                 onViewEmailSubmission={handleViewEmailSubmission}
               />
