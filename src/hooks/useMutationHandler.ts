@@ -25,9 +25,9 @@ export function useMutationHandler<TData = unknown, TVariables = unknown, TError
   showErrorToast = true,
   ...options
 }: {
-  mutationFn: (variables: TVariables) => Promise<TData>;
-  onSuccess?: (data: TData, variables: TVariables) => void;
-  onError?: (error: TError, variables: TVariables) => void;
+  mutationFn: (_variables: TVariables) => Promise<TData>;
+  onSuccess?: (data: TData, _variables: TVariables) => void;
+  onError?: (error: TError, _variables: TVariables) => void;
   successMessage?: string;
   errorMessage?: string;
   showSuccessToast?: boolean;

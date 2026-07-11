@@ -14,6 +14,7 @@ import {
 } from "@/components/shared";
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useTabsState, type Tab } from "@/hooks/useTabsState";
+import { HrMentorReviewApprovalPage } from "@/pages/Shared/HrMentorReviewApproval";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
   ClipboardCheck,
@@ -49,7 +50,8 @@ type TabType =
   | "feedbackModeration"
   | "postModeration"
   | "applicationGrading"
-  | "grading-detail";
+  | "grading-detail"
+  | "mentorReviewApprovals";
 
 const VALID_TAB_TYPES: TabType[] = [
   "dashboard",
@@ -60,6 +62,7 @@ const VALID_TAB_TYPES: TabType[] = [
   "postModeration",
   "applicationGrading",
   "grading-detail",
+  "mentorReviewApprovals",
 ];
 
 const isValidTabType = (value: string): value is TabType => {
@@ -95,6 +98,10 @@ const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; la
     type: "postModeration",
     label: t("common.articlesCommunity"),
   },
+  {
+    type: "mentorReviewApprovals",
+    label: t("staffStaffdashboard.mentorReviewApprovals"),
+  },
 ];
 
 const TAB_ICONS: Record<TabType, React.ElementType> = {
@@ -105,6 +112,7 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   reviewModeration: Star,
   feedbackModeration: MessageSquare,
   postModeration: Newspaper,
+  mentorReviewApprovals: UserCheck,
   "grading-detail": FileText,
 };
 
@@ -116,6 +124,7 @@ const TAB_COLORS: Record<TabType, string> = {
   reviewModeration: "text-yellow-600",
   feedbackModeration: "text-cyan-600",
   postModeration: "text-purple-600",
+  mentorReviewApprovals: "text-amber-600",
   "grading-detail": "text-orange-600",
 };
 
@@ -209,6 +218,13 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         label: t("adminApplicationGrading.applicationGrading"),
         color: "text-orange-600",
         description: t("adminApplicationGrading.gradeApplications"),
+      },
+      {
+        type: "mentorReviewApprovals",
+        icon: UserCheck,
+        label: t("staffStaffdashboard.mentorReviewApprovals"),
+        color: "text-amber-600",
+        description: t("staffStaffdashboard.mentorReviewApprovalsDescription"),
       },
     ],
   },
@@ -470,6 +486,8 @@ export function StaffDashboardPage() {
         return <FeedbackModerationPage />;
       case "postModeration":
         return <PostModerationPage />;
+      case "mentorReviewApprovals":
+        return <HrMentorReviewApprovalPage />;
       default:
         return <div>{t("common.invalidTabType")}</div>;
     }

@@ -1,164 +1,512 @@
+import { SlotCalendar, type SlotCalendarSlot } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
+import { useActiveKiosks, useKioskSlots, usePickKioskSlot } from "@/hooks/useKiosk";
 import { useCurrentRound } from "@/hooks/useRound";
+import { fetchClient } from "@/lib/api";
 import {
-  SESSION_QUERY_KEYS,
-  useCreateSession,
-  useMakeSessionPayment,
-  useSessionById,
-} from "@/hooks/useSession";
-import { cn } from "@/lib/utils";
-import type { ApplicationDetail } from "@/services/application-detail.manager";
-import { applicationDetailManager } from "@/services/application-detail.manager";
-import { useAuthStore } from "@/stores/authStore";
-import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Send, Video } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  KeyRound,
+  MapPin,
+  Send,
+  Video,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-export function ApplicationMentorReviewPage() {
+// ============================================================
+// Types
+// ============================================================
+
+type BookingStatus =
+  | "AWAITING_MENTOR"
+  | "MENTOR_ASSIGNED"
+  | "ROOM_CREATED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELED";
+type ApplicationDetailStatus =
+  | "PENDING"
+  | "SLOT_PICKED"
+  | "SUBMITTED"
+  | "AI_EVALUATED"
+  | "COMPLETED"
+  | "ERROR";
+
+interface ApplicationDetail {
+  id?: number;
+  applicationId?: number;
+  roundId?: number;
+  status?: ApplicationDetailStatus;
+  bookingId?: number;
+  sessionId?: number;
+  finalScore?: number;
+  finalResult?: string;
+  // After POST /api/mentor-reviews the backend sets `mentorReview`
+  // (Mentor evaluating Student). After POST /api/mentor-feedbacks the
+  // backend sets `mentorFeedback` (Student evaluating Mentor). On the
+  // student-facing page we only care about feedback submitted by the
+  // student, so we look for `mentorFeedback`.
+  mentorReview?: { id?: number };
+  mentorFeedback?: { id?: number };
+}
+
+interface MentorInterviewBooking {
+  id?: number;
+  applicationDetailId?: number;
+  kioskId?: number;
+  applicantUserId?: number;
+  scheduledStart?: string;
+  scheduledEnd?: string;
+  mentorId?: number;
+  sessionId?: number;
+  status?: BookingStatus;
+  sessionKey?: string;
+  notes?: string;
+}
+
+// ============================================================
+// Helpers
+// ============================================================
+
+const toYmd = (date: Date): string => {
+  const tz = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tz).toISOString().slice(0, 10);
+};
+
+// GET /api/mentor-bookings/{bookingId}
+// NOTE: backend v062 does NOT expose this endpoint for students (admin-only).
+// We still attempt it but log + throw when the call fails so the upstream UI
+// can decide what to do (e.g. fall back to the application-detail data).
+async function fetchBookingById(bookingId: number): Promise<MentorInterviewBooking> {
+  try {
+    const { useAuthStore } = await import("@/stores/authStore");
+    const token = useAuthStore.getState().token;
+    const headers: HeadersInit = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const baseUrl = (await import("@/constants/api.config")).API_BASE_URL;
+    const res = await fetch(`${baseUrl}/api/mentor-bookings/${bookingId}`, { headers });
+
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) {
+      throw new Error(`/api/mentor-bookings/${bookingId} returned non-JSON (${contentType})`);
+    }
+    if (!res.ok) {
+      throw new Error(`/api/mentor-bookings/${bookingId} HTTP ${res.status}`);
+    }
+    return (await res.json()) as MentorInterviewBooking;
+  } catch (err) {
+    console.error("[MentorReviewPage] fetchBookingById failed:", err);
+    throw err;
+  }
+}
+
+// ============================================================
+// Step 1: Slot Selection Screen
+// ============================================================
+
+function SlotSelectionStep({
+  applicationDetailId,
+  onSuccess,
+}: {
+  applicationDetailId: number;
+  onSuccess: (booking: MentorInterviewBooking) => void;
+}) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const params = useParams();
-  const [searchParams] = useSearchParams();
-  const user = useAuthStore((s) => s.user);
-
-  const applicationId = Number(params.applicationId);
-  const roundIdParam = searchParams.get("roundId");
-  const roundId = roundIdParam ? Number(roundIdParam) : undefined;
-
-  // DEBUG
-  console.log("[MentorReviewPage] mount", {
-    applicationId,
-    roundId,
-    hasUser: !!user,
-    userId: user?.id,
+  const [selectedKioskId, setSelectedKioskId] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
   });
+  const [selectedSlot, setSelectedSlot] = useState<SlotCalendarSlot | null>(null);
 
-  // Fetch current round config
-  const { data: currentRound, isLoading: roundLoading } = useCurrentRound(
-    applicationId,
-    !!applicationId
+  const selectedDateString = useMemo(() => toYmd(selectedDate), [selectedDate]);
+  const { data: kiosks = [], isLoading: kiosksLoading } = useActiveKiosks();
+  const { data: slots = [], isLoading: slotsLoading } = useKioskSlots(
+    selectedKioskId ?? 0,
+    selectedDateString,
+    !!selectedKioskId
   );
-  const roundConfig = currentRound?.configData as
-    | {
-        mentorInterview?: {
-          userId?: number;
-          mentorId?: number;
-          mentorName?: string;
-          mentorAvatar?: string;
-          mentorExpertise?: string;
-          duration?: number;
-          totalPrice?: number;
-        };
+  const pickSlotMutation = usePickKioskSlot();
+
+  const slotSelectorKey = `${selectedKioskId ?? "none"}__${selectedDateString}`;
+
+  const handlePickSlot = async () => {
+    if (!selectedKioskId || !selectedSlot) return;
+    if (!applicationDetailId) {
+      // applicationDetailId is 0 when the page-level effect hasn't resolved yet.
+      // Surface this so the user can retry instead of getting a silent 404.
+      toast.error(t("common.anErrorHasOccurred"));
+      return;
+    }
+    try {
+      const result = await pickSlotMutation.mutateAsync({
+        applicationDetailId,
+        kioskId: selectedKioskId,
+        scheduledStart: selectedSlot.startTime,
+        scheduledEnd: selectedSlot.endTime,
+      });
+      if (result) {
+        onSuccess(result as unknown as MentorInterviewBooking);
       }
-    | undefined;
+    } catch {
+      // error handled by hook
+    }
+  };
 
-  // Fetch existing application detail (to check if review was submitted + get mentor info from API)
-  const [existingDetail, setExistingDetail] = useState<ApplicationDetail | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const kioskName = kiosks.find((k) => k.id === selectedKioskId)?.name;
 
-  useEffect(() => {
-    if (!applicationId || !roundId) return;
-    setDetailLoading(true);
-    applicationDetailManager
-      .getByApplicationId(applicationId)
-      .then((res) => {
-        if (res.success && res.data) {
-          const detail = res.data.find((d) => d.roundId === roundId);
-          if (detail) setExistingDetail(detail);
-        }
+  return (
+    <div className="space-y-5">
+      {/* Hero */}
+      <Card className="border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-950">
+        <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 dark:bg-indigo-900">
+            <Calendar className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-indigo-700 dark:text-indigo-300">
+              {t("userKiosk.pickTimeSlot")}
+            </p>
+            <p className="mt-1 text-sm text-indigo-600 dark:text-indigo-400">
+              {t("userKiosk.selectKioskAndTime")}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Step 1: Select Kiosk */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MapPin className="h-4 w-4 text-[#0047AB]" />
+            {t("userKiosk.selectKiosk")}
+          </CardTitle>
+          <CardDescription>{t("userKiosk.selectKioskDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {kiosksLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Spinner size="sm" tone="primary" />
+            </div>
+          ) : kiosks.length === 0 ? (
+            <p className="text-sm text-slate-500">{t("userKiosk.noKiosksAvailable")}</p>
+          ) : (
+            <Select
+              value={selectedKioskId ? String(selectedKioskId) : ""}
+              onValueChange={(v) => setSelectedKioskId(Number(v))}>
+              <SelectTrigger id="kiosk-select">
+                <SelectValue placeholder={t("userKiosk.chooseKiosk")} />
+              </SelectTrigger>
+              <SelectContent>
+                {kiosks.map((kiosk) => (
+                  <SelectItem key={kiosk.id} value={String(kiosk.id)}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{kiosk.name}</span>
+                      {kiosk.location && (
+                        <span className="text-xs text-slate-500">{kiosk.location}</span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Step 2: Select Date & Time */}
+      {selectedKioskId && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-4 w-4 text-[#0047AB]" />
+              {t("userKiosk.selectTimeSlot")}
+            </CardTitle>
+            {kioskName && (
+              <CardDescription>
+                {t("userKiosk.availableSlotsFor")} {kioskName}
+              </CardDescription>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <SlotCalendar
+              key={slotSelectorKey}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              slots={slots.map((s) => ({
+                startTime: s.startTime ?? "",
+                endTime: s.endTime ?? "",
+                available: s.available ?? false,
+              }))}
+              selectedSlotKey={
+                selectedSlot ? `${selectedSlot.startTime}__${selectedSlot.endTime}` : null
+              }
+              onSelectSlot={setSelectedSlot}
+              isLoading={slotsLoading}
+            />
+
+            {/* Selected slot info */}
+            {selectedSlot && (
+              <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-800 dark:bg-indigo-950">
+                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  {t("userKiosk.selectedSlot")}: {selectedSlot.startTime} - {selectedSlot.endTime}
+                </p>
+              </div>
+            )}
+
+            {/* Confirm button */}
+            <Button
+              onClick={handlePickSlot}
+              disabled={!selectedSlot || pickSlotMutation.isPending}
+              className="w-full gap-2 bg-indigo-600 text-white hover:bg-indigo-700">
+              {pickSlotMutation.isPending ? (
+                <>
+                  <Spinner size="sm" tone="white" />
+                  {t("userKiosk.booking")}
+                </>
+              ) : (
+                <>
+                  <Calendar className="h-4 w-4" />
+                  {t("userKiosk.confirmSlot")}
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// Step 2: Waiting for Mentor
+// ============================================================
+
+function AwaitingMentorStep({
+  booking,
+  onCancel,
+}: {
+  booking: MentorInterviewBooking;
+  onCancel?: () => void;
+}) {
+  const { t } = useTranslation();
+
+  const scheduledTime = booking.scheduledStart
+    ? new Date(booking.scheduledStart).toLocaleString("vi-VN", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       })
-      .finally(() => setDetailLoading(false));
-  }, [applicationId, roundId]);
+    : null;
 
-  // Mentor info: prefer from existingDetail API response (backend may populate this),
-  // fallback to roundConfig (round template config)
-  const mentorInfoFromDetail = (
-    existingDetail as unknown as
-      | {
-          mentorInterview?: {
-            userId?: number;
-            mentorId?: number;
-            mentorName?: string;
-            mentorAvatar?: string;
-            mentorExpertise?: string;
-            duration?: number;
-            totalPrice?: number;
-          };
-        }
-      | undefined
-  )?.mentorInterview;
-  const mentorInfo = mentorInfoFromDetail ?? roundConfig?.mentorInterview;
+  return (
+    <div className="space-y-5">
+      {/* Waiting card */}
+      <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+        <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+          <div className="relative">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+              <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            </div>
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500">
+              <span className="absolute h-4 w-4 animate-ping rounded-full bg-amber-400 opacity-75" />
+            </span>
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-amber-700 dark:text-amber-300">
+              {t("userKiosk.waitingForMentor")}
+            </p>
+            <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+              {t("userKiosk.waitingForMentorDesc")}
+            </p>
+          </div>
+          {scheduledTime && (
+            <div className="rounded-lg border border-amber-200 bg-white/60 px-4 py-2 dark:border-amber-800 dark:bg-black/20">
+              <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                {t("userKiosk.scheduledFor")} {scheduledTime}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-  // Session state
-  const [sessionId, setSessionId] = useState<number | null>(null);
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
+      {/* How it works */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">{t("userKiosk.howItWorks")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[
+            { step: 1, text: t("userKiosk.step1Waiting") },
+            { step: 2, text: t("userKiosk.step2Notification") },
+            { step: 3, text: t("userKiosk.step3GoToKiosk") },
+          ].map((item) => (
+            <div key={item.step} className="flex items-start gap-3">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0047AB] text-xs font-bold text-white">
+                {item.step}
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{item.text}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
-  // React Query: auto-refetch session status when navigating back.
-  // Poll every 3 seconds while sessionId is set so payment/room status updates automatically.
-  const { data: fetchedSession } = useSessionById(sessionId ?? 0);
+      {/* Cancel button */}
+      {onCancel && (
+        <Button variant="outline" onClick={onCancel} className="w-full text-slate-500">
+          {t("userKiosk.cancelBooking")}
+        </Button>
+      )}
+    </div>
+  );
+}
 
-  // DEBUG
-  console.log("[MentorReviewPage] session", {
-    sessionId,
-    fetchedSession,
-    fetchedSessionStatus: fetchedSession?.status,
-    isCreatingSession,
-  });
+// ============================================================
+// Step 3: Room Ready (mentor assigned, room created)
+// ============================================================
 
-  // Create session on mount if mentorInfo is available
-  const createSessionMutation = useCreateSession();
+function RoomReadyStep({
+  booking,
+  onGoToKiosk,
+}: {
+  booking: MentorInterviewBooking;
+  onGoToKiosk: () => void;
+}) {
+  const { t } = useTranslation();
 
-  useEffect(() => {
-    console.log("[MentorReviewPage] sessionEffect", {
-      mentorInfo,
-      sessionId,
-      condition: !mentorInfo || sessionId !== null ? "SKIP" : "CREATE",
-    });
-    if (!mentorInfo || sessionId !== null) return;
-    void (async () => {
-      console.log("[MentorReviewPage] creating session...");
-      setIsCreatingSession(true);
-      try {
-        const result = await createSessionMutation.mutateAsync({
-          userId: mentorInfo.userId ?? 0,
-          mentorId: mentorInfo.mentorId ?? 0,
-          duration: mentorInfo.duration ?? 60,
-          totalPrice: mentorInfo.totalPrice ?? 0,
-        });
-        console.log("[MentorReviewPage] session created", result);
-        if (result?.id) setSessionId(result.id);
-      } catch (err) {
-        console.error("[MentorReviewPage] session create failed", err);
-        // Allow manual retry
-      } finally {
-        setIsCreatingSession(false);
-      }
-    })();
-  }, [mentorInfo, sessionId, createSessionMutation]);
+  const scheduledTime = booking.scheduledStart
+    ? new Date(booking.scheduledStart).toLocaleString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
 
-  // Poll session status every 3 seconds while a session is active so payment/room
-  // status updates automatically after returning from external flows.
-  useEffect(() => {
-    if (!sessionId) return;
-    const interval = setInterval(() => {
-      void queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.byId(sessionId) });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [sessionId, queryClient]);
+  return (
+    <div className="space-y-5">
+      <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+        <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+              {t("userKiosk.mentorAssigned")}
+            </p>
+            <p className="mt-1 text-sm text-green-600 dark:text-green-400">
+              {t("userKiosk.mentorAssignedDesc")}
+            </p>
+          </div>
+          {scheduledTime && (
+            <div className="rounded-lg border border-green-200 bg-white/60 px-4 py-2 dark:border-green-800 dark:bg-black/20">
+              <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                {t("userKiosk.interviewTime")}: {scheduledTime}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-  // Session mutations
-  const makePaymentMutation = useMakeSessionPayment();
+      {/* Session Key */}
+      {booking.sessionKey && (
+        <Card className="border-[#0047AB]/30 bg-[#0047AB]/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <KeyRound className="h-4 w-4 text-[#0047AB]" />
+              {t("userKiosk.sessionKey")}
+            </CardTitle>
+            <CardDescription>{t("userKiosk.sessionKeyDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg border border-[#0047AB]/20 bg-white px-4 py-3 font-mono text-sm text-[#0047AB]">
+              {booking.sessionKey}
+            </div>
+            <p className="mt-2 text-xs text-slate-500">{t("userKiosk.sessionKeyHint")}</p>
+          </CardContent>
+        </Card>
+      )}
 
-  // Form state — STAR model
+      {/* Go to Kiosk */}
+      <Button
+        onClick={onGoToKiosk}
+        size="lg"
+        className="w-full gap-2 bg-green-600 text-white hover:bg-green-700">
+        <Video className="h-5 w-5" />
+        {t("userKiosk.goToKiosk")}
+      </Button>
+    </div>
+  );
+}
+
+// ============================================================
+// Step 4: In Progress (at kiosk)
+// ============================================================
+
+function InProgressStep({ roomUrl }: { roomUrl?: string }) {
+  const { t } = useTranslation();
+  return (
+    <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+      <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+          <Video className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-blue-700 dark:text-blue-300">
+            {t("userKiosk.interviewInProgress")}
+          </p>
+          <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
+            {t("userKiosk.interviewInProgressDesc")}
+          </p>
+        </div>
+        {roomUrl && (
+          <p className="rounded-lg border border-blue-200 bg-white/60 px-4 py-2 font-mono text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
+            Room URL ready
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================
+// Step 5: STAR Review Form
+// ============================================================
+
+function ReviewFormStep({
+  sessionId,
+  mentorId,
+  userId,
+  onSubmitSuccess,
+}: {
+  sessionId?: number;
+  mentorId?: number;
+  userId?: number;
+  onSubmitSuccess: () => void;
+}) {
+  const { t } = useTranslation();
   const [rating, setRating] = useState<number>(0);
   const [situationNote, setSituationNote] = useState("");
   const [taskNote, setTaskNote] = useState("");
@@ -176,137 +524,412 @@ export function ApplicationMentorReviewPage() {
       actionNote.trim().length > 0 ||
       resultNote.trim().length > 0);
 
-  // Callbacks
-  const handlePayment = useCallback(async () => {
-    if (!sessionId) return;
-    try {
-      const checkoutUrl = await makePaymentMutation.mutateAsync(sessionId);
-      window.location.href = checkoutUrl;
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("common.anErrorHasOccurred"));
+  const handleSubmit = async () => {
+    if (!canSubmit) return;
+    if (!sessionId || !mentorId || !userId) {
+      toast.error(t("common.anErrorHasOccurred"));
+      return;
     }
-  }, [sessionId, makePaymentMutation, t]);
-
-  const handleJoinRoom = useCallback(() => {
-    if (!sessionId) return;
-    navigate(`/user/mock-interview/room/${sessionId}`);
-  }, [sessionId, navigate]);
-
-  const handleSubmit = useCallback(async () => {
-    if (!applicationId || !roundId || !user?.id || !canSubmit) return;
     setIsSubmitting(true);
     try {
-      const payload = {
-        sessionId: sessionId ?? 0,
-        mentorId: mentorInfo?.mentorId ?? 0,
-        userId: user.id,
-        rating,
-        situationNote: situationNote.trim() || undefined,
-        taskNote: taskNote.trim() || undefined,
-        actionNote: actionNote.trim() || undefined,
-        resultNote: resultNote.trim() || undefined,
-        strength: strength.trim() || undefined,
-        weakness: weakness.trim() || undefined,
-        improve: improve.trim() || undefined,
-      };
-
-      const response = await fetch("/api/application-details/mentor-review/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicationId, roundId, ...payload }),
+      // Student đánh giá Mentor sau phỏng vấn → POST /api/mentor-feedbacks
+      // (POST /api/mentor-reviews là Mentor đánh giá Student — flow ngược lại)
+      // Schema OpenAPI chỉ Declare body: { sessionId, mentorId, userId, rating, comment }
+      const { response } = await fetchClient.POST("/api/mentor-feedbacks", {
+        body: {
+          sessionId,
+          mentorId,
+          userId,
+          rating,
+          comment:
+            [
+              situationNote.trim(),
+              taskNote.trim(),
+              actionNote.trim(),
+              resultNote.trim(),
+              strength.trim(),
+              weakness.trim(),
+              improve.trim(),
+            ]
+              .filter(Boolean)
+              .join("\n\n") || undefined,
+        },
       });
-
-      if (response.ok) {
-        toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
-        navigate(-1);
-      } else {
-        const errData = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const errData = (await response.json().catch(() => ({}))) as { message?: string };
         toast.error(errData?.message ?? t("common.anErrorHasOccurred"));
+        return;
       }
-    } catch {
+      toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
+      onSubmitSuccess();
+    } catch (err) {
+      console.error("[MentorReviewPage] submit feedback failed:", err);
       toast.error(t("common.anErrorHasOccurred"));
     } finally {
       setIsSubmitting(false);
     }
-  }, [
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900">
+          <StarRating value={rating} onChange={setRating} size="md" />
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-slate-900 dark:text-white">
+            {t("userApplicationhistory.ratingAndFeedback")}
+          </p>
+          <p className="text-sm text-slate-500">{t("userKiosk.reviewMentorAfterInterview")}</p>
+        </div>
+      </div>
+
+      {/* STAR Form */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">{t("userApplicationhistory.starModel")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* Rating */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">
+              {t("userApplicationhistory.overallRating")} <span className="text-red-500">*</span>
+            </Label>
+            <StarRating value={rating} onChange={setRating} size="lg" />
+            {rating > 0 && (
+              <p className="text-xs text-slate-500">
+                {t(`userApplicationhistory.rating${rating}Star` as const, { count: rating })}
+              </p>
+            )}
+          </div>
+
+          {/* STAR Fields */}
+          <div className="space-y-4">
+            {[
+              {
+                label: t("userApplicationhistory.situation"),
+                hint: t("userApplicationhistory.situationHint"),
+                value: situationNote,
+                onChange: setSituationNote,
+                placeholder: t("userApplicationhistory.describeTheSituation"),
+              },
+              {
+                label: t("userApplicationhistory.task"),
+                hint: t("userApplicationhistory.taskHint"),
+                value: taskNote,
+                onChange: setTaskNote,
+                placeholder: t("userApplicationhistory.describeTheTask"),
+              },
+              {
+                label: t("userApplicationhistory.action"),
+                hint: t("userApplicationhistory.actionHint"),
+                value: actionNote,
+                onChange: setActionNote,
+                placeholder: t("userApplicationhistory.describeTheAction"),
+              },
+              {
+                label: t("userApplicationhistory.result"),
+                hint: t("userApplicationhistory.resultHint"),
+                value: resultNote,
+                onChange: setResultNote,
+                placeholder: t("userApplicationhistory.describeTheResult"),
+              },
+            ].map((field) => (
+              <div key={field.label} className="space-y-2">
+                <Label className="text-sm font-medium">{field.label}</Label>
+                <p className="text-xs text-slate-500">{field.hint}</p>
+                <Textarea
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  placeholder={field.placeholder}
+                  rows={3}
+                  maxLength={1000}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Additional Feedback */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t("userApplicationhistory.strength")}</Label>
+              <Textarea
+                value={strength}
+                onChange={(e) => setStrength(e.target.value)}
+                placeholder={t("userApplicationhistory.whatDidTheMentorDoWell")}
+                rows={3}
+                maxLength={500}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t("userApplicationhistory.weakness")}</Label>
+              <Textarea
+                value={weakness}
+                onChange={(e) => setWeakness(e.target.value)}
+                placeholder={t("userApplicationhistory.whatCouldBeImproved")}
+                rows={3}
+                maxLength={500}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">
+              {t("userApplicationhistory.improvementSuggestion")}
+            </Label>
+            <Textarea
+              value={improve}
+              onChange={(e) => setImprove(e.target.value)}
+              placeholder={t("userApplicationhistory.suggestionsForImprovement")}
+              rows={3}
+              maxLength={500}
+            />
+          </div>
+
+          {/* Submit */}
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              onClick={handleSubmit}
+              disabled={!canSubmit || isSubmitting}
+              className="gap-2 bg-[#0047AB] text-white hover:bg-[#003d91] disabled:bg-slate-300">
+              {isSubmitting ? (
+                <>
+                  <Spinner size="sm" tone="white" />
+                  {t("compUi.submitting")}
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  {t("common.submit")}
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ============================================================
+// Main Page
+// ============================================================
+
+export function ApplicationMentorReviewPage() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const params = useParams();
+  const applicationId = Number(params.applicationId);
+
+  // State
+  const [applicationDetail, setApplicationDetail] = useState<ApplicationDetail | null>(null);
+  const [booking, setBooking] = useState<MentorInterviewBooking | null>(null);
+  const [roomUrl, setRoomUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const { data: currentRound, isLoading: currentRoundLoading } = useCurrentRound(
     applicationId,
-    roundId,
-    sessionId,
-    user,
-    mentorInfo,
-    rating,
-    situationNote,
-    taskNote,
-    actionNote,
-    resultNote,
-    strength,
-    weakness,
-    improve,
-    canSubmit,
-    navigate,
-    t,
-  ]);
+    !!applicationId
+  );
 
-  // Derived state
-  const isReviewSubmitted = !!existingDetail?.mentorReview;
-  const isLoading = roundLoading || detailLoading || isCreatingSession;
-  const sessionStatus =
-    (fetchedSession?.status as
-      | "PENDING"
-      | "DRAFT"
-      | "SCHEDULED"
-      | "PAID"
-      | "ONGOING"
-      | "COMPLETED"
-      | "REJECTED"
-      | "CANCELED") ?? "PENDING";
+  // ============================================================
+  // Fetch application detail + booking on mount
+  // ============================================================
+  useEffect(() => {
+    if (!applicationId) return;
+    // Wait until current round is loaded so we can match by roundId accurately.
+    if (currentRoundLoading) return;
+    if (!currentRound?.id) {
+      // Current round query has settled but returned nothing → can't proceed.
+      setLoading(false);
+      return;
+    }
 
-  // DEBUG
-  console.log("[MentorReviewPage] derived state", {
-    isLoading,
-    isReviewSubmitted,
-    existingDetail,
-    sessionStatus,
-    // Which branch will render?
-    willShowForm:
-      !isLoading &&
-      !isReviewSubmitted &&
-      mentorInfo &&
-      sessionId !== null &&
-      !["PENDING", "DRAFT", "PAID", "SCHEDULED", "ONGOING"].includes(sessionStatus),
-    willShowPayment:
-      !isLoading &&
-      !isReviewSubmitted &&
-      mentorInfo &&
-      (!sessionId || sessionStatus === "PENDING" || sessionStatus === "DRAFT"),
-    willShowJoinRoom:
-      !isLoading &&
-      !isReviewSubmitted &&
-      mentorInfo &&
-      (sessionStatus === "PAID" || sessionStatus === "SCHEDULED"),
-  });
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const detailRes = await fetchClient.GET(
+          "/api/application-details/application/{applicationId}",
+          { params: { path: { applicationId } } }
+        );
 
-  // ─── Conditional flow rendering ────────────────────────────────────────────
+        if (detailRes.response?.ok && Array.isArray(detailRes.data)) {
+          const details = detailRes.data as ApplicationDetail[];
 
-  // DEBUG: Log which branch is rendering
-  console.log("[MentorReviewPage] RENDER", {
-    branch: isLoading
-      ? "LOADING"
-      : isReviewSubmitted
-        ? "REVIEWED"
-        : !mentorInfo
-          ? "NO_MENTOR"
-          : !sessionId || sessionStatus === "PENDING" || sessionStatus === "DRAFT"
-            ? "PAYMENT"
-            : sessionStatus === "PAID" || sessionStatus === "SCHEDULED"
-              ? "JOIN_ROOM"
-              : sessionStatus === "ONGOING"
-                ? "ONGOING"
-                : "FORM_STAR",
-  });
+          // Backend v062: tự tạo ApplicationDetail cho MENTOR_REVIEW khi moveToNextRound()
+          // Frontend dùng current round để xác định detail đúng, tránh lấy nhầm detail cũ.
+          const currentRoundId = currentRound.id;
+          let currentDetail = details.find((d) => d.roundId === currentRoundId) ?? null;
 
-  // Loading state
-  if (isLoading) {
+          // Defensive fallback: when the application only has the MENTOR_REVIEW detail
+          // (e.g. user just unlocked this round), take it even if roundId did not match.
+          // This covers schema drift between `currentRound.id` and detail roundIds.
+          if (!currentDetail && currentRound.roundType === "MENTROR_REVIEW") {
+            const mentorDetails = details.filter(
+              (d) =>
+                d.status === "PENDING" ||
+                d.status === "SLOT_PICKED" ||
+                d.status === "SUBMITTED" ||
+                d.status === "AI_EVALUATED" ||
+                d.status === "COMPLETED"
+            );
+            if (mentorDetails.length === 1) {
+              currentDetail = mentorDetails[0] ?? null;
+            }
+          }
+
+          if (!currentDetail && details.length > 0) {
+            console.warn("[MentorReviewPage] no ApplicationDetail for current round", {
+              currentRoundId,
+              currentRoundType: currentRound.roundType,
+              detailRoundIds: details.map((d) => d.roundId),
+            });
+          }
+
+          setApplicationDetail(currentDetail ?? null);
+
+          if (currentDetail?.bookingId) {
+            try {
+              const bookingData = await fetchBookingById(currentDetail.bookingId);
+              setBooking(bookingData);
+              // Resolve sessionId: booking may carry it, otherwise fall back to the
+              // detail (backend stores sessionId on ApplicationDetail too).
+              const resolvedSessionId = bookingData.sessionId ?? currentDetail.sessionId ?? null;
+              if (
+                bookingData.status === "ROOM_CREATED" ||
+                bookingData.status === "IN_PROGRESS" ||
+                resolvedSessionId
+              ) {
+                if (!resolvedSessionId) {
+                  return;
+                }
+                const sessionRes = await fetchClient.GET("/api/sessions/{id}", {
+                  params: { path: { id: resolvedSessionId } },
+                });
+                if (sessionRes.response?.ok && sessionRes.data) {
+                  const sessionData = sessionRes.data as { roomUrl?: string };
+                  setRoomUrl(sessionData.roomUrl ?? null);
+                }
+              }
+            } catch (err) {
+              console.error("[MentorReviewPage] fetch booking failed:", err);
+            }
+          } else {
+            setBooking(null);
+            setRoomUrl(null);
+          }
+        }
+      } catch (err) {
+        console.error("[MentorReviewPage] fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchData();
+  }, [applicationId, currentRound?.id, currentRoundLoading, t]);
+
+  // ============================================================
+  // Polling: refresh booking status periodically
+  // ============================================================
+  useEffect(() => {
+    if (!applicationDetail?.bookingId) return;
+    if (booking?.status === "COMPLETED" || booking?.status === "CANCELED") return;
+
+    const interval = setInterval(async () => {
+      if (!applicationDetail?.bookingId) return;
+      try {
+        const fresh = await fetchBookingById(applicationDetail.bookingId);
+        setBooking(fresh);
+      } catch (err) {
+        console.error("[MentorReviewPage] refresh booking failed:", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [applicationDetail?.bookingId, booking?.status]);
+
+  // ============================================================
+  // Handlers
+  // ============================================================
+
+  // Handle slot selection success (after pick-slot)
+  const handleSlotPicked = (newBooking: MentorInterviewBooking) => {
+    setBooking(newBooking);
+    // Update application detail with new bookingId
+    setApplicationDetail((prev) =>
+      prev ? { ...prev, bookingId: newBooking.id, status: "SLOT_PICKED" } : prev
+    );
+  };
+
+  // Go to kiosk (enter room)
+  const handleGoToKiosk = () => {
+    if (!booking?.sessionKey || !booking?.kioskId) return;
+    // Navigate to kiosk enter page with sessionKey and kioskId
+    const params = new URLSearchParams({
+      sessionKey: booking.sessionKey,
+      kioskId: String(booking.kioskId),
+      applicationDetailId: String(applicationDetail?.id ?? 0),
+    });
+    navigate(`/user/kiosk/enter?${params.toString()}`);
+  };
+
+  // Cancel booking
+  const handleCancelBooking = async () => {
+    if (!booking?.id) return;
+    try {
+      await fetchClient.DELETE("/api/mentor-bookings/{bookingId}", {
+        params: { path: { bookingId: booking.id } },
+      });
+      setBooking(null);
+      setApplicationDetail((prev) =>
+        prev ? { ...prev, bookingId: undefined, status: "PENDING" } : prev
+      );
+      toast.success(t("userKiosk.bookingCancelledSuccessfully"));
+    } catch {
+      toast.error(t("common.anErrorHasOccurred"));
+    }
+  };
+
+  // Review submitted
+  const handleReviewSubmitted = () => {
+    navigate(-1);
+  };
+
+  // ============================================================
+  // Derive UI state from backend data
+  // ============================================================
+
+  const applicationDetailId = applicationDetail?.id ?? 0;
+  const bookingStatus = booking?.status;
+  // The student page is showing "have you rated the mentor?" so the
+  // relevant marker on ApplicationDetail is `mentorFeedback` (set by
+  // POST /api/mentor-feedbacks). `mentorReview` is the *mentor's*
+  // evaluation of the student, which is irrelevant here.
+  const isReviewed = !!applicationDetail?.mentorFeedback;
+  // The backend uses ApplicationDetail.status as the source of truth for
+  // "meeting is done, ready for review" — per docs §5, when both parties
+  // leave the Daily.co room the backend flips:
+  //   Session.status  → COMPLETED
+  //   Booking.status  → COMPLETED
+  //   ApplicationDetail.status → AI_EVALUATED
+  // The mentor-review form should be reachable whenever the detail has
+  // reached AI_EVALUATED (or COMPLETED, if a previous round is already
+  // closed) so students can leave feedback even before polling sees the
+  // booking.status catch up.
+  const isCompleted =
+    bookingStatus === "COMPLETED" ||
+    applicationDetail?.status === "AI_EVALUATED" ||
+    applicationDetail?.status === "COMPLETED";
+  const isWrongRound =
+    !currentRoundLoading && !!currentRound && currentRound.roundType !== "MENTROR_REVIEW";
+
+  // ============================================================
+  // Render
+  // ============================================================
+
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Spinner size="lg" tone="primary" />
@@ -314,310 +937,8 @@ export function ApplicationMentorReviewPage() {
     );
   }
 
-  // Already reviewed
-  if (isReviewSubmitted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-8 dark:from-slate-900 dark:to-slate-800">
-        <div className="mx-auto max-w-2xl space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {t("userApplicationhistory.mentorReviewRound")}
-            </h1>
-          </div>
-          <div className="rounded-lg border border-green-200 bg-green-50 p-6 dark:border-green-800 dark:bg-green-900/20">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="h-8 w-8 fill-green-500 text-green-500" />
-              <div>
-                <p className="font-semibold text-green-700 dark:text-green-300">
-                  {t("userApplicationhistory.reviewAlreadySubmitted")}
-                </p>
-                <p className="text-sm text-green-600 dark:text-green-400">
-                  {t("userApplicationhistory.thankYouForYourFeedback")}
-                </p>
-              </div>
-            </div>
-          </div>
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            {t("general.back")}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // No mentor assigned
-  if (!mentorInfo) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-8 dark:from-slate-900 dark:to-slate-800">
-        <div className="mx-auto max-w-2xl space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {t("userApplicationhistory.mentorReviewRound")}
-            </h1>
-          </div>
-          <Card>
-            <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                <Calendar className="h-8 w-8 text-slate-400" />
-              </div>
-              <div>
-                <p className="text-foreground font-semibold">
-                  {t("userApplicationhistory.noMentorAssigned")}
-                </p>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {t("userApplicationhistory.mentorWillBeAssignedSoon")}
-                </p>
-              </div>
-              <Button variant="outline" onClick={() => navigate(-1)}>
-                {t("general.back")}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Session PENDING / DRAFT — show payment screen
-  if (!sessionId || sessionStatus === "PENDING" || sessionStatus === "DRAFT") {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-8 dark:from-slate-900 dark:to-slate-800">
-        <div className="mx-auto max-w-2xl space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {t("userApplicationhistory.mentorReviewRound")}
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                {t("userApplicationhistory.mentorReviewRoundDesc")}
-              </p>
-            </div>
-          </div>
-
-          {/* Mentor Info */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">
-                {t("userApplicationhistory.mentorInformation")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                {mentorInfo.mentorAvatar ? (
-                  <img
-                    src={mentorInfo.mentorAvatar}
-                    alt={mentorInfo.mentorName}
-                    className="h-14 w-14 rounded-full object-cover ring-2 ring-[#0047AB]/20"
-                  />
-                ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0047AB]/10 text-lg font-bold text-[#0047AB]">
-                    {mentorInfo.mentorName?.charAt(0) ?? "M"}
-                  </div>
-                )}
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">
-                    {mentorInfo.mentorName ?? t("userApplicationhistory.mentor")}
-                  </p>
-                  {mentorInfo.mentorExpertise && (
-                    <p className="text-sm text-slate-500">{mentorInfo.mentorExpertise}</p>
-                  )}
-                  {mentorInfo.duration && (
-                    <p className="text-xs text-slate-400">
-                      {mentorInfo.duration} {t("common.minute")}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Interview details */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">
-                {t("userApplicationhistory.interviewDetails")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Clock className="h-4 w-4 text-slate-400" />
-                <span className="text-sm text-slate-600 dark:text-slate-300">
-                  {mentorInfo.duration ?? 60} {t("common.minute")}
-                </span>
-              </div>
-              {mentorInfo.totalPrice != null && mentorInfo.totalPrice > 0 && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-[#0047AB]">
-                    {mentorInfo.totalPrice.toLocaleString()} VND
-                  </span>
-                </div>
-              )}
-              <p className="text-sm text-slate-500">
-                {t("userApplicationhistory.paymentRequiredNote")}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Payment */}
-          {isCreatingSession ? (
-            <div className="flex items-center justify-center gap-2 py-4">
-              <Spinner size="sm" tone="primary" />
-              <span className="text-sm text-slate-500">
-                {t("userApplicationhistory.preparingSession")}
-              </span>
-            </div>
-          ) : (
-            <Card className="border-[#0047AB]/30 bg-[#0047AB]/5">
-              <CardContent className="flex flex-col items-center gap-4 p-6">
-                <CreditCard className="h-10 w-10 text-[#0047AB]" />
-                <div className="text-center">
-                  <p className="font-semibold text-slate-900 dark:text-white">
-                    {t("userApplicationhistory.paymentRequired")}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {t("userApplicationhistory.paymentRequiredDesc")}
-                  </p>
-                </div>
-                <Button
-                  onClick={handlePayment}
-                  disabled={makePaymentMutation.isPending || !sessionId}
-                  className="w-full gap-2 bg-[#0047AB] text-white hover:bg-[#003d91]">
-                  {makePaymentMutation.isPending ? (
-                    <>
-                      <Spinner size="sm" tone="white" />
-                      {t("compUi.processing")}
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="h-4 w-4" />
-                      {t("userApplicationhistory.proceedToPayment")}
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Session PAID / SCHEDULED — show join room screen
-  if (sessionStatus === "PAID" || sessionStatus === "SCHEDULED") {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-8 dark:from-slate-900 dark:to-slate-800">
-        <div className="mx-auto max-w-2xl space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {t("userApplicationhistory.mentorReviewRound")}
-            </h1>
-          </div>
-
-          {/* Mentor card */}
-          <Card>
-            <CardContent className="flex items-center gap-4 p-4">
-              {mentorInfo.mentorAvatar ? (
-                <img
-                  src={mentorInfo.mentorAvatar}
-                  alt={mentorInfo.mentorName}
-                  className="h-12 w-12 rounded-full object-cover ring-2 ring-[#0047AB]/20"
-                />
-              ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0047AB]/10 text-lg font-bold text-[#0047AB]">
-                  {mentorInfo.mentorName?.charAt(0) ?? "M"}
-                </div>
-              )}
-              <div>
-                <p className="font-semibold text-slate-900 dark:text-white">
-                  {mentorInfo.mentorName}
-                </p>
-                <p className="text-sm text-slate-500">{mentorInfo.mentorExpertise}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-            <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-                <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <p className="text-lg font-semibold text-green-700 dark:text-green-300">
-                  {t("userApplicationhistory.paymentSuccessful")}
-                </p>
-                <p className="mt-1 text-sm text-green-600 dark:text-green-400">
-                  {t("userApplicationhistory.readyToJoinRoom")}
-                </p>
-              </div>
-              <Button
-                onClick={handleJoinRoom}
-                size="lg"
-                className="gap-2 bg-green-600 text-white hover:bg-green-700">
-                <Video className="h-5 w-5" />
-                {t("userApplicationhistory.joinRoomNow")}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Session ONGOING — show in-progress screen
-  if (sessionStatus === "ONGOING") {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-8 dark:from-slate-900 dark:to-slate-800">
-        <div className="mx-auto max-w-2xl space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {t("userApplicationhistory.mentorReviewRound")}
-            </h1>
-          </div>
-          <Card>
-            <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                <Video className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                  {t("userApplicationhistory.interviewInProgress")}
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  {t("userApplicationhistory.interviewInProgressDesc")}
-                </p>
-              </div>
-              <Button
-                onClick={handleJoinRoom}
-                size="lg"
-                className="gap-2 bg-[#0047AB] text-white hover:bg-[#003d91]">
-                <Video className="h-5 w-5" />
-                {t("userApplicationhistory.rejoinRoom")}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Session COMPLETED / default — show STAR review form
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-8 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-6 sm:px-6 lg:px-8 dark:from-slate-900 dark:to-slate-800">
       <div className="mx-auto max-w-2xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -625,212 +946,90 @@ export function ApplicationMentorReviewPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {t("userApplicationhistory.mentorReviewRound")}
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+              {t("userKiosk.mentorInterview")}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              {t("userApplicationhistory.mentorReviewRoundDesc")}
-            </p>
+            <p className="text-sm text-slate-500">{t("userKiosk.mentorInterviewSubtitle")}</p>
           </div>
         </div>
 
-        {/* Mentor Info Card */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">
-              {t("userApplicationhistory.mentorInformation")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              {mentorInfo.mentorAvatar ? (
-                <img
-                  src={mentorInfo.mentorAvatar}
-                  alt={mentorInfo.mentorName}
-                  className="h-14 w-14 rounded-full object-cover ring-2 ring-[#0047AB]/20"
-                />
-              ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0047AB]/10 text-lg font-bold text-[#0047AB]">
-                  {mentorInfo.mentorName?.charAt(0) ?? "M"}
-                </div>
-              )}
+        {/* Already reviewed */}
+        {isReviewed && (
+          <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+            <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+              <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
               <div>
-                <p className="font-semibold text-slate-900 dark:text-white">
-                  {mentorInfo.mentorName ?? t("userApplicationhistory.mentor")}
+                <p className="font-semibold text-green-700 dark:text-green-300">
+                  {t("userApplicationhistory.reviewAlreadySubmitted")}
                 </p>
-                {mentorInfo.mentorExpertise && (
-                  <p className="text-sm text-slate-500">{mentorInfo.mentorExpertise}</p>
-                )}
-                {mentorInfo.duration && (
-                  <p className="text-xs text-slate-400">
-                    {mentorInfo.duration} {t("common.minute")} •{" "}
-                    {mentorInfo.totalPrice ? `${mentorInfo.totalPrice.toLocaleString()} VND` : ""}
-                  </p>
-                )}
+                <p className="mt-1 text-sm text-green-600 dark:text-green-400">
+                  {t("userApplicationhistory.thankYouForYourFeedback")}
+                </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <Button variant="outline" onClick={() => navigate(-1)}>
+                {t("general.back")}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* STAR Rating Form */}
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base">
-              {t("userApplicationhistory.ratingAndFeedback")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Overall Rating */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                {t("userApplicationhistory.overallRating")} <span className="text-red-500">*</span>
-              </Label>
-              <StarRating
-                value={rating}
-                onChange={setRating}
-                size="lg"
-                className={cn(
-                  "pointer-events-none opacity-50",
-                  rating > 0 && "pointer-events-auto opacity-100"
-                )}
-              />
-              {rating > 0 && (
-                <p className="text-xs text-slate-500">
-                  {t(`userApplicationhistory.rating${rating}Star` as const, { count: rating })}
-                </p>
-              )}
-            </div>
-
-            {/* STAR Fields */}
-            <div className="space-y-5">
-              <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                {t("userApplicationhistory.starModel")}
+        {/* Wrong round type */}
+        {isWrongRound && !isReviewed && (
+          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+            <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+              <Clock className="h-10 w-10 text-amber-600 dark:text-amber-400" />
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                {t("userKiosk.wrongRoundType")}
               </p>
+              <Button variant="outline" onClick={() => navigate(-1)}>
+                {t("general.back")}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("userApplicationhistory.situation")}
-                </Label>
-                <p className="text-xs text-slate-500">
-                  {t("userApplicationhistory.situationHint")}
-                </p>
-                <Textarea
-                  value={situationNote}
-                  onChange={(e) => setSituationNote(e.target.value)}
-                  placeholder={t("userApplicationhistory.describeTheSituation")}
-                  rows={3}
-                  maxLength={1000}
-                />
-              </div>
+        {/* Completed but not reviewed */}
+        {isCompleted && !isReviewed && (
+          <ReviewFormStep
+            sessionId={booking?.sessionId ?? applicationDetail?.sessionId}
+            mentorId={booking?.mentorId}
+            userId={booking?.applicantUserId}
+            onSubmitSuccess={handleReviewSubmitted}
+          />
+        )}
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t("userApplicationhistory.task")}</Label>
-                <p className="text-xs text-slate-500">{t("userApplicationhistory.taskHint")}</p>
-                <Textarea
-                  value={taskNote}
-                  onChange={(e) => setTaskNote(e.target.value)}
-                  placeholder={t("userApplicationhistory.describeTheTask")}
-                  rows={3}
-                  maxLength={1000}
-                />
-              </div>
+        {/* In Progress */}
+        {bookingStatus === "IN_PROGRESS" && !isReviewed && booking && (
+          <InProgressStep roomUrl={roomUrl ?? undefined} />
+        )}
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t("userApplicationhistory.action")}</Label>
-                <p className="text-xs text-slate-500">{t("userApplicationhistory.actionHint")}</p>
-                <Textarea
-                  value={actionNote}
-                  onChange={(e) => setActionNote(e.target.value)}
-                  placeholder={t("userApplicationhistory.describeTheAction")}
-                  rows={3}
-                  maxLength={1000}
-                />
-              </div>
+        {/* Room Created (mentor assigned, room ready) */}
+        {(bookingStatus === "ROOM_CREATED" || bookingStatus === "MENTOR_ASSIGNED") &&
+          !isReviewed &&
+          booking && <RoomReadyStep booking={booking} onGoToKiosk={handleGoToKiosk} />}
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t("userApplicationhistory.result")}</Label>
-                <p className="text-xs text-slate-500">{t("userApplicationhistory.resultHint")}</p>
-                <Textarea
-                  value={resultNote}
-                  onChange={(e) => setResultNote(e.target.value)}
-                  placeholder={t("userApplicationhistory.describeTheResult")}
-                  rows={3}
-                  maxLength={1000}
-                />
-              </div>
-            </div>
+        {/* Awaiting Mentor (slot picked, waiting for admin to assign) */}
+        {bookingStatus === "AWAITING_MENTOR" && !isReviewed && booking && (
+          <AwaitingMentorStep booking={booking} onCancel={handleCancelBooking} />
+        )}
 
-            {/* Additional Feedback */}
-            <div className="space-y-4 border-t border-slate-200 pt-6 dark:border-slate-700">
-              <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                {t("userApplicationhistory.additionalFeedback")}
-              </p>
+        {/* Slot selection (no booking yet) — only after applicationDetail is resolved */}
+        {!booking && !isReviewed && applicationDetailId > 0 && (
+          <SlotSelectionStep
+            applicationDetailId={applicationDetailId}
+            onSuccess={handleSlotPicked}
+          />
+        )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {t("userApplicationhistory.strength")}
-                  </Label>
-                  <Textarea
-                    value={strength}
-                    onChange={(e) => setStrength(e.target.value)}
-                    placeholder={t("userApplicationhistory.whatDidTheMentorDoWell")}
-                    rows={3}
-                    maxLength={500}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {t("userApplicationhistory.weakness")}
-                  </Label>
-                  <Textarea
-                    value={weakness}
-                    onChange={(e) => setWeakness(e.target.value)}
-                    placeholder={t("userApplicationhistory.whatCouldBeImproved")}
-                    rows={3}
-                    maxLength={500}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("userApplicationhistory.improvementSuggestion")}
-                </Label>
-                <Textarea
-                  value={improve}
-                  onChange={(e) => setImprove(e.target.value)}
-                  placeholder={t("userApplicationhistory.suggestionsForImprovement")}
-                  rows={3}
-                  maxLength={500}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Submit */}
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => navigate(-1)} disabled={isSubmitting}>
-            {t("general.cancel")}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!canSubmit || isSubmitting}
-            className="gap-2 bg-[#0047AB] text-white hover:bg-[#003d91] disabled:bg-slate-300">
-            {isSubmitting ? (
-              <>
-                <Spinner size="sm" tone="white" />
-                {t("compUi.submitting")}
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4" />
-                {t("common.submit")}
-              </>
-            )}
-          </Button>
-        </div>
+        {/* Waiting for applicationDetail while currentRound is loading */}
+        {!booking && !isReviewed && applicationDetailId === 0 && (
+          <Card>
+            <CardContent className="flex items-center justify-center gap-3 p-8 text-sm text-slate-500">
+              <Spinner size="sm" tone="primary" />
+              {t("userKiosk.loadingBooking")}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
