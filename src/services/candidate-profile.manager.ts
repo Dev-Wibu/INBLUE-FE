@@ -97,7 +97,7 @@ export class CandidateProfileManager implements BaseManager<CandidateProfile> {
     try {
       const updateData = { id: Number(id), ...data };
       const response = await fetchClient
-        .POST("/api/candidate-profiles", { body: updateData })
+        .PUT("/api/candidate-profiles", { body: updateData })
         .then((res) => ({
           data: res.data,
           status: res.response?.status,

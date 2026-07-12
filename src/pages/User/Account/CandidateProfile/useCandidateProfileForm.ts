@@ -31,10 +31,10 @@ export const buildSkillTabs = (t: TFunction) => [
     label: t("common.tools"),
   },
 ];
-export function useCandidateProfileForm() {
+export function useCandidateProfileForm(overrideUserId?: number) {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
-  const userId = user?.id ?? 0;
+  const userId = overrideUserId ?? user?.id ?? 0;
   const { data: profileData, isLoading, error, refetch } = useCandidateProfile(userId);
   const profile = (profileData as unknown as CandidateProfile) ?? null;
   const createMutation = useCreateCandidateProfile();
