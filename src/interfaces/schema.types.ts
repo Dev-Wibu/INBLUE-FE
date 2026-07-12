@@ -392,6 +392,7 @@ export interface CandidateProfile {
   educations?: EducationEntry[];
   certifications?: string[];
   achievements?: string[];
+  cvUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 }

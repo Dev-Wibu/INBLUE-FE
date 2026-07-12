@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
 import {
@@ -8,6 +10,9 @@ import {
   Briefcase,
   ChevronLeft,
   Code,
+  Edit3,
+  ExternalLink,
+  FileText,
   FolderOpen,
   GraduationCap,
   Target,
@@ -48,22 +53,33 @@ export function UserDetailView({
             {t("common.userDetail") || "User Details"}
           </h2>
         </div>
+        <div className="ml-auto flex items-center gap-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Edit3 className="mr-2 h-4 w-4" />
+                {t("general.edit")}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full overflow-y-auto p-0 sm:max-w-xl">
+              <UserEditForm
+                isInline
+                formData={formData}
+                onFormChange={onFormChange}
+                onSubmit={onSubmit}
+                onCancel={() => {}}
+                title={t("adminUsermanagement.userEditing")}
+                description={t("adminUsermanagement.updateUserInformation")}
+                submitLabel={t("common.saveChanges")}
+                selectedUser={user}
+              />
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-5xl space-y-6">
-          <UserEditForm
-            isInline
-            formData={formData}
-            onFormChange={onFormChange}
-            onSubmit={onSubmit}
-            onCancel={onBack}
-            title={t("adminUsermanagement.userEditing")}
-            description={t("adminUsermanagement.updateUserInformation")}
-            submitLabel={t("common.saveChanges")}
-            selectedUser={user}
-          />
-
           {profile ? (
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="space-y-6">
@@ -105,6 +121,19 @@ export function UserDetailView({
                       <p className="mt-1 text-sm leading-relaxed">{profile.introduction}</p>
                     </div>
                   )}
+                  {profile.cvUrl && (
+                    <div className="mt-3">
+                      <a
+                        href={profile.cvUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
+                        <FileText className="h-4 w-4" />
+                        Xem CV
+                        <ExternalLink className="h-3 w-3 opacity-50" />
+                      </a>
+                    </div>
+                  )}
                 </section>
 
                 <Separator />
@@ -115,15 +144,11 @@ export function UserDetailView({
                     <Code className="h-4 w-4 text-green-600" />
                     <h3 className="text-base font-semibold">{t("common.technicalSkills")}</h3>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                     {(profile.technicalSkills ?? []).length > 0 ? (
-                      profile.technicalSkills!.map((s) => (
-                        <Badge key={s} variant="secondary" className="px-3 py-1">
-                          {s}
-                        </Badge>
-                      ))
+                      profile.technicalSkills!.join(", ")
                     ) : (
-                      <span className="text-sm text-gray-400">
+                      <span className="text-gray-400">
                         {t("adminUsermanagement.noInformationYet")}
                       </span>
                     )}
@@ -136,15 +161,11 @@ export function UserDetailView({
                     <BookOpen className="h-4 w-4 text-purple-600" />
                     <h3 className="text-base font-semibold">{t("common.softSkills")}</h3>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                     {(profile.softSkills ?? []).length > 0 ? (
-                      profile.softSkills!.map((s) => (
-                        <Badge key={s} variant="outline" className="px-3 py-1">
-                          {s}
-                        </Badge>
-                      ))
+                      profile.softSkills!.join(", ")
                     ) : (
-                      <span className="text-sm text-gray-400">
+                      <span className="text-gray-400">
                         {t("adminUsermanagement.noInformationYet")}
                       </span>
                     )}
@@ -157,15 +178,11 @@ export function UserDetailView({
                     <Wrench className="h-4 w-4 text-orange-500" />
                     <h3 className="text-base font-semibold">{t("common.tools")}</h3>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                     {(profile.tools ?? []).length > 0 ? (
-                      profile.tools!.map((t) => (
-                        <Badge key={t} variant="secondary" className="px-3 py-1">
-                          {t}
-                        </Badge>
-                      ))
+                      profile.tools!.join(", ")
                     ) : (
-                      <span className="text-sm text-gray-400">
+                      <span className="text-gray-400">
                         {t("adminUsermanagement.noInformationYet")}
                       </span>
                     )}
@@ -181,11 +198,9 @@ export function UserDetailView({
                     <h3 className="text-base font-semibold">{t("common.workExperience")}</h3>
                   </div>
                   {(profile.workExperiences ?? []).length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
                       {profile.workExperiences!.map((w, i) => (
-                        <div
-                          key={i}
-                          className="rounded-lg border p-4 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:hover:bg-slate-800/50">
+                        <div key={i} className="py-4 first:pt-0 last:pb-0">
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="font-semibold">{w.position}</p>
@@ -221,11 +236,9 @@ export function UserDetailView({
                     <h3 className="text-base font-semibold">{t("common.project")}</h3>
                   </div>
                   {(profile.projects ?? []).length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
                       {profile.projects!.map((p, i) => (
-                        <div
-                          key={i}
-                          className="rounded-lg border p-4 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:hover:bg-slate-800/50">
+                        <div key={i} className="py-4 first:pt-0 last:pb-0">
                           <p className="font-semibold">{p.name}</p>
                           {p.description && (
                             <p className="mt-1 text-sm text-gray-600 dark:text-slate-300">
@@ -277,11 +290,9 @@ export function UserDetailView({
                     <h3 className="text-base font-semibold">{t("common.education")}</h3>
                   </div>
                   {(profile.educations ?? []).length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
                       {profile.educations!.map((e, i) => (
-                        <div
-                          key={i}
-                          className="rounded-lg border p-4 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:hover:bg-slate-800/50">
+                        <div key={i} className="py-4 first:pt-0 last:pb-0">
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="font-semibold">{e.school}</p>

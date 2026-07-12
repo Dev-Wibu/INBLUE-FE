@@ -76,11 +76,10 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
           </TableHeader>
           <TableBody>
             {users.map((user) => (
-              <TableRow 
+              <TableRow
                 key={user.id}
                 onClick={() => onViewDetail(user)}
-                className="cursor-pointer bg-white transition-colors hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/50"
-              >
+                className="cursor-pointer bg-white transition-colors hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/50">
                 <TableCell className="font-medium">{user.id}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">

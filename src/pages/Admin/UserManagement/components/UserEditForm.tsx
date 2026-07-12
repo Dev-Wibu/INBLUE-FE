@@ -3,16 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Camera,
-  ChevronLeft,
-  Eye,
-  EyeOff,
-  Image as ImageIcon,
-  Shield,
-  User as UserIcon,
-  X,
-} from "lucide-react";
+import { Camera, ChevronLeft, Image as ImageIcon, Shield, User as UserIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { User, UserFormData } from "../types";
@@ -159,23 +150,20 @@ export function UserEditForm({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="password">{t("adminUsermanagement.passwordLeaveBlankIfNot")}</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={formData.password || ""}
-                onChange={(e) => onFormChange({ ...formData, password: e.target.value })}
-                placeholder={t("adminUsermanagement.enterThePasswordForThe")}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+          <div className="space-y-1.5 pt-2">
+            <Label>{t("common.password")}</Label>
+            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {t("adminUsermanagement.resetPassword")}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {t("adminUsermanagement.sendPasswordResetLinkToUser")}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" type="button">
+                {t("common.sendLink")}
+              </Button>
             </div>
           </div>
 
