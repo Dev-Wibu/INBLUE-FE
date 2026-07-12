@@ -54,27 +54,6 @@ export function JobDescriptionTable({
 }: JobDescriptionTableProps) {
   const { t } = useTranslation();
 
-  const formatSalaryRange = (
-    salaryMin?: number | null,
-    salaryMax?: number | null,
-    currency?: string | null
-  ): string => {
-    if (salaryMin == null && salaryMax == null) return t("common.agree");
-    const currencyNote = currency && currency.toUpperCase() !== "VND" ? ` (${currency})` : "";
-    if (salaryMin != null && salaryMax != null) {
-      return `${formatCurrency(salaryMin)} - ${formatCurrency(salaryMax)}${currencyNote}`;
-    }
-    if (salaryMin != null)
-      return t("general.from2", {
-        var_0: formatCurrency(salaryMin),
-        var_1: currencyNote,
-      });
-    return t("general.to2", {
-      var_0: formatCurrency(salaryMax ?? 0),
-      var_1: currencyNote,
-    });
-  };
-
   if (!jobDescriptions.length) {
     return (
       <div className="border-border/50 bg-background/50 flex flex-1 flex-col items-center justify-center rounded-2xl border p-12 text-center shadow-sm">
@@ -118,20 +97,7 @@ export function JobDescriptionTable({
               </TableHead>
             )}
             <TableHead>
-              {getSortProps ? (
-                <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
-              ) : (
-                t("common.status")
-              )}
-            </TableHead>
-            <TableHead>
-              {getSortProps ? (
-                <SortButton {...getSortProps("salaryMinSortValue")}>
-                  {t("adminCompanymanagement.wage")}
-                </SortButton>
-              ) : (
-                t("adminCompanymanagement.wage")
-              )}
+              {t("adminCompanymanagement.rounds", "Số vòng thi")}
             </TableHead>
             <TableHead>
               {getSortProps ? (
@@ -142,7 +108,13 @@ export function JobDescriptionTable({
                 t("adminCompanymanagement.deadline")
               )}
             </TableHead>
-            <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
+            <TableHead className="w-24 text-right">
+              {getSortProps ? (
+                <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
+              ) : (
+                t("common.status")
+              )}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -164,8 +136,12 @@ export function JobDescriptionTable({
                   {job.company?.name || job.companyName || "—"}
                 </TableCell>
               )}
-              <TableCell>
-                <div className="flex items-center gap-4 py-1">
+              <TableCell className="text-slate-500">
+                {job.rounds?.length || 0}
+              </TableCell>
+              <TableCell className="text-slate-500">{formatDate(job.deadlineAt)}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-3">
                   <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
                   <div 
                     onClick={(e) => e.stopPropagation()} 
@@ -178,24 +154,6 @@ export function JobDescriptionTable({
                     />
                   </div>
                 </div>
-              </TableCell>
-              <TableCell className="text-slate-500">
-                {formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
-              </TableCell>
-              <TableCell className="text-slate-500">{formatDate(job.deadlineAt)}</TableCell>
-              <TableCell className="text-right" onClick={(e: MouseEvent) => e.stopPropagation()}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onView?.(job)}>
-                      {t("common.detail")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
