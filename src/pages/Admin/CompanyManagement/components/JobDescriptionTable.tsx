@@ -136,13 +136,12 @@ export function JobDescriptionTable({
                   {job.company?.name || job.companyName || "—"}
                 </TableCell>
               )}
-              <TableCell className="text-slate-500">
+              <TableCell className="font-medium text-slate-900 dark:text-slate-100">
                 {job.rounds?.length || 0}
               </TableCell>
               <TableCell className="text-slate-500">{formatDate(job.deadlineAt)}</TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-3">
-                  <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
+                <div className="flex items-center justify-end">
                   <div 
                     onClick={(e) => e.stopPropagation()} 
                     className="flex items-center justify-center p-1"
