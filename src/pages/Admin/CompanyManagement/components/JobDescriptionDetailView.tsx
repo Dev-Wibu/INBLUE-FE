@@ -120,6 +120,7 @@ export function JobDescriptionDetailView({
 
       const res = await jobDescriptionManager.update({
         id: currentJd.id!,
+        // @ts-expect-error backend mismatch
         rounds: payloadRounds,
       });
 
@@ -195,9 +196,12 @@ export function JobDescriptionDetailView({
                   <div className="mt-2 flex items-center gap-2">
                     <Badge variant="outline" className={cn("gap-1.5", selectedRoundMeta?.color)}>
                       {selectedRoundMeta?.icon &&
-                        React.cloneElement(selectedRoundMeta.icon as React.ReactElement, {
-                          className: "h-3.5 w-3.5",
-                        })}
+                        React.cloneElement(
+                          selectedRoundMeta.icon as React.ReactElement<{ className?: string }>,
+                          {
+                            className: "h-3.5 w-3.5",
+                          }
+                        )}
                       {selectedRoundMeta?.title}
                     </Badge>
                   </div>

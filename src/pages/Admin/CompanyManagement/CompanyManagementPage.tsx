@@ -40,7 +40,6 @@ export function CompanyManagementPage() {
     queryFn: async () => {
       const response = await jobDescriptionManager.getAll();
       if (response.success) {
-        // @ts-expect-error: Schema mismatch
         return extractDataArray<JobDescription>(response);
       }
       return [];
@@ -158,7 +157,6 @@ export function CompanyManagementPage() {
               onView={(jd) => setSelectedJdId(jd.id!)}
               onToggleStatus={async (job, nextStatus) => {
                 try {
-                  // @ts-expect-error partial update
                   const res = await jobDescriptionManager.update({
                     id: job.id,
                     status: nextStatus,

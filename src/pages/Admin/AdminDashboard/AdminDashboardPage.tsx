@@ -344,11 +344,8 @@ export function AdminDashboardPage() {
               <Route path="practiceSets" element={<PracticeSetManagementPage />} />
               <Route path="practiceQuestions" element={<PracticeQuestionManagementPage />} />
               <Route path="posts" element={<PostManagementPage />} />
-              <Route path="companies" element={<CompanyManagementPage isActive={true} />} />
-              <Route
-                path="companies/:companyId"
-                element={<CompanyManagementPage isActive={true} />}
-              />
+              <Route path="companies" element={<CompanyManagementPage />} />
+              <Route path="companies/:companyId" element={<CompanyManagementPage />} />
               <Route path="candidateProfiles" element={<CandidateProfileManagementPage />} />
               <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
               <Route

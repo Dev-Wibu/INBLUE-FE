@@ -104,7 +104,6 @@ export function CompanyGridTab({
       if (!selectedCompanyId) return [];
       const response = await jobDescriptionManager.getByCompanyId(selectedCompanyId);
       if (response.success) {
-        // @ts-expect-error schema mismatch
         return extractDataArray<JobDescription>(response);
       }
       return [];
@@ -122,9 +121,7 @@ export function CompanyGridTab({
     setFormData({
       name: company.name,
       description: company.description,
-      status: company.status,
-      logoUrl: company.logoUrl,
-      bannerUrl: company.bannerUrl,
+      status: company.status as import("../types").CompanyStatus,
     });
     setIsFormOpen(true);
   };
@@ -140,8 +137,8 @@ export function CompanyGridTab({
     try {
       setIsSubmitting(true);
       const res = await companyManager.update({
-        id: editingCompany.id,
         data: {
+          id: editingCompany.id,
           name: formData.name?.trim() || undefined,
           description: formData.description?.trim() || undefined,
           status: formData.status,
@@ -247,7 +244,6 @@ export function CompanyGridTab({
                 onView={(jd) => setSelectedJdId(jd.id!)}
                 onToggleStatus={async (job, nextStatus) => {
                   try {
-                    // @ts-expect-error partial update
                     const res = await jobDescriptionManager.update({
                       id: job.id,
                       status: nextStatus,
@@ -419,9 +415,8 @@ export function CompanyGridTab({
       <CompanyDeleteDialog
         isOpen={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
-        companyName={deletingCompany?.name || ""}
+        company={deletingCompany}
         onConfirm={handleDeleteConfirm}
-        isSubmitting={isSubmitting}
       />
     </div>
   );
