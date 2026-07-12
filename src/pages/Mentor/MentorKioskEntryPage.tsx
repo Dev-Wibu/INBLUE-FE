@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { Video } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 
 export function MentorKioskEntryPage() {
   const { t } = useTranslation();
@@ -13,8 +14,17 @@ export function MentorKioskEntryPage() {
   const { mutateAsync: enterKiosk, isPending: isEntering } = useEnterKiosk();
   const joinSessionMutation = useJoinSession();
 
-  const [sessionKey, setSessionKey] = useState("");
-  const [kioskId, setKioskId] = useState("");
+  // Auto-fill from `?sessionKey=...&kioskId=...` only when navigating from
+  // the user-facing mentor-review booking flow. The values are read once at
+  // mount via the state initialisers; if the URL changes later, the parent
+  // route should remount this page (or the kiosk operator can re-enter the
+  // values manually, which is the canonical kiosk flow).
+  const [searchParams] = useSearchParams();
+  const initialSessionKey = searchParams.get("sessionKey") ?? "";
+  const initialKioskId = searchParams.get("kioskId") ?? "";
+
+  const [sessionKey, setSessionKey] = useState(initialSessionKey);
+  const [kioskId, setKioskId] = useState(initialKioskId);
   const [roomUrl, setRoomUrl] = useState("");
   const [joinMode, setJoinMode] = useState<"idle" | "room">("idle");
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(false);
