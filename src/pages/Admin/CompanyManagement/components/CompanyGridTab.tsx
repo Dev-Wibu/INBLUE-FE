@@ -3,16 +3,17 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Building2, Edit, Folder, Plus, Search, Trash2 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { jobDescriptionManager, companyManager } from "@/services";
 import { extractDataArray } from "@/lib/utils";
 
-import type { Company, JobDescription, CompanyFormData } from "../types";
+import type { Company, JobDescription, CompanyFormData, JobDescriptionFormData, CreateJobDescriptionRequest } from "../types";
 import { JobDescriptionTable } from "./JobDescriptionTable";
 import { JobDescriptionDetailView } from "./JobDescriptionDetailView";
 import { CompanyFormDialog } from "./CompanyFormDialog";
 import { CompanyDeleteDialog } from "./CompanyDeleteDialog";
+import { JobDescriptionFormDialog } from "./JobDescriptionFormDialog";
 
 interface CompanyGridTabProps {
   companies: Company[];
@@ -37,8 +38,46 @@ export function CompanyGridTab({
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
+  const queryClient = useQueryClient();
+
   // Drill-down JD Viewer
   const [selectedJdId, setSelectedJdId] = useState<number | null>(null);
+  const [isJdDialogOpen, setIsJdDialogOpen] = useState(false);
+  const [jdFormData, setJdFormData] = useState<Partial<JobDescriptionFormData>>({});
+  const [isCreatingJd, setIsCreatingJd] = useState(false);
+
+  const handleJdSubmit = async () => {
+    if (!selectedCompanyId) return;
+    try {
+      setIsCreatingJd(true);
+      const data: CreateJobDescriptionRequest = {
+        title: jdFormData.title,
+        description: jdFormData.description,
+        requirements: jdFormData.requirements,
+        benefits: jdFormData.benefits,
+        level: jdFormData.level,
+        salaryMin: jdFormData.salaryMin,
+        salaryMax: jdFormData.salaryMax,
+        currency: jdFormData.currency,
+        status: jdFormData.status,
+        deadlineAt: jdFormData.deadlineAt,
+        companyId: selectedCompanyId,
+      };
+      const res = await jobDescriptionManager.create(data);
+      if (res.success) {
+        toast.success(t("adminCompanymanagement.successfullyCreatedJd", "Thêm JD thành công"));
+        setIsJdDialogOpen(false);
+        setJdFormData({});
+        queryClient.invalidateQueries({ queryKey: ["admin", "companies", selectedCompanyId, "jds"] });
+      } else {
+        toast.error(res.error || t("common.cannotCreateJd", "Không thể thêm JD"));
+      }
+    } catch {
+      toast.error(t("common.cannotCreateJd", "Không thể thêm JD"));
+    } finally {
+      setIsCreatingJd(false);
+    }
+  };
 
   const filteredCompanies = useMemo(() => {
     if (!searchQuery.trim()) return companies;
@@ -161,7 +200,10 @@ export function CompanyGridTab({
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                onClick={() => toast.info(t("common.featureUnderDevelopment", "Tính năng đang phát triển"))}
+                onClick={() => {
+                  setJdFormData({ status: "OPEN" });
+                  setIsJdDialogOpen(true);
+                }}
                 className="h-8 gap-1.5"
               >
                 <Plus className="h-4 w-4" />
@@ -207,6 +249,17 @@ export function CompanyGridTab({
             </div>
           )}
         </div>
+        
+        <JobDescriptionFormDialog
+          isOpen={isJdDialogOpen}
+          onOpenChange={setIsJdDialogOpen}
+          formData={jdFormData}
+          onFormChange={(data) => setJdFormData((prev) => ({ ...prev, ...data }))}
+          onSubmit={handleJdSubmit}
+          title={t("adminCompanymanagement.createJd", "Tạo Job Description")}
+          description={t("adminCompanymanagement.createJdDescription", "Điền thông tin để tạo Job Description mới.")}
+          submitLabel={isCreatingJd ? t("common.processing", "Đang xử lý...") : t("common.create", "Tạo mới")}
+        />
       </div>
     );
   }
