@@ -4071,7 +4071,9 @@
     "or": "または",
     "weeklyCalendar": "週間カレンダー",
     "pickWeeklySlot": "今週の日時を選択してください",
-    "slotTakenJustNow": "この枠は他の方に予約されました。別の時間を選んでください。"
+    "slotTakenJustNow": "この枠は他の方に予約されました。別の時間を選んでください。",
+    "detailNotReady": "予約はまだ準備中です。少し経ってから再試行してください。",
+    "detailNotReadyHint": "それでも解決しない場合、バックエンドがこのラウンドの詳細を作成していない可能性があります。再試行をクリックしてください。"
   },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",

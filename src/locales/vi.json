@@ -4065,7 +4065,9 @@
     "or": "hoặc",
     "weeklyCalendar": "Lịch theo tuần",
     "pickWeeklySlot": "Chọn một ngày và giờ trong tuần này",
-    "slotTakenJustNow": "Slot vừa được người khác đặt. Vui lòng chọn thời gian khác."
+    "slotTakenJustNow": "Slot vừa được người khác đặt. Vui lòng chọn thời gian khác.",
+    "detailNotReady": "Booking chưa sẵn sàng. Vui lòng thử lại sau giây lát.",
+    "detailNotReadyHint": "Nếu vẫn không được, có thể backend chưa tạo detail cho vòng này. Nhấn Thử lại để gọi lại."
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

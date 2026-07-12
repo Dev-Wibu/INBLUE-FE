@@ -4069,7 +4069,9 @@
     "or": "or",
     "weeklyCalendar": "Weekly calendar",
     "pickWeeklySlot": "Pick a day and time in this week",
-    "slotTakenJustNow": "This slot was just booked by someone else. Please pick another time."
+    "slotTakenJustNow": "This slot was just booked by someone else. Please pick another time.",
+    "detailNotReady": "Booking is not ready yet. Please retry in a moment.",
+    "detailNotReadyHint": "If the issue persists, the backend may not have created the round detail yet. Click Retry to refetch."
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",
