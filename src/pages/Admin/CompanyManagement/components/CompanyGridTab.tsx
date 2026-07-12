@@ -159,9 +159,14 @@ export function CompanyGridTab({
           </div>
           {!selectedJdId && (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-slate-500">
-                {companyJds.length} {t("adminCompanymanagement.jdList", "Danh sách JD")}
-              </span>
+              <Button
+                size="sm"
+                onClick={() => toast.info(t("common.featureUnderDevelopment", "Tính năng đang phát triển"))}
+                className="h-8 gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                {t("adminCompanymanagement.addJd", "Thêm JD")}
+              </Button>
             </div>
           )}
         </div>
