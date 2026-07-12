@@ -134,7 +134,14 @@ function SlotSelectionStep({
   const { data: kiosks = [], isLoading: kiosksLoading } = useActiveKiosks();
   const weekQueries = useKioskWeekSlots(selectedKioskId, weekStart, !!selectedKioskId);
   const weekSlots = useMemo<WeeklySlot[]>(() => {
-    return weekQueries.flatMap((q) => q.data ?? []);
+    // BE returns `SlotDto` with optional fields; the calendar only renders
+    // slots that have a valid start/end pair and a boolean availability.
+    return weekQueries.flatMap((q) =>
+      (q.data ?? []).flatMap((s): WeeklySlot[] => {
+        if (!s.startTime || !s.endTime) return [];
+        return [{ startTime: s.startTime, endTime: s.endTime, available: !!s.available }];
+      })
+    );
   }, [weekQueries]);
   const slotsLoading = weekQueries.some((q) => q.isLoading);
   const pickSlotMutation = usePickKioskSlot();
@@ -725,6 +732,12 @@ export function ApplicationMentorReviewPage() {
   const [booking, setBooking] = useState<MentorInterviewBooking | null>(null);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // Distinguishes "still fetching" from "fetched but BE returned []" so we
+  // can offer a Retry / re-trigger instead of an infinite spinner when the
+  // backend hasn't auto-created the ApplicationDetail for this round yet.
+  const [detailsResolved, setDetailsResolved] = useState(false);
+  // Bump to force the fetch effect to re-run (manual retry button).
+  const [retryToken, setRetryToken] = useState(0);
 
   const { data: currentRound, isLoading: currentRoundLoading } = useCurrentRound(
     applicationId,
@@ -741,11 +754,13 @@ export function ApplicationMentorReviewPage() {
     if (!currentRound?.id) {
       // Current round query has settled but returned nothing → can't proceed.
       setLoading(false);
+      setDetailsResolved(true);
       return;
     }
 
     const fetchData = async () => {
       setLoading(true);
+      setDetailsResolved(false);
       try {
         const detailRes = await fetchClient.GET(
           "/api/application-details/application/{applicationId}",
@@ -777,15 +792,17 @@ export function ApplicationMentorReviewPage() {
             }
           }
 
-          if (!currentDetail && details.length > 0) {
+          if (!currentDetail) {
             console.warn("[MentorReviewPage] no ApplicationDetail for current round", {
               currentRoundId,
               currentRoundType: currentRound.roundType,
+              detailCount: details.length,
               detailRoundIds: details.map((d) => d.roundId),
             });
           }
 
           setApplicationDetail(currentDetail ?? null);
+          setDetailsResolved(true);
 
           if (currentDetail?.bookingId) {
             try {
@@ -826,7 +843,14 @@ export function ApplicationMentorReviewPage() {
     };
 
     void fetchData();
-  }, [applicationId, currentRound?.id, currentRoundLoading, t]);
+  }, [
+    applicationId,
+    currentRound?.id,
+    currentRound?.roundType,
+    currentRoundLoading,
+    t,
+    retryToken,
+  ]);
 
   // ============================================================
   // Polling: refresh booking status periodically
@@ -864,13 +888,14 @@ export function ApplicationMentorReviewPage() {
   // Go to kiosk (enter room)
   const handleGoToKiosk = () => {
     if (!booking?.sessionKey || !booking?.kioskId) return;
-    // Navigate to kiosk enter page with sessionKey and kioskId
+    // Route is registered as `/user/kiosk/entry` (see `src/App.tsx`).
+    // We pass `sessionKey` + `kioskId` as query params for the kiosk entry page.
     const params = new URLSearchParams({
       sessionKey: booking.sessionKey,
       kioskId: String(booking.kioskId),
       applicationDetailId: String(applicationDetail?.id ?? 0),
     });
-    navigate(`/user/kiosk/enter?${params.toString()}`);
+    navigate(`/user/kiosk/entry?${params.toString()}`);
   };
 
   // Cancel booking
@@ -1019,8 +1044,45 @@ export function ApplicationMentorReviewPage() {
           />
         )}
 
+        {/* BE side hasn't created an ApplicationDetail for the current
+            MENTOR_REVIEW round yet (e.g. backend v062 auto-create hasn't
+            fired because this round was the first round of the JD). Show a
+            recoverable state instead of an infinite spinner. */}
+        {!booking && !isReviewed && currentRound?.roundType === "MENTROR_REVIEW" && (
+          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+            <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+              <Clock className="h-10 w-10 text-amber-600 dark:text-amber-400" />
+              <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                {loading
+                  ? t("userKiosk.loadingBooking")
+                  : t(
+                      "userKiosk.detailNotReady",
+                      "Booking is not ready yet. Please retry in a moment."
+                    )}
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                {t(
+                  "userKiosk.detailNotReadyHint",
+                  "If the issue persists, the backend may not have created the round detail yet. Click Retry to refetch."
+                )}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setRetryToken((n) => n + 1)}
+                  disabled={loading}>
+                  {t("common.retry", "Retry")}
+                </Button>
+                <Button variant="ghost" onClick={() => navigate(-1)}>
+                  {t("general.back")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Waiting for applicationDetail while currentRound is loading */}
-        {!booking && !isReviewed && applicationDetailId === 0 && (
+        {!booking && !isReviewed && applicationDetailId === 0 && !detailsResolved && (
           <Card>
             <CardContent className="flex items-center justify-center gap-3 p-8 text-sm text-slate-500">
               <Spinner size="sm" tone="primary" />
