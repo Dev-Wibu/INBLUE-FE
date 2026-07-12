@@ -71,7 +71,11 @@ export function MentorTable({
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={mentor.avatarUrl} alt={mentor.name} className="object-cover" />
+                    <AvatarImage
+                      src={mentor.avatarUrl}
+                      alt={mentor.name}
+                      className="object-cover"
+                    />
                     <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                       {mentor.name?.charAt(0)?.toUpperCase()}
                     </AvatarFallback>

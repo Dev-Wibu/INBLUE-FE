@@ -10,9 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDate } from "@/lib/formatting";
 import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatDate } from "@/lib/formatting";
 import type { UserRole, User as UserType } from "../types";
 
 interface SortProps {
@@ -96,7 +96,9 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                 </TableCell>
                 <TableCell className="text-muted-foreground">{user.email}</TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {((user as any).createdAt || (user as any).created_at) ? formatDate(((user as any).createdAt || (user as any).created_at)) : "—"}
+                  {(user as any).createdAt || (user as any).created_at
+                    ? formatDate((user as any).createdAt || (user as any).created_at)
+                    : "—"}
                 </TableCell>
                 <TableCell>
                   <Badge variant="default" className={`text-white ${getRoleBadgeClass(user.role)}`}>

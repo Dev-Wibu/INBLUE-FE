@@ -106,7 +106,11 @@ export function MentorDetailView({
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-md dark:border-slate-800">
               {mentor.avatarUrl ? (
-                <img src={mentor.avatarUrl} alt={mentor.name} className="h-full w-full object-cover" />
+                <img
+                  src={mentor.avatarUrl}
+                  alt={mentor.name}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-blue-100 text-3xl font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                   {mentor.name?.charAt(0)?.toUpperCase()}
@@ -123,7 +127,7 @@ export function MentorDetailView({
           </div>
 
           <div className="mt-8">
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <h4 className="mb-3 text-xs font-semibold tracking-wider text-slate-500 uppercase">
               {t("common.navigation", "Điều hướng")}
             </h4>
             <div className="flex flex-col gap-1">
@@ -150,7 +154,9 @@ export function MentorDetailView({
                 </div>
                 <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                   {mentor.yearsOfExperience || 0}
-                  <span className="ml-1 text-sm font-normal text-slate-500">{t("common.year")}</span>
+                  <span className="ml-1 text-sm font-normal text-slate-500">
+                    {t("common.year")}
+                  </span>
                 </div>
               </div>
               <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
@@ -183,7 +189,10 @@ export function MentorDetailView({
               </CollapsibleCard>
             ) : (
               <>
-                <CollapsibleCard id="basic-info" title={t("common.basicInfo", "Thông tin cơ bản")} icon={UserIcon}>
+                <CollapsibleCard
+                  id="basic-info"
+                  title={t("common.basicInfo", "Thông tin cơ bản")}
+                  icon={UserIcon}>
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-medium text-slate-900 dark:text-white">
@@ -197,8 +206,12 @@ export function MentorDetailView({
 
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-slate-500">{t("common.fullName1")}</p>
-                        <p className="text-base text-slate-900 dark:text-white">{mentor.name || "-"}</p>
+                        <p className="text-sm font-medium text-slate-500">
+                          {t("common.fullName1")}
+                        </p>
+                        <p className="text-base text-slate-900 dark:text-white">
+                          {mentor.name || "-"}
+                        </p>
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-slate-500">{t("common.email")}</p>
@@ -210,8 +223,10 @@ export function MentorDetailView({
                         </div>
                       </div>
                       <div className="space-y-1 sm:col-span-2">
-                        <p className="text-sm font-medium text-slate-500">{t("common.introduceYourself")}</p>
-                        <p className="text-base text-slate-900 whitespace-pre-wrap dark:text-white">
+                        <p className="text-sm font-medium text-slate-500">
+                          {t("common.introduceYourself")}
+                        </p>
+                        <p className="text-base whitespace-pre-wrap text-slate-900 dark:text-white">
                           {mentor.bio || "-"}
                         </p>
                       </div>
@@ -219,11 +234,16 @@ export function MentorDetailView({
                   </div>
                 </CollapsibleCard>
 
-                <CollapsibleCard id="professional-info" title={t("common.professionalInfo", "Thông tin nghề nghiệp")} icon={Briefcase}>
+                <CollapsibleCard
+                  id="professional-info"
+                  title={t("common.professionalInfo", "Thông tin nghề nghiệp")}
+                  icon={Briefcase}>
                   <div className="space-y-6">
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-slate-500">{t("common.currentCompany")}</p>
+                        <p className="text-sm font-medium text-slate-500">
+                          {t("common.currentCompany")}
+                        </p>
                         <div className="flex items-center gap-2">
                           <Briefcase className="h-4 w-4 text-slate-400" />
                           <p className="text-base text-slate-900 dark:text-white">
@@ -232,15 +252,16 @@ export function MentorDetailView({
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-medium text-slate-500">{t("common.linkedinLink")}</p>
+                        <p className="text-sm font-medium text-slate-500">
+                          {t("common.linkedinLink")}
+                        </p>
                         <div className="flex items-center gap-2">
                           {mentor.linkedInUrl ? (
                             <a
                               href={mentor.linkedInUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-blue-600 hover:underline dark:text-blue-400"
-                            >
+                              className="text-blue-600 hover:underline dark:text-blue-400">
                               {mentor.linkedInUrl}
                             </a>
                           ) : (
@@ -249,10 +270,12 @@ export function MentorDetailView({
                         </div>
                       </div>
                       <div className="space-y-1 sm:col-span-2">
-                        <p className="text-sm font-medium text-slate-500">{t("common.expertise")}</p>
+                        <p className="text-sm font-medium text-slate-500">
+                          {t("common.expertise")}
+                        </p>
                         <div className="flex items-center gap-2">
-                          <Code className="h-4 w-4 text-slate-400 mt-1 self-start" />
-                          <p className="text-base text-slate-900 whitespace-pre-wrap dark:text-white">
+                          <Code className="mt-1 h-4 w-4 self-start text-slate-400" />
+                          <p className="text-base whitespace-pre-wrap text-slate-900 dark:text-white">
                             {mentor.expertise || "-"}
                           </p>
                         </div>

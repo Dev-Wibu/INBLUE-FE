@@ -118,20 +118,20 @@ export function CVUploadModal({
   };
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl flex flex-col max-h-[90vh]">
+      <DialogContent className="flex max-h-[90vh] max-w-3xl flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{resolvedTitle}</DialogTitle>
           <DialogDescription>{resolvedDescription}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4 flex-1 overflow-y-auto px-1">
+        <div className="flex-1 space-y-4 overflow-y-auto px-1 py-4">
           {/* Current CV Section */}
           {currentCvUrl && !selectedFile && (
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
               <div className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
                 {t("common.currentCv")}
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-500 dark:bg-red-500/10">
                     <FileText className="h-5 w-5" />
@@ -145,7 +145,10 @@ export function CVUploadModal({
                 </div>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="secondary" size="sm" className="w-full sm:w-auto shadow-sm text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full bg-blue-50 text-blue-700 shadow-sm hover:bg-blue-100 sm:w-auto dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
                       <FileText className="mr-2 h-4 w-4" />
                       {t("common.viewCv")}
                     </Button>
@@ -186,7 +189,9 @@ export function CVUploadModal({
                   <FileText className="h-5 w-5" />
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{selectedFile.name}</p>
+                  <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {selectedFile.name}
+                  </p>
                   <p className="text-xs text-slate-500">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                   </p>
@@ -198,7 +203,7 @@ export function CVUploadModal({
                   source={selectedFile}
                   fileName={selectedFile.name}
                   requireAuth={false}
-                  className="max-h-[400px] w-full object-contain bg-slate-100 dark:bg-slate-900/50"
+                  className="max-h-[400px] w-full bg-slate-100 object-contain dark:bg-slate-900/50"
                 />
               </div>
             </div>
@@ -210,16 +215,22 @@ export function CVUploadModal({
               className={cn(
                 "cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all duration-200",
                 "hover:border-blue-500 hover:bg-blue-50/50 dark:hover:border-blue-400 dark:hover:bg-blue-900/10",
-                error ? "border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-900/10" : 
-                selectedFile ? "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/30" : "border-slate-200 dark:border-slate-800"
+                error
+                  ? "border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-900/10"
+                  : selectedFile
+                    ? "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/30"
+                    : "border-slate-200 dark:border-slate-800"
               )}
               onClick={() => !isUploading && inputRef.current?.click()}>
-              <div className={cn(
-                "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full",
-                error ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" : 
-                selectedFile ? "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400" : 
-                "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-              )}>
+              <div
+                className={cn(
+                  "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full",
+                  error
+                    ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                    : selectedFile
+                      ? "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                      : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                )}>
                 <Upload className="h-6 w-6" />
               </div>
               <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -249,7 +260,7 @@ export function CVUploadModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0 flex-shrink-0 mt-2">
+        <DialogFooter className="mt-2 flex-shrink-0 gap-2 sm:gap-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUploading}>
             {t("general.cancel")}
           </Button>

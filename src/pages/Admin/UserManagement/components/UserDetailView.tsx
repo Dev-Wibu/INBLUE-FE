@@ -1,8 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import CVUploadModal from "@/components/ui/cv-upload-modal";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
+import { queryClient } from "@/lib/queryClient";
+import { usersAdminManager } from "@/services/users-admin.manager";
 import {
   Award,
   Briefcase,
@@ -17,18 +20,15 @@ import {
   FolderOpen,
   GraduationCap,
   Mail,
+  Trophy,
   User as UserIcon,
-  Trophy
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import type { User as UserType } from "../types";
-import { UserEditForm, type ExtendedUserFormData } from "./UserEditForm";
-import { AdminCandidateProfileEditForm } from "./AdminCandidateProfileEditForm";
-import CVUploadModal from "@/components/ui/cv-upload-modal";
-import { usersAdminManager } from "@/services/users-admin.manager";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { queryClient } from "@/lib/queryClient";
+import type { User as UserType } from "../types";
+import { AdminCandidateProfileEditForm } from "./AdminCandidateProfileEditForm";
+import { UserEditForm, type ExtendedUserFormData } from "./UserEditForm";
 
 interface UserDetailViewProps {
   user: UserType;
@@ -42,24 +42,24 @@ interface UserDetailViewProps {
 function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }: any) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div id={id} className="scroll-mt-24 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm transition-all dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div 
-        className="flex cursor-pointer items-center justify-between" 
-        onClick={() => setIsOpen(!isOpen)}
-      >
+    <div
+      id={id}
+      className="scroll-mt-24 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm transition-all dark:border-slate-800/60 dark:bg-slate-900/40">
+      <div
+        className="flex cursor-pointer items-center justify-between"
+        onClick={() => setIsOpen(!isOpen)}>
         <div className="flex items-center gap-2">
           {Icon && <Icon className="h-5 w-5 text-slate-500" />}
           <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
         </div>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
       </div>
-      {isOpen && (
-        <div className="mt-6">
-          {children}
-        </div>
-      )}
+      {isOpen && <div className="mt-6">{children}</div>}
     </div>
   );
 }
@@ -110,7 +110,7 @@ export function UserDetailView({
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -129,11 +129,11 @@ export function UserDetailView({
         </button>
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {isEditingUser 
-              ? t("adminUsermanagement.userEditing") 
-              : isEditingProfile 
-                ? "Chỉnh sửa Hồ sơ" 
-                : (t("common.userDetail") || "User Details")}
+            {isEditingUser
+              ? t("adminUsermanagement.userEditing")
+              : isEditingProfile
+                ? "Chỉnh sửa Hồ sơ"
+                : t("common.userDetail") || "User Details"}
           </h2>
         </div>
       </div>
@@ -171,12 +171,14 @@ export function UserDetailView({
                         <UserIcon className="h-10 w-10 text-slate-400" />
                       )}
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{user.name}</h3>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                      {user.name}
+                    </h3>
                     <div className="mt-1 flex items-center justify-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
                       <Mail className="h-3.5 w-3.5" />
                       <span>{user.email}</span>
                     </div>
-                    
+
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
                       <Badge
                         variant="outline"
@@ -205,7 +207,9 @@ export function UserDetailView({
                       {user?.cvUrl && (
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="secondary" className="w-full shadow-sm text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
+                            <Button
+                              variant="secondary"
+                              className="w-full bg-blue-50 text-blue-700 shadow-sm hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
                               <FileText className="mr-2 h-4 w-4" />
                               Xem CV
                               <ExternalLink className="ml-2 h-3 w-3 opacity-50" />
@@ -222,18 +226,27 @@ export function UserDetailView({
                           </DialogContent>
                         </Dialog>
                       )}
-                      <Button variant="outline" className="w-full shadow-sm" onClick={() => setIsCvModalOpen(true)}>
+                      <Button
+                        variant="outline"
+                        className="w-full shadow-sm"
+                        onClick={() => setIsCvModalOpen(true)}>
                         <FileText className="mr-2 h-4 w-4" />
                         {user?.cvUrl ? "Cập nhật CV" : "Tải lên CV"}
                       </Button>
                     </div>
 
                     <div className="mt-3 flex gap-2">
-                      <Button className="flex-1 shadow-none" variant="default" onClick={() => setIsEditingUser(true)}>
+                      <Button
+                        className="flex-1 shadow-none"
+                        variant="default"
+                        onClick={() => setIsEditingUser(true)}>
                         <Edit3 className="mr-2 h-4 w-4" />
                         Tài khoản
                       </Button>
-                      <Button className="flex-1 shadow-none" variant="outline" onClick={() => setIsEditingProfile(true)}>
+                      <Button
+                        className="flex-1 shadow-none"
+                        variant="outline"
+                        onClick={() => setIsEditingProfile(true)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Hồ sơ
                       </Button>
@@ -245,7 +258,10 @@ export function UserDetailView({
               {/* Middle Column: Detailed Info or Profile Edit Form */}
               <div className="lg:col-span-7">
                 {isEditingProfile ? (
-                  <AdminCandidateProfileEditForm userId={user.id!} onCancel={() => setIsEditingProfile(false)} />
+                  <AdminCandidateProfileEditForm
+                    userId={user.id!}
+                    onCancel={() => setIsEditingProfile(false)}
+                  />
                 ) : (
                   <div className="space-y-6">
                     {profile ? (
@@ -259,7 +275,10 @@ export function UserDetailView({
                         )}
 
                         {/* Skills & Tools */}
-                        <CollapsibleCard id="skills" title={t("common.technicalSkills")} icon={Code}>
+                        <CollapsibleCard
+                          id="skills"
+                          title={t("common.technicalSkills")}
+                          icon={Code}>
                           <div className="space-y-6">
                             {/* Technical Skills */}
                             <section>
@@ -330,7 +349,10 @@ export function UserDetailView({
                         </CollapsibleCard>
 
                         {/* Work Experience */}
-                        <CollapsibleCard id="experience" title={t("common.workExperience")} icon={Briefcase}>
+                        <CollapsibleCard
+                          id="experience"
+                          title={t("common.workExperience")}
+                          icon={Briefcase}>
                           {(profile.workExperiences ?? []).length > 0 ? (
                             <div className="relative border-l-2 border-slate-100 pl-6 dark:border-slate-800">
                               <div className="space-y-8">
@@ -365,7 +387,10 @@ export function UserDetailView({
                         </CollapsibleCard>
 
                         {/* Projects */}
-                        <CollapsibleCard id="projects" title={t("common.project")} icon={FolderOpen}>
+                        <CollapsibleCard
+                          id="projects"
+                          title={t("common.project")}
+                          icon={FolderOpen}>
                           {(profile.projects ?? []).length > 0 ? (
                             <div className="relative border-l-2 border-slate-100 pl-6 dark:border-slate-800">
                               <div className="space-y-8">
@@ -415,7 +440,10 @@ export function UserDetailView({
                         </CollapsibleCard>
 
                         {/* Education */}
-                        <CollapsibleCard id="education" title={t("common.education")} icon={GraduationCap}>
+                        <CollapsibleCard
+                          id="education"
+                          title={t("common.education")}
+                          icon={GraduationCap}>
                           {(profile.educations ?? []).length > 0 ? (
                             <div className="relative border-l-2 border-slate-100 pl-6 dark:border-slate-800">
                               <div className="space-y-8">
@@ -453,7 +481,10 @@ export function UserDetailView({
                         </CollapsibleCard>
 
                         {/* Certifications */}
-                        <CollapsibleCard id="certifications" title="Chứng chỉ (Certifications)" icon={Award}>
+                        <CollapsibleCard
+                          id="certifications"
+                          title="Chứng chỉ (Certifications)"
+                          icon={Award}>
                           {(profile.certifications ?? []).length > 0 ? (
                             <ul className="space-y-3">
                               {profile.certifications!.map((cert, i) => (
@@ -471,7 +502,10 @@ export function UserDetailView({
                         </CollapsibleCard>
 
                         {/* Achievements */}
-                        <CollapsibleCard id="achievements" title="Thành tựu (Achievements)" icon={Trophy}>
+                        <CollapsibleCard
+                          id="achievements"
+                          title="Thành tựu (Achievements)"
+                          icon={Trophy}>
                           {(profile.achievements ?? []).length > 0 ? (
                             <ul className="space-y-3">
                               {profile.achievements!.map((ach, i) => (
@@ -487,7 +521,6 @@ export function UserDetailView({
                             </p>
                           )}
                         </CollapsibleCard>
-
                       </>
                     ) : (
                       <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200/60 bg-white dark:border-slate-800/60 dark:bg-slate-900/40">
@@ -502,33 +535,54 @@ export function UserDetailView({
 
               {/* Right Column: TOC Menu (Only visible when not editing profile) */}
               {!isEditingProfile && (
-                <div className="hidden lg:block lg:sticky lg:top-0 lg:col-span-2">
+                <div className="hidden lg:sticky lg:top-0 lg:col-span-2 lg:block">
                   <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-                    <h4 className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                       Nội dung
                     </h4>
                     <nav className="space-y-1">
                       {profile?.introduction && (
-                        <a href="#intro" onClick={(e) => scrollToSection(e, 'intro')} className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                        <a
+                          href="#intro"
+                          onClick={(e) => scrollToSection(e, "intro")}
+                          className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
                           {t("common.introduce")}
                         </a>
                       )}
-                      <a href="#skills" onClick={(e) => scrollToSection(e, 'skills')} className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      <a
+                        href="#skills"
+                        onClick={(e) => scrollToSection(e, "skills")}
+                        className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
                         {t("common.technicalSkills")}
                       </a>
-                      <a href="#experience" onClick={(e) => scrollToSection(e, 'experience')} className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      <a
+                        href="#experience"
+                        onClick={(e) => scrollToSection(e, "experience")}
+                        className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
                         {t("common.workExperience")}
                       </a>
-                      <a href="#projects" onClick={(e) => scrollToSection(e, 'projects')} className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      <a
+                        href="#projects"
+                        onClick={(e) => scrollToSection(e, "projects")}
+                        className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
                         {t("common.project")}
                       </a>
-                      <a href="#education" onClick={(e) => scrollToSection(e, 'education')} className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      <a
+                        href="#education"
+                        onClick={(e) => scrollToSection(e, "education")}
+                        className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
                         {t("common.education")}
                       </a>
-                      <a href="#certifications" onClick={(e) => scrollToSection(e, 'certifications')} className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      <a
+                        href="#certifications"
+                        onClick={(e) => scrollToSection(e, "certifications")}
+                        className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
                         Chứng chỉ
                       </a>
-                      <a href="#achievements" onClick={(e) => scrollToSection(e, 'achievements')} className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
+                      <a
+                        href="#achievements"
+                        onClick={(e) => scrollToSection(e, "achievements")}
+                        className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
                         Thành tựu
                       </a>
                     </nav>

@@ -314,9 +314,7 @@ export function MentorEditForm({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="pricePerMinute">
-            {t("adminMentormanagement.unitPricePerMinuteVnd")}
-          </Label>
+          <Label htmlFor="pricePerMinute">{t("adminMentormanagement.unitPricePerMinuteVnd")}</Label>
           <Input
             id="pricePerMinute"
             type="number"

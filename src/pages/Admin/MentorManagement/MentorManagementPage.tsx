@@ -170,7 +170,9 @@ export function MentorManagementPage() {
           })
         );
         if (selectedMentor?.id === mentor.id) {
-          setSelectedMentor(prev => prev ? { ...prev, active: prev.active === false ? true : false } : null);
+          setSelectedMentor((prev) =>
+            prev ? { ...prev, active: prev.active === false ? true : false } : null
+          );
         }
         void loadMentors(); // Refresh the list
       } else {
@@ -305,7 +307,7 @@ export function MentorManagementPage() {
             </div>
           )
         ) : viewMode === "detail" && selectedMentor ? (
-          <div className="h-full animate-in fade-in slide-in-from-right-8 duration-300">
+          <div className="animate-in fade-in slide-in-from-right-8 h-full duration-300">
             <MentorDetailView
               mentor={selectedMentor}
               onBack={() => setViewMode("list")}
@@ -315,7 +317,7 @@ export function MentorManagementPage() {
             />
           </div>
         ) : viewMode === "create" ? (
-          <div className="h-full bg-slate-50 p-6 lg:p-8 dark:bg-slate-950 animate-in fade-in slide-in-from-right-8 duration-300">
+          <div className="animate-in fade-in slide-in-from-right-8 h-full bg-slate-50 p-6 duration-300 lg:p-8 dark:bg-slate-950">
             <div className="mx-auto max-w-3xl space-y-6">
               <div className="flex items-center gap-4">
                 <Button

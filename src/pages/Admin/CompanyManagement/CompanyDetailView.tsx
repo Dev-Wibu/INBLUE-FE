@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { extractDataArray } from "@/lib/utils";
@@ -21,9 +22,8 @@ import {
   CompanyDeleteDialog,
   CompanyFormDialog,
   JobDescriptionDeleteDialog,
-  JobDescriptionDetailDialog,
+  JobDescriptionDetailView,
   JobDescriptionFormDialog,
-  JobDescriptionRoundsDialog,
   JobDescriptionTable,
 } from "./components";
 import type {
@@ -66,14 +66,14 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [companyFormData, setCompanyFormData] = useState<CompanyFormData>({});
+
+  // Job Description Management States
+  const [viewMode, setViewMode] = useState<"company" | "jd-detail">("company");
   const [isCreateJobDialogOpen, setIsCreateJobDialogOpen] = useState(false);
   const [isEditJobDialogOpen, setIsEditJobDialogOpen] = useState(false);
   const [isDeleteJobDialogOpen, setIsDeleteJobDialogOpen] = useState(false);
-  const [isViewJobDialogOpen, setIsViewJobDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<JobDescription | null>(null);
   const [jobFormData, setJobFormData] = useState<Partial<JobDescriptionFormData>>({});
-  const [isRoundsDialogOpen, setIsRoundsDialogOpen] = useState(false);
-  const [selectedJobForRounds, setSelectedJobForRounds] = useState<JobDescription | null>(null);
   const loadCompany = useCallback(async () => {
     setIsCompanyLoading(true);
     try {
@@ -188,7 +188,7 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
   };
   const handleViewJob = (job: JobDescription) => {
     setSelectedJob(job);
-    setIsViewJobDialogOpen(true);
+    setViewMode("jd-detail");
   };
   const handleEditJob = (job: JobDescription) => {
     setSelectedJob(job);
@@ -209,10 +209,6 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
   const handleDeleteJob = (job: JobDescription) => {
     setSelectedJob(job);
     setIsDeleteJobDialogOpen(true);
-  };
-  const handleConfigureRounds = (job: JobDescription) => {
-    setSelectedJobForRounds(job);
-    setIsRoundsDialogOpen(true);
   };
   const handleSubmitCreateJob = async () => {
     try {
@@ -374,8 +370,31 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
       </div>
     );
   }
+  if (viewMode === "jd-detail" && selectedJob) {
+    return (
+      <div className="animate-in fade-in slide-in-from-right-8 h-full duration-300">
+        <JobDescriptionDetailView
+          jobDescription={selectedJob}
+          onBack={() => setViewMode("company")}
+          onEdit={handleEditJob}
+        />
+        {/* Modals needed inside JD Detail view */}
+        <JobDescriptionFormDialog
+          isOpen={isEditJobDialogOpen}
+          onOpenChange={setIsEditJobDialogOpen}
+          formData={jobFormData}
+          onFormChange={setJobFormData}
+          onSubmit={handleSubmitEditJob}
+          title={t("adminCompanymanagement.editJd")}
+          description={t("adminCompanymanagement.updateJdInformation")}
+          submitLabel={t("common.saveChanges")}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col">
+    <div className="animate-in fade-in slide-in-from-left-8 flex h-full flex-col duration-300">
       {/* Banner + Header */}
       <div className="relative shrink-0">
         {/* Banner image or gradient placeholder */}
@@ -432,13 +451,6 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
           <h2 className="text-foreground text-2xl font-bold">
             {company?.name || t("adminCompanymanagement.companyDetails")}
           </h2>
-          {company?.description && company.description !== "string" ? (
-            <p className="text-muted-foreground mt-1 max-w-xl text-sm">{company.description}</p>
-          ) : (
-            <p className="text-muted-foreground/50 mt-1 max-w-xl text-sm italic">
-              {t("adminCompanymanagement.noCompanyDescription")}
-            </p>
-          )}
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <Button
@@ -457,81 +469,122 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         </div>
       </div>
 
-      {/* JD Table */}
-      <div className="border-border/50 bg-card/40 mx-6 mb-2 flex flex-col rounded-2xl border shadow-sm">
-        <div className="border-border/50 bg-card/50 flex flex-col items-start justify-between gap-4 border-b p-4 md:flex-row md:items-center">
-          <h3 className="text-foreground text-lg font-bold">
-            {t("adminCompanymanagement.jdList")}
-          </h3>
-          <div className="flex items-center gap-3">
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => {
-                setStatusFilter(value as JobStatusFilter);
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="bg-background/50 w-[160px] rounded-lg border-none">
-                <SelectValue placeholder={t("common.allStatus")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-                {STATUS_OPTIONS.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={levelFilter}
-              onValueChange={(value) => {
-                setLevelFilter(value as JobLevelFilter);
-                pagination.goToFirstPage();
-              }}>
-              <SelectTrigger className="bg-background/50 w-[150px] rounded-lg border-none">
-                <SelectValue placeholder={t("common.allLevels")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("common.allLevels")}</SelectItem>
-                {LEVEL_OPTIONS.map((level) => (
-                  <SelectItem key={level} value={level}>
-                    {level}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+      <div className="flex-1 overflow-hidden px-6 pb-6">
+        <Tabs defaultValue="jobs" className="flex h-full flex-col">
+          <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
+            <TabsTrigger
+              value="overview"
+              className="data-[state=active]:border-primary data-[state=active]:text-primary rounded-none border-b-2 border-transparent px-4 py-2 font-medium">
+              Thông tin chung
+            </TabsTrigger>
+            <TabsTrigger
+              value="jobs"
+              className="data-[state=active]:border-primary data-[state=active]:text-primary rounded-none border-b-2 border-transparent px-4 py-2 font-medium">
+              Chiến dịch tuyển dụng
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="overflow-x-auto">
-          {isJobLoading ? (
-            <div className="p-8">
-              <SpinnerBlock size="lg" label={t("adminCompanymanagement.loadingJdList")} />
+          <TabsContent
+            value="overview"
+            className="mt-4 flex-1 overflow-auto focus-visible:outline-none">
+            <div className="max-w-3xl space-y-6">
+              <div className="rounded-xl border border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <h3 className="mb-4 text-sm font-semibold tracking-wider text-slate-500 uppercase">
+                  Mô tả công ty
+                </h3>
+                {company?.description && company.description !== "string" ? (
+                  <div className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300">
+                    {company.description}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm italic">
+                    {t("adminCompanymanagement.noCompanyDescription")}
+                  </p>
+                )}
+              </div>
             </div>
-          ) : (
-            <JobDescriptionTable
-              jobDescriptions={pageData}
-              onView={handleViewJob}
-              onEdit={handleEditJob}
-              onDelete={handleDeleteJob}
-              onToggleStatus={handleToggleJobStatus}
-              onConfigureRounds={handleConfigureRounds}
-              getSortProps={getSortProps}
-            />
-          )}
-        </div>
+          </TabsContent>
 
-        {sortedData.length > 0 && !isJobLoading && (
-          <div className="border-border/50 bg-card/30 border-t pr-4 pl-4">
-            <PaginationControl
-              pagination={pagination}
-              onPageSizeChange={(nextPageSize) => {
-                setPageSize(nextPageSize);
-                pagination.goToFirstPage();
-              }}
-            />
-          </div>
-        )}
+          <TabsContent
+            value="jobs"
+            className="mt-4 flex flex-1 flex-col overflow-hidden focus-visible:outline-none">
+            {/* JD Table Area */}
+            <div className="border-border/50 bg-card/40 flex flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm">
+              <div className="border-border/50 bg-card/50 flex shrink-0 flex-col items-start justify-between gap-4 border-b p-4 md:flex-row md:items-center">
+                <h3 className="text-foreground text-lg font-bold">
+                  {t("adminCompanymanagement.jdList")}
+                </h3>
+                <div className="flex items-center gap-3">
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(value) => {
+                      setStatusFilter(value as JobStatusFilter);
+                      pagination.goToFirstPage();
+                    }}>
+                    <SelectTrigger className="bg-background/50 w-[160px] rounded-lg border-none">
+                      <SelectValue placeholder={t("common.allStatus")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                      {STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={levelFilter}
+                    onValueChange={(value) => {
+                      setLevelFilter(value as JobLevelFilter);
+                      pagination.goToFirstPage();
+                    }}>
+                    <SelectTrigger className="bg-background/50 w-[150px] rounded-lg border-none">
+                      <SelectValue placeholder={t("common.allLevels")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("common.allLevels")}</SelectItem>
+                      {LEVEL_OPTIONS.map((level) => (
+                        <SelectItem key={level} value={level}>
+                          {level}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-x-auto">
+                {isJobLoading ? (
+                  <div className="p-8">
+                    <SpinnerBlock size="lg" label={t("adminCompanymanagement.loadingJdList")} />
+                  </div>
+                ) : (
+                  <JobDescriptionTable
+                    jobDescriptions={pageData}
+                    onView={handleViewJob}
+                    onEdit={handleEditJob}
+                    onDelete={handleDeleteJob}
+                    onToggleStatus={handleToggleJobStatus}
+                    getSortProps={getSortProps}
+                  />
+                )}
+              </div>
+
+              {sortedData.length > 0 && !isJobLoading && (
+                <div className="border-border/50 bg-card/30 shrink-0 border-t pr-4 pl-4">
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Dialogs */}
@@ -554,13 +607,6 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         onConfirm={handleConfirmCompanyToggle}
       />
 
-      <JobDescriptionDetailDialog
-        isOpen={isViewJobDialogOpen}
-        onOpenChange={setIsViewJobDialogOpen}
-        jobDescription={selectedJob}
-        onEdit={handleEditJob}
-      />
-
       <JobDescriptionFormDialog
         isOpen={isCreateJobDialogOpen}
         onOpenChange={setIsCreateJobDialogOpen}
@@ -572,29 +618,11 @@ export function CompanyDetailView({ companyId, onCompanyUpdate }: CompanyDetailV
         submitLabel={t("adminCompanymanagement.createJd")}
       />
 
-      <JobDescriptionFormDialog
-        isOpen={isEditJobDialogOpen}
-        onOpenChange={setIsEditJobDialogOpen}
-        formData={jobFormData}
-        onFormChange={setJobFormData}
-        onSubmit={handleSubmitEditJob}
-        title={t("adminCompanymanagement.editJd")}
-        description={t("adminCompanymanagement.updateJdInformation")}
-        submitLabel={t("common.saveChanges")}
-      />
-
       <JobDescriptionDeleteDialog
         isOpen={isDeleteJobDialogOpen}
         onOpenChange={setIsDeleteJobDialogOpen}
         jobDescription={selectedJob}
         onConfirm={handleConfirmCloseJob}
-      />
-
-      <JobDescriptionRoundsDialog
-        isOpen={isRoundsDialogOpen}
-        onOpenChange={setIsRoundsDialogOpen}
-        jobDescription={selectedJobForRounds}
-        onSaved={loadJobDescriptions}
       />
     </div>
   );

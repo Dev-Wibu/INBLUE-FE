@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BasicInfoSection } from "@/pages/User/Account/CandidateProfile/BasicInfoSection";
 import { ExperienceSection } from "@/pages/User/Account/CandidateProfile/ExperienceSection";
 import { SkillsSection } from "@/pages/User/Account/CandidateProfile/SkillsSection";
 import { useCandidateProfileForm } from "@/pages/User/Account/CandidateProfile/useCandidateProfileForm";
-import { useTranslation } from "react-i18next";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export function AdminCandidateProfileEditForm({
   userId,
@@ -47,9 +47,7 @@ export function AdminCandidateProfileEditForm({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-              {form.hasProfile
-                ? "Chỉnh sửa Hồ sơ Ứng viên"
-                : "Tạo mới Hồ sơ Ứng viên"}
+              {form.hasProfile ? "Chỉnh sửa Hồ sơ Ứng viên" : "Tạo mới Hồ sơ Ứng viên"}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Cập nhật các thông tin chi tiết về kỹ năng, dự án, học vấn...

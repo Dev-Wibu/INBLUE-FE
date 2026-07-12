@@ -42,7 +42,6 @@ interface JobDescriptionTableProps {
   onDelete: (job: JobDescription) => void;
   onToggleStatus?: (job: JobDescription, nextStatus: "OPEN" | "CLOSED") => void;
   onView?: (job: JobDescription) => void;
-  onConfigureRounds?: (job: JobDescription) => void;
   getSortProps?: (key: JobDescriptionSortKey) => SortProps;
 }
 
@@ -52,7 +51,6 @@ export function JobDescriptionTable({
   onDelete,
   onToggleStatus,
   onView,
-  onConfigureRounds,
   getSortProps,
 }: JobDescriptionTableProps) {
   const { t } = useTranslation();
@@ -177,11 +175,6 @@ export function JobDescriptionTable({
                     <DropdownMenuItem onClick={() => onEdit(job)}>
                       {t("general.edit")}
                     </DropdownMenuItem>
-                    {onConfigureRounds && (
-                      <DropdownMenuItem onClick={() => onConfigureRounds(job)}>
-                        {t("adminCompanymanagement.configureRecruitmentProcess")}
-                      </DropdownMenuItem>
-                    )}
                     {job.status === "OPEN" ? (
                       <DropdownMenuItem
                         onClick={() => onDelete(job)}

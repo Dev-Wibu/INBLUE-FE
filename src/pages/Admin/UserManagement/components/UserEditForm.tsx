@@ -37,7 +37,6 @@ export function UserEditForm({
 }: UserEditFormProps) {
   const { t } = useTranslation();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  
 
   useEffect(() => {
     return () => {
