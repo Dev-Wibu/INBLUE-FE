@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatDate } from "@/lib/formatting";
 import type { UserRole, User as UserType } from "../types";
 
 interface SortProps {
@@ -70,6 +71,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                 )}
               </TableHead>
               <TableHead>{t("common.email")}</TableHead>
+              <TableHead className="w-32">Ngày tham gia</TableHead>
               <TableHead className="w-24">{t("common.role")}</TableHead>
               <TableHead className="w-24">{t("common.status")}</TableHead>
             </TableRow>
@@ -93,6 +95,9 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {((user as any).createdAt || (user as any).created_at) ? formatDate(((user as any).createdAt || (user as any).created_at)) : "—"}
+                </TableCell>
                 <TableCell>
                   <Badge variant="default" className={`text-white ${getRoleBadgeClass(user.role)}`}>
                     {user.role}

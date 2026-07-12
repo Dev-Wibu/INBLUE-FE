@@ -147,13 +147,13 @@ export function CVUploadModal({
   };
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl flex flex-col max-h-[90vh]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{resolvedTitle}</DialogTitle>
           <DialogDescription>{resolvedDescription}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 flex-1 overflow-y-auto px-1">
           {/* Current CV Section */}
           {currentCvUrl && !selectedFile && (
             <div className="rounded-lg border bg-slate-50 p-4 dark:bg-slate-800">
@@ -258,7 +258,7 @@ export function CVUploadModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2 sm:gap-0 flex-shrink-0 mt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUploading}>
             {t("general.cancel")}
           </Button>
