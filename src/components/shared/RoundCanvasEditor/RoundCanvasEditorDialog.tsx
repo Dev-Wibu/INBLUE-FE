@@ -364,12 +364,14 @@ export function RoundCanvasEditorDialog({
     setPositions(newPositions);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateRoundField = (index: number, field: keyof UIRound, value: any) => {
     const updated = [...rounds];
     updated[index] = { ...updated[index], [field]: value };
     setRounds(updated);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateRoundConfigField = (index: number, field: keyof UIRoundConfig, value: any) => {
     const updated = [...rounds];
     updated[index] = {

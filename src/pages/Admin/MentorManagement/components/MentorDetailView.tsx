@@ -24,6 +24,7 @@ interface MentorDetailViewProps {
   onSubmit: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }: any) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (

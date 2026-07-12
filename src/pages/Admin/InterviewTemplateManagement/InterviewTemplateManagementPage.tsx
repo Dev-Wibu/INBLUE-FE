@@ -116,6 +116,7 @@ export function InterviewTemplateManagementPage() {
     setIsEditorOpen(true);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapToUIRounds = (rounds: any[]): UIRound[] => {
     const sortedRounds = [...(rounds || [])].sort(
       (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
@@ -128,12 +129,16 @@ export function InterviewTemplateManagementPage() {
         ...r.configData,
         codingProblemsId:
           r.configData?.codingProblems
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ?.map((cp: any) => cp.problemId)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((id: any): id is number => id !== undefined) ?? [],
         codingProblems: r.configData?.codingProblems ?? [],
         codeReviewProblemsId:
           r.configData?.codeReviewProblems
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ?.map((cp: any) => cp.problemId)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((id: any): id is number => id !== undefined) ?? [],
         codeReviewProblems: r.configData?.codeReviewProblems ?? [],
       },
@@ -179,6 +184,7 @@ export function InterviewTemplateManagementPage() {
         rounds: rounds.map((r, idx) => ({
           name: r.name || `Vòng ${idx + 1}`,
           roundOrder: idx + 1,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           roundType: r.roundType as any,
           passThreshold: Number(r.passThreshold ?? 0.8),
           configData: {

@@ -96,8 +96,12 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                 </TableCell>
                 <TableCell className="text-muted-foreground">{user.email}</TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {(user as any).createdAt || (user as any).created_at
-                    ? formatDate((user as any).createdAt || (user as any).created_at)
+                  {(user as Record<string, unknown>).createdAt ||
+                  (user as Record<string, unknown>).created_at
+                    ? formatDate(
+                        ((user as Record<string, unknown>).createdAt ||
+                          (user as Record<string, unknown>).created_at) as string
+                      )
                     : "—"}
                 </TableCell>
                 <TableCell>

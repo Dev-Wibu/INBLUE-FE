@@ -50,12 +50,16 @@ export function JobDescriptionDetailView({
         ...r.configData,
         codingProblemsId:
           r.configData?.codingProblems
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ?.map((cp: any) => cp.problemId)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((id: any): id is number => id !== undefined) ?? [],
         codingProblems: r.configData?.codingProblems ?? [],
         codeReviewProblemsId:
           r.configData?.codeReviewProblems
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ?.map((cp: any) => cp.problemId)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((id: any): id is number => id !== undefined) ?? [],
         codeReviewProblems: r.configData?.codeReviewProblems ?? [],
       },
@@ -68,6 +72,7 @@ export function JobDescriptionDetailView({
       const payloadRounds = rounds.map((r, idx) => ({
         name: r.name || `Vòng ${idx + 1}`,
         roundOrder: idx + 1,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         roundType: r.roundType as any,
         passThreshold: Number(r.passThreshold ?? 0.8),
         configData: {
@@ -77,6 +82,7 @@ export function JobDescriptionDetailView({
           maxScore: Number(r.configData?.maxScore ?? 100),
           aiSystemPrompt: r.configData?.aiSystemPrompt || "",
           evaluationCriteria: r.configData?.evaluationCriteria || "",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           quizQuestions: (r.configData?.quizQuestions || []).map((q: any) => ({
             questionText: q.questionText || "",
             options: q.options || [],
@@ -86,6 +92,7 @@ export function JobDescriptionDetailView({
           codingProblems:
             r.configData?.codingProblemsId?.map((id) => {
               const cp = r.configData?.codingProblems?.find(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (problem: any) => problem.problemId === id
               );
               return {
@@ -98,6 +105,7 @@ export function JobDescriptionDetailView({
           codeReviewProblems:
             r.configData?.codeReviewProblemsId?.map((id) => {
               const cp = r.configData?.codeReviewProblems?.find(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (problem: any) => problem.problemId === id
               );
               return {

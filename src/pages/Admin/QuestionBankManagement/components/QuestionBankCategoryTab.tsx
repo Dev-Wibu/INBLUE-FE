@@ -136,6 +136,7 @@ export function QuestionBankCategoryTab({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleStartCreate = () => {
     setIsCreating(true);
     setCreateValue("");

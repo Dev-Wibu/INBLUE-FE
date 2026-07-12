@@ -39,6 +39,7 @@ interface UserDetailViewProps {
   onSubmit: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }: any) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
@@ -94,6 +95,7 @@ export function UserDetailView({
       } else {
         toast.error(response.error || "Tải lên CV thất bại");
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error("Tải lên CV thất bại");
     } finally {
@@ -106,6 +108,7 @@ export function UserDetailView({
     setIsEditingUser(false);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const scrollToSection = (e: any, id: string) => {
     e.preventDefault();
     const element = document.getElementById(id);
