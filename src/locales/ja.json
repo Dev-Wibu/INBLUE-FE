@@ -4068,7 +4068,10 @@
     "kioskSchedule": "キオスクスケジュール",
     "bookingSuccessTitle": "予約成功",
     "viewDetails": "詳細を見る",
-    "or": "または"
+    "or": "または",
+    "weeklyCalendar": "週間カレンダー",
+    "pickWeeklySlot": "今週の日時を選択してください",
+    "slotTakenJustNow": "この枠は他の方に予約されました。別の時間を選んでください。"
   },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",

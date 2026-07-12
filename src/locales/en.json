@@ -4066,7 +4066,10 @@
     "kioskSchedule": "Kiosk Schedule",
     "bookingSuccessTitle": "Booking Successful",
     "viewDetails": "View details",
-    "or": "or"
+    "or": "or",
+    "weeklyCalendar": "Weekly calendar",
+    "pickWeeklySlot": "Pick a day and time in this week",
+    "slotTakenJustNow": "This slot was just booked by someone else. Please pick another time."
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",

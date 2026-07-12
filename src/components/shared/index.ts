@@ -58,3 +58,5 @@ export type { SocketConnectionState } from "./SocketStatusBadge";
 export { SortButton } from "./SortButton";
 export type { SortDirection } from "./SortButton";
 export { TabContentWrapper } from "./TabContentWrapper";
+export { WeeklySlotCalendar } from "./WeeklySlotCalendar";
+export type { WeeklySlot, WeeklySlotCalendarProps } from "./WeeklySlotCalendar";

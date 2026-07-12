@@ -4062,7 +4062,10 @@
     "kioskSchedule": "Lịch Kiosk",
     "bookingSuccessTitle": "Đặt lịch thành công",
     "viewDetails": "Xem chi tiết",
-    "or": "hoặc"
+    "or": "hoặc",
+    "weeklyCalendar": "Lịch theo tuần",
+    "pickWeeklySlot": "Chọn một ngày và giờ trong tuần này",
+    "slotTakenJustNow": "Slot vừa được người khác đặt. Vui lòng chọn thời gian khác."
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",
