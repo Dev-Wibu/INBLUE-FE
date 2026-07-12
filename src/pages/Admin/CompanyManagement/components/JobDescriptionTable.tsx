@@ -1,3 +1,4 @@
+import { Switch } from "@/components/ui/switch";
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -38,20 +39,18 @@ interface SortProps {
 
 interface JobDescriptionTableProps {
   jobDescriptions: JobDescription[];
-  onEdit: (job: JobDescription) => void;
-  onDelete: (job: JobDescription) => void;
   onToggleStatus?: (job: JobDescription, nextStatus: "OPEN" | "CLOSED") => void;
   onView?: (job: JobDescription) => void;
   getSortProps?: (key: JobDescriptionSortKey) => SortProps;
+  showCompany?: boolean;
 }
 
 export function JobDescriptionTable({
   jobDescriptions,
-  onEdit,
-  onDelete,
   onToggleStatus,
   onView,
   getSortProps,
+  showCompany,
 }: JobDescriptionTableProps) {
   const { t } = useTranslation();
 
@@ -92,7 +91,7 @@ export function JobDescriptionTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-16">
+            <TableHead className="w-20">
               {getSortProps ? (
                 <SortButton {...getSortProps("idSortValue")}>{t("common.id", "ID")}</SortButton>
               ) : (
@@ -113,6 +112,11 @@ export function JobDescriptionTable({
                 t("common.level")
               )}
             </TableHead>
+            {showCompany && (
+              <TableHead>
+                {t("adminCompanymanagement.companyName", "Tên công ty")}
+              </TableHead>
+            )}
             <TableHead>
               {getSortProps ? (
                 <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
@@ -154,8 +158,26 @@ export function JobDescriptionTable({
               <TableCell>
                 {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
               </TableCell>
+              {showCompany && (
+                <TableCell className="text-slate-600 dark:text-slate-300">
+                  {/* @ts-expect-error Company data comes from BE */}
+                  {job.company?.name || job.companyName || "—"}
+                </TableCell>
+              )}
               <TableCell>
-                <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
+                <div className="flex items-center gap-4 py-1">
+                  <StatusBadge {...getJobDescriptionStatusBadge(job.status)} />
+                  <div 
+                    onClick={(e) => e.stopPropagation()} 
+                    className="flex items-center justify-center p-1"
+                  >
+                    <Switch
+                      checked={job.status === "OPEN"}
+                      onCheckedChange={(checked) => onToggleStatus?.(job, checked ? "OPEN" : "CLOSED")}
+                      aria-label={`Toggle status for ${job.title || job.id}`}
+                    />
+                  </div>
+                </div>
               </TableCell>
               <TableCell className="text-slate-500">
                 {formatSalaryRange(job.salaryMin, job.salaryMax, job.currency)}
@@ -172,22 +194,6 @@ export function JobDescriptionTable({
                     <DropdownMenuItem onClick={() => onView?.(job)}>
                       {t("common.detail")}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onEdit(job)}>
-                      {t("general.edit")}
-                    </DropdownMenuItem>
-                    {job.status === "OPEN" ? (
-                      <DropdownMenuItem
-                        onClick={() => onDelete(job)}
-                        className="text-red-600 focus:bg-red-50 focus:text-red-700">
-                        {t("adminCompanymanagement.closeJd")}
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem
-                        onClick={() => onToggleStatus && onToggleStatus(job, "OPEN")}
-                        className="text-emerald-600 focus:bg-emerald-50 focus:text-emerald-700">
-                        {t("adminCompanymanagement.openJd", t("recruitment.openRecruitment"))}
-                      </DropdownMenuItem>
-                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

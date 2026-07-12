@@ -21,6 +21,7 @@ export function QuestionBankManagementPage() {
   const [questions, setQuestions] = useState<QuestionBank[]>([]);
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -160,10 +161,10 @@ export function QuestionBankManagementPage() {
         <div className="flex flex-wrap items-center gap-3">
           <TabsList className="h-8">
             <TabsTrigger value="questions" className="text-xs">
-              {t("adminQuestionbankmanagement.questionList")}
+              {t("adminQuestionbankmanagement.questionList", "Danh sách câu hỏi")}
             </TabsTrigger>
             <TabsTrigger value="categories" className="text-xs">
-              {t("adminQuestionbankmanagement.categoryManagement")}
+              {t("adminQuestionbankmanagement.categoryManagement", "Quản lý chuyên mục")}
             </TabsTrigger>
           </TabsList>
 
@@ -175,6 +176,18 @@ export function QuestionBankManagementPage() {
                 className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 {t("adminQuestionbankmanagement.addQuestion", t("general.addNew"))}
+              </Button>
+            </>
+          )}
+
+          {activeTab === "categories" && (
+            <>
+              <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+              <Button
+                onClick={() => setIsCreatingCategory(true)}
+                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                {t("adminQuestionbankmanagement.addCategory", "Thêm chuyên mục")}
               </Button>
             </>
           )}
@@ -203,6 +216,8 @@ export function QuestionBankManagementPage() {
             questions={questions}
             onEditQuestion={handleEdit}
             onDeleteQuestion={handleDeleteClick}
+            isCreatingExternally={isCreatingCategory}
+            onCancelCreateExternally={() => setIsCreatingCategory(false)}
           />
         </TabsContent>
       </div>

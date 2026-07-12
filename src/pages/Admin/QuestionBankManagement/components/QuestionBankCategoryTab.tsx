@@ -20,12 +20,16 @@ interface QuestionBankCategoryTabProps {
   questions?: QuestionBank[];
   onEditQuestion?: (q: QuestionBank) => void;
   onDeleteQuestion?: (q: QuestionBank) => void;
+  isCreatingExternally?: boolean;
+  onCancelCreateExternally?: () => void;
 }
 
 export function QuestionBankCategoryTab({
   questions = [],
   onEditQuestion,
   onDeleteQuestion,
+  isCreatingExternally,
+  onCancelCreateExternally,
 }: QuestionBankCategoryTabProps) {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
@@ -60,6 +64,13 @@ export function QuestionBankCategoryTab({
       editInputRef.current.focus();
     }
   }, [editingId]);
+
+  useEffect(() => {
+    if (isCreatingExternally !== undefined) {
+      setIsCreating(isCreatingExternally);
+      if (isCreatingExternally) setCreateValue("");
+    }
+  }, [isCreatingExternally]);
 
   useEffect(() => {
     if (isCreating && createInputRef.current) {
@@ -133,6 +144,7 @@ export function QuestionBankCategoryTab({
   const handleCancelCreate = () => {
     setIsCreating(false);
     setCreateValue("");
+    onCancelCreateExternally?.();
   };
 
   const handleSaveCreate = async () => {
@@ -259,16 +271,9 @@ export function QuestionBankCategoryTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {categories.length} {t("adminQuestionbankmanagement.categoryName").toLowerCase()}
+            {categories.length} {t("adminQuestionbankmanagement.categoryName", "chuyên mục").toLowerCase()}
           </h2>
         </div>
-        <Button
-          onClick={handleStartCreate}
-          disabled={isCreating}
-          className="bg-indigo-600 text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow">
-          <Plus className="mr-2 h-4 w-4" />
-          {t("adminQuestionbankmanagement.addCategory")}
-        </Button>
       </div>
 
       {isLoading ? (
