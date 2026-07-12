@@ -49,6 +49,20 @@ function safeDate(value: string): Date | null {
 }
 
 /**
+ * YYYY-MM-DD using the *local* clock. We need this so the cell `dayKey`
+ * (computed from a `Date` that we built from `weekStart` in local time) and
+ * the slot `dayKey` (computed from a parsed ISO string) agree when the
+ * ISO string carries no explicit offset / BE/JVM serialises it as local
+ * midnight. Keeps slots from disappearing into the wrong day cell.
+ */
+function localDayKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/**
  * Weekly kiosk slot calendar — mockup from `docs/mentor_booking_ui_mockup.html`.
  * Columns are days (Mon → Sun), rows are unique start-times within the week.
  *
@@ -81,13 +95,18 @@ export function WeeklySlotCalendar({
   const today = useMemo(() => startOfDay(new Date()), []);
 
   // Group slots by (day-of-week, time-of-day) so we know which cells to render.
+  // We DO NOT rely on `format(slot, "yyyy-MM-dd")` here: date-fns formats using
+  // the *browser-local* clock, but `weekStart` is also local, so both keys agree
+  // as long as we project the slot's local date components directly. We use a
+  // hand-rolled helper instead of `format` to avoid any timezone ambiguity (e.g.
+  // ISO strings without an explicit offset).
   const slotsByDayHour = useMemo(() => {
     const map = new Map<string, WeeklySlot[]>();
     for (const slot of slots) {
       const start = safeDate(slot.startTime);
       if (!start) continue;
-      const dayKey = format(start, "yyyy-MM-dd");
-      const hourKey = format(start, "HH:mm");
+      const dayKey = localDayKey(start);
+      const hourKey = `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`;
       const k = `${dayKey}__${hourKey}`;
       const list = map.get(k) ?? [];
       list.push(slot);
@@ -96,12 +115,16 @@ export function WeeklySlotCalendar({
     return map;
   }, [slots]);
 
-  // Distinct time-of-day rows across the week (sorted ascending).
+  // Distinct time-of-day rows across the week (sorted ascending), again using
+  // raw local time components to dodge any timezone weirdness with ISO strings.
   const timeRows = useMemo(() => {
     const set = new Set<string>();
     for (const slot of slots) {
       const start = safeDate(slot.startTime);
-      if (start) set.add(format(start, "HH:mm"));
+      if (!start) continue;
+      set.add(
+        `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}`
+      );
     }
     return Array.from(set).sort();
   }, [slots]);
@@ -165,7 +188,7 @@ export function WeeklySlotCalendar({
       </div>
 
       {/* Weekday header */}
-      <div className="border-border bg-muted/30 grid grid-cols-[64px_repeat(7,_1fr)] border-b text-center">
+      <div className="border-border bg-muted/30 grid grid-cols-[56px_repeat(7,_minmax(0,_1fr))] border-b text-center">
         <div className="text-muted-foreground px-1 py-2 text-[0.7rem] font-semibold tracking-wider uppercase" />
         {weekdayLabels.map((label, idx) => {
           const day = weekDays[idx];
@@ -175,7 +198,7 @@ export function WeeklySlotCalendar({
             <div
               key={label}
               className={cn(
-                "text-muted-foreground px-1 py-2 text-[0.7rem] font-semibold tracking-wider uppercase",
+                "text-muted-foreground min-w-0 truncate px-1 py-2 text-[0.7rem] font-semibold tracking-wider uppercase",
                 isToday && "text-primary"
               )}>
               <div>{label}</div>
@@ -211,17 +234,19 @@ export function WeeklySlotCalendar({
           {timeRows.map((time) => (
             <div
               key={time}
-              className="border-border/60 grid grid-cols-[64px_repeat(7,_1fr)] border-b last:border-b-0">
+              className="border-border/60 grid grid-cols-[56px_repeat(7,_minmax(0,_1fr))] border-b last:border-b-0">
               <div className="text-muted-foreground flex items-start justify-end px-2 pt-2 text-[0.7rem] tabular-nums">
                 {time}
               </div>
               {weekDays.map((day) => {
-                const dayKey = format(day, "yyyy-MM-dd");
+                const dayKey = localDayKey(day);
                 const hourKey = `${dayKey}__${time}`;
                 const cellSlots = slotsByDayHour.get(hourKey) ?? [];
                 const isPast = day.getTime() < today.getTime();
                 return (
-                  <div key={hourKey} className="border-border/40 min-h-[56px] border-l p-1.5">
+                  <div
+                    key={hourKey}
+                    className="border-border/40 flex min-h-[56px] flex-col items-stretch gap-1 overflow-hidden border-l p-1">
                     {cellSlots.map((slot) => {
                       const key = slotKey(slot);
                       const isSelected = selectedSlotKey === key;
@@ -242,7 +267,7 @@ export function WeeklySlotCalendar({
                               : t("common.slotCalendar.full", "Full")
                           }`}
                           className={cn(
-                            "w-full truncate rounded-md border px-1.5 py-1 text-[0.7rem] font-medium tabular-nums transition-all",
+                            "block w-full truncate rounded-md border px-1 py-0.5 text-center text-[0.65rem] font-medium tabular-nums transition-all",
                             "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
                             isSelected
                               ? "border-emerald-600 bg-emerald-600 text-white shadow-sm"
