@@ -1,13 +1,13 @@
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { extractDataArray } from "@/lib/utils";
 import { companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, FolderOpen, Plus } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Building2, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { CompanyFormDialog, JobDescriptionTable, JobDescriptionDetailView } from "./components";
+import { CompanyFormDialog, JobDescriptionDetailView, JobDescriptionTable } from "./components";
 import { CompanyGridTab } from "./components/CompanyGridTab";
 import type { Company, CompanyFormData, JobDescription } from "./types";
 
@@ -109,7 +109,10 @@ export function CompanyManagementPage() {
               {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
             </h1>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {t("adminCompanymanagement.manageCompaniesDesc", "Quản lý danh sách các công ty và thông tin tuyển dụng.")}
+              {t(
+                "adminCompanymanagement.manageCompaniesDesc",
+                "Quản lý danh sách các công ty và thông tin tuyển dụng."
+              )}
             </p>
           </div>
         </div>
@@ -144,7 +147,9 @@ export function CompanyManagementPage() {
             <JobDescriptionDetailView
               jobDescription={selectedJd}
               onBack={() => setSelectedJdId(null)}
-              onEdit={() => toast.info(t("common.featureUnderDevelopment", "Tính năng đang phát triển"))}
+              onEdit={() =>
+                toast.info(t("common.featureUnderDevelopment", "Tính năng đang phát triển"))
+              }
             />
           ) : (
             <JobDescriptionTable
@@ -154,7 +159,10 @@ export function CompanyManagementPage() {
               onToggleStatus={async (job, nextStatus) => {
                 try {
                   // @ts-expect-error partial update
-                  const res = await jobDescriptionManager.update({ id: job.id, status: nextStatus });
+                  const res = await jobDescriptionManager.update({
+                    id: job.id,
+                    status: nextStatus,
+                  });
                   if (res.success) {
                     toast.success(t("common.updateSuccess", "Cập nhật thành công"));
                   } else {

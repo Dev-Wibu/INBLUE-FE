@@ -18,16 +18,16 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
   getAvailableRoundsTemplates,
   RoundCanvasEditorDialog,
 } from "@/components/shared/RoundCanvasEditor";
-import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 
 export function InterviewTemplateManagementPage() {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
-  
+
   const [templates, setTemplates] = useState<SummaryResponse[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<DetailResponse | null>(null);

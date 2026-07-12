@@ -18,7 +18,10 @@ export const getDistanceToSegment = (
   return Math.sqrt((px - projX) ** 2 + (py - projY) ** 2);
 };
 
-export const getBestConnection = (fromPos: { x: number; y: number }, toPos: { x: number; y: number }) => {
+export const getBestConnection = (
+  fromPos: { x: number; y: number },
+  toPos: { x: number; y: number }
+) => {
   const CARD_W = 208;
   const CARD_H = 130;
 

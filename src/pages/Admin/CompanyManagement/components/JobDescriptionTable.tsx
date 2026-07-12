@@ -1,13 +1,6 @@
-import { Switch } from "@/components/ui/switch";
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -16,10 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, formatDate } from "@/lib/formatting";
-import { getJobDescriptionLevelBadge, getJobDescriptionStatusBadge } from "@/lib/status-utils";
-import { Briefcase, MoreHorizontal } from "lucide-react";
-import { type MouseEvent } from "react";
+import { formatDate } from "@/lib/formatting";
+import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
+import { Briefcase } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
 
@@ -92,13 +84,9 @@ export function JobDescriptionTable({
               )}
             </TableHead>
             {showCompany && (
-              <TableHead>
-                {t("adminCompanymanagement.companyName", "Tên công ty")}
-              </TableHead>
+              <TableHead>{t("adminCompanymanagement.companyName", "Tên công ty")}</TableHead>
             )}
-            <TableHead>
-              {t("adminCompanymanagement.rounds", "Số vòng thi")}
-            </TableHead>
+            <TableHead>{t("adminCompanymanagement.rounds", "Số vòng thi")}</TableHead>
             <TableHead>
               {getSortProps ? (
                 <SortButton {...getSortProps("updatedAtSortValue")}>
@@ -142,13 +130,14 @@ export function JobDescriptionTable({
               <TableCell className="text-slate-500">{formatDate(job.deadlineAt)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end">
-                  <div 
-                    onClick={(e) => e.stopPropagation()} 
-                    className="flex items-center justify-center p-1"
-                  >
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center justify-center p-1">
                     <Switch
                       checked={job.status === "OPEN"}
-                      onCheckedChange={(checked) => onToggleStatus?.(job, checked ? "OPEN" : "CLOSED")}
+                      onCheckedChange={(checked) =>
+                        onToggleStatus?.(job, checked ? "OPEN" : "CLOSED")
+                      }
                       aria-label={`Toggle status for ${job.title || job.id}`}
                     />
                   </div>

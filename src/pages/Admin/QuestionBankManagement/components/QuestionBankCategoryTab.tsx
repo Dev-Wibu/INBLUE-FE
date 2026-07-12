@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { extractDataArray } from "@/lib/utils";
 import { questionCategoryManager } from "@/services/question-category.manager";
-import { ArrowLeft, Edit2, Folder, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit2, Folder, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -271,7 +271,8 @@ export function QuestionBankCategoryTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {categories.length} {t("adminQuestionbankmanagement.categoryName", "chuyên mục").toLowerCase()}
+            {categories.length}{" "}
+            {t("adminQuestionbankmanagement.categoryName", "chuyên mục").toLowerCase()}
           </h2>
         </div>
       </div>

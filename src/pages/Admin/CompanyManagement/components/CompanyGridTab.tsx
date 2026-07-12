@@ -1,19 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { extractDataArray } from "@/lib/utils";
+import { companyManager, jobDescriptionManager } from "@/services";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Building2, Edit, Folder, Plus, Search, Trash2 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { jobDescriptionManager, companyManager } from "@/services";
-import { extractDataArray } from "@/lib/utils";
 
-import type { Company, JobDescription, CompanyFormData, JobDescriptionFormData, CreateJobDescriptionRequest } from "../types";
-import { JobDescriptionTable } from "./JobDescriptionTable";
-import { JobDescriptionDetailView } from "./JobDescriptionDetailView";
-import { CompanyFormDialog } from "./CompanyFormDialog";
+import type {
+  Company,
+  CompanyFormData,
+  CreateJobDescriptionRequest,
+  JobDescription,
+  JobDescriptionFormData,
+} from "../types";
 import { CompanyDeleteDialog } from "./CompanyDeleteDialog";
+import { CompanyFormDialog } from "./CompanyFormDialog";
+import { JobDescriptionDetailView } from "./JobDescriptionDetailView";
 import { JobDescriptionFormDialog } from "./JobDescriptionFormDialog";
+import { JobDescriptionTable } from "./JobDescriptionTable";
 
 interface CompanyGridTabProps {
   companies: Company[];
@@ -68,7 +74,9 @@ export function CompanyGridTab({
         toast.success(t("adminCompanymanagement.successfullyCreatedJd", "Thêm JD thành công"));
         setIsJdDialogOpen(false);
         setJdFormData({});
-        queryClient.invalidateQueries({ queryKey: ["admin", "companies", selectedCompanyId, "jds"] });
+        queryClient.invalidateQueries({
+          queryKey: ["admin", "companies", selectedCompanyId, "jds"],
+        });
       } else {
         toast.error(res.error || t("common.cannotCreateJd", "Không thể thêm JD"));
       }
@@ -142,7 +150,9 @@ export function CompanyGridTab({
         banner: formData.banner,
       });
       if (res.success) {
-        toast.success(t("adminCompanymanagement.successfullyUpdatedCompany", "Cập nhật công ty thành công"));
+        toast.success(
+          t("adminCompanymanagement.successfullyUpdatedCompany", "Cập nhật công ty thành công")
+        );
         setIsFormOpen(false);
         onCompanyUpdate?.();
       } else {
@@ -161,7 +171,9 @@ export function CompanyGridTab({
       setIsSubmitting(true);
       const res = await companyManager.delete(deletingCompany.id);
       if (res.success) {
-        toast.success(t("adminCompanymanagement.successfullyDeletedCompany", "Xóa công ty thành công"));
+        toast.success(
+          t("adminCompanymanagement.successfullyDeletedCompany", "Xóa công ty thành công")
+        );
         setIsDeleteOpen(false);
         onCompanyUpdate?.();
       } else {
@@ -204,8 +216,7 @@ export function CompanyGridTab({
                   setJdFormData({ status: "OPEN" });
                   setIsJdDialogOpen(true);
                 }}
-                className="h-8 gap-1.5"
-              >
+                className="h-8 gap-1.5">
                 <Plus className="h-4 w-4" />
                 {t("adminCompanymanagement.addJd", "Thêm JD")}
               </Button>
@@ -218,7 +229,9 @@ export function CompanyGridTab({
             <JobDescriptionDetailView
               jobDescription={selectedJd}
               onBack={() => setSelectedJdId(null)}
-              onEdit={() => toast.info(t("common.featureUnderDevelopment", "Tính năng đang phát triển"))}
+              onEdit={() =>
+                toast.info(t("common.featureUnderDevelopment", "Tính năng đang phát triển"))
+              }
             />
           ) : companyJds.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center">
@@ -235,7 +248,10 @@ export function CompanyGridTab({
                 onToggleStatus={async (job, nextStatus) => {
                   try {
                     // @ts-expect-error partial update
-                    const res = await jobDescriptionManager.update({ id: job.id, status: nextStatus });
+                    const res = await jobDescriptionManager.update({
+                      id: job.id,
+                      status: nextStatus,
+                    });
                     if (res.success) {
                       toast.success(t("common.updateSuccess", "Cập nhật thành công"));
                     } else {
@@ -249,7 +265,7 @@ export function CompanyGridTab({
             </div>
           )}
         </div>
-        
+
         <JobDescriptionFormDialog
           isOpen={isJdDialogOpen}
           onOpenChange={setIsJdDialogOpen}
@@ -257,27 +273,35 @@ export function CompanyGridTab({
           onFormChange={(data) => setJdFormData((prev) => ({ ...prev, ...data }))}
           onSubmit={handleJdSubmit}
           title={t("adminCompanymanagement.createJd", "Tạo Job Description")}
-          description={t("adminCompanymanagement.createJdDescription", "Điền thông tin để tạo Job Description mới.")}
-          submitLabel={isCreatingJd ? t("common.processing", "Đang xử lý...") : t("common.create", "Tạo mới")}
+          description={t(
+            "adminCompanymanagement.createJdDescription",
+            "Điền thông tin để tạo Job Description mới."
+          )}
+          submitLabel={
+            isCreatingJd ? t("common.processing", "Đang xử lý...") : t("common.create", "Tạo mới")
+          }
         />
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col p-4 md:p-6 lg:p-8 animate-in fade-in duration-300">
+    <div className="animate-in fade-in flex h-full flex-col p-4 duration-300 md:p-6 lg:p-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            {t("adminCompanymanagement.manageCompaniesDesc", "Quản lý danh sách các công ty và thông tin tuyển dụng.")}
+            {t(
+              "adminCompanymanagement.manageCompaniesDesc",
+              "Quản lý danh sách các công ty và thông tin tuyển dụng."
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-500" />
             <Input
               type="text"
               placeholder={t("common.search")}
@@ -296,7 +320,7 @@ export function CompanyGridTab({
             onClick={() => setSelectedCompanyId(company.id!)}
             className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/50">
             {/* Edit / Delete Buttons */}
-            <div className="absolute right-2 top-2 z-10 flex items-center opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="absolute top-2 right-2 z-10 flex items-center opacity-0 transition-opacity group-hover:opacity-100">
               <Button
                 variant="ghost"
                 size="icon"
@@ -358,7 +382,9 @@ export function CompanyGridTab({
             <Building2 className="h-8 w-8 text-slate-400" />
           </div>
           <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
-            {searchQuery ? t("common.noResultsFound") : t("adminCompanymanagement.noCompaniesAvailable")}
+            {searchQuery
+              ? t("common.noResultsFound")
+              : t("adminCompanymanagement.noCompaniesAvailable")}
           </h3>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {searchQuery
@@ -382,7 +408,10 @@ export function CompanyGridTab({
         onFormChange={setFormData}
         onSubmit={handleSaveEdit}
         title={t("adminCompanymanagement.editCompanyInfo", "Chỉnh sửa thông tin công ty")}
-        description={t("adminCompanymanagement.updateInfoOfPartner", "Cập nhật các thông tin của công ty đối tác")}
+        description={t(
+          "adminCompanymanagement.updateInfoOfPartner",
+          "Cập nhật các thông tin của công ty đối tác"
+        )}
         submitLabel={t("common.save", "Lưu thay đổi")}
         isSubmitting={isSubmitting}
       />
