@@ -151,23 +151,14 @@ export function UserEditForm({
           </div>
 
           <div className="space-y-1.5 pt-2">
-            <Label>{t("common.password")}</Label>
-            <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {t("adminUsermanagement.resetPassword", "Reset Password")}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {t(
-                    "adminUsermanagement.sendPasswordResetLinkToUser",
-                    "Send password reset link to user"
-                  )}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" type="button">
-                {t("common.sendLink")}
-              </Button>
-            </div>
+            <Label htmlFor="password">{t("common.password")}</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password || ""}
+              onChange={(e) => onFormChange({ ...formData, password: e.target.value })}
+              placeholder={t("common.leaveBlankToKeepCurrent", "Bỏ trống để giữ nguyên")}
+            />
           </div>
 
           <div className="space-y-2 pt-2">
