@@ -25,6 +25,10 @@ import { useState } from "react";
 import type { User as UserType } from "../types";
 import { UserEditForm, type ExtendedUserFormData } from "./UserEditForm";
 import { AdminCandidateProfileEditForm } from "./AdminCandidateProfileEditForm";
+import CVUploadModal from "@/components/ui/cv-upload-modal";
+import { usersAdminManager } from "@/services/users-admin.manager";
+import { toast } from "sonner";
+import { queryClient } from "@/lib/queryClient";
 
 interface UserDetailViewProps {
   user: UserType;
@@ -71,6 +75,31 @@ export function UserDetailView({
   const { t } = useTranslation();
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isCvModalOpen, setIsCvModalOpen] = useState(false);
+  const [isCvUploading, setIsCvUploading] = useState(false);
+
+  const handleCvUpload = async (file: File) => {
+    try {
+      setIsCvUploading(true);
+      const response = await usersAdminManager.uploadCv(user.id!, file);
+      if (response.data) {
+        toast.success("Tải lên CV thành công");
+        await queryClient.invalidateQueries({
+          queryKey: ["get", "/api/candidate-profiles/{userId}"],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ["get", "/api/users"],
+        });
+        setIsCvModalOpen(false);
+      } else {
+        toast.error(response.error || "Tải lên CV thất bại");
+      }
+    } catch (error) {
+      toast.error("Tải lên CV thất bại");
+    } finally {
+      setIsCvUploading(false);
+    }
+  };
 
   const handleSaveUser = () => {
     onSubmit();
@@ -172,8 +201,8 @@ export function UserDetailView({
                       </div>
                     )}
 
-                    {user?.cvUrl && (
-                      <div className="mt-6">
+                    <div className="mt-6 flex flex-col gap-2">
+                      {user?.cvUrl && (
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="secondary" className="w-full shadow-sm text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
@@ -192,8 +221,12 @@ export function UserDetailView({
                             </div>
                           </DialogContent>
                         </Dialog>
-                      </div>
-                    )}
+                      )}
+                      <Button variant="outline" className="w-full shadow-sm" onClick={() => setIsCvModalOpen(true)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        {user?.cvUrl ? "Cập nhật CV" : "Tải lên CV"}
+                      </Button>
+                    </div>
 
                     <div className="mt-3 flex gap-2">
                       <Button className="flex-1 shadow-none" variant="default" onClick={() => setIsEditingUser(true)}>
@@ -506,6 +539,16 @@ export function UserDetailView({
           )}
         </div>
       </div>
+
+      <CVUploadModal
+        isOpen={isCvModalOpen}
+        onOpenChange={setIsCvModalOpen}
+        currentCvUrl={user?.cvUrl}
+        onUpload={handleCvUpload}
+        isUploading={isCvUploading}
+        title="Cập nhật CV"
+        description="Tải lên CV (định dạng PDF) cho ứng viên này."
+      />
     </div>
   );
 }
