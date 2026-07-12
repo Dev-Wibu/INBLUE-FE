@@ -111,24 +111,6 @@ export function UserManagementPage() {
     setViewMode("create");
   };
 
-  const handleEdit = (user: User) => {
-    setSelectedUser(user);
-    setFormData({
-      name: user.name || "",
-      email: user.email || "",
-      password: user.password || "",
-      role: user.role,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...((user as any).university !== undefined && { university: (user as any).university }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...((user as any).major !== undefined && { major: (user as any).major }),
-      isActive: user.isActive,
-      public_id: user.public_id,
-      cv_public_id: user.cv_public_id,
-    });
-    setViewMode("edit");
-  };
-
   const handleToggleStatus = async (user: User) => {
     if (!user.id) return;
     const previousStatus = user.isActive;
@@ -163,6 +145,11 @@ export function UserManagementPage() {
 
   const handleViewDetail = async (user: User) => {
     setSelectedUser(user);
+    setFormData({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
     if (user.role === "USER" && user.id) {
       try {
         const response = await candidateProfileManager.getByUserId(user.id);
@@ -223,6 +210,9 @@ export function UserManagementPage() {
       <UserDetailView
         user={selectedUser}
         profile={selectedProfileData}
+        formData={formData}
+        onFormChange={setFormData}
+        onSubmit={handleSubmitEdit}
         onBack={() => {
           setViewMode("list");
           setSelectedUser(null);
@@ -242,24 +232,6 @@ export function UserManagementPage() {
         title={t("adminUsermanagement.addNewUser")}
         description={t("adminUsermanagement.fillInTheInformationTo")}
         submitLabel={t("adminUsermanagement.createUsers")}
-      />
-    );
-  }
-
-  if (viewMode === "edit" && selectedUser) {
-    return (
-      <UserEditForm
-        formData={formData}
-        onFormChange={setFormData}
-        onSubmit={handleSubmitEdit}
-        onCancel={() => {
-          setViewMode("list");
-          setSelectedUser(null);
-        }}
-        title={t("adminUsermanagement.userEditing")}
-        description={t("adminUsermanagement.updateUserInformation")}
-        submitLabel={t("common.saveChanges")}
-        selectedUser={selectedUser}
       />
     );
   }
@@ -347,7 +319,6 @@ export function UserManagementPage() {
             <div>
               <UserTable
                 users={pageData}
-                onEdit={handleEdit}
                 onDelete={handleToggleStatus}
                 onViewDetail={handleViewDetail}
                 getSortProps={getSortProps}

@@ -1,13 +1,6 @@
 import { SortButton, type SortDirection } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -17,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Edit, Eye, MoreHorizontal, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UserRole, User as UserType } from "../types";
 
@@ -28,7 +21,6 @@ interface SortProps {
 
 interface UserTableProps {
   users: UserType[];
-  onEdit: (user: UserType) => void;
   onDelete: (user: UserType) => void;
   onViewDetail: (user: UserType) => void;
   getSortProps?: (key: keyof UserType) => SortProps;
@@ -47,7 +39,7 @@ const getRoleBadgeClass = (role?: UserRole): string => {
   }
 };
 
-export function UserTable({ users, onEdit, onDelete, onViewDetail, getSortProps }: UserTableProps) {
+export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserTableProps) {
   const { t } = useTranslation();
 
   if (users.length === 0) {
@@ -80,12 +72,15 @@ export function UserTable({ users, onEdit, onDelete, onViewDetail, getSortProps 
               <TableHead>{t("common.email")}</TableHead>
               <TableHead className="w-24">{t("common.role")}</TableHead>
               <TableHead className="w-24">{t("common.status")}</TableHead>
-              <TableHead className="w-32 text-right">{t("common.operation")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map((user) => (
-              <TableRow key={user.id}>
+              <TableRow 
+                key={user.id}
+                onClick={() => onViewDetail(user)}
+                className="cursor-pointer bg-white transition-colors hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/50"
+              >
                 <TableCell className="font-medium">{user.id}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -109,27 +104,8 @@ export function UserTable({ users, onEdit, onDelete, onViewDetail, getSortProps 
                     checked={user.isActive !== false}
                     onCheckedChange={() => onDelete(user)}
                     aria-label="Toggle user status"
+                    onClick={(e) => e.stopPropagation()}
                   />
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onViewDetail(user)}>
-                        <Eye className="mr-2 h-4 w-4 text-slate-500" />
-                        {t("common.userDetail") || "View Details"}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(user)}>
-                        <Edit className="mr-2 h-4 w-4 text-blue-500" />
-                        {t("general.edit")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
