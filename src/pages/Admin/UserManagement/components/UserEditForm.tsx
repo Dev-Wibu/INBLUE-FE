@@ -37,7 +37,7 @@ export function UserEditForm({
 }: UserEditFormProps) {
   const { t } = useTranslation();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
+  
 
   useEffect(() => {
     return () => {
@@ -72,15 +72,15 @@ export function UserEditForm({
 
   const innerForm = (
     <div className="mx-auto max-w-4xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="flex flex-col gap-6">
         {/* Avatar Section */}
-        <div className="flex flex-col items-center space-y-4 md:col-span-1">
+        <div className="flex flex-col items-center space-y-4">
           <UniversalMediaUploader
             preset="single-image"
             hideFileList={true}
             onFilesChange={(files) => handleAvatarChange(files[0])}
             customTrigger={
-              <div className="group relative mx-auto h-40 w-40 cursor-pointer overflow-hidden rounded-full border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500">
+              <div className="group relative mx-auto h-24 w-24 cursor-pointer overflow-hidden rounded-full border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500">
                 {displayAvatarUrl ? (
                   <img
                     src={displayAvatarUrl}
@@ -127,7 +127,7 @@ export function UserEditForm({
         </div>
 
         {/* Form Fields Section */}
-        <div className="space-y-4 md:col-span-2">
+        <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="name">{t("common.fullName1")}</Label>
@@ -155,10 +155,13 @@ export function UserEditForm({
             <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
               <div className="flex-1">
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {t("adminUsermanagement.resetPassword")}
+                  {t("adminUsermanagement.resetPassword", "Reset Password")}
                 </p>
                 <p className="text-xs text-slate-500">
-                  {t("adminUsermanagement.sendPasswordResetLinkToUser")}
+                  {t(
+                    "adminUsermanagement.sendPasswordResetLinkToUser",
+                    "Send password reset link to user"
+                  )}
                 </p>
               </div>
               <Button variant="outline" size="sm" type="button">
@@ -177,7 +180,7 @@ export function UserEditForm({
                   role: value as "STAFF" | "MENTOR" | "ADMIN" | "USER",
                 })
               }
-              className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              className="grid grid-cols-2 gap-3">
               <div>
                 <RadioGroupItem value="USER" id="role-user" className="peer sr-only" />
                 <Label
