@@ -1,4 +1,4 @@
-import { SlotCalendar, type SlotCalendarSlot } from "@/components/shared";
+import { WeeklySlotCalendar, type WeeklySlot } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -12,9 +12,10 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
-import { useActiveKiosks, useKioskSlots, usePickKioskSlot } from "@/hooks/useKiosk";
+import { useActiveKiosks, useKioskWeekSlots, usePickKioskSlot } from "@/hooks/useKiosk";
 import { useCurrentRound } from "@/hooks/useRound";
 import { fetchClient } from "@/lib/api";
+import { startOfWeek } from "date-fns";
 import {
   ArrowLeft,
   Calendar,
@@ -85,11 +86,6 @@ interface MentorInterviewBooking {
 // Helpers
 // ============================================================
 
-const toYmd = (date: Date): string => {
-  const tz = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tz).toISOString().slice(0, 10);
-};
-
 // GET /api/mentor-bookings/{bookingId}
 // NOTE: backend v062 does NOT expose this endpoint for students (admin-only).
 // We still attempt it but log + throw when the call fails so the upstream UI
@@ -130,23 +126,29 @@ function SlotSelectionStep({
 }) {
   const { t } = useTranslation();
   const [selectedKioskId, setSelectedKioskId] = useState<number | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  });
-  const [selectedSlot, setSelectedSlot] = useState<SlotCalendarSlot | null>(null);
-
-  const selectedDateString = useMemo(() => toYmd(selectedDate), [selectedDate]);
-  const { data: kiosks = [], isLoading: kiosksLoading } = useActiveKiosks();
-  const { data: slots = [], isLoading: slotsLoading } = useKioskSlots(
-    selectedKioskId ?? 0,
-    selectedDateString,
-    !!selectedKioskId
+  const [weekStart, setWeekStart] = useState<Date>(() =>
+    startOfWeek(new Date(), { weekStartsOn: 1 })
   );
+  const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
+
+  const { data: kiosks = [], isLoading: kiosksLoading } = useActiveKiosks();
+  const weekQueries = useKioskWeekSlots(selectedKioskId, weekStart, !!selectedKioskId);
+  const weekSlots = useMemo<WeeklySlot[]>(() => {
+    return weekQueries.flatMap((q) => q.data ?? []);
+  }, [weekQueries]);
+  const slotsLoading = weekQueries.some((q) => q.isLoading);
   const pickSlotMutation = usePickKioskSlot();
 
-  const slotSelectorKey = `${selectedKioskId ?? "none"}__${selectedDateString}`;
+  const handleKioskChange = (kioskId: number) => {
+    setSelectedKioskId(kioskId);
+    setSelectedSlot(null);
+    setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  };
+
+  const handleWeekChange = (next: Date) => {
+    setWeekStart(startOfWeek(next, { weekStartsOn: 1 }));
+    setSelectedSlot(null);
+  };
 
   const handlePickSlot = async () => {
     if (!selectedKioskId || !selectedSlot) return;
@@ -211,7 +213,7 @@ function SlotSelectionStep({
           ) : (
             <Select
               value={selectedKioskId ? String(selectedKioskId) : ""}
-              onValueChange={(v) => setSelectedKioskId(Number(v))}>
+              onValueChange={(v) => handleKioskChange(Number(v))}>
               <SelectTrigger id="kiosk-select">
                 <SelectValue placeholder={t("userKiosk.chooseKiosk")} />
               </SelectTrigger>
@@ -240,27 +242,23 @@ function SlotSelectionStep({
               <Clock className="h-4 w-4 text-[#0047AB]" />
               {t("userKiosk.selectTimeSlot")}
             </CardTitle>
-            {kioskName && (
-              <CardDescription>
-                {t("userKiosk.availableSlotsFor")} {kioskName}
-              </CardDescription>
-            )}
+            <CardDescription>
+              {kioskName
+                ? `${t("userKiosk.availableSlotsFor")} ${kioskName}`
+                : t("userKiosk.pickWeeklySlot")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <SlotCalendar
-              key={slotSelectorKey}
-              selectedDate={selectedDate}
-              onSelectDate={setSelectedDate}
-              slots={slots.map((s) => ({
-                startTime: s.startTime ?? "",
-                endTime: s.endTime ?? "",
-                available: s.available ?? false,
-              }))}
+            <WeeklySlotCalendar
+              weekStart={weekStart}
+              onChangeWeek={handleWeekChange}
+              slots={weekSlots}
               selectedSlotKey={
                 selectedSlot ? `${selectedSlot.startTime}__${selectedSlot.endTime}` : null
               }
               onSelectSlot={setSelectedSlot}
               isLoading={slotsLoading}
+              emptyMessage={t("common.slotCalendar.noSlotsForSelectedDate")}
             />
 
             {/* Selected slot info */}

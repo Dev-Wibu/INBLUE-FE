@@ -8,7 +8,7 @@ import type {
   SlotDto,
 } from "@/services/kiosk.manager";
 import { kioskManager } from "@/services/kiosk.manager";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 const t = i18n.t.bind(i18n);
 
@@ -40,6 +40,43 @@ export const useKioskSlots = (kioskId: number, date: string | undefined, enabled
     },
     enabled: enabled && !!kioskId && !!date,
     staleTime: 30_000,
+  });
+};
+
+/**
+ * Aggregates 7 daily slot queries into a single week view, matching the
+ * mentor-booking mockup (`docs/mentor_booking_ui_mockup.html`): FE calls
+ * `/api/kiosks/{id}/slots?date=` per day and the calendar merges them.
+ */
+export const useKioskWeekSlots = (
+  kioskId: number | undefined | null,
+  weekStart: Date,
+  enabled = true
+) => {
+  return useQueries({
+    queries: Array.from({ length: 7 }).map((_, i) => {
+      const day = new Date(weekStart);
+      day.setDate(day.getDate() + i);
+      // Keep strict YYYY-MM-DD based on local date (not UTC) so kiosk schedules
+      // configured in local time align with the BE side.
+      const y = day.getFullYear();
+      const m = String(day.getMonth() + 1).padStart(2, "0");
+      const d = String(day.getDate()).padStart(2, "0");
+      const dateString = `${y}-${m}-${d}`;
+      return {
+        queryKey: ["kiosks", kioskId, "slots", dateString],
+        queryFn: async (): Promise<SlotDto[]> => {
+          if (!kioskId) return [];
+          const result = await kioskManager.getAvailableSlots(kioskId, dateString);
+          if (!result.success) {
+            throw new Error(result.error);
+          }
+          return result.data ?? [];
+        },
+        enabled: enabled && !!kioskId,
+        staleTime: 30_000,
+      };
+    }),
   });
 };
 
