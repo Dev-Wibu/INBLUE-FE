@@ -1422,8 +1422,8 @@ export function ApplicationHistoryPage() {
   }, [apps]);
 
   // Enrich applications with JD data, then surface newest applications first.
-  // Backend returned applications in unstable order, so we sort defensively
-  // by `appliedAt` (descending) and fall back to id when timestamp is missing.
+  // BE may not guarantee insertion order, so we sort defensively by
+  // `createdAt` (descending) and fall back to id when timestamp is missing.
   const enrichedApplications = useMemo<EnrichedApplication[]>(() => {
     const enriched = apps.map((app) => {
       const jd = jdMap.get(app.jdId ?? 0);
@@ -1436,8 +1436,8 @@ export function ApplicationHistoryPage() {
       };
     });
     return enriched.sort((a, b) => {
-      const aTs = a.appliedAt ? new Date(a.appliedAt).getTime() : 0;
-      const bTs = b.appliedAt ? new Date(b.appliedAt).getTime() : 0;
+      const aTs = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTs = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       if (aTs !== bTs) return bTs - aTs;
       return (b.id ?? 0) - (a.id ?? 0);
     });
