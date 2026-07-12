@@ -1,6 +1,6 @@
 import { SortButton, type SortDirection } from "@/components/shared";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -9,29 +9,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/formatting";
-import { Edit, Eye, Power, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Mentor } from "../types";
+
 interface SortProps {
   direction: SortDirection;
   onChange: (direction: SortDirection) => void;
 }
 interface MentorTableProps {
   mentors: Mentor[];
-  onEdit: (mentor: Mentor) => void;
-  onDelete: (mentor: Mentor) => void;
   onViewDetail: (mentor: Mentor) => void;
+  onToggleActive: (mentor: Mentor) => void;
   getSortProps?: (key: keyof Mentor) => SortProps;
 }
 export function MentorTable({
   mentors,
-  onEdit,
-  onDelete,
   onViewDetail,
+  onToggleActive,
   getSortProps,
 }: MentorTableProps) {
   const { t } = useTranslation();
+
   if (mentors.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
@@ -59,87 +58,36 @@ export function MentorTable({
             </TableHead>
             <TableHead>{t("common.email")}</TableHead>
             <TableHead>{t("common.expertise")}</TableHead>
-            <TableHead className="w-24">
-              {getSortProps ? (
-                <SortButton {...getSortProps("yearsOfExperience")}>
-                  {t("common.experience")}
-                </SortButton>
-              ) : (
-                t("common.experience")
-              )}
-            </TableHead>
-            <TableHead>{t("common.company")}</TableHead>
-            <TableHead className="w-36">{t("adminMentormanagement.priceMin")}</TableHead>
-            <TableHead className="w-20">
-              {getSortProps ? (
-                <SortButton {...getSortProps("totalSession")}>
-                  {t("adminMentormanagement.numberOfSessions")}
-                </SortButton>
-              ) : (
-                t("adminMentormanagement.numberOfSessions")
-              )}
-            </TableHead>
             <TableHead className="w-24">{t("common.status")}</TableHead>
-            <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {mentors.map((mentor) => (
-            <TableRow key={mentor.id}>
+            <TableRow
+              key={mentor.id}
+              onClick={() => onViewDetail(mentor)}
+              className="cursor-pointer bg-white transition-colors hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/50">
               <TableCell className="font-medium">{mentor.id}</TableCell>
-              <TableCell className="font-medium">{mentor.name}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={mentor.avatarUrl} alt={mentor.name} className="object-cover" />
+                    <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                      {mentor.name?.charAt(0)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{mentor.name}</span>
+                </div>
+              </TableCell>
               <TableCell className="text-muted-foreground">{mentor.email}</TableCell>
               <TableCell className="max-w-xs truncate">{mentor.expertise || "-"}</TableCell>
               <TableCell>
-                <Badge variant="outline">
-                  {mentor.yearsOfExperience || 0} {t("common.year")}
-                </Badge>
-              </TableCell>
-              <TableCell>{mentor.currentCompany || "-"}</TableCell>
-              <TableCell>
-                {typeof mentor.pricePerMinute === "number" && mentor.pricePerMinute > 0
-                  ? t("common.var0Min", {
-                      var_0: formatCurrency(mentor.pricePerMinute),
-                    })
-                  : "-"}
-              </TableCell>
-              <TableCell>
-                <Badge variant="secondary">{mentor.totalSession || 0}</Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant={mentor.active !== false ? "default" : "destructive"}>
-                  {mentor.active !== false ? t("common.active") : t("common.inactive")}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewDetail(mentor)}
-                    className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    title={t("common.userDetail") || "View Details"}>
-                    <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEdit(mentor)}
-                    className="h-8 w-8 p-0 hover:bg-blue-50"
-                    title={t("general.edit")}>
-                    <Edit className="h-4 w-4 text-blue-600" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDelete(mentor)}
-                    className={`h-8 w-8 p-0 ${mentor.active !== false ? "hover:bg-red-50" : "hover:bg-green-50"}`}
-                    title={mentor.active !== false ? t("common.disable") : t("common.activate")}>
-                    <Power
-                      className={`h-4 w-4 ${mentor.active !== false ? "text-red-600" : "text-green-600"}`}
-                    />
-                  </Button>
-                </div>
+                <Switch
+                  checked={mentor.active !== false}
+                  onCheckedChange={() => onToggleActive(mentor)}
+                  aria-label="Toggle mentor status"
+                  onClick={(e) => e.stopPropagation()}
+                />
               </TableCell>
             </TableRow>
           ))}

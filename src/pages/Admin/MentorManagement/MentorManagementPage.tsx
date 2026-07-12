@@ -12,11 +12,11 @@ import { SpinnerBlock } from "@/components/ui/spinner";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { mentorManager } from "@/services";
-import { Plus, Search } from "lucide-react";
+import { ChevronLeft, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { DeleteMentorDialog, MentorDetailModal, MentorFormDialog, MentorTable } from "./components";
+import { MentorDetailView, MentorEditForm, MentorTable } from "./components";
 import type { Mentor, MentorFormData } from "./types";
 export function MentorManagementPage() {
   const { t } = useTranslation();
@@ -25,12 +25,9 @@ export function MentorManagementPage() {
   const [isReloading, setIsReloading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active"); // Default to show only active mentors
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "detail" | "create">("list");
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [formData, setFormData] = useState<Partial<MentorFormData>>({});
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Load mentors using the mentor manager service
   const loadMentors = useCallback(
@@ -107,9 +104,9 @@ export function MentorManagementPage() {
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
   const handleCreate = () => {
     setFormData({});
-    setIsCreateDialogOpen(true);
+    setViewMode("create");
   };
-  const handleEdit = (mentor: Mentor) => {
+  const handleViewDetail = (mentor: Mentor) => {
     setSelectedMentor(mentor);
     setFormData({
       name: mentor.name || "",
@@ -123,18 +120,14 @@ export function MentorManagementPage() {
       pricePerMinute: mentor.pricePerMinute,
       active: mentor.active ?? true, // Ensure boolean value, default to true if null/undefined
     });
-    setIsEditDialogOpen(true);
-  };
-  const handleToggleActive = (mentor: Mentor) => {
-    setSelectedMentor(mentor);
-    setIsDeleteDialogOpen(true);
+    setViewMode("detail");
   };
   const handleSubmitCreate = async () => {
     try {
       const response = await mentorManager.create(formData);
       if (response.success) {
         toast.success(t("adminMentormanagement.successfullyCreatedMentor"));
-        setIsCreateDialogOpen(false);
+        setViewMode("list");
         void loadMentors(); // Refresh the list
       } else {
         toast.error(response.error || t("common.cannotCreateMentor"));
@@ -151,7 +144,9 @@ export function MentorManagementPage() {
       const response = await mentorManager.update(selectedMentor.id, formData);
       if (response.success) {
         toast.success(t("adminMentormanagement.mentorUpdatedSuccessfully"));
-        setIsEditDialogOpen(false);
+        if (response.data) {
+          setSelectedMentor(response.data);
+        }
         void loadMentors(); // Refresh the list
       } else {
         toast.error(response.error || t("common.unableToUpdateMentor"));
@@ -161,21 +156,22 @@ export function MentorManagementPage() {
       toast.error(t("common.unableToUpdateMentor"));
     }
   };
-  const handleConfirmToggle = async () => {
-    if (!selectedMentor?.id) return;
+  const handleToggleActive = async (mentor: Mentor) => {
+    if (!mentor.id) return;
+    const action = mentor.active !== false ? "Vô hiệu hóa" : "Kích hoạt";
+    if (!window.confirm(`Bạn có chắc chắn muốn ${action.toLowerCase()} mentor này?`)) return;
+
     try {
-      const response = await mentorManager.toggleActive(selectedMentor.id);
+      const response = await mentorManager.toggleActive(mentor.id);
       if (response.success) {
-        const action =
-          selectedMentor.active !== false
-            ? t("adminMentormanagement.disable")
-            : t("adminMentormanagement.activate");
         toast.success(
           t("general.successfullyMentor", {
             var_0: action,
           })
         );
-        setIsDeleteDialogOpen(false);
+        if (selectedMentor?.id === mentor.id) {
+          setSelectedMentor(prev => prev ? { ...prev, active: prev.active === false ? true : false } : null);
+        }
         void loadMentors(); // Refresh the list
       } else {
         toast.error(response.error || t("adminMentormanagement.mentorStatusCannotBeChanged"));
@@ -260,98 +256,97 @@ export function MentorManagementPage() {
         </div>
       </div>
 
-      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
+      {/* ── MAIN CONTENT ──────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
-        {isInitialLoading ? (
-          <div className="flex h-64 items-center justify-center">
-            <SpinnerBlock size="lg" label={t("adminMentormanagement.loadingListOfMentors")} />
-          </div>
-        ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div>
-              <MentorTable
-                mentors={pageData}
-                onEdit={handleEdit}
-                onDelete={handleToggleActive}
-                onViewDetail={(mentor) => {
-                  setSelectedMentor(mentor);
-                  setIsDetailModalOpen(true);
-                }}
-                getSortProps={getSortProps}
-              />
+        {viewMode === "list" ? (
+          isInitialLoading ? (
+            <div className="flex h-64 items-center justify-center">
+              <SpinnerBlock size="lg" label={t("adminMentormanagement.loadingListOfMentors")} />
             </div>
+          ) : (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div>
+                <MentorTable
+                  mentors={pageData}
+                  onViewDetail={handleViewDetail}
+                  onToggleActive={handleToggleActive}
+                  getSortProps={getSortProps}
+                />
+              </div>
 
-            {/* Pagination & Empty State */}
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              {sortedData.length > 0 && (
-                <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                  <PaginationControl
-                    pagination={pagination}
-                    onPageSizeChange={(nextPageSize) => {
-                      setPageSize(nextPageSize);
-                      pagination.goToFirstPage();
-                    }}
-                  />
-                </div>
-              )}
+              {/* Pagination & Empty State */}
+              <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+                {sortedData.length > 0 && (
+                  <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                    <PaginationControl
+                      pagination={pagination}
+                      onPageSizeChange={(nextPageSize) => {
+                        setPageSize(nextPageSize);
+                        pagination.goToFirstPage();
+                      }}
+                    />
+                  </div>
+                )}
 
-              {sortedData.length === 0 && (searchQuery || statusFilter !== "active") && (
-                <div className="mt-4 flex justify-center pb-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setStatusFilter("active");
-                      pagination.goToFirstPage();
-                    }}>
-                    {t("common.clearFilter")}
-                  </Button>
+                {sortedData.length === 0 && (searchQuery || statusFilter !== "active") && (
+                  <div className="mt-4 flex justify-center pb-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setStatusFilter("active");
+                        pagination.goToFirstPage();
+                      }}>
+                      {t("common.clearFilter")}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        ) : viewMode === "detail" && selectedMentor ? (
+          <div className="h-full animate-in fade-in slide-in-from-right-8 duration-300">
+            <MentorDetailView
+              mentor={selectedMentor}
+              onBack={() => setViewMode("list")}
+              formData={formData}
+              onFormChange={setFormData}
+              onSubmit={handleSubmitEdit}
+            />
+          </div>
+        ) : viewMode === "create" ? (
+          <div className="h-full bg-slate-50 p-6 lg:p-8 dark:bg-slate-950 animate-in fade-in slide-in-from-right-8 duration-300">
+            <div className="mx-auto max-w-3xl space-y-6">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                  className="h-8 w-8 rounded-full">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+                    {t("adminMentormanagement.addNewMentor")}
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {t("adminMentormanagement.fillInTheInformationTo")}
+                  </p>
                 </div>
-              )}
+              </div>
+              <div className="rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <MentorEditForm
+                  formData={formData}
+                  onFormChange={setFormData}
+                  onSubmit={handleSubmitCreate}
+                  onCancel={() => setViewMode("list")}
+                  submitLabel={t("adminMentormanagement.createMentors")}
+                />
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
-
-      {/* Create Dialog */}
-      <MentorFormDialog
-        isOpen={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        formData={formData}
-        onFormChange={setFormData}
-        onSubmit={handleSubmitCreate}
-        title={t("adminMentormanagement.addNewMentor")}
-        description={t("adminMentormanagement.fillInTheInformationTo")}
-        submitLabel={t("adminMentormanagement.createMentors")}
-      />
-
-      {/* Edit Dialog */}
-      <MentorFormDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        formData={formData}
-        onFormChange={setFormData}
-        onSubmit={handleSubmitEdit}
-        title={t("adminMentormanagement.editMentor")}
-        description={t("adminMentormanagement.updateMentorInformation")}
-        submitLabel={t("common.saveChanges")}
-        selectedMentor={selectedMentor}
-      />
-
-      {/* Toggle Active Status Confirmation Dialog */}
-      <DeleteMentorDialog
-        isOpen={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        mentor={selectedMentor}
-        onConfirm={handleConfirmToggle}
-      />
-
-      {/* Mentor Detail Modal */}
-      <MentorDetailModal
-        mentor={selectedMentor}
-        isOpen={isDetailModalOpen}
-        onOpenChange={setIsDetailModalOpen}
-      />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-export { DeleteMentorDialog } from "./DeleteMentorDialog";
-export { MentorDetailModal } from "./MentorDetailModal";
-export { MentorFormDialog } from "./MentorFormDialog";
+export { MentorDetailView } from "./MentorDetailView";
+export { MentorEditForm } from "./MentorEditForm";
 export { MentorTable } from "./MentorTable";
