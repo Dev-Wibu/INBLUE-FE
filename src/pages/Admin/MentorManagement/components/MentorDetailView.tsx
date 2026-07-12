@@ -69,8 +69,8 @@ export function MentorDetailView({
   };
 
   const sections = [
-    { id: "basic-info", label: t("common.basicInfo") },
-    { id: "professional-info", label: t("common.professionalInfo") },
+    { id: "basic-info", label: t("common.basicInfo", "Thông tin cơ bản") },
+    { id: "professional-info", label: t("common.professionalInfo", "Thông tin nghề nghiệp") },
   ];
 
   const scrollToSection = (id: string) => {
@@ -89,7 +89,7 @@ export function MentorDetailView({
         </Button>
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
-            {t("common.mentorDetail")}
+            {t("common.mentorDetail", "Chi tiết Mentor")}
           </h2>
           <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <span>{mentor.name}</span>
@@ -124,7 +124,7 @@ export function MentorDetailView({
 
           <div className="mt-8">
             <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {t("common.navigation")}
+              {t("common.navigation", "Điều hướng")}
             </h4>
             <div className="flex flex-col gap-1">
               {sections.map((section) => (
@@ -183,11 +183,11 @@ export function MentorDetailView({
               </CollapsibleCard>
             ) : (
               <>
-                <CollapsibleCard id="basic-info" title={t("common.basicInfo")} icon={UserIcon}>
+                <CollapsibleCard id="basic-info" title={t("common.basicInfo", "Thông tin cơ bản")} icon={UserIcon}>
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-medium text-slate-900 dark:text-white">
-                        {t("common.basicInfo")}
+                        {t("common.basicInfo", "Thông tin cơ bản")}
                       </div>
                       <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                         <Edit className="mr-2 h-4 w-4" />
@@ -219,7 +219,7 @@ export function MentorDetailView({
                   </div>
                 </CollapsibleCard>
 
-                <CollapsibleCard id="professional-info" title={t("common.professionalInfo")} icon={Briefcase}>
+                <CollapsibleCard id="professional-info" title={t("common.professionalInfo", "Thông tin nghề nghiệp")} icon={Briefcase}>
                   <div className="space-y-6">
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div className="space-y-1">
