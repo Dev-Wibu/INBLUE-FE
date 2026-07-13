@@ -10,9 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeviceCheckDialog, VideoCallProvider, VideoCallRoom } from "@/components/video-call";
-import { useJoinSession, useSessionById } from "@/hooks/useSession";
+import { SESSION_QUERY_KEYS, useJoinSession, useSessionById } from "@/hooks/useSession";
 import { formatDateTime, formatTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, ArrowLeft, Calendar, Clock, Settings, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,11 +24,13 @@ export function MentorSessionRoomPage() {
   }>();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const queryClient = useQueryClient();
   const [hasJoinedTracking, setHasJoinedTracking] = useState(false);
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [displayName, setDisplayName] = useState("");
-  const { data: session, isLoading, error } = useSessionById(Number(sessionId));
+  const numericSessionId = Number(sessionId);
+  const { data: session, isLoading, error } = useSessionById(numericSessionId);
   const joinSessionMutation = useJoinSession();
 
   // Validate session and user
@@ -41,12 +44,18 @@ export function MentorSessionRoomPage() {
   const handleJoined = async (participantId: string) => {
     if (hasJoinedTracking || !session?.roomName || !user?.id) return;
 
-    // Track join via API
+    // Track join via API. BE returns HTTP 200 with an empty body — we
+    // invalidate the session-detail query so the page picks up the new
+    // `participantId2` + `startTime2` on the next render instead of waiting
+    // for a manual refresh.
     await joinSessionMutation.mutateAsync({
       sessionName: session.roomName,
       userId: user.id,
       participantId,
       isMentor: true, // Mentor is joining
+    });
+    queryClient.invalidateQueries({
+      queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),
     });
     setHasJoinedTracking(true);
   };

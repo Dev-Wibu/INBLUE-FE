@@ -19,6 +19,24 @@ import type {
 import { fetchClient } from "@/lib/api";
 
 /**
+ * Pull the most specific message off an unknown error object so we can
+ * pattern-match BE error responses (FE fetchClient wraps them under
+ * `.response.data`).
+ */
+function responseMessageFromError(err: unknown): string | undefined {
+  if (!err || typeof err !== "object") return undefined;
+  const data = (err as { response?: { data?: unknown } }).response?.data;
+  if (!data) return undefined;
+  if (typeof data === "string") return data;
+  if (typeof data === "object") {
+    const o = data as { message?: unknown; error?: unknown };
+    if (typeof o.message === "string") return o.message;
+    if (typeof o.error === "string") return o.error;
+  }
+  return undefined;
+}
+
+/**
  * MentorReview type based on backend schema
  */
 export interface MentorReview {
@@ -154,6 +172,12 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
   /**
    * Create new mentor review
    * POST /api/mentor-reviews (JSON body with CreateMentorReviewRequest)
+   *
+   * BE v062 quirk: if a MentorReview already exists for the same session
+   * BE responds with HTTP 500 and a raw PostgreSQL duplicate-key error
+   * (visible in the response body). Until BE fixes the cascade, we
+   * detect that signature client-side and surface a friendly message so
+   * users don't see the raw SQL.
    */
   async create(
     data: Partial<MentorReview> | CreateMentorReviewRequest
@@ -171,9 +195,20 @@ export class MentorReviewManager implements BaseManager<MentorReview> {
         data: response.data,
       };
     } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : "";
+      const message = responseMessageFromError(error) ?? "";
+      if (/mentorreview_pkey|duplicate key value/i.test(rawMessage + message)) {
+        return {
+          success: false,
+          error: t(
+            "general.mentorReviewAlreadyExists",
+            "A mentor review for this session already exists. Please use Update instead."
+          ),
+        };
+      }
       return {
         success: false,
-        error: error instanceof Error ? error.message : t("general.unableToCreateMentorReview"),
+        error: rawMessage || t("general.unableToCreateMentorReview"),
       };
     }
   }

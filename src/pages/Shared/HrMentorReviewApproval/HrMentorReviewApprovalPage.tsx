@@ -44,6 +44,17 @@ import { useLocation } from "react-router-dom";
 import type { components } from "../../../../schema-from-be";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
+
+// COMPAT v062 (2026-07-13):
+//   BE POST /api/mentor-reviews currently sets `ApplicationDetail.finalScore =
+//   rating * 10`. So when a mentor submits rating=85 the detail stores
+//   finalScore=850 (out of 100). The matching HR override endpoint uses raw
+//   score, so the two scales disagree. Until BE fixes the multiplier this
+//   helper normalises any value > 100 back down to /10 as a heuristic.
+function normalizeMentorFinalScore(value: number | null | undefined): number | null {
+  if (value === undefined || value === null || Number.isNaN(value)) return null;
+  return value > 100 ? value / 10 : value;
+}
 type MentorReview = components["schemas"]["MentorReview"];
 type Round = components["schemas"]["Round"];
 type Application = components["schemas"]["Application"];
@@ -116,11 +127,15 @@ function PendingReviewRow({ item, isExpanded, onToggle, onApproved }: RowProps) 
 
   const handleApprove = () => {
     if (!detail.id) return;
-    const scoreNum =
+    // Normalise BE's accidental ×10 multiplier (see helper note). The HR
+    // override endpoint takes raw score (0-100) so we always normalise before
+    // clamping.
+    const rawScore =
       detail.finalScore !== undefined && detail.finalScore !== null
         ? detail.finalScore
         : (review?.rating ?? 0);
-    const clamped = Math.min(100, Math.max(0, Number(scoreNum) || 0));
+    const normalised = normalizeMentorFinalScore(rawScore) ?? 0;
+    const clamped = Math.min(100, Math.max(0, Number(normalised) || 0));
 
     submitScore({
       applicationDetailId: detail.id,
@@ -224,8 +239,17 @@ function PendingReviewRow({ item, isExpanded, onToggle, onApproved }: RowProps) 
                       {review.rating}/10
                     </span>
                     {detail.finalScore !== undefined && (
-                      <span className="text-xs text-slate-500">
-                        → finalScore: <span className="font-semibold">{detail.finalScore}</span>
+                      <span className="flex items-center gap-1 text-xs text-slate-500">
+                        → finalScore:{" "}
+                        <span className="font-semibold">
+                          {normalizeMentorFinalScore(detail.finalScore) ?? detail.finalScore}
+                        </span>
+                        <span className="text-slate-400">/100</span>
+                        {(detail.finalScore ?? 0) > 100 && (
+                          <span className="rounded bg-amber-100 px-1 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                            ⚠️ ×10
+                          </span>
+                        )}
                       </span>
                     )}
                   </div>

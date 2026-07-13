@@ -190,6 +190,13 @@ export const useCancelSession = () => {
 
 /**
  * Hook to join a session (for tracking purposes with Daily.co)
+ *
+ * Notes from the v062 verification (2026-07-13):
+ *   - BE returns HTTP 200 with an empty body. We treat any 2xx as success.
+ *   - We also invalidate the matching session-detail query so any caller
+ *     that polls via `useSessionById` picks up the new participantId /
+ *     startTime without an extra GET. This is the "optimistic confirmation"
+ *     pattern recommended by BE team.
  */
 export const useJoinSession = () => {
   const queryClient = useQueryClient();
@@ -199,12 +206,18 @@ export const useJoinSession = () => {
       if (!response.success) {
         throw new Error(response.error || t("general.unableToAttendInterviewSession"));
       }
-      return true;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: SESSION_QUERY_KEYS.all,
       });
+      // Best-effort: invalidate the session-by-*Id view if we can resolve
+      // it. joinSession doesn't return the sessionId, but `roomName` is
+      // unique per session, so we cannot map back without a stored id. The
+      // common path is for the caller (the room page) to also invalidate
+      // SESSION_QUERY_KEYS.byId manually after mutation.
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
       toast.success(t("general.participatedInTheInterviewSession"));
     },
     onError: (error: Error) => {

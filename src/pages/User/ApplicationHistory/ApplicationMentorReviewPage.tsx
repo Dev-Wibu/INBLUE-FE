@@ -26,7 +26,7 @@ import {
   Send,
   Video,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -86,29 +86,40 @@ interface MentorInterviewBooking {
 // Helpers
 // ============================================================
 
-// GET /api/mentor-bookings/{bookingId}
-// NOTE: backend v062 does NOT expose this endpoint for students (admin-only).
-// We still attempt it but log + throw when the call fails so the upstream UI
-// can decide what to do (e.g. fall back to the application-detail data).
-async function fetchBookingById(bookingId: number): Promise<MentorInterviewBooking> {
-  try {
-    const { useAuthStore } = await import("@/stores/authStore");
-    const token = useAuthStore.getState().token;
-    const headers: HeadersInit = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const baseUrl = (await import("@/constants/api.config")).API_BASE_URL;
-    const res = await fetch(`${baseUrl}/api/mentor-bookings/${bookingId}`, { headers });
+// Best-effort mapping from an ApplicationDetail.status onto a BookingStatus
+// the rest of the UI understands. BE has independent status fields for
+// ApplicationDetail vs MentorInterviewBooking so we have to reconcile them
+// client-side. Anything we can't map resolves to undefined (no booking yet).
+function bookingStatusFromDetail(
+  detailStatus: ApplicationDetailStatus | undefined
+): BookingStatus | undefined {
+  if (!detailStatus) return undefined;
+  switch (detailStatus) {
+    case "PENDING":
+      return undefined;
+    case "SLOT_PICKED":
+    case "SUBMITTED":
+      return "AWAITING_MENTOR";
+    case "AI_EVALUATED":
+      return "IN_PROGRESS";
+    case "COMPLETED":
+      return "COMPLETED";
+    default:
+      return undefined;
+  }
+}
 
-    const contentType = res.headers.get("content-type") ?? "";
-    if (!contentType.includes("application/json")) {
-      throw new Error(`/api/mentor-bookings/${bookingId} returned non-JSON (${contentType})`);
-    }
-    if (!res.ok) {
-      throw new Error(`/api/mentor-bookings/${bookingId} HTTP ${res.status}`);
-    }
-    return (await res.json()) as MentorInterviewBooking;
+// Re-fetch a single ApplicationDetail by id (BE exposes this for any role).
+// We use this for polling because `GET /api/mentor-bookings/{id}` is only
+// available as DELETE on the BE side (controller doesn't expose GET).
+async function fetchApplicationDetail(detailId: number): Promise<ApplicationDetail> {
+  try {
+    const { data } = await fetchClient.GET("/api/application-details/{id}", {
+      params: { path: { id: detailId } },
+    });
+    return (data as ApplicationDetail | undefined) ?? {};
   } catch (err) {
-    console.error("[MentorReviewPage] fetchBookingById failed:", err);
+    console.error("[MentorReviewPage] fetchApplicationDetail failed:", err);
     throw err;
   }
 }
@@ -122,7 +133,7 @@ function SlotSelectionStep({
   onSuccess,
 }: {
   applicationDetailId: number;
-  onSuccess: (booking: MentorInterviewBooking) => void;
+  onSuccess: (newBooking: MentorInterviewBooking) => void;
 }) {
   const { t } = useTranslation();
   const [selectedKioskId, setSelectedKioskId] = useState<number | null>(null);
@@ -729,6 +740,11 @@ export function ApplicationMentorReviewPage() {
 
   // State
   const [applicationDetail, setApplicationDetail] = useState<ApplicationDetail | null>(null);
+  // Booking fields we need to render the UI are kept in their own state because
+  // BE doesn't expose a single `GET /api/mentor-bookings/{id}` endpoint for
+  // students. Instead we lift them into local state on pick-slot and refresh
+  // them by re-fetching the parent ApplicationDetail (which embeds
+  // `bookingId`, `sessionId`, `status`).
   const [booking, setBooking] = useState<MentorInterviewBooking | null>(null);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -738,6 +754,9 @@ export function ApplicationMentorReviewPage() {
   const [detailsResolved, setDetailsResolved] = useState(false);
   // Bump to force the fetch effect to re-run (manual retry button).
   const [retryToken, setRetryToken] = useState(0);
+  // Tracks an explicit "no ApplicationDetail exists for this round" outcome
+  // — surfaces a different UX (legacy data warning) than a network error.
+  const [detailMissing, setDetailMissing] = useState(false);
 
   const { data: currentRound, isLoading: currentRoundLoading } = useCurrentRound(
     applicationId,
@@ -745,22 +764,39 @@ export function ApplicationMentorReviewPage() {
   );
 
   // ============================================================
-  // Fetch application detail + booking on mount
+  // Fetch application detail + booking on mount.
+  // We run the fetch ONCE per `applicationId` (or when the user retries) once
+  // the current-round query has settled. Earlier versions listed several
+  // React-Query / translation-derived values in the dependency array which
+  // caused re-runs whenever those references changed, producing an infinite
+  // fetch loop and repeated "no ApplicationDetail for current round" warnings
+  // in the console even after the detail had been resolved.
   // ============================================================
+  const fetchStartedRef = useRef(false);
+  // Reset the "already fetched" sentinel whenever the user navigates to a
+  // different application so we re-fetch the new application's detail.
+  useEffect(() => {
+    fetchStartedRef.current = false;
+  }, [applicationId]);
   useEffect(() => {
     if (!applicationId) return;
-    // Wait until current round is loaded so we can match by roundId accurately.
     if (currentRoundLoading) return;
+    // Always allow re-run on explicit retry (`retryToken`) or if the user
+    // switched to a different application.
+    const allowReFetch = fetchStartedRef.current === false || retryToken > 0;
+    if (!allowReFetch) return;
     if (!currentRound?.id) {
       // Current round query has settled but returned nothing → can't proceed.
       setLoading(false);
       setDetailsResolved(true);
       return;
     }
+    fetchStartedRef.current = true;
 
     const fetchData = async () => {
       setLoading(true);
       setDetailsResolved(false);
+      setDetailMissing(false);
       try {
         const detailRes = await fetchClient.GET(
           "/api/application-details/application/{applicationId}",
@@ -799,37 +835,30 @@ export function ApplicationMentorReviewPage() {
               detailCount: details.length,
               detailRoundIds: details.map((d) => d.roundId),
             });
+            setDetailMissing(true);
           }
 
           setApplicationDetail(currentDetail ?? null);
           setDetailsResolved(true);
 
+          // BACKEND v062 NOTE:
+          // — `GET /api/mentor-bookings/{id}` is NOT exposed for students; only
+          //   DELETE is supported by BE controller. Earlier versions of this
+          //   page polled that endpoint and would log 405s every 5s.
+          // — Instead, we lift the subset of booking fields we render into
+          //   local state on `pick-slot` and refresh them by re-fetching the
+          //   parent ApplicationDetail (which embeds bookingId / sessionId /
+          //   status / mentorReview.id etc.).
           if (currentDetail?.bookingId) {
-            try {
-              const bookingData = await fetchBookingById(currentDetail.bookingId);
-              setBooking(bookingData);
-              // Resolve sessionId: booking may carry it, otherwise fall back to the
-              // detail (backend stores sessionId on ApplicationDetail too).
-              const resolvedSessionId = bookingData.sessionId ?? currentDetail.sessionId ?? null;
-              if (
-                bookingData.status === "ROOM_CREATED" ||
-                bookingData.status === "IN_PROGRESS" ||
-                resolvedSessionId
-              ) {
-                if (!resolvedSessionId) {
-                  return;
-                }
-                const sessionRes = await fetchClient.GET("/api/sessions/{id}", {
-                  params: { path: { id: resolvedSessionId } },
-                });
-                if (sessionRes.response?.ok && sessionRes.data) {
-                  const sessionData = sessionRes.data as { roomUrl?: string };
-                  setRoomUrl(sessionData.roomUrl ?? null);
-                }
-              }
-            } catch (err) {
-              console.error("[MentorReviewPage] fetch booking failed:", err);
-            }
+            // Keep the local booking snapshot in sync with whatever the most
+            // recent detail already tells us, so we don't need a separate
+            // booking-detail fetch.
+            setBooking((prev) => ({
+              id: currentDetail.bookingId,
+              sessionId: currentDetail.sessionId,
+              status: bookingStatusFromDetail(currentDetail.status),
+              ...(prev ?? {}),
+            }));
           } else {
             setBooking(null);
             setRoomUrl(null);
@@ -843,34 +872,55 @@ export function ApplicationMentorReviewPage() {
     };
 
     void fetchData();
-  }, [
-    applicationId,
-    currentRound?.id,
-    currentRound?.roundType,
-    currentRoundLoading,
-    t,
-    retryToken,
-  ]);
+    // Stable deps: only re-run when the application or the current-round
+    // query transitions, or when the user explicitly retries. Translation
+    // and the currentRound object's identity are intentionally excluded to
+    // avoid the infinite re-fetch loop we observed before.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applicationId, currentRoundLoading, retryToken]);
 
   // ============================================================
-  // Polling: refresh booking status periodically
+  // Polling: refresh detail+booking status by re-fetching the
+  // ApplicationDetail (which embeds sessionId / status / mentorReview.id).
+  // Earlier we polled `GET /api/mentor-bookings/{id}` every 5s — that
+  // endpoint isn't exposed to students so polling failed silently.
   // ============================================================
   useEffect(() => {
-    if (!applicationDetail?.bookingId) return;
+    if (!applicationDetail?.id) return;
     if (booking?.status === "COMPLETED" || booking?.status === "CANCELED") return;
 
     const interval = setInterval(async () => {
-      if (!applicationDetail?.bookingId) return;
+      if (!applicationDetail?.id) return;
       try {
-        const fresh = await fetchBookingById(applicationDetail.bookingId);
-        setBooking(fresh);
+        const fresh = await fetchApplicationDetail(applicationDetail.id);
+        // Merge fields we don't have direct access to otherwise.
+        setApplicationDetail((prev) => ({ ...(prev ?? {}), ...fresh }));
+        if (fresh.bookingId) {
+          setBooking((prev) => ({
+            id: fresh.bookingId,
+            sessionId: fresh.sessionId,
+            status: bookingStatusFromDetail(fresh.status),
+            ...(prev ?? {}),
+          }));
+        }
+        if (fresh.sessionId) {
+          try {
+            const { data: sessionData } = await fetchClient.GET("/api/sessions/{id}", {
+              params: { path: { id: fresh.sessionId } },
+            });
+            const room = (sessionData as { roomUrl?: string } | undefined)?.roomUrl;
+            if (room) setRoomUrl(room);
+          } catch {
+            // session endpoint might 404 briefly after admin assign; ignore.
+          }
+        }
       } catch (err) {
-        console.error("[MentorReviewPage] refresh booking failed:", err);
+        console.error("[MentorReviewPage] refresh detail failed:", err);
       }
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [applicationDetail?.bookingId, booking?.status]);
+  }, [applicationDetail?.id, booking?.status]);
 
   // ============================================================
   // Handlers
@@ -931,20 +981,17 @@ export function ApplicationMentorReviewPage() {
   // POST /api/mentor-feedbacks). `mentorReview` is the *mentor's*
   // evaluation of the student, which is irrelevant here.
   const isReviewed = !!applicationDetail?.mentorFeedback;
-  // The backend uses ApplicationDetail.status as the source of truth for
-  // "meeting is done, ready for review" — per docs §5, when both parties
-  // leave the Daily.co room the backend flips:
-  //   Session.status  → COMPLETED
-  //   Booking.status  → COMPLETED
-  //   ApplicationDetail.status → AI_EVALUATED
-  // The mentor-review form should be reachable whenever the detail has
-  // reached AI_EVALUATED (or COMPLETED, if a previous round is already
-  // closed) so students can leave feedback even before polling sees the
-  // booking.status catch up.
-  const isCompleted =
-    bookingStatus === "COMPLETED" ||
-    applicationDetail?.status === "AI_EVALUATED" ||
-    applicationDetail?.status === "COMPLETED";
+  // When the mentor-review form can be shown:
+  //  - ApplicationDetail.status === "COMPLETED"        (set by BE after
+  //                                                    POST /api/mentor-reviews)
+  //  - booking.status === "COMPLETED"                  (covers polls where
+  //                                                    the detail status
+  //                                                    hasn't caught up yet)
+  // AI_EVALUATED is intentionally NOT included here: it is the
+  // CODE_REVIEW/QUIZ/CODING post-AI-evaluation flag and never appears on
+  // a MENTOR_REVIEW round. Earlier code treated it as a stand-in for
+  // "meeting is over" but that conflated two separate state machines.
+  const isCompleted = bookingStatus === "COMPLETED" || applicationDetail?.status === "COMPLETED";
   const isWrongRound =
     !currentRoundLoading && !!currentRound && currentRound.roundType !== "MENTROR_REVIEW";
 
@@ -1044,10 +1091,21 @@ export function ApplicationMentorReviewPage() {
           />
         )}
 
-        {/* BE side hasn't created an ApplicationDetail for the current
-            MENTOR_REVIEW round yet (e.g. backend v062 auto-create hasn't
-            fired because this round was the first round of the JD). Show a
-            recoverable state instead of an infinite spinner. */}
+        {/* MENTOR_REVIEW round has no ApplicationDetail yet.
+            Two distinct sub-cases the UI has to differentiate:
+              1. `loading`           — the fetch hasn't settled; the detail
+                                      may simply arrive on a retry.
+              2. `detailMissing`     — the fetch settled but BE returned 0
+                                      details, so the row was never created
+                                      for this application. This typically
+                                      happens for applications created before
+                                      commit `ffa9814` (v062) on a JD whose
+                                      only round is MENTOR_REVIEW — see BE
+                                      bug report BACKEND_BUG_REPORT_MESSAGE_V2.
+                                      No client-side retry can recover; we
+                                      surface a contact-support hint instead
+                                      of an indefinite Retry loop.
+        */}
         {!booking && !isReviewed && currentRound?.roundType === "MENTROR_REVIEW" && (
           <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
             <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
@@ -1055,28 +1113,39 @@ export function ApplicationMentorReviewPage() {
               <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
                 {loading
                   ? t("userKiosk.loadingBooking")
-                  : t(
-                      "userKiosk.detailNotReady",
-                      "Booking is not ready yet. Please retry in a moment."
-                    )}
+                  : detailMissing
+                    ? t(
+                        "userKiosk.detailMissingLegacy",
+                        "Booking system hasn't initialized for this application. Please contact support."
+                      )
+                    : t(
+                        "userKiosk.detailNotReady",
+                        "Booking is not ready yet. Please retry in a moment."
+                      )}
               </p>
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                {t(
-                  "userKiosk.detailNotReadyHint",
-                  "If the issue persists, the backend may not have created the round detail yet. Click Retry to refetch."
-                )}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setRetryToken((n) => n + 1)}
-                  disabled={loading}>
-                  {t("common.retry", "Retry")}
-                </Button>
-                <Button variant="ghost" onClick={() => navigate(-1)}>
-                  {t("general.back")}
-                </Button>
-              </div>
+              {!loading && !detailMissing && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  {t(
+                    "userKiosk.detailNotReadyHint",
+                    "If the issue persists, the backend may not have created the round detail yet. Click Retry to refetch."
+                  )}
+                </p>
+              )}
+              {!loading && (
+                <div className="flex gap-2">
+                  {!detailMissing && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setRetryToken((n) => n + 1)}
+                      disabled={loading}>
+                      {t("common.retry", "Retry")}
+                    </Button>
+                  )}
+                  <Button variant="ghost" onClick={() => navigate(-1)}>
+                    {t("general.back")}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
