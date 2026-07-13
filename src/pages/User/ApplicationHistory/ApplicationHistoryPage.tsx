@@ -58,6 +58,7 @@ type RoundType =
 type ApplicationStatus = "IN_PROGRESS" | "PASSED" | "FAILED" | "SOFT_FAILED";
 type RoundDetailStatus =
   | "PENDING"
+  | "SLOT_PICKED"
   | "IN_PROGRESS"
   | "SUBMITTED"
   | "AI_EVALUATED"
@@ -184,6 +185,10 @@ function RoundStatusBadge({ status }: { status: RoundDetailStatus }) {
     PENDING: {
       label: t("userApplicationhistory.roundPending"),
       className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+    },
+    SLOT_PICKED: {
+      label: t("userApplicationhistory.roundSlotPicked"),
+      className: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
     },
     SUBMITTED: {
       label: t("userApplicationhistory.roundSubmitting"),
@@ -787,9 +792,23 @@ function RoundTimelineItem({
                 </p>
               )}
 
-              {submissionData && (
-                <SubmissionPreview detail={detail!} onViewEmailSubmission={onViewEmailSubmission} />
-              )}
+              {round?.roundType !== "MENTOR_REVIEW" &&
+                round?.roundType !== "MENTROR_REVIEW" &&
+                submissionData && (
+                  <SubmissionPreview
+                    detail={detail!}
+                    onViewEmailSubmission={onViewEmailSubmission}
+                  />
+                )}
+
+              {(round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
+                effectiveStatus === "SLOT_PICKED" &&
+                !isCompleted && (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400">
+                    <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-400" />
+                    {t("userApplicationhistory.mentorReviewInProgress")}
+                  </p>
+                )}
 
               {(aiScore !== undefined ||
                 aiFeedback ||

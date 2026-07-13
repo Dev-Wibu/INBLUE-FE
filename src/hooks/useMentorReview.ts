@@ -142,6 +142,12 @@ export const useMentorReviewBySession = (sessionId: number) => {
 
 /**
  * Hook to create a mentor review
+ *
+ * BE side-effects: session → COMPLETED, booking → COMPLETED,
+ * ApplicationDetail → COMPLETED + finalScore + finalResult.
+ * We invalidate the user-facing queries so the student's
+ * `ApplicationHistoryPage` and the admin's review queues
+ * refresh automatically without a hard reload.
  */
 export const useCreateMentorReview = () => {
   const queryClient = useQueryClient();
@@ -157,6 +163,14 @@ export const useCreateMentorReview = () => {
       queryClient.invalidateQueries({
         queryKey: REVIEW_QUERY_KEYS.all,
       });
+      // Mentor Interview finalised → student timeline & current-round
+      // queries must re-pull so the vòng Mentor Interview chuyển sang
+      // COMPLETED và (nếu là vòng cuối) Application sang PASSED/FAILED.
+      queryClient.invalidateQueries({ queryKey: ["applicationDetails"] });
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
+      queryClient.invalidateQueries({ queryKey: ["mentor-reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["kiosk-bookings"] });
       toast.success(t("general.reviewSubmittedSuccessfully"));
     },
     onError: (error: Error) => {

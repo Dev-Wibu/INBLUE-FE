@@ -360,6 +360,14 @@
     "text": "KB"
   },
   {
+    "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorDialog.tsx",
+    "line": 1143,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI System Prompt"
+  },
+  {
     "file": "src/components/ui/code-review-editor.tsx",
     "line": 722,
     "character": 50,
@@ -1033,7 +1041,15 @@
   },
   {
     "file": "src/components/ui/cv-upload-modal.tsx",
-    "line": 202,
+    "line": 161,
+    "character": 25,
+    "type": "JsxAttribute[title]",
+    "category": "english",
+    "text": "CV Viewer"
+  },
+  {
+    "file": "src/components/ui/cv-upload-modal.tsx",
+    "line": 196,
     "character": 68,
     "type": "JsxText",
     "category": "english",
@@ -1568,14 +1584,6 @@
     "text": "Output..."
   },
   {
-    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionRoundsDialog.tsx",
-    "line": 1852,
-    "character": 39,
-    "type": "JsxText",
-    "category": "english",
-    "text": "AI System Prompt"
-  },
-  {
     "file": "src/pages/Admin/FeedbackManagement/FeedbackManagementPage.tsx",
     "line": 329,
     "character": 15,
@@ -1585,43 +1593,27 @@
   },
   {
     "file": "src/pages/Admin/InterviewTemplateManagement/InterviewTemplateManagementPage.tsx",
-    "line": 1050,
+    "line": 384,
     "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "&larr;"
   },
   {
-    "file": "src/pages/Admin/InterviewTemplateManagement/InterviewTemplateManagementPage.tsx",
-    "line": 1964,
-    "character": 29,
-    "type": "JsxText",
-    "category": "english",
-    "text": "AI System Prompt"
-  },
-  {
     "file": "src/pages/Admin/KioskManagement/components/ScheduleTable.tsx",
-    "line": 122,
+    "line": 114,
     "character": 59,
     "type": "JsxText",
     "category": "english",
     "text": "min"
   },
   {
-    "file": "src/pages/Admin/MentorManagement/components/MentorDetailModal.tsx",
-    "line": 64,
-    "character": 17,
+    "file": "src/pages/Admin/MentorManagement/components/MentorDetailView.tsx",
+    "line": 98,
+    "character": 19,
     "type": "JsxText",
     "category": "english",
-    "text": "MENTOR"
-  },
-  {
-    "file": "src/pages/Admin/MentorManagement/components/MentorDetailModal.tsx",
-    "line": 72,
-    "character": 17,
-    "type": "JsxText",
-    "category": "english",
-    "text": "at"
+    "text": "ID:"
   },
   {
     "file": "src/pages/Admin/PracticeSetManagement/components/PracticeSetFormDialog.tsx",
@@ -1641,7 +1633,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
-    "line": 295,
+    "line": 296,
     "character": 21,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1649,7 +1641,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
-    "line": 335,
+    "line": 336,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -1728,20 +1720,44 @@
     "text": "ID"
   },
   {
+    "file": "src/pages/Admin/UserManagement/components/UserDetailView.tsx",
+    "line": 170,
+    "character": 27,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "Avatar"
+  },
+  {
+    "file": "src/pages/Admin/UserManagement/components/UserDetailView.tsx",
+    "line": 201,
+    "character": 27,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Join Date"
+  },
+  {
+    "file": "src/pages/Admin/UserManagement/components/UserDetailView.tsx",
+    "line": 217,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Xem CV"
+  },
+  {
+    "file": "src/pages/Admin/UserManagement/components/UserDetailView.tsx",
+    "line": 226,
+    "character": 33,
+    "type": "JsxAttribute[title]",
+    "category": "english",
+    "text": "CV Viewer"
+  },
+  {
     "file": "src/pages/Admin/UserManagement/components/UserEditForm.tsx",
-    "line": 110,
-    "character": 25,
+    "line": 86,
+    "character": 21,
     "type": "JsxAttribute[alt]",
     "category": "english",
     "text": "Avatar Preview"
-  },
-  {
-    "file": "src/pages/Admin/UserManagement/components/UserTable.tsx",
-    "line": 118,
-    "character": 51,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Open menu"
   },
   {
     "file": "src/pages/Auth/ForgotPasswordShell.tsx",
@@ -1944,6 +1960,22 @@
     "text": "INBLUE AI"
   },
   {
+    "file": "src/pages/Shared/HrMentorReviewApproval/HrMentorReviewApprovalPage.tsx",
+    "line": 176,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "(JD #"
+  },
+  {
+    "file": "src/pages/Shared/HrMentorReviewApproval/HrMentorReviewApprovalPage.tsx",
+    "line": 243,
+    "character": 25,
+    "type": "JsxText",
+    "category": "english",
+    "text": "→ finalScore:"
+  },
+  {
     "file": "src/pages/Staff/FeedbackModeration/FeedbackModerationPage.tsx",
     "line": 360,
     "character": 15,
@@ -1969,7 +2001,7 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 286,
+    "line": 291,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -1977,7 +2009,7 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 530,
+    "line": 535,
     "character": 69,
     "type": "JsxText",
     "category": "english",
@@ -1985,7 +2017,7 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 538,
+    "line": 543,
     "character": 69,
     "type": "JsxText",
     "category": "english",
@@ -1993,7 +2025,7 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 546,
+    "line": 551,
     "character": 69,
     "type": "JsxText",
     "category": "english",
@@ -2001,7 +2033,7 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 554,
+    "line": 559,
     "character": 69,
     "type": "JsxText",
     "category": "english",
@@ -2009,7 +2041,7 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 562,
+    "line": 567,
     "character": 69,
     "type": "JsxText",
     "category": "english",
@@ -2017,11 +2049,11 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",
-    "line": 460,
-    "character": 62,
+    "line": 502,
+    "character": 13,
     "type": "JsxText",
     "category": "english",
-    "text": "VND"
+    "text": "Room URL ready"
   },
   {
     "file": "src/pages/User/MentorList/components/MentorListHero.tsx",

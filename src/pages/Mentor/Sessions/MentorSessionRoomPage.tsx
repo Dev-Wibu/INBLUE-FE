@@ -85,6 +85,14 @@ export function MentorSessionRoomPage() {
     console.error("Video call error:", errorMessage);
   };
 
+  // 2026-07-13 v063: same as student page — when Daily.co reports the
+  //   room URL is dead, BE may have handed us a stale roomUrl. Force a
+  //   refetch so the page can flip to "session has ended" without F5.
+  const handleRoomUnavailable = (reason: string) => {
+    console.warn("[MentorSessionRoomPage] room-unavailable, refetching session", { reason });
+    void refetchSession();
+  };
+
   // 2026-07-13 v062: when the peer leaves, BE will eventually flip
   //   status (via Daily.co webhook). Trigger a refetch so the UI can
   //   react in real time instead of waiting for the 10s poll.
@@ -221,6 +229,7 @@ export function MentorSessionRoomPage() {
               onJoined={handleJoined}
               onParticipantLeft={handlePeerLeft}
               onParticipantCountUpdated={handlePeerCountUpdated}
+              onRoomUnavailable={handleRoomUnavailable}
               className="h-[80vh] w-full"
             />
           </VideoCallProvider>
