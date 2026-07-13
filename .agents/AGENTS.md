@@ -13,3 +13,16 @@ Whenever you are asked to create, modify, or interact with ANY Frontend code (in
 ### Table Components
 
 Always use shadcn/ui <Table> components (Table, TableHeader, TableBody, TableRow, TableCell, TableHead) instead of custom grid div tables. For row actions, ALWAYS use a <DropdownMenu> (with a MoreHorizontal icon trigger) instead of inline hover-only buttons (opacity-0) to ensure accessibility, touch-friendliness, and UI consistency.
+
+## Strict Inblue-FE Development Rules
+
+When modifying or creating code in this workspace, you MUST strictly obey:
+
+1. **API Client:** NEVER use Axios. ALWAYS use `$api` (openapi-fetch) for API calls.
+2. **i18n:** NEVER hardcode user-facing strings in UI components. ALWAYS use `t('key')`. For a list of UNTRANSLATABLE terms, you MUST read `.agents/references/i18n-rules.md`.
+3. **No Enums:** TypeScript `enum` and `namespace` are banned. Use Union Types or plain Objects.
+4. **No Zombie Pages:** Every `<Route>` must have a reachable UI entry point.
+
+## Architecture & Codebase Reference
+
+- For deep architectural rules, custom hooks, shared components, and anti-patterns, you MUST read: `.agents/references/rules.md`

@@ -1,6 +1,6 @@
 # INBLUE-FE — AI Agent Rules
 
-> **@LAST_SYNCED: 2026-06-14T14:44**
+> **@LAST_SYNCED: 2026-07-13T08:54**
 > Canonical source of truth for all AI agents working on this codebase.
 > Mirrored to `.github/copilot-instructions.md` for GitHub Copilot compatibility.
 
@@ -67,6 +67,8 @@ const isLoggedIn = !!token; // check login ← unnecessary
 | PDF viewer | `react-pdf` + `pdfjs-dist` |
 | API client | `openapi-fetch` + `openapi-react-query` |
 | WebSocket | `@stomp/stompjs` + `sockjs-client` |
+| Routing | `react-router-dom` |
+| Code Editor | `@monaco-editor/react` |
 | Carousel | `embla-carousel-react` |
 | Panel resizing | `react-resizable-panels` |
 | Image lightbox | `yet-another-react-lightbox` |
@@ -105,10 +107,10 @@ src/
 │   ├── Auth/
 │   ├── Enterprise/
 │   ├── Error/
-│   ├── Homepage/
+│   ├── Homepage/        # Homepage, Resources (FAQ, Blog), Questions (QuestionBank)
 │   ├── Mentor/
 │   ├── Payment/
-│   ├── Shared/          # Cross-role pages (QuestionBank, FAQ, Blog)
+│   ├── Shared/          # Cross-role pages (HrMentorReviewApproval, Messenger)
 │   ├── Staff/
 │   └── User/
 ├── services/            # API service managers (barrel: services/index.ts)
@@ -177,14 +179,11 @@ const response = await sessionManager.getAll();
 
 ### Migration Checklist (Manager → $api)
 
-When you encounter legacy manager code during a feature change:
+When updating legacy code:
 
-1. Check if the endpoint exists in `schema-from-be.d.ts`
-2. If yes, replace the manager call with `$api.useQuery()` or `$api.useMutation()`
-3. Update the hook to use `$api` directly instead of wrapping the manager
-4. Remove unused manager methods (if the manager becomes empty, delete it)
-5. Remove barrel export from `services/index.ts`
-6. Update tests accordingly
+1. **Replace** manager calls with `$api.useQuery/Mutation` (check `schema-from-be.d.ts`).
+2. **Clean up**: Delete unused manager methods and remove from `services/index.ts`.
+3. **Update tests** to mock `$api` instead of the manager.
 
 ### Error Handling
 
@@ -255,6 +254,8 @@ export const useMyStore = create<MyState>()(
 
 ### Custom Hooks (`src/hooks/`)
 
+Only **core framework** hooks are listed here. For domain-specific hooks (e.g., `useMentorReview`, `useApplication`), check the respective domain folders.
+
 | Hook                                          | Purpose                                                                                         |
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `useMutationHandler`                          | Wraps `useMutation` with auto-toast (Vietnamese messages). **Use for all mutations.**           |
@@ -265,31 +266,24 @@ export const useMyStore = create<MyState>()(
 | `useDashboardScrollRestoration`               | Restores scroll position when navigating between dashboard tabs                                 |
 | `useNotification` / `useNotificationAlerts`   | Notification fetching and alert management                                                      |
 | `useSpeechRecognition` / `useSpeechSynthesis` | Browser Speech API wrappers for AI interview features                                           |
-| `useWalletBalanceReconciliation`              | Wallet balance sync between client and server                                                   |
-| `usePostFeed`                                 | Social post feed fetching with infinite scroll                                                  |
-| `usePublishedFeed`                            | Public post feed fetching with infinite scroll                                                  |
 
 All hooks are barrel-exported from `hooks/index.ts`.
 
 ### Shared Components (`src/components/shared/`)
 
+Only **core UI primitives** are listed here. For domain-specific shared components (e.g., `RoundCanvasEditor`, `SlotCalendar`), check the directory.
+
 | Component                                                                                                         | Purpose                                                                                             |
 | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `DashboardChromeTabs`                                                                                             | Chrome-style tab navigation bar. Accepts `ChromeTabsTheme` for role-based theming                   |
-| `DashboardSidebar`                                                                                                | Collapsible sidebar navigation. Accepts `DashboardSidebarTheme`                                     |
+| `DashboardChromeTabs` / `DashboardSidebar`                                                                        | Shell navigation layouts. Accept themes for role-based coloring.                                    |
 | `ProtectedRoute` / `PublicOnlyRoute`                                                                              | Route guards for auth                                                                               |
 | `SessionExpiryGuard`                                                                                              | Polls session expiry every 30s, auto-logouts on expiry                                              |
-| `PaginationControl`                                                                                               | Reusable pagination UI with page size selector                                                      |
-| `Filter`                                                                                                          | Generic filter with `FilterCriteria`, `FilterGroup`, `FilterOption` types                           |
-| `SortButton`                                                                                                      | Toggleable sort direction button                                                                    |
+| `PaginationControl` / `Filter` / `SortButton`                                                                     | Reusable list/table data manipulation controls                                                      |
 | `StatusBadge`                                                                                                     | Simple label + variant badge                                                                        |
-| `PaymentMethodDialog`                                                                                             | Payment method selection dialog                                                                     |
 | `ChatComposer` / `MessageBubble`                                                                                  | Chat UI primitives                                                                                  |
 | `SocketStatusBadge`                                                                                               | WebSocket connection state indicator                                                                |
-| `ScrollToTopButton`                                                                                               | Floating scroll-to-top button                                                                       |
+| `ScrollToTopButton` / `ScrollToTop`                                                                               | Scroll management utilities                                                                         |
 | `SettingsModal`                                                                                                   | User settings dialog                                                                                |
-| `ReloadButton`                                                                                                    | Data refresh button                                                                                 |
-| `ScrollToTop`                                                                                                     | Utility to scroll to top on route change                                                            |
 | `TabContentWrapper`                                                                                               | Wrapper for tabs to manage keep-alive state and scroll restoration                                  |
 | `DateTimePicker`                                                                                                  | Premium date & time picker component with custom scroll wheels, i18n support, and role-based themes |
 | **Media sub-components**: `ImageZoomPreview`, `MediaLightboxDialog`, `PdfPreviewViewer`, `UniversalMediaUploader` |
@@ -337,11 +331,18 @@ Connection state shown via `SocketStatusBadge` component.
 
 ## §6 — Styling
 
+### Standard UI Patterns
+
+**Impeccable UI Enforcement**: Before making any UI changes, you **must** read `.agents/skills/impeccable/SKILL.md` and follow all standard layout, colorize, and shape patterns.
+
+**Table Components**: Always use shadcn/ui `<Table>` components (`Table`, `TableHeader`, `TableBody`, `TableRow`, `TableCell`, `TableHead`) instead of custom grid div tables.
+**Row Actions**: For table row actions, ALWAYS use a `<DropdownMenu>` (with a `MoreHorizontal` icon trigger) instead of inline hover-only buttons to ensure accessibility and UI consistency.
+
 ### shadcn/ui
 
-62 components in `components/ui/`, configured via `components.json` (style: `new-york`, base color: `slate`, CSS variables enabled, icon library: `lucide`).
+72 components in `components/ui/`, configured via `components.json` (style: `new-york`, base color: `slate`, CSS variables enabled, icon library: `lucide`).
 
-**Custom extensions** (beyond standard shadcn): `cv-upload-modal`, `empty-state`, `star-rating`, `spinner`, `time-ago`, `loading-card`, `file-upload-input`, `image-carousel`, `testimonial-carousel`, `button-group`, `input-group`, `field`, `item`, `kbd`, `native-select`.
+**Custom extensions** (beyond standard shadcn): `code-review-editor`, `code-review-submission-modal`, `code-submission-viewer`, `coding-editor`, `coding-round-grader`, `coding-submission-modal`, `email-preview-dialog`, `monaco-code-review-viewer`, `quiz-editor`, `round-submission-dialog`, `score-input`, `cv-upload-modal`, `empty-state`, `star-rating`, `spinner`, `time-ago`, `loading-card`, `file-upload-input`, `image-carousel`, `testimonial-carousel`, `button-group`, `input-group`, `field`, `item`, `kbd`, `native-select`.
 
 ### Design Tokens
 
@@ -549,11 +550,10 @@ These anti-patterns were catalogued in `docs/error.md`. **Do NOT introduce them 
 
 ### ❌ AP-13: Zombie Pages (Orphaned Routes)
 
-- Do NOT create a `<Route>` in `App.tsx` without a corresponding UI entry point (sidebar item, tab, button, or `<Link>`) that lets users reach it through normal navigation. A page that can only be accessed by manually typing a URL is a "zombie page".
-- Do NOT create a new page by copy-pasting the entire content of one or more existing pages. Reuse existing components, hooks, and utilities instead. If a combined view is needed, compose it from the existing parts.
-- When adding a route, always cross-check three sources: (1) Route definition in `App.tsx`, (2) Navigation/Tab definitions in Dashboard pages, (3) All `<Link>` and `navigate()` calls in the codebase. All three must be consistent.
-- When deleting or renaming a route, search the entire codebase for references to the old path and update or remove them.
-- **Case study**: `InterviewHistoryPage` (deleted 2026-06-14) — a 1036-LOC page with a valid route at `/user/interview-history`, fully imported and passing all automated checks, yet completely unreachable via UI. Its content was 100% copy-pasted from `SessionHistoryPage` + `AIInterviewListPage`, creating triple duplication of status maps and payment logic.
+- Do NOT create a `<Route>` in `App.tsx` without a corresponding UI entry point (sidebar item, tab, button, or `<Link>`). A page that can only be accessed by manually typing a URL is a "zombie page".
+- Do NOT create a new page by copy-pasting the entire content of one or more existing pages. Compose from existing parts.
+- When adding a route, cross-check: (1) `App.tsx`, (2) Navigation definitions, (3) `<Link>` calls.
+- When deleting or renaming a route, search the entire codebase for references to the old path.
 
 ---
 
@@ -664,10 +664,6 @@ When a trigger is detected:
 
 | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-13 | Deep refactor based on full project scan: Synced UI component strict rules from `AGENTS.md`, updated shadcn/ui count to 72 and listed new custom extensions, removed dead hooks/components (`useWalletBalanceReconciliation`, `PaymentMethodDialog`), added new core components/hooks, and corrected `Shared` vs `Homepage` directory mapping.                                                                                                                  |
 | 2026-06-14 | Added AP-13 (Zombie Pages / Orphaned Routes) after discovering and deleting `InterviewHistoryPage` — a 1036-LOC zombie page with valid route but zero UI entry points. Consolidated Playground routes from `/dev/media-toolkit` + `/dev/speech-playground` into unified `/dev/playground` with tabbed components at `src/pages/Dev/Playground/`. Moved Playground files from `Shared/` to `Dev/Playground/components/`. Updated dev-only pages reference in §2. |
 | 2026-06-14 | Added `i18n:check-missing` script to audit missing i18n keys across `vi.json`, `en.json`, and `ja.json`. Added rule requiring developers to run `pnpm nx run inblue-fe:i18n:check-missing` or `pnpm validate` when adding new i18n keys to ensure full language coverage. Updated synced date.                                                                                                                                                                  |
-| 2026-06-12 | Documented `DateTimePicker` in shared components and timezone mismatch gotcha under §10, and updated synced date.                                                                                                                                                                                                                                                                                                                                               |
-| 2026-06-06 | Documented newly established testing conventions (Unit Testing via Vitest and E2E via Cypress with custom commands/fixtures), added Japanese (`ja.json`) to supported locales, added rules against runtime-emitted TS syntax (e.g. `enum`/`namespace` per `erasableSyntaxOnly` option), i18n key formatting conventions, and documented frozen translation anti-patterns (AP-12) and Zustand selector performance guidelines (AP-07).                           |
-| 2026-06-01 | Removed Axios completely from the project. Migrated all legacy Service Managers to use `fetchClient` (which wraps `openapi-fetch`). Updated API guidelines to reflect that `createApiInstance` is dead and `$api` is the only supported API client moving forward.                                                                                                                                                                                              |
-| 2026-05-31 | Migrated the application to full dynamic i18n using `react-i18next`. Extracted all hardcoded Vietnamese text into JSON locales (`en.json`, `vi.json`). Updated Hard Rules to require `t()` translations for all new user-facing strings. Added `i18next` to active stack and defined new i18n architecture under §5.                                                                                                                                            |
-| 2026-05-30 | Initial creation. Distilled from legacy `.github/copilot-instructions.md` and `docs/error.md`. Corrected inaccurate documentation about Axios JWT handling. Removed dead Homepage Redesign section. Added Auto-Evolution Protocol, Operational Playbook, comprehensive Anti-Patterns, and strict Naming Conventions. Flagged `formik` and `react-icons` as dead dependencies.                                                                                   |
