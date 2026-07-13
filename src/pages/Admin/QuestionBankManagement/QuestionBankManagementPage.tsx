@@ -4,7 +4,7 @@ import type { ApiResponse } from "@/interfaces";
 import { extractDataArray } from "@/lib/utils";
 import { questionBankManager } from "@/services/question-bank.manager";
 import { questionCategoryManager } from "@/services/question-category.manager";
-import { FolderOpen, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -143,21 +143,7 @@ export function QuestionBankManagementPage() {
       value={activeTab}
       onValueChange={setActiveTab}
       className="-m-4 flex h-[calc(100%+32px)] flex-col md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-            <FolderOpen className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              {t("common.questionBank", t("adminCodingProblem.problemBank"))}
-            </h1>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {t("adminQuestionbankmanagement.description")}
-            </p>
-          </div>
-        </div>
-
+      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex flex-wrap items-center gap-3">
           <TabsList className="h-8">
             <TabsTrigger value="questions" className="text-xs">

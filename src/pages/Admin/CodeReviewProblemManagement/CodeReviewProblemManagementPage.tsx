@@ -467,7 +467,7 @@ export function CodeReviewProblemManagementPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="">
             <div>
               <CodeReviewProblemTable
                 problems={pageItems}
@@ -477,8 +477,8 @@ export function CodeReviewProblemManagementPage() {
               />
             </div>
 
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+            <div>
+              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                 <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   Hiển thị {pageItems.length} / {processedData.length} kết quả
                 </div>

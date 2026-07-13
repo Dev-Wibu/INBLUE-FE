@@ -213,20 +213,10 @@ export function PracticeSetManagementPage() {
     }
   };
   return (
-    <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          {t("adminPracticesetmanagement.questionnaireManagement")}
-        </h1>
-        <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          {t("adminPracticesetmanagement.manageQuestionSetsForDifferent")}
-        </p>
-      </div>
-
-      {/* Action Bar */}
-      <div className="mb-6 grid gap-3 xl:grid-cols-[1fr_auto]">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+      {/* TOOLBAR */}
+      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Search Input */}
           <div className="relative w-full sm:max-w-md">
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
@@ -262,7 +252,7 @@ export function PracticeSetManagementPage() {
           </Select>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex items-center gap-2">
           {(searchQuery || levelFilter !== "all") && (
             <Button
               variant="outline"
@@ -288,50 +278,54 @@ export function PracticeSetManagementPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        {isInitialLoading ? (
-          <SpinnerBlock
-            size="lg"
-            label={t("adminPracticesetmanagement.loadingListOfQuestionSets")}
-          />
-        ) : (
-          <>
-            <PracticeSetTable
-              practiceSets={pageData}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onViewItems={handleViewItems}
-              getSortProps={getSortProps}
-            />
-
-            {/* Pagination */}
-            {sortedData.length > 0 && (
-              <PaginationControl
-                pagination={pagination}
-                onPageSizeChange={(nextPageSize) => {
-                  setPageSize(nextPageSize);
-                  pagination.goToFirstPage();
-                }}
+      {/* TABLE SECTION */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            {isInitialLoading ? (
+              <SpinnerBlock
+                size="lg"
+                label={t("adminPracticesetmanagement.loadingListOfQuestionSets")}
               />
-            )}
+            ) : (
+              <>
+                <PracticeSetTable
+                  practiceSets={pageData}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onViewItems={handleViewItems}
+                  getSortProps={getSortProps}
+                />
 
-            {/* Empty State with Clear Filters */}
-            {sortedData.length === 0 && (searchQuery || levelFilter !== "all") && (
-              <div className="flex justify-center pb-4">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setLevelFilter("all");
-                    pagination.goToFirstPage();
-                  }}>
-                  {t("common.clearFilter")}
-                </Button>
-              </div>
+                {/* Pagination */}
+                {sortedData.length > 0 && (
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                )}
+
+                {/* Empty State with Clear Filters */}
+                {sortedData.length === 0 && (searchQuery || levelFilter !== "all") && (
+                  <div className="flex justify-center pb-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setLevelFilter("all");
+                        pagination.goToFirstPage();
+                      }}>
+                      {t("common.clearFilter")}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
 
       {/* Create Dialog */}

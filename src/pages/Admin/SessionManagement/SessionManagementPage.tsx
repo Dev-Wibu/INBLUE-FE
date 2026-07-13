@@ -214,9 +214,9 @@ export function SessionManagementPage() {
             </div>
 
             {/* Pagination & Empty State */}
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+            <div>
               {sortedData.length > 0 && (
-                <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                   <PaginationControl
                     pagination={pagination}
                     onPageSizeChange={(nextPageSize) => {
@@ -228,7 +228,7 @@ export function SessionManagementPage() {
               )}
 
               {sortedData.length === 0 && (searchQuery || statusFilter !== "all") && (
-                <div className="mt-4 flex justify-center pb-4">
+                <div className="flex justify-center pt-4 pb-4">
                   <Button
                     variant="outline"
                     onClick={() => {
