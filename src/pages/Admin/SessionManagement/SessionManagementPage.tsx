@@ -16,14 +16,10 @@ import { sessionManager } from "@/services";
 import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  CancelSessionDialog,
-  SessionFormDialog,
-  SessionTable,
-  ViewSessionDialog,
-} from "./components";
-import type { Session, SessionFormData } from "./types";
+import { SessionTable } from "./components";
+import type { Session } from "./types";
 type SortableSession = Session & {
   startTimeSortValue: number;
 };
@@ -32,14 +28,9 @@ export function SessionManagementPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
-  const [formData, setFormData] = useState<Partial<SessionFormData>>({});
 
   // Load sessions using the session manager service
   const loadSessions = useCallback(
@@ -85,6 +76,7 @@ export function SessionManagementPage() {
           session.id?.toString().includes(lowerQuery) ||
           session.userId?.toString().includes(lowerQuery) ||
           session.userId2?.toString().includes(lowerQuery) ||
+          session.roomName?.toLowerCase().includes(lowerQuery) ||
           session.roomUrl?.toLowerCase().includes(lowerQuery) ||
           session.transactionCode?.toLowerCase().includes(lowerQuery);
         if (!matchesSearch) return false;
@@ -123,132 +115,12 @@ export function SessionManagementPage() {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
   const handleCreate = () => {
-    setFormData({
-      status: "SCHEDULED",
-      start_video_off: true,
-      start_audio_off: true,
-      duration: undefined,
-      totalPrice: undefined,
-      transactionCode: "",
-    });
-    setIsCreateDialogOpen(true);
+    navigate("/admin/sessions/create");
   };
   const handleView = (session: Session) => {
-    setSelectedSession(session);
-    setIsViewDialogOpen(true);
-  };
-  const handleEdit = (session: Session) => {
-    setSelectedSession(session);
-    setFormData({
-      userId: session.userId,
-      userId2: session.userId2,
-      status: session.status,
-      joinTime: session.joinTime,
-      duration: session.duration,
-      totalPrice: session.totalPrice,
-      transactionCode: session.transactionCode,
-      start_video_off: true,
-      start_audio_off: true,
-    });
-    setIsEditDialogOpen(true);
-  };
-  const handleCancel = (session: Session) => {
-    setSelectedSession(session);
-    setIsCancelDialogOpen(true);
-  };
-  const handleApprove = async (session: Session) => {
-    if (!session.id) return;
-    try {
-      const response = await sessionManager.updateStatus(session.id, true);
-      if (response.success) {
-        toast.success(t("adminSessionmanagement.interviewSessionApproved"));
-        void loadSessions();
-      } else {
-        toast.error(response.error || t("adminSessionmanagement.unableToBrowseSession"));
-      }
-    } catch (error) {
-      console.error("Error approving session:", error);
-      toast.error(t("adminSessionmanagement.unableToBrowseSession"));
-    }
-  };
-  const handleReject = async (session: Session) => {
-    if (!session.id) return;
-    try {
-      const response = await sessionManager.updateStatus(session.id, false);
-      if (response.success) {
-        toast.success(t("common.refusedTheInterviewSession"));
-        void loadSessions();
-      } else {
-        toast.error(response.error || t("adminSessionmanagement.sessionCannotBeRejected"));
-      }
-    } catch (error) {
-      console.error("Error rejecting session:", error);
-      toast.error(t("adminSessionmanagement.sessionCannotBeRejected"));
-    }
-  };
-  const handleSubmitCreate = async () => {
-    try {
-      const response = await sessionManager.create(formData);
-      if (response.success) {
-        toast.success(t("adminSessionmanagement.lessonCreatedSuccessfully"));
-        setIsCreateDialogOpen(false);
-        void loadSessions(); // Refresh the list
-      } else {
-        toast.error(response.error || t("adminSessionmanagement.unableToCreateLesson"));
-      }
-    } catch (error) {
-      console.error("Error creating session:", error);
-      toast.error(t("adminSessionmanagement.unableToCreateLesson"));
-    }
-  };
-  const handleSubmitEdit = async () => {
-    if (!selectedSession?.id) return;
-    try {
-      // Merge full session data with form changes to prevent PUT from nulling fields
-      const mergedData: Partial<Session> = {
-        ...selectedSession,
-        userId: formData.userId,
-        userId2: formData.userId2,
-        status: formData.status,
-        joinTime: formData.joinTime,
-        duration: formData.duration,
-        totalPrice: formData.totalPrice,
-        transactionCode: formData.transactionCode,
-      };
-      const response = await sessionManager.update(selectedSession.id, mergedData);
-      if (response.success) {
-        toast.success(t("adminSessionmanagement.lessonUpdatedSuccessfully"));
-        setIsEditDialogOpen(false);
-        void loadSessions(); // Refresh the list
-      } else {
-        toast.error(response.error || t("adminSessionmanagement.unableToUpdateLesson"));
-      }
-    } catch (error) {
-      console.error("Error updating session:", error);
-      toast.error(t("adminSessionmanagement.unableToUpdateLesson"));
-    }
+    navigate(`/admin/sessions/${session.id}`);
   };
 
-  const handleConfirmCancel = async () => {
-    if (!selectedSession?.id) return;
-    try {
-      // Use update with full session data + CANCELED status to prevent PUT from nulling fields
-      const response = await sessionManager.update(selectedSession.id.toString(), {
-        ...selectedSession,
-        status: "REJECTED",
-      });
-      if (response.success) {
-        toast.success(t("adminSessionmanagement.lessonCanceledSuccessfully"));
-        setIsCancelDialogOpen(false);
-        void loadSessions(); // Refresh the list
-      } else {
-        toast.error(response.error || t("adminSessionmanagement.lessonsCannotBeCanceled"));
-      }
-    } catch (error) {
-      console.error("Error canceling session:", error);
-      toast.error(t("adminSessionmanagement.lessonsCannotBeCanceled"));
-    }
-  };
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
@@ -322,7 +194,7 @@ export function SessionManagementPage() {
 
           <Button
             onClick={handleCreate}
-            className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+            className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             {t("general.createSession")}
           </Button>
@@ -338,15 +210,7 @@ export function SessionManagementPage() {
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div>
-              <SessionTable
-                sessions={pageData}
-                onView={handleView}
-                onEdit={handleEdit}
-                onCancel={handleCancel}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                getSortProps={getSortProps}
-              />
+              <SessionTable sessions={pageData} onView={handleView} getSortProps={getSortProps} />
             </div>
 
             {/* Pagination & Empty State */}
@@ -380,45 +244,6 @@ export function SessionManagementPage() {
           </div>
         )}
       </div>
-
-      {/* View Dialog */}
-      <ViewSessionDialog
-        isOpen={isViewDialogOpen}
-        onOpenChange={setIsViewDialogOpen}
-        session={selectedSession}
-      />
-
-      {/* Create Dialog */}
-      <SessionFormDialog
-        isOpen={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        formData={formData}
-        onFormChange={setFormData}
-        onSubmit={handleSubmitCreate}
-        title={t("adminSessionmanagement.createANewLesson")}
-        description={t("adminSessionmanagement.fillInTheInformationTo")}
-        submitLabel={t("adminSessionmanagement.createAStudySession")}
-      />
-
-      {/* Edit Dialog */}
-      <SessionFormDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        formData={formData}
-        onFormChange={setFormData}
-        onSubmit={handleSubmitEdit}
-        title={t("adminSessionmanagement.editingLessons")}
-        description={t("adminSessionmanagement.updateLessonInformation")}
-        submitLabel={t("common.saveChanges")}
-      />
-
-      {/* Cancel Confirmation Dialog */}
-      <CancelSessionDialog
-        isOpen={isCancelDialogOpen}
-        onOpenChange={setIsCancelDialogOpen}
-        session={selectedSession}
-        onConfirm={handleConfirmCancel}
-      />
     </div>
   );
 }

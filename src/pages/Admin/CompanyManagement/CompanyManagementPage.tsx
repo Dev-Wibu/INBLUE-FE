@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { extractDataArray } from "@/lib/utils";
 import { companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Plus } from "lucide-react";
+import { Building2, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ export function CompanyManagementPage() {
   const [formData, setFormData] = useState<CompanyFormData>({});
   const [isCreating, setIsCreating] = useState(false);
   const [selectedJdId, setSelectedJdId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch all companies
   const { data: companies = [], refetch: refetchCompanies } = useQuery({
@@ -129,6 +131,16 @@ export function CompanyManagementPage() {
           {activeTab === "companies" && (
             <>
               <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+              <div className="relative">
+                <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-500" />
+                <Input
+                  type="text"
+                  placeholder={t("common.search")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8 w-full pl-9 text-xs sm:w-64"
+                />
+              </div>
               <Button
                 onClick={handleCreateCompany}
                 className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
@@ -177,6 +189,7 @@ export function CompanyManagementPage() {
         <TabsContent value="companies" className="m-0 h-full">
           <CompanyGridTab
             companies={companies}
+            searchQuery={searchQuery}
             onCompanyUpdate={() => void refetchCompanies()}
             onCreateCompany={handleCreateCompany}
           />

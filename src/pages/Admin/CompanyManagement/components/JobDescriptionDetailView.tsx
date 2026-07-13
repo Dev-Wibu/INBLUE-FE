@@ -7,7 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { jobDescriptionManager } from "@/services/job-description.manager";
-import { ArrowLeft, CheckCircle, ChevronLeft, Clock, Edit3, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  Banknote,
+  CalendarDays,
+  CheckCircle,
+  ChevronLeft,
+  Clock,
+  Edit3,
+  FileText,
+  Gift,
+  Layers,
+} from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -38,10 +49,24 @@ export function JobDescriptionDetailView({
     setSelectedRoundIndex(null);
   }, [jobDescription]);
 
+  const formatSalary = (min?: number | null, max?: number | null, currency?: string | null) => {
+    if (!min && !max) return "Thỏa thuận";
+    const formatNum = (num: number) => {
+      if (num >= 1000000 && num % 1000000 === 0) return `${num / 1000000} Tr`;
+      if (num >= 1000000) return `${+(num / 1000000).toFixed(1)} Tr`;
+      return num.toLocaleString();
+    };
+    const c = currency || "VND";
+    if (min && max) return `${formatNum(min)} - ${formatNum(max)} ${c}`;
+    if (min) return `Từ ${formatNum(min)} ${c}`;
+    return `Đến ${formatNum(max!)} ${c}`;
+  };
+
   const initialRounds = React.useMemo(() => {
     const sortedRounds = [...(currentJd.rounds || [])].sort(
       (a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0)
     );
+
     return sortedRounds.map((r) => ({
       name: r.name,
       roundType: r.roundType as RoundType,
@@ -178,9 +203,9 @@ export function JobDescriptionDetailView({
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Column: Job Info OR Round Info */}
-        <div className="border-border/50 relative w-2/3 overflow-y-auto border-r p-6">
+        <div className="border-border/50 relative w-2/3 overflow-y-auto border-r p-4">
           {selectedRound ? (
-            <div className="animate-in fade-in slide-in-from-right-4 mx-auto max-w-3xl space-y-8 duration-300">
+            <div className="animate-in fade-in slide-in-from-right-4 w-full space-y-6 duration-300">
               <button
                 onClick={() => setSelectedRoundIndex(null)}
                 className="flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400">
@@ -280,43 +305,82 @@ export function JobDescriptionDetailView({
               )}
             </div>
           ) : (
-            <div className="animate-in fade-in mx-auto max-w-3xl space-y-8 duration-300">
-              <div>
-                <h3 className="mb-3 text-sm font-semibold tracking-wider text-slate-500 uppercase">
-                  {t("common.description", "Mô tả công việc")}
-                </h3>
-                <div className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300">
-                  {currentJd.description ? (
-                    <div dangerouslySetInnerHTML={{ __html: currentJd.description }} />
-                  ) : (
-                    <span className="text-slate-400 italic">Chưa có thông tin</span>
-                  )}
+            <div className="animate-in fade-in w-full space-y-6 duration-300">
+              {/* Overview Cards */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
+                  <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                    <Layers className="h-4 w-4 shrink-0" />
+                    Cấp bậc
+                  </div>
+                  <div className="truncate text-base font-bold text-slate-900 xl:text-lg dark:text-white">
+                    {currentJd.level || "Chưa xác định"}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
+                  <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                    <Banknote className="h-4 w-4 shrink-0" />
+                    Mức lương
+                  </div>
+                  <div className="truncate text-base font-bold text-emerald-600 xl:text-lg dark:text-emerald-400">
+                    {formatSalary(currentJd.salaryMin, currentJd.salaryMax, currentJd.currency)}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/50">
+                  <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                    <CalendarDays className="h-4 w-4 shrink-0" />
+                    Hạn nộp
+                  </div>
+                  <div className="truncate text-base font-bold text-slate-900 xl:text-lg dark:text-white">
+                    {currentJd.deadlineAt
+                      ? new Date(currentJd.deadlineAt).toLocaleDateString("vi-VN")
+                      : "Không giới hạn"}
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <h3 className="mb-3 text-sm font-semibold tracking-wider text-slate-500 uppercase">
-                  {t("common.requirements", "Yêu cầu")}
-                </h3>
-                <div className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300">
-                  {currentJd.requirements ? (
-                    <div dangerouslySetInnerHTML={{ __html: currentJd.requirements }} />
-                  ) : (
-                    <span className="text-slate-400 italic">Chưa có thông tin</span>
-                  )}
+              {/* Descriptions */}
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                  <h3 className="mb-4 flex items-center gap-2 text-sm font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
+                    <FileText className="h-4 w-4" />
+                    {t("common.description", "Mô tả công việc")}
+                  </h3>
+                  <div className="prose prose-slate prose-sm dark:prose-invert max-w-none leading-relaxed text-slate-700 dark:text-slate-300">
+                    {currentJd.description ? (
+                      <div dangerouslySetInnerHTML={{ __html: currentJd.description }} />
+                    ) : (
+                      <span className="text-slate-400 italic">Chưa có thông tin mô tả</span>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <h3 className="mb-3 text-sm font-semibold tracking-wider text-slate-500 uppercase">
-                  {t("common.benefits", "Quyền lợi")}
-                </h3>
-                <div className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300">
-                  {currentJd.benefits ? (
-                    <div dangerouslySetInnerHTML={{ __html: currentJd.benefits }} />
-                  ) : (
-                    <span className="text-slate-400 italic">Chưa có thông tin</span>
-                  )}
+                <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                  <h3 className="mb-4 flex items-center gap-2 text-sm font-bold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
+                    <CheckCircle className="h-4 w-4" />
+                    {t("common.requirements", "Yêu cầu")}
+                  </h3>
+                  <div className="prose prose-slate prose-sm dark:prose-invert max-w-none leading-relaxed text-slate-700 dark:text-slate-300">
+                    {currentJd.requirements ? (
+                      <div dangerouslySetInnerHTML={{ __html: currentJd.requirements }} />
+                    ) : (
+                      <span className="text-slate-400 italic">Chưa có thông tin yêu cầu</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                  <h3 className="mb-4 flex items-center gap-2 text-sm font-bold tracking-wider text-rose-600 uppercase dark:text-rose-400">
+                    <Gift className="h-4 w-4" />
+                    {t("common.benefits", "Quyền lợi")}
+                  </h3>
+                  <div className="prose prose-slate prose-sm dark:prose-invert max-w-none leading-relaxed text-slate-700 dark:text-slate-300">
+                    {currentJd.benefits ? (
+                      <div dangerouslySetInnerHTML={{ __html: currentJd.benefits }} />
+                    ) : (
+                      <span className="text-slate-400 italic">Chưa có thông tin quyền lợi</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -352,7 +416,7 @@ export function JobDescriptionDetailView({
                 return (
                   <div
                     key={index}
-                    onClick={() => setSelectedRoundIndex(index)}
+                    onClick={() => setSelectedRoundIndex(isSelected ? null : index)}
                     className={cn(
                       "group is-active relative flex cursor-pointer items-center justify-between transition-all md:justify-normal md:odd:flex-row-reverse",
                       isSelected ? "scale-105" : "opacity-70 hover:scale-105 hover:opacity-90"

@@ -216,6 +216,7 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
             cb(toPayload(event.participant));
           }
         });
+        // @ts-expect-error Daily.co types might not include this event depending on the version
         newCallObject.on("participant-count-updated", (event) => {
           const participantCount = (event as { participantCount?: number })?.participantCount ?? 0;
           const localIsAlone = participantCount <= 1;
