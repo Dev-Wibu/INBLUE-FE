@@ -7,7 +7,11 @@ const t = i18n.t.bind(i18n);
 
 import type { Session } from "@/interfaces";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
-import type { JoinSessionRequest, SessionCreationRequest } from "@/services/session.manager";
+import type {
+  JoinSessionRequest,
+  LeaveSessionRequest,
+  SessionCreationRequest,
+} from "@/services/session.manager";
 import { sessionManager } from "@/services/session.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

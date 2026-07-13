@@ -8,6 +8,18 @@ import { createContext } from "react";
 
 export type RoomState = "idle" | "joining" | "joined" | "leaving" | "left" | "error";
 
+/**
+ * 2026-07-13 v063: more granular error reasons emitted by the Daily.co
+ *   listener. Consumers (SessionRoomPage, MentorSessionRoomPage) can react
+ *   to "room-unavailable" without needing to re-parse the human-readable
+ *   error string.
+ */
+export type RoomErrorReason =
+  | "room-unavailable"
+  | "connection-failed"
+  | "permission-denied"
+  | "unknown";
+
 export interface ParticipantPayload {
   participantId: string;
   userName?: string;
@@ -35,6 +47,12 @@ export interface VideoCallContextValue {
   callObject: DailyCall | null;
   roomState: RoomState;
   error: string | null;
+  /**
+   * 2026-07-13 v063: machine-readable reason alongside `error`. Lets
+   *   consumers decide whether to show a recoverable CTA, auto-refetch
+   *   the session, or block rejoin outright.
+   */
+  errorReason?: RoomErrorReason;
   joinRoom: (
     _roomUrl: string,
     _userName: string,

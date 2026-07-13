@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ParticipantPayload,
+  RoomErrorReason,
   RoomState,
   VideoCallCallbacks,
   VideoCallContextValue,
@@ -85,6 +86,7 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
   const [callObject, setCallObject] = useState<DailyCall | null>(null);
   const [roomState, setRoomState] = useState<RoomState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [errorReason, setErrorReason] = useState<RoomErrorReason | undefined>(undefined);
   const [participants, setParticipants] = useState<DailyParticipantsObject | undefined>(undefined);
 
   // Use ref to track callObject for stable callbacks (avoids stale closures)
@@ -132,6 +134,7 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
       try {
         setRoomState("joining");
         setError(null);
+        setErrorReason(undefined);
 
         // Destroy existing call object if any (avoid duplicate)
         if (callObjectRef.current) {
@@ -216,14 +219,27 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
             cb(toPayload(event.participant));
           }
         });
-        newCallObject.on("participant-count-updated", (event) => {
-          const participantCount = (event as { participantCount?: number })?.participantCount ?? 0;
-          const localIsAlone = participantCount <= 1;
-          const cb = callbacksRef.current?.onParticipantCountUpdated;
-          if (cb) {
-            cb({ participantCount, localIsAlone });
+        // 2026-07-13 v063: Daily.co has no dedicated "count" event we can rely on
+        //   across versions. The participant-joined/participant-left handlers
+        //   already publish the latest `participants()` snapshot, so the
+        //   consumer can derive the count itself. We expose the same
+        //   `onParticipantCountUpdated` callback by listening on those events
+        //   and computing the count locally — this keeps the public contract
+        //   stable without depending on an event the Daily types reject.
+        const fireCountUpdate = () => {
+          try {
+            const list = newCallObject.participants();
+            const count = list ? Object.keys(list).length : 0;
+            const cb = callbacksRef.current?.onParticipantCountUpdated;
+            if (cb) {
+              cb({ participantCount: count, localIsAlone: count <= 1 });
+            }
+          } catch {
+            // ignore - participants() may not be available yet
           }
-        });
+        };
+        newCallObject.on("participant-joined", () => fireCountUpdate());
+        newCallObject.on("participant-left", () => fireCountUpdate());
         newCallObject.on("error", (event) => {
           hasDailyErrorEvent = true;
           const rawErrorMessage = extractErrorMessage(event);
@@ -237,6 +253,16 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
             roomUrl: normalizedRoomUrl,
             event,
           });
+          // 2026-07-13 v063: expose machine-readable reason alongside
+          //   the message so the page can auto-refetch the session
+          //   when the stale roomUrl was returned by BE.
+          const reason: RoomErrorReason =
+            isUnavailableByType || isUnavailableByMessage
+              ? "room-unavailable"
+              : event?.error?.type === "permission-denied"
+                ? "permission-denied"
+                : "connection-failed";
+          setErrorReason(reason);
           setError(errorMessage);
           setRoomState("error");
 
@@ -259,6 +285,7 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
         }
         const rawErrorMessage = extractErrorMessage(err);
         const isUnavailable = isRoomUnavailableError(rawErrorMessage);
+        setErrorReason(isUnavailable ? "room-unavailable" : "connection-failed");
         setError(
           isUnavailable
             ? t("compVideoCall.thisMeetingRoomIsNo")
@@ -292,11 +319,12 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
       callObject,
       roomState,
       error,
+      errorReason,
       joinRoom,
       leaveRoom,
       participants,
     }),
-    [callObject, roomState, error, joinRoom, leaveRoom, participants]
+    [callObject, roomState, error, errorReason, joinRoom, leaveRoom, participants]
   );
   return <VideoCallContext.Provider value={value}>{children}</VideoCallContext.Provider>;
 }

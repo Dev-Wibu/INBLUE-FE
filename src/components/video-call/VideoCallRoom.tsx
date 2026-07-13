@@ -23,6 +23,12 @@ interface VideoCallRoomProps {
   onParticipantJoined?: (_p: import("./VideoCallContext").ParticipantPayload) => void;
   onParticipantLeft?: (_p: import("./VideoCallContext").ParticipantPayload) => void;
   onParticipantCountUpdated?: (_info: { participantCount: number; localIsAlone: boolean }) => void;
+  /**
+   * 2026-07-13 v063: fired only when the Daily.co error is classified as
+   *   `room-unavailable` (exp-room / "no longer available"). Lets the page
+   *   react without parsing the human-readable error string.
+   */
+  onRoomUnavailable?: (_reason: string) => void;
   className?: string;
 }
 export function VideoCallRoom({
@@ -34,10 +40,11 @@ export function VideoCallRoom({
   onParticipantJoined,
   onParticipantLeft,
   onParticipantCountUpdated,
+  onRoomUnavailable,
   className,
 }: VideoCallRoomProps) {
   const { t } = useTranslation();
-  const { joinRoom, roomState, error, callObject } = useVideoCall();
+  const { joinRoom, roomState, error, errorReason, callObject } = useVideoCall();
   const containerRef = useRef<HTMLDivElement>(null);
   const hasCalledOnJoined = useRef(false);
   const hasStartedJoin = useRef(false);
@@ -82,6 +89,24 @@ export function VideoCallRoom({
       onError(error);
     }
   }, [error, onError]);
+
+  // 2026-07-13 v063: forward machine-readable "room-unavailable" to consumers
+  //   so they can refetch the session when BE returned a stale roomUrl.
+  const hasFiredRoomUnavailable = useRef(false);
+  useEffect(() => {
+    if (
+      errorReason === "room-unavailable" &&
+      onRoomUnavailable &&
+      !hasFiredRoomUnavailable.current
+    ) {
+      hasFiredRoomUnavailable.current = true;
+      onRoomUnavailable(errorReason);
+    }
+    if (errorReason !== "room-unavailable") {
+      // Reset so a subsequent exp-room (after refetch) re-fires.
+      hasFiredRoomUnavailable.current = false;
+    }
+  }, [errorReason, onRoomUnavailable]);
 
   // Handle joined callback - fire only once per room
   useEffect(() => {
