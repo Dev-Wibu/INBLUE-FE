@@ -227,7 +227,50 @@ export const useJoinSession = () => {
 };
 
 // Re-export types
-export type { JoinSessionRequest, Session, SessionCreationRequest };
+export type { JoinSessionRequest, LeaveSessionRequest, Session, SessionCreationRequest };
+
+// /**
+//  * Hook to record that a participant left the Daily.co room.
+//  *
+//  * 2026-07-13 v062: BE may or may not expose a `POST /api/sessions/leave-session`
+//  * route — the primary signal for "this participant ended the call" arrives via
+//  * the Daily.co webhook (which BE receives on its own side and writes to
+//  * endTime*/durationSeconds*). This hook exists so the FE can:
+//  *   1. Fire-and-forget a hint to BE so endTime1 / endTime2 are guaranteed
+//  *      up-to-date *before* BE's webhook is processed (best-effort).
+//  *   2. Tolerate 404 / 5xx gracefully so FE never blocks user navigation
+//  *      on a backend that hasn't shipped the endpoint yet.
+//  *   3. Invalidate cached session data so the list page can read the new
+//  *      endTime / duration / status as soon as BE has acknowledged.
+//  */
+export const useLeaveSession = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: LeaveSessionRequest) => {
+      try {
+        const response = await sessionManager.leaveSession(data);
+        // Treat any 2xx, 404, or 405 as "ok" — BE may not have the endpoint yet.
+        if (
+          response.success ||
+          response.error?.toLowerCase().includes("not found") ||
+          response.error?.toLowerCase().includes("method not allowed")
+        ) {
+          return true;
+        }
+        return false;
+      } catch (err: unknown) {
+        // Backend unavailable (network/server) — don't block FE navigation.
+
+        console.warn("[useLeaveSession] non-fatal error", err);
+        return false;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    },
+  });
+};
 
 /**
  * Hook to approve or reject a DRAFT session

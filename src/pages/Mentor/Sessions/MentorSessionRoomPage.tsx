@@ -30,7 +30,12 @@ export function MentorSessionRoomPage() {
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const numericSessionId = Number(sessionId);
-  const { data: session, isLoading, error } = useSessionById(numericSessionId);
+  const {
+    data: session,
+    isLoading,
+    error,
+    refetch: refetchSession,
+  } = useSessionById(numericSessionId);
   const joinSessionMutation = useJoinSession();
 
   // Validate session and user
@@ -61,7 +66,17 @@ export function MentorSessionRoomPage() {
   };
 
   // Handle when mentor leaves the call
+  // 2026-07-13 fix: invalidate queries so the list page picks up
+  //   status changes (BE may flip ONGOING -> COMPLETED any time,
+  //   including via Daily.co webhook from the peer leaving).
   const handleLeave = () => {
+    if (!Number.isNaN(numericSessionId)) {
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),
+      });
+    }
+    queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+    queryClient.invalidateQueries({ queryKey: ["sessions"] });
     navigate("/mentor?tab=sessions");
   };
 
@@ -70,12 +85,42 @@ export function MentorSessionRoomPage() {
     console.error("Video call error:", errorMessage);
   };
 
+  // 2026-07-13 v062: when the peer leaves, BE will eventually flip
+  //   status (via Daily.co webhook). Trigger a refetch so the UI can
+  //   react in real time instead of waiting for the 10s poll.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handlePeerLeft = (_payload: { participantId: string; isLocal?: boolean }) => {
+    void refetchSession();
+  };
+
+  const handlePeerCountUpdated = (_info: { participantCount: number; localIsAlone: boolean }) => {
+    if (_info.localIsAlone) {
+      void refetchSession();
+    }
+  };
+
   // Redirect if session is not available
   useEffect(() => {
     if (!isLoading && !session) {
       navigate("/mentor?tab=sessions");
     }
   }, [isLoading, session, navigate]);
+
+  // 2026-07-13 fix: polling backup — while inside the room, BE may flip
+  //   status ONGOING -> COMPLETED at any moment (e.g. when peer leaves
+  //   and Daily.co webhook fires). Without a refresh we keep rendering
+  //   stale data and miss the "session ended" UI.
+  useEffect(() => {
+    if (session?.status !== "ONGOING") {
+      return;
+    }
+    const interval = window.setInterval(() => {
+      void refetchSession();
+    }, 10_000);
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [session?.status, refetchSession]);
   if (isLoading) {
     return (
       <div className="container max-w-7xl py-4">
@@ -174,6 +219,8 @@ export function MentorSessionRoomPage() {
               onLeave={handleLeave}
               onError={handleError}
               onJoined={handleJoined}
+              onParticipantLeft={handlePeerLeft}
+              onParticipantCountUpdated={handlePeerCountUpdated}
               className="h-[80vh] w-full"
             />
           </VideoCallProvider>

@@ -158,6 +158,20 @@ export interface JoinSessionRequest {
   isMentor: boolean;
 }
 
+/**
+ * Leave session request (matches upcoming backend LeaveSessionDtoRequest).
+ * 2026-07-13 v062: payload mirrors the BE team discussion — if BE ships
+ * the endpoint while we're in v062, we want the FE to send the same
+ * fields with no rework on the calling site.
+ */
+export interface LeaveSessionRequest {
+  sessionName?: string;
+  sessionId?: number;
+  userId?: number;
+  participantId?: string;
+  isMentor: boolean;
+}
+
 export class SessionManager implements BaseManager<Session> {
   private buildPaidUpdatePayload(sessionData: Session, transactionCode?: string): Session | null {
     const userId = toPositiveInteger(sessionData.userId);
@@ -434,6 +448,37 @@ export class SessionManager implements BaseManager<Session> {
         status: res.response?.status,
         headers: res.response?.headers,
       }));
+      return {
+        success: true,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("general.unableToJoinSession"),
+      };
+    }
+  }
+
+  /**
+   * Leave session
+   * POST /api/sessions/leave-session (JSON body with LeaveSessionDtoRequest)
+   *
+   * 2026-07-13 v062: BE may not have shipped this endpoint yet. Callers
+   * MUST treat 404 / 405 / network errors as non-fatal; the primary
+   * leave-tracking flow is via Daily.co webhooks which BE already handles.
+   * This method exists so FE can offer a best-effort synchronous signal
+   * instead of waiting up to the webhook delivery latency.
+   */
+  async leaveSession(data: LeaveSessionRequest): Promise<ApiResponse<void>> {
+    try {
+      await fetchClient
+        // @ts-expect-error: LeaveSessionDtoRequest is not yet in the BE Swagger schema (v062)
+        .POST("/api/sessions/leave-session", { body: data })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
       return {
         success: true,
       };

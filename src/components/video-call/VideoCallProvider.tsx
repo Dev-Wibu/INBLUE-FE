@@ -6,11 +6,16 @@ import { useTranslation } from "react-i18next";
  * Based on VideoCall-Fe reference implementation
  */
 
-import type { DailyCall } from "@daily-co/daily-js";
+import type { DailyCall, DailyParticipantsObject } from "@daily-co/daily-js";
 import DailyIframe from "@daily-co/daily-js";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { RoomState, VideoCallContextValue } from "./VideoCallContext";
+import type {
+  ParticipantPayload,
+  RoomState,
+  VideoCallCallbacks,
+  VideoCallContextValue,
+} from "./VideoCallContext";
 import { VideoCallContext } from "./VideoCallContext";
 interface VideoCallProviderProps {
   children: ReactNode;
@@ -80,9 +85,15 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
   const [callObject, setCallObject] = useState<DailyCall | null>(null);
   const [roomState, setRoomState] = useState<RoomState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<DailyParticipantsObject | undefined>(undefined);
 
   // Use ref to track callObject for stable callbacks (avoids stale closures)
   const callObjectRef = useRef<DailyCall | null>(null);
+
+  // 2026-07-13 v062: callbacks passed to joinRoom are unstable (new object
+  // every render) but Daily event handlers should only fire once with the
+  // latest version. We hold them in a ref and consume in the listeners.
+  const callbacksRef = useRef<VideoCallCallbacks | undefined>(undefined);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -100,7 +111,12 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
 
   // Join room handler - uses createFrame (iframe-based, full Daily.co UI)
   const joinRoom = useCallback(
-    async (roomUrl: string, userName: string, container: HTMLElement) => {
+    async (
+      roomUrl: string,
+      userName: string,
+      container: HTMLElement,
+      callbacks?: VideoCallCallbacks
+    ) => {
       if (!roomUrl) {
         setError(t("compVideoCall.missingMeetingRoomUrl"));
         return;
@@ -111,6 +127,7 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
         setRoomState("error");
         return;
       }
+      callbacksRef.current = callbacks;
       let hasDailyErrorEvent = false;
       try {
         setRoomState("joining");
@@ -144,10 +161,29 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
           showLeaveButton: true,
         });
 
+        // 2026-07-13 v062: helper to convert Daily participants to our
+        //   lightweight payload without dragging Daily types into callers.
+        const toPayload = (participant: {
+          session_id?: string;
+          user_name?: string;
+          local?: boolean;
+        }): ParticipantPayload => ({
+          participantId: participant.session_id ?? "",
+          userName: participant.user_name,
+          isLocal: participant.local === true,
+          participantCount: Object.keys(newCallObject.participants() ?? {}).length,
+        });
+
         // Set up event listeners
         // "joined-meeting" fires when user clicks "Join" in Daily.co's pre-call lobby
         newCallObject.on("joined-meeting", () => {
           setRoomState("joined");
+          // refresh participant list on join
+          try {
+            setParticipants(newCallObject.participants());
+          } catch {
+            // ignore - participants() may not be available yet
+          }
         });
         newCallObject.on("left-meeting", () => {
           setRoomState("left");
@@ -155,6 +191,38 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
           newCallObject.destroy();
           callObjectRef.current = null;
           setCallObject(null);
+        });
+        // 2026-07-13 v062: granular Daily.co participant events so the
+        //   session-page can react to the peer leaving in real time.
+        newCallObject.on("participant-joined", (event) => {
+          try {
+            setParticipants(newCallObject.participants());
+          } catch {
+            // ignore
+          }
+          const cb = callbacksRef.current?.onParticipantJoined;
+          if (cb && event?.participant) {
+            cb(toPayload(event.participant));
+          }
+        });
+        newCallObject.on("participant-left", (event) => {
+          try {
+            setParticipants(newCallObject.participants());
+          } catch {
+            // ignore
+          }
+          const cb = callbacksRef.current?.onParticipantLeft;
+          if (cb && event?.participant) {
+            cb(toPayload(event.participant));
+          }
+        });
+        newCallObject.on("participant-count-updated", (event) => {
+          const participantCount = (event as { participantCount?: number })?.participantCount ?? 0;
+          const localIsAlone = participantCount <= 1;
+          const cb = callbacksRef.current?.onParticipantCountUpdated;
+          if (cb) {
+            cb({ participantCount, localIsAlone });
+          }
         });
         newCallObject.on("error", (event) => {
           hasDailyErrorEvent = true;
@@ -226,8 +294,9 @@ export function VideoCallProvider({ children }: VideoCallProviderProps) {
       error,
       joinRoom,
       leaveRoom,
+      participants,
     }),
-    [callObject, roomState, error, joinRoom, leaveRoom]
+    [callObject, roomState, error, joinRoom, leaveRoom, participants]
   );
   return <VideoCallContext.Provider value={value}>{children}</VideoCallContext.Provider>;
 }

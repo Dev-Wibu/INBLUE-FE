@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AlertCircle, RefreshCw, XCircle } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useVideoCall } from "./useVideoCall";
 interface VideoCallRoomProps {
   roomUrl: string;
@@ -17,6 +17,12 @@ interface VideoCallRoomProps {
   onLeave?: () => void;
   onError?: (_error: string) => void;
   onJoined?: (_participantId: string) => void;
+  /**
+   * 2026-07-13 v062: granular Daily.co callbacks. Each is best-effort.
+   */
+  onParticipantJoined?: (_p: import("./VideoCallContext").ParticipantPayload) => void;
+  onParticipantLeft?: (_p: import("./VideoCallContext").ParticipantPayload) => void;
+  onParticipantCountUpdated?: (_info: { participantCount: number; localIsAlone: boolean }) => void;
   className?: string;
 }
 export function VideoCallRoom({
@@ -25,6 +31,9 @@ export function VideoCallRoom({
   onLeave,
   onError,
   onJoined,
+  onParticipantJoined,
+  onParticipantLeft,
+  onParticipantCountUpdated,
   className,
 }: VideoCallRoomProps) {
   const { t } = useTranslation();
@@ -32,6 +41,20 @@ export function VideoCallRoom({
   const containerRef = useRef<HTMLDivElement>(null);
   const hasCalledOnJoined = useRef(false);
   const hasStartedJoin = useRef(false);
+
+  // 2026-07-13 v062: stable callbacks object so joinRoom doesn't re-fire
+  // on each render. Only its identity changes if any of the 3 deps changes.
+  const videoCallbacks = useMemo(
+    () =>
+      onParticipantJoined || onParticipantLeft || onParticipantCountUpdated
+        ? {
+            ...(onParticipantJoined ? { onParticipantJoined } : {}),
+            ...(onParticipantLeft ? { onParticipantLeft } : {}),
+            ...(onParticipantCountUpdated ? { onParticipantCountUpdated } : {}),
+          }
+        : undefined,
+    [onParticipantJoined, onParticipantLeft, onParticipantCountUpdated]
+  );
 
   // Reset flags when roomUrl changes (new room)
   useEffect(() => {
@@ -49,9 +72,9 @@ export function VideoCallRoom({
       !hasStartedJoin.current
     ) {
       hasStartedJoin.current = true;
-      joinRoom(roomUrl, userName, containerRef.current);
+      joinRoom(roomUrl, userName, containerRef.current, videoCallbacks);
     }
-  }, [roomUrl, userName, roomState, joinRoom]);
+  }, [roomUrl, userName, roomState, joinRoom, videoCallbacks]);
 
   // Handle error callback
   useEffect(() => {
