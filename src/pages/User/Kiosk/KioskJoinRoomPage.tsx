@@ -102,6 +102,7 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
   const user = useAuthStore((s) => s.user);
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
+  const [hasLeftMeeting, setHasLeftMeeting] = useState(false);
   const hasJoinedTrackingRef = useRef(false);
 
   const { data: booking, isLoading, error } = useKioskBooking(bookingId);
@@ -273,7 +274,7 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
         </div>
       )}
 
-      {enterMutation.data?.roomUrl && (
+      {enterMutation.data?.roomUrl && !hasLeftMeeting && (
         <>
           <DeviceCheckDialog
             isOpen={isDeviceCheckOpen}
@@ -290,7 +291,7 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
                 roomUrl={enterMutation.data.roomUrl}
                 userName={`Booking #${booking.id}`}
                 onJoined={handleJoined}
-                onLeave={() => navigate("/user/kiosk")}
+                onLeave={() => setHasLeftMeeting(true)}
                 className="h-[80vh] w-full"
               />
             </VideoCallProvider>
@@ -310,16 +311,53 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
           )}
         </>
       )}
+
+      {enterMutation.data?.roomUrl && hasLeftMeeting && (
+        <div className="border-border rounded-xl border bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-950">
+            <svg
+              className="h-7 w-7 animate-pulse text-indigo-600 dark:text-indigo-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <p className="text-lg font-semibold text-slate-900 dark:text-white">
+            {t("userKiosk.mentorReviewInProgress")}
+          </p>
+          <p className="text-muted-foreground mt-2 text-sm">
+            {t("userKiosk.mentorReviewInProgressHint")}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button
+              onClick={() => navigate("/user/application-history")}
+              className="bg-indigo-600 text-white hover:bg-indigo-700">
+              {t("userKiosk.mentorReviewInProgressAction")}
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/user/kiosk")}>
+              {t("common.back")}
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
 function SessionKeyFlow() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [sessionKey, setSessionKey] = useState("");
   const [kioskId, setKioskId] = useState("");
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
+  const [hasLeftMeeting, setHasLeftMeeting] = useState(false);
   const enterMutation = useEnterKiosk();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -468,7 +506,7 @@ function SessionKeyFlow() {
         </Button>
       </form>
 
-      {enterMutation.data?.roomUrl && (
+      {enterMutation.data?.roomUrl && !hasLeftMeeting && (
         <>
           <DeviceCheckDialog
             isOpen={isDeviceCheckOpen}
@@ -484,7 +522,7 @@ function SessionKeyFlow() {
               <VideoCallRoom
                 roomUrl={enterMutation.data.roomUrl}
                 userName={sessionKey}
-                onLeave={() => window.location.reload()}
+                onLeave={() => setHasLeftMeeting(true)}
                 className="h-[80vh] w-full"
               />
             </VideoCallProvider>
@@ -503,6 +541,41 @@ function SessionKeyFlow() {
             </div>
           )}
         </>
+      )}
+
+      {enterMutation.data?.roomUrl && hasLeftMeeting && (
+        <div className="border-border rounded-xl border bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-950">
+            <svg
+              className="h-7 w-7 animate-pulse text-indigo-600 dark:text-indigo-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <p className="text-lg font-semibold text-slate-900 dark:text-white">
+            {t("userKiosk.mentorReviewInProgress")}
+          </p>
+          <p className="text-muted-foreground mt-2 text-sm">
+            {t("userKiosk.mentorReviewInProgressHint")}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button
+              onClick={() => navigate("/user/application-history")}
+              className="bg-indigo-600 text-white hover:bg-indigo-700">
+              {t("userKiosk.mentorReviewInProgressAction")}
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/user/kiosk")}>
+              {t("common.back")}
+            </Button>
+          </div>
+        </div>
       )}
     </>
   );

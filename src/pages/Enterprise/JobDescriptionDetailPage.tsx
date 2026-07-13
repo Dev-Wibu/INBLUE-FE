@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import i18n from "@/lib/i18n";
-import { applicationService } from "@/services/application.manager";
+import { applicationService, type Application } from "@/services/application.manager";
 import { companyManager, type JobDescription } from "@/services/company.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -95,6 +95,10 @@ function getRoundTypeIcon(type?: string) {
       return <CheckCircle2 className="h-5 w-5" />;
   }
 }
+// Statuses that block a new application for the same JD.
+// FAILED / SOFT_FAILED allow the user to re-apply (start a fresh attempt).
+const BLOCKING_APPLICATION_STATUSES = ["IN_PROGRESS", "PASSED"] as const;
+
 export function JobDescriptionDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{
@@ -105,7 +109,7 @@ export function JobDescriptionDetailPage() {
   const [job, setJob] = useState<JobDescription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
+  const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const fetchJob = async () => {
@@ -120,14 +124,22 @@ export function JobDescriptionDetailPage() {
           setError(t("enterpriseJobdescriptiondetailpage.noVacancyInformationFound"));
         }
 
-        // Check if user has already applied for this job
+        // Fetch the user's existing applications to decide whether the Apply
+        // button should be disabled. We surface only the most-recent application
+        // for this JD (BE may currently return duplicates due to missing
+        // unique-constraint on `(user_id, jd_id)`).
         if (isLoggedIn) {
           const myAppsResult = await applicationService.getMyApplications();
           if (myAppsResult.success && myAppsResult.data) {
-            const hasAppliedToThisJob = myAppsResult.data.some(
-              (app) => app.jdId === Number(id) && !app.isDeleted
-            );
-            setHasApplied(hasAppliedToThisJob);
+            const appsForThisJd = myAppsResult.data
+              .filter((app) => app.jdId === Number(id) && !app.isDeleted)
+              .sort((a, b) => {
+                const aTs = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const bTs = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                if (aTs !== bTs) return bTs - aTs;
+                return (b.id ?? 0) - (a.id ?? 0);
+              });
+            setExistingApplication(appsForThisJd[0] ?? null);
           }
         }
       } catch (err) {
@@ -139,6 +151,13 @@ export function JobDescriptionDetailPage() {
     };
     fetchJob();
   }, [id, isLoggedIn, t]);
+  // Only block when there is an application still in an active phase
+  // (IN_PROGRESS / PASSED). FAILED and SOFT_FAILED allow the user to re-apply.
+  const isApplicationActive =
+    existingApplication !== null &&
+    BLOCKING_APPLICATION_STATUSES.includes(
+      existingApplication.status as (typeof BLOCKING_APPLICATION_STATUSES)[number]
+    );
   const handleApply = async () => {
     if (!isLoggedIn) {
       toast.error(t("enterpriseJobdescriptiondetailpage.pleaseLoginToApply"));
@@ -149,13 +168,31 @@ export function JobDescriptionDetailPage() {
       toast.warning(t("enterpriseJobdescriptiondetailpage.thisPositionIsCurrentlyNo"));
       return;
     }
+    if (isApplicationActive) {
+      toast.warning(t("enterpriseJobdescriptiondetailpage.alreadyAppliedActive"));
+      return;
+    }
     if (!job?.id) return;
     setIsApplying(true);
     try {
       const result = await applicationService.apply(job.id);
       if (result.success) {
         toast.success(t("enterpriseJobdescriptiondetailpage.successfulApplicationGoodLuck"));
-        setHasApplied(true);
+        // Track the newly created application so the button stays disabled
+        // until the user finishes the new attempt.
+        if (result.data) {
+          setExistingApplication(result.data);
+        } else {
+          // Defensive fallback: refetch my-applications to keep state truthful
+          // even when BE returns no body.
+          const myAppsResult = await applicationService.getMyApplications();
+          if (myAppsResult.success && myAppsResult.data) {
+            const appsForThisJd = myAppsResult.data
+              .filter((app) => app.jdId === job.id && !app.isDeleted)
+              .sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
+            setExistingApplication(appsForThisJd[0] ?? null);
+          }
+        }
         // Refresh job data to update applied count
         const refreshResult = await companyManager.getJobById(job.id);
         if (refreshResult.success && refreshResult.data) {
@@ -269,16 +306,18 @@ export function JobDescriptionDetailPage() {
               {/* Action Buttons - Apply */}
               <Button
                 onClick={handleApply}
-                disabled={isApplying || job.status !== "OPEN" || hasApplied}
-                className={`text-white ${hasApplied || job.status !== "OPEN" ? "cursor-not-allowed bg-green-600 hover:bg-green-600" : !isLoggedIn ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500" : "bg-[#0047AB] hover:bg-[#003d8f]"}`}
+                disabled={isApplying || job.status !== "OPEN" || isApplicationActive}
+                className={`text-white ${isApplicationActive || job.status !== "OPEN" ? "cursor-not-allowed bg-green-600 hover:bg-green-600" : !isLoggedIn ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500" : "bg-[#0047AB] hover:bg-[#003d8f]"}`}
                 size="lg">
                 {isApplying ? (
                   <>
                     <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     {t("common.processing")}
                   </>
-                ) : hasApplied ? (
+                ) : isApplicationActive ? (
                   t("enterpriseJobdescriptiondetailpage.applied")
+                ) : existingApplication ? (
+                  t("enterpriseJobdescriptiondetailpage.reapply")
                 ) : job.status !== "OPEN" ? (
                   t("enterpriseJobdescriptiondetailpage.recruitmentHasBeenClosed")
                 ) : !isLoggedIn ? (
@@ -424,16 +463,18 @@ export function JobDescriptionDetailPage() {
             {/* Apply Button */}
             <Button
               onClick={handleApply}
-              disabled={isApplying || job.status !== "OPEN" || hasApplied}
-              className={`w-full text-white ${hasApplied || job.status !== "OPEN" ? "cursor-not-allowed bg-green-600 hover:bg-green-600" : !isLoggedIn ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500" : "bg-[#0047AB] hover:bg-[#003d8f]"}`}
+              disabled={isApplying || job.status !== "OPEN" || isApplicationActive}
+              className={`w-full text-white ${isApplicationActive || job.status !== "OPEN" ? "cursor-not-allowed bg-green-600 hover:bg-green-600" : !isLoggedIn ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500" : "bg-[#0047AB] hover:bg-[#003d8f]"}`}
               size="lg">
               {isApplying ? (
                 <>
                   <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   {t("common.processing")}
                 </>
-              ) : hasApplied ? (
+              ) : isApplicationActive ? (
                 t("enterpriseJobdescriptiondetailpage.applied")
+              ) : existingApplication ? (
+                t("enterpriseJobdescriptiondetailpage.reapply")
               ) : job.status !== "OPEN" ? (
                 t("enterpriseJobdescriptiondetailpage.recruitmentHasBeenClosed")
               ) : !isLoggedIn ? (

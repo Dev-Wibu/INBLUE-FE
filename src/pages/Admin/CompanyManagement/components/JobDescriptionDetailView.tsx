@@ -6,7 +6,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { jobDescriptionManager } from "@/services/job-description.manager";
+import { roundManager } from "@/services/round.manager";
 import { ArrowLeft, CheckCircle, ChevronLeft, Clock, Edit3, FileText } from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -118,15 +118,20 @@ export function JobDescriptionDetailView({
         },
       }));
 
-      const res = await jobDescriptionManager.update({
-        id: currentJd.id!,
-        // @ts-expect-error backend mismatch
-        rounds: payloadRounds,
-      });
+      // Per OpenAPI v3, rounds are updated via PUT /api/rounds/jd/{jdId}/update
+      // (the PUT /api/job-descriptions endpoint only updates JD metadata and
+      // ignores any `rounds` field). The BE schema mismatch (currentJd.status
+      // nullable) is irrelevant here because we don't touch the JD entity.
+      const res = await roundManager.updateForJd(currentJd.id!, { rounds: payloadRounds });
 
       if (res.success && res.data) {
         toast.success(t("general.updateSuccess"));
-        setCurrentJd(res.data);
+        // The PUT /api/rounds/jd/{jdId}/update endpoint returns the updated
+        // rounds only — merge them back into the current JD so we don't lose
+        // metadata like status, salary, etc.
+        setCurrentJd((prev) =>
+          prev ? { ...prev, rounds: res.data as unknown as typeof prev.rounds } : prev
+        );
       } else {
         toast.error(res.error || t("errors.cannotUpdateJobDescription"));
         throw new Error();
