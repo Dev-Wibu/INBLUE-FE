@@ -1,3 +1,0 @@
-chore: apply prettier formatting to docs
-
-Co-Authored-By: Claude <noreply@anthropic.com>
