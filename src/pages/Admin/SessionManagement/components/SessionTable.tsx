@@ -96,28 +96,22 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
               </TableCell>
               <TableCell>
                 {session.userId ? (
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                      U
-                    </div>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">
-                      #{session.userId}
-                    </span>
-                  </div>
+                  <Badge
+                    variant="outline"
+                    className="border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-900/20 dark:text-blue-300">
+                    #{session.userId}
+                  </Badge>
                 ) : (
                   "-"
                 )}
               </TableCell>
               <TableCell>
                 {session.userId2 ? (
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-700 dark:bg-teal-900/50 dark:text-teal-300">
-                      M
-                    </div>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">
-                      #{session.userId2}
-                    </span>
-                  </div>
+                  <Badge
+                    variant="outline"
+                    className="border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-900/50 dark:bg-teal-900/20 dark:text-teal-300">
+                    #{session.userId2}
+                  </Badge>
                 ) : (
                   "-"
                 )}
