@@ -37,16 +37,17 @@ Cảm ơn a/c đã verify lại v2 — em xin lỗi đã làm a/c mất công re
 
 **Kết quả test 4 schema trên session 49**:
 
-| Schema payload | participantId mà BE đọc | endTime set? |
-|---|---|---|
-| A) Flat `{event, session.id, participant.user_id}` | không map được | ❌ |
-| B) Daily.co thật `{type, payload:{session_id, room, participant.participant_id}}` | `payload.session_id` = meeting id | ❌ |
-| C) `{type, payload:{session_id="p_xyz789_st", room}}` (giả lập) | đúng vì `session_id === participantId1` | ✅ `endTime1=01:42:15Z`, `duration=1502s` |
-| D) `{type, payload:{session_id="m_join_mn", room}}` (giả lập) | đúng vì `session_id === participantId2` | ✅ `endTime2=01:42:41Z`, `duration=1412s` |
+| Schema payload                                                                    | participantId mà BE đọc                 | endTime set?                              |
+| --------------------------------------------------------------------------------- | --------------------------------------- | ----------------------------------------- |
+| A) Flat `{event, session.id, participant.user_id}`                                | không map được                          | ❌                                        |
+| B) Daily.co thật `{type, payload:{session_id, room, participant.participant_id}}` | `payload.session_id` = meeting id       | ❌                                        |
+| C) `{type, payload:{session_id="p_xyz789_st", room}}` (giả lập)                   | đúng vì `session_id === participantId1` | ✅ `endTime1=01:42:15Z`, `duration=1502s` |
+| D) `{type, payload:{session_id="m_join_mn", room}}` (giả lập)                     | đúng vì `session_id === participantId2` | ✅ `endTime2=01:42:41Z`, `duration=1412s` |
 
 → **Chỉ schema sai (trùng tên trường) mới trigger được set endTime**. Real Daily.co webhook bị bỏ qua.
 
 **Code BE sai** (`DailyWebHookPayload.java` PayloadData):
+
 ```java
 @JsonProperty("room") private String roomName;
 @JsonProperty("session_id") private String participantId;  // ← MAP NHẦM
@@ -62,20 +63,23 @@ private String recording_id;
 **Sai chỗ nào**: `DailyWebHookPayload.java` map `payload.session_id` (Daily.co meeting session id) thành `participantId`. Daily.co thực sự không bao giờ gửi participant id ở `session_id` — cái đó là UUID của meeting room. Participant id nằm ở `payload.participant.participant_id`.
 
 **Đề xuất fix** (a/c confirm PR ready):
+
 ```java
 public static class PayloadData {
     @JsonProperty("room") private String roomName;
     @JsonProperty("session_id") private String dailySessionId;  // rename
     private ParticipantData participant;
     private String recording_id;
-    
+
     @Data
     public static class ParticipantData {
         @JsonProperty("participant_id") private String participantId;
     }
 }
 ```
+
 Sau đó `SessionServiceImpl.updateLeaveRecord()`:
+
 ```java
 String participantId = payload.getPayload().getParticipant() != null
     ? payload.getPayload().getParticipant().getParticipantId() : null;
@@ -96,28 +100,36 @@ String participantId = payload.getPayload().getParticipant() != null
 **Endpoint**: `POST /api/mentor-reviews`
 
 **Request**:
+
 ```json
 {
   "sessionId": 49,
   "mentorId": 4,
   "userId": 30,
   "rating": 85,
-  "situationNote": "...", "taskNote": "...", "actionNote": "...",
-  "resultNote": "...", "strength": "...", "weakness": "...", "improve": "..."
+  "situationNote": "...",
+  "taskNote": "...",
+  "actionNote": "...",
+  "resultNote": "...",
+  "strength": "...",
+  "weakness": "...",
+  "improve": "..."
 }
 ```
 
 **Response (POST thành công)**:
+
 ```json
 {"id": 49, "rating": 85, "session": {...}, "traceId": "6a53df96..."}
 ```
 
 **Check `GET /api/application-details/45`** (traceId `6a53df978662f1787f425d7f82c3852e`):
+
 ```json
 {
   "id": 45,
   "status": "COMPLETED",
-  "finalScore": 850.0,       // ← ⚠️ rating=85 nhưng lưu 850
+  "finalScore": 850.0, // ← ⚠️ rating=85 nhưng lưu 850
   "aiScore": 80.0,
   "finalResult": "PASSED"
 }
@@ -126,6 +138,7 @@ String participantId = payload.getPayload().getParticipant() != null
 → **HR override dùng score raw** (gửi `score=40` → `finalScore=40` đúng), **nhưng mentor-reviews thì ra 850**. Hai scale không consistent.
 
 **Code BE** (`MentorReviewServiceImpl.java` line 79):
+
 ```java
 double maxScore = 100.0;
 if (round != null && round.getConfigData() != null
@@ -143,20 +156,23 @@ appDetail.setFinalScore(score);
 | rating=100 | score=1000 (vượt max) | score=1000 (không giới hạn) |
 | HR ghi đè `score=40` | finalScore=40 | finalScore=40 ✅ |
 
-**Sai chỗ nào**: 
+**Sai chỗ nào**:
+
 1. `MentorReviewServiceImpl:79` chia 10 × maxScore (÷10×100) — logic giả định rating scale 0-10. KHÔNG có validate input → rating=85 vẫn lọt qua.
 2. `CreateMentorReviewRequest` field `rating` không có `@Min`/`@Max` → BE nhận bất kỳ int nào.
 
 **Câu hỏi cần a/c quyết định trước khi fix**:
+
 1. **Rating scale chuẩn là gì?** 0-10 hay 0-100? Em thấy:
    - Swagger doc mẫu: `"rating": 4` → scale 0-10
    - Code BE: `(rating/10) * maxScore` → chia 10 → scale 0-10
    - UI FE StarRating hiển thị 5 sao nhưng value 0-10
-   → **Em đoán 0-10** — a/c confirm giúp?
+     → **Em đoán 0-10** — a/c confirm giúp?
 2. **Nếu scale 0-10**: thêm `@Min(0) @Max(10)` ở `CreateMentorReviewRequest.rating` là đủ, không cần đổi logic.
 3. **Nếu scale 0-100**: đổi code thành `score = review.getRating()` (không chia 10) + `@Min(0) @Max(100)`.
 
 **Bonus inconsistency** a/c note:
+
 - `MentorReview.rating` → 0-10 → `finalScore = (rating/10) * maxScore`
 - `MentorFeedback.rating` → ? (raw, average = sum/count) → scale không rõ
 
@@ -175,13 +191,19 @@ Recommend: **chuẩn hóa rating 0-10 cho cả 2**, validate input, không cần
 **Endpoint**: `POST /api/mentor-reviews`
 
 **Request lần 2**:
+
 ```json
 {
-  "sessionId": 49, "mentorId": 4, "userId": 30, "rating": 90, "strength": "Edit"
+  "sessionId": 49,
+  "mentorId": 4,
+  "userId": 30,
+  "rating": 90,
+  "strength": "Edit"
 }
 ```
 
 **Response (HTTP 500)**:
+
 ```json
 {
   "traceId": "6a53df9887695bf28dab785582b2cf19",
@@ -200,9 +222,11 @@ Recommend: **chuẩn hóa rating 0-10 cho cả 2**, validate input, không cần
 1. **`MentorReviewServiceImpl.java` (line 34-99)** — không check `repo.existsBySession_Id(sessionId)` trước khi save → `save()` insert → DB ném `DataIntegrityViolationException`.
 
 2. **`GlobalExceptionHandler.java:55`** — catch-all `@ExceptionHandler(Exception.class)` trả raw `ex.getMessage()`:
+
    ```java
    response.put("error", ex.getMessage());  // ← lộ SQL
    ```
+
    → Lộ info: table name, column name, constraint name, SQL syntax. Vi phạm info leak.
 
 3. **Không wrap thành 409** — REST convention yêu cầu 409 Conflict cho duplicate resource.
@@ -210,6 +234,7 @@ Recommend: **chuẩn hóa rating 0-10 cho cả 2**, validate input, không cần
 **Note quan trọng**: `PUT /api/mentor-reviews` đã có sẵn (line 44 controller, nhận `UpdateMentorReviewRequest` có field `id`). Do `@MapsId` trên entity, `id` ở URL = `session_id`. Vậy `GET /api/mentor-reviews/{sessionId}` cũng có sẵn (dù naming hơi ambiguous — nó chính là `GET /{id}`).
 
 → FE có thể tự fix bằng cách:
+
 1. Fetch existing review qua `GET /api/mentor-reviews/{sessionId}` trước khi submit
 2. Nếu có → gọi `PUT /api/mentor-reviews` body có `id`
 3. Nếu không → gọi `POST /api/mentor-reviews`
@@ -217,6 +242,7 @@ Recommend: **chuẩn hóa rating 0-10 cho cả 2**, validate input, không cần
 Nhưng vẫn nên fix BE cho user khác (mobile, external caller) không crash.
 
 **Đề xuất fix Option A (recommend, BE có thể gộp vào PR #2)**:
+
 ```java
 // MentorReviewServiceImpl.java — check trước
 if (repo.findBySession_Id(mentorReview.getSessionId()) != null) {
@@ -241,7 +267,7 @@ public ResponseEntity<...> handleDataIntegrity(DataIntegrityViolationException e
 public ResponseEntity<...> handleGenericException(Exception ex) {
     log.error("Unhandled Exception: ", ex);  // log full stack server-side
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(Map.of("error", "Internal server error. Please contact admin with traceId.", 
+        .body(Map.of("error", "Internal server error. Please contact admin with traceId.",
                      "traceId", getTraceId()));
 }
 ```
@@ -252,13 +278,14 @@ public ResponseEntity<...> handleGenericException(Exception ex) {
 
 ## ✅ Đề xuất ưu tiên commit
 
-| Priority | Bug | PR nào |
-|---|---|---|
-| P0 | #1 Daily.co webhook | PR độc lập — blocker mentor interview |
-| P1 | #2 finalScore validate | PR #2 — gộp với hygiene |
-| P2 | #3 duplicate + SQL leak | PR #2 — gộp hygiene |
+| Priority | Bug                     | PR nào                                |
+| -------- | ----------------------- | ------------------------------------- |
+| P0       | #1 Daily.co webhook     | PR độc lập — blocker mentor interview |
+| P1       | #2 finalScore validate  | PR #2 — gộp với hygiene               |
+| P2       | #3 duplicate + SQL leak | PR #2 — gộp hygiene                   |
 
 Em đề xuất **2 PR**:
+
 - **PR #1**: Fix `DailyWebHookPayload` (P0, fix độc lập)
 - **PR #2**: Fix `finalScore` validation + `GlobalExceptionHandler` info leak + duplicate check (P1+P2 hygiene, cùng file `MentorReview`/exceptions)
 

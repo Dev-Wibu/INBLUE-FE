@@ -67,6 +67,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
 **Endpoint**: `POST /api/sessions/webhooks/dailyco`
 
 **Request**:
+
 ```json
 {
   "type": "participant.left",
@@ -85,6 +86,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
 **Response**: HTTP 200 (empty body)
 
 **Sau webhook, GET /api/sessions/50**:
+
 ```json
 {
   "id": 50,
@@ -99,6 +101,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
 → `endTime1` KHÔNG set, vẫn null mãi
 
 **So sánh — gửi schema SAI** (`session_id` = participant id thay vì nested):
+
 ```json
 {
   "type": "participant.left",
@@ -108,6 +111,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
   }
 }
 ```
+
 → traceId: `6a53ed087b6f5f77a331f6f2de9f37b7`
 → `endTime1 = 2026-07-13T02:37:42.254Z`, `durationSeconds1 = 131` ✅
 
@@ -122,6 +126,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
 **Endpoint**: `POST /api/mentor-reviews`
 
 **Request**:
+
 ```json
 {
   "sessionId": 51,
@@ -141,6 +146,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
 **Response**: HTTP 200
 
 **Check `GET /api/application-details/55** (traceId: `6a53ee9aa639c8493799c26314131cdb`):
+
 ```json
 {
   "id": 55,
@@ -169,6 +175,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
 **Endpoint**: `POST /api/mentor-reviews`
 
 **Request**:
+
 ```json
 {
   "sessionId": 50,
@@ -186,6 +193,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
 ```
 
 **Response** (HTTP 500):
+
 ```json
 {
   "traceId": "6a53edb4a18d3b9d1c17887d0571ae87",
@@ -208,6 +216,7 @@ Sau khi hiểu flow đúng của BE, mình đã test lại toàn bộ từ đầ
 **Request**: Authorization header chứa token student
 
 **Response**: HTTP 200, body chứa full list booking (cùng data với admin):
+
 ```json
 {
   "traceId": "6a53ef1ba50db8a4aafbaa9c11401636",
