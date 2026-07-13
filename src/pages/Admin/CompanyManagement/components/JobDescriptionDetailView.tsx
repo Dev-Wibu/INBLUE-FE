@@ -130,15 +130,21 @@ export function JobDescriptionDetailView({
         : await roundManager.setUpForJd(jdId, { rounds: payloadRounds });
 
       const res = endpointResult;
-      const errKey = hasExistingRounds
-        ? "errors.cannotUpdateInterviewRounds"
-        : "errors.cannotSetUpInterviewRounds";
 
       if (res.success && res.data) {
         toast.success(t("general.updateSuccess"));
-        setCurrentJd({ ...currentJd, rounds: res.data });
+        // The PUT /api/rounds/jd/{id}[/update] endpoint returns only the
+        // updated rounds — merge them back so we don't overwrite JD metadata.
+        setCurrentJd((prev) =>
+          prev ? { ...prev, rounds: res.data as unknown as typeof prev.rounds } : prev
+        );
       } else {
-        toast.error(res.error || t(errKey));
+        toast.error(
+          res.error ||
+            t(hasExistingRounds
+              ? "errors.cannotUpdateInterviewRounds"
+              : "errors.cannotSetUpInterviewRounds")
+        );
         throw new Error();
       }
     } catch (err) {
