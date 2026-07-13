@@ -6,7 +6,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { jobDescriptionManager } from "@/services/job-description.manager";
+import { roundManager } from "@/services/round.manager";
 import { ArrowLeft, CheckCircle, ChevronLeft, Clock, Edit3, FileText } from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -118,22 +118,32 @@ export function JobDescriptionDetailView({
         },
       }));
 
-      const res = await jobDescriptionManager.update({
-        id: currentJd.id!,
-        // @ts-expect-error backend mismatch
-        rounds: payloadRounds,
-      });
+      // 2026-07-13 fix: BE has 2 distinct endpoints for rounds — pick the
+      //   right one based on whether this JD already has rounds configured.
+      //   The previous code was hitting PUT /api/job-descriptions with a
+      //   {rounds:[...]} body which BE silently dropped, leaving `status`
+      //   null on the partial update and tripping a NOT NULL constraint.
+      const jdId = currentJd.id!;
+      const hasExistingRounds = (currentJd.rounds?.length ?? 0) > 0;
+      const endpointResult = hasExistingRounds
+        ? await roundManager.updateForJd(jdId, { rounds: payloadRounds })
+        : await roundManager.setUpForJd(jdId, { rounds: payloadRounds });
+
+      const res = endpointResult;
+      const errKey = hasExistingRounds
+        ? "errors.cannotUpdateInterviewRounds"
+        : "errors.cannotSetUpInterviewRounds";
 
       if (res.success && res.data) {
         toast.success(t("general.updateSuccess"));
-        setCurrentJd(res.data);
+        setCurrentJd({ ...currentJd, rounds: res.data });
       } else {
-        toast.error(res.error || t("errors.cannotUpdateJobDescription"));
+        toast.error(res.error || t(errKey));
         throw new Error();
       }
     } catch (err) {
       console.error(err);
-      toast.error(t("errors.cannotUpdateJobDescription"));
+      toast.error(t("errors.cannotUpdateInterviewRounds"));
       throw err;
     } finally {
       setIsSaving(false);
