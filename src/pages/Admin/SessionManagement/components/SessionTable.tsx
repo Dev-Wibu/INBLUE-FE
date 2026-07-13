@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { getSessionStatusBadge } from "@/lib/status-utils";
 import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -39,7 +39,7 @@ const formatDuration = (seconds?: number, minutes?: number) => {
 };
 
 export function SessionTable({ sessions, onView, getSortProps }: SessionTableProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (sessions.length === 0) {
     return (
@@ -74,8 +74,7 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
             </TableHead>
             <TableHead>{t("adminSessionmanagement.meetingTime")}</TableHead>
             <TableHead className="w-24">{t("common.duration")}</TableHead>
-            <TableHead className="w-36">{t("adminSessionmanagement.totalPrice")}</TableHead>
-            <TableHead className="w-40">{t("common.transactionCode")}</TableHead>
+            <TableHead className="w-36">{t("adminSessionmanagement.totalPrice")} (VNĐ)</TableHead>
             <TableHead className="w-28">
               {getSortProps ? (
                 <SortButton {...getSortProps("status")}>{t("common.status")}</SortButton>
@@ -96,22 +95,47 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
                 {session.roomName || "-"}
               </TableCell>
               <TableCell>
-                <Badge variant="outline">{session.userId || "-"}</Badge>
+                {session.userId ? (
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                      U
+                    </div>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      #{session.userId}
+                    </span>
+                  </div>
+                ) : (
+                  "-"
+                )}
               </TableCell>
               <TableCell>
-                <Badge variant="secondary">{session.userId2 || "-"}</Badge>
+                {session.userId2 ? (
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-700 dark:bg-teal-900/50 dark:text-teal-300">
+                      M
+                    </div>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      #{session.userId2}
+                    </span>
+                  </div>
+                ) : (
+                  "-"
+                )}
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="font-medium text-slate-800 dark:text-slate-200">
                 {formatDateTime(treatZuluAsVietnamLocal(session.startTime1))}
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="font-medium text-slate-800 dark:text-slate-200">
                 {formatDateTime(session.joinTime)}
               </TableCell>
               <TableCell>{formatDuration(session.durationSeconds1, session.duration)}</TableCell>
               <TableCell>
-                {session.totalPrice != null ? formatCurrency(session.totalPrice) : "-"}
+                {session.totalPrice != null
+                  ? new Intl.NumberFormat(i18n.language === "en" ? "en-US" : "vi-VN").format(
+                      session.totalPrice
+                    )
+                  : "-"}
               </TableCell>
-              <TableCell className="font-mono text-xs">{session.transactionCode || "-"}</TableCell>
               <TableCell>
                 {(() => {
                   const statusConfig = getSessionStatusBadge(session.status);
