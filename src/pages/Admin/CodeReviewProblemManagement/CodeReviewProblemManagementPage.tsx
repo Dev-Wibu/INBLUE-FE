@@ -477,7 +477,27 @@ export function CodeReviewProblemManagementPage() {
             </p>
           </div>
         ) : (
-          <div className="">
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {/* Filter result count */}
+            {(searchQuery || difficultyFilter !== "ALL") && (
+              <div className="mb-3 flex items-center gap-2 px-6">
+                <span className="text-xs text-slate-500">
+                  Hiển thị{" "}
+                  <strong className="text-slate-800 dark:text-slate-200">
+                    {processedData.length}
+                  </strong>{" "}
+                  / <strong>{problems.length}</strong> kết quả
+                </span>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setDifficultyFilter("ALL");
+                  }}
+                  className="text-xs text-indigo-600 hover:underline dark:text-indigo-400">
+                  Xóa bộ lọc
+                </button>
+              </div>
+            )}
             <div>
               <CodeReviewProblemTable
                 problems={pageItems}
@@ -488,10 +508,7 @@ export function CodeReviewProblemManagementPage() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-                <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Hiển thị {pageItems.length} / {processedData.length} kết quả
-                </div>
+              <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                 <PaginationControl
                   pagination={pagination}
                   onPageSizeChange={(nextPageSize) => {
