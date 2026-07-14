@@ -138,15 +138,6 @@ export function QuestionBankTable({
           ))}
         </TableBody>
       </Table>
-      {/* Footer summary */}
-      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/50">
-        <p className="text-xs text-slate-500">
-          <strong className="font-semibold text-slate-700 dark:text-slate-300">
-            {questions.length}
-          </strong>{" "}
-          câu hỏi
-        </p>
-      </div>
     </div>
   );
 }
