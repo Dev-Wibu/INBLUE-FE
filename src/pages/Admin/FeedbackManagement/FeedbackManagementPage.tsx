@@ -9,14 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -35,26 +28,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  useDeleteMentorFeedback,
-  useMentorFeedbacks,
-  type MentorFeedback,
-} from "@/hooks/useMentorFeedback";
+import { useMentorFeedbacks, type MentorFeedback } from "@/hooks/useMentorFeedback";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDateTime } from "@/lib/formatting";
-import { Eye, MessageSquare, Search, Trash2 } from "lucide-react";
+import { MessageSquare, Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 export function FeedbackManagementPage() {
   const { t } = useTranslation();
   const { data: feedbacks = [], isLoading, isRefetching, refetch } = useMentorFeedbacks();
-  const { mutate: deleteFeedback, isPending: isDeleting } = useDeleteMentorFeedback();
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [selectedFeedback, setSelectedFeedback] = useState<MentorFeedback | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   // Convert rating filter once for efficiency
   const numericRatingFilter = ratingFilter !== "all" ? Number(ratingFilter) : null;
@@ -104,21 +90,6 @@ export function FeedbackManagementPage() {
   const handleViewDetail = (feedback: MentorFeedback) => {
     setSelectedFeedback(feedback);
     setIsDetailOpen(true);
-  };
-  const handleDeleteClick = (feedback: MentorFeedback) => {
-    setSelectedFeedback(feedback);
-    setIsDeleteOpen(true);
-  };
-  const handleDeleteConfirm = () => {
-    if (selectedFeedback?.id) {
-      deleteFeedback(selectedFeedback.id, {
-        onSuccess: () => {
-          setIsDeleteOpen(false);
-          setSelectedFeedback(null);
-          toast.success(t("common.responseRemoved"));
-        },
-      });
-    }
   };
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
@@ -246,12 +217,14 @@ export function FeedbackManagementPage() {
                         {t("common.evaluate")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pageData.map((feedback: MentorFeedback) => (
-                    <TableRow key={feedback.id}>
+                    <TableRow
+                      key={feedback.id}
+                      className="cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      onClick={() => handleViewDetail(feedback)}>
                       <TableCell className="font-medium">#{feedback.id}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -292,24 +265,6 @@ export function FeedbackManagementPage() {
                       <TableCell>
                         <StarRating value={feedback.rating || 0} readOnly size="sm" />
                       </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            onClick={() => handleViewDetail(feedback)}>
-                            <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
-                            onClick={() => handleDeleteClick(feedback)}>
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -342,28 +297,6 @@ export function FeedbackManagementPage() {
               </p>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("common.confirmDeletion")}</DialogTitle>
-            <DialogDescription>
-              {t("adminFeedbackmanagement.areYouSureYouWant")}
-              {selectedFeedback?.id}
-              {t("adminFeedbackmanagement.thisActionIsImpossibleUndo")}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={isDeleting}>
-              {t("general.cancel")}
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
-              {isDeleting ? t("common.deleting") : t("general.delete")}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
