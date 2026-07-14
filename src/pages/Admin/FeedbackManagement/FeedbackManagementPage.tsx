@@ -220,6 +220,17 @@ export function FeedbackManagementPage() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {hasActiveFilters && (
+              <div className="mb-3 flex items-center gap-2 px-6">
+                <span className="text-xs text-slate-500">
+                  Hiển thị{" "}
+                  <strong className="text-slate-800 dark:text-slate-200">
+                    {filteredFeedbacks.length}
+                  </strong>{" "}
+                  / <strong>{feedbacks.length}</strong> kết quả
+                </span>
+              </div>
+            )}
             <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
@@ -300,16 +311,14 @@ export function FeedbackManagementPage() {
               </Table>
             </div>
 
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(nextPageSize) => {
-                    setPageSize(nextPageSize);
-                    pagination.goToFirstPage();
-                  }}
-                />
-              </div>
+            <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              <PaginationControl
+                pagination={pagination}
+                onPageSizeChange={(nextPageSize) => {
+                  setPageSize(nextPageSize);
+                  pagination.goToFirstPage();
+                }}
+              />
             </div>
           </div>
         )}
