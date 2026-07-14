@@ -31,9 +31,8 @@ export function QuestionBankManagementPage() {
   });
 
   const pagination = usePagination({
-    totalItems: questions.length,
-    initialPageSize: pageSize,
-    onPageSizeChange: setPageSize,
+    totalCount: questions.length,
+    pageSize: pageSize,
   });
 
   const pageItems = questions.slice(pagination.startIndex, pagination.endIndex + 1);
@@ -221,14 +220,11 @@ export function QuestionBankManagementPage() {
                 </div>
                 <div className="border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                   <PaginationControl
-                    currentPage={pagination.currentPage}
-                    totalPages={pagination.totalPages}
-                    startIndex={pagination.startIndex}
-                    endIndex={pagination.endIndex}
-                    totalItems={pagination.totalItems}
-                    pageSize={pagination.pageSize}
-                    onPageChange={pagination.goToPage}
-                    onPageSizeChange={pagination.setPageSize}
+                    pagination={pagination}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize);
+                      pagination.goToFirstPage();
+                    }}
                   />
                 </div>
               </div>
