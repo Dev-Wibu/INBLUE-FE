@@ -111,15 +111,36 @@ Dùng shadcn/ui `<Table>` components.
 
 ---
 
-## Pagination Pattern
+## Pagination & Table Layout Pattern
+
+**Quy tắc:**
+
+1. Container của Table KHÔNG có margin bottom, chỉ dùng `border-y border-slate-200 shadow-sm`.
+2. Không đặt các hàng đếm số lượng (ví dụ: "10 bài tập - 8 đang hoạt động") vào bên trong Table.
+3. Phần hiển thị kết quả (e.g. `Hiển thị X/Y kết quả`) PHẢI được đặt ở TRÊN table (thường bọc trong `div.mb-3`), và chỉ hiển thị khi có bộ lọc active.
+4. `PaginationControl` PHẢI đặt ngay dưới table container và dùng `border-b border-slate-200`. Không đặt text "Hiển thị X/Y kết quả" vào trong thẻ div này.
 
 ```jsx
-<div className="px-4 pb-4 sm:px-6 sm:pb-6">
-  <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-    <span className="text-xs font-medium text-slate-500">Hiển thị X / Y kết quả</span>
+{/* Phần hiển thị đếm số lượng (Chỉ hiện khi có filter) */}
+{(searchQuery || statusFilter !== "ALL") && (
+  <div className="mb-3 flex items-center gap-2 px-6">
+    <span className="text-xs text-slate-500">
+      Hiển thị <strong className="text-slate-800 dark:text-slate-200">{filteredData.length}</strong> / <strong>{totalData.length}</strong> kết quả
+    </span>
+  </div>
+)}
+
+{/* Bảng dữ liệu */}
+<div>
+  <TableComponent data={pageData} />
+</div>
+
+{/* Thanh phân trang ngay dưới bảng */}
+{filteredData.length > 0 && (
+  <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
     <PaginationControl pagination={pagination} ... />
   </div>
-</div>
+)}
 ```
 
 ---
