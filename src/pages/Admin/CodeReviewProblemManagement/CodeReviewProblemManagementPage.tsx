@@ -354,6 +354,16 @@ export function CodeReviewProblemManagementPage() {
   // LIST MODE
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+      {/* HEADER SECTION */}
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Bài tập Code Review</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Quản lý danh sách bài tập thực hành Code Review
+          </p>
+        </div>
+      </div>
+
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-4">
