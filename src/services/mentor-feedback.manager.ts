@@ -22,6 +22,8 @@ export interface MentorFeedback {
   user?: User;
   rating?: number;
   comment?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**

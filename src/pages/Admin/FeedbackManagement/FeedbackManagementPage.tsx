@@ -42,6 +42,7 @@ import {
 } from "@/hooks/useMentorFeedback";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import { formatDateTime } from "@/lib/formatting";
 import { Eye, MessageSquare, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -236,15 +237,15 @@ export function FeedbackManagementPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-16">{t("common.id")}</TableHead>
-                    <TableHead>{t("common.mentorAccepted")}</TableHead>
                     <TableHead>{t("common.candidateSubmits")}</TableHead>
+                    <TableHead>{t("common.mentorAccepted")}</TableHead>
                     <TableHead className="w-32">{t("common.session")}</TableHead>
+                    <TableHead className="w-40">{t("common.time")}</TableHead>
                     <TableHead className="w-36">
                       <SortButton {...getSortProps("rating" as keyof MentorFeedback)}>
                         {t("common.evaluate")}
                       </SortButton>
                     </TableHead>
-                    <TableHead>{t("common.comment")}</TableHead>
                     <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -252,19 +253,6 @@ export function FeedbackManagementPage() {
                   {pageData.map((feedback: MentorFeedback) => (
                     <TableRow key={feedback.id}>
                       <TableCell className="font-medium">#{feedback.id}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={feedback.mentor?.avatarUrl} />
-                            <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                              {feedback.mentor?.name?.charAt(0) || "M"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">
-                            {feedback.mentor?.name || t("common.noDataAvailable")}
-                          </span>
-                        </div>
-                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
@@ -279,13 +267,30 @@ export function FeedbackManagementPage() {
                         </div>
                       </TableCell>
                       <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={feedback.mentor?.avatarUrl} />
+                            <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                              {feedback.mentor?.name?.charAt(0) || "M"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">
+                            {feedback.mentor?.name || t("common.noDataAvailable")}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
                         <Badge variant="outline">#{feedback.session?.id}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-slate-500">
+                        {feedback.createdAt
+                          ? formatDateTime(feedback.createdAt)
+                          : feedback.session?.joinTime
+                            ? formatDateTime(feedback.session.joinTime)
+                            : t("common.noDataAvailable")}
                       </TableCell>
                       <TableCell>
                         <StarRating value={feedback.rating || 0} readOnly size="sm" />
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-slate-500">
-                        {feedback.comment || t("common.noComments")}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
@@ -326,55 +331,15 @@ export function FeedbackManagementPage() {
 
       {/* View Detail Dialog */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>
-              {t("common.feedbackDetails")}
-              {selectedFeedback?.id}
-            </DialogTitle>
-            <DialogDescription>
-              {t("common.feedbackFromCandidates")} {selectedFeedback?.user?.name}
-              {" -> "}
-              mentor {selectedFeedback?.mentor?.name}
-            </DialogDescription>
+            <DialogTitle>{t("common.comment")}</DialogTitle>
           </DialogHeader>
           {selectedFeedback && (
-            <div className="space-y-4">
-              {/* Rating */}
-              <div className="flex items-center justify-center">
-                <StarRating value={selectedFeedback.rating || 0} readOnly size="lg" />
-              </div>
-
-              {/* Comment */}
-              <div>
-                <h4 className="mb-2 font-medium text-slate-700 dark:text-slate-300">
-                  {t("common.comment")}
-                </h4>
-                <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
-                  <p className="whitespace-pre-wrap">
-                    {selectedFeedback.comment || t("common.thereAreNoDetailedComments")}
-                  </p>
-                </div>
-              </div>
-
-              {/* Session Info */}
-              <div>
-                <h4 className="mb-2 font-medium text-slate-700 dark:text-slate-300">
-                  {t("common.sessionInformation")}
-                </h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-slate-500">{t("common.sessionCode")}</span>{" "}
-                    <span className="font-medium">#{selectedFeedback.session?.id}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">{t("common.roomName")}</span>{" "}
-                    <span className="font-medium">
-                      {selectedFeedback.session?.roomName || t("common.noDataAvailable")}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div className="mt-2 rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
+              <p className="leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                {selectedFeedback.comment || t("common.thereAreNoDetailedComments")}
+              </p>
             </div>
           )}
         </DialogContent>
