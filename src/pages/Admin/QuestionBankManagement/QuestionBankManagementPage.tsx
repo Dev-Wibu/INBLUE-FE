@@ -163,7 +163,10 @@ export function QuestionBankManagementPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex min-h-0 flex-1 flex-col gap-0">
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
           <div className="flex flex-wrap items-center gap-3">
             <TabsList className="h-8">
@@ -209,8 +212,8 @@ export function QuestionBankManagementPage() {
                 <p className="text-sm text-slate-500">Đang tải danh sách câu hỏi…</p>
               </div>
             ) : (
-              <div className="flex flex-1 flex-col overflow-hidden">
-                <div className="flex-1 overflow-auto">
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
                   <QuestionBankTable
                     questions={pageItems}
                     categories={categories}
@@ -218,15 +221,17 @@ export function QuestionBankManagementPage() {
                     onDelete={handleDeleteClick}
                   />
                 </div>
-                <div className="border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-                  <PaginationControl
-                    pagination={pagination}
-                    onPageSizeChange={(nextPageSize) => {
-                      setPageSize(nextPageSize);
-                      pagination.goToFirstPage();
-                    }}
-                  />
-                </div>
+                {questions.length > 0 && (
+                  <div className="flex items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                    <PaginationControl
+                      pagination={pagination}
+                      onPageSizeChange={(nextPageSize) => {
+                        setPageSize(nextPageSize);
+                        pagination.goToFirstPage();
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>

@@ -1,3 +1,4 @@
+import { PaginationControl } from "@/components/shared/PaginationControl";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { codingProblemManager, type CodingProblem } from "@/services/coding-problem.manager";
 import { Loader2, Plus, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -150,6 +152,20 @@ export function CodingProblemManagementPage() {
     }
     return list;
   }, [problems, query, difficulty, sort]);
+
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_admin_codingproblemmanagement_codingproblemmanagementpage_tsx_pagesize",
+    defaultPageSize: 10,
+  });
+
+  const pagination = usePagination({
+    totalCount: filteredProblems.length,
+    pageSize,
+  });
+
+  const pageItems = useMemo(() => {
+    return filteredProblems.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [filteredProblems, pagination.startIndex, pagination.endIndex]);
 
   // ── Editor flow ──────────────────────────────────────────────────────────────
   if (isAuthoring) {
@@ -294,7 +310,7 @@ export function CodingProblemManagementPage() {
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Result count when filtered */}
             {(query || difficulty !== "ALL") && (
-              <div className="mb-3 flex items-center gap-2">
+              <div className="mb-3 flex items-center gap-2 px-6">
                 <span className="text-xs text-slate-500">
                   Hiển thị{" "}
                   <strong className="text-slate-800 dark:text-slate-200">
@@ -314,7 +330,7 @@ export function CodingProblemManagementPage() {
             )}
             <div>
               <CodingProblemTable
-                problems={filteredProblems}
+                problems={pageItems}
                 onEdit={(p) => {
                   setEditingProblem(p);
                   setIsAuthoring(true);
@@ -323,6 +339,17 @@ export function CodingProblemManagementPage() {
                 onToggleStatus={handleToggleStatus}
               />
             </div>
+            {filteredProblems.length > 0 && (
+              <div className="flex items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                <PaginationControl
+                  pagination={pagination}
+                  onPageSizeChange={(nextPageSize) => {
+                    setPageSize(nextPageSize);
+                    pagination.goToFirstPage();
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
