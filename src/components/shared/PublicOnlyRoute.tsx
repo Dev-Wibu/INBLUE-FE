@@ -11,7 +11,9 @@ export function PublicOnlyRoute() {
   }
 
   if (isLoggedIn) {
-    return <Navigate to={getDashboardPath(user?.role)} replace />;
+    // USER role stays on landing page; ADMIN/MENTOR/STAFF go to their dashboard
+    const redirectPath = user?.role === "USER" ? "/" : getDashboardPath(user?.role);
+    return <Navigate to={redirectPath} replace />;
   }
 
   return <Outlet />;
