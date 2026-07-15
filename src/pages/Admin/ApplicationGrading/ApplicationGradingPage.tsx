@@ -27,6 +27,11 @@ import {
 } from "@/hooks/useApplicationDetails";
 import { usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
+import {
+  filterOutAutoGradedRounds,
+  isAutoGradedRound,
+  needsHrScoring,
+} from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
 import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -132,8 +137,7 @@ function RoundCard({
 
   const statusCfg = STATUS_CONFIG[detail.status ?? ""] ?? { label: detail.status, className: "" };
   const resultCfg = detail.finalResult ? RESULT_CONFIG[detail.finalResult] : null;
-  const needsHrScore =
-    detail.status === "AI_EVALUATED" && (detail.hrScore === undefined || detail.hrScore === null);
+  const needsHrScore = needsHrScoring(detail);
   const hasExistingGrade = detail.hrScore !== undefined;
 
   const [isEditing, setIsEditing] = useState(false);
@@ -1118,19 +1122,18 @@ export function ApplicationGradingDetailPage({
   const [startGradingRoundId, setStartGradingRoundId] = useState<number | null>(null);
 
   // Unified details array: single detail for Staff, all details for Admin
+  // Filter out auto-graded rounds (QUIZ, etc.) - these don't need HR scoring
   const displayDetails = useMemo((): ApplicationDetail[] => {
     if (isStaff && singleDetail) {
-      return [singleDetail];
+      return isAutoGradedRound(singleDetail) ? [] : [singleDetail];
     }
-    return details;
+    return filterOutAutoGradedRounds(details);
   }, [isStaff, singleDetail, details]);
 
   // Expanded rounds state - track which round cards are expanded
   const [expandedRoundIds, setExpandedRoundIds] = useState<Set<number>>(() => {
     if (displayDetails.length === 0) return new Set<number>();
-    const firstNeedsHr = displayDetails.find(
-      (d) => d.status === "AI_EVALUATED" && (d.hrScore === undefined || d.hrScore === null)
-    );
+    const firstNeedsHr = displayDetails.find((d) => needsHrScoring(d));
     const firstId = firstNeedsHr?.id ?? displayDetails[0]?.id;
     return firstId !== undefined ? new Set([firstId]) : new Set<number>();
   });
@@ -1173,23 +1176,15 @@ export function ApplicationGradingDetailPage({
   // Filter displayDetails based on showPendingOnly
   const filteredDetails = useMemo(() => {
     if (!showPendingOnly) return displayDetails;
-    return displayDetails.filter(
-      (d: ApplicationDetail) =>
-        d.status === "AI_EVALUATED" && (d.hrScore === undefined || d.hrScore === null)
-    );
+    return displayDetails.filter((d) => needsHrScoring(d));
   }, [displayDetails, showPendingOnly]);
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
     const total = displayDetails.length;
-    const pending = displayDetails.filter(
-      (d: ApplicationDetail) =>
-        d.status === "AI_EVALUATED" && (d.hrScore === undefined || d.hrScore === null)
-    ).length;
-    const completed = displayDetails.filter((d: ApplicationDetail) => d.finalResult).length;
-    const passed = displayDetails.filter(
-      (d: ApplicationDetail) => d.finalResult === "PASSED"
-    ).length;
+    const pending = displayDetails.filter((d) => needsHrScoring(d)).length;
+    const completed = displayDetails.filter((d) => d.finalResult).length;
+    const passed = displayDetails.filter((d) => d.finalResult === "PASSED").length;
     const avgScore =
       displayDetails.reduce((sum: number, d: ApplicationDetail) => sum + (d.hrScore ?? 0), 0) /
       (completed || 1);

@@ -26,6 +26,7 @@ import {
   useHrScore,
 } from "@/hooks/useApplicationDetails";
 import { useCurrentRound } from "@/hooks/useRound";
+import { filterOutAutoGradedRounds } from "@/lib/application-detail-utils";
 import { formatDateTime } from "@/lib/formatting";
 import {
   CheckCircle2,
@@ -476,6 +477,12 @@ export function HrMentorReviewApprovalPage() {
     [applications]
   );
 
+  // Filter out auto-graded rounds (QUIZ, etc.) from reviewer details
+  const filteredReviewerDetails = useMemo(
+    () => filterOutAutoGradedRounds(reviewerDetails),
+    [reviewerDetails]
+  );
+
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
@@ -496,7 +503,7 @@ export function HrMentorReviewApprovalPage() {
       <div className="flex-1 overflow-auto p-4 sm:p-6">
         {isStaff ? (
           <StaffList
-            details={reviewerDetails}
+            details={filteredReviewerDetails}
             isLoading={isReviewerLoading}
             onReload={refetchReviewer}
           />

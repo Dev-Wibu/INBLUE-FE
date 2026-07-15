@@ -21,11 +21,13 @@ Phát hiện thêm 1 bug mới liên quan đến flow **assign mentor** mà hồ
 **Endpoint**: `POST /api/admin/mentor-bookings/16/assign-mentor`
 
 **Request**:
+
 ```json
 { "mentorId": 4, "notes": "" }
 ```
 
 **Response**: HTTP 500
+
 ```json
 {
   "traceId": "6a54ca31ffd89a64fa4f621c9288d05a",
@@ -42,6 +44,7 @@ Phát hiện thêm 1 bug mới liên quan đến flow **assign mentor** mà hồ
 ### 🔍 Phân tích (FE làm rõ để BE confirm)
 
 **Decode `exp = 1783915716` (Unix seconds)**:
+
 - `1783915716 / 86400 / 365.25 ≈ 56.6 năm` kể từ epoch
 - Tương ứng: **2026-06-09 06:48:36 UTC+7**
 - Hôm nay test: **2026-07-13**
@@ -49,6 +52,7 @@ Phát hiện thêm 1 bug mới liên quan đến flow **assign mentor** mà hồ
 → `exp` bị **trong quá khứ ~34 ngày**. Daily.co reject ngay.
 
 **Root cause khả dĩ** (BE confirm):
+
 - BE đang tính `exp` từ `booking.scheduledEnd.getEpochSecond()` thay vì `now() + sessionDuration`.
 - Vì booking 16 có `scheduledEnd = 2026-06-09 06:48:36` (user pick slot ngày 9/6, admin assign trễ vào ngày 13/7) → exp = quá khứ → Daily.co 400.
 - So sánh với hồi trước test booking 14 thành công (traceId `6a53ec39b9fde5350b56978b4dd351ca`) → assign trong cùng ngày → `exp = scheduledEnd` còn ở tương lai → chạy được.
@@ -66,11 +70,11 @@ Phát hiện thêm 1 bug mới liên quan đến flow **assign mentor** mà hồ
 
 ### 🧪 Test xác nhận
 
-| Booking | scheduledEnd (UTC+7) | Ngày assign | exp nhận được | Kết quả |
-|---|---|---|---|---|
+| Booking    | scheduledEnd (UTC+7)         | Ngày assign      | exp nhận được   | Kết quả              |
+| ---------- | ---------------------------- | ---------------- | --------------- | -------------------- |
 | Booking 14 | 2026-07-13 02:35 (tương lai) | 2026-07-13 02:35 | trong tương lai | ✅ 200, ROOM_CREATED |
-| Booking 16 | 2026-06-09 06:48 (quá khứ) | 2026-07-13 18:21 | quá khứ | ❌ 500, Daily.co 400 |
-| Booking 15 | tương tự 14 | cùng ngày | trong tương lai | ✅ 200 |
+| Booking 16 | 2026-06-09 06:48 (quá khứ)   | 2026-07-13 18:21 | quá khứ         | ❌ 500, Daily.co 400 |
+| Booking 15 | tương tự 14                  | cùng ngày        | trong tương lai | ✅ 200               |
 
 → Bug **time-dependent**: chỉ fail khi admin assign trễ, sau khi `scheduledEnd` đã trôi qua.
 
@@ -85,10 +89,12 @@ Phát hiện thêm 1 bug mới liên quan đến flow **assign mentor** mà hồ
 Có 2 hướng để BE không phải từ chối nữa:
 
 **A. Sửa logic `exp`**:
+
 - Đặt `exp = max(now + sessionDurationMinutes * 60, scheduledEnd.getEpochSecond() + buffer)`.
 - Hoặc: nếu `scheduledEnd` ở quá khứ, **đặt `exp = now + durationMinutes * 60`** thay vì báo lỗi.
 
 **B. Cho phép override khung giờ**:
+
 - Khi admin assign mentor cho booking trễ, cho admin chọn lại `start/end` mới.
 - Hoặc: auto-rotate `scheduledStart/scheduledEnd` lên `now() + duration` nếu đã quá hạn.
 
@@ -109,7 +115,7 @@ Có 2 hướng để BE không phải từ chối nữa:
 
 ```
 kiosk-booking.manager.ts:86 [KioskBookingManager] assignMentor error:
-  Error: Error creating Daily.co session: 400 Bad Request 
+  Error: Error creating Daily.co session: 400 Bad Request
   on POST request for "https://api.daily.co/v1/rooms":
   "{"error":"invalid-request-error","info":"exp was '1783915716', which is in the past rather than in the future"}"
       at toAppApiError (error-normalizer.ts:435:20)

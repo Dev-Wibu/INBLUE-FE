@@ -141,9 +141,11 @@ export function JobDescriptionDetailView({
       } else {
         toast.error(
           res.error ||
-            t(hasExistingRounds
-              ? "errors.cannotUpdateInterviewRounds"
-              : "errors.cannotSetUpInterviewRounds")
+            t(
+              hasExistingRounds
+                ? "errors.cannotUpdateInterviewRounds"
+                : "errors.cannotSetUpInterviewRounds"
+            )
         );
         throw new Error();
       }

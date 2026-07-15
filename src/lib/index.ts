@@ -3,6 +3,7 @@
  */
 
 export * from "./api";
+export * from "./application-detail-utils";
 export * from "./error-normalizer";
 export * from "./payment-callback";
 export * from "./payment-recovery";
