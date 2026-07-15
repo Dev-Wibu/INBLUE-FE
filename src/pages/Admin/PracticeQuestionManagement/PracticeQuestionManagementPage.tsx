@@ -259,20 +259,10 @@ export function PracticeQuestionManagementPage() {
     toast.info(t("adminPracticequestionmanagement.bulkImportFunctionalityIsUnder"));
   };
   return (
-    <div className="min-h-screen bg-white p-8 dark:bg-slate-950">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="mb-2 font-['Inter'] text-3xl font-bold text-zinc-800 dark:text-white">
-          {t("adminPracticequestionmanagement.managingPracticeQuestions")}
-        </h1>
-        <p className="font-['Inter'] text-base text-gray-600 dark:text-slate-400">
-          {t("adminPracticequestionmanagement.manageBanksOfPracticeQuestions")}
-        </p>
-      </div>
-
-      {/* Action Bar */}
-      <div className="mb-6 grid gap-3 xl:grid-cols-[1fr_auto]">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+      {/* TOOLBAR */}
+      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:max-w-md">
             <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
             <Input
@@ -305,7 +295,7 @@ export function PracticeQuestionManagementPage() {
           </Select>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex items-center gap-2">
           {(searchQuery || levelFilter !== "all") && (
             <Button
               variant="outline"
@@ -335,101 +325,108 @@ export function PracticeQuestionManagementPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        {isInitialLoading ? (
-          <SpinnerBlock
-            size="lg"
-            label={t("adminPracticequestionmanagement.loadingListOfQuestions")}
-          />
-        ) : (
-          <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
-                  <TableHead
-                    className="cursor-pointer"
-                    onClick={() => toggleSort("title" as keyof PracticeQuestion)}>
-                    {t("common.title")}
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer"
-                    onClick={() => toggleSort("level" as keyof PracticeQuestion)}>
-                    {t("common.level")}
-                  </TableHead>
-                  <TableHead>{t("common.lesson")}</TableHead>
-                  <TableHead className="text-right">{t("common.act")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pageData.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="py-8 text-center">
-                      <p className="text-gray-500 dark:text-slate-400">
-                        {t("common.noQuestionsAsked")}
-                      </p>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  pageData.map((question) => (
-                    <TableRow key={question.questionId}>
-                      <TableCell className="font-medium">#{question.questionId}</TableCell>
-                      <TableCell className="font-medium">{question.title}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"
-                          }>
-                          {question.level}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{question.lesson?.lessonName || "—"}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={() => handleEdit(question)}>
-                            {t("adminPracticequestionmanagement.fix")}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDelete(question)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-
-            {sortedData.length > 0 && (
-              <PaginationControl
-                pagination={pagination}
-                onPageSizeChange={(nextPageSize) => {
-                  setPageSize(nextPageSize);
-                  pagination.goToFirstPage();
-                }}
+      {/* TABLE SECTION */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            {isInitialLoading ? (
+              <SpinnerBlock
+                size="lg"
+                label={t("adminPracticequestionmanagement.loadingListOfQuestions")}
               />
-            )}
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
+                      <TableHead
+                        className="cursor-pointer"
+                        onClick={() => toggleSort("title" as keyof PracticeQuestion)}>
+                        {t("common.title")}
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer"
+                        onClick={() => toggleSort("level" as keyof PracticeQuestion)}>
+                        {t("common.level")}
+                      </TableHead>
+                      <TableHead>{t("common.lesson")}</TableHead>
+                      <TableHead className="text-right">{t("common.act")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pageData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="py-8 text-center">
+                          <p className="text-gray-500 dark:text-slate-400">
+                            {t("common.noQuestionsAsked")}
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pageData.map((question) => (
+                        <TableRow key={question.questionId}>
+                          <TableCell className="font-medium">#{question.questionId}</TableCell>
+                          <TableCell className="font-medium">{question.title}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                levelBadgeMap[question.level || ""] || "bg-gray-100 text-gray-700"
+                              }>
+                              {question.level}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{question.lesson?.lessonName || "—"}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(question)}>
+                                {t("adminPracticequestionmanagement.fix")}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700"
+                                onClick={() => handleDelete(question)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
 
-            {sortedData.length === 0 && (searchQuery || levelFilter !== "all") && (
-              <div className="flex justify-center pb-4">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setLevelFilter("all");
-                    pagination.goToFirstPage();
-                  }}>
-                  {t("common.clearFilter")}
-                </Button>
-              </div>
+                {sortedData.length > 0 && (
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                )}
+
+                {sortedData.length === 0 && (searchQuery || levelFilter !== "all") && (
+                  <div className="flex justify-center pb-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setLevelFilter("all");
+                        pagination.goToFirstPage();
+                      }}>
+                      {t("common.clearFilter")}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
 
       {/* Create Dialog */}
@@ -513,7 +510,7 @@ function QuestionFormDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="">
           <div>
             <Label htmlFor="title">{t("common.title")}</Label>
             <Input

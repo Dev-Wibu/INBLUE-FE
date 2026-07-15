@@ -9,14 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -35,25 +28,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  useDeleteMentorFeedback,
-  useMentorFeedbacks,
-  type MentorFeedback,
-} from "@/hooks/useMentorFeedback";
+import { useMentorFeedbacks, type MentorFeedback } from "@/hooks/useMentorFeedback";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
-import { Eye, MessageSquare, Search, Trash2 } from "lucide-react";
+import { formatDateTime } from "@/lib/formatting";
+import { MessageSquare, Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 export function FeedbackManagementPage() {
   const { t } = useTranslation();
   const { data: feedbacks = [], isLoading, isRefetching, refetch } = useMentorFeedbacks();
-  const { mutate: deleteFeedback, isPending: isDeleting } = useDeleteMentorFeedback();
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [selectedFeedback, setSelectedFeedback] = useState<MentorFeedback | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   // Convert rating filter once for efficiency
   const numericRatingFilter = ratingFilter !== "all" ? Number(ratingFilter) : null;
@@ -103,21 +90,6 @@ export function FeedbackManagementPage() {
   const handleViewDetail = (feedback: MentorFeedback) => {
     setSelectedFeedback(feedback);
     setIsDetailOpen(true);
-  };
-  const handleDeleteClick = (feedback: MentorFeedback) => {
-    setSelectedFeedback(feedback);
-    setIsDeleteOpen(true);
-  };
-  const handleDeleteConfirm = () => {
-    if (selectedFeedback?.id) {
-      deleteFeedback(selectedFeedback.id, {
-        onSuccess: () => {
-          setIsDeleteOpen(false);
-          setSelectedFeedback(null);
-          toast.success(t("common.responseRemoved"));
-        },
-      });
-    }
   };
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
@@ -220,40 +192,40 @@ export function FeedbackManagementPage() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {hasActiveFilters && (
+              <div className="mb-3 flex items-center gap-2 px-6">
+                <span className="text-xs text-slate-500">
+                  Hiển thị{" "}
+                  <strong className="text-slate-800 dark:text-slate-200">
+                    {filteredFeedbacks.length}
+                  </strong>{" "}
+                  / <strong>{feedbacks.length}</strong> kết quả
+                </span>
+              </div>
+            )}
             <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-16">{t("common.id")}</TableHead>
-                    <TableHead>{t("common.mentorAccepted")}</TableHead>
                     <TableHead>{t("common.candidateSubmits")}</TableHead>
+                    <TableHead>{t("common.mentorAccepted")}</TableHead>
                     <TableHead className="w-32">{t("common.session")}</TableHead>
+                    <TableHead className="w-40">{t("common.time")}</TableHead>
                     <TableHead className="w-36">
                       <SortButton {...getSortProps("rating" as keyof MentorFeedback)}>
                         {t("common.evaluate")}
                       </SortButton>
                     </TableHead>
-                    <TableHead>{t("common.comment")}</TableHead>
-                    <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pageData.map((feedback: MentorFeedback) => (
-                    <TableRow key={feedback.id}>
+                    <TableRow
+                      key={feedback.id}
+                      className="cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      onClick={() => handleViewDetail(feedback)}>
                       <TableCell className="font-medium">#{feedback.id}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={feedback.mentor?.avatarUrl} />
-                            <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                              {feedback.mentor?.name?.charAt(0) || "M"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">
-                            {feedback.mentor?.name || t("common.noDataAvailable")}
-                          </span>
-                        </div>
-                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
@@ -268,31 +240,30 @@ export function FeedbackManagementPage() {
                         </div>
                       </TableCell>
                       <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={feedback.mentor?.avatarUrl} />
+                            <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                              {feedback.mentor?.name?.charAt(0) || "M"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">
+                            {feedback.mentor?.name || t("common.noDataAvailable")}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
                         <Badge variant="outline">#{feedback.session?.id}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-slate-500">
+                        {feedback.createdAt
+                          ? formatDateTime(feedback.createdAt)
+                          : feedback.session?.joinTime
+                            ? formatDateTime(feedback.session.joinTime)
+                            : t("common.noDataAvailable")}
                       </TableCell>
                       <TableCell>
                         <StarRating value={feedback.rating || 0} readOnly size="sm" />
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-slate-500">
-                        {feedback.comment || t("common.noComments")}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            onClick={() => handleViewDetail(feedback)}>
-                            <Eye className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
-                            onClick={() => handleDeleteClick(feedback)}>
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -300,16 +271,14 @@ export function FeedbackManagementPage() {
               </Table>
             </div>
 
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(nextPageSize) => {
-                    setPageSize(nextPageSize);
-                    pagination.goToFirstPage();
-                  }}
-                />
-              </div>
+            <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              <PaginationControl
+                pagination={pagination}
+                onPageSizeChange={(nextPageSize) => {
+                  setPageSize(nextPageSize);
+                  pagination.goToFirstPage();
+                }}
+              />
             </div>
           </div>
         )}
@@ -317,79 +286,17 @@ export function FeedbackManagementPage() {
 
       {/* View Detail Dialog */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>
-              {t("common.feedbackDetails")}
-              {selectedFeedback?.id}
-            </DialogTitle>
-            <DialogDescription>
-              {t("common.feedbackFromCandidates")} {selectedFeedback?.user?.name}
-              {" -> "}
-              mentor {selectedFeedback?.mentor?.name}
-            </DialogDescription>
+            <DialogTitle>{t("common.comment")}</DialogTitle>
           </DialogHeader>
           {selectedFeedback && (
-            <div className="space-y-4">
-              {/* Rating */}
-              <div className="flex items-center justify-center">
-                <StarRating value={selectedFeedback.rating || 0} readOnly size="lg" />
-              </div>
-
-              {/* Comment */}
-              <div>
-                <h4 className="mb-2 font-medium text-slate-700 dark:text-slate-300">
-                  {t("common.comment")}
-                </h4>
-                <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
-                  <p className="whitespace-pre-wrap">
-                    {selectedFeedback.comment || t("common.thereAreNoDetailedComments")}
-                  </p>
-                </div>
-              </div>
-
-              {/* Session Info */}
-              <div>
-                <h4 className="mb-2 font-medium text-slate-700 dark:text-slate-300">
-                  {t("common.sessionInformation")}
-                </h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-slate-500">{t("common.sessionCode")}</span>{" "}
-                    <span className="font-medium">#{selectedFeedback.session?.id}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">{t("common.roomName")}</span>{" "}
-                    <span className="font-medium">
-                      {selectedFeedback.session?.roomName || t("common.noDataAvailable")}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div className="mt-2 rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
+              <p className="leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                {selectedFeedback.comment || t("common.thereAreNoDetailedComments")}
+              </p>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("common.confirmDeletion")}</DialogTitle>
-            <DialogDescription>
-              {t("adminFeedbackmanagement.areYouSureYouWant")}
-              {selectedFeedback?.id}
-              {t("adminFeedbackmanagement.thisActionIsImpossibleUndo")}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={isDeleting}>
-              {t("general.cancel")}
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
-              {isDeleting ? t("common.deleting") : t("general.delete")}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,10 +1,12 @@
+import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import type { ApiResponse } from "@/interfaces";
 import { extractDataArray } from "@/lib/utils";
 import { questionBankManager } from "@/services/question-bank.manager";
 import { questionCategoryManager } from "@/services/question-category.manager";
-import { FolderOpen, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -22,6 +24,18 @@ export function QuestionBankManagementPage() {
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_admin_questionbankmanagement_questionbankmanagementpage_tsx_pagesize",
+    defaultPageSize: 10,
+  });
+
+  const pagination = usePagination({
+    totalCount: questions.length,
+    pageSize: pageSize,
+  });
+
+  const pageItems = questions.slice(pagination.startIndex, pagination.endIndex + 1);
 
   // Form State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -139,116 +153,126 @@ export function QuestionBankManagementPage() {
   };
 
   return (
-    <Tabs
-      value={activeTab}
-      onValueChange={setActiveTab}
-      className="-m-4 flex h-[calc(100%+32px)] flex-col md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-            <FolderOpen className="h-5 w-5" />
-          </div>
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex min-h-0 flex-1 flex-col gap-0">
+        <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:px-6 sm:py-4 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800 dark:bg-slate-900">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              {t("common.questionBank", t("adminCodingProblem.problemBank"))}
-            </h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Ngân hàng câu hỏi</h1>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {t("adminQuestionbankmanagement.description")}
+              Quản lý danh sách câu hỏi trắc nghiệm và chuyên mục
             </p>
           </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <TabsList className="h-8">
+              <TabsTrigger value="questions" className="text-xs">
+                {t("adminQuestionbankmanagement.questionList", "Danh sách câu hỏi")}
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="text-xs">
+                {t("adminQuestionbankmanagement.categoryManagement", "Quản lý chuyên mục")}
+              </TabsTrigger>
+            </TabsList>
+
+            {activeTab === "questions" && (
+              <>
+                <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+                <Button
+                  onClick={handleCreate}
+                  className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  {t("adminQuestionbankmanagement.addQuestion", t("general.addNew"))}
+                </Button>
+              </>
+            )}
+
+            {activeTab === "categories" && (
+              <>
+                <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+                <Button
+                  onClick={() => setIsCreatingCategory(true)}
+                  className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  {t("adminQuestionbankmanagement.addCategory", "Thêm chuyên mục")}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <TabsList className="h-8">
-            <TabsTrigger value="questions" className="text-xs">
-              {t("adminQuestionbankmanagement.questionList", "Danh sách câu hỏi")}
-            </TabsTrigger>
-            <TabsTrigger value="categories" className="text-xs">
-              {t("adminQuestionbankmanagement.categoryManagement", "Quản lý chuyên mục")}
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950">
+          <TabsContent value="questions" className="m-0 flex h-full flex-col">
+            {isLoading ? (
+              <div className="flex h-64 flex-col items-center justify-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+                <p className="text-sm text-slate-500">Đang tải danh sách câu hỏi…</p>
+              </div>
+            ) : (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <QuestionBankTable
+                    questions={pageItems}
+                    categories={categories}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                  />
+                </div>
+                {questions.length > 0 && (
+                  <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                    <PaginationControl
+                      pagination={pagination}
+                      onPageSizeChange={(nextPageSize) => {
+                        setPageSize(nextPageSize);
+                        pagination.goToFirstPage();
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
 
-          {activeTab === "questions" && (
-            <>
-              <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-              <Button
-                onClick={handleCreate}
-                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                {t("adminQuestionbankmanagement.addQuestion", t("general.addNew"))}
-              </Button>
-            </>
-          )}
-
-          {activeTab === "categories" && (
-            <>
-              <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-              <Button
-                onClick={() => setIsCreatingCategory(true)}
-                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                {t("adminQuestionbankmanagement.addCategory", "Thêm chuyên mục")}
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950">
-        <TabsContent value="questions" className="m-0 h-full">
-          {isLoading ? (
-            <div className="flex h-64 flex-col items-center justify-center gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-              <p className="text-sm text-slate-500">Đang tải danh sách câu hỏi…</p>
-            </div>
-          ) : (
-            <QuestionBankTable
+          <TabsContent value="categories" className="m-0 flex h-full flex-col">
+            <QuestionBankCategoryTab
               questions={questions}
-              categories={categories}
-              onEdit={handleEdit}
-              onDelete={handleDeleteClick}
+              onEditQuestion={handleEdit}
+              onDeleteQuestion={handleDeleteClick}
+              isCreatingExternally={isCreatingCategory}
+              onCancelCreateExternally={() => setIsCreatingCategory(false)}
             />
-          )}
-        </TabsContent>
+          </TabsContent>
+        </div>
 
-        <TabsContent value="categories" className="m-0 h-full">
-          <QuestionBankCategoryTab
-            questions={questions}
-            onEditQuestion={handleEdit}
-            onDeleteQuestion={handleDeleteClick}
-            isCreatingExternally={isCreatingCategory}
-            onCancelCreateExternally={() => setIsCreatingCategory(false)}
-          />
-        </TabsContent>
-      </div>
+        <QuestionBankFormDialog
+          isOpen={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          formData={formData}
+          onFormChange={setFormData}
+          onSubmit={handleFormSubmit}
+          categories={categories}
+          onCreateCategory={handleCreateCategory}
+          title={
+            editingQuestion ? t("question.updateQuestion") : t("adminQuizProblem.addNewQuestion")
+          }
+          description={
+            editingQuestion ? t("question.editInfoInstructions") : t("question.createOrAi")
+          }
+          submitLabel={
+            editingQuestion
+              ? t("general.update", t("general.update"))
+              : t("general.create", t("general.addNew"))
+          }
+        />
 
-      <QuestionBankFormDialog
-        isOpen={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        formData={formData}
-        onFormChange={setFormData}
-        onSubmit={handleFormSubmit}
-        categories={categories}
-        onCreateCategory={handleCreateCategory}
-        title={
-          editingQuestion ? t("question.updateQuestion") : t("adminQuizProblem.addNewQuestion")
-        }
-        description={
-          editingQuestion ? t("question.editInfoInstructions") : t("question.createOrAi")
-        }
-        submitLabel={
-          editingQuestion
-            ? t("general.update", t("general.update"))
-            : t("general.create", t("general.addNew"))
-        }
-      />
-
-      <DeleteQuestionBankDialog
-        isOpen={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        question={editingQuestion}
-        onConfirm={handleDeleteConfirm}
-      />
-    </Tabs>
+        <DeleteQuestionBankDialog
+          isOpen={isDeleteOpen}
+          onOpenChange={setIsDeleteOpen}
+          question={editingQuestion}
+          onConfirm={handleDeleteConfirm}
+        />
+      </Tabs>
+    </div>
   );
 }

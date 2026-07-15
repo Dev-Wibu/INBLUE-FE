@@ -1,5 +1,8 @@
 {
   "adminInterviewTemplate": {
+    "name": "Tên mẫu",
+    "category": "Danh mục",
+    "description": "Mô tả",
     "cvScreening": {
       "title": "Lọc CV",
       "description": "Đánh giá hồ sơ và kỹ năng ứng viên."
@@ -878,6 +881,14 @@
     "yourApplicationHasBeenSubmitted": "Đơn đăng ký của bạn đã được gửi thành công"
   },
   "common": {
+    "generalInformation": "Thông tin chung",
+    "mentorInformation": "Thông tin Mentor",
+    "roomName1": "Tên phòng",
+    "idMentor": "ID Mentor",
+    "transactionCode": "Mã giao dịch",
+    "action": "Hành động",
+    "viewDetails": "Xem chi tiết",
+    "stt": "STT",
     "exercises": "bài tập",
     "submitting": "Đang nộp...",
     "clear": "Xóa",
@@ -2060,6 +2071,7 @@
     "youNeedToLogIn": "Bạn cần đăng nhập để truy cập trang này. Vui lòng đăng nhập và thử lại."
   },
   "general": {
+    "minute": "phút",
     "pleaseFillAllRequiredFields": "Vui lòng điền tất cả các trường bắt buộc",
     "accompaniedSessionsWithStudentsOf": "Đã đồng hành {{var_0}} phiên cùng học viên ở nhiều cấp độ.",
     "accountHasBeenLocked": "Tài khoản đã bị khóa",
@@ -4326,7 +4338,8 @@
     "description": "Quản lý danh sách câu hỏi và danh mục cho các vòng thi Quiz.",
     "addCategory": "Thêm chuyên mục",
     "categoryName": "Tên chuyên mục",
-    "actions": "Thao tác",
+    "action": "Thao tác",
+    "viewDetails": "Xem chi tiết",
     "noDataFound": "Không tìm thấy dữ liệu",
     "updateCategory": "Cập nhật chuyên mục",
     "addNewCategory": "Thêm chuyên mục mới",

@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { extractDataArray } from "@/lib/utils";
 import { companyManager, jobDescriptionManager } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Building2, Edit, Folder, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, Building2, Edit, Folder, Plus, Trash2 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -23,18 +22,19 @@ import { JobDescriptionTable } from "./JobDescriptionTable";
 
 interface CompanyGridTabProps {
   companies: Company[];
+  searchQuery: string;
   onCompanyUpdate?: () => void;
   onCreateCompany: () => void;
 }
 
 export function CompanyGridTab({
   companies,
+  searchQuery,
   onCompanyUpdate,
   onCreateCompany,
 }: CompanyGridTabProps) {
   const { t } = useTranslation();
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -283,32 +283,6 @@ export function CompanyGridTab({
 
   return (
     <div className="animate-in fade-in flex h-full flex-col p-4 duration-300 md:p-6 lg:p-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t(
-              "adminCompanymanagement.manageCompaniesDesc",
-              "Quản lý danh sách các công ty và thông tin tuyển dụng."
-            )}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-slate-500" />
-            <Input
-              type="text"
-              placeholder={t("common.search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 sm:w-64"
-            />
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredCompanies.map((company) => (
           <div

@@ -15,7 +15,6 @@ import {
   ClipboardCheck,
   Code2,
   Database,
-  FileText,
   LayoutDashboard,
   LayoutTemplate,
   Library,
@@ -37,12 +36,12 @@ import {
   ApplicationGradingDetailPage,
   ApplicationGradingPage,
 } from "../ApplicationGrading/ApplicationGradingPage";
-import { CandidateProfileManagementPage } from "../CandidateProfileManagement";
 import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement";
 import { CodingProblemManagementPage } from "../CodingProblemManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
 import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
+import { InterviewTemplateDetailPage } from "../InterviewTemplateManagement/InterviewTemplateDetailPage";
 import { InterviewTemplateManagementPage } from "../InterviewTemplateManagement/InterviewTemplateManagementPage";
 import { KioskBookingManagementPage } from "../KioskBookingManagement";
 import { KioskManagementPage, KioskSchedulePage } from "../KioskManagement";
@@ -54,7 +53,7 @@ import { PracticeSetManagementPage } from "../PracticeSetManagement";
 import { QuestionBankManagementPage } from "../QuestionBankManagement";
 import { QuestionMajorManagementPage } from "../QuestionMajorManagement";
 import { ReviewManagementPage } from "../ReviewManagement";
-import { SessionManagementPage } from "../SessionManagement";
+import { SessionFormPage, SessionManagementPage } from "../SessionManagement";
 import { UserManagementPage } from "../UserManagement";
 import { AdminHeader } from "./components/AdminHeader";
 
@@ -110,12 +109,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             type: "interviewTemplates",
             icon: LayoutTemplate,
             label: t("adminAdmindashboard.processTemplate"),
-            color: "text-slate-400",
-          },
-          {
-            type: "candidateProfiles",
-            icon: FileText,
-            label: t("common.candidateProfile"),
             color: "text-slate-400",
           },
           {
@@ -336,6 +329,8 @@ export function AdminDashboardPage() {
               <Route path="users" element={<UserManagementPage />} />
               <Route path="mentors" element={<MentorManagementPage />} />
               <Route path="sessions" element={<SessionManagementPage />} />
+              <Route path="sessions/create" element={<SessionFormPage />} />
+              <Route path="sessions/:id" element={<SessionFormPage />} />
               <Route path="reviews" element={<ReviewManagementPage />} />
               <Route path="feedback" element={<FeedbackManagementPage />} />
               <Route path="notifications" element={<NotificationManagementPage />} />
@@ -346,8 +341,8 @@ export function AdminDashboardPage() {
               <Route path="posts" element={<PostManagementPage />} />
               <Route path="companies" element={<CompanyManagementPage />} />
               <Route path="companies/:companyId" element={<CompanyManagementPage />} />
-              <Route path="candidateProfiles" element={<CandidateProfileManagementPage />} />
               <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
+              <Route path="interviewTemplates/:id" element={<InterviewTemplateDetailPage />} />
               <Route
                 path="applicationGrading"
                 element={

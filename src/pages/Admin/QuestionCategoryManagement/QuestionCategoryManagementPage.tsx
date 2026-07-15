@@ -190,24 +190,25 @@ export function QuestionCategoryManagementPage({ isEmbedded = false }: { isEmbed
         </div>
       )}
 
-      {/* Action Bar */}
-      <div className="mb-6 grid gap-3 xl:grid-cols-[1fr_auto]">
-        {/* Search Input */}
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
-          <Input
-            type="text"
-            placeholder={t("common.searchByNameOrDescription")}
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              pagination.goToFirstPage();
-            }}
-            className="pl-10"
-          />
+      {/* TOOLBAR */}
+      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:max-w-md">
+            <Search className="absolute top-3 left-3 h-4 w-4 text-gray-500 dark:text-slate-400" />
+            <Input
+              type="text"
+              placeholder={t("common.searchByNameOrDescription")}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                pagination.goToFirstPage();
+              }}
+              className="pl-10"
+            />
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex items-center gap-2">
           {searchQuery && (
             <Button
               variant="outline"
@@ -232,47 +233,51 @@ export function QuestionCategoryManagementPage({ isEmbedded = false }: { isEmbed
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        {isInitialLoading ? (
-          <SpinnerBlock
-            size="lg"
-            label={t("adminQuestioncategorymanagement.loadingQuestionList")}
-          />
-        ) : (
-          <>
-            <QuestionCategoryTable
-              categories={pageData}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              getSortProps={getSortProps}
-            />
-
-            {sortedData.length > 0 && (
-              <PaginationControl
-                pagination={pagination}
-                onPageSizeChange={(nextPageSize) => {
-                  setPageSize(nextPageSize);
-                  pagination.goToFirstPage();
-                }}
+      {/* TABLE SECTION */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            {isInitialLoading ? (
+              <SpinnerBlock
+                size="lg"
+                label={t("adminQuestioncategorymanagement.loadingQuestionList")}
               />
-            )}
+            ) : (
+              <>
+                <QuestionCategoryTable
+                  categories={pageData}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  getSortProps={getSortProps}
+                />
 
-            {/* Empty State with Clear Search */}
-            {sortedData.length === 0 && searchQuery && (
-              <div className="flex justify-center pb-4">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearchQuery("");
-                    pagination.goToFirstPage();
-                  }}>
-                  {t("common.clearFilter")}
-                </Button>
-              </div>
+                {sortedData.length > 0 && (
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                )}
+
+                {/* Empty State with Clear Search */}
+                {sortedData.length === 0 && searchQuery && (
+                  <div className="flex justify-center pb-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchQuery("");
+                        pagination.goToFirstPage();
+                      }}>
+                      {t("common.clearFilter")}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
 
       {/* Create Dialog */}

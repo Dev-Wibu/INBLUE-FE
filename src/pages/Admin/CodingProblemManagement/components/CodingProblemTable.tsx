@@ -26,7 +26,6 @@ import {
   Eye,
   FlaskConical,
   MoreHorizontal,
-  RefreshCw,
   Trash2,
 } from "lucide-react";
 
@@ -253,31 +252,6 @@ export function CodingProblemTable({
           })}
         </TableBody>
       </Table>
-      {/* Footer summary */}
-      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/50">
-        <p className="text-xs text-slate-500">
-          <strong className="font-semibold text-slate-700 dark:text-slate-300">
-            {problems.length}
-          </strong>{" "}
-          bài tập {" · "}
-          <strong className="font-semibold text-emerald-700 dark:text-emerald-400">
-            {problems.filter((p) => !p.isDeleted).length}
-          </strong>{" "}
-          đang hoạt động
-          {problems.some((p) => p.isDeleted) && (
-            <>
-              {" · "}
-              <strong className="font-medium text-slate-400">
-                {problems.filter((p) => p.isDeleted).length} đã tắt
-              </strong>
-            </>
-          )}
-        </p>
-        <div className="flex items-center gap-1.5 text-xs text-slate-400">
-          <RefreshCw className="h-3.5 w-3.5" />
-          Cập nhật tự động khi lưu
-        </div>
-      </div>
     </div>
   );
 }

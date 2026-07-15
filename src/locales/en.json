@@ -1,5 +1,8 @@
 {
   "adminInterviewTemplate": {
+    "name": "Template Name",
+    "category": "Category",
+    "description": "Description",
     "cvScreening": {
       "title": "CV Screening",
       "description": "Evaluate candidate's profile and skills."
@@ -881,6 +884,14 @@
     "yourApplicationHasBeenSubmitted": "Your application has been submitted successfully"
   },
   "common": {
+    "generalInformation": "General Information",
+    "mentorInformation": "Mentor Information",
+    "roomName1": "Room Name",
+    "idMentor": "Mentor ID",
+    "transactionCode": "Transaction Code",
+    "action": "Action",
+    "viewDetails": "View details",
+    "stt": "No.",
     "exercises": "exercises",
     "submitting": "Submitting...",
     "clear": "Clear",
@@ -2064,6 +2075,7 @@
     "youNeedToLogIn": "You need to log in to access this page. Please log in and try again."
   },
   "general": {
+    "minute": "minute(s)",
     "pleaseFillAllRequiredFields": "Please fill all required fields",
     "accompaniedSessionsWithStudentsOf": "Accompanied {{var_0}} sessions with students of various levels.",
     "accountHasBeenLocked": "Account has been locked",

@@ -14,6 +14,12 @@ Whenever you are asked to create, modify, or interact with ANY Frontend code (in
 
 Always use shadcn/ui <Table> components (Table, TableHeader, TableBody, TableRow, TableCell, TableHead) instead of custom grid div tables. For row actions, ALWAYS use a <DropdownMenu> (with a MoreHorizontal icon trigger) instead of inline hover-only buttons (opacity-0) to ensure accessibility, touch-friendliness, and UI consistency.
 
+**Pagination & Table Layout Standard:**
+
+- The Table container should only have `border-y border-slate-200 shadow-sm`. Do not put any custom footer rows (like "10 bài tập" counts) inside the table.
+- Result counts (e.g. `Hiển thị X/Y kết quả`) MUST be placed ABOVE the table (usually inside a `div.mb-3`), and ONLY displayed when a filter is active or required.
+- The `PaginationControl` MUST be placed immediately AFTER the table container. It must be wrapped in `<div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">`. Do not include result counts inside this pagination bar.
+
 ## Strict Inblue-FE Development Rules
 
 When modifying or creating code in this workspace, you MUST strictly obey:

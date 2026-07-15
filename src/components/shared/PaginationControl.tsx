@@ -75,7 +75,7 @@ export function PaginationControl({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-1">
+    <div className="flex w-full flex-wrap items-center justify-between gap-1">
       {/* Left: info */}
       <p className="text-muted-foreground text-xs">
         {startIndex + 1}-{Math.min(endIndex + 1, totalCount)} / {totalCount}

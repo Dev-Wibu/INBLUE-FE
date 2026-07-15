@@ -1,3 +1,4 @@
+import { PaginationControl } from "@/components/shared/PaginationControl";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { codingProblemManager, type CodingProblem } from "@/services/coding-problem.manager";
 import { Loader2, Plus, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -151,6 +153,20 @@ export function CodingProblemManagementPage() {
     return list;
   }, [problems, query, difficulty, sort]);
 
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_admin_codingproblemmanagement_codingproblemmanagementpage_tsx_pagesize",
+    defaultPageSize: 10,
+  });
+
+  const pagination = usePagination({
+    totalCount: filteredProblems.length,
+    pageSize,
+  });
+
+  const pageItems = useMemo(() => {
+    return filteredProblems.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [filteredProblems, pagination.startIndex, pagination.endIndex]);
+
   // ── Editor flow ──────────────────────────────────────────────────────────────
   if (isAuthoring) {
     return (
@@ -173,10 +189,16 @@ export function CodingProblemManagementPage() {
 
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
-        {/* Left: Search & Filters */}
-        <div className="flex items-center gap-4">
+      {/* HEADER SECTION */}
+      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:px-6 sm:py-4 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800 dark:bg-slate-900">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Vòng Coding</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Quản lý danh sách bài tập lập trình thuật toán
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-64">
             <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <Input
@@ -187,7 +209,8 @@ export function CodingProblemManagementPage() {
             />
           </div>
 
-          <div className="flex items-center gap-1 border-l border-slate-200 pl-4 dark:border-slate-700">
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+          <div className="flex items-center gap-1">
             {(["ALL", "EASY", "MEDIUM", "HARD"] as Difficulty[]).map((d) => {
               const count =
                 d === "ALL" ? problems.length : problems.filter((p) => p.difficulty === d).length;
@@ -220,10 +243,8 @@ export function CodingProblemManagementPage() {
               );
             })}
           </div>
-        </div>
 
-        {/* Right: Sort & Actions */}
-        <div className="flex items-center gap-3">
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
           <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
             <SelectTrigger className="h-8 w-[140px] border-slate-200 text-xs dark:border-slate-700">
               <SelectValue />
@@ -244,7 +265,7 @@ export function CodingProblemManagementPage() {
             </SelectContent>
           </Select>
 
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 
           <div className="flex items-center gap-1.5">
             <button
@@ -284,7 +305,7 @@ export function CodingProblemManagementPage() {
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Result count when filtered */}
             {(query || difficulty !== "ALL") && (
-              <div className="mb-3 flex items-center gap-2">
+              <div className="mb-3 flex items-center gap-2 px-6">
                 <span className="text-xs text-slate-500">
                   Hiển thị{" "}
                   <strong className="text-slate-800 dark:text-slate-200">
@@ -304,7 +325,7 @@ export function CodingProblemManagementPage() {
             )}
             <div>
               <CodingProblemTable
-                problems={filteredProblems}
+                problems={pageItems}
                 onEdit={(p) => {
                   setEditingProblem(p);
                   setIsAuthoring(true);
@@ -313,6 +334,17 @@ export function CodingProblemManagementPage() {
                 onToggleStatus={handleToggleStatus}
               />
             </div>
+            {filteredProblems.length > 0 && (
+              <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                <PaginationControl
+                  pagination={pagination}
+                  onPageSizeChange={(nextPageSize) => {
+                    setPageSize(nextPageSize);
+                    pagination.goToFirstPage();
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -42,6 +42,8 @@ import { useSortable } from "@/hooks/useSortable";
 import { Eye, Search, Star, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ReviewDetailView } from "./components/ReviewDetailView";
+
 export function ReviewManagementPage() {
   const { t } = useTranslation();
   const { data: reviews = [], isLoading, isRefetching, refetch } = useMentorReviews();
@@ -49,7 +51,7 @@ export function ReviewManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<string>("all");
   const [selectedReview, setSelectedReview] = useState<MentorReview | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   // Convert rating filter once for efficiency
@@ -98,7 +100,7 @@ export function ReviewManagementPage() {
 
   const handleViewDetail = (review: MentorReview) => {
     setSelectedReview(review);
-    setIsDetailOpen(true);
+    setViewMode("detail");
   };
   const handleDeleteClick = (review: MentorReview) => {
     setSelectedReview(review);
@@ -115,6 +117,19 @@ export function ReviewManagementPage() {
       });
     }
   };
+
+  if (viewMode === "detail" && selectedReview) {
+    return (
+      <ReviewDetailView
+        review={selectedReview}
+        onBack={() => {
+          setViewMode("list");
+          setSelectedReview(null);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
@@ -216,6 +231,17 @@ export function ReviewManagementPage() {
           </div>
         ) : (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {hasActiveFilters && (
+              <div className="mb-3 flex items-center gap-2 px-6">
+                <span className="text-xs text-slate-500">
+                  Hiển thị{" "}
+                  <strong className="text-slate-800 dark:text-slate-200">
+                    {filteredReviews.length}
+                  </strong>{" "}
+                  / <strong>{reviews.length}</strong> kết quả
+                </span>
+              </div>
+            )}
             <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
@@ -292,111 +318,18 @@ export function ReviewManagementPage() {
               </Table>
             </div>
 
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(nextPageSize) => {
-                    setPageSize(nextPageSize);
-                    pagination.goToFirstPage();
-                  }}
-                />
-              </div>
+            <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              <PaginationControl
+                pagination={pagination}
+                onPageSizeChange={(nextPageSize) => {
+                  setPageSize(nextPageSize);
+                  pagination.goToFirstPage();
+                }}
+              />
             </div>
           </div>
         )}
       </div>
-
-      {/* View Detail Dialog */}
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {t("common.reviewDetails")}
-              {selectedReview?.id}
-            </DialogTitle>
-            <DialogDescription>
-              {t("common.reviewFromMentor")} {selectedReview?.mentor?.name}
-              {" -> "}
-              {t("common.candidate")} {selectedReview?.user?.name}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedReview && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-center">
-                <StarRating value={selectedReview.rating || 0} readOnly size="lg" />
-              </div>
-
-              {selectedReview.situationNote && (
-                <div>
-                  <h4 className="mb-1 font-medium text-emerald-600">{t("common.situation")}</h4>
-                  <p className="rounded bg-emerald-50 p-3 text-sm dark:bg-emerald-900/20">
-                    {selectedReview.situationNote}
-                  </p>
-                </div>
-              )}
-
-              {selectedReview.taskNote && (
-                <div>
-                  <h4 className="mb-1 font-medium text-blue-600">{t("common.mission")}</h4>
-                  <p className="rounded bg-blue-50 p-3 text-sm dark:bg-blue-900/20">
-                    {selectedReview.taskNote}
-                  </p>
-                </div>
-              )}
-
-              {selectedReview.actionNote && (
-                <div>
-                  <h4 className="mb-1 font-medium text-purple-600">{t("common.act")}</h4>
-                  <p className="rounded bg-purple-50 p-3 text-sm dark:bg-purple-900/20">
-                    {selectedReview.actionNote}
-                  </p>
-                </div>
-              )}
-
-              {selectedReview.resultNote && (
-                <div>
-                  <h4 className="mb-1 font-medium text-amber-600">{t("common.result")}</h4>
-                  <p className="rounded bg-amber-50 p-3 text-sm dark:bg-amber-900/20">
-                    {selectedReview.resultNote}
-                  </p>
-                </div>
-              )}
-
-              {selectedReview.strength && (
-                <div>
-                  <h4 className="mb-1 font-medium text-green-600">{t("common.strengths")}</h4>
-                  <p className="rounded bg-green-50 p-3 text-sm dark:bg-green-900/20">
-                    {selectedReview.strength}
-                  </p>
-                </div>
-              )}
-
-              {selectedReview.weakness && (
-                <div>
-                  <h4 className="mb-1 font-medium text-red-600">
-                    {t("adminReviewmanagement.weakness")}
-                  </h4>
-                  <p className="rounded bg-red-50 p-3 text-sm dark:bg-red-900/20">
-                    {selectedReview.weakness}
-                  </p>
-                </div>
-              )}
-
-              {selectedReview.improve && (
-                <div>
-                  <h4 className="mb-1 font-medium text-indigo-600">
-                    {t("common.suggestedImprovements")}
-                  </h4>
-                  <p className="rounded bg-indigo-50 p-3 text-sm dark:bg-indigo-900/20">
-                    {selectedReview.improve}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
