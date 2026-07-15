@@ -119,7 +119,7 @@ const getAvailableTabs = (
   },
   {
     type: "applicationHistory",
-    label: t("common.applicationHistory"),
+    label: t("common.application"),
   },
   {
     type: "feedback",

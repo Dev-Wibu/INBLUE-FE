@@ -164,7 +164,7 @@ export function HomepageHeader() {
               className={`group/item relative text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
               <Link to="/user?tab=applicationHistory">
                 <Briefcase className="mr-2 h-4 w-4" />
-                {t("common.applicationHistory")}
+                {t("common.application")}
                 <span
                   className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
                 />
@@ -336,7 +336,7 @@ export function HomepageHeader() {
                               to="/user?tab=applicationHistory"
                               className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-900/60 dark:hover:text-[#66B2FF]">
                               <Briefcase className="h-5 w-5 text-slate-500 transition-colors group-hover:text-[#0047AB] dark:text-slate-400 dark:group-hover:text-[#66B2FF]" />
-                              {t("common.applicationHistory")}
+                              {t("common.application")}
                             </Link>
                           )}
                         </div>
