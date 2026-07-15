@@ -54,7 +54,10 @@ export function LoginPage() {
       if (userId && !isNaN(userId)) {
         localStorage.setItem("current-user-id", String(userId));
       }
-      navigate(getDashboardPath(payload.user.role), {
+      // USER role goes to landing page, other roles go to their dashboard
+      const redirectPath =
+        payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);
+      navigate(redirectPath, {
         replace: true,
       });
     },

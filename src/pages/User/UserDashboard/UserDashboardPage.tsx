@@ -176,6 +176,12 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
         color: "text-blue-600",
       },
       {
+        type: "applicationHistory",
+        icon: Briefcase,
+        label: t("common.application"),
+        color: "text-teal-600",
+      },
+      {
         type: "mentors",
         icon: UserIcon,
         label: t("common.mentors"),
@@ -190,14 +196,8 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
       {
         type: "interviewHistory",
         icon: History,
-        label: t("common.interviewHistory"),
+        label: t("common.interview"),
         color: "text-orange-600",
-      },
-      {
-        type: "applicationHistory",
-        icon: Briefcase,
-        label: t("common.applicationHistory"),
-        color: "text-teal-600",
       },
       {
         type: "feedback",
@@ -264,12 +264,16 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
 ];
 const USER_SIDEBAR_LOGO = (
   <>
-    <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
-    <span className="text-lg font-bold text-[#002654] dark:text-white">INBLUE AI</span>
+    <a href="/" className="flex items-center gap-2">
+      <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
+      <span className="text-lg font-bold text-[#002654] dark:text-white">INBLUE AI</span>
+    </a>
   </>
 );
 const USER_SIDEBAR_LOGO_COLLAPSED = (
-  <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
+  <a href="/" className="flex items-center justify-center">
+    <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
+  </a>
 );
 const DEFAULT_TAB: TabType = "homeFeed";
 export function UserDashboardPage() {

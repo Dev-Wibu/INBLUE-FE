@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
-import { getDashboardPath, useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import { Eye, EyeOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -52,7 +52,7 @@ export function SignupPage() {
       if (userId && !isNaN(userId)) {
         localStorage.setItem("current-user-id", String(userId));
       }
-      navigate(getDashboardPath(payload.user.role), {
+      navigate("/", {
         replace: true,
       });
     },

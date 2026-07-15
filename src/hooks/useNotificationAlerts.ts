@@ -111,7 +111,8 @@ export function useNotificationAlerts({
   const muteSoundNotification = useSettingsStore((state) => state.muteSoundNotification);
   const muteToastNotification = useSettingsStore((state) => state.muteToastNotification);
   const seenNotificationIdsRef = useRef<Set<number>>(new Set());
-  const initializedRef = useRef(false);
+  // Track if initial data has been loaded - only alert for NEW notifications after this
+  const hasInitialDataLoadedRef = useRef(false);
   const lastSoundAtRef = useRef(0);
   const markNotificationAsSeen = useCallback((notification: Notification): void => {
     if (isValidNotificationId(notification.id)) {
@@ -176,11 +177,16 @@ export function useNotificationAlerts({
     if (!enabled) {
       return;
     }
-    if (!initializedRef.current) {
+    // On initial mount with empty notifications, just mark as seen and wait
+    if (!hasInitialDataLoadedRef.current) {
       notifications.forEach(markNotificationAsSeen);
-      initializedRef.current = true;
+      // Once we have actual notifications (data loaded), mark that we've loaded
+      if (notifications.length > 0) {
+        hasInitialDataLoadedRef.current = true;
+      }
       return;
     }
+    // After initial data is loaded, only alert for truly new notifications
     handleNotificationBatch(notifications);
   }, [enabled, handleNotificationBatch, markNotificationAsSeen, notifications]);
   useEffect(() => {
@@ -188,7 +194,10 @@ export function useNotificationAlerts({
       return;
     }
     return subscribeToNotificationCreated((notification) => {
-      handleNotificationBatch([notification]);
+      // Only handle real-time notifications (not initial data)
+      if (hasInitialDataLoadedRef.current) {
+        handleNotificationBatch([notification]);
+      }
     });
   }, [enabled, handleNotificationBatch]);
 }
