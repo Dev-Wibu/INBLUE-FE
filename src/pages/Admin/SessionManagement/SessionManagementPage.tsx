@@ -202,45 +202,43 @@ export function SessionManagementPage() {
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isInitialLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" label={t("adminSessionmanagement.loadingClassList")} />
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div>
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
+            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <SessionTable sessions={pageData} onView={handleView} getSortProps={getSortProps} />
             </div>
 
             {/* Pagination & Empty State */}
-            <div>
-              {sortedData.length > 0 && (
-                <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-                  <PaginationControl
-                    pagination={pagination}
-                    onPageSizeChange={(nextPageSize) => {
-                      setPageSize(nextPageSize);
-                      pagination.goToFirstPage();
-                    }}
-                  />
-                </div>
-              )}
+            {sortedData.length > 0 && (
+              <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                <PaginationControl
+                  pagination={pagination}
+                  onPageSizeChange={(nextPageSize) => {
+                    setPageSize(nextPageSize);
+                    pagination.goToFirstPage();
+                  }}
+                />
+              </div>
+            )}
 
-              {sortedData.length === 0 && (searchQuery || statusFilter !== "all") && (
-                <div className="flex justify-center pt-4 pb-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setStatusFilter("all");
-                      pagination.goToFirstPage();
-                    }}>
-                    {t("common.clearFilter")}
-                  </Button>
-                </div>
-              )}
-            </div>
+            {sortedData.length === 0 && (searchQuery || statusFilter !== "all") && (
+              <div className="flex justify-center pt-4 pb-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                    pagination.goToFirstPage();
+                  }}>
+                  {t("common.clearFilter")}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

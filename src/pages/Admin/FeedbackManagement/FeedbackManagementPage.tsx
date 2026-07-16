@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
  */
 
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -87,10 +87,6 @@ export function FeedbackManagementPage() {
     return sortedData.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [sortedData, pagination.startIndex, pagination.endIndex]);
 
-  const handleViewDetail = (feedback: MentorFeedback) => {
-    setSelectedFeedback(feedback);
-    setIsDetailOpen(true);
-  };
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
@@ -165,121 +161,109 @@ export function FeedbackManagementPage() {
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <SpinnerBlock size="lg" label={t("common.loading")} />
-          </div>
-        ) : pageData.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-              <MessageSquare className="h-6 w-6 text-slate-400 dark:text-slate-500" />
-            </div>
-            <p className="text-sm font-medium text-slate-500">
-              {t("adminFeedbackmanagement.noResponsesFoundMatchingThe")}
-            </p>
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchQuery("");
-                  setRatingFilter("all");
-                  pagination.goToFirstPage();
-                }}>
-                {t("common.clearFilter")}
-              </Button>
-            )}
+            <SpinnerBlock size="sm" />
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {hasActiveFilters && (
-              <div className="mb-3 flex items-center gap-2 px-6">
-                <span className="text-xs text-slate-500">
-                  Hiển thị{" "}
-                  <strong className="text-slate-800 dark:text-slate-200">
-                    {filteredFeedbacks.length}
-                  </strong>{" "}
-                  / <strong>{feedbacks.length}</strong> kết quả
-                </span>
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
+            {pageData.length === 0 ? (
+              <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <MessageSquare className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+                </div>
+                <p className="text-sm font-medium text-slate-500">
+                  {t("adminFeedbackmanagement.noResponsesFoundMatchingThe")}
+                </p>
+                {hasActiveFilters && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setRatingFilter("all");
+                      pagination.goToFirstPage();
+                    }}>
+                    {t("common.clearFilter")}
+                  </Button>
+                )}
               </div>
-            )}
-            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">{t("common.id")}</TableHead>
-                    <TableHead>{t("common.candidateSubmits")}</TableHead>
-                    <TableHead>{t("common.mentorAccepted")}</TableHead>
-                    <TableHead className="w-32">{t("common.session")}</TableHead>
-                    <TableHead className="w-40">{t("common.time")}</TableHead>
-                    <TableHead className="w-36">
-                      <SortButton {...getSortProps("rating" as keyof MentorFeedback)}>
-                        {t("common.evaluate")}
-                      </SortButton>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pageData.map((feedback: MentorFeedback) => (
-                    <TableRow
-                      key={feedback.id}
-                      className="cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                      onClick={() => handleViewDetail(feedback)}>
-                      <TableCell className="font-medium">#{feedback.id}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={feedback.user?.avatarUrl} />
-                            <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-                              {feedback.user?.name?.charAt(0) || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">
-                            {feedback.user?.name || t("common.noDataAvailable")}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={feedback.mentor?.avatarUrl} />
-                            <AvatarFallback className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                              {feedback.mentor?.name?.charAt(0) || "M"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">
-                            {feedback.mentor?.name || t("common.noDataAvailable")}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">#{feedback.session?.id}</Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-500">
-                        {feedback.createdAt
-                          ? formatDateTime(feedback.createdAt)
-                          : feedback.session?.joinTime
-                            ? formatDateTime(feedback.session.joinTime)
-                            : t("common.noDataAvailable")}
-                      </TableCell>
-                      <TableCell>
-                        <StarRating value={feedback.rating || 0} readOnly size="sm" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            ) : (
+              <>
+                <div className="flex-1 overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">ID</TableHead>
+                        <TableHead>{t("common.applicant")}</TableHead>
+                        <TableHead>Mentor</TableHead>
+                        <TableHead>{t("adminFeedback.session")}</TableHead>
+                        <TableHead>
+                          <SortButton {...getSortProps("createdAt" as keyof MentorFeedback)}>
+                            {t("adminFeedback.sentDate")}
+                          </SortButton>
+                        </TableHead>
+                        <TableHead>
+                          <SortButton {...getSortProps("rating" as keyof MentorFeedback)}>
+                            {t("common.review")}
+                          </SortButton>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pageData.map((feedback) => (
+                        <TableRow
+                          key={feedback.id}
+                          onClick={() => {
+                            setSelectedFeedback(feedback);
+                            setIsDetailOpen(true);
+                          }}
+                          className="cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                          <TableCell className="font-medium text-slate-500">
+                            #{feedback.id}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {feedback.user?.name || t("common.noDataAvailable")}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {feedback.mentor?.name || t("common.noDataAvailable")}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">#{feedback.session?.id}</Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-500">
+                            {feedback.createdAt
+                              ? formatDateTime(feedback.createdAt)
+                              : t("common.noDataAvailable")}
+                          </TableCell>
+                          <TableCell>
+                            <StarRating value={feedback.rating || 0} readOnly size="sm" />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
 
-            <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-              <PaginationControl
-                pagination={pagination}
-                onPageSizeChange={(nextPageSize) => {
-                  setPageSize(nextPageSize);
-                  pagination.goToFirstPage();
-                }}
-              />
-            </div>
+                <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                  <PaginationControl
+                    pagination={pagination}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

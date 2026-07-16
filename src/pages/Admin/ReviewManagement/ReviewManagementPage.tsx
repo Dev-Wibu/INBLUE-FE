@@ -204,7 +204,7 @@ export function ReviewManagementPage() {
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" label={t("common.loading")} />
@@ -230,9 +230,9 @@ export function ReviewManagementPage() {
             )}
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
             {hasActiveFilters && (
-              <div className="mb-3 flex items-center gap-2 px-6">
+              <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
                 <span className="text-xs text-slate-500">
                   Hiển thị{" "}
                   <strong className="text-slate-800 dark:text-slate-200">
@@ -242,7 +242,7 @@ export function ReviewManagementPage() {
                 </span>
               </div>
             )}
-            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -318,7 +318,7 @@ export function ReviewManagementPage() {
               </Table>
             </div>
 
-            <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+            <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
               <PaginationControl
                 pagination={pagination}
                 onPageSizeChange={(nextPageSize) => {

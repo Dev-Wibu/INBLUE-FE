@@ -279,9 +279,9 @@ export function PracticeSetManagementPage() {
       </div>
 
       {/* TABLE SECTION */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
+          <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
             {isInitialLoading ? (
               <SpinnerBlock
                 size="lg"
@@ -299,13 +299,15 @@ export function PracticeSetManagementPage() {
 
                 {/* Pagination */}
                 {sortedData.length > 0 && (
-                  <PaginationControl
-                    pagination={pagination}
-                    onPageSizeChange={(nextPageSize) => {
-                      setPageSize(nextPageSize);
-                      pagination.goToFirstPage();
-                    }}
-                  />
+                  <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                    <PaginationControl
+                      pagination={pagination}
+                      onPageSizeChange={(nextPageSize) => {
+                        setPageSize(nextPageSize);
+                        pagination.goToFirstPage();
+                      }}
+                    />
+                  </div>
                 )}
 
                 {/* Empty State with Clear Filters */}

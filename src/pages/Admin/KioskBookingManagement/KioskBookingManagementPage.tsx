@@ -216,28 +216,30 @@ export function KioskBookingManagementPage() {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto p-4 sm:px-6 sm:py-6">
-        <BookingTable
-          bookings={paginatedBookings}
-          onViewDetails={handleViewDetails}
-          onAssignMentor={handleAssignMentor}
-          isLoading={isInitialLoading}
-        />
-      </div>
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="border-border bg-card border-t px-4 py-3 sm:px-6">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground text-xs font-medium">
-              {t("common.showing")} {(pagination.currentPage - 1) * pagination.pageSize + 1}–
-              {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)} /{" "}
-              {pagination.totalCount} {t("common.results")}
-            </span>
-            <PaginationControl pagination={pagination} />
-          </div>
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <div className="flex-1 overflow-auto p-4 sm:px-6 sm:py-6">
+          <BookingTable
+            bookings={paginatedBookings}
+            onViewDetails={handleViewDetails}
+            onAssignMentor={handleAssignMentor}
+            isLoading={isInitialLoading}
+          />
         </div>
-      )}
+
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="border-border bg-card flex-none border-t px-4 py-3 sm:px-6">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground text-xs font-medium">
+                {t("common.showing")} {(pagination.currentPage - 1) * pagination.pageSize + 1}–
+                {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)} /{" "}
+                {pagination.totalCount} {t("common.results")}
+              </span>
+              <PaginationControl pagination={pagination} />
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Detail Dialog */}
       <BookingDetailDialog onOpenChange={setIsViewDialogOpen} booking={selectedBooking} />

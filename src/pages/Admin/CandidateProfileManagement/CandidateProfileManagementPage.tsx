@@ -229,8 +229,8 @@ export function CandidateProfileManagementPage() {
             </p>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
+            <div className="flex-1 overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -289,17 +289,15 @@ export function CandidateProfileManagementPage() {
               </Table>
             </div>
 
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    pagination.goToFirstPage();
-                  }}
-                  pageSizeOptions={[5, 10, 20, 50]}
-                />
-              </div>
+            <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              <PaginationControl
+                pagination={pagination}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  pagination.goToFirstPage();
+                }}
+                pageSizeOptions={[5, 10, 20, 50]}
+              />
             </div>
           </div>
         )}

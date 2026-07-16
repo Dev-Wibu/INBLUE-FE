@@ -202,7 +202,7 @@ export function QuestionBankManagementPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
           <TabsContent value="questions" className="m-0 flex h-full flex-col">
             {isLoading ? (
               <div className="flex h-64 flex-col items-center justify-center gap-3">
@@ -210,8 +210,8 @@ export function QuestionBankManagementPage() {
                 <p className="text-sm text-slate-500">Đang tải danh sách câu hỏi…</p>
               </div>
             ) : (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div>
+              <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
+                <div className="flex-1 overflow-auto">
                   <QuestionBankTable
                     questions={pageItems}
                     categories={categories}
@@ -220,7 +220,7 @@ export function QuestionBankManagementPage() {
                   />
                 </div>
                 {questions.length > 0 && (
-                  <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                     <PaginationControl
                       pagination={pagination}
                       onPageSizeChange={(nextPageSize) => {

@@ -295,17 +295,17 @@ export function CodingProblemManagementPage() {
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isLoading ? (
           <div className="flex h-64 flex-col items-center justify-center gap-3">
             <Loader2 className="h-7 w-7 animate-spin text-indigo-500" />
             <p className="text-sm text-slate-500">Đang tải danh sách bài tập…</p>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
             {/* Result count when filtered */}
             {(query || difficulty !== "ALL") && (
-              <div className="mb-3 flex items-center gap-2 px-6">
+              <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
                 <span className="text-xs text-slate-500">
                   Hiển thị{" "}
                   <strong className="text-slate-800 dark:text-slate-200">
@@ -323,7 +323,7 @@ export function CodingProblemManagementPage() {
                 </button>
               </div>
             )}
-            <div>
+            <div className="flex-1 overflow-auto">
               <CodingProblemTable
                 problems={pageItems}
                 onEdit={(p) => {
@@ -335,7 +335,7 @@ export function CodingProblemManagementPage() {
               />
             </div>
             {filteredProblems.length > 0 && (
-              <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                 <PaginationControl
                   pagination={pagination}
                   onPageSizeChange={(nextPageSize) => {

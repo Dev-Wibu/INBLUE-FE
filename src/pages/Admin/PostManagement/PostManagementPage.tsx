@@ -39,6 +39,7 @@ import { postManager, usePostById } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
+  BookOpen,
   CheckCircle2,
   Eye,
   MessageSquare,
@@ -560,24 +561,54 @@ export function PostManagementPage() {
         </div>
       </div>
 
-      {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isInitialLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <SpinnerBlock size="lg" />
+            <SpinnerBlock size="lg" label={t("adminPostmanagement.loadingArticleList")} />
           </div>
         ) : pageItems.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-              <Search className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+              <BookOpen className="h-6 w-6 text-slate-400 dark:text-slate-500" />
             </div>
             <p className="text-sm font-medium text-slate-500">
-              {t("adminPostmanagement.thereAreNoMatchingArticles")}
+              {t("adminPostmanagement.noArticlesFoundMatchingTheSelected")}
             </p>
+            {(searchQuery || statusFilter !== "all" || tagFilter !== "all") && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                  setTagFilter("all");
+                  pagination.goToFirstPage();
+                }}>
+                {t("common.clearFilter")}
+              </Button>
+            )}
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
+            {(searchQuery || statusFilter !== "all" || tagFilter !== "all") && (
+              <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
+                <span className="text-sm text-slate-500">
+                  {t("adminPostmanagement.showingResultsFor", { count: pageItems.length })}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                    setTagFilter("all");
+                    pagination.goToFirstPage();
+                  }}
+                  className="h-7 text-xs">
+                  {t("common.clearFilter")}
+                </Button>
+              </div>
+            )}
+            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
                   <TableRow>

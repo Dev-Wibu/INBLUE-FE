@@ -954,7 +954,7 @@ export function ApplicationGradingPage({
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {paginatedData.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -965,9 +965,9 @@ export function ApplicationGradingPage({
             </p>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <div className="overflow-x-auto">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
+            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              <div className="min-w-full overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1060,10 +1060,8 @@ export function ApplicationGradingPage({
               </div>
             </div>
 
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="mt-4 flex items-center justify-end rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <PaginationControl pagination={pagination} />
-              </div>
+            <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              <PaginationControl pagination={pagination} />
             </div>
           </div>
         )}

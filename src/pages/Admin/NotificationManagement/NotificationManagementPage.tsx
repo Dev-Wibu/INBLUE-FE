@@ -428,7 +428,7 @@ export function NotificationManagementPage() {
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <SpinnerBlock size="lg" label={t("common.loading")} />
@@ -439,7 +439,7 @@ export function NotificationManagementPage() {
               <Bell className="h-6 w-6 text-slate-400 dark:text-slate-500" />
             </div>
             <p className="text-sm font-medium text-slate-500">
-              {t("adminNotificationmanagement.noNotifications")}
+              {t("adminNotificationmanagement.thereAreNoNotificationsMatchingThe")}
             </p>
             {hasActiveFilters && (
               <Button
@@ -454,8 +454,25 @@ export function NotificationManagementPage() {
             )}
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
+            {hasActiveFilters && (
+              <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
+                <p className="text-xs text-slate-500">
+                  {t("common.showingResultsFor", { count: sortedData.length })}
+                </p>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                    pagination.goToFirstPage();
+                  }}
+                  className="h-6 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
+                  {t("common.clearFilter")}
+                </Button>
+              </div>
+            )}
+            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
                   <TableRow>
