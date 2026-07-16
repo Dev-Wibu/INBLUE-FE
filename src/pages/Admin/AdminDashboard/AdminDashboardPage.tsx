@@ -7,8 +7,6 @@ import { AdminGradingTabProvider } from "@/contexts/AdminGradingTabContext";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
   Bell,
-  BrainCircuit,
-  Briefcase,
   Building2,
   CalendarClock,
   CalendarDays,
@@ -17,10 +15,8 @@ import {
   Database,
   LayoutDashboard,
   LayoutTemplate,
-  Library,
   MessageSquare,
   Newspaper,
-  Settings,
   Star,
   UserCheck,
   UserCog,
@@ -66,128 +62,116 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         label: t("common.dashboard"),
         color: "text-slate-400",
       },
+    ],
+  },
+  {
+    label: t("adminAdmindashboard.administration"),
+    items: [
+      { type: "users", icon: Users, label: t("common.user"), color: "text-slate-400" },
       {
-        type: "system",
-        icon: Settings,
-        label: t("adminAdmindashboard.administration"),
+        type: "mentors",
+        icon: UserCog,
+        label: t("adminAdmindashboard.instructor"),
         color: "text-slate-400",
-        children: [
-          { type: "users", icon: Users, label: t("common.user"), color: "text-slate-400" },
-          {
-            type: "mentors",
-            icon: UserCog,
-            label: t("adminAdmindashboard.instructor"),
-            color: "text-slate-400",
-          },
-          {
-            type: "companies",
-            icon: Building2,
-            label: t("common.company"),
-            color: "text-slate-400",
-          },
-          {
-            type: "notifications",
-            icon: Bell,
-            label: t("common.notification"),
-            color: "text-slate-400",
-          },
-        ],
       },
       {
-        type: "recruitment",
-        icon: Briefcase,
-        label: t("adminAdmindashboard.recruitment"),
+        type: "companies",
+        icon: Building2,
+        label: t("common.company"),
         color: "text-slate-400",
-        children: [
-          {
-            type: "sessions",
-            icon: Video,
-            label: t("common.interviewSession"),
-            color: "text-slate-400",
-          },
-          {
-            type: "interviewTemplates",
-            icon: LayoutTemplate,
-            label: t("adminAdmindashboard.processTemplate"),
-            color: "text-slate-400",
-          },
-          {
-            type: "reviews",
-            icon: Star,
-            label: t("common.reviewFromMentor"),
-            color: "text-slate-400",
-          },
-          {
-            type: "feedback",
-            icon: MessageSquare,
-            label: t("common.feedbackFromCandidates"),
-            color: "text-slate-400",
-          },
-          {
-            type: "applicationGrading",
-            icon: ClipboardCheck,
-            label: t("adminAdmindashboard.candidateGrading"),
-            color: "text-slate-400",
-          },
-          {
-            type: "mentorReviewApprovals",
-            icon: UserCheck,
-            label: t("adminAdmindashboard.mentorReviewApprovals"),
-            color: "text-slate-400",
-          },
-          {
-            type: "kiosk-bookings",
-            icon: CalendarClock,
-            label: t("adminKiosk.bookingRequests"),
-            color: "text-slate-400",
-          },
-          {
-            type: "kiosk-management",
-            icon: CalendarDays,
-            label: t("adminKioskManagement.title"),
-            color: "text-slate-400",
-          },
-        ],
       },
       {
-        type: "testing",
-        icon: BrainCircuit,
-        label: t("adminAdmindashboard.testingAndTraining"),
+        type: "notifications",
+        icon: Bell,
+        label: t("common.notification"),
         color: "text-slate-400",
-        children: [
-          {
-            type: "questionBanks",
-            icon: Database,
-            label: t("common.questionBank"),
-            color: "text-slate-400",
-          },
-          {
-            type: "codeReviewProblems",
-            icon: Code2,
-            label: t("adminAdmindashboard.codeReviewProblems"),
-            color: "text-slate-400",
-          },
-          {
-            type: "codingProblems",
-            icon: Code2,
-            label: t("adminAdmindashboard.codingProblems"),
-            color: "text-slate-400",
-          },
-        ],
+      },
+    ],
+  },
+  {
+    label: t("adminAdmindashboard.recruitment"),
+    items: [
+      {
+        type: "sessions",
+        icon: Video,
+        label: t("common.interviewSession"),
+        color: "text-slate-400",
       },
       {
-        type: "content",
-        icon: Library,
-        label: t("common.content"),
+        type: "interviewTemplates",
+        icon: LayoutTemplate,
+        label: t("adminAdmindashboard.processTemplate"),
         color: "text-slate-400",
-        children: [
-          {
-            type: "posts",
-            icon: Newspaper,
-            label: t("common.articlesCommunity"),
-            color: "text-slate-400",
-          },
-        ],
+      },
+      {
+        type: "reviews",
+        icon: Star,
+        label: t("common.reviewFromMentor"),
+        color: "text-slate-400",
+      },
+      {
+        type: "feedback",
+        icon: MessageSquare,
+        label: t("common.feedbackFromCandidates"),
+        color: "text-slate-400",
+      },
+      {
+        type: "applicationGrading",
+        icon: ClipboardCheck,
+        label: t("adminAdmindashboard.candidateGrading"),
+        color: "text-slate-400",
+      },
+      {
+        type: "mentorReviewApprovals",
+        icon: UserCheck,
+        label: t("adminAdmindashboard.mentorReviewApprovals"),
+        color: "text-slate-400",
+      },
+      {
+        type: "kiosk-bookings",
+        icon: CalendarClock,
+        label: t("adminKiosk.bookingRequests"),
+        color: "text-slate-400",
+      },
+      {
+        type: "kiosk-management",
+        icon: CalendarDays,
+        label: t("adminKioskManagement.title"),
+        color: "text-slate-400",
+      },
+    ],
+  },
+  {
+    label: t("adminAdmindashboard.testingAndTraining"),
+    items: [
+      {
+        type: "questionBanks",
+        icon: Database,
+        label: t("common.questionBank"),
+        color: "text-slate-400",
+      },
+      {
+        type: "codeReviewProblems",
+        icon: Code2,
+        label: t("adminAdmindashboard.codeReviewProblems"),
+        color: "text-slate-400",
+      },
+      {
+        type: "codingProblems",
+        icon: Code2,
+        label: t("adminAdmindashboard.codingProblems"),
+        color: "text-slate-400",
+      },
+    ],
+  },
+  {
+    label: t("common.content"),
+    items: [
+      {
+        type: "posts",
+        icon: Newspaper,
+        label: t("common.articlesCommunity"),
+        color: "text-slate-400",
       },
     ],
   },
@@ -238,26 +222,23 @@ export function AdminDashboardPage() {
   const ADMIN_SIDEBAR_LOGO = useMemo(
     () => (
       <>
-        <div className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-          <LayoutDashboard className="h-6 w-6 text-white" />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0047AB] shadow-sm">
+          <span className="text-base font-bold text-white">IB</span>
         </div>
         <div>
-          <h1 className="font-semibold text-gray-900 dark:text-white">
-            {t("adminAdmindashboard.administrator")}
+          <h1 className="text-lg font-bold tracking-widest text-[#0047AB] dark:text-[#66B2FF]">
+            INBLUE
           </h1>
-          <p className="text-xs text-gray-500 dark:text-slate-400">
-            {t("adminAdmindashboard.systemAdministration")}
-          </p>
         </div>
       </>
     ),
-    [t]
+    []
   );
 
   const ADMIN_SIDEBAR_LOGO_COLLAPSED = useMemo(
     () => (
-      <div className="bg-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-        <LayoutDashboard className="h-6 w-6 text-white" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0047AB] shadow-sm">
+        <span className="text-base font-bold text-white">IB</span>
       </div>
     ),
     []
@@ -283,11 +264,11 @@ export function AdminDashboardPage() {
           expandedWidth: "w-64",
           collapsedWidth: "w-[72px]",
           logoBorder: "border-b border-gray-200 dark:border-slate-800",
-          logoExpandedPadding: "h-16 gap-3 px-5",
+          logoExpandedPadding: "h-16 gap-3 px-8",
           logoCollapsedPadding: "h-16 justify-center px-2",
-          navWrapper: "flex-1 space-y-1 overflow-y-auto px-4 py-5",
-          navExpandedPadding: "p-0",
-          navCollapsedPadding: "p-0",
+          navWrapper: "flex-1 space-y-1 overflow-y-auto scrollbar-hide",
+          navExpandedPadding: "px-5 py-4",
+          navCollapsedPadding: "px-2 py-4",
           sectionLabel:
             "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-6 px-3 dark:text-slate-400",
           divider: "border-gray-200 dark:border-slate-800",
@@ -297,12 +278,6 @@ export function AdminDashboardPage() {
           inactiveItem:
             "text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
           activeIconOverride: "text-indigo-600 dark:text-indigo-400",
-          flyoutActiveItem:
-            "bg-indigo-50 text-indigo-700 font-semibold rounded-lg dark:bg-indigo-500/10 dark:text-indigo-400",
-          flyoutInactiveItem:
-            "text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all rounded-lg dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
-          flyoutActiveIcon: "text-indigo-600 dark:text-indigo-400",
-          flyoutBorder: "border-gray-200 dark:border-slate-700/80",
           footerBorder: "border-t border-gray-200 dark:border-slate-800",
           footerExpandedPadding: "p-4",
           footerCollapsedPadding: "p-3",

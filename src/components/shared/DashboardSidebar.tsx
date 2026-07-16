@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -5,7 +6,7 @@ import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { ChevronDown, LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -48,11 +49,6 @@ export interface DashboardSidebarTheme {
   activeItem: string;
   inactiveItem: string;
   activeIconOverride?: string;
-  // Flyout submenu
-  flyoutActiveItem?: string;
-  flyoutInactiveItem?: string;
-  flyoutActiveIcon?: string;
-  flyoutBorder?: string;
   // Footer
   footerBorder: string;
   footerExpandedPadding: string;
@@ -130,6 +126,7 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const isMobile = useIsMobile();
   const [internalCollapsed, setInternalCollapsed] = useState(() =>
@@ -138,13 +135,7 @@ export function DashboardSidebar({
   const isControlled = controlledCollapsed !== undefined;
   const isCollapsed = isControlled ? controlledCollapsed : internalCollapsed;
   const desktopSidebarRef = useRef<HTMLElement | null>(null);
-  const [pinnedDesktopParent, setPinnedDesktopParent] = useState<string | null>(null);
-  const [collapsedDropdownParent, setCollapsedDropdownParent] = useState<string | null>(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(() => {
-    const saved = localStorage.getItem(`${storageKey}_mobile_expanded`);
-    return saved || null;
-  });
   const setCollapsed = (nextCollapsed: boolean | ((_prev: boolean) => boolean)) => {
     const resolved =
       typeof nextCollapsed === "function" ? nextCollapsed(isCollapsed) : nextCollapsed;
@@ -156,34 +147,7 @@ export function DashboardSidebar({
   useEffect(() => {
     localStorage.setItem(storageKey, String(isCollapsed));
   }, [isCollapsed, storageKey]);
-  useEffect(() => {
-    if (expandedMobileItem) {
-      localStorage.setItem(`${storageKey}_mobile_expanded`, expandedMobileItem);
-      return;
-    }
-    localStorage.removeItem(`${storageKey}_mobile_expanded`);
-  }, [expandedMobileItem, storageKey]);
-  useEffect(() => {
-    if (!isCollapsed || !collapsedDropdownParent) {
-      return;
-    }
-    const handleOutsideClick = (event: MouseEvent) => {
-      const target = event.target;
-      if (!(target instanceof Node)) {
-        return;
-      }
-      if (!desktopSidebarRef.current?.contains(target)) {
-        setCollapsedDropdownParent(null);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, [collapsedDropdownParent, isCollapsed]);
   const toggleCollapse = () => {
-    setCollapsedDropdownParent(null);
-    setPinnedDesktopParent(null);
     setCollapsed((prev) => !prev);
   };
   const handleSettingsClick = () => {
@@ -198,7 +162,6 @@ export function DashboardSidebar({
   };
   const handleNavigate = (type: string) => {
     onNavigate(type);
-    setCollapsedDropdownParent(null);
     setIsMobileOpen(false);
   };
   const handleLogout = async () => {
@@ -216,10 +179,6 @@ export function DashboardSidebar({
     }
   };
   const renderMenuItem = (item: SidebarMenuItem) => {
-    // Items with children get flyout submenu handling
-    if (item.children && item.children.length > 0) {
-      return renderFlyoutItem(item);
-    }
     const isActive = activeTab === item.type;
     const buttonContent = (
       <button
@@ -230,13 +189,19 @@ export function DashboardSidebar({
           isCollapsed ? cn("justify-center px-2", theme.itemPy) : cn("px-3", theme.itemPy),
           isActive ? theme.activeItem : theme.inactiveItem
         )}>
-        <item.icon
+        <div
           className={cn(
-            "h-5 w-5 shrink-0",
-            isActive && theme.activeIconOverride ? theme.activeIconOverride : item.color
-          )}
-        />
-        {!isCollapsed && item.label}
+            "flex shrink-0 items-center",
+            isCollapsed ? "w-5 justify-center" : "w-8 justify-start"
+          )}>
+          <item.icon
+            className={cn(
+              "h-5 w-5 shrink-0",
+              isActive && theme.activeIconOverride ? theme.activeIconOverride : item.color
+            )}
+          />
+        </div>
+        {!isCollapsed && <span className="truncate">{item.label}</span>}
       </button>
     );
     if (isCollapsed) {
@@ -258,246 +223,29 @@ export function DashboardSidebar({
     }
     return buttonContent;
   };
-  const renderFlyoutItem = (item: SidebarMenuItem) => {
-    const isAnyChildActive = item.children!.some((c) => activeTab === c.type);
-    const isActive = activeTab === item.type || isAnyChildActive;
-    const isCollapsedDropdownOpen = collapsedDropdownParent === item.type;
-    const isExpandedDropdownOpen =
-      !isCollapsed && (pinnedDesktopParent === item.type || isAnyChildActive);
-    return (
-      <div key={item.type} className="relative">
-        {isCollapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                aria-haspopup="menu"
-                aria-expanded={isCollapsedDropdownOpen}
-                onClick={() =>
-                  setCollapsedDropdownParent((prev) => (prev === item.type ? null : item.type))
-                }
-                className={cn(
-                  "flex w-full items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors",
-                  theme.itemPy,
-                  isActive ? theme.activeItem : theme.inactiveItem
-                )}>
-                <item.icon
-                  className={cn(
-                    "h-5 w-5 shrink-0",
-                    isActive && theme.activeIconOverride ? theme.activeIconOverride : item.color
-                  )}
-                />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="font-medium">
-              {item.label}
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          <button
-            type="button"
-            aria-haspopup="menu"
-            aria-expanded={isExpandedDropdownOpen}
-            onClick={() =>
-              setPinnedDesktopParent((prev) => (prev === item.type ? null : item.type))
-            }
-            className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors",
-              theme.itemPy,
-              isActive ? theme.activeItem : theme.inactiveItem
-            )}>
-            <item.icon
-              className={cn(
-                "h-5 w-5 shrink-0",
-                isActive && theme.activeIconOverride ? theme.activeIconOverride : item.color
-              )}
-            />
-            {item.label}
-            <ChevronDown
-              className={cn(
-                "ml-auto h-4 w-4 shrink-0 opacity-70 transition-transform duration-200",
-                isExpandedDropdownOpen && "rotate-180"
-              )}
-            />
-          </button>
-        )}
-
-        {isCollapsed && isCollapsedDropdownOpen && item.children && (
-          <div
-            className={cn(
-              "absolute top-0 left-[calc(100%+0.5rem)] z-70 min-w-52 rounded-xl border bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900",
-              theme.flyoutBorder
-            )}
-            style={{
-              willChange: "opacity, transform",
-            }}>
-            <p className="px-2.5 pt-1 pb-1.5 text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400">
-              {item.label}
-            </p>
-
-            {item.children.map((child) => {
-              const isChildActive = activeTab === child.type;
-              return (
-                <button
-                  key={child.type}
-                  type="button"
-                  onClick={() => handleNavigate(child.type)}
-                  className={cn(
-                    "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors",
-                    isChildActive
-                      ? theme.flyoutActiveItem || theme.activeItem
-                      : theme.flyoutInactiveItem ||
-                          "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
-                  )}>
-                  <child.icon
-                    className={cn(
-                      "h-4 w-4 shrink-0",
-                      isChildActive && theme.flyoutActiveIcon ? theme.flyoutActiveIcon : child.color
-                    )}
-                  />
-                  <span className="truncate">{child.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {!isCollapsed && item.children && (
-          <div
-            className={cn(
-              "grid transition-all duration-300 ease-in-out",
-              isExpandedDropdownOpen
-                ? "mt-1 grid-rows-[1fr] opacity-100"
-                : "pointer-events-none mt-0 grid-rows-[0fr] opacity-0"
-            )}>
-            <div className="overflow-hidden">
-              <div className="ml-6 space-y-1 border-l border-slate-200 pl-3 dark:border-slate-700/80">
-                {item.children.map((child) => {
-                  const isChildActive = activeTab === child.type;
-                  return (
-                    <button
-                      key={child.type}
-                      type="button"
-                      onClick={() => handleNavigate(child.type)}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
-                        isChildActive
-                          ? theme.flyoutActiveItem || theme.activeItem
-                          : theme.flyoutInactiveItem ||
-                              "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
-                      )}>
-                      <child.icon
-                        className={cn(
-                          "h-4 w-4 shrink-0",
-                          isChildActive && theme.flyoutActiveIcon
-                            ? theme.flyoutActiveIcon
-                            : child.color
-                        )}
-                      />
-                      <span className="truncate">{child.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
   const renderMobileMenuItem = (item: SidebarMenuItem) => {
-    if (!item.children || item.children.length === 0) {
-      const isActive = activeTab === item.type;
-      return (
-        <button
-          key={item.type}
-          onClick={() => handleNavigate(item.type)}
-          className={cn(
-            "group flex w-full items-center gap-3 rounded-2xl border px-3.5 text-left text-sm font-semibold transition-all",
-            "min-h-11 border-transparent",
-            isActive
-              ? "border-[#0047AB]/20 shadow-sm shadow-[#0047AB]/10 dark:border-[#66B2FF]/25 dark:shadow-[#66B2FF]/10"
-              : "hover:border-slate-200/90 hover:shadow-[0_6px_16px_-14px_rgba(15,23,42,0.6)] dark:hover:border-slate-700/80 dark:hover:shadow-black/30",
-            theme.itemPy,
-            isActive ? theme.activeItem : theme.inactiveItem
-          )}>
-          <item.icon
-            className={cn(
-              "h-5 w-5 shrink-0",
-              isActive && theme.activeIconOverride ? theme.activeIconOverride : item.color
-            )}
-          />
-          <span className="truncate">{item.label}</span>
-        </button>
-      );
-    }
-    const isAnyChildActive = item.children.some((child) => activeTab === child.type);
-    const isExpanded = expandedMobileItem === item.type || isAnyChildActive;
+    const isActive = activeTab === item.type;
     return (
-      <div key={item.type} className="space-y-1">
-        <button
-          onClick={() =>
-            setExpandedMobileItem((prev) => {
-              if (prev === item.type) return null;
-              return item.type;
-            })
-          }
+      <button
+        key={item.type}
+        onClick={() => handleNavigate(item.type)}
+        className={cn(
+          "group flex w-full items-center gap-3 rounded-2xl border px-3.5 text-left text-sm font-semibold transition-all",
+          "min-h-11 border-transparent",
+          isActive
+            ? "border-[#0047AB]/20 shadow-sm shadow-[#0047AB]/10 dark:border-[#66B2FF]/25 dark:shadow-[#66B2FF]/10"
+            : "hover:border-slate-200/90 hover:shadow-[0_6px_16px_-14px_rgba(15,23,42,0.6)] dark:hover:border-slate-700/80 dark:hover:shadow-black/30",
+          theme.itemPy,
+          isActive ? theme.activeItem : theme.inactiveItem
+        )}>
+        <item.icon
           className={cn(
-            "group flex w-full items-center gap-3 rounded-2xl border px-3.5 text-left text-sm font-semibold transition-all",
-            "min-h-11 border-transparent",
-            isAnyChildActive
-              ? "border-[#0047AB]/20 shadow-sm shadow-[#0047AB]/10 dark:border-[#66B2FF]/25 dark:shadow-[#66B2FF]/10"
-              : "hover:border-slate-200/90 hover:shadow-[0_6px_16px_-14px_rgba(15,23,42,0.6)] dark:hover:border-slate-700/80 dark:hover:shadow-black/30",
-            theme.itemPy,
-            isAnyChildActive ? theme.activeItem : theme.inactiveItem
-          )}>
-          <item.icon
-            className={cn(
-              "h-5 w-5 shrink-0",
-              isAnyChildActive && theme.activeIconOverride ? theme.activeIconOverride : item.color
-            )}
-          />
-          <span className="truncate">{item.label}</span>
-          <ChevronDown
-            className={cn(
-              "ml-auto h-4 w-4 shrink-0 transition-transform duration-300 ease-out",
-              isExpanded && "rotate-180"
-            )}
-          />
-        </button>
-
-        {isExpanded && (
-          <div className="mt-1 ml-6 space-y-1 border-l border-slate-200/90 pl-3 dark:border-slate-700/90">
-            {item.children.map((child) => {
-              const isChildActive = activeTab === child.type;
-              return (
-                <button
-                  key={child.type}
-                  onClick={() => handleNavigate(child.type)}
-                  className={cn(
-                    "flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm font-medium transition-all",
-                    "border-transparent",
-                    isChildActive
-                      ? "border-[#0047AB]/20 shadow-sm shadow-[#0047AB]/10 dark:border-[#66B2FF]/25 dark:shadow-[#66B2FF]/10"
-                      : "hover:border-slate-200/80 dark:hover:border-slate-700/80",
-                    isChildActive
-                      ? theme.flyoutActiveItem || theme.activeItem
-                      : theme.flyoutInactiveItem ||
-                          "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
-                  )}>
-                  <child.icon
-                    className={cn(
-                      "h-[18px] w-[18px] shrink-0",
-                      isChildActive && theme.flyoutActiveIcon ? theme.flyoutActiveIcon : child.color
-                    )}
-                  />
-                  <span className="truncate">{child.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+            "h-5 w-5 shrink-0",
+            isActive && theme.activeIconOverride ? theme.activeIconOverride : item.color
+          )}
+        />
+        <span className="truncate">{item.label}</span>
+      </button>
     );
   };
   return (
@@ -653,6 +401,33 @@ export function DashboardSidebar({
             )}>
             {isCollapsed && collapsedLogo ? collapsedLogo : logo}
           </div>
+
+          {user && (
+            <div
+              className={cn(
+                "flex-shrink-0 border-b border-slate-200/60 dark:border-slate-800",
+                isCollapsed ? "flex justify-center px-2 py-4" : "px-8 py-4"
+              )}>
+              <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
+                <Avatar className="h-8 w-8 shrink-0 border border-slate-200 shadow-sm dark:border-slate-700">
+                  <AvatarImage src={user.avatarUrl || ""} />
+                  <AvatarFallback className="bg-indigo-100 font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400">
+                    {user.name?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                {!isCollapsed && (
+                  <div className="flex min-w-0 flex-col">
+                    <span className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      {user.name}
+                    </span>
+                    <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      {user.email}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Navigation */}
           <nav

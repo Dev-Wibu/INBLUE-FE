@@ -432,13 +432,7 @@ export function UserDashboardPage() {
           inactiveItem:
             "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
           activeIconOverride: "text-[#0047AB] dark:text-[#66B2FF]",
-          flyoutActiveItem:
-            "bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]",
-          flyoutInactiveItem:
-            "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800",
-          flyoutActiveIcon: "text-[#0047AB] dark:text-[#66B2FF]",
-          flyoutBorder: "border-slate-200 dark:border-slate-800",
-          footerBorder: "border-t border-slate-200 dark:border-slate-800",
+          footerBorder: "border-t border-slate-200/90 dark:border-slate-800/80",
           footerExpandedPadding: "p-3",
           footerCollapsedPadding: "p-2",
           logoutExpandedBtn:
