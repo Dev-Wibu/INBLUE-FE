@@ -159,16 +159,15 @@ function SessionCard({
   //   mentor can test their device; it's also allowed once the time has
   //   passed regardless of the persisted status (BE may be slow to flip
   //   to ONGOING after the webhook returns).
+  // COMPLETED is intentionally NOT in the allowlist — once the room is
+  // closed by Daily.co the URL is dead.
   const joinTimestamp = toTimestamp(session.joinTime);
   const earlyJoinWindowMs = 15 * 60 * 1000;
   const isTimeReached = joinTimestamp ? joinTimestamp - earlyJoinWindowMs <= now : true;
   const isDraft = session.status === "DRAFT";
   const isCancelled = session.status === "CANCELED" || session.status === "REJECTED";
   const canJoin =
-    (session.status === "PAID" ||
-      session.status === "ONGOING" ||
-      session.status === "SCHEDULED" ||
-      session.status === "COMPLETED") &&
+    (session.status === "PAID" || session.status === "ONGOING" || session.status === "SCHEDULED") &&
     !isDraft &&
     !isCancelled &&
     !!session.roomUrl &&
@@ -383,13 +382,38 @@ export function MentorSessionsPage() {
   // BE sometimes returns the mentor id under `userId2` (DB column) and sometimes
   // under `mentorId` (response DTO). Accept both so the list stays in sync with
   // whatever the active BE controller is doing.
-  const mentorSessions = useMemo(
-    () =>
-      [...allSessions]
-        .filter((session: Session) => session.userId2 === user?.id || session.mentorId === user?.id)
-        .sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
-    [allSessions, user?.id]
-  );
+  const mentorSessions = useMemo(() => {
+    const userIdStr = user?.id != null ? String(user.id) : "";
+    const all = [...allSessions];
+    if (typeof window !== "undefined") {
+      // Temporary debug aid — remove once mentor can see their session.
+      console.debug("[MentorSessions] filter debug", {
+        userId: user?.id,
+        userIdType: typeof user?.id,
+        userRole: user?.role,
+        totalSessions: all.length,
+        sample: all.slice(0, 3).map((s) => ({
+          id: s.id,
+          status: s.status,
+          roomName: s.roomName,
+          userId: s.userId,
+          userId2: s.userId2,
+          mentorId: s.mentorId,
+          userId2Match: s.userId2 === user?.id,
+          mentorIdMatch: s.mentorId === user?.id,
+        })),
+      });
+    }
+    return all
+      .filter(
+        (session: Session) =>
+          session.userId2 === user?.id ||
+          session.mentorId === user?.id ||
+          (userIdStr && String(session.userId2 ?? "") === userIdStr) ||
+          (userIdStr && String(session.mentorId ?? "") === userIdStr)
+      )
+      .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+  }, [allSessions, user?.id, user?.role]);
 
   // Get session IDs that already have mentor reviews
   const reviewBySessionId = useMemo(() => {
