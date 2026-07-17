@@ -1025,13 +1025,41 @@ export function ApplicationMentorReviewPage() {
 
   // Join the Daily.co room for an ONLINE interview. Opens the roomUrl
   // directly (the room is "public" per BE doc, so no token is needed).
+  // 2026-07-17: students were getting a blank rejoin because the previous
+  //   implementation fell back to `booking.sessionKey` (the RoomName, e.g.
+  //   "session-1721...") when roomUrl hadn't populated yet, which of course
+  //   isn't a valid Daily URL. Compose the public URL from sessionId or
+  //   fall back to a stable derivation so the Rejoin button always works.
   const handleJoinRoom = () => {
-    const target = roomUrl ?? booking?.sessionKey;
+    const target = composeDailyRoomUrl(roomUrl, booking?.sessionKey);
     if (!target) return;
-    // Use a new tab so the candidate can keep the page around to submit
-    // their mentor feedback once the interview is over.
     window.open(target, "_blank", "noopener,noreferrer");
   };
+
+  /**
+   * Build a Daily.co URL usable by Daily's iframe. Accepts:
+   *   - full URL (returns as-is)
+   *   - explicit "OFFLINE" (returns null — no online room)
+   *   - bare session key like "session-1721..." (derives
+   *     https://inblue.daily.co/{key})
+   *   - anything else falsy (returns null)
+   */
+  function composeDailyRoomUrl(
+    candidate: string | null | undefined,
+    fallbackKey: string | undefined
+  ): string | null {
+    const raw = (candidate ?? "").trim();
+    if (raw && raw !== "OFFLINE") {
+      if (/^https?:\/\//i.test(raw)) return raw;
+      // BE sometimes returns just the key instead of the full URL.
+      const key = raw.replace(/^\/+/, "");
+      return `https://inblue.daily.co/${encodeURIComponent(key)}`;
+    }
+    if (fallbackKey && fallbackKey !== "OFFLINE") {
+      return `https://inblue.daily.co/${encodeURIComponent(fallbackKey)}`;
+    }
+    return null;
+  }
 
   // Re-fetch roomUrl for a session (used after SlotSelectionStep success).
   const fetchSessionRoomUrl = async (sessionId: number) => {
@@ -1226,6 +1254,29 @@ export function ApplicationMentorReviewPage() {
             <CardContent className="flex items-center justify-center gap-3 p-8 text-sm text-slate-500">
               <Spinner size="sm" tone="primary" />
               {t("userKiosk.loadingBooking")}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 2026-07-17: Belt-and-braces fallback. The branches above only
+            render when `booking` (or `applicationDetail`) is populated. If
+            BE responds late / with an empty detail, the page used to render
+            completely blank, leaving the student stuck. Now we always show
+            an actionable state — a Retry CTA on top of an explainer. */}
+        {!booking && !isReviewed && detailsResolved && applicationDetailId === 0 && (
+          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+            <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+              <Hourglass className="h-10 w-10 text-amber-600 dark:text-amber-400" />
+              <p className="font-semibold text-amber-700 dark:text-amber-300">
+                {t("userKiosk.waitingForMentor")}
+              </p>
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                {t("userKiosk.detailNotReady")}
+              </p>
+              <Button variant="outline" onClick={() => window.location.reload()} className="gap-2">
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+                {t("general.retry")}
+              </Button>
             </CardContent>
           </Card>
         )}
