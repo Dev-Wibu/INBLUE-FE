@@ -1321,20 +1321,23 @@ export function ApplicationMentorReviewPage() {
   };
 
   // Cancel booking
+  // 2026-07-18: in the new Mentor Interview flow `booking.id` is *always*
+  // null (BE confirmed bookingId is unused). Until BE exposes a proper
+  // cancel-session endpoint we no-op + warn instead of deleting a
+  // non-existent booking — otherwise the user gets a silent 404 every
+  // time. TODO: hook this up once
+  // POST /api/sessions/{id}/cancel or DELETE /api/mentor-bookings?…
+  // exists.
   const handleCancelBooking = async () => {
-    if (!booking?.id) return;
-    try {
-      await fetchClient.DELETE("/api/mentor-bookings/{bookingId}", {
-        params: { path: { bookingId: booking.id } },
-      });
-      setBooking(null);
-      setApplicationDetail((prev) =>
-        prev ? { ...prev, bookingId: undefined, status: "PENDING" } : prev
+    if (typeof window !== "undefined") {
+      console.warn(
+        "[MentorReviewPage] cancel requested but BE has not exposed an endpoint for the new Mentor Interview flow; awaiting BE ticket."
       );
-      toast.success(t("userKiosk.bookingCancelledSuccessfully"));
-    } catch {
-      toast.error(t("common.anErrorHasOccurred"));
     }
+    toast.error(
+      t("userKiosk.bookingCancelledSuccessfully") +
+        " (tính năng tạm thời chưa khả dụng — đang chờ BE bổ sung API cancel)"
+    );
   };
 
   // 2026-07-18: when ApplicationDetail carries a sessionId but the
@@ -1492,9 +1495,29 @@ export function ApplicationMentorReviewPage() {
           <AwaitingMentorAssignmentStep />
         )}
 
-        {/* Room Created (ONLINE — Daily.co room ready). Driven by the
-            derived booking snapshot, which now resolves from
-            ApplicationDetail alone (bookingId is null in the new flow). */}
+        {/* 2026-07-18: also show the awaiting-mentor explainer when we
+            have a Session row but `applicationDetail.mentorId` is still
+            null (admin hasn't finalised the assignment yet). Without this
+            the page used to fall through to OfflineConfirmedStep purely
+            because meetingType was OFFLINE, masking the wait. */}
+        {applicationDetail?.sessionId &&
+          !isReviewed &&
+          !bookingSnapshot?.mentorId &&
+          !applicationDetail?.mentorId && <AwaitingMentorAssignmentStep />}
+
+        {/* OFFLINE confirmed — waiting for the in-person meeting. Per BE
+            doc 2026-07-18, the offline marker is the *sessionInfo
+            meetingType* (or `session.roomUrl === "OFFLINE"`). We must
+            NOT fall through to this branch just because detail status
+            is SLOT_PICKED — that's also the canonical state after
+            picking an ONLINE slot. Gate strictly on the OFFLINE marker. */}
+        {(roomUrl === "OFFLINE" || applicationDetail?.sessionInfo?.meetingType === "OFFLINE") &&
+          !isReviewed &&
+          bookingSnapshot && <OfflineConfirmedStep booking={bookingSnapshot} />}
+
+        {/* ONLINE Room Ready — slot picked + mentor assigned + meetingType
+            ONLINE. The Daily iframe is mounted on demand via the Rejoin
+            button which navigates to /user/sessions/room/:sessionId. */}
         {(bookingStatus === "ROOM_CREATED" || bookingStatus === "MENTOR_ASSIGNED") &&
           !isReviewed &&
           bookingSnapshot && (
@@ -1504,17 +1527,6 @@ export function ApplicationMentorReviewPage() {
               onJoinRoom={handleJoinRoom}
             />
           )}
-
-        {/* OFFLINE confirmed — waiting for the in-person meeting. Per BE
-            doc 2026-07-18, the offline marker lives on the Session row as
-            `roomUrl === "OFFLINE"` and/or on ApplicationDetail as
-            `sessionInfo.meetingType === "OFFLINE"`. Accept either. */}
-        {(bookingStatus === "OFFLINE_CONFIRMED" ||
-          applicationDetail?.status === "SLOT_PICKED" ||
-          (roomUrl === "OFFLINE" && applicationDetail?.sessionId) ||
-          applicationDetail?.sessionInfo?.meetingType === "OFFLINE") &&
-          !isReviewed &&
-          bookingSnapshot && <OfflineConfirmedStep booking={bookingSnapshot} />}
 
         {/* Awaiting Mentor (slot picked, waiting for admin to assign) */}
         {bookingStatus === "AWAITING_MENTOR" && !isReviewed && bookingSnapshot && (
