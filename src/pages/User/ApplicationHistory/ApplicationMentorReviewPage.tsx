@@ -657,6 +657,14 @@ function ReviewFormStep({
   onSubmitSuccess: () => void;
 }) {
   const { t } = useTranslation();
+  // 2026-07-18: surface prop identity on every mount so we can see whether
+  // the parent rendered the form with complete identity (sessionId + mentorId
+  // + userId) or with holes that would silently kill the POST.
+  console.log("[MentorReviewPage] ReviewFormStep mounted with props", {
+    sessionId,
+    mentorId,
+    userId,
+  });
   const [rating, setRating] = useState<number>(0);
   const [situationNote, setSituationNote] = useState("");
   const [taskNote, setTaskNote] = useState("");
@@ -675,45 +683,89 @@ function ReviewFormStep({
       resultNote.trim().length > 0);
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    // 2026-07-18: verbose logging — student reported "An error has occurred"
+    // with no API call visible. Surface every input + decision so we can see
+    // whether we're bailing out client-side, hitting a 4xx, or getting 0
+    // network activity.
+    console.log("[MentorReviewPage] submit clicked", {
+      sessionId,
+      mentorId,
+      userId,
+      rating,
+      canSubmit,
+      hasComment: !!(
+        situationNote.trim() ||
+        taskNote.trim() ||
+        actionNote.trim() ||
+        resultNote.trim() ||
+        strength.trim() ||
+        weakness.trim() ||
+        improve.trim()
+      ),
+    });
+    if (!canSubmit) {
+      console.warn("[MentorReviewPage] submit blocked: canSubmit=false", { rating });
+      return;
+    }
     if (!sessionId || !mentorId || !userId) {
+      console.error("[MentorReviewPage] submit blocked: missing identity", {
+        sessionId,
+        mentorId,
+        userId,
+      });
       toast.error(t("common.anErrorHasOccurred"));
       return;
     }
     setIsSubmitting(true);
+    const commentText =
+      [
+        situationNote.trim(),
+        taskNote.trim(),
+        actionNote.trim(),
+        resultNote.trim(),
+        strength.trim(),
+        weakness.trim(),
+        improve.trim(),
+      ]
+        .filter(Boolean)
+        .join("\n\n") || undefined;
+    console.log("[MentorReviewPage] POST /api/mentor-feedbacks", {
+      sessionId,
+      mentorId,
+      userId,
+      rating,
+      commentLen: commentText?.length ?? 0,
+    });
     try {
-      // Student đánh giá Mentor sau phỏng vấn → POST /api/mentor-feedbacks
-      // (POST /api/mentor-reviews là Mentor đánh giá Student — flow ngược lại)
-      // Schema OpenAPI chỉ Declare body: { sessionId, mentorId, userId, rating, comment }
       const { response } = await fetchClient.POST("/api/mentor-feedbacks", {
-        body: {
-          sessionId,
-          mentorId,
-          userId,
-          rating,
-          comment:
-            [
-              situationNote.trim(),
-              taskNote.trim(),
-              actionNote.trim(),
-              resultNote.trim(),
-              strength.trim(),
-              weakness.trim(),
-              improve.trim(),
-            ]
-              .filter(Boolean)
-              .join("\n\n") || undefined,
-        },
+        body: { sessionId, mentorId, userId, rating, comment: commentText },
+      });
+      console.log("[MentorReviewPage] POST response", {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
       });
       if (!response.ok) {
-        const errData = (await response.json().catch(() => ({}))) as { message?: string };
+        let errBody: unknown = null;
+        try {
+          errBody = await response.json();
+        } catch {
+          try {
+            errBody = await response.text();
+          } catch {
+            errBody = "<unreadable>";
+          }
+        }
+        console.error("[MentorReviewPage] POST failed body:", errBody);
+        const errData = (errBody ?? {}) as { message?: string };
         toast.error(errData?.message ?? t("common.anErrorHasOccurred"));
         return;
       }
       toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
       onSubmitSuccess();
     } catch (err) {
-      console.error("[MentorReviewPage] submit feedback failed:", err);
+      console.error("[MentorReviewPage] submit feedback threw:", err);
       toast.error(t("common.anErrorHasOccurred"));
     } finally {
       setIsSubmitting(false);
@@ -1039,33 +1091,47 @@ export function ApplicationMentorReviewPage() {
               status: bookingStatusFromDetail(currentDetail.status),
               ...(prev ?? {}),
             }));
-            if (currentDetail.sessionId) {
-              try {
-                const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
-                  params: { path: { id: currentDetail.sessionId } },
-                });
-                const live = (sessionRefetch.data ?? null) as {
-                  roomUrl?: string;
-                  startTime1?: string | null;
-                  startTime2?: string | null;
-                  endTime1?: string | null;
-                  endTime2?: string | null;
-                  durationSeconds1?: number | null;
-                  durationSeconds2?: number | null;
-                  participantId1?: string | null;
-                  participantId2?: string | null;
-                } | null;
-                const room = live?.roomUrl;
-                if (room) setRoomUrl(room);
-                if (live) setSessionTiming(live);
-              } catch {
-                // session may not be ready
-              }
-            }
           } else {
+            // 2026-07-18: detail.bookingId may be null on rounds created before
+            // the v062 schema switch (the BE controller never persisted it).
+            // Wipe the booking snapshot so the page doesn't display a stale
+            // "your interview is in this room" card tied to a deleted booking.
             setBooking(null);
-            setRoomUrl(null);
-            setSessionTiming(null);
+          }
+          // 2026-07-18: always fetch session by sessionId if we have one,
+          // not just when bookingId is present. The session row carries the
+          // ground-truth `status` + `mentorReview` flags which drive whether
+          // the student should see the feedback form. Booking-derived state
+          // is a derived optimisation; session-derived state is the source
+          // of truth.
+          if (currentDetail?.sessionId) {
+            try {
+              const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
+                params: { path: { id: currentDetail.sessionId } },
+              });
+              const live = (sessionRefetch.data ?? null) as {
+                roomUrl?: string;
+                startTime1?: string | null;
+                startTime2?: string | null;
+                endTime1?: string | null;
+                endTime2?: string | null;
+                durationSeconds1?: number | null;
+                durationSeconds2?: number | null;
+                participantId1?: string | null;
+                participantId2?: string | null;
+                status?: string;
+                mentorReview?: unknown;
+                userId?: number;
+              } | null;
+              sessionRef.current = live
+                ? { status: live.status, mentorReview: live.mentorReview, userId: live.userId }
+                : null;
+              const room = live?.roomUrl;
+              if (room) setRoomUrl(room);
+              if (live) setSessionTiming(live);
+            } catch {
+              // session may not be ready
+            }
           }
         }
       } catch (err) {
@@ -1304,19 +1370,48 @@ export function ApplicationMentorReviewPage() {
   // POST /api/mentor-feedbacks). `mentorReview` is the *mentor's*
   // evaluation of the student, which is irrelevant here.
   const isReviewed = !!applicationDetail?.mentorFeedback;
+  // 2026-07-18: session.status=COMPLETED is ground-truth for "interview is over".
+  // Before this fix, the page relied on `applicationDetail.status=COMPLETED` to
+  // show the feedback form, but BE only sets that AFTER student submits
+  // feedback (review && feedback condition in
+  // MentorReviewServiceImpl.checkAndCompleteRound). This created a chicken-and-egg
+  // deadlock: student needs to submit feedback to unblock COMPLETED, but never
+  // sees the form because COMPLETED is never set.
+  // Solution: detect "interview is over" from the Session row directly.
+  const sessionRef = useRef<{ status?: string; mentorReview?: unknown; userId?: number } | null>(
+    null
+  );
+  const mentorReviewReceived =
+    !!applicationDetail?.mentorReview || !!sessionRef.current?.mentorReview;
   // When the mentor-review form can be shown:
-  //  - ApplicationDetail.status === "COMPLETED"        (set by BE after
-  //                                                    POST /api/mentor-reviews)
-  //  - booking.status === "COMPLETED"                  (covers polls where
-  //                                                    the detail status
-  //                                                    hasn't caught up yet)
-  // AI_EVALUATED is intentionally NOT included here: it is the
-  // CODE_REVIEW/QUIZ/CODING post-AI-evaluation flag and never appears on
-  // a MENTOR_REVIEW round. Earlier code treated it as a stand-in for
-  // "meeting is over" but that conflated two separate state machines.
-  const isCompleted = bookingStatus === "COMPLETED" || applicationDetail?.status === "COMPLETED";
+  //  - Mentor has reviewed the student (mentorReviewReceived) AND student has not
+  //    yet submitted feedback (!isReviewed). This unblocks the form even when
+  //    applicationDetail.status is still SLOT_PICKED.
+  //  - OR applicationDetail.status === "COMPLETED" (BE-normal path)
+  const showFeedbackForm =
+    (mentorReviewReceived && !isReviewed) || applicationDetail?.status === "COMPLETED";
   const isWrongRound =
     !currentRoundLoading && !!currentRound && currentRound.roundType !== "MENTROR_REVIEW";
+
+  // 2026-07-18: debug snapshot to make triage easier when the form fails to
+  // appear. One-liner so the dev console doesn't drown in noise.
+  if (typeof window !== "undefined") {
+    console.log("[MentorReviewPage]", {
+      applicationId,
+      detailStatus: applicationDetail?.status,
+      detailMentorReview: !!applicationDetail?.mentorReview,
+      detailMentorFeedback: !!applicationDetail?.mentorFeedback,
+      sessionMentorReview: !!sessionRef.current?.mentorReview,
+      sessionStatus: sessionRef.current?.status,
+      roomUrl: roomUrl ? roomUrl.slice(0, 40) : null,
+      mentorReviewReceived,
+      isReviewed,
+      showFeedbackForm,
+      isWrongRound,
+      currentRoundType: currentRound?.roundType,
+      currentRoundId: currentRound?.id,
+    });
+  }
 
   // ============================================================
   // Render
@@ -1381,15 +1476,23 @@ export function ApplicationMentorReviewPage() {
           </Card>
         )}
 
-        {/* Completed but not reviewed */}
-        {isCompleted && !isReviewed && (
+        {/* Mentor has reviewed — show feedback form so student can rate the mentor.
+            Handles the deadlock: detail.status=SLOT_PICKED but mentorReview != null.
+            This step must come BEFORE RoomReadyStep so the student sees the form
+            instead of being redirected back to Daily.co. */}
+        {showFeedbackForm && (
           <ReviewFormStep
             sessionId={booking?.sessionId ?? applicationDetail?.sessionId}
             mentorId={booking?.mentorId}
-            userId={booking?.applicantUserId}
+            userId={sessionRef.current?.userId ?? booking?.applicantUserId}
             onSubmitSuccess={handleReviewSubmitted}
           />
         )}
+
+        {/* Deprecated 2026-07-18: `isCompleted` check removed. Form visibility is now
+            controlled by `showFeedbackForm` above which checks `mentorReview` directly
+            from the Session row, bypassing the circular dependency on
+            `applicationDetail.status=COMPLETED`. */}
 
         {/* In Progress — still has a valid roomUrl so the candidate can
             rejoin if they closed the tab earlier. The session timing
@@ -1422,12 +1525,17 @@ export function ApplicationMentorReviewPage() {
             We do NOT wait for BookingStatus === ROOM_CREATED because the
             BookingStatus is derived from ApplicationDetail.status which stays
             as SLOT_PICKED from the moment the student picks a slot. The
-            session.rowUrl is the ground-truth readiness signal. */}
+            session.rowUrl is the ground-truth readiness signal.
+
+            2026-07-18: skip this step when mentor has already reviewed the
+            student — we show ReviewFormStep instead so the student is not
+            redirected back to Daily.co for an interview that already ended. */}
         {applicationDetail?.sessionId &&
           roomUrl &&
           roomUrl !== "OFFLINE" &&
           applicationDetail?.mentorId &&
-          !isReviewed && (
+          !isReviewed &&
+          !showFeedbackForm && (
             <RoomReadyStep
               booking={
                 bookingSnapshot ?? {
