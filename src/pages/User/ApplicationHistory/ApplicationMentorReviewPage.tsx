@@ -1251,11 +1251,12 @@ export function ApplicationMentorReviewPage() {
   // stayed null. The inline page mounts <VideoCallProvider/> and tracks
   // the join exactly the same way MentorSessionRoomPage does for mentor.
   const handleJoinRoom = () => {
-    if (booking?.sessionId) {
-      navigate(`/user/sessions/room/${booking.sessionId}`);
+    const sessionId = bookingSnapshot?.sessionId ?? applicationDetail?.sessionId;
+    if (sessionId) {
+      navigate(`/user/sessions/room/${sessionId}`);
       return;
     }
-    // Booking snapshot may not have the id yet (early mount); fall back
+    // Session snapshot may not have id yet (early mount); fall back
     // to opening Daily.co directly so the candidate isn't locked out.
     const target = composeDailyRoomUrl(roomUrl, booking?.sessionKey);
     if (!target) return;
@@ -1293,8 +1294,27 @@ export function ApplicationMentorReviewPage() {
       const { data } = await fetchClient.GET("/api/sessions/{id}", {
         params: { path: { id: sessionId } },
       });
-      const room = (data as { roomUrl?: string } | undefined)?.roomUrl;
-      if (room && room !== "OFFLINE") setRoomUrl(room);
+      const live =
+        (data as
+          | {
+              roomUrl?: string;
+              participantId1?: string | null;
+              participantId2?: string | null;
+              startTime1?: string | null;
+              startTime2?: string | null;
+              endTime1?: string | null;
+              endTime2?: string | null;
+              durationSeconds1?: number | null;
+              durationSeconds2?: number | null;
+            }
+          | undefined) ?? null;
+      const room = live?.roomUrl;
+      if (room === "OFFLINE") {
+        setRoomUrl("OFFLINE");
+      } else if (room) {
+        setRoomUrl(room);
+      }
+      if (live) setSessionTiming(live);
     } catch {
       // session may not be ready yet; ignore
     }
@@ -1317,6 +1337,19 @@ export function ApplicationMentorReviewPage() {
     }
   };
 
+  // 2026-07-18: when ApplicationDetail carries a sessionId but the
+  // local roomUrl / sessionTiming caches are still empty (e.g. hard
+  // reload before the first poll, or SlotSelectionStep completed in
+  // a previous browser session), prime them from /api/sessions/{id}.
+  // Without this the page rendered before but `RoomReadyStep` had no
+  // roomUrl to display.
+  useEffect(() => {
+    const sid = applicationDetail?.sessionId;
+    if (!sid) return;
+    if (roomUrl) return;
+    void fetchSessionRoomUrl(sid);
+  }, [applicationDetail?.sessionId, roomUrl]);
+
   // Review submitted
   const handleReviewSubmitted = () => {
     navigate(-1);
@@ -1326,8 +1359,26 @@ export function ApplicationMentorReviewPage() {
   // Derive UI state from backend data
   // ============================================================
 
+  // 2026-07-18: backend v063 confirmed `bookingId` is *always* null in
+  // the new Mentor Interview flow. Don't gate the UI on a booking
+  // snapshot we will never get. Instead synthesise a derived booking
+  // from ApplicationDetail itself + the session-detail roomUrl /
+  // sessionTiming. UI branches then read from `bookingSnapshot` and
+  // don't have to know whether the data came from
+  // `MentorInterviewBooking` or `ApplicationDetail`.
+  const bookingSnapshot: MentorInterviewBooking | null =
+    booking ??
+    (applicationDetail?.sessionId
+      ? ({
+          id: applicationDetail.bookingId ?? applicationDetail.sessionId,
+          sessionId: applicationDetail.sessionId,
+          mentorId: applicationDetail.mentorId,
+          status: bookingStatusFromDetail(applicationDetail.status) ?? "ROOM_CREATED",
+        } as MentorInterviewBooking)
+      : null);
+
   const applicationDetailId = applicationDetail?.id ?? 0;
-  const bookingStatus = booking?.status;
+  const bookingStatus = bookingSnapshot?.status;
   // The student page is showing "have you rated the mentor?" so the
   // relevant marker on ApplicationDetail is `mentorFeedback` (set by
   // POST /api/mentor-feedbacks). `mentorReview` is the *mentor's*
@@ -1425,11 +1476,11 @@ export function ApplicationMentorReviewPage() {
             panel underneath surfaces BE-tracked start/end durations so
             the student can see whether they or their mentor is in the
             room. */}
-        {bookingStatus === "IN_PROGRESS" && !isReviewed && booking && (
+        {bookingStatus === "IN_PROGRESS" && !isReviewed && bookingSnapshot && (
           <InProgressStep
             roomUrl={roomUrl ?? undefined}
             sessionTiming={sessionTiming}
-            sessionId={booking?.sessionId}
+            sessionId={bookingSnapshot?.sessionId}
             onJoinRoom={handleJoinRoom}
           />
         )}
@@ -1437,65 +1488,44 @@ export function ApplicationMentorReviewPage() {
         {/* Awaiting Mentor Assignment — admin has not yet assigned a mentor.
             We deliberately hide the SlotSelectionStep in this branch because
             BE's create-for-round requires a non-null mentorId on the round. */}
-        {applicationDetail?.status === "AWAITING_MENTOR" && !isReviewed && !booking && (
+        {applicationDetail?.status === "AWAITING_MENTOR" && !isReviewed && !bookingSnapshot && (
           <AwaitingMentorAssignmentStep />
         )}
 
-        {/* Room Created (ONLINE — Daily.co room ready). We also cover the
-            transitional state where ApplicationDetail has a sessionId +
-            mentorId but the derived `booking` hasn't populated yet (e.g.
-            the polling effect hasn't run). Without this fallback the
-            page rendered completely blank on hard reloads. */}
-        {(bookingStatus === "ROOM_CREATED" ||
-          bookingStatus === "MENTOR_ASSIGNED" ||
-          (!booking &&
-            !isReviewed &&
-            !isCompleted &&
-            applicationDetail?.sessionId &&
-            applicationDetail?.meetingType === "ONLINE" &&
-            applicationDetail?.mentorId)) &&
-          booking && (
-            <RoomReadyStep booking={booking} roomUrl={roomUrl} onJoinRoom={handleJoinRoom} />
-          )}
-        {/* Hard-reload fallback: booking snapshot hasn't been built yet but
-            we already have enough info to render RoomReady. Without this
-            fallback the page was a white wall for ~1 second between mount
-            and the first poll landing. */}
-        {!booking &&
+        {/* Room Created (ONLINE — Daily.co room ready). Driven by the
+            derived booking snapshot, which now resolves from
+            ApplicationDetail alone (bookingId is null in the new flow). */}
+        {(bookingStatus === "ROOM_CREATED" || bookingStatus === "MENTOR_ASSIGNED") &&
           !isReviewed &&
-          !isCompleted &&
-          applicationDetail?.sessionId &&
-          applicationDetail?.meetingType === "ONLINE" &&
-          applicationDetail?.mentorId &&
-          applicationDetail?.bookingId && (
+          bookingSnapshot && (
             <RoomReadyStep
-              booking={{
-                id: applicationDetail.bookingId,
-                sessionId: applicationDetail.sessionId,
-                mentorId: applicationDetail.mentorId,
-                applicantUserId: applicationDetail.applicantUserId,
-                status: "ROOM_CREATED",
-              }}
+              booking={bookingSnapshot}
               roomUrl={roomUrl}
               onJoinRoom={handleJoinRoom}
             />
           )}
 
-        {/* OFFLINE confirmed — waiting for the in-person meeting */}
-        {bookingStatus === "OFFLINE_CONFIRMED" && !isReviewed && booking && (
-          <OfflineConfirmedStep booking={booking} />
-        )}
+        {/* OFFLINE confirmed — waiting for the in-person meeting. Per BE
+            doc 2026-07-18, the offline marker lives on the Session row as
+            `roomUrl === "OFFLINE"` and/or on ApplicationDetail as
+            `sessionInfo.meetingType === "OFFLINE"`. Accept either. */}
+        {(bookingStatus === "OFFLINE_CONFIRMED" ||
+          applicationDetail?.status === "SLOT_PICKED" ||
+          (roomUrl === "OFFLINE" && applicationDetail?.sessionId) ||
+          applicationDetail?.sessionInfo?.meetingType === "OFFLINE") &&
+          !isReviewed &&
+          bookingSnapshot && <OfflineConfirmedStep booking={bookingSnapshot} />}
 
         {/* Awaiting Mentor (slot picked, waiting for admin to assign) */}
-        {bookingStatus === "AWAITING_MENTOR" && !isReviewed && booking && (
-          <AwaitingMentorStep booking={booking} onCancel={handleCancelBooking} />
+        {bookingStatus === "AWAITING_MENTOR" && !isReviewed && bookingSnapshot && (
+          <AwaitingMentorStep booking={bookingSnapshot} onCancel={handleCancelBooking} />
         )}
 
         {/* Slot selection — only when status === PENDING AND meetingType is unset.
             Outside of these preconditions the candidate is either waiting for
             admin to assign a mentor (AWAITING_MENTOR branch above) or already
             has a confirmed slot (SLOT_PICKED/PENDING+OFFLINE in branches above). */}
-        {!booking &&
+        {!bookingSnapshot &&
           !isReviewed &&
           applicationDetailId > 0 &&
           applicationDetail?.status === "PENDING" &&
@@ -1507,16 +1537,8 @@ export function ApplicationMentorReviewPage() {
             />
           )}
 
-        {/* MENTOR_REVIEW round has no ApplicationDetail yet — 2026-07-17 the
-            empty-state card (with Retry/Back) has been removed because the
-            new backend flow always creates an ApplicationDetail for the
-            Mentor Review round. If a legacy application still lacks a
-            detail, the candidate will see the regular SlotSelectionStep
-            below once the round resolves (or the i18n key
-            `userKiosk.detailNotReady` if the fetch is still in-flight). */}
-
         {/* Waiting for applicationDetail while currentRound is loading */}
-        {!booking && !isReviewed && applicationDetailId === 0 && !detailsResolved && (
+        {!bookingSnapshot && !isReviewed && applicationDetailId === 0 && !detailsResolved && (
           <Card>
             <CardContent className="flex items-center justify-center gap-3 p-8 text-sm text-slate-500">
               <Spinner size="sm" tone="primary" />
@@ -1530,7 +1552,7 @@ export function ApplicationMentorReviewPage() {
             BE responds late / with an empty detail, the page used to render
             completely blank, leaving the student stuck. Now we always show
             an actionable state — a Retry CTA on top of an explainer. */}
-        {!booking && !isReviewed && detailsResolved && applicationDetailId === 0 && (
+        {!bookingSnapshot && !isReviewed && detailsResolved && applicationDetailId === 0 && (
           <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
             <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
               <Hourglass className="h-10 w-10 text-amber-600 dark:text-amber-400" />
