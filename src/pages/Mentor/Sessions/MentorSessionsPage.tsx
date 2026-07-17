@@ -153,12 +153,26 @@ function SessionCard({
   };
   const status = statusMap[session.status || "SCHEDULED"] || statusMap.SCHEDULED;
   const isCompleted = session.status === "COMPLETED";
+  // 2026-07-17: Mentor Interview (RoundType.MENTROR_REVIEW) sessions are
+  //   persisted with status SCHEDULED until the first peer joins. The
+  //   earliest 'canJoin' moment is 15 minutes before `joinTime` so the
+  //   mentor can test their device; it's also allowed once the time has
+  //   passed regardless of the persisted status (BE may be slow to flip
+  //   to ONGOING after the webhook returns).
   const joinTimestamp = toTimestamp(session.joinTime);
-  const isTimeReached = joinTimestamp ? joinTimestamp <= now : true;
+  const earlyJoinWindowMs = 15 * 60 * 1000;
+  const isTimeReached = joinTimestamp ? joinTimestamp - earlyJoinWindowMs <= now : true;
   const isDraft = session.status === "DRAFT";
+  const isCancelled = session.status === "CANCELED" || session.status === "REJECTED";
   const canJoin =
-    (session.status === "PAID" || session.status === "ONGOING") &&
+    (session.status === "PAID" ||
+      session.status === "ONGOING" ||
+      session.status === "SCHEDULED" ||
+      session.status === "COMPLETED") &&
+    !isDraft &&
+    !isCancelled &&
     !!session.roomUrl &&
+    session.roomUrl !== "OFFLINE" &&
     isTimeReached;
   return (
     <Card className="border-emerald-100 transition-all hover:shadow-md dark:border-slate-800">
@@ -193,6 +207,9 @@ function SessionCard({
                   {t("common.itsNotTimeYet")}
                 </Badge>
               )}
+            {/* Always expose a Join button for SCHEDULED Mentor Interview
+                sessions within 15 minutes of the scheduled start, even
+                before BE flips status to ONGOING. */}
             {canJoin && (
               <Button
                 size="sm"
@@ -314,8 +331,11 @@ function SessionCard({
           )}
           {!isCompleted && !canJoin && (
             <span className="text-sm text-slate-500 italic">
-              {session.status === "SCHEDULED"
-                ? t("mentorSessions.waitForStudentsToPay")
+              {/* Mentor Interview sessions start in SCHEDULED with no
+                  upfront payment; the only blocking condition is the
+                  15-minute pre-join window not yet being open. */}
+              {session.status === "SCHEDULED" && !isTimeReached
+                ? t("common.itsNotTimeYet")
                 : session.status === "PAID" && !isTimeReached
                   ? t("mentorSessions.itSNotTimeTo")
                   : t("mentorSessions.theSessionIsNotYet")}
@@ -348,10 +368,13 @@ export function MentorSessionsPage() {
   } = useMentorReviews();
   const updateStatusMutation = useUpdateSessionStatus();
 
-  // Current time state for joinTime-based blocking (updates every 30s)
+  // Current time state for joinTime-based blocking (updates every 5s).
+  // 2026-07-17 mentor-interview: Mentor Interview sessions can be joined
+  //   from 15 minutes before `joinTime`, so we want short tick cadence
+  //   to surface the 'Join' button quickly around that moment.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 30_000);
+    const timer = setInterval(() => setNow(Date.now()), 5_000);
     return () => clearInterval(timer);
   }, []);
   const isLoading = sessionsLoading || reviewsLoading;
