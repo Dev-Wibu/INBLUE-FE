@@ -311,88 +311,6 @@ function SlotSelectionStep({
 // Step 2: Waiting for Mentor
 // ============================================================
 
-function AwaitingMentorStep({
-  booking,
-  onCancel,
-}: {
-  booking: MentorInterviewBooking;
-  onCancel?: () => void;
-}) {
-  const { t } = useTranslation();
-
-  const scheduledTime = booking.scheduledStart
-    ? new Date(booking.scheduledStart).toLocaleString("vi-VN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : null;
-
-  return (
-    <div className="space-y-5">
-      {/* Waiting card */}
-      <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-        <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-          <div className="relative">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
-              <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
-            </div>
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500">
-              <span className="absolute h-4 w-4 animate-ping rounded-full bg-amber-400 opacity-75" />
-            </span>
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-amber-700 dark:text-amber-300">
-              {t("userKiosk.waitingForMentor")}
-            </p>
-            <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
-              {t("userKiosk.waitingForMentorDesc")}
-            </p>
-          </div>
-          {scheduledTime && (
-            <div className="rounded-lg border border-amber-200 bg-white/60 px-4 py-2 dark:border-amber-800 dark:bg-black/20">
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                {t("userKiosk.scheduledFor")} {scheduledTime}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* How it works */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">{t("userKiosk.howItWorks")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {[
-            { step: 1, text: t("userKiosk.step1Waiting") },
-            { step: 2, text: t("userKiosk.step2Notification") },
-            { step: 3, text: t("userKiosk.step3GoToKiosk") },
-          ].map((item) => (
-            <div key={item.step} className="flex items-start gap-3">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0047AB] text-xs font-bold text-white">
-                {item.step}
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300">{item.text}</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Cancel button */}
-      {onCancel && (
-        <Button variant="outline" onClick={onCancel} className="w-full text-slate-500">
-          {t("userKiosk.cancelBooking")}
-        </Button>
-      )}
-    </div>
-  );
-}
-
 // ============================================================
 // Step 3: Room Ready (mentor assigned, room created)
 // ============================================================
@@ -1325,10 +1243,9 @@ export function ApplicationMentorReviewPage() {
   // null (BE confirmed bookingId is unused). Until BE exposes a proper
   // cancel-session endpoint we no-op + warn instead of deleting a
   // non-existent booking — otherwise the user gets a silent 404 every
-  // time. TODO: hook this up once
-  // POST /api/sessions/{id}/cancel or DELETE /api/mentor-bookings?…
-  // exists.
-  const handleCancelBooking = async () => {
+  // time. TODO: hook this up once POST /api/sessions/{id}/cancel exists.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleCancelBooking = async () => {
     if (typeof window !== "undefined") {
       console.warn(
         "[MentorReviewPage] cancel requested but BE has not exposed an endpoint for the new Mentor Interview flow; awaiting BE ticket."
@@ -1488,6 +1405,43 @@ export function ApplicationMentorReviewPage() {
           />
         )}
 
+        {/* 2026-07-18: route ONLINE/OFFLINE based solely on the ground-truth
+            session row: roomUrl === "OFFLINE" means offline, any other URL
+            means online. Do NOT derive from BookingStatus — that is derived
+            from ApplicationDetail.status which stays SLOT_PICKED after the
+            student picks a slot, and bookingStatusFromDetail maps
+            SLOT_PICKED -> AWAITING_MENTOR, which caused the page to
+            incorrectly show the wait-card instead of RoomReadyStep. */}
+        {(roomUrl === "OFFLINE" || applicationDetail?.sessionInfo?.meetingType === "OFFLINE") &&
+          !isReviewed &&
+          bookingSnapshot && <OfflineConfirmedStep booking={bookingSnapshot} />}
+
+        {/* ONLINE Room Ready — the interview is READY when:
+            1. ApplicationDetail carries a sessionId with a Daily.co URL, AND
+            2. a mentor has been assigned (mentorId is non-null).
+            We do NOT wait for BookingStatus === ROOM_CREATED because the
+            BookingStatus is derived from ApplicationDetail.status which stays
+            as SLOT_PICKED from the moment the student picks a slot. The
+            session.rowUrl is the ground-truth readiness signal. */}
+        {applicationDetail?.sessionId &&
+          roomUrl &&
+          roomUrl !== "OFFLINE" &&
+          applicationDetail?.mentorId &&
+          !isReviewed && (
+            <RoomReadyStep
+              booking={
+                bookingSnapshot ?? {
+                  id: applicationDetail.sessionId,
+                  sessionId: applicationDetail.sessionId,
+                  mentorId: applicationDetail.mentorId,
+                  status: "ROOM_CREATED",
+                }
+              }
+              roomUrl={roomUrl}
+              onJoinRoom={handleJoinRoom}
+            />
+          )}
+
         {/* Awaiting Mentor Assignment — admin has not yet assigned a mentor.
             We deliberately hide the SlotSelectionStep in this branch because
             BE's create-for-round requires a non-null mentorId on the round. */}
@@ -1495,42 +1449,11 @@ export function ApplicationMentorReviewPage() {
           <AwaitingMentorAssignmentStep />
         )}
 
-        {/* 2026-07-18: also show the awaiting-mentor explainer when we
-            have a Session row but `applicationDetail.mentorId` is still
-            null (admin hasn't finalised the assignment yet). Without this
-            the page used to fall through to OfflineConfirmedStep purely
-            because meetingType was OFFLINE, masking the wait. */}
-        {applicationDetail?.sessionId &&
-          !isReviewed &&
-          !bookingSnapshot?.mentorId &&
-          !applicationDetail?.mentorId && <AwaitingMentorAssignmentStep />}
-
-        {/* OFFLINE confirmed — waiting for the in-person meeting. Per BE
-            doc 2026-07-18, the offline marker is the *sessionInfo
-            meetingType* (or `session.roomUrl === "OFFLINE"`). We must
-            NOT fall through to this branch just because detail status
-            is SLOT_PICKED — that's also the canonical state after
-            picking an ONLINE slot. Gate strictly on the OFFLINE marker. */}
-        {(roomUrl === "OFFLINE" || applicationDetail?.sessionInfo?.meetingType === "OFFLINE") &&
-          !isReviewed &&
-          bookingSnapshot && <OfflineConfirmedStep booking={bookingSnapshot} />}
-
-        {/* ONLINE Room Ready — slot picked + mentor assigned + meetingType
-            ONLINE. The Daily iframe is mounted on demand via the Rejoin
-            button which navigates to /user/sessions/room/:sessionId. */}
-        {(bookingStatus === "ROOM_CREATED" || bookingStatus === "MENTOR_ASSIGNED") &&
-          !isReviewed &&
-          bookingSnapshot && (
-            <RoomReadyStep
-              booking={bookingSnapshot}
-              roomUrl={roomUrl}
-              onJoinRoom={handleJoinRoom}
-            />
-          )}
-
-        {/* Awaiting Mentor (slot picked, waiting for admin to assign) */}
-        {bookingStatus === "AWAITING_MENTOR" && !isReviewed && bookingSnapshot && (
-          <AwaitingMentorStep booking={bookingSnapshot} onCancel={handleCancelBooking} />
+        {/* Awaiting Mentor — slot picked but mentor has NOT been assigned yet
+            (mentorId is still null on ApplicationDetail). Show the explainer
+            so the student knows to wait. */}
+        {applicationDetail?.sessionId && !isReviewed && !applicationDetail?.mentorId && (
+          <AwaitingMentorAssignmentStep />
         )}
 
         {/* Slot selection — only when status === PENDING AND meetingType is unset.
