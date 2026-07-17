@@ -4115,7 +4115,13 @@
     "offlineBookedDesc": "Vui lòng gặp mentor theo thời gian đã hẹn tại văn phòng công ty.",
     "awaitingMentorTitle": "Đang đợi admin gán mentor",
     "awaitingMentorDesc": "Vui lòng quay lại sau khi admin phân công mentor. Sau khi được gán, bạn có thể chọn giờ và hình thức phỏng vấn.",
-    "rejoinRoom": "Vào lại phòng"
+    "rejoinRoom": "Vào lại phòng",
+    "timingNotRecorded": "Chưa có dữ liệu thời gian cho session này.",
+    "student": "Học viên",
+    "mentor": "Mentor",
+    "joinedAt": "Vào lúc",
+    "leftAt": "Rời lúc",
+    "duration": "Thời lượng"
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

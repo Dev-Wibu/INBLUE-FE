@@ -4119,7 +4119,13 @@
     "offlineBookedDesc": "Please meet your mentor at the company office at the scheduled time.",
     "awaitingMentorTitle": "Waiting for the admin to assign a mentor",
     "awaitingMentorDesc": "Please come back after the admin has assigned a mentor. Once assigned, you can pick a time and format.",
-    "rejoinRoom": "Rejoin room"
+    "rejoinRoom": "Rejoin room",
+    "timingNotRecorded": "No timing data recorded for this session yet.",
+    "student": "Candidate",
+    "mentor": "Mentor",
+    "joinedAt": "Joined",
+    "leftAt": "Left",
+    "duration": "Duration"
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",

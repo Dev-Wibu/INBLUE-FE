@@ -35,7 +35,7 @@ import {
 } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 import { Calendar, Check, Clock, LogIn, MessageSquare, Search, User, Video, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -163,6 +163,11 @@ function SessionCard({
   // closed by Daily.co the URL is dead.
   const joinTimestamp = toTimestamp(session.joinTime);
   const earlyJoinWindowMs = 15 * 60 * 1000;
+  // Three cases:
+  //   1. joinTime set + within 15 min of now → can join
+  //   2. joinTime set + past → can join (BE may not have flipped status)
+  //   3. joinTime set + future + > 15 min away → cannot join yet
+  //   4. joinTime null → allow join by default (legacy sessions)
   const isTimeReached = joinTimestamp ? joinTimestamp - earlyJoinWindowMs <= now : true;
   const isDraft = session.status === "DRAFT";
   const isCancelled = session.status === "CANCELED" || session.status === "REJECTED";
@@ -369,9 +374,9 @@ export function MentorSessionsPage() {
 
   // Current time state for joinTime-based blocking (updates every 5s).
   // 2026-07-17 mentor-interview: Mentor Interview sessions can be joined
-  //   from 15 minutes before `joinTime`, so we want short tick cadence
-  //   to surface the 'Join' button quickly around that moment.
-  const [now, setNow] = useState(() => Date.now());
+  //   from 15 minutes before `joinTime`; the card uses this to surface
+  //   the 'Join' button quickly around that moment.
+  const [now, setNow] = useState<number>(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 5_000);
     return () => clearInterval(timer);

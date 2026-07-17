@@ -544,11 +544,25 @@ function OfflineConfirmedStep({ booking }: { booking: MentorInterviewBooking }) 
 // Step 4: In Progress (at kiosk)
 // ============================================================
 
-function InProgressStep({ roomUrl, onJoinRoom }: { roomUrl?: string; onJoinRoom?: () => void }) {
+function InProgressStep({
+  roomUrl,
+  sessionTiming,
+  sessionId,
+  onJoinRoom,
+}: {
+  roomUrl?: string;
+  sessionTiming?: {
+    startTime1?: string | null;
+    startTime2?: string | null;
+    endTime1?: string | null;
+    endTime2?: string | null;
+    durationSeconds1?: number | null;
+    durationSeconds2?: number | null;
+  } | null;
+  sessionId?: number;
+  onJoinRoom?: () => void;
+}) {
   const { t } = useTranslation();
-  // The student may have left the room earlier; as long as the session
-  // hasn't been COMPLETED, they should be able to rejoin. The Daily.co
-  // URL stays valid until BE marks the session completed.
   const canRejoin = !!roomUrl && !!onJoinRoom;
   return (
     <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
@@ -564,11 +578,6 @@ function InProgressStep({ roomUrl, onJoinRoom }: { roomUrl?: string; onJoinRoom?
             {t("userKiosk.interviewInProgressDesc")}
           </p>
         </div>
-        {roomUrl && (
-          <p className="rounded-lg border border-blue-200 bg-white/60 px-4 py-2 font-mono text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
-            Room URL ready
-          </p>
-        )}
         {canRejoin && (
           <Button
             type="button"
@@ -578,9 +587,140 @@ function InProgressStep({ roomUrl, onJoinRoom }: { roomUrl?: string; onJoinRoom?
             {t("userMentorReview.rejoinRoom")}
           </Button>
         )}
+        {sessionTiming && (
+          <SessionTimingPanel
+            startTime1={sessionTiming.startTime1}
+            endTime1={sessionTiming.endTime1}
+            durationSeconds1={sessionTiming.durationSeconds1}
+            startTime2={sessionTiming.startTime2}
+            endTime2={sessionTiming.endTime2}
+            durationSeconds2={sessionTiming.durationSeconds2}
+            sessionId={sessionId}
+          />
+        )}
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Show the BE-tracked join/leave durations next to the InProgress card
+ * so the candidate can see whether they or the mentor has already
+ * joined and how long each of them has been in the room.
+ */
+function SessionTimingPanel({
+  startTime1,
+  endTime1,
+  durationSeconds1,
+  startTime2,
+  endTime2,
+  durationSeconds2,
+  sessionId,
+}: {
+  startTime1?: string | null;
+  endTime1?: string | null;
+  durationSeconds1?: number | null;
+  startTime2?: string | null;
+  endTime2?: string | null;
+  durationSeconds2?: number | null;
+  sessionId?: number;
+}) {
+  const { t } = useTranslation();
+  const hasAnyTiming = !!(startTime1 || startTime2);
+  if (!hasAnyTiming) {
+    return (
+      <p className="text-xs text-blue-600 dark:text-blue-400">
+        {t("userMentorReview.timingNotRecorded")}
+        {sessionId ? ` (#${sessionId})` : ""}
+      </p>
+    );
+  }
+  return (
+    <div className="grid w-full grid-cols-1 gap-2 text-left sm:grid-cols-2">
+      <TimingChip
+        label={t("userMentorReview.student")}
+        startAt={startTime1}
+        endAt={endTime1}
+        durationSeconds={durationSeconds1}
+      />
+      <TimingChip
+        label={t("userMentorReview.mentor")}
+        startAt={startTime2}
+        endAt={endTime2}
+        durationSeconds={durationSeconds2}
+      />
+    </div>
+  );
+}
+
+function TimingChip({
+  label,
+  startAt,
+  endAt,
+  durationSeconds,
+}: {
+  label: string;
+  startAt?: string | null;
+  endAt?: string | null;
+  durationSeconds?: number | null;
+}) {
+  if (!startAt) {
+    return (
+      <div className="rounded-lg border border-blue-200 bg-white/60 px-3 py-2 text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
+        <p className="font-semibold">{label}</p>
+        <p className="text-blue-500 dark:text-blue-400">—</p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-lg border border-blue-200 bg-white/60 px-3 py-2 text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
+      <p className="font-semibold">{label}</p>
+      <p>
+        <span className="text-blue-500 dark:text-blue-400">{t("userMentorReview.joinedAt")}: </span>
+        {formatVnDateTime(startAt)}
+      </p>
+      {endAt && (
+        <p>
+          <span className="text-blue-500 dark:text-blue-400">{t("userMentorReview.leftAt")}: </span>
+          {formatVnDateTime(endAt)}
+        </p>
+      )}
+      {typeof durationSeconds === "number" && (
+        <p className="font-mono">
+          {t("userMentorReview.duration")}: {formatVnDuration(durationSeconds)}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function formatVnDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h} giờ ${m} phút ${s} giây`;
+  if (m > 0) return `${m} phút ${s} giây`;
+  return `${s} giây`;
+}
+
+/**
+ * Backend records timestamps as naive "yyyy-MM-dd HH:mm:ss.SSS" in UTC+7.
+ * Append the offset so `new Date(...)` parses to the intended instant.
+ */
+function formatVnDateTime(input: string | null | undefined): string {
+  if (!input) return "-";
+  const parsed = new Date(input.includes("T") ? input : input.replace(" ", "T") + "+07:00");
+  if (Number.isNaN(parsed.getTime())) return input;
+  return parsed.toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour12: false,
+  });
 }
 
 // ============================================================
@@ -823,6 +963,22 @@ export function ApplicationMentorReviewPage() {
   // `bookingId`, `sessionId`, `status`).
   const [booking, setBooking] = useState<MentorInterviewBooking | null>(null);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
+  // Live tracking fields lifted from /api/sessions/{id}. While
+  // `useDailyTracking` (created in 2026-07-17) would POST /join-session
+  // to record `startTime1/2` client-side, the simpler initial approach
+  // is to read whatever the BE has already recorded (webhook
+  // `endTime1/2` is processed by BE; we can show the user the
+  // progress in real-time without touching Daily's iframe lifecycle).
+  const [sessionTiming, setSessionTiming] = useState<{
+    startTime1?: string | null;
+    startTime2?: string | null;
+    endTime1?: string | null;
+    endTime2?: string | null;
+    durationSeconds1?: number | null;
+    durationSeconds2?: number | null;
+    participantId1?: string | null;
+    participantId2?: string | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   // Distinguishes "still fetching" from "fetched but BE returned []" so we
   // can offer a Retry / re-trigger instead of an infinite spinner when the
@@ -912,6 +1068,22 @@ export function ApplicationMentorReviewPage() {
             }
           }
 
+          if (typeof window !== "undefined") {
+            console.debug("[MentorReviewPage] detail selection", {
+              applicationId,
+              currentRoundId,
+              currentRoundType: currentRound.roundType,
+              detailCount: details.length,
+              detailRoundIds: details.map((d) => d.roundId),
+              detailStatuses: details.map((d) => d.status),
+              bookingIds: details.map((d) => d.bookingId),
+              sessionIds: details.map((d) => d.sessionId),
+              resolvedDetailId: currentDetail?.id ?? null,
+              resolvedDetailStatus: currentDetail?.status ?? null,
+              resolvedDetailBookingId: currentDetail?.bookingId ?? null,
+            });
+          }
+
           if (!currentDetail) {
             console.warn("[MentorReviewPage] no ApplicationDetail for current round", {
               currentRoundId,
@@ -943,9 +1115,33 @@ export function ApplicationMentorReviewPage() {
               status: bookingStatusFromDetail(currentDetail.status),
               ...(prev ?? {}),
             }));
+            if (currentDetail.sessionId) {
+              try {
+                const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
+                  params: { path: { id: currentDetail.sessionId } },
+                });
+                const live = (sessionRefetch.data ?? null) as {
+                  roomUrl?: string;
+                  startTime1?: string | null;
+                  startTime2?: string | null;
+                  endTime1?: string | null;
+                  endTime2?: string | null;
+                  durationSeconds1?: number | null;
+                  durationSeconds2?: number | null;
+                  participantId1?: string | null;
+                  participantId2?: string | null;
+                } | null;
+                const room = live?.roomUrl;
+                if (room) setRoomUrl(room);
+                if (live) setSessionTiming(live);
+              } catch {
+                // session may not be ready
+              }
+            }
           } else {
             setBooking(null);
             setRoomUrl(null);
+            setSessionTiming(null);
           }
         }
       } catch (err) {
@@ -989,11 +1185,23 @@ export function ApplicationMentorReviewPage() {
         }
         if (fresh.sessionId) {
           try {
-            const { data: sessionData } = await fetchClient.GET("/api/sessions/{id}", {
+            const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
               params: { path: { id: fresh.sessionId } },
             });
-            const room = (sessionData as { roomUrl?: string } | undefined)?.roomUrl;
+            const live = (sessionRefetch.data ?? null) as {
+              roomUrl?: string;
+              participantId1?: string | null;
+              participantId2?: string | null;
+              startTime1?: string | null;
+              startTime2?: string | null;
+              endTime1?: string | null;
+              endTime2?: string | null;
+              durationSeconds1?: number | null;
+              durationSeconds2?: number | null;
+            } | null;
+            const room = live?.roomUrl;
             if (room) setRoomUrl(room);
+            if (live) setSessionTiming(live);
           } catch {
             // session endpoint might 404 briefly after admin assign; ignore.
           }
@@ -1195,9 +1403,17 @@ export function ApplicationMentorReviewPage() {
         )}
 
         {/* In Progress — still has a valid roomUrl so the candidate can
-            rejoin if they closed the tab earlier. */}
+            rejoin if they closed the tab earlier. The session timing
+            panel underneath surfaces BE-tracked start/end durations so
+            the student can see whether they or their mentor is in the
+            room. */}
         {bookingStatus === "IN_PROGRESS" && !isReviewed && booking && (
-          <InProgressStep roomUrl={roomUrl ?? undefined} onJoinRoom={handleJoinRoom} />
+          <InProgressStep
+            roomUrl={roomUrl ?? undefined}
+            sessionTiming={sessionTiming}
+            sessionId={booking?.sessionId}
+            onJoinRoom={handleJoinRoom}
+          />
         )}
 
         {/* Awaiting Mentor Assignment — admin has not yet assigned a mentor.
