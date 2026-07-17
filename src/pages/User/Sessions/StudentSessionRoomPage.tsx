@@ -73,6 +73,12 @@ export function StudentSessionRoomPage() {
   //   here reflects the SESSION-LEVEL meaning — when a session carries
   //   a mentorId, both participants send `mentor: true` and the BE
   //   controller stamps startTime1/2 based on userId/participantId.
+  // 2026-07-18 (rev 2): the flag is PER-USER (this participant IS the
+  //   mentor), not session-level. Sending `mentor: true` from a student
+  //   account returns 403 "Mentor ID không khớp với Session" because the
+  //   BE controller compares userId against the session's mentorId.
+  //   Mock interview sends `isMentor: false` for student users, which
+  //   matches how BE has historically distinguished the two flows.
   const handleJoined = async (participantId: string) => {
     if (hasJoinedTracking || !session?.roomName || !user?.id) return;
     try {
@@ -80,8 +86,8 @@ export function StudentSessionRoomPage() {
         sessionName: session.roomName,
         userId: user.id,
         participantId,
-        mentor: true,
-        isMentor: true,
+        mentor: false,
+        isMentor: false,
       });
     } catch {
       // mutation toast handles errors; we still want to record that we tried
@@ -109,8 +115,8 @@ export function StudentSessionRoomPage() {
         sessionId: numericSessionId,
         userId: user.id,
         participantId: joinedParticipantId,
-        mentor: true,
-        isMentor: true,
+        mentor: false,
+        isMentor: false,
       });
     }
     if (!Number.isNaN(numericSessionId)) {
