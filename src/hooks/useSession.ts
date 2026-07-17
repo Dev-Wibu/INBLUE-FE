@@ -288,6 +288,13 @@ export const useLeaveSession = () => {
     mutationFn: async (data: LeaveSessionRequest) => {
       try {
         const response = await sessionManager.leaveSession(data);
+        // 2026-07-18: log status so we can see whether BE is actually being
+        //   hit when the user clicks Leave. Helps debug the endTime1/2
+        //   missing case (Daily.co webhook may be down or BE may reject).
+        console.info("[useLeaveSession] response", {
+          success: response.success,
+          error: response.error,
+        });
         // Treat any 2xx, 404, or 405 as "ok" — BE may not have the endpoint yet.
         if (
           response.success ||
@@ -299,7 +306,6 @@ export const useLeaveSession = () => {
         return false;
       } catch (err: unknown) {
         // Backend unavailable (network/server) — don't block FE navigation.
-
         console.warn("[useLeaveSession] non-fatal error", err);
         return false;
       }
