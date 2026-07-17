@@ -1055,16 +1055,22 @@ export function ApplicationMentorReviewPage() {
           // (e.g. user just unlocked this round), take it even if roundId did not match.
           // This covers schema drift between `currentRound.id` and detail roundIds.
           if (!currentDetail && currentRound.roundType === "MENTROR_REVIEW") {
+            // 2026-07-17: relax the allowlist — `IN_PROGRESS`,
+            // `ROOM_CREATED`, `MENTOR_ASSIGNED`, `OFFLINE_CONFIRMED` and
+            // any other round status BE may introduce all correspond to a
+            // Mentor Interview detail. Old version only accepted the five
+            // legacy statuses (PENDING / SLOT_PICKED / SUBMITTED /
+            // AI_EVALUATED / COMPLETED) which would silently produce no
+            // detail and leave the page blank.
             const mentorDetails = details.filter(
-              (d) =>
-                d.status === "PENDING" ||
-                d.status === "SLOT_PICKED" ||
-                d.status === "SUBMITTED" ||
-                d.status === "AI_EVALUATED" ||
-                d.status === "COMPLETED"
+              (d) => !["CODE_REVIEW", "QUIZ", "TECHNICAL_INTERVIEW"].includes(d.roundType ?? "")
             );
             if (mentorDetails.length === 1) {
               currentDetail = mentorDetails[0] ?? null;
+            } else if (mentorDetails.length > 1) {
+              // Pick the newest by id as a tie-breaker.
+              currentDetail =
+                mentorDetails.reduce((acc, d) => ((d.id ?? 0) > (acc.id ?? 0) ? d : acc)) ?? null;
             }
           }
 
@@ -1423,11 +1429,44 @@ export function ApplicationMentorReviewPage() {
           <AwaitingMentorAssignmentStep />
         )}
 
-        {/* Room Created (ONLINE — Daily.co room ready) */}
-        {(bookingStatus === "ROOM_CREATED" || bookingStatus === "MENTOR_ASSIGNED") &&
-          !isReviewed &&
+        {/* Room Created (ONLINE — Daily.co room ready). We also cover the
+            transitional state where ApplicationDetail has a sessionId +
+            mentorId but the derived `booking` hasn't populated yet (e.g.
+            the polling effect hasn't run). Without this fallback the
+            page rendered completely blank on hard reloads. */}
+        {(bookingStatus === "ROOM_CREATED" ||
+          bookingStatus === "MENTOR_ASSIGNED" ||
+          (!booking &&
+            !isReviewed &&
+            !isCompleted &&
+            applicationDetail?.sessionId &&
+            applicationDetail?.meetingType === "ONLINE" &&
+            applicationDetail?.mentorId)) &&
           booking && (
             <RoomReadyStep booking={booking} roomUrl={roomUrl} onJoinRoom={handleJoinRoom} />
+          )}
+        {/* Hard-reload fallback: booking snapshot hasn't been built yet but
+            we already have enough info to render RoomReady. Without this
+            fallback the page was a white wall for ~1 second between mount
+            and the first poll landing. */}
+        {!booking &&
+          !isReviewed &&
+          !isCompleted &&
+          applicationDetail?.sessionId &&
+          applicationDetail?.meetingType === "ONLINE" &&
+          applicationDetail?.mentorId &&
+          applicationDetail?.bookingId && (
+            <RoomReadyStep
+              booking={{
+                id: applicationDetail.bookingId,
+                sessionId: applicationDetail.sessionId,
+                mentorId: applicationDetail.mentorId,
+                applicantUserId: applicationDetail.applicantUserId,
+                status: "ROOM_CREATED",
+              }}
+              roomUrl={roomUrl}
+              onJoinRoom={handleJoinRoom}
+            />
           )}
 
         {/* OFFLINE confirmed — waiting for the in-person meeting */}
