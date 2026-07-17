@@ -1,21 +1,13 @@
-import { WeeklySlotCalendar, type WeeklySlot } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
-import { useActiveKiosks, useKioskWeekSlots, usePickKioskSlot } from "@/hooks/useKiosk";
 import { useCurrentRound } from "@/hooks/useRound";
+import { useCreateRoundSession } from "@/hooks/useSession";
 import { fetchClient } from "@/lib/api";
-import { startOfWeek } from "date-fns";
 import {
   ArrowLeft,
   Calendar,
@@ -26,7 +18,7 @@ import {
   Send,
   Video,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -136,62 +128,69 @@ function SlotSelectionStep({
   onSuccess: (newBooking: MentorInterviewBooking) => void;
 }) {
   const { t } = useTranslation();
-  const [selectedKioskId, setSelectedKioskId] = useState<number | null>(null);
-  const [weekStart, setWeekStart] = useState<Date>(() =>
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  );
-  const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
+  // Mentor Review v2 (2026-07-17): no kiosk. Candidate picks joinTime +
+  // ONLINE/OFFLINE and we call `POST /api/sessions/create-for-round`.
+  // The rest of the page still consumes `MentorInterviewBooking`, so we
+  // synthesise a minimal snapshot from the returned Session.
+  const [joinTimeLocal, setJoinTimeLocal] = useState<string>(() => {
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    tomorrow.setSeconds(0, 0);
+    return new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60_000)
+      .toISOString()
+      .slice(0, 16);
+  });
+  const [meetingType, setMeetingType] = useState<"ONLINE" | "OFFLINE">("ONLINE");
+  const meetingTypeRef = useRef<"ONLINE" | "OFFLINE">("ONLINE");
+  useEffect(() => {
+    meetingTypeRef.current = meetingType;
+  }, [meetingType]);
 
-  const { data: kiosks = [], isLoading: kiosksLoading } = useActiveKiosks();
-  const weekQueries = useKioskWeekSlots(selectedKioskId, weekStart, !!selectedKioskId);
-  const weekSlots = useMemo<WeeklySlot[]>(() => {
-    // BE returns `SlotDto` with optional fields; the calendar only renders
-    // slots that have a valid start/end pair and a boolean availability.
-    return weekQueries.flatMap((q) =>
-      (q.data ?? []).flatMap((s): WeeklySlot[] => {
-        if (!s.startTime || !s.endTime) return [];
-        return [{ startTime: s.startTime, endTime: s.endTime, available: !!s.available }];
-      })
-    );
-  }, [weekQueries]);
-  const slotsLoading = weekQueries.some((q) => q.isLoading);
-  const pickSlotMutation = usePickKioskSlot();
+  const createRoundSessionMutation = useCreateRoundSession({
+    onSuccess: (session) => {
+      toast.success(
+        meetingTypeRef.current === "OFFLINE"
+          ? t("userMentorReview.offlineConfirmed")
+          : t("userMentorReview.onlineConfirmed")
+      );
+      // Build a MentorInterviewBooking snapshot so the downstream
+      // step components (AwaitingMentorStep / RoomReadyStep) can render
+      // without modification. OFFLINE → "AWAITING_MENTOR" (waiting card),
+      // ONLINE → "ROOM_CREATED" (room ready card with Daily.co link).
+      const synthetic: MentorInterviewBooking = {
+        id: session.id,
+        applicationDetailId,
+        sessionId: session.id,
+        status: meetingTypeRef.current === "OFFLINE" ? "AWAITING_MENTOR" : "ROOM_CREATED",
+        scheduledStart: new Date(joinTimeLocal).toISOString(),
+      };
+      onSuccess(synthetic);
+    },
+  });
 
-  const handleKioskChange = (kioskId: number) => {
-    setSelectedKioskId(kioskId);
-    setSelectedSlot(null);
-    setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  };
-
-  const handleWeekChange = (next: Date) => {
-    setWeekStart(startOfWeek(next, { weekStartsOn: 1 }));
-    setSelectedSlot(null);
-  };
-
-  const handlePickSlot = async () => {
-    if (!selectedKioskId || !selectedSlot) return;
+  const handleConfirm = () => {
     if (!applicationDetailId) {
-      // applicationDetailId is 0 when the page-level effect hasn't resolved yet.
-      // Surface this so the user can retry instead of getting a silent 404.
       toast.error(t("common.anErrorHasOccurred"));
       return;
     }
-    try {
-      const result = await pickSlotMutation.mutateAsync({
-        applicationDetailId,
-        kioskId: selectedKioskId,
-        scheduledStart: selectedSlot.startTime,
-        scheduledEnd: selectedSlot.endTime,
-      });
-      if (result) {
-        onSuccess(result as unknown as MentorInterviewBooking);
-      }
-    } catch {
-      // error handled by hook
+    if (!joinTimeLocal) {
+      toast.error(t("userMentorReview.pickDateFirst"));
+      return;
     }
+    const parsed = new Date(joinTimeLocal);
+    if (Number.isNaN(parsed.getTime())) {
+      toast.error(t("userMentorReview.invalidDate"));
+      return;
+    }
+    // Native datetime-local gives a tz-naive string; convert to the
+    // ISO-8601 +07:00 the backend contract expects.
+    const joinTime = parsed.toISOString();
+    createRoundSessionMutation.mutate({
+      applicationDetailId,
+      joinTime,
+      duration: 60,
+      offline: meetingType === "OFFLINE",
+    });
   };
-
-  const kioskName = kiosks.find((k) => k.id === selectedKioskId)?.name;
 
   return (
     <div className="space-y-5">
@@ -203,111 +202,90 @@ function SlotSelectionStep({
           </div>
           <div>
             <p className="text-base font-semibold text-indigo-700 dark:text-indigo-300">
-              {t("userKiosk.pickTimeSlot")}
+              {t("userMentorReview.chooseSchedule")}
             </p>
             <p className="mt-1 text-sm text-indigo-600 dark:text-indigo-400">
-              {t("userKiosk.selectKioskAndTime")}
+              {t("userMentorReview.chooseScheduleDesc")}
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Step 1: Select Kiosk */}
+      {/* Form: date-time + ONLINE/OFFLINE */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <MapPin className="h-4 w-4 text-[#0047AB]" />
-            {t("userKiosk.selectKiosk")}
+            <Clock className="h-4 w-4 text-[#0047AB]" />
+            {t("userMentorReview.pickDateAndType")}
           </CardTitle>
-          <CardDescription>{t("userKiosk.selectKioskDescription")}</CardDescription>
+          <CardDescription>{t("userMentorReview.pickDateAndTypeDesc")}</CardDescription>
         </CardHeader>
-        <CardContent>
-          {kiosksLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Spinner size="sm" tone="primary" />
+        <CardContent className="space-y-5">
+          {/* DateTime picker */}
+          <div className="space-y-2">
+            <Label htmlFor="mentor-review-join-time">{t("userMentorReview.meetingTime")}</Label>
+            <Input
+              id="mentor-review-join-time"
+              type="datetime-local"
+              value={joinTimeLocal}
+              onChange={(e) => setJoinTimeLocal(e.target.value)}
+              min={new Date().toISOString().slice(0, 16)}
+            />
+          </div>
+
+          {/* ONLINE / OFFLINE radio */}
+          <div className="space-y-2">
+            <Label>{t("userMentorReview.meetingType")}</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setMeetingType("ONLINE")}
+                className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition ${
+                  meetingType === "ONLINE"
+                    ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950 dark:text-indigo-200"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                }`}>
+                <Video className="h-4 w-4" />
+                {t("userMentorReview.online")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMeetingType("OFFLINE")}
+                className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition ${
+                  meetingType === "OFFLINE"
+                    ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950 dark:text-indigo-200"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                }`}>
+                <MapPin className="h-4 w-4" />
+                {t("userMentorReview.offline")}
+              </button>
             </div>
-          ) : kiosks.length === 0 ? (
-            <p className="text-sm text-slate-500">{t("userKiosk.noKiosksAvailable")}</p>
-          ) : (
-            <Select
-              value={selectedKioskId ? String(selectedKioskId) : ""}
-              onValueChange={(v) => handleKioskChange(Number(v))}>
-              <SelectTrigger id="kiosk-select">
-                <SelectValue placeholder={t("userKiosk.chooseKiosk")} />
-              </SelectTrigger>
-              <SelectContent>
-                {kiosks.map((kiosk) => (
-                  <SelectItem key={kiosk.id} value={String(kiosk.id)}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{kiosk.name}</span>
-                      {kiosk.location && (
-                        <span className="text-xs text-slate-500">{kiosk.location}</span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+            <p className="text-xs text-slate-500">
+              {meetingType === "ONLINE"
+                ? t("userMentorReview.onlineHint")
+                : t("userMentorReview.offlineHint")}
+            </p>
+          </div>
+
+          {/* Confirm */}
+          <Button
+            onClick={handleConfirm}
+            disabled={createRoundSessionMutation.isPending}
+            className="w-full gap-2 bg-indigo-600 text-white hover:bg-indigo-700">
+            {createRoundSessionMutation.isPending ? (
+              <>
+                <Spinner size="sm" tone="white" />
+                {t("userMentorReview.confirming")}
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                {t("userMentorReview.confirm")}
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
-
-      {/* Step 2: Select Date & Time */}
-      {selectedKioskId && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="h-4 w-4 text-[#0047AB]" />
-              {t("userKiosk.selectTimeSlot")}
-            </CardTitle>
-            <CardDescription>
-              {kioskName
-                ? `${t("userKiosk.availableSlotsFor")} ${kioskName}`
-                : t("userKiosk.pickWeeklySlot")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <WeeklySlotCalendar
-              weekStart={weekStart}
-              onChangeWeek={handleWeekChange}
-              slots={weekSlots}
-              selectedSlotKey={
-                selectedSlot ? `${selectedSlot.startTime}__${selectedSlot.endTime}` : null
-              }
-              onSelectSlot={setSelectedSlot}
-              isLoading={slotsLoading}
-              emptyMessage={t("common.slotCalendar.noSlotsForSelectedDate")}
-            />
-
-            {/* Selected slot info */}
-            {selectedSlot && (
-              <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-800 dark:bg-indigo-950">
-                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                  {t("userKiosk.selectedSlot")}: {selectedSlot.startTime} - {selectedSlot.endTime}
-                </p>
-              </div>
-            )}
-
-            {/* Confirm button */}
-            <Button
-              onClick={handlePickSlot}
-              disabled={!selectedSlot || pickSlotMutation.isPending}
-              className="w-full gap-2 bg-indigo-600 text-white hover:bg-indigo-700">
-              {pickSlotMutation.isPending ? (
-                <>
-                  <Spinner size="sm" tone="white" />
-                  {t("userKiosk.booking")}
-                </>
-              ) : (
-                <>
-                  <Calendar className="h-4 w-4" />
-                  {t("userKiosk.confirmSlot")}
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
