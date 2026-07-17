@@ -311,9 +311,9 @@ export function StudentSessionRoomPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="container max-w-7xl py-6">
+      <div className="mx-auto w-full max-w-[1800px] px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6 xl:px-10 xl:py-8 2xl:px-12">
         {/* Header */}
-        <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="mb-4 flex flex-wrap items-center gap-3 lg:mb-6">
           <Button
             variant="ghost"
             size="sm"
@@ -322,7 +322,7 @@ export function StudentSessionRoomPage() {
             <ArrowLeft className="h-4 w-4" />
             {t("general.back")}
           </Button>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl lg:text-3xl xl:text-4xl">
             {t("userMentorReview.interviewRoomTitle")}
           </h1>
           <span
@@ -360,9 +360,9 @@ export function StudentSessionRoomPage() {
           }}
         />
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main video area — spans 2 columns on lg+ */}
-          <div className="lg:col-span-2">
+        <div className="grid gap-4 lg:gap-6 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
+          {/* Main video area — video takes remaining width on xl+, sidebar is fixed px */}
+          <div className="min-w-0">
             {hasConfirmedDevices ? (
               <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
                 <CardContent className="p-0">
@@ -376,19 +376,19 @@ export function StudentSessionRoomPage() {
                       onParticipantLeft={handlePeerLeft}
                       onParticipantCountUpdated={handlePeerCountUpdated}
                       onRoomUnavailable={handleRoomUnavailable}
-                      className="h-[70vh] w-full"
+                      className="h-[60vh] min-h-[420px] w-full sm:h-[68vh] lg:h-[72svh] lg:min-h-[560px] xl:h-[calc(100vh-220px)] xl:min-h-[640px] 2xl:h-[calc(100vh-200px)]"
                     />
                   </VideoCallProvider>
                 </CardContent>
               </Card>
             ) : (
               <Card className="border-dashed bg-white dark:bg-slate-900">
-                <CardContent className="flex h-[60vh] flex-col items-center justify-center gap-4">
+                <CardContent className="flex h-[60vh] min-h-[420px] flex-col items-center justify-center gap-4 lg:h-[72svh] lg:min-h-[560px] xl:h-[calc(100vh-220px)] xl:min-h-[640px]">
                   <div className="rounded-full bg-slate-100 p-4 dark:bg-slate-800">
                     <Video className="h-10 w-10 text-slate-500" />
                   </div>
-                  <div className="space-y-1 text-center">
-                    <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">
+                  <div className="space-y-1 px-4 text-center">
+                    <p className="text-base font-semibold text-slate-700 sm:text-lg dark:text-slate-200">
                       {t("common.pleaseCheckYourEquipmentBeforeParti")}
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -405,7 +405,7 @@ export function StudentSessionRoomPage() {
 
             {/* Participant timeline — mirrors mentor page info card, but
                 with a people-focused 2-column layout (me + mentor). */}
-            <Card className="mt-6 border-slate-200 shadow-sm dark:border-slate-800">
+            <Card className="mt-4 border-slate-200 shadow-sm lg:mt-6 dark:border-slate-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <UserIcon className="h-4 w-4" />
@@ -414,7 +414,7 @@ export function StudentSessionRoomPage() {
                 <CardDescription>{t("common.interviewDetails")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2 xl:gap-4">
                   {/* You column */}
                   <ParticipantRow
                     name={user?.name ?? t("common.candidate")}
@@ -439,7 +439,7 @@ export function StudentSessionRoomPage() {
 
                 <Separator />
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:gap-4">
                   <InfoCell
                     icon={<UserIcon className="h-4 w-4" />}
                     label={t("common.room")}
@@ -464,8 +464,10 @@ export function StudentSessionRoomPage() {
             </Card>
           </div>
 
-          {/* Sidebar — session status + waiting indicator + supporting info */}
-          <aside className="space-y-6">
+          {/* Sidebar — session status + waiting indicator + supporting info.
+              Sticky on xl+ so it stays in view while student watches the
+              video. */}
+          <aside className="space-y-4 lg:space-y-6 xl:sticky xl:top-4 xl:self-start">
             <Card className="border-slate-200 shadow-sm dark:border-slate-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
@@ -581,7 +583,7 @@ export function StudentSessionRoomPage() {
 
         {/* Action footer — only show on terminal states */}
         {sessionStatus === "COMPLETED" && (
-          <div className="mt-6 flex justify-end gap-2">
+          <div className="mt-4 flex flex-wrap justify-end gap-2 lg:mt-6">
             <Badge variant="secondary" className="gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />
               {t("common.itsOver")}
