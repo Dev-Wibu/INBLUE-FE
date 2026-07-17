@@ -1244,7 +1244,19 @@ export function ApplicationMentorReviewPage() {
   //   "session-1721...") when roomUrl hadn't populated yet, which of course
   //   isn't a valid Daily URL. Compose the public URL from sessionId or
   //   fall back to a stable derivation so the Rejoin button always works.
+  // Navigate to the inline Daily iframe (StudentSessionRoomPage) instead
+  // of opening the Daily URL in a new tab. The new tab approach meant we
+  // never observed Daily's `joined-meeting` event in the main thread, so
+  // BE never got the POST /api/sessions/join-session call → startTime1
+  // stayed null. The inline page mounts <VideoCallProvider/> and tracks
+  // the join exactly the same way MentorSessionRoomPage does for mentor.
   const handleJoinRoom = () => {
+    if (booking?.sessionId) {
+      navigate(`/user/sessions/room/${booking.sessionId}`);
+      return;
+    }
+    // Booking snapshot may not have the id yet (early mount); fall back
+    // to opening Daily.co directly so the candidate isn't locked out.
     const target = composeDailyRoomUrl(roomUrl, booking?.sessionKey);
     if (!target) return;
     window.open(target, "_blank", "noopener,noreferrer");
