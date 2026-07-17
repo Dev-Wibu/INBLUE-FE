@@ -66,6 +66,7 @@ export function MentorKioskEntryPage() {
         userId: user.id,
         participantId,
         mentor: true,
+        isMentor: true,
       });
     } catch {
       // silent fail - join is best-effort tracking

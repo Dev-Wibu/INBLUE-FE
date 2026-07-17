@@ -17,7 +17,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeviceCheckDialog, VideoCallProvider, VideoCallRoom } from "@/components/video-call";
-import { SESSION_QUERY_KEYS, useJoinSession, useSessionById } from "@/hooks/useSession";
+import {
+  SESSION_QUERY_KEYS,
+  useJoinSession,
+  useLeaveSession,
+  useSessionById,
+} from "@/hooks/useSession";
 import { formatDateTime, formatTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,6 +37,11 @@ export function StudentSessionRoomPage() {
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const [hasJoinedTracking, setHasJoinedTracking] = useState(false);
+  // Cache the local Daily.co participantId so we can pass it to /leave-session
+  //   when the user exits (best-effort: BE primary signal is via the Daily.co
+  //   webhook, but this guarantees endTime* is written even when the user
+  //   closes the tab without a clean Daily.co leave event).
+  const [joinedParticipantId, setJoinedParticipantId] = useState<string | null>(null);
   const [isDeviceCheckOpen, setIsDeviceCheckOpen] = useState(true);
   const [hasConfirmedDevices, setHasConfirmedDevices] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -43,6 +53,7 @@ export function StudentSessionRoomPage() {
     refetch: refetchSession,
   } = useSessionById(numericSessionId);
   const joinSessionMutation = useJoinSession();
+  const leaveSessionMutation = useLeaveSession();
 
   const canJoin =
     session &&
@@ -54,6 +65,14 @@ export function StudentSessionRoomPage() {
   // stamps `startTime1` on the Session row. Then invalidate the detail
   // query so the info panel below reflects the new `participantId1` /
   // `startTime1` without a manual refresh.
+  //
+  // 2026-07-18: payload mirrors the legacy mock-interview flow exactly —
+  //   send BOTH `mentor` AND `isMentor` (legacy alias) so BE has no
+  //   ambiguity about whether this flag means "this participant is the
+  //   mentor" or "this session has a mentor assigned". `mentor: true`
+  //   here reflects the SESSION-LEVEL meaning — when a session carries
+  //   a mentorId, both participants send `mentor: true` and the BE
+  //   controller stamps startTime1/2 based on userId/participantId.
   const handleJoined = async (participantId: string) => {
     if (hasJoinedTracking || !session?.roomName || !user?.id) return;
     try {
@@ -62,6 +81,7 @@ export function StudentSessionRoomPage() {
         userId: user.id,
         participantId,
         mentor: true,
+        isMentor: true,
       });
     } catch {
       // mutation toast handles errors; we still want to record that we tried
@@ -70,9 +90,29 @@ export function StudentSessionRoomPage() {
       queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),
     });
     setHasJoinedTracking(true);
+    setJoinedParticipantId(participantId);
   };
 
+  // 2026-07-18: mirror the mock-interview leave flow. We fire-and-forget
+  //   POST /leave-session so endTime1 is written even if Daily.co's
+  //   webhook hasn't been delivered yet. The mutation tolerates 404/5xx
+  //   so the user is never blocked.
   const handleLeave = () => {
+    if (
+      hasJoinedTracking &&
+      joinedParticipantId &&
+      session?.roomName &&
+      typeof user?.id === "number"
+    ) {
+      void leaveSessionMutation.mutate({
+        sessionName: session.roomName,
+        sessionId: numericSessionId,
+        userId: user.id,
+        participantId: joinedParticipantId,
+        mentor: true,
+        isMentor: true,
+      });
+    }
     if (!Number.isNaN(numericSessionId)) {
       queryClient.invalidateQueries({
         queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),

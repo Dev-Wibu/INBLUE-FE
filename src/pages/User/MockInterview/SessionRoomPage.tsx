@@ -58,12 +58,16 @@ export function SessionRoomPage() {
   const handleJoined = async (participantId: string) => {
     if (hasJoinedTracking || !session?.roomName || !user?.id) return;
 
-    // Track join via API
+    // Track join via API (legacy mock-interview flow). `mentor` here is the
+    //   session-level flag (mock interviews still take mentor participants
+    //   sometimes), and BE expects BOTH keys. Sending `mentor: false`/
+    //   `isMentor: false` matches what worked before the 2026-07-18 change.
     await joinSessionMutation.mutateAsync({
       sessionName: session.roomName,
       userId: user.id,
       participantId,
-      mentor: false, // User is not a mentor
+      mentor: false,
+      isMentor: false,
     });
     setHasJoinedTracking(true);
   };

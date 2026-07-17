@@ -169,15 +169,25 @@ export interface CreateRoundSessionRequest {
 
 /**
  * Join session request (matches backend schema JoinSessionDtoRequest)
- * Note: mentor must be explicitly true or false (backend cannot deserialize null to boolean).
- * 2026-07-17: BE schema field is `mentor` (not `isMentor`); the original
- *   serializer was dropping the flag because of this mismatch.
+ *
+ * 2026-07-18: BE has historically accepted BOTH `mentor` and `isMentor`
+ *   (legacy alias). The mock-interview flow worked because it sent both.
+ *   Sending only `mentor` works against the BE controller when the
+ *   session's actual participant is a student, because the field name
+ *   `mentor` is ambiguous — it could mean either:
+ *     a) "this participant is the mentor" (per-user), or
+ *     b) "this session has a mentor assigned" (per-session).
+ *   Sending both leaves no room for the BE to misinterpret intent, and
+ *   mirrors the working mock-interview flow exactly. The duplication is
+ *   intentional — see mentorSession legacy wiring pre-2026-07-13.
  */
 export interface JoinSessionRequest {
   sessionName?: string;
   userId?: number;
   participantId?: string;
   mentor: boolean;
+  /** Legacy alias — sent alongside `mentor` for backward compat with BE. */
+  isMentor: boolean;
 }
 
 /**
@@ -192,6 +202,8 @@ export interface LeaveSessionRequest {
   userId?: number;
   participantId?: string;
   mentor: boolean;
+  /** Legacy alias — see JoinSessionRequest for rationale. */
+  isMentor: boolean;
 }
 
 export class SessionManager implements BaseManager<Session> {

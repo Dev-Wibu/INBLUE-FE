@@ -215,6 +215,7 @@ describe("SessionManager", () => {
         sessionName: "test-session",
         userId: 1,
         mentor: false,
+        isMentor: false,
       });
 
       expect(result.success).toBe(true);
@@ -227,6 +228,7 @@ describe("SessionManager", () => {
         sessionName: "test-session",
         userId: 1,
         mentor: false,
+        isMentor: false,
       });
 
       expect(result.success).toBe(false);
@@ -240,6 +242,7 @@ describe("SessionManager", () => {
         sessionName: "test-session",
         userId: 1,
         mentor: false,
+        isMentor: false,
       });
 
       expect(result.success).toBe(false);
