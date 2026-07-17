@@ -8,7 +8,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCurrentRound } from "@/hooks/useRound";
 import { useCreateRoundSession } from "@/hooks/useSession";
 import { fetchClient } from "@/lib/api";
-import { ArrowLeft, Calendar, CheckCircle2, Clock, MapPin, Send, Video } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Hourglass,
+  MapPin,
+  Send,
+  Video,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -41,6 +50,13 @@ interface ApplicationDetail {
   status?: ApplicationDetailStatus;
   bookingId?: number;
   sessionId?: number;
+  mentorId?: number | null;
+  sessionInfo?: {
+    sessionId?: number | null;
+    meetingType?: "ONLINE" | "OFFLINE" | null;
+    startTime?: string | null;
+    endTime?: string | null;
+  } | null;
   finalScore?: number;
   finalResult?: string;
   // After POST /api/mentor-reviews the backend sets `mentorReview`
@@ -453,6 +469,31 @@ function RoomReadyStep({
         {t("userMentorReview.joinOnlineRoom")}
       </Button>
     </div>
+  );
+}
+
+// ============================================================
+// Awaiting Mentor Assignment — admin has not assigned a mentor yet.
+// ============================================================
+
+function AwaitingMentorAssignmentStep() {
+  const { t } = useTranslation();
+  return (
+    <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+      <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+          <Hourglass className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-amber-700 dark:text-amber-300">
+            {t("userMentorReview.awaitingMentorTitle")}
+          </p>
+          <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
+            {t("userMentorReview.awaitingMentorDesc")}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1116,6 +1157,13 @@ export function ApplicationMentorReviewPage() {
           <InProgressStep roomUrl={roomUrl ?? undefined} />
         )}
 
+        {/* Awaiting Mentor Assignment — admin has not yet assigned a mentor.
+            We deliberately hide the SlotSelectionStep in this branch because
+            BE's create-for-round requires a non-null mentorId on the round. */}
+        {applicationDetail?.status === "AWAITING_MENTOR" && !isReviewed && !booking && (
+          <AwaitingMentorAssignmentStep />
+        )}
+
         {/* Room Created (ONLINE — Daily.co room ready) */}
         {(bookingStatus === "ROOM_CREATED" || bookingStatus === "MENTOR_ASSIGNED") &&
           !isReviewed &&
@@ -1133,14 +1181,21 @@ export function ApplicationMentorReviewPage() {
           <AwaitingMentorStep booking={booking} onCancel={handleCancelBooking} />
         )}
 
-        {/* Slot selection (no booking yet) — only after applicationDetail is resolved */}
-        {!booking && !isReviewed && applicationDetailId > 0 && (
-          <SlotSelectionStep
-            applicationDetailId={applicationDetailId}
-            mentorId={applicationDetail?.mentorId ?? null}
-            onSuccess={handleSlotPicked}
-          />
-        )}
+        {/* Slot selection — only when status === PENDING AND meetingType is unset.
+            Outside of these preconditions the candidate is either waiting for
+            admin to assign a mentor (AWAITING_MENTOR branch above) or already
+            has a confirmed slot (SLOT_PICKED/PENDING+OFFLINE in branches above). */}
+        {!booking &&
+          !isReviewed &&
+          applicationDetailId > 0 &&
+          applicationDetail?.status === "PENDING" &&
+          applicationDetail?.sessionInfo?.meetingType == null && (
+            <SlotSelectionStep
+              applicationDetailId={applicationDetailId}
+              mentorId={applicationDetail?.mentorId ?? null}
+              onSuccess={handleSlotPicked}
+            />
+          )}
 
         {/* MENTOR_REVIEW round has no ApplicationDetail yet — 2026-07-17 the
             empty-state card (with Retry/Back) has been removed because the

@@ -4112,7 +4112,9 @@
     "dailyRoomUrlDesc": "Đường dẫn Daily.co để tham gia phỏng vấn online.",
     "joinOnlineRoom": "Vào phòng phỏng vấn online",
     "offlineBookedTitle": "Lịch Offline đã xác nhận",
-    "offlineBookedDesc": "Vui lòng gặp mentor theo thời gian đã hẹn tại văn phòng công ty."
+    "offlineBookedDesc": "Vui lòng gặp mentor theo thời gian đã hẹn tại văn phòng công ty.",
+    "awaitingMentorTitle": "Đang đợi admin gán mentor",
+    "awaitingMentorDesc": "Vui lòng quay lại sau khi admin phân công mentor. Sau khi được gán, bạn có thể chọn giờ và hình thức phỏng vấn."
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",
