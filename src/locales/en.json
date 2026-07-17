@@ -4125,7 +4125,10 @@
     "mentor": "Mentor",
     "joinedAt": "Joined",
     "leftAt": "Left",
-    "duration": "Duration"
+    "duration": "Duration",
+    "interviewRoomTitle": "Interview room",
+    "mentorJoined": "Mentor joined",
+    "youJoined": "You joined"
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",

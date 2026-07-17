@@ -4121,7 +4121,10 @@
     "mentor": "Mentor",
     "joinedAt": "Vào lúc",
     "leftAt": "Rời lúc",
-    "duration": "Thời lượng"
+    "duration": "Thời lượng",
+    "interviewRoomTitle": "Phòng phỏng vấn",
+    "mentorJoined": "Mentor vào lúc",
+    "youJoined": "Bạn vào lúc"
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

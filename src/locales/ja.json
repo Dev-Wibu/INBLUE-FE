@@ -4115,7 +4115,10 @@
     "mentor": "メンター",
     "joinedAt": "入室時刻",
     "leftAt": "退室時刻",
-    "duration": "所要時間"
+    "duration": "所要時間",
+    "interviewRoomTitle": "面接室",
+    "mentorJoined": "メンター入室",
+    "youJoined": "入室時刻"
   },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",
