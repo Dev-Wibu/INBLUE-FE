@@ -74,3 +74,8 @@ yarn.lock
 .impeccable/live/deferred-svelte-component-accepts.json
 .impeccable/live/*.png
 # impeccable-ignore-end
+
+# Local docs (technical-spec/ is the only kept subfolder)
+/docs/*
+!/docs/technical-spec/
+!/docs/technical-spec/**
