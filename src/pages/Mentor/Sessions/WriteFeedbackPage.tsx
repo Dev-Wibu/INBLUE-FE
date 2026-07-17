@@ -14,6 +14,7 @@ import {
   useUpdateMentorReview,
 } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
+import { isSessionMentor } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowLeft, Star, User } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -47,7 +48,7 @@ export function WriteFeedbackPage() {
     mentorId: number;
     userId: number;
   }) => {
-    if (!session || !user?.id || session.userId2 !== user.id) {
+    if (!session || !user?.id || !isSessionMentor(session, user.id)) {
       toast.error(t("mentorSessions.youDoNotHavePermission"));
       return;
     }
@@ -173,7 +174,7 @@ export function WriteFeedbackPage() {
   }
 
   // Check if current user is the mentor for this session
-  if (session.userId2 !== user?.id) {
+  if (!isSessionMentor(session, user?.id)) {
     return (
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => navigate(-1)}>

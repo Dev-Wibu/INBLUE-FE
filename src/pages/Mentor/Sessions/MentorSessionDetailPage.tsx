@@ -6,6 +6,7 @@ import { useMentorById } from "@/hooks/useMentor";
 import { useMentorReviewBySession } from "@/hooks/useMentorReview";
 import { useSessionById } from "@/hooks/useSession";
 import { formatCurrency, formatDateTime } from "@/lib/formatting";
+import { getSessionMentorId, isSessionMentor } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft,
@@ -29,10 +30,11 @@ export function MentorSessionDetailPage() {
   const user = useAuthStore((state) => state.user);
   const numericSessionId = Number(sessionId);
   const { data: session, isLoading: sessionLoading } = useSessionById(numericSessionId);
-  const { data: mentorInfo } = useMentorById(session?.userId2 || 0);
+  const mentorId = session ? getSessionMentorId(session) : undefined;
+  const { data: mentorInfo } = useMentorById(mentorId || 0);
   const { data: mentorReview, isLoading: reviewLoading } =
     useMentorReviewBySession(numericSessionId);
-  const isAllowed = session && session.userId2 === user?.id;
+  const isAllowed = isSessionMentor(session, user?.id);
   const statusMap: Record<string, { label: string; badgeClass: string }> = {
     DRAFT: {
       label: t("common.waitingForApproval"),
@@ -145,7 +147,7 @@ export function MentorSessionDetailPage() {
               <span className="text-slate-600 dark:text-slate-400">{t("common.mentor")}:</span>
               <span className="font-medium">
                 {mentorInfo?.name ||
-                  (session.userId2 ? t("common.mentorWithId", { id: session.userId2 }) : "-")}
+                  (mentorId != null ? t("common.mentorWithId", { id: mentorId }) : "-")}
               </span>
             </div>
             <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-900/50">

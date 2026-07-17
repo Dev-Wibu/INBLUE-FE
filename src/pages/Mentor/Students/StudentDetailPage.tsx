@@ -19,6 +19,7 @@ import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import type { CandidateProfile } from "@/interfaces/schema.types";
+import { isSessionMentor } from "@/lib/session-mentor";
 import { useCandidateProfile } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -49,7 +50,7 @@ export function StudentDetailPage() {
 
   // Filter sessions for this student with current mentor
   const studentSessions = allSessions.filter(
-    (session: Session) => session.userId === studentId && session.userId2 === currentUser?.id
+    (session: Session) => session.userId === studentId && isSessionMentor(session, currentUser?.id)
   );
 
   // Filter feedbacks for this student from current mentor

@@ -43,6 +43,7 @@ import {
   formatTime,
   treatZuluAsVietnamLocal,
 } from "@/lib/formatting";
+import { getSessionMentorId } from "@/lib/session-mentor";
 import { sessionManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowRight, Calendar, Clock, Search, Star, User, Video } from "lucide-react";
@@ -140,7 +141,7 @@ function SessionCard({
               </CardTitle>
               <CardDescription className="flex items-center gap-2">
                 <User className="h-3 w-3" />
-                {t("common.mentorWithId", { id: session.userId2 })}
+                {t("common.mentorWithId", { id: getSessionMentorId(session) ?? "-" })}
               </CardDescription>
             </div>
           </div>
@@ -328,7 +329,7 @@ export function SessionHistoryPage() {
         const matchesSearch =
           normalizedSearch.length === 0 ||
           session.id?.toString().includes(normalizedSearch) ||
-          session.userId2?.toString().includes(normalizedSearch) ||
+          getSessionMentorId(session)?.toString().includes(normalizedSearch) ||
           session.roomName?.toLowerCase().includes(normalizedSearch) ||
           (statusLabels[session.status || "SCHEDULED"] ?? "")
             .toLowerCase()

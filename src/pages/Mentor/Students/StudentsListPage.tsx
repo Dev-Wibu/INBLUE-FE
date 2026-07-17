@@ -29,6 +29,7 @@ import { useSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import { toTimestamp, treatZuluAsVietnamLocal } from "@/lib/formatting";
+import { isSessionMentor } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
 import { Calendar, MessageSquare, Search, Star, Users } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -72,8 +73,10 @@ export function StudentsListPage() {
   } = useMentorReviewsByMentor(user?.id || 0);
   const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading;
 
-  // Filter sessions where current user is the mentor (userId2)
-  const mentorSessions = allSessions.filter((session: Session) => session.userId2 === user?.id);
+  // Filter sessions where current user is the mentor (mentorId/userId2)
+  const mentorSessions = allSessions.filter((session: Session) =>
+    isSessionMentor(session, user?.id)
+  );
 
   // Group sessions by student (userId)
   const studentsMap = new Map<number, StudentInfo>();

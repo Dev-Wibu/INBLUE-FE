@@ -14,6 +14,7 @@ import {
   useUpdateMentorFeedback,
 } from "@/hooks/useMentorFeedback";
 import { useSessionById } from "@/hooks/useSession";
+import { getSessionMentorId } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowLeft, Star } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -35,6 +36,7 @@ export function WriteReviewPage() {
   const isLoading = sessionLoading || feedbackLoading;
   const isSubmitting = isCreating || isUpdating;
   const isEdit = !!existingFeedback;
+  const sessionMentorId = session ? getSessionMentorId(session) : undefined;
   const handleSubmit = (data: {
     rating?: number;
     comment?: string;
@@ -50,7 +52,7 @@ export function WriteReviewPage() {
       toast.error(t("userMockinterview.youCanOnlySubmitFeedback"));
       return;
     }
-    if (!session.id || !session.userId2) {
+    if (!session.id || sessionMentorId == null) {
       toast.error(t("userMockinterview.unableToIdentifyInterviewSession"));
       return;
     }
@@ -62,7 +64,7 @@ export function WriteReviewPage() {
     }
     const payload = {
       sessionId: session.id,
-      mentorId: session.userId2,
+      mentorId: sessionMentorId,
       userId: currentUserId,
       rating: normalizedRating,
       comment: normalizedComment,
@@ -153,7 +155,7 @@ export function WriteReviewPage() {
       </div>
     );
   }
-  if (!session.userId2) {
+  if (sessionMentorId == null) {
     return (
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => navigate(-1)}>
@@ -200,7 +202,7 @@ export function WriteReviewPage() {
         <CardContent>
           <MentorFeedbackForm
             sessionId={numericSessionId}
-            mentorId={session.userId2}
+            mentorId={sessionMentorId}
             userId={currentUserId}
             existingFeedback={existingFeedback}
             onSubmit={handleSubmit}

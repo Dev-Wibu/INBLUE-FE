@@ -1,5 +1,6 @@
 import type { Session } from "@/interfaces";
 import { formatTime, parseBackendDate, toVietnamDateKey } from "@/lib/formatting";
+import { isSessionMentor } from "@/lib/session-mentor";
 
 export const MENTOR_CALENDAR_STATUSES = ["SCHEDULED", "PAID", "ONGOING", "COMPLETED"] as const;
 
@@ -37,7 +38,7 @@ export const buildMentorCalendarSessions = (
   }
 
   return sessions
-    .filter((session) => session.userId2 === mentorId)
+    .filter((session) => isSessionMentor(session, mentorId))
     .filter((session) => isMentorCalendarStatus(session.status))
     .reduce<MentorCalendarSession[]>((result, session) => {
       const joinDate = parseJoinDate(session.joinTime);

@@ -26,6 +26,7 @@ import {
   upsertPaymentRecoveryContext,
 } from "@/lib";
 import { formatCurrency, formatDateTime } from "@/lib/formatting";
+import { getSessionMentorId } from "@/lib/session-mentor";
 import { sessionManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -107,7 +108,7 @@ export function SessionDetailPage() {
     isLoading: sessionLoading,
     refetch: refetchSession,
   } = useSessionById(Number(sessionId));
-  const mentorId = session?.userId2 || 0;
+  const mentorId = getSessionMentorId(session) || 0;
   const { data: mentorInfo } = useMentorById(mentorId);
   const { mutateAsync: makeSessionPayment } = useMakeSessionPayment();
   const { data: myFeedback, isLoading: feedbackLoading } = useMentorFeedbackBySession(
@@ -466,8 +467,8 @@ export function SessionDetailPage() {
               </span>
               <span className="font-medium">
                 {mentorInfo?.name ||
-                  (session.userId2
-                    ? t("common.mentorWithId", { id: session.userId2 })
+                  ((getSessionMentorId(session) ?? null) != null
+                    ? t("common.mentorWithId", { id: getSessionMentorId(session) })
                     : t("userMockinterview.notDetermined"))}
               </span>
             </div>

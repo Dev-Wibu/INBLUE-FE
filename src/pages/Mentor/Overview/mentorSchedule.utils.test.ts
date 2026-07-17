@@ -28,12 +28,16 @@ describe("mentorSchedule.utils", () => {
       { id: 3, userId2: 9, status: "PAID", joinTime: "2026-04-14T10:00:00" },
       { id: 4, userId2: 8, status: "PAID" },
       { id: 5, userId2: 8, status: "COMPLETED", joinTime: "2026-04-15T10:00:00" },
+      // mentorId (current SessionDetailResponse shape) must also match
+      { id: 6, mentorId: 8, status: "PAID", joinTime: "2026-04-15T11:00:00" },
     ];
 
     const result = buildMentorCalendarSessions(sessions, 8);
 
-    expect(result.map((item) => item.session.id)).toEqual([1, 5]);
-    expect(result.every((item) => item.session.userId2 === 8)).toBe(true);
+    expect(result.map((item) => item.session.id)).toEqual([1, 5, 6]);
+    expect(result.every((item) => (item.session.userId2 ?? item.session.mentorId) === 8)).toBe(
+      true
+    );
   });
 
   it("sorts mentor calendar sessions ascending by joinTime", () => {

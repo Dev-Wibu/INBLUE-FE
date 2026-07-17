@@ -18,6 +18,7 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useUserSessions } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import { formatDate, formatTime, toTimestamp } from "@/lib/formatting";
+import { getSessionMentorId } from "@/lib/session-mentor";
 import { getMockInterviewStatusBadge } from "@/lib/status-utils";
 import {
   Calendar,
@@ -95,9 +96,12 @@ export function MockInterviewListPage() {
           t("common.sessionVar0", {
             var_0: session.id,
           }),
-        mentorName: t("common.mentorWithId", {
-          id: session.userId2 || t("common.noDataAvailable"),
-        }),
+        mentorName: (() => {
+          const mentorId = getSessionMentorId(session);
+          return t("common.mentorWithId", {
+            id: mentorId ?? t("common.noDataAvailable"),
+          });
+        })(),
         date: session.joinTime
           ? formatDate(session.joinTime, t("common.noDataAvailable"))
           : formatDate(session.startTime1, t("common.noDataAvailable")),
