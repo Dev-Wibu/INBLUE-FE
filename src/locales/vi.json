@@ -187,6 +187,21 @@
       "SUNDAY": "Chủ Nhật"
     }
   },
+  "adminMentorReviewAssignment": {
+    "pageTitle": "Phân công Mentor Review",
+    "pageDescription": "Phân công Mentor cho các ApplicationDetail đang chờ.",
+    "sidebarLabel": "Phân công Mentor Review",
+    "searchPlaceholder": "Tìm theo ApplicationDetail ID hoặc Application ID...",
+    "noPendingAssignments": "Không có ApplicationDetail nào đang chờ Mentor.",
+    "application": "Hồ sơ",
+    "awaitingMentor": "Đang chờ Mentor",
+    "detailId": "ApplicationDetail",
+    "round": "Vòng",
+    "createdAt": "Tạo lúc",
+    "pleaseSelectMentor": "Vui lòng chọn Mentor trước khi xác nhận.",
+    "assignDescription": "Chọn Mentor để phụ trách vòng review này.",
+    "selectMentor": "Chọn Mentor"
+  },
   "adminCandidateprofilemanagement": {
     "allRoles": "Tất cả vai trò",
     "filterByRole": "Lọc theo vai trò",

@@ -187,6 +187,21 @@
       "SUNDAY": "Sunday"
     }
   },
+  "adminMentorReviewAssignment": {
+    "pageTitle": "Mentor Review Assignment",
+    "pageDescription": "Assign mentors to ApplicationDetails that are awaiting a reviewer.",
+    "sidebarLabel": "Mentor Review Assignment",
+    "searchPlaceholder": "Search by ApplicationDetail ID or Application ID...",
+    "noPendingAssignments": "No ApplicationDetails are awaiting a mentor.",
+    "application": "Application",
+    "awaitingMentor": "Awaiting mentor",
+    "detailId": "ApplicationDetail",
+    "round": "Round",
+    "createdAt": "Created at",
+    "pleaseSelectMentor": "Please select a mentor before confirming.",
+    "assignDescription": "Pick a mentor to handle this review round.",
+    "selectMentor": "Select a mentor"
+  },
   "adminCandidateprofilemanagement": {
     "allRoles": "All roles",
     "filterByRole": "Filter by role",

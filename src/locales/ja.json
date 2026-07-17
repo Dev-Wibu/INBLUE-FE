@@ -153,6 +153,21 @@
       "SUNDAY": "日曜日"
     }
   },
+  "adminMentorReviewAssignment": {
+    "pageTitle": "メンターレビュー割り当て",
+    "pageDescription": "メンターを待機中の ApplicationDetail に割り当てます。",
+    "sidebarLabel": "メンターレビュー割り当て",
+    "searchPlaceholder": "ApplicationDetail ID または Application ID で検索...",
+    "noPendingAssignments": "メンターを待機中の ApplicationDetail はありません。",
+    "application": "応募",
+    "awaitingMentor": "メンター待ち",
+    "detailId": "ApplicationDetail",
+    "round": "ラウンド",
+    "createdAt": "作成日時",
+    "pleaseSelectMentor": "確認前にメンターを選択してください。",
+    "assignDescription": "このレビューラウンドを担当するメンターを選択してください。",
+    "selectMentor": "メンターを選択"
+  },
   "adminCandidateprofilemanagement": {
     "allRoles": "すべての役割",
     "filterByRole": "役割でフィルター",
