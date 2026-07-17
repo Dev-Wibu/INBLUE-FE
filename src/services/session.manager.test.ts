@@ -214,7 +214,7 @@ describe("SessionManager", () => {
       const result = await sessionManager.joinSession({
         sessionName: "test-session",
         userId: 1,
-        isMentor: false,
+        mentor: false,
       });
 
       expect(result.success).toBe(true);
@@ -226,7 +226,7 @@ describe("SessionManager", () => {
       const result = await sessionManager.joinSession({
         sessionName: "test-session",
         userId: 1,
-        isMentor: false,
+        mentor: false,
       });
 
       expect(result.success).toBe(false);
@@ -239,7 +239,7 @@ describe("SessionManager", () => {
       const result = await sessionManager.joinSession({
         sessionName: "test-session",
         userId: 1,
-        isMentor: false,
+        mentor: false,
       });
 
       expect(result.success).toBe(false);

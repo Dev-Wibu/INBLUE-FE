@@ -169,13 +169,15 @@ export interface CreateRoundSessionRequest {
 
 /**
  * Join session request (matches backend schema JoinSessionDtoRequest)
- * Note: isMentor must be explicitly true or false (backend cannot deserialize null to boolean)
+ * Note: mentor must be explicitly true or false (backend cannot deserialize null to boolean).
+ * 2026-07-17: BE schema field is `mentor` (not `isMentor`); the original
+ *   serializer was dropping the flag because of this mismatch.
  */
 export interface JoinSessionRequest {
   sessionName?: string;
   userId?: number;
   participantId?: string;
-  isMentor: boolean;
+  mentor: boolean;
 }
 
 /**
@@ -189,7 +191,7 @@ export interface LeaveSessionRequest {
   sessionId?: number;
   userId?: number;
   participantId?: string;
-  isMentor: boolean;
+  mentor: boolean;
 }
 
 export class SessionManager implements BaseManager<Session> {

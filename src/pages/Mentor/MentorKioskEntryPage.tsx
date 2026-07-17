@@ -65,7 +65,7 @@ export function MentorKioskEntryPage() {
         sessionName: extractRoomName(roomUrl),
         userId: user.id,
         participantId,
-        isMentor: true,
+        mentor: true,
       });
     } catch {
       // silent fail - join is best-effort tracking

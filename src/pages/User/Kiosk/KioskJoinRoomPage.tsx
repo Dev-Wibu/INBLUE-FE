@@ -138,7 +138,7 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
         sessionName: session.roomName,
         userId: user.id,
         participantId,
-        isMentor: false,
+        mentor: false,
       });
     } catch {
       hasJoinedTrackingRef.current = false;

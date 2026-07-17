@@ -63,7 +63,7 @@ export function SessionRoomPage() {
       sessionName: session.roomName,
       userId: user.id,
       participantId,
-      isMentor: false, // User is not a mentor
+      mentor: false, // User is not a mentor
     });
     setHasJoinedTracking(true);
   };

@@ -23,7 +23,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
+import { useSessionsByUserId, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import {
@@ -339,7 +339,7 @@ export function MentorSessionsPage() {
     isLoading: sessionsLoading,
     isRefetching: sessionsRefetching,
     refetch: refetchSessions,
-  } = useSessions();
+  } = useSessionsByUserId(user?.id ?? 0);
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
@@ -357,10 +357,13 @@ export function MentorSessionsPage() {
   const isLoading = sessionsLoading || reviewsLoading;
 
   // Keep source data deterministic so default sort always yields newest-first consistently.
+  // BE sometimes returns the mentor id under `userId2` (DB column) and sometimes
+  // under `mentorId` (response DTO). Accept both so the list stays in sync with
+  // whatever the active BE controller is doing.
   const mentorSessions = useMemo(
     () =>
       [...allSessions]
-        .filter((session: Session) => session.userId2 === user?.id)
+        .filter((session: Session) => session.userId2 === user?.id || session.mentorId === user?.id)
         .sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
     [allSessions, user?.id]
   );
