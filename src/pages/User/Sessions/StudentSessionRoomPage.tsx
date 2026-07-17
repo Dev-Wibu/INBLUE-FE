@@ -61,7 +61,7 @@ export function StudentSessionRoomPage() {
         sessionName: session.roomName,
         userId: user.id,
         participantId,
-        mentor: false,
+        mentor: true,
       });
     } catch {
       // mutation toast handles errors; we still want to record that we tried
