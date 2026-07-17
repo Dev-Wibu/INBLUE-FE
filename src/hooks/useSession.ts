@@ -8,6 +8,7 @@ const t = i18n.t.bind(i18n);
 import type { Session } from "@/interfaces";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type {
+  CreateRoundSessionRequest,
   JoinSessionRequest,
   LeaveSessionRequest,
   SessionCreationRequest,
@@ -140,6 +141,40 @@ export const useCreateSession = () => {
 };
 
 /**
+ * Mentor Review v2 — create a Session for an ApplicationDetail round.
+ * Wraps `POST /api/sessions/create-for-round`. Invalidates the
+ * application-detail + session caches so the caller sees the new
+ * sessionInfo + roomUrl immediately after the mutation resolves.
+ */
+export const useCreateRoundSession = (options?: { onSuccess?: (_session: Session) => void }) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: CreateRoundSessionRequest) => {
+      const response = await sessionManager.createForRound(data);
+      if (!response.success || !response.data) {
+        throw new Error(response.error || t("general.unableToCreateInterviewSession"));
+      }
+      return response.data;
+    },
+    onSuccess: (session) => {
+      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+      if (session?.id) {
+        queryClient.invalidateQueries({
+          queryKey: SESSION_QUERY_KEYS.byId(session.id),
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: ["application-details"],
+      });
+      options?.onSuccess?.(session);
+    },
+    onError: (error: Error) => {
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToCreateInterviewSession")));
+    },
+  });
+};
+
+/**
  * Hook to update a session
  */
 export const useUpdateSession = () => {
@@ -253,6 +288,13 @@ export const useLeaveSession = () => {
     mutationFn: async (data: LeaveSessionRequest) => {
       try {
         const response = await sessionManager.leaveSession(data);
+        // 2026-07-18: log status so we can see whether BE is actually being
+        //   hit when the user clicks Leave. Helps debug the endTime1/2
+        //   missing case (Daily.co webhook may be down or BE may reject).
+        console.info("[useLeaveSession] response", {
+          success: response.success,
+          error: response.error,
+        });
         // Treat any 2xx, 404, or 405 as "ok" — BE may not have the endpoint yet.
         if (
           response.success ||
@@ -264,7 +306,6 @@ export const useLeaveSession = () => {
         return false;
       } catch (err: unknown) {
         // Backend unavailable (network/server) — don't block FE navigation.
-
         console.warn("[useLeaveSession] non-fatal error", err);
         return false;
       }

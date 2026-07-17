@@ -148,13 +148,45 @@ export interface SessionCreationRequest {
 }
 
 /**
+ * Mentor Review v2 — create a Session for an ApplicationDetail round.
+ * Matches `POST /api/sessions/create-for-round` (CreateRoundSessionRequest).
+ *
+ * 2026-07-17: backend dev confirmed FE only needs to wire this endpoint;
+ *   no mentorId is required from the FE (BE pulls it from the assigned
+ *   ApplicationDetail), but the BE schema still accepts an optional
+ *   `mentorId` for backward compatibility during the rollout window.
+ */
+export interface CreateRoundSessionRequest {
+  applicationDetailId: number;
+  mentorId?: number;
+  /** ISO-8601 UTC timestamp chosen by the candidate. */
+  joinTime: string;
+  /** Interview duration in minutes (default 60). */
+  duration?: number;
+  /** true = OFFLINE interview, false = ONLINE (creates Daily.co room). */
+  offline: boolean;
+}
+
+/**
  * Join session request (matches backend schema JoinSessionDtoRequest)
- * Note: isMentor must be explicitly true or false (backend cannot deserialize null to boolean)
+ *
+ * 2026-07-18: BE has historically accepted BOTH `mentor` and `isMentor`
+ *   (legacy alias). The mock-interview flow worked because it sent both.
+ *   Sending only `mentor` works against the BE controller when the
+ *   session's actual participant is a student, because the field name
+ *   `mentor` is ambiguous — it could mean either:
+ *     a) "this participant is the mentor" (per-user), or
+ *     b) "this session has a mentor assigned" (per-session).
+ *   Sending both leaves no room for the BE to misinterpret intent, and
+ *   mirrors the working mock-interview flow exactly. The duplication is
+ *   intentional — see mentorSession legacy wiring pre-2026-07-13.
  */
 export interface JoinSessionRequest {
   sessionName?: string;
   userId?: number;
   participantId?: string;
+  mentor: boolean;
+  /** Legacy alias — sent alongside `mentor` for backward compat with BE. */
   isMentor: boolean;
 }
 
@@ -169,6 +201,8 @@ export interface LeaveSessionRequest {
   sessionId?: number;
   userId?: number;
   participantId?: string;
+  mentor: boolean;
+  /** Legacy alias — see JoinSessionRequest for rationale. */
   isMentor: boolean;
 }
 
@@ -379,6 +413,36 @@ export class SessionManager implements BaseManager<Session> {
         success: true,
         // @ts-expect-error: Backend Swagger schema mismatch
         data: response.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("general.unableToCreateSession"),
+      };
+    }
+  }
+
+  /**
+   * Mentor Review v2 — create a Session for an ApplicationDetail round.
+   * POST /api/sessions/create-for-round (CreateRoundSessionRequest).
+   *
+   * For ONLINE interviews the backend creates a Daily.co room and the
+   * returned Session.roomUrl is ready to join. For OFFLINE interviews
+   * no room is created — only the booking record is updated.
+   */
+  async createForRound(data: CreateRoundSessionRequest): Promise<ApiResponse<Session>> {
+    try {
+      const response = await fetchClient
+        .POST("/api/sessions/create-for-round", { body: data as never })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return {
+        success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch (SessionDetailResponse shape)
+        data: response.data as Session,
       };
     } catch (error) {
       return {

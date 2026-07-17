@@ -21,6 +21,9 @@ export interface Tab {
   label: string;
   appId?: string;
   detailId?: string;
+  /** Optional user info to display in tab title/header without extra fetch */
+  candidateName?: string;
+  jdId?: string;
 }
 
 interface TabsStateStorage {
@@ -45,10 +48,10 @@ interface UseTabsStateReturn {
   openTabs: Tab[];
   /** Change active tab (updates URL) */
   setActiveTab: (_tabType: string, _preventUrlUpdate?: boolean) => void;
-  /** Open a new tab or switch to existing */
+  /** Open a tab from sidebar/menu */
   openTab: (_tabType: string) => void;
   /** Open a grading-detail tab for a specific appId (or switch if already open) */
-  openGradingTab: (_appId: number) => void;
+  openGradingTab: (_appId: number, _extra?: { candidateName?: string; jdId?: string }) => void;
   /** Close a tab by ID */
   closeTab: (_tabId: string) => void;
   /** Reset open tabs to only one tab */
@@ -266,14 +269,26 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
 
   // Open a grading-detail tab for a specific appId (or switch if already open)
   const openGradingTab = useCallback(
-    (appId: number) => {
+    (appId: number, extra?: { candidateName?: string; jdId?: string }) => {
       const gradingType = "grading-detail";
+      const extraData = extra ?? {};
 
       setOpenTabs((prev) => {
         const existingTab = prev.find((t) => t.type === gradingType && t.appId === String(appId));
 
         if (existingTab) {
-          // Already open — update URL below (tab already in state)
+          // Already open — merge candidate info if newly provided
+          if (extraData.candidateName || extraData.jdId) {
+            return prev.map((t) =>
+              t.id === existingTab.id
+                ? {
+                    ...t,
+                    candidateName: extraData.candidateName ?? t.candidateName,
+                    jdId: extraData.jdId ?? t.jdId,
+                  }
+                : t
+            );
+          }
           return prev;
         }
 
@@ -283,8 +298,12 @@ export function useTabsState(options: UseTabsStateOptions): UseTabsStateReturn {
           {
             id: generateTabId(gradingType),
             type: gradingType,
-            label: `Đơn #${appId}`,
+            label: extraData.candidateName
+              ? `Đơn #${appId} - ${extraData.candidateName}`
+              : `Đơn #${appId}`,
             appId: String(appId),
+            candidateName: extraData.candidateName,
+            jdId: extraData.jdId,
           },
         ];
 

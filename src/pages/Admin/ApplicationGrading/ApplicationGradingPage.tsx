@@ -1,5 +1,6 @@
 import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -18,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { useApplications } from "@/hooks/useApplication";
+import { useApplication, useApplications, useUsers } from "@/hooks/useApplication";
 import {
   useApplicationDetail,
   useApplicationDetails,
@@ -68,6 +69,9 @@ interface GradingListItem {
   status: string;
   currentRoundOrder?: number;
   overallScore?: number;
+  userId?: number;
+  userName?: string;
+  createdAt?: string;
   // Staff-only fields
   detailId?: number;
   detailStatus?: string;
@@ -134,7 +138,6 @@ function RoundCard({
   const { mutate: submitScore, isPending: isSubmitting } = useHrScore({
     onSuccess: onHrScoreSuccess,
   });
-
   const statusCfg = STATUS_CONFIG[detail.status ?? ""] ?? { label: detail.status, className: "" };
   const resultCfg = detail.finalResult ? RESULT_CONFIG[detail.finalResult] : null;
   const needsHrScore = needsHrScoring(detail);
@@ -823,7 +826,10 @@ export function ApplicationGradingPage({
   onOpenGradingDetail,
   basePath,
 }: {
-  onOpenGradingDetail?: (_appId: number) => void;
+  onOpenGradingDetail?: (
+    _appId: number,
+    _extra?: { candidateName?: string; jdId?: string }
+  ) => void;
   basePath?: string;
 }) {
   const navigate = useNavigate();
@@ -840,39 +846,92 @@ export function ApplicationGradingPage({
   const applications = useMemo(() => (Array.isArray(rawApps) ? rawApps : []), [rawApps]);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Map of applicationId -> Application (to enrich staff items with userId/jdId)
+  const applicationMap = useMemo(() => {
+    const map = new Map<number, { userId?: number; jdId?: number }>();
+    applications.forEach((app) => {
+      if (app.id != null) {
+        map.set(app.id, { userId: app.userId, jdId: app.jdId });
+      }
+    });
+    return map;
+  }, [applications]);
+
   // Staff: transform reviewerDetails (ApplicationDetail[]) to display format
   // Admin: use filtered Applications
   const staffItems = useMemo((): GradingListItem[] => {
     if (!isStaff) return [];
-    return reviewerDetails.map((detail) => ({
-      id: detail.applicationId!,
-      status: detail.status ?? "PENDING",
-      currentRoundOrder: 0,
-      overallScore: detail.finalScore ?? undefined,
-      detailId: detail.id,
-      detailStatus: detail.status,
-      detail,
-    }));
-  }, [isStaff, reviewerDetails]);
+    return reviewerDetails.map((detail) => {
+      const appInfo = applicationMap.get(detail.applicationId!);
+      return {
+        id: detail.applicationId!,
+        userId: appInfo?.userId,
+        jdId: appInfo?.jdId,
+        status: detail.status ?? "PENDING",
+        currentRoundOrder: 0,
+        overallScore: detail.finalScore ?? undefined,
+        detailId: detail.id,
+        detailStatus: detail.status,
+        detail,
+      };
+    });
+  }, [isStaff, reviewerDetails, applicationMap]);
+
+  const { data: allUsers } = useUsers();
+  const userMap = useMemo(() => {
+    const map = new Map<number, string>();
+    if (allUsers) {
+      const userList = Array.isArray(allUsers) ? allUsers : [];
+      userList.forEach((user) => {
+        if (user.id != null) {
+          map.set(user.id, user.name ?? `User #${user.id}`);
+        }
+      });
+    }
+    return map;
+  }, [allUsers]);
 
   const filteredApplications = useMemo((): GradingListItem[] => {
     if (isStaff) {
-      return staffItems.filter((item) => {
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          if (!String(item.id).includes(q) && !String(item.detailId).includes(q)) return false;
-        }
-        return true;
-      });
+      return staffItems
+        .filter((item) => {
+          if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            const userName = userMap.get(item.userId!) ?? "";
+            if (
+              !String(item.id).includes(q) &&
+              !String(item.detailId).includes(q) &&
+              !userName.toLowerCase().includes(q)
+            )
+              return false;
+          }
+          return true;
+        })
+        .sort((a, b) => {
+          // Sort by newest first (by detail.id as proxy for creation time, higher = newer)
+          return (b.detailId ?? b.id) - (a.detailId ?? a.id);
+        });
     }
     return applications
       .filter((app) => app.status === "IN_PROGRESS")
       .filter((app) => {
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
-          if (!String(app.id).includes(q) && !String(app.jdId ?? "").includes(q)) return false;
+          const userName = userMap.get(app.userId!) ?? "";
+          if (
+            !String(app.id).includes(q) &&
+            !String(app.jdId ?? "").includes(q) &&
+            !userName.toLowerCase().includes(q)
+          )
+            return false;
         }
         return true;
+      })
+      .sort((a, b) => {
+        const aTs = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bTs = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        if (bTs !== aTs) return bTs - aTs;
+        return (b.id ?? 0) - (a.id ?? 0);
       })
       .map((app) => ({
         id: app.id!,
@@ -880,8 +939,10 @@ export function ApplicationGradingPage({
         status: app.status ?? "IN_PROGRESS",
         currentRoundOrder: app.currentRoundOrder,
         overallScore: app.overallScore,
+        userName: userMap.get(app.userId!) ?? `User #${app.userId}`,
+        createdAt: app.createdAt,
       }));
-  }, [isStaff, staffItems, applications, searchQuery]);
+  }, [isStaff, staffItems, applications, searchQuery, userMap]);
 
   const { sortedData } = useSortable(filteredApplications);
 
@@ -897,9 +958,16 @@ export function ApplicationGradingPage({
   );
 
   const handleOpenGrading = useCallback(
-    (_appId: number, detailId?: number) => {
+    (_appId: number, detailId?: number, item?: GradingListItem) => {
       if (onOpenGradingDetail) {
-        onOpenGradingDetail(detailId ?? _appId);
+        // Pass candidate info for tab label and detail page header
+        const extra: { candidateName?: string; jdId?: string } = {};
+        if (item) {
+          const name = item.userName ?? (item.userId ? userMap.get(item.userId) : undefined);
+          if (name) extra.candidateName = name;
+          if (item.jdId !== undefined) extra.jdId = String(item.jdId);
+        }
+        onOpenGradingDetail(detailId ?? _appId, extra);
       } else {
         const params = new URLSearchParams({ tab: "grading-detail" });
         if (detailId !== undefined) {
@@ -910,11 +978,11 @@ export function ApplicationGradingPage({
         navigate(`${dashboardBase}?${params.toString()}`);
       }
     },
-    [navigate, onOpenGradingDetail, dashboardBase]
+    [navigate, onOpenGradingDetail, dashboardBase, userMap]
   );
 
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+    <div className="flex h-full min-h-0 flex-col bg-slate-50 dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
@@ -931,7 +999,7 @@ export function ApplicationGradingPage({
             <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <Input
               type="text"
-              placeholder={t("application.searchById")}
+              placeholder={t("application.searchByUserOrJob")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -965,99 +1033,82 @@ export function ApplicationGradingPage({
             </p>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 flex flex-1 flex-col overflow-hidden duration-300">
-            <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <div className="min-w-full overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
-                      {isStaff ? (
-                        <>
-                          <TableHead>ID Detail</TableHead>
-                          <TableHead>{t("common.status")}</TableHead>
-                          <TableHead>{t("userApplicationhistory.round")}</TableHead>
-                        </>
-                      ) : (
-                        <>
-                          <TableHead>ID JD</TableHead>
-                          <TableHead>{t("common.status")}</TableHead>
-                          <TableHead>
-                            {t("userApplicationhistory.round")} {t("round.currentRound")}
-                          </TableHead>
-                        </>
-                      )}
-                      <TableHead>{t("userApplicationhistory.totalScore")}</TableHead>
-                      <TableHead className="w-32 text-right">{t("common.operation")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedData.map((item) => {
-                      const detailId = item.detailId;
-                      const status = item.detailStatus ?? item.status;
-                      const score = item.overallScore;
-                      const roundId = item.detail?.roundId ?? item.currentRoundOrder;
-                      const jdId = item.jdId;
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
+                    <TableHead>{t("common.candidate")}</TableHead>
+                    <TableHead className="hidden md:table-cell">ID JD</TableHead>
+                    <TableHead>{t("common.status")}</TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      {t("userApplicationhistory.round")}
+                    </TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      {t("userApplicationhistory.totalScore")}
+                    </TableHead>
+                    <TableHead className="w-32 text-right">{t("common.operation")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedData.map((item) => {
+                    const status = item.detailStatus ?? item.status;
+                    const score = item.overallScore;
+                    const roundId = item.detail?.roundId ?? item.currentRoundOrder;
+                    const jdId = item.jdId;
+                    const userId = item.userId;
+                    const userName =
+                      item.userName ?? userMap.get(userId!) ?? (userId ? `User #${userId}` : "-");
 
-                      return (
-                        <TableRow key={item.detailId ?? item.id}>
-                          <TableCell className="font-medium">#{item.id}</TableCell>
-                          {isStaff ? (
-                            <>
-                              <TableCell>Detail #{detailId}</TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="outline"
-                                  className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
-                                  {STATUS_CONFIG[status ?? ""]?.label ?? status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-sm font-medium">
-                                  {t("userApplicationhistory.round")} #{roundId ?? "-"}
-                                </span>
-                              </TableCell>
-                            </>
+                    return (
+                      <TableRow key={item.detailId ?? item.id}>
+                        <TableCell className="font-medium">#{item.id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-7 w-7 shrink-0">
+                              <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
+                                {(userName ?? "?")[0]?.toUpperCase() ?? "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="truncate font-medium">{userName}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">{jdId ?? "-"}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
+                            {STATUS_CONFIG[status ?? ""]?.label ?? status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          <span className="text-sm font-medium">
+                            {t("userApplicationhistory.round")} {roundId ?? 1}
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {score !== undefined ? (
+                            <span className="font-bold text-[#0047AB]">{score}</span>
                           ) : (
-                            <>
-                              <TableCell>{jdId ?? "-"}</TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="outline"
-                                  className={STATUS_CONFIG[status ?? ""]?.className ?? ""}>
-                                  {STATUS_CONFIG[status ?? ""]?.label ?? status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-sm font-medium">
-                                  {t("userApplicationhistory.round")} {roundId ?? 1}
-                                </span>
-                              </TableCell>
-                            </>
+                            <span className="text-slate-400">-</span>
                           )}
-                          <TableCell>
-                            {score !== undefined ? (
-                              <span className="font-bold text-[#0047AB]">{score}</span>
-                            ) : (
-                              <span className="text-slate-400">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 gap-1.5 text-xs text-[#0047AB] hover:bg-[#0047AB]/10 dark:text-blue-400 dark:hover:bg-blue-900/20"
-                              onClick={() => handleOpenGrading(item.id, item.detailId)}>
-                              <ClipboardCheck className="h-3.5 w-3.5" />
-                              {t("grading.grade")} {t("general.score")}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 gap-1.5 text-xs text-[#0047AB] hover:bg-[#0047AB]/10 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                            onClick={() => handleOpenGrading(item.id, item.detailId, item)}>
+                            <ClipboardCheck className="h-3.5 w-3.5" />
+                            {t("grading.grade")}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
 
             <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
@@ -1078,10 +1129,16 @@ export function ApplicationGradingDetailPage({
   appId: appIdProp,
   detailId: detailIdProp,
   basePath,
+  candidateName: candidateNameProp,
+  jdId: jdIdProp,
 }: {
   appId?: string;
   detailId?: string;
   basePath?: string;
+  /** Optional pre-loaded candidate name from parent (avoids extra fetch) */
+  candidateName?: string;
+  /** Optional pre-loaded JD ID from parent (avoids extra fetch) */
+  jdId?: string;
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -1109,7 +1166,45 @@ export function ApplicationGradingDetailPage({
     refetch: refetchDetails,
   } = useApplicationDetails(numericId, isValidId && !isStaff);
 
-  const isLoading = isLoadingSingle || isLoadingDetails;
+  // Determine the actual applicationId we need to fetch full application info
+  // For Staff, singleDetail contains the applicationId; for Admin, numericId is the app id.
+  const applicationId =
+    isStaff && singleDetail?.applicationId !== undefined
+      ? singleDetail.applicationId
+      : !isStaff
+        ? numericId
+        : 0;
+
+  // Fetch the application to get userId/jdId
+  const { data: application, isLoading: isLoadingApplication } = useApplication(
+    applicationId,
+    applicationId > 0
+  );
+
+  // Fetch user info for the candidate (if we have a userId)
+  const userId = application?.userId;
+  const { data: allUsers } = useUsers();
+  const candidateName = useMemo(() => {
+    // Use prop first if provided
+    if (candidateNameProp) return candidateNameProp;
+    if (!userId || !allUsers) return undefined;
+    const userList = Array.isArray(allUsers) ? allUsers : [];
+    const found = userList.find((u: { id?: number; name?: string }) => u.id === userId);
+    return found?.name ?? `User #${userId}`;
+  }, [candidateNameProp, userId, allUsers]);
+
+  const candidateAvatar = useMemo(() => {
+    if (!userId || !allUsers) return undefined;
+    const userList = Array.isArray(allUsers) ? allUsers : [];
+    const found = userList.find((u: { id?: number; avatarUrl?: string }) => u.id === userId);
+    return found?.avatarUrl;
+  }, [userId, allUsers]);
+
+  // jdId: prefer prop, fallback to fetched application data
+  const jdId = jdIdProp !== undefined ? Number(jdIdProp) : application?.jdId;
+
+  const isLoading =
+    isLoadingSingle || isLoadingDetails || (applicationId > 0 && isLoadingApplication);
   const refetch = refetchSingle || refetchDetails;
 
   // Email preview dialog state
@@ -1191,7 +1286,7 @@ export function ApplicationGradingDetailPage({
 
   if (!isValidId) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-full min-h-0 items-center justify-center p-6">
         <EmptyState
           icon={ClipboardCheck}
           title={t("error.invalidId")}
@@ -1209,7 +1304,7 @@ export function ApplicationGradingDetailPage({
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="flex h-full min-h-0 items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
           <Spinner className="h-8 w-8" />
           <p className="text-sm text-slate-500">{t("general.loadingData")}</p>
@@ -1219,26 +1314,45 @@ export function ApplicationGradingDetailPage({
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col">
       {/* Compact header — no sidebar, just back button */}
-      <div className="border-border flex h-14 shrink-0 items-center gap-3 border-b bg-white px-6 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex h-14 shrink-0 items-center gap-3 overflow-hidden border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1.5 text-slate-600 dark:text-slate-400"
+          className="shrink-0 gap-1.5 text-slate-600 dark:text-slate-400"
           onClick={() => navigate(`${dashboardBase}?tab=applicationGrading`)}>
           <ChevronLeft className="h-4 w-4" />
           {t("common.goBack")}
         </Button>
-        <Separator orientation="vertical" className="h-5" />
-        <div>
-          <h1 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            {t("application.detailsId")}
-            {singleDetail?.applicationId ?? appIdProp}
-          </h1>
-          <p className="text-xs text-slate-500">
-            {singleDetail ? t("round.roundDetails") : `${details.length} vòng thi`}
-          </p>
+        <Separator orientation="vertical" className="h-5 shrink-0" />
+        {/* Candidate info */}
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <Avatar className="h-8 w-8 shrink-0">
+            <AvatarImage src={candidateAvatar ?? undefined} alt={candidateName ?? "User"} />
+            <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
+              {(candidateName ?? "?")[0]?.toUpperCase() ?? "?"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <h1 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+              {candidateName ?? `${t("application.detailsId")}${applicationId || numericId}`}
+            </h1>
+            <div className="flex items-center gap-2 truncate text-xs text-slate-500">
+              <span className="truncate">
+                {t("application.detailsId")}
+                {applicationId || numericId}
+              </span>
+              {jdId !== undefined && (
+                <>
+                  <span className="shrink-0">•</span>
+                  <span className="truncate">
+                    {t("common.id", "ID JD")}: <span className="font-medium">{jdId}</span>
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Reload button */}
@@ -1247,7 +1361,7 @@ export function ApplicationGradingDetailPage({
             void refetch();
           }}
           disabled={isLoading}
-          className="ml-auto flex h-8 w-8 items-center justify-center rounded-md border border-slate-300/85 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
+          className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-300/85 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
           title={t("common.reload")}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -1267,10 +1381,10 @@ export function ApplicationGradingDetailPage({
       </div>
 
       {/* NEW LAYOUT: Single page with all rounds as expandable cards */}
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
         {/* Summary Stats Bar */}
-        <div className="shrink-0 border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-wrap items-center gap-6">
+        <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-500">
                 {t("round.totalRounds")} {t("userApplicationhistory.rounds")}:
@@ -1305,8 +1419,8 @@ export function ApplicationGradingDetailPage({
 
         {/* Filter & Actions Bar */}
         {!singleDetail && (
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6 py-2 dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center justify-between gap-2 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex shrink-0 items-center gap-2">
               <Button
                 variant={showPendingOnly ? "default" : "outline"}
                 size="sm"
@@ -1319,7 +1433,7 @@ export function ApplicationGradingDetailPage({
                 {t("grading.needsGrading")} ({summaryStats.pending})
               </Button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <Button variant="outline" size="sm" onClick={expandAll} className="gap-1.5 text-xs">
                 {t("userPractice.openAll")}
               </Button>
@@ -1331,7 +1445,7 @@ export function ApplicationGradingDetailPage({
         )}
 
         {/* Expandable Round Cards */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
           {filteredDetails.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center text-center">
               <ClipboardCheck className="mb-4 h-12 w-12 text-slate-300" />

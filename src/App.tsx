@@ -80,6 +80,7 @@ import {
   SessionDetailPage,
   SessionRoomPage,
   SettingsPage,
+  StudentSessionRoomPage,
   UserDashboardPage,
   WriteReviewPage,
 } from "@/pages/User";
@@ -232,6 +233,11 @@ function App() {
                 path="/user/application/:applicationId/mentor-review"
                 element={<ApplicationMentorReviewPage />}
               />
+            </Route>
+            {/* Student Session Room — Daily.co iframe inline so we can listen
+                to joined-meeting and POST /api/sessions/join-session. */}
+            <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route path="/user/sessions/room/:sessionId" element={<StudentSessionRoomPage />} />
             </Route>
             {/* AI Interview for Application — full page, no sidebar */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>

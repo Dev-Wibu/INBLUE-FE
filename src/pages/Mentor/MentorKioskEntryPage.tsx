@@ -65,6 +65,7 @@ export function MentorKioskEntryPage() {
         sessionName: extractRoomName(roomUrl),
         userId: user.id,
         participantId,
+        mentor: true,
         isMentor: true,
       });
     } catch {

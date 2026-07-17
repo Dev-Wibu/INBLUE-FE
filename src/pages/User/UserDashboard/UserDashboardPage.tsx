@@ -23,15 +23,13 @@ import { useDashboardBreadcrumb } from "@/hooks/useDashboardBreadcrumb";
 import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestoration";
 import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
-import { cn } from "@/lib/utils";
+import { cn, fixUtf8Mojibake } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
   Bot,
   Briefcase,
-  FileQuestion,
-  GraduationCap,
   History,
   LayoutDashboard,
   LogOut,
@@ -57,7 +55,6 @@ import { MessengerPage } from "../Messenger";
 import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
 import { UserNotificationsPage } from "../Notifications";
 import { OverviewPage } from "../Overview";
-import { PracticeQuestionsPage, PracticeSetsPage } from "../Practice";
 type TabType =
   | "homeFeed"
   | "overview"
@@ -69,8 +66,6 @@ type TabType =
   | "kioskBookings"
   | "kioskEntry"
   | "aiInterview"
-  | "practice"
-  | "practiceQuestions"
   | "notifications"
   | "messenger";
 const isValidTabType = (value: string): value is TabType => {
@@ -85,8 +80,6 @@ const isValidTabType = (value: string): value is TabType => {
     "kioskBookings",
     "kioskEntry",
     "aiInterview",
-    "practice",
-    "practiceQuestions",
     "notifications",
     "messenger",
   ].includes(value as TabType);
@@ -136,14 +129,6 @@ const getAvailableTabs = (
   {
     type: "aiInterview",
     label: t("common.aiInterview1"),
-  },
-  {
-    type: "practice",
-    label: t("common.trainingSet"),
-  },
-  {
-    type: "practiceQuestions",
-    label: t("common.practiceQuestions"),
   },
   {
     type: "notifications",
@@ -227,26 +212,6 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
         icon: Bot,
         label: t("common.aiInterview1"),
         color: "text-green-600",
-      },
-      {
-        type: "practice",
-        icon: GraduationCap,
-        label: t("common.practice"),
-        color: "text-indigo-600",
-        children: [
-          {
-            type: "practice",
-            icon: GraduationCap,
-            label: t("common.trainingSet"),
-            color: "text-indigo-600",
-          },
-          {
-            type: "practiceQuestions",
-            icon: FileQuestion,
-            label: t("common.practiceQuestions"),
-            color: "text-violet-600",
-          },
-        ],
       },
     ],
   },
@@ -386,10 +351,6 @@ export function UserDashboardPage() {
         return <KioskEntryPage />;
       case "aiInterview":
         return <AIInterviewListPage />;
-      case "practice":
-        return <PracticeSetsPage />;
-      case "practiceQuestions":
-        return <PracticeQuestionsPage />;
       case "notifications":
         return <UserNotificationsPage />;
       case "messenger":
@@ -460,20 +421,23 @@ export function UserDashboardPage() {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-full border border-slate-200 p-1 transition-colors hover:bg-slate-100 focus:outline-none dark:border-slate-700 dark:hover:bg-slate-800">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? "User"} />
+                    <AvatarImage
+                      src={user?.avatarUrl ?? undefined}
+                      alt={fixUtf8Mojibake(user?.name) ?? "User"}
+                    />
                     <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                      {getInitials(user?.name)}
+                      {getInitials(fixUtf8Mojibake(user?.name))}
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden max-w-[100px] truncate text-sm font-medium text-slate-700 lg:inline dark:text-slate-200">
-                    {user?.name}
+                    {fixUtf8Mojibake(user?.name)}
                   </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col gap-1">
-                    <p className="text-sm font-medium">{user?.name}</p>
+                    <p className="text-sm font-medium">{fixUtf8Mojibake(user?.name)}</p>
                     <p className="text-muted-foreground text-xs">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>

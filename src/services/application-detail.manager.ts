@@ -236,6 +236,34 @@ export class ApplicationDetailManager {
       };
     }
   }
+
+  /**
+   * Admin assigns a mentor to a candidate's Mentor Review round
+   * PUT /api/application-details/{id}/assign-mentor?mentorId=
+   */
+  async assignMentor(
+    applicationDetailId: number,
+    mentorId: number
+  ): Promise<ApiResponse<ApplicationDetail>> {
+    try {
+      const response = await fetchClient.PUT("/api/application-details/{id}/assign-mentor", {
+        params: {
+          path: { id: applicationDetailId },
+          query: { mentorId },
+        },
+      });
+      return {
+        success: true,
+        data: response.data as ApplicationDetail,
+      };
+    } catch (error) {
+      console.error("[ApplicationDetailManager] assignMentor error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
 }
 
 export const applicationDetailManager = new ApplicationDetailManager();

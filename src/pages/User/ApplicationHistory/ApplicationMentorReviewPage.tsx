@@ -1,32 +1,25 @@
-import { WeeklySlotCalendar, type WeeklySlot } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
-import { useActiveKiosks, useKioskWeekSlots, usePickKioskSlot } from "@/hooks/useKiosk";
 import { useCurrentRound } from "@/hooks/useRound";
+import { useCreateRoundSession } from "@/hooks/useSession";
 import { fetchClient } from "@/lib/api";
-import { startOfWeek } from "date-fns";
 import {
   ArrowLeft,
   Calendar,
   CheckCircle2,
   Clock,
-  KeyRound,
+  Hourglass,
+  LogIn,
   MapPin,
   Send,
   Video,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -39,6 +32,7 @@ type BookingStatus =
   | "AWAITING_MENTOR"
   | "MENTOR_ASSIGNED"
   | "ROOM_CREATED"
+  | "OFFLINE_CONFIRMED"
   | "IN_PROGRESS"
   | "COMPLETED"
   | "CANCELED";
@@ -57,6 +51,13 @@ interface ApplicationDetail {
   status?: ApplicationDetailStatus;
   bookingId?: number;
   sessionId?: number;
+  mentorId?: number | null;
+  sessionInfo?: {
+    sessionId?: number | null;
+    meetingType?: "ONLINE" | "OFFLINE" | null;
+    startTime?: string | null;
+    endTime?: string | null;
+  } | null;
   finalScore?: number;
   finalResult?: string;
   // After POST /api/mentor-reviews the backend sets `mentorReview`
@@ -130,68 +131,83 @@ async function fetchApplicationDetail(detailId: number): Promise<ApplicationDeta
 
 function SlotSelectionStep({
   applicationDetailId,
+  mentorId,
   onSuccess,
 }: {
   applicationDetailId: number;
+  mentorId?: number | null;
   onSuccess: (newBooking: MentorInterviewBooking) => void;
 }) {
   const { t } = useTranslation();
-  const [selectedKioskId, setSelectedKioskId] = useState<number | null>(null);
-  const [weekStart, setWeekStart] = useState<Date>(() =>
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  );
-  const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
+  // Mentor Review v2 (2026-07-17): no kiosk. Candidate picks joinTime +
+  // ONLINE/OFFLINE and we call `POST /api/sessions/create-for-round`.
+  // The rest of the page still consumes `MentorInterviewBooking`, so we
+  // synthesise a minimal snapshot from the returned Session.
+  const [joinTimeLocal, setJoinTimeLocal] = useState<string>(() => {
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    tomorrow.setSeconds(0, 0);
+    return new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60_000)
+      .toISOString()
+      .slice(0, 16);
+  });
+  const [meetingType, setMeetingType] = useState<"ONLINE" | "OFFLINE">("ONLINE");
+  const meetingTypeRef = useRef<"ONLINE" | "OFFLINE">("ONLINE");
+  useEffect(() => {
+    meetingTypeRef.current = meetingType;
+  }, [meetingType]);
 
-  const { data: kiosks = [], isLoading: kiosksLoading } = useActiveKiosks();
-  const weekQueries = useKioskWeekSlots(selectedKioskId, weekStart, !!selectedKioskId);
-  const weekSlots = useMemo<WeeklySlot[]>(() => {
-    // BE returns `SlotDto` with optional fields; the calendar only renders
-    // slots that have a valid start/end pair and a boolean availability.
-    return weekQueries.flatMap((q) =>
-      (q.data ?? []).flatMap((s): WeeklySlot[] => {
-        if (!s.startTime || !s.endTime) return [];
-        return [{ startTime: s.startTime, endTime: s.endTime, available: !!s.available }];
-      })
-    );
-  }, [weekQueries]);
-  const slotsLoading = weekQueries.some((q) => q.isLoading);
-  const pickSlotMutation = usePickKioskSlot();
+  const createRoundSessionMutation = useCreateRoundSession({
+    onSuccess: (session) => {
+      toast.success(
+        meetingTypeRef.current === "OFFLINE"
+          ? t("userMentorReview.offlineConfirmed")
+          : t("userMentorReview.onlineConfirmed")
+      );
+      // Build a MentorInterviewBooking snapshot so the downstream
+      // step components (RoomReadyStep / InProgressStep) can render
+      // without modification. ONLINE → "ROOM_CREATED" (room ready
+      // card with Daily.co link). OFFLINE → "OFFLINE_CONFIRMED"
+      // (waiting card until mentor reviews on-site).
+      const synthetic: MentorInterviewBooking = {
+        id: session.id,
+        applicationDetailId,
+        sessionId: session.id,
+        status: meetingTypeRef.current === "OFFLINE" ? "OFFLINE_CONFIRMED" : "ROOM_CREATED",
+        scheduledStart: new Date(joinTimeLocal).toISOString(),
+      };
+      onSuccess(synthetic);
+    },
+  });
 
-  const handleKioskChange = (kioskId: number) => {
-    setSelectedKioskId(kioskId);
-    setSelectedSlot(null);
-    setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  };
-
-  const handleWeekChange = (next: Date) => {
-    setWeekStart(startOfWeek(next, { weekStartsOn: 1 }));
-    setSelectedSlot(null);
-  };
-
-  const handlePickSlot = async () => {
-    if (!selectedKioskId || !selectedSlot) return;
+  const handleConfirm = () => {
     if (!applicationDetailId) {
-      // applicationDetailId is 0 when the page-level effect hasn't resolved yet.
-      // Surface this so the user can retry instead of getting a silent 404.
       toast.error(t("common.anErrorHasOccurred"));
       return;
     }
-    try {
-      const result = await pickSlotMutation.mutateAsync({
-        applicationDetailId,
-        kioskId: selectedKioskId,
-        scheduledStart: selectedSlot.startTime,
-        scheduledEnd: selectedSlot.endTime,
-      });
-      if (result) {
-        onSuccess(result as unknown as MentorInterviewBooking);
-      }
-    } catch {
-      // error handled by hook
+    if (!joinTimeLocal) {
+      toast.error(t("userMentorReview.pickDateFirst"));
+      return;
     }
+    const parsed = new Date(joinTimeLocal);
+    if (Number.isNaN(parsed.getTime())) {
+      toast.error(t("userMentorReview.invalidDate"));
+      return;
+    }
+    if (!mentorId) {
+      toast.error(t("userMentorReview.mentorMissing"));
+      return;
+    }
+    // Native datetime-local gives a tz-naive string; convert to the
+    // ISO-8601 the backend contract expects (UTC with millis).
+    const joinTime = parsed.toISOString();
+    createRoundSessionMutation.mutate({
+      applicationDetailId,
+      mentorId,
+      joinTime,
+      duration: 60,
+      offline: meetingType === "OFFLINE",
+    });
   };
-
-  const kioskName = kiosks.find((k) => k.id === selectedKioskId)?.name;
 
   return (
     <div className="space-y-5">
@@ -203,111 +219,90 @@ function SlotSelectionStep({
           </div>
           <div>
             <p className="text-base font-semibold text-indigo-700 dark:text-indigo-300">
-              {t("userKiosk.pickTimeSlot")}
+              {t("userMentorReview.chooseSchedule")}
             </p>
             <p className="mt-1 text-sm text-indigo-600 dark:text-indigo-400">
-              {t("userKiosk.selectKioskAndTime")}
+              {t("userMentorReview.chooseScheduleDesc")}
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Step 1: Select Kiosk */}
+      {/* Form: date-time + ONLINE/OFFLINE */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <MapPin className="h-4 w-4 text-[#0047AB]" />
-            {t("userKiosk.selectKiosk")}
+            <Clock className="h-4 w-4 text-[#0047AB]" />
+            {t("userMentorReview.pickDateAndType")}
           </CardTitle>
-          <CardDescription>{t("userKiosk.selectKioskDescription")}</CardDescription>
+          <CardDescription>{t("userMentorReview.pickDateAndTypeDesc")}</CardDescription>
         </CardHeader>
-        <CardContent>
-          {kiosksLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Spinner size="sm" tone="primary" />
+        <CardContent className="space-y-5">
+          {/* DateTime picker */}
+          <div className="space-y-2">
+            <Label htmlFor="mentor-review-join-time">{t("userMentorReview.meetingTime")}</Label>
+            <Input
+              id="mentor-review-join-time"
+              type="datetime-local"
+              value={joinTimeLocal}
+              onChange={(e) => setJoinTimeLocal(e.target.value)}
+              min={new Date().toISOString().slice(0, 16)}
+            />
+          </div>
+
+          {/* ONLINE / OFFLINE radio */}
+          <div className="space-y-2">
+            <Label>{t("userMentorReview.meetingType")}</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setMeetingType("ONLINE")}
+                className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition ${
+                  meetingType === "ONLINE"
+                    ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950 dark:text-indigo-200"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                }`}>
+                <Video className="h-4 w-4" />
+                {t("userMentorReview.online")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMeetingType("OFFLINE")}
+                className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition ${
+                  meetingType === "OFFLINE"
+                    ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-400 dark:bg-indigo-950 dark:text-indigo-200"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                }`}>
+                <MapPin className="h-4 w-4" />
+                {t("userMentorReview.offline")}
+              </button>
             </div>
-          ) : kiosks.length === 0 ? (
-            <p className="text-sm text-slate-500">{t("userKiosk.noKiosksAvailable")}</p>
-          ) : (
-            <Select
-              value={selectedKioskId ? String(selectedKioskId) : ""}
-              onValueChange={(v) => handleKioskChange(Number(v))}>
-              <SelectTrigger id="kiosk-select">
-                <SelectValue placeholder={t("userKiosk.chooseKiosk")} />
-              </SelectTrigger>
-              <SelectContent>
-                {kiosks.map((kiosk) => (
-                  <SelectItem key={kiosk.id} value={String(kiosk.id)}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{kiosk.name}</span>
-                      {kiosk.location && (
-                        <span className="text-xs text-slate-500">{kiosk.location}</span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+            <p className="text-xs text-slate-500">
+              {meetingType === "ONLINE"
+                ? t("userMentorReview.onlineHint")
+                : t("userMentorReview.offlineHint")}
+            </p>
+          </div>
+
+          {/* Confirm */}
+          <Button
+            onClick={handleConfirm}
+            disabled={createRoundSessionMutation.isPending}
+            className="w-full gap-2 bg-indigo-600 text-white hover:bg-indigo-700">
+            {createRoundSessionMutation.isPending ? (
+              <>
+                <Spinner size="sm" tone="white" />
+                {t("userMentorReview.confirming")}
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                {t("userMentorReview.confirm")}
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
-
-      {/* Step 2: Select Date & Time */}
-      {selectedKioskId && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="h-4 w-4 text-[#0047AB]" />
-              {t("userKiosk.selectTimeSlot")}
-            </CardTitle>
-            <CardDescription>
-              {kioskName
-                ? `${t("userKiosk.availableSlotsFor")} ${kioskName}`
-                : t("userKiosk.pickWeeklySlot")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <WeeklySlotCalendar
-              weekStart={weekStart}
-              onChangeWeek={handleWeekChange}
-              slots={weekSlots}
-              selectedSlotKey={
-                selectedSlot ? `${selectedSlot.startTime}__${selectedSlot.endTime}` : null
-              }
-              onSelectSlot={setSelectedSlot}
-              isLoading={slotsLoading}
-              emptyMessage={t("common.slotCalendar.noSlotsForSelectedDate")}
-            />
-
-            {/* Selected slot info */}
-            {selectedSlot && (
-              <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 dark:border-indigo-800 dark:bg-indigo-950">
-                <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
-                  {t("userKiosk.selectedSlot")}: {selectedSlot.startTime} - {selectedSlot.endTime}
-                </p>
-              </div>
-            )}
-
-            {/* Confirm button */}
-            <Button
-              onClick={handlePickSlot}
-              disabled={!selectedSlot || pickSlotMutation.isPending}
-              className="w-full gap-2 bg-indigo-600 text-white hover:bg-indigo-700">
-              {pickSlotMutation.isPending ? (
-                <>
-                  <Spinner size="sm" tone="white" />
-                  {t("userKiosk.booking")}
-                </>
-              ) : (
-                <>
-                  <Calendar className="h-4 w-4" />
-                  {t("userKiosk.confirmSlot")}
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
@@ -316,98 +311,18 @@ function SlotSelectionStep({
 // Step 2: Waiting for Mentor
 // ============================================================
 
-function AwaitingMentorStep({
-  booking,
-  onCancel,
-}: {
-  booking: MentorInterviewBooking;
-  onCancel?: () => void;
-}) {
-  const { t } = useTranslation();
-
-  const scheduledTime = booking.scheduledStart
-    ? new Date(booking.scheduledStart).toLocaleString("vi-VN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : null;
-
-  return (
-    <div className="space-y-5">
-      {/* Waiting card */}
-      <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-        <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-          <div className="relative">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
-              <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
-            </div>
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500">
-              <span className="absolute h-4 w-4 animate-ping rounded-full bg-amber-400 opacity-75" />
-            </span>
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-amber-700 dark:text-amber-300">
-              {t("userKiosk.waitingForMentor")}
-            </p>
-            <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
-              {t("userKiosk.waitingForMentorDesc")}
-            </p>
-          </div>
-          {scheduledTime && (
-            <div className="rounded-lg border border-amber-200 bg-white/60 px-4 py-2 dark:border-amber-800 dark:bg-black/20">
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                {t("userKiosk.scheduledFor")} {scheduledTime}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* How it works */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">{t("userKiosk.howItWorks")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {[
-            { step: 1, text: t("userKiosk.step1Waiting") },
-            { step: 2, text: t("userKiosk.step2Notification") },
-            { step: 3, text: t("userKiosk.step3GoToKiosk") },
-          ].map((item) => (
-            <div key={item.step} className="flex items-start gap-3">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0047AB] text-xs font-bold text-white">
-                {item.step}
-              </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300">{item.text}</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Cancel button */}
-      {onCancel && (
-        <Button variant="outline" onClick={onCancel} className="w-full text-slate-500">
-          {t("userKiosk.cancelBooking")}
-        </Button>
-      )}
-    </div>
-  );
-}
-
 // ============================================================
 // Step 3: Room Ready (mentor assigned, room created)
 // ============================================================
 
 function RoomReadyStep({
   booking,
-  onGoToKiosk,
+  roomUrl,
+  onJoinRoom,
 }: {
   booking: MentorInterviewBooking;
-  onGoToKiosk: () => void;
+  roomUrl?: string | null;
+  onJoinRoom: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -430,10 +345,10 @@ function RoomReadyStep({
           </div>
           <div>
             <p className="text-lg font-semibold text-green-700 dark:text-green-300">
-              {t("userKiosk.mentorAssigned")}
+              {t("userMentorReview.roomReady")}
             </p>
             <p className="mt-1 text-sm text-green-600 dark:text-green-400">
-              {t("userKiosk.mentorAssignedDesc")}
+              {t("userMentorReview.roomReadyDesc")}
             </p>
           </div>
           {scheduledTime && (
@@ -446,34 +361,100 @@ function RoomReadyStep({
         </CardContent>
       </Card>
 
-      {/* Session Key */}
-      {booking.sessionKey && (
+      {/* Daily.co room link */}
+      {roomUrl && (
         <Card className="border-[#0047AB]/30 bg-[#0047AB]/5">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <KeyRound className="h-4 w-4 text-[#0047AB]" />
-              {t("userKiosk.sessionKey")}
+              <Video className="h-4 w-4 text-[#0047AB]" />
+              {t("userMentorReview.dailyRoomUrl")}
             </CardTitle>
-            <CardDescription>{t("userKiosk.sessionKeyDescription")}</CardDescription>
+            <CardDescription>{t("userMentorReview.dailyRoomUrlDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border border-[#0047AB]/20 bg-white px-4 py-3 font-mono text-sm text-[#0047AB]">
-              {booking.sessionKey}
+            <div className="rounded-lg border border-[#0047AB]/20 bg-white px-4 py-3 font-mono text-xs break-all text-[#0047AB]">
+              {roomUrl}
             </div>
-            <p className="mt-2 text-xs text-slate-500">{t("userKiosk.sessionKeyHint")}</p>
           </CardContent>
         </Card>
       )}
 
-      {/* Go to Kiosk */}
+      {/* Join Daily.co room */}
       <Button
-        onClick={onGoToKiosk}
+        onClick={onJoinRoom}
         size="lg"
         className="w-full gap-2 bg-green-600 text-white hover:bg-green-700">
         <Video className="h-5 w-5" />
-        {t("userKiosk.goToKiosk")}
+        {t("userMentorReview.joinOnlineRoom")}
       </Button>
     </div>
+  );
+}
+
+// ============================================================
+// Awaiting Mentor Assignment — admin has not assigned a mentor yet.
+// ============================================================
+
+function AwaitingMentorAssignmentStep() {
+  const { t } = useTranslation();
+  return (
+    <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+      <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+          <Hourglass className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-amber-700 dark:text-amber-300">
+            {t("userMentorReview.awaitingMentorTitle")}
+          </p>
+          <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
+            {t("userMentorReview.awaitingMentorDesc")}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================
+// Offline confirmed — waiting for the in-person meeting
+// ============================================================
+
+function OfflineConfirmedStep({ booking }: { booking: MentorInterviewBooking }) {
+  const { t } = useTranslation();
+  const scheduledTime = booking.scheduledStart
+    ? new Date(booking.scheduledStart).toLocaleString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  return (
+    <Card className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950">
+      <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
+          <MapPin className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">
+            {t("userMentorReview.offlineBookedTitle")}
+          </p>
+          <p className="mt-1 text-sm text-emerald-600 dark:text-emerald-400">
+            {t("userMentorReview.offlineBookedDesc")}
+          </p>
+        </div>
+        {scheduledTime && (
+          <div className="rounded-lg border border-emerald-200 bg-white/60 px-4 py-2 dark:border-emerald-800 dark:bg-black/20">
+            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+              {t("userKiosk.interviewTime")}: {scheduledTime}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -481,8 +462,26 @@ function RoomReadyStep({
 // Step 4: In Progress (at kiosk)
 // ============================================================
 
-function InProgressStep({ roomUrl }: { roomUrl?: string }) {
+function InProgressStep({
+  roomUrl,
+  sessionTiming,
+  sessionId,
+  onJoinRoom,
+}: {
+  roomUrl?: string;
+  sessionTiming?: {
+    startTime1?: string | null;
+    startTime2?: string | null;
+    endTime1?: string | null;
+    endTime2?: string | null;
+    durationSeconds1?: number | null;
+    durationSeconds2?: number | null;
+  } | null;
+  sessionId?: number;
+  onJoinRoom?: () => void;
+}) {
   const { t } = useTranslation();
+  const canRejoin = !!roomUrl && !!onJoinRoom;
   return (
     <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
       <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
@@ -497,14 +496,149 @@ function InProgressStep({ roomUrl }: { roomUrl?: string }) {
             {t("userKiosk.interviewInProgressDesc")}
           </p>
         </div>
-        {roomUrl && (
-          <p className="rounded-lg border border-blue-200 bg-white/60 px-4 py-2 font-mono text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
-            Room URL ready
-          </p>
+        {canRejoin && (
+          <Button
+            type="button"
+            onClick={onJoinRoom}
+            className="gap-2 bg-blue-600 text-white hover:bg-blue-700">
+            <LogIn className="h-4 w-4" />
+            {t("userMentorReview.rejoinRoom")}
+          </Button>
+        )}
+        {sessionTiming && (
+          <SessionTimingPanel
+            startTime1={sessionTiming.startTime1}
+            endTime1={sessionTiming.endTime1}
+            durationSeconds1={sessionTiming.durationSeconds1}
+            startTime2={sessionTiming.startTime2}
+            endTime2={sessionTiming.endTime2}
+            durationSeconds2={sessionTiming.durationSeconds2}
+            sessionId={sessionId}
+          />
         )}
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Show the BE-tracked join/leave durations next to the InProgress card
+ * so the candidate can see whether they or the mentor has already
+ * joined and how long each of them has been in the room.
+ */
+function SessionTimingPanel({
+  startTime1,
+  endTime1,
+  durationSeconds1,
+  startTime2,
+  endTime2,
+  durationSeconds2,
+  sessionId,
+}: {
+  startTime1?: string | null;
+  endTime1?: string | null;
+  durationSeconds1?: number | null;
+  startTime2?: string | null;
+  endTime2?: string | null;
+  durationSeconds2?: number | null;
+  sessionId?: number;
+}) {
+  const { t } = useTranslation();
+  const hasAnyTiming = !!(startTime1 || startTime2);
+  if (!hasAnyTiming) {
+    return (
+      <p className="text-xs text-blue-600 dark:text-blue-400">
+        {t("userMentorReview.timingNotRecorded")}
+        {sessionId ? ` (#${sessionId})` : ""}
+      </p>
+    );
+  }
+  return (
+    <div className="grid w-full grid-cols-1 gap-2 text-left sm:grid-cols-2">
+      <TimingChip
+        label={t("userMentorReview.student")}
+        startAt={startTime1}
+        endAt={endTime1}
+        durationSeconds={durationSeconds1}
+      />
+      <TimingChip
+        label={t("userMentorReview.mentor")}
+        startAt={startTime2}
+        endAt={endTime2}
+        durationSeconds={durationSeconds2}
+      />
+    </div>
+  );
+}
+
+function TimingChip({
+  label,
+  startAt,
+  endAt,
+  durationSeconds,
+}: {
+  label: string;
+  startAt?: string | null;
+  endAt?: string | null;
+  durationSeconds?: number | null;
+}) {
+  if (!startAt) {
+    return (
+      <div className="rounded-lg border border-blue-200 bg-white/60 px-3 py-2 text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
+        <p className="font-semibold">{label}</p>
+        <p className="text-blue-500 dark:text-blue-400">—</p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-lg border border-blue-200 bg-white/60 px-3 py-2 text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
+      <p className="font-semibold">{label}</p>
+      <p>
+        <span className="text-blue-500 dark:text-blue-400">{t("userMentorReview.joinedAt")}: </span>
+        {formatVnDateTime(startAt)}
+      </p>
+      {endAt && (
+        <p>
+          <span className="text-blue-500 dark:text-blue-400">{t("userMentorReview.leftAt")}: </span>
+          {formatVnDateTime(endAt)}
+        </p>
+      )}
+      {typeof durationSeconds === "number" && (
+        <p className="font-mono">
+          {t("userMentorReview.duration")}: {formatVnDuration(durationSeconds)}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function formatVnDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h} giờ ${m} phút ${s} giây`;
+  if (m > 0) return `${m} phút ${s} giây`;
+  return `${s} giây`;
+}
+
+/**
+ * Backend records timestamps as naive "yyyy-MM-dd HH:mm:ss.SSS" in UTC+7.
+ * Append the offset so `new Date(...)` parses to the intended instant.
+ */
+function formatVnDateTime(input: string | null | undefined): string {
+  if (!input) return "-";
+  const parsed = new Date(input.includes("T") ? input : input.replace(" ", "T") + "+07:00");
+  if (Number.isNaN(parsed.getTime())) return input;
+  return parsed.toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour12: false,
+  });
 }
 
 // ============================================================
@@ -523,6 +657,14 @@ function ReviewFormStep({
   onSubmitSuccess: () => void;
 }) {
   const { t } = useTranslation();
+  // 2026-07-18: surface prop identity on every mount so we can see whether
+  // the parent rendered the form with complete identity (sessionId + mentorId
+  // + userId) or with holes that would silently kill the POST.
+  console.log("[MentorReviewPage] ReviewFormStep mounted with props", {
+    sessionId,
+    mentorId,
+    userId,
+  });
   const [rating, setRating] = useState<number>(0);
   const [situationNote, setSituationNote] = useState("");
   const [taskNote, setTaskNote] = useState("");
@@ -541,45 +683,89 @@ function ReviewFormStep({
       resultNote.trim().length > 0);
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    // 2026-07-18: verbose logging — student reported "An error has occurred"
+    // with no API call visible. Surface every input + decision so we can see
+    // whether we're bailing out client-side, hitting a 4xx, or getting 0
+    // network activity.
+    console.log("[MentorReviewPage] submit clicked", {
+      sessionId,
+      mentorId,
+      userId,
+      rating,
+      canSubmit,
+      hasComment: !!(
+        situationNote.trim() ||
+        taskNote.trim() ||
+        actionNote.trim() ||
+        resultNote.trim() ||
+        strength.trim() ||
+        weakness.trim() ||
+        improve.trim()
+      ),
+    });
+    if (!canSubmit) {
+      console.warn("[MentorReviewPage] submit blocked: canSubmit=false", { rating });
+      return;
+    }
     if (!sessionId || !mentorId || !userId) {
+      console.error("[MentorReviewPage] submit blocked: missing identity", {
+        sessionId,
+        mentorId,
+        userId,
+      });
       toast.error(t("common.anErrorHasOccurred"));
       return;
     }
     setIsSubmitting(true);
+    const commentText =
+      [
+        situationNote.trim(),
+        taskNote.trim(),
+        actionNote.trim(),
+        resultNote.trim(),
+        strength.trim(),
+        weakness.trim(),
+        improve.trim(),
+      ]
+        .filter(Boolean)
+        .join("\n\n") || undefined;
+    console.log("[MentorReviewPage] POST /api/mentor-feedbacks", {
+      sessionId,
+      mentorId,
+      userId,
+      rating,
+      commentLen: commentText?.length ?? 0,
+    });
     try {
-      // Student đánh giá Mentor sau phỏng vấn → POST /api/mentor-feedbacks
-      // (POST /api/mentor-reviews là Mentor đánh giá Student — flow ngược lại)
-      // Schema OpenAPI chỉ Declare body: { sessionId, mentorId, userId, rating, comment }
       const { response } = await fetchClient.POST("/api/mentor-feedbacks", {
-        body: {
-          sessionId,
-          mentorId,
-          userId,
-          rating,
-          comment:
-            [
-              situationNote.trim(),
-              taskNote.trim(),
-              actionNote.trim(),
-              resultNote.trim(),
-              strength.trim(),
-              weakness.trim(),
-              improve.trim(),
-            ]
-              .filter(Boolean)
-              .join("\n\n") || undefined,
-        },
+        body: { sessionId, mentorId, userId, rating, comment: commentText },
+      });
+      console.log("[MentorReviewPage] POST response", {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
       });
       if (!response.ok) {
-        const errData = (await response.json().catch(() => ({}))) as { message?: string };
+        let errBody: unknown = null;
+        try {
+          errBody = await response.json();
+        } catch {
+          try {
+            errBody = await response.text();
+          } catch {
+            errBody = "<unreadable>";
+          }
+        }
+        console.error("[MentorReviewPage] POST failed body:", errBody);
+        const errData = (errBody ?? {}) as { message?: string };
         toast.error(errData?.message ?? t("common.anErrorHasOccurred"));
         return;
       }
       toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
       onSubmitSuccess();
     } catch (err) {
-      console.error("[MentorReviewPage] submit feedback failed:", err);
+      console.error("[MentorReviewPage] submit feedback threw:", err);
       toast.error(t("common.anErrorHasOccurred"));
     } finally {
       setIsSubmitting(false);
@@ -747,16 +933,40 @@ export function ApplicationMentorReviewPage() {
   // `bookingId`, `sessionId`, `status`).
   const [booking, setBooking] = useState<MentorInterviewBooking | null>(null);
   const [roomUrl, setRoomUrl] = useState<string | null>(null);
+  // Live tracking fields lifted from /api/sessions/{id}. While
+  // `useDailyTracking` (created in 2026-07-17) would POST /join-session
+  // to record `startTime1/2` client-side, the simpler initial approach
+  // is to read whatever the BE has already recorded (webhook
+  // `endTime1/2` is processed by BE; we can show the user the
+  // progress in real-time without touching Daily's iframe lifecycle).
+  const [sessionTiming, setSessionTiming] = useState<{
+    startTime1?: string | null;
+    startTime2?: string | null;
+    endTime1?: string | null;
+    endTime2?: string | null;
+    durationSeconds1?: number | null;
+    durationSeconds2?: number | null;
+    participantId1?: string | null;
+    participantId2?: string | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   // Distinguishes "still fetching" from "fetched but BE returned []" so we
   // can offer a Retry / re-trigger instead of an infinite spinner when the
   // backend hasn't auto-created the ApplicationDetail for this round yet.
   const [detailsResolved, setDetailsResolved] = useState(false);
-  // Bump to force the fetch effect to re-run (manual retry button).
+  // Bump to force the fetch effect to re-run (was previously triggered by
+  // a manual Retry button; the button has been removed in 2026-07-17, but
+  // we keep the dependency in the fetch effect so future re-introductions
+  // of a Retry CTA only have to call the setter).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [retryToken, setRetryToken] = useState(0);
   // Tracks an explicit "no ApplicationDetail exists for this round" outcome
   // — surfaces a different UX (legacy data warning) than a network error.
-  const [detailMissing, setDetailMissing] = useState(false);
+  // 2026-07-17: legacy "Booking is not ready" empty-state card has been
+  // removed, so the read flag is no longer needed in JSX. The setter is
+  // still kept (and consumed) inside the fetch effect.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_detailMissing, _setDetailMissing] = useState(false);
 
   const { data: currentRound, isLoading: currentRoundLoading } = useCurrentRound(
     applicationId,
@@ -796,7 +1006,7 @@ export function ApplicationMentorReviewPage() {
     const fetchData = async () => {
       setLoading(true);
       setDetailsResolved(false);
-      setDetailMissing(false);
+      _setDetailMissing(false);
       try {
         const detailRes = await fetchClient.GET(
           "/api/application-details/application/{applicationId}",
@@ -815,17 +1025,39 @@ export function ApplicationMentorReviewPage() {
           // (e.g. user just unlocked this round), take it even if roundId did not match.
           // This covers schema drift between `currentRound.id` and detail roundIds.
           if (!currentDetail && currentRound.roundType === "MENTROR_REVIEW") {
+            // 2026-07-17: relax the allowlist — `IN_PROGRESS`,
+            // `ROOM_CREATED`, `MENTOR_ASSIGNED`, `OFFLINE_CONFIRMED` and
+            // any other round status BE may introduce all correspond to a
+            // Mentor Interview detail. Old version only accepted the five
+            // legacy statuses (PENDING / SLOT_PICKED / SUBMITTED /
+            // AI_EVALUATED / COMPLETED) which would silently produce no
+            // detail and leave the page blank.
             const mentorDetails = details.filter(
-              (d) =>
-                d.status === "PENDING" ||
-                d.status === "SLOT_PICKED" ||
-                d.status === "SUBMITTED" ||
-                d.status === "AI_EVALUATED" ||
-                d.status === "COMPLETED"
+              (d) => !["CODE_REVIEW", "QUIZ", "TECHNICAL_INTERVIEW"].includes(d.roundType ?? "")
             );
             if (mentorDetails.length === 1) {
               currentDetail = mentorDetails[0] ?? null;
+            } else if (mentorDetails.length > 1) {
+              // Pick the newest by id as a tie-breaker.
+              currentDetail =
+                mentorDetails.reduce((acc, d) => ((d.id ?? 0) > (acc.id ?? 0) ? d : acc)) ?? null;
             }
+          }
+
+          if (typeof window !== "undefined") {
+            console.debug("[MentorReviewPage] detail selection", {
+              applicationId,
+              currentRoundId,
+              currentRoundType: currentRound.roundType,
+              detailCount: details.length,
+              detailRoundIds: details.map((d) => d.roundId),
+              detailStatuses: details.map((d) => d.status),
+              bookingIds: details.map((d) => d.bookingId),
+              sessionIds: details.map((d) => d.sessionId),
+              resolvedDetailId: currentDetail?.id ?? null,
+              resolvedDetailStatus: currentDetail?.status ?? null,
+              resolvedDetailBookingId: currentDetail?.bookingId ?? null,
+            });
           }
 
           if (!currentDetail) {
@@ -835,7 +1067,7 @@ export function ApplicationMentorReviewPage() {
               detailCount: details.length,
               detailRoundIds: details.map((d) => d.roundId),
             });
-            setDetailMissing(true);
+            _setDetailMissing(true);
           }
 
           setApplicationDetail(currentDetail ?? null);
@@ -860,8 +1092,46 @@ export function ApplicationMentorReviewPage() {
               ...(prev ?? {}),
             }));
           } else {
+            // 2026-07-18: detail.bookingId may be null on rounds created before
+            // the v062 schema switch (the BE controller never persisted it).
+            // Wipe the booking snapshot so the page doesn't display a stale
+            // "your interview is in this room" card tied to a deleted booking.
             setBooking(null);
-            setRoomUrl(null);
+          }
+          // 2026-07-18: always fetch session by sessionId if we have one,
+          // not just when bookingId is present. The session row carries the
+          // ground-truth `status` + `mentorReview` flags which drive whether
+          // the student should see the feedback form. Booking-derived state
+          // is a derived optimisation; session-derived state is the source
+          // of truth.
+          if (currentDetail?.sessionId) {
+            try {
+              const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
+                params: { path: { id: currentDetail.sessionId } },
+              });
+              const live = (sessionRefetch.data ?? null) as {
+                roomUrl?: string;
+                startTime1?: string | null;
+                startTime2?: string | null;
+                endTime1?: string | null;
+                endTime2?: string | null;
+                durationSeconds1?: number | null;
+                durationSeconds2?: number | null;
+                participantId1?: string | null;
+                participantId2?: string | null;
+                status?: string;
+                mentorReview?: unknown;
+                userId?: number;
+              } | null;
+              sessionRef.current = live
+                ? { status: live.status, mentorReview: live.mentorReview, userId: live.userId }
+                : null;
+              const room = live?.roomUrl;
+              if (room) setRoomUrl(room);
+              if (live) setSessionTiming(live);
+            } catch {
+              // session may not be ready
+            }
           }
         }
       } catch (err) {
@@ -905,11 +1175,23 @@ export function ApplicationMentorReviewPage() {
         }
         if (fresh.sessionId) {
           try {
-            const { data: sessionData } = await fetchClient.GET("/api/sessions/{id}", {
+            const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
               params: { path: { id: fresh.sessionId } },
             });
-            const room = (sessionData as { roomUrl?: string } | undefined)?.roomUrl;
+            const live = (sessionRefetch.data ?? null) as {
+              roomUrl?: string;
+              participantId1?: string | null;
+              participantId2?: string | null;
+              startTime1?: string | null;
+              startTime2?: string | null;
+              endTime1?: string | null;
+              endTime2?: string | null;
+              durationSeconds1?: number | null;
+              durationSeconds2?: number | null;
+            } | null;
+            const room = live?.roomUrl;
             if (room) setRoomUrl(room);
+            if (live) setSessionTiming(live);
           } catch {
             // session endpoint might 404 briefly after admin assign; ignore.
           }
@@ -933,37 +1215,126 @@ export function ApplicationMentorReviewPage() {
     setApplicationDetail((prev) =>
       prev ? { ...prev, bookingId: newBooking.id, status: "SLOT_PICKED" } : prev
     );
+    // For ONLINE flow, immediately fetch the Session to get roomUrl.
+    if (newBooking.sessionId) {
+      void fetchSessionRoomUrl(newBooking.sessionId);
+    }
   };
 
-  // Go to kiosk (enter room)
-  const handleGoToKiosk = () => {
-    if (!booking?.sessionKey || !booking?.kioskId) return;
-    // Route is registered as `/user/kiosk/entry` (see `src/App.tsx`).
-    // We pass `sessionKey` + `kioskId` as query params for the kiosk entry page.
-    const params = new URLSearchParams({
-      sessionKey: booking.sessionKey,
-      kioskId: String(booking.kioskId),
-      applicationDetailId: String(applicationDetail?.id ?? 0),
-    });
-    navigate(`/user/kiosk/entry?${params.toString()}`);
+  // Join the Daily.co room for an ONLINE interview. Opens the roomUrl
+  // directly (the room is "public" per BE doc, so no token is needed).
+  // 2026-07-17: students were getting a blank rejoin because the previous
+  //   implementation fell back to `booking.sessionKey` (the RoomName, e.g.
+  //   "session-1721...") when roomUrl hadn't populated yet, which of course
+  //   isn't a valid Daily URL. Compose the public URL from sessionId or
+  //   fall back to a stable derivation so the Rejoin button always works.
+  // Navigate to the inline Daily iframe (StudentSessionRoomPage) instead
+  // of opening the Daily URL in a new tab. The new tab approach meant we
+  // never observed Daily's `joined-meeting` event in the main thread, so
+  // BE never got the POST /api/sessions/join-session call → startTime1
+  // stayed null. The inline page mounts <VideoCallProvider/> and tracks
+  // the join exactly the same way MentorSessionRoomPage does for mentor.
+  const handleJoinRoom = () => {
+    const sessionId = bookingSnapshot?.sessionId ?? applicationDetail?.sessionId;
+    if (sessionId) {
+      navigate(`/user/sessions/room/${sessionId}`);
+      return;
+    }
+    // Session snapshot may not have id yet (early mount); fall back
+    // to opening Daily.co directly so the candidate isn't locked out.
+    const target = composeDailyRoomUrl(roomUrl, booking?.sessionKey);
+    if (!target) return;
+    window.open(target, "_blank", "noopener,noreferrer");
+  };
+
+  /**
+   * Build a Daily.co URL usable by Daily's iframe. Accepts:
+   *   - full URL (returns as-is)
+   *   - explicit "OFFLINE" (returns null — no online room)
+   *   - bare session key like "session-1721..." (derives
+   *     https://inblue.daily.co/{key})
+   *   - anything else falsy (returns null)
+   */
+  function composeDailyRoomUrl(
+    candidate: string | null | undefined,
+    fallbackKey: string | undefined
+  ): string | null {
+    const raw = (candidate ?? "").trim();
+    if (raw && raw !== "OFFLINE") {
+      if (/^https?:\/\//i.test(raw)) return raw;
+      // BE sometimes returns just the key instead of the full URL.
+      const key = raw.replace(/^\/+/, "");
+      return `https://inblue.daily.co/${encodeURIComponent(key)}`;
+    }
+    if (fallbackKey && fallbackKey !== "OFFLINE") {
+      return `https://inblue.daily.co/${encodeURIComponent(fallbackKey)}`;
+    }
+    return null;
+  }
+
+  // Re-fetch roomUrl for a session (used after SlotSelectionStep success).
+  const fetchSessionRoomUrl = async (sessionId: number) => {
+    try {
+      const { data } = await fetchClient.GET("/api/sessions/{id}", {
+        params: { path: { id: sessionId } },
+      });
+      const live =
+        (data as
+          | {
+              roomUrl?: string;
+              participantId1?: string | null;
+              participantId2?: string | null;
+              startTime1?: string | null;
+              startTime2?: string | null;
+              endTime1?: string | null;
+              endTime2?: string | null;
+              durationSeconds1?: number | null;
+              durationSeconds2?: number | null;
+            }
+          | undefined) ?? null;
+      const room = live?.roomUrl;
+      if (room === "OFFLINE") {
+        setRoomUrl("OFFLINE");
+      } else if (room) {
+        setRoomUrl(room);
+      }
+      if (live) setSessionTiming(live);
+    } catch {
+      // session may not be ready yet; ignore
+    }
   };
 
   // Cancel booking
-  const handleCancelBooking = async () => {
-    if (!booking?.id) return;
-    try {
-      await fetchClient.DELETE("/api/mentor-bookings/{bookingId}", {
-        params: { path: { bookingId: booking.id } },
-      });
-      setBooking(null);
-      setApplicationDetail((prev) =>
-        prev ? { ...prev, bookingId: undefined, status: "PENDING" } : prev
+  // 2026-07-18: in the new Mentor Interview flow `booking.id` is *always*
+  // null (BE confirmed bookingId is unused). Until BE exposes a proper
+  // cancel-session endpoint we no-op + warn instead of deleting a
+  // non-existent booking — otherwise the user gets a silent 404 every
+  // time. TODO: hook this up once POST /api/sessions/{id}/cancel exists.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleCancelBooking = async () => {
+    if (typeof window !== "undefined") {
+      console.warn(
+        "[MentorReviewPage] cancel requested but BE has not exposed an endpoint for the new Mentor Interview flow; awaiting BE ticket."
       );
-      toast.success(t("userKiosk.bookingCancelledSuccessfully"));
-    } catch {
-      toast.error(t("common.anErrorHasOccurred"));
     }
+    toast.error(
+      t("userKiosk.bookingCancelledSuccessfully") +
+        " (tính năng tạm thời chưa khả dụng — đang chờ BE bổ sung API cancel)"
+    );
   };
+
+  // 2026-07-18: when ApplicationDetail carries a sessionId but the
+  // local roomUrl / sessionTiming caches are still empty (e.g. hard
+  // reload before the first poll, or SlotSelectionStep completed in
+  // a previous browser session), prime them from /api/sessions/{id}.
+  // Without this the page rendered before but `RoomReadyStep` had no
+  // roomUrl to display.
+  useEffect(() => {
+    const sid = applicationDetail?.sessionId;
+    if (!sid) return;
+    if (roomUrl) return;
+    void fetchSessionRoomUrl(sid);
+  }, [applicationDetail?.sessionId, roomUrl]);
 
   // Review submitted
   const handleReviewSubmitted = () => {
@@ -974,26 +1345,73 @@ export function ApplicationMentorReviewPage() {
   // Derive UI state from backend data
   // ============================================================
 
+  // 2026-07-18: backend v063 confirmed `bookingId` is *always* null in
+  // the new Mentor Interview flow. Don't gate the UI on a booking
+  // snapshot we will never get. Instead synthesise a derived booking
+  // from ApplicationDetail itself + the session-detail roomUrl /
+  // sessionTiming. UI branches then read from `bookingSnapshot` and
+  // don't have to know whether the data came from
+  // `MentorInterviewBooking` or `ApplicationDetail`.
+  const bookingSnapshot: MentorInterviewBooking | null =
+    booking ??
+    (applicationDetail?.sessionId
+      ? ({
+          id: applicationDetail.bookingId ?? applicationDetail.sessionId,
+          sessionId: applicationDetail.sessionId,
+          mentorId: applicationDetail.mentorId,
+          status: bookingStatusFromDetail(applicationDetail.status) ?? "ROOM_CREATED",
+        } as MentorInterviewBooking)
+      : null);
+
   const applicationDetailId = applicationDetail?.id ?? 0;
-  const bookingStatus = booking?.status;
+  const bookingStatus = bookingSnapshot?.status;
   // The student page is showing "have you rated the mentor?" so the
   // relevant marker on ApplicationDetail is `mentorFeedback` (set by
   // POST /api/mentor-feedbacks). `mentorReview` is the *mentor's*
   // evaluation of the student, which is irrelevant here.
   const isReviewed = !!applicationDetail?.mentorFeedback;
+  // 2026-07-18: session.status=COMPLETED is ground-truth for "interview is over".
+  // Before this fix, the page relied on `applicationDetail.status=COMPLETED` to
+  // show the feedback form, but BE only sets that AFTER student submits
+  // feedback (review && feedback condition in
+  // MentorReviewServiceImpl.checkAndCompleteRound). This created a chicken-and-egg
+  // deadlock: student needs to submit feedback to unblock COMPLETED, but never
+  // sees the form because COMPLETED is never set.
+  // Solution: detect "interview is over" from the Session row directly.
+  const sessionRef = useRef<{ status?: string; mentorReview?: unknown; userId?: number } | null>(
+    null
+  );
+  const mentorReviewReceived =
+    !!applicationDetail?.mentorReview || !!sessionRef.current?.mentorReview;
   // When the mentor-review form can be shown:
-  //  - ApplicationDetail.status === "COMPLETED"        (set by BE after
-  //                                                    POST /api/mentor-reviews)
-  //  - booking.status === "COMPLETED"                  (covers polls where
-  //                                                    the detail status
-  //                                                    hasn't caught up yet)
-  // AI_EVALUATED is intentionally NOT included here: it is the
-  // CODE_REVIEW/QUIZ/CODING post-AI-evaluation flag and never appears on
-  // a MENTOR_REVIEW round. Earlier code treated it as a stand-in for
-  // "meeting is over" but that conflated two separate state machines.
-  const isCompleted = bookingStatus === "COMPLETED" || applicationDetail?.status === "COMPLETED";
+  //  - Mentor has reviewed the student (mentorReviewReceived) AND student has not
+  //    yet submitted feedback (!isReviewed). This unblocks the form even when
+  //    applicationDetail.status is still SLOT_PICKED.
+  //  - OR applicationDetail.status === "COMPLETED" (BE-normal path)
+  const showFeedbackForm =
+    (mentorReviewReceived && !isReviewed) || applicationDetail?.status === "COMPLETED";
   const isWrongRound =
     !currentRoundLoading && !!currentRound && currentRound.roundType !== "MENTROR_REVIEW";
+
+  // 2026-07-18: debug snapshot to make triage easier when the form fails to
+  // appear. One-liner so the dev console doesn't drown in noise.
+  if (typeof window !== "undefined") {
+    console.log("[MentorReviewPage]", {
+      applicationId,
+      detailStatus: applicationDetail?.status,
+      detailMentorReview: !!applicationDetail?.mentorReview,
+      detailMentorFeedback: !!applicationDetail?.mentorFeedback,
+      sessionMentorReview: !!sessionRef.current?.mentorReview,
+      sessionStatus: sessionRef.current?.status,
+      roomUrl: roomUrl ? roomUrl.slice(0, 40) : null,
+      mentorReviewReceived,
+      isReviewed,
+      showFeedbackForm,
+      isWrongRound,
+      currentRoundType: currentRound?.roundType,
+      currentRoundId: currentRound?.id,
+    });
+  }
 
   // ============================================================
   // Render
@@ -1058,104 +1476,139 @@ export function ApplicationMentorReviewPage() {
           </Card>
         )}
 
-        {/* Completed but not reviewed */}
-        {isCompleted && !isReviewed && (
+        {/* Mentor has reviewed — show feedback form so student can rate the mentor.
+            Handles the deadlock: detail.status=SLOT_PICKED but mentorReview != null.
+            This step must come BEFORE RoomReadyStep so the student sees the form
+            instead of being redirected back to Daily.co. */}
+        {showFeedbackForm && (
           <ReviewFormStep
             sessionId={booking?.sessionId ?? applicationDetail?.sessionId}
             mentorId={booking?.mentorId}
-            userId={booking?.applicantUserId}
+            userId={sessionRef.current?.userId ?? booking?.applicantUserId}
             onSubmitSuccess={handleReviewSubmitted}
           />
         )}
 
-        {/* In Progress */}
-        {bookingStatus === "IN_PROGRESS" && !isReviewed && booking && (
-          <InProgressStep roomUrl={roomUrl ?? undefined} />
-        )}
+        {/* Deprecated 2026-07-18: `isCompleted` check removed. Form visibility is now
+            controlled by `showFeedbackForm` above which checks `mentorReview` directly
+            from the Session row, bypassing the circular dependency on
+            `applicationDetail.status=COMPLETED`. */}
 
-        {/* Room Created (mentor assigned, room ready) */}
-        {(bookingStatus === "ROOM_CREATED" || bookingStatus === "MENTOR_ASSIGNED") &&
-          !isReviewed &&
-          booking && <RoomReadyStep booking={booking} onGoToKiosk={handleGoToKiosk} />}
-
-        {/* Awaiting Mentor (slot picked, waiting for admin to assign) */}
-        {bookingStatus === "AWAITING_MENTOR" && !isReviewed && booking && (
-          <AwaitingMentorStep booking={booking} onCancel={handleCancelBooking} />
-        )}
-
-        {/* Slot selection (no booking yet) — only after applicationDetail is resolved */}
-        {!booking && !isReviewed && applicationDetailId > 0 && (
-          <SlotSelectionStep
-            applicationDetailId={applicationDetailId}
-            onSuccess={handleSlotPicked}
+        {/* In Progress — still has a valid roomUrl so the candidate can
+            rejoin if they closed the tab earlier. The session timing
+            panel underneath surfaces BE-tracked start/end durations so
+            the student can see whether they or their mentor is in the
+            room. */}
+        {bookingStatus === "IN_PROGRESS" && !isReviewed && bookingSnapshot && (
+          <InProgressStep
+            roomUrl={roomUrl ?? undefined}
+            sessionTiming={sessionTiming}
+            sessionId={bookingSnapshot?.sessionId}
+            onJoinRoom={handleJoinRoom}
           />
         )}
 
-        {/* MENTOR_REVIEW round has no ApplicationDetail yet.
-            Two distinct sub-cases the UI has to differentiate:
-              1. `loading`           — the fetch hasn't settled; the detail
-                                      may simply arrive on a retry.
-              2. `detailMissing`     — the fetch settled but BE returned 0
-                                      details, so the row was never created
-                                      for this application. This typically
-                                      happens for applications created before
-                                      commit `ffa9814` (v062) on a JD whose
-                                      only round is MENTOR_REVIEW — see BE
-                                      bug report BACKEND_BUG_REPORT_MESSAGE_V2.
-                                      No client-side retry can recover; we
-                                      surface a contact-support hint instead
-                                      of an indefinite Retry loop.
-        */}
-        {!booking && !isReviewed && currentRound?.roundType === "MENTROR_REVIEW" && (
-          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-            <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-              <Clock className="h-10 w-10 text-amber-600 dark:text-amber-400" />
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                {loading
-                  ? t("userKiosk.loadingBooking")
-                  : detailMissing
-                    ? t(
-                        "userKiosk.detailMissingLegacy",
-                        "Booking system hasn't initialized for this application. Please contact support."
-                      )
-                    : t(
-                        "userKiosk.detailNotReady",
-                        "Booking is not ready yet. Please retry in a moment."
-                      )}
-              </p>
-              {!loading && !detailMissing && (
-                <p className="text-xs text-amber-600 dark:text-amber-400">
-                  {t(
-                    "userKiosk.detailNotReadyHint",
-                    "If the issue persists, the backend may not have created the round detail yet. Click Retry to refetch."
-                  )}
-                </p>
-              )}
-              {!loading && (
-                <div className="flex gap-2">
-                  {!detailMissing && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setRetryToken((n) => n + 1)}
-                      disabled={loading}>
-                      {t("common.retry", "Retry")}
-                    </Button>
-                  )}
-                  <Button variant="ghost" onClick={() => navigate(-1)}>
-                    {t("general.back")}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* 2026-07-18: route ONLINE/OFFLINE based solely on the ground-truth
+            session row: roomUrl === "OFFLINE" means offline, any other URL
+            means online. Do NOT derive from BookingStatus — that is derived
+            from ApplicationDetail.status which stays SLOT_PICKED after the
+            student picks a slot, and bookingStatusFromDetail maps
+            SLOT_PICKED -> AWAITING_MENTOR, which caused the page to
+            incorrectly show the wait-card instead of RoomReadyStep. */}
+        {(roomUrl === "OFFLINE" || applicationDetail?.sessionInfo?.meetingType === "OFFLINE") &&
+          !isReviewed &&
+          bookingSnapshot && <OfflineConfirmedStep booking={bookingSnapshot} />}
+
+        {/* ONLINE Room Ready — the interview is READY when:
+            1. ApplicationDetail carries a sessionId with a Daily.co URL, AND
+            2. a mentor has been assigned (mentorId is non-null).
+            We do NOT wait for BookingStatus === ROOM_CREATED because the
+            BookingStatus is derived from ApplicationDetail.status which stays
+            as SLOT_PICKED from the moment the student picks a slot. The
+            session.rowUrl is the ground-truth readiness signal.
+
+            2026-07-18: skip this step when mentor has already reviewed the
+            student — we show ReviewFormStep instead so the student is not
+            redirected back to Daily.co for an interview that already ended. */}
+        {applicationDetail?.sessionId &&
+          roomUrl &&
+          roomUrl !== "OFFLINE" &&
+          applicationDetail?.mentorId &&
+          !isReviewed &&
+          !showFeedbackForm && (
+            <RoomReadyStep
+              booking={
+                bookingSnapshot ?? {
+                  id: applicationDetail.sessionId,
+                  sessionId: applicationDetail.sessionId,
+                  mentorId: applicationDetail.mentorId,
+                  status: "ROOM_CREATED",
+                }
+              }
+              roomUrl={roomUrl}
+              onJoinRoom={handleJoinRoom}
+            />
+          )}
+
+        {/* Awaiting Mentor Assignment — admin has not yet assigned a mentor.
+            We deliberately hide the SlotSelectionStep in this branch because
+            BE's create-for-round requires a non-null mentorId on the round. */}
+        {applicationDetail?.status === "AWAITING_MENTOR" && !isReviewed && !bookingSnapshot && (
+          <AwaitingMentorAssignmentStep />
         )}
 
+        {/* Awaiting Mentor — slot picked but mentor has NOT been assigned yet
+            (mentorId is still null on ApplicationDetail). Show the explainer
+            so the student knows to wait. */}
+        {applicationDetail?.sessionId && !isReviewed && !applicationDetail?.mentorId && (
+          <AwaitingMentorAssignmentStep />
+        )}
+
+        {/* Slot selection — only when status === PENDING AND meetingType is unset.
+            Outside of these preconditions the candidate is either waiting for
+            admin to assign a mentor (AWAITING_MENTOR branch above) or already
+            has a confirmed slot (SLOT_PICKED/PENDING+OFFLINE in branches above). */}
+        {!bookingSnapshot &&
+          !isReviewed &&
+          applicationDetailId > 0 &&
+          applicationDetail?.status === "PENDING" &&
+          applicationDetail?.sessionInfo?.meetingType == null && (
+            <SlotSelectionStep
+              applicationDetailId={applicationDetailId}
+              mentorId={applicationDetail?.mentorId ?? null}
+              onSuccess={handleSlotPicked}
+            />
+          )}
+
         {/* Waiting for applicationDetail while currentRound is loading */}
-        {!booking && !isReviewed && applicationDetailId === 0 && !detailsResolved && (
+        {!bookingSnapshot && !isReviewed && applicationDetailId === 0 && !detailsResolved && (
           <Card>
             <CardContent className="flex items-center justify-center gap-3 p-8 text-sm text-slate-500">
               <Spinner size="sm" tone="primary" />
               {t("userKiosk.loadingBooking")}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 2026-07-17: Belt-and-braces fallback. The branches above only
+            render when `booking` (or `applicationDetail`) is populated. If
+            BE responds late / with an empty detail, the page used to render
+            completely blank, leaving the student stuck. Now we always show
+            an actionable state — a Retry CTA on top of an explainer. */}
+        {!bookingSnapshot && !isReviewed && detailsResolved && applicationDetailId === 0 && (
+          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+            <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+              <Hourglass className="h-10 w-10 text-amber-600 dark:text-amber-400" />
+              <p className="font-semibold text-amber-700 dark:text-amber-300">
+                {t("userKiosk.waitingForMentor")}
+              </p>
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                {t("userKiosk.detailNotReady")}
+              </p>
+              <Button variant="outline" onClick={() => window.location.reload()} className="gap-2">
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+                {t("general.retry")}
+              </Button>
             </CardContent>
           </Card>
         )}

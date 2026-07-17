@@ -54,6 +54,10 @@ export { ApplicationQuizPage } from "./ApplicationQuiz";
 // Mentor detail exports
 export { MentorDetailPage } from "./MentorDetail";
 
+// Student-facing session rooms (Daily.co inline iframe for tracking
+// startTime1/2 + durationSeconds1/2).
+export { StudentSessionRoomPage } from "./Sessions";
+
 // Application History exports
 export {
   ApplicationAIInterviewPage,

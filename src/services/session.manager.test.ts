@@ -214,6 +214,7 @@ describe("SessionManager", () => {
       const result = await sessionManager.joinSession({
         sessionName: "test-session",
         userId: 1,
+        mentor: false,
         isMentor: false,
       });
 
@@ -226,6 +227,7 @@ describe("SessionManager", () => {
       const result = await sessionManager.joinSession({
         sessionName: "test-session",
         userId: 1,
+        mentor: false,
         isMentor: false,
       });
 
@@ -239,6 +241,7 @@ describe("SessionManager", () => {
       const result = await sessionManager.joinSession({
         sessionName: "test-session",
         userId: 1,
+        mentor: false,
         isMentor: false,
       });
 

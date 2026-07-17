@@ -183,6 +183,9 @@ export interface Session {
   endTime1?: string;
   durationSeconds1?: number;
   userId2?: number;
+  /** BE returns this as `mentorId` for mentor-session endpoints even though
+   * the DB column is `userId2`. Mirrored here so the FE can match on either. */
+  mentorId?: number;
   participantId2?: string;
   startTime2?: string;
   endTime2?: string;

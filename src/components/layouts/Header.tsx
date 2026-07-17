@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { fixUtf8Mojibake } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
@@ -158,13 +159,16 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <button className="flex h-10 w-full items-center justify-center rounded-full border border-slate-200 bg-white transition-colors hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? "User"} />
+                      <AvatarImage
+                        src={user.avatarUrl ?? undefined}
+                        alt={fixUtf8Mojibake(user.name) ?? "User"}
+                      />
                       <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                        {getInitials(user.name)}
+                        {getInitials(fixUtf8Mojibake(user.name))}
                       </AvatarFallback>
                     </Avatar>
                     <span className="hidden max-w-[100px] truncate text-sm font-medium text-slate-700 md:inline dark:text-slate-200">
-                      {user.name}
+                      {fixUtf8Mojibake(user.name)}
                     </span>
                   </button>
                 </DropdownMenuTrigger>
@@ -172,7 +176,7 @@ export function Header() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col gap-1">
-                      <p className="text-sm font-medium">{user.name}</p>
+                      <p className="text-sm font-medium">{fixUtf8Mojibake(user.name)}</p>
                       <p className="text-muted-foreground text-xs">{user.email}</p>
                     </div>
                   </DropdownMenuLabel>
@@ -293,15 +297,15 @@ export function Header() {
                           <Avatar className="h-9 w-9 border border-slate-200 dark:border-slate-800">
                             <AvatarImage
                               src={user.avatarUrl ?? undefined}
-                              alt={user.name ?? "User"}
+                              alt={fixUtf8Mojibake(user.name) ?? "User"}
                             />
                             <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                              {getInitials(user.name)}
+                              {getInitials(fixUtf8Mojibake(user.name))}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                              {user.name}
+                              {fixUtf8Mojibake(user.name)}
                             </p>
                             <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">
                               {user.email}

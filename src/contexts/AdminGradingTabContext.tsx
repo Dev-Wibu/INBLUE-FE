@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 
 interface AdminGradingTabContextValue {
-  openGradingTab: (_appId: number) => void;
+  openGradingTab: (_appId: number, _extra?: { candidateName?: string; jdId?: string }) => void;
 }
 
 const AdminGradingTabContext = createContext<AdminGradingTabContextValue>({
@@ -13,7 +13,7 @@ export function AdminGradingTabProvider({
   openGradingTab,
 }: {
   children: React.ReactNode;
-  openGradingTab: (_appId: number) => void;
+  openGradingTab: (_appId: number, _extra?: { candidateName?: string; jdId?: string }) => void;
 }) {
   return (
     <AdminGradingTabContext.Provider value={{ openGradingTab }}>

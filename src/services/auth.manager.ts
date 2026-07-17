@@ -178,7 +178,16 @@ export class AuthManager {
     const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
     try {
       if (typeof atob === "function") {
-        return JSON.parse(atob(padded)) as Record<string, unknown>;
+        // Decode base64 to binary string, then convert to UTF-8
+        // atob() only handles Latin-1, so we must convert to byte array
+        // and use TextDecoder for proper UTF-8 support (e.g. Vietnamese names)
+        const binaryString = atob(padded);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const jsonString = new TextDecoder("utf-8").decode(bytes);
+        return JSON.parse(jsonString) as Record<string, unknown>;
       }
     } catch {
       return null;

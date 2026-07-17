@@ -38,10 +38,13 @@ export function MentorSessionRoomPage() {
   } = useSessionById(numericSessionId);
   const joinSessionMutation = useJoinSession();
 
-  // Validate session and user
+  // Validate session and user.
+  // For Mentor Interview (RoundType.MENTROR_REVIEW) the session is created
+  // with status SCHEDULED (see BE doc Phase 4). PAID/ONGOING are reserved
+  // for paid mock-interview sessions, so we accept both shapes here.
   const canJoin =
     session &&
-    (session.status === "PAID" || session.status === "ONGOING") &&
+    (session.status === "PAID" || session.status === "ONGOING" || session.status === "SCHEDULED") &&
     session.roomUrl &&
     user;
 
@@ -53,11 +56,15 @@ export function MentorSessionRoomPage() {
     // invalidate the session-detail query so the page picks up the new
     // `participantId2` + `startTime2` on the next render instead of waiting
     // for a manual refresh.
+    // 2026-07-18: send both `mentor` AND `isMentor` (legacy alias) — see
+    //   JoinSessionRequest comment in session.manager.ts. BE has historically
+    //   needed both keys to disambiguate intent.
     await joinSessionMutation.mutateAsync({
       sessionName: session.roomName,
       userId: user.id,
       participantId,
-      isMentor: true, // Mentor is joining
+      mentor: true,
+      isMentor: true,
     });
     queryClient.invalidateQueries({
       queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),

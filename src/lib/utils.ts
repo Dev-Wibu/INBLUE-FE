@@ -70,3 +70,81 @@ export function datetimeLocalToVietnamISOString(value: string): string {
   const withSeconds = withoutTimezone.length === 16 ? `${withoutTimezone}:00` : withoutTimezone;
   return `${withSeconds}`;
 }
+
+/**
+ * Attempts to fix common UTF-8 mojibake caused by double-encoding.
+ * E.g. "Nguyá»…n" (UTF-8 bytes decoded as Latin-1) → "Nguyễn"
+ *
+ * Strategy: try multiple interpretations and pick the one that produces
+ * the most Vietnamese characters.
+ */
+export function fixUtf8Mojibake(value: unknown): string {
+  if (value == null) return "";
+  const str = String(value);
+
+  // Common Vietnamese characters - used to score candidates.
+  const VIETNAMESE_CHARS =
+    /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ]/;
+  const countVietnamese = (s: string): number => {
+    let count = 0;
+    for (const ch of s) {
+      if (VIETNAMESE_CHARS.test(ch)) count++;
+    }
+    return count;
+  };
+
+  // Fast path: if string is already clean Vietnamese, skip processing.
+  // "Suspicious" if it has high-byte Latin-1 chars next to other high-byte chars,
+  // or contains common mojibake chars like ¡, ¢, £, ¤, ¥, §, ¨, ©, ª, «, ¬, ®, ¯, °, ±, ², ³, ¶, ·, ¸, ¹, º, », ¼, ½, ¾, ¿, ×, ÷.
+  const hasMojibakeIndicator = /á»|áº|Ä|Ã|Å|â€/.test(str);
+  if (!hasMojibakeIndicator) {
+    return str;
+  }
+
+  // Helper: decode a string treated as Latin-1 byte values, then attempt UTF-8.
+  const decodeAsUtf8 = (input: string): string => {
+    try {
+      const codes: number[] = [];
+      for (let i = 0; i < input.length; i++) {
+        codes.push(input.charCodeAt(i) & 0xff);
+      }
+      const bytes = new Uint8Array(codes);
+      const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+      return decoded.replace(/\uFFFD/g, "");
+    } catch {
+      return input;
+    }
+  };
+
+  // Strategy 1: Latin-1 -> UTF-8
+  const candidate1 = decodeAsUtf8(str);
+  // Strategy 2: Windows-1252 -> UTF-8
+  let candidate2 = str;
+  try {
+    const codes: number[] = [];
+    for (let i = 0; i < str.length; i++) {
+      codes.push(str.charCodeAt(i) & 0xff);
+    }
+    const bytes = new Uint8Array(codes);
+    candidate2 = new TextDecoder("windows-1252").decode(bytes);
+    // Now try UTF-8 on that
+    candidate2 = decodeAsUtf8(candidate2);
+  } catch {
+    candidate2 = str;
+  }
+
+  // Choose the best candidate (most Vietnamese characters).
+  const cands = [str, candidate1, candidate2];
+  let best = str;
+  let bestScore = countVietnamese(str);
+  for (const cand of cands) {
+    if (!cand) continue;
+    const score = countVietnamese(cand);
+    if (score > bestScore) {
+      best = cand;
+      bestScore = score;
+    }
+  }
+
+  return best;
+}

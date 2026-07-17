@@ -23,7 +23,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
+import { useSessionsByUserId, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import {
@@ -153,12 +153,30 @@ function SessionCard({
   };
   const status = statusMap[session.status || "SCHEDULED"] || statusMap.SCHEDULED;
   const isCompleted = session.status === "COMPLETED";
+  // 2026-07-17: Mentor Interview (RoundType.MENTROR_REVIEW) sessions are
+  //   persisted with status SCHEDULED until the first peer joins. The
+  //   earliest 'canJoin' moment is 15 minutes before `joinTime` so the
+  //   mentor can test their device; it's also allowed once the time has
+  //   passed regardless of the persisted status (BE may be slow to flip
+  //   to ONGOING after the webhook returns).
+  // COMPLETED is intentionally NOT in the allowlist — once the room is
+  // closed by Daily.co the URL is dead.
   const joinTimestamp = toTimestamp(session.joinTime);
-  const isTimeReached = joinTimestamp ? joinTimestamp <= now : true;
+  const earlyJoinWindowMs = 15 * 60 * 1000;
+  // Three cases:
+  //   1. joinTime set + within 15 min of now → can join
+  //   2. joinTime set + past → can join (BE may not have flipped status)
+  //   3. joinTime set + future + > 15 min away → cannot join yet
+  //   4. joinTime null → allow join by default (legacy sessions)
+  const isTimeReached = joinTimestamp ? joinTimestamp - earlyJoinWindowMs <= now : true;
   const isDraft = session.status === "DRAFT";
+  const isCancelled = session.status === "CANCELED" || session.status === "REJECTED";
   const canJoin =
-    (session.status === "PAID" || session.status === "ONGOING") &&
+    (session.status === "PAID" || session.status === "ONGOING" || session.status === "SCHEDULED") &&
+    !isDraft &&
+    !isCancelled &&
     !!session.roomUrl &&
+    session.roomUrl !== "OFFLINE" &&
     isTimeReached;
   return (
     <Card className="border-emerald-100 transition-all hover:shadow-md dark:border-slate-800">
@@ -193,6 +211,9 @@ function SessionCard({
                   {t("common.itsNotTimeYet")}
                 </Badge>
               )}
+            {/* Always expose a Join button for SCHEDULED Mentor Interview
+                sessions within 15 minutes of the scheduled start, even
+                before BE flips status to ONGOING. */}
             {canJoin && (
               <Button
                 size="sm"
@@ -314,8 +335,11 @@ function SessionCard({
           )}
           {!isCompleted && !canJoin && (
             <span className="text-sm text-slate-500 italic">
-              {session.status === "SCHEDULED"
-                ? t("mentorSessions.waitForStudentsToPay")
+              {/* Mentor Interview sessions start in SCHEDULED with no
+                  upfront payment; the only blocking condition is the
+                  15-minute pre-join window not yet being open. */}
+              {session.status === "SCHEDULED" && !isTimeReached
+                ? t("common.itsNotTimeYet")
                 : session.status === "PAID" && !isTimeReached
                   ? t("mentorSessions.itSNotTimeTo")
                   : t("mentorSessions.theSessionIsNotYet")}
@@ -339,7 +363,7 @@ export function MentorSessionsPage() {
     isLoading: sessionsLoading,
     isRefetching: sessionsRefetching,
     refetch: refetchSessions,
-  } = useSessions();
+  } = useSessionsByUserId(user?.id ?? 0);
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
@@ -348,22 +372,53 @@ export function MentorSessionsPage() {
   } = useMentorReviews();
   const updateStatusMutation = useUpdateSessionStatus();
 
-  // Current time state for joinTime-based blocking (updates every 30s)
-  const [now, setNow] = useState(() => Date.now());
+  // Current time state for joinTime-based blocking (updates every 5s).
+  // 2026-07-17 mentor-interview: Mentor Interview sessions can be joined
+  //   from 15 minutes before `joinTime`; the card uses this to surface
+  //   the 'Join' button quickly around that moment.
+  const [now, setNow] = useState<number>(() => Date.now());
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 30_000);
+    const timer = setInterval(() => setNow(Date.now()), 5_000);
     return () => clearInterval(timer);
   }, []);
   const isLoading = sessionsLoading || reviewsLoading;
 
   // Keep source data deterministic so default sort always yields newest-first consistently.
-  const mentorSessions = useMemo(
-    () =>
-      [...allSessions]
-        .filter((session: Session) => session.userId2 === user?.id)
-        .sort((a, b) => (a.id ?? 0) - (b.id ?? 0)),
-    [allSessions, user?.id]
-  );
+  // BE sometimes returns the mentor id under `userId2` (DB column) and sometimes
+  // under `mentorId` (response DTO). Accept both so the list stays in sync with
+  // whatever the active BE controller is doing.
+  const mentorSessions = useMemo(() => {
+    const userIdStr = user?.id != null ? String(user.id) : "";
+    const all = [...allSessions];
+    if (typeof window !== "undefined") {
+      // Temporary debug aid — remove once mentor can see their session.
+      console.debug("[MentorSessions] filter debug", {
+        userId: user?.id,
+        userIdType: typeof user?.id,
+        userRole: user?.role,
+        totalSessions: all.length,
+        sample: all.slice(0, 3).map((s) => ({
+          id: s.id,
+          status: s.status,
+          roomName: s.roomName,
+          userId: s.userId,
+          userId2: s.userId2,
+          mentorId: s.mentorId,
+          userId2Match: s.userId2 === user?.id,
+          mentorIdMatch: s.mentorId === user?.id,
+        })),
+      });
+    }
+    return all
+      .filter(
+        (session: Session) =>
+          session.userId2 === user?.id ||
+          session.mentorId === user?.id ||
+          (userIdStr && String(session.userId2 ?? "") === userIdStr) ||
+          (userIdStr && String(session.mentorId ?? "") === userIdStr)
+      )
+      .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+  }, [allSessions, user?.id, user?.role]);
 
   // Get session IDs that already have mentor reviews
   const reviewBySessionId = useMemo(() => {
