@@ -4088,6 +4088,24 @@
     "detailNotReady": "Booking chưa sẵn sàng. Vui lòng thử lại sau giây lát.",
     "detailNotReadyHint": "Nếu vẫn không được, có thể backend chưa tạo detail cho vòng này. Nhấn Thử lại để gọi lại."
   },
+  "userMentorReview": {
+    "chooseSchedule": "Chọn lịch phỏng vấn",
+    "chooseScheduleDesc": "Chọn thời gian và hình thức phỏng vấn với mentor.",
+    "pickDateAndType": "Thời gian & Hình thức",
+    "pickDateAndTypeDesc": "Chọn ngày giờ bạn rảnh và hình thức phỏng vấn phù hợp.",
+    "meetingTime": "Thời gian hẹn",
+    "meetingType": "Hình thức phỏng vấn",
+    "online": "Online",
+    "offline": "Offline",
+    "onlineHint": "Phỏng vấn qua video. Bạn sẽ nhận được link phòng họp sau khi xác nhận.",
+    "offlineHint": "Phỏng vấn trực tiếp tại văn phòng. Vui lòng đến đúng giờ.",
+    "confirm": "Xác nhận lịch hẹn",
+    "confirming": "Đang xác nhận…",
+    "onlineConfirmed": "Lịch phỏng vấn Online đã xác nhận!",
+    "offlineConfirmed": "Lịch phỏng vấn Offline đã xác nhận!",
+    "pickDateFirst": "Vui lòng chọn thời gian trước.",
+    "invalidDate": "Thời gian không hợp lệ."
+  },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",
     "anotherDayToCompleteThe": "ngày nữa để hoàn thành lộ trình",

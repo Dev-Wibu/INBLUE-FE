@@ -4082,6 +4082,24 @@
     "detailNotReady": "予約はまだ準備中です。少し経ってから再試行してください。",
     "detailNotReadyHint": "それでも解決しない場合、バックエンドがこのラウンドの詳細を作成していない可能性があります。再試行をクリックしてください。"
   },
+  "userMentorReview": {
+    "chooseSchedule": "面接スケジュールを選択",
+    "chooseScheduleDesc": "メンターとの面接日時と形式を選択してください。",
+    "pickDateAndType": "日時と形式",
+    "pickDateAndTypeDesc": "都合の良い日時と面接形式を選択してください。",
+    "meetingTime": "面接日時",
+    "meetingType": "面接形式",
+    "online": "オンライン",
+    "offline": "オフライン",
+    "onlineHint": "ビデオ面接です。確認後、会議室のリンクが届きます。",
+    "offlineHint": "</tool_call>面接です。時間通りにお越しください。",
+    "confirm": "スケジュールを確認",
+    "confirming": "確認中…",
+    "onlineConfirmed": "オンライン面接のスケジュールが確定しました！",
+    "offlineConfirmed": "オフライン面接のスケジュールが確定しました！",
+    "pickDateFirst": "先に日時を選択してください。",
+    "invalidDate": "無効な日時です。"
+  },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",
     "aiTestCreated": "AIテストが作成されました！",
