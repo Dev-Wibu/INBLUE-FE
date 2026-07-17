@@ -4114,7 +4114,8 @@
     "offlineBookedTitle": "Lịch Offline đã xác nhận",
     "offlineBookedDesc": "Vui lòng gặp mentor theo thời gian đã hẹn tại văn phòng công ty.",
     "awaitingMentorTitle": "Đang đợi admin gán mentor",
-    "awaitingMentorDesc": "Vui lòng quay lại sau khi admin phân công mentor. Sau khi được gán, bạn có thể chọn giờ và hình thức phỏng vấn."
+    "awaitingMentorDesc": "Vui lòng quay lại sau khi admin phân công mentor. Sau khi được gán, bạn có thể chọn giờ và hình thức phỏng vấn.",
+    "rejoinRoom": "Vào lại phòng"
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

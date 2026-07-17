@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Clock,
   Hourglass,
+  LogIn,
   MapPin,
   Send,
   Video,
@@ -543,8 +544,12 @@ function OfflineConfirmedStep({ booking }: { booking: MentorInterviewBooking }) 
 // Step 4: In Progress (at kiosk)
 // ============================================================
 
-function InProgressStep({ roomUrl }: { roomUrl?: string }) {
+function InProgressStep({ roomUrl, onJoinRoom }: { roomUrl?: string; onJoinRoom?: () => void }) {
   const { t } = useTranslation();
+  // The student may have left the room earlier; as long as the session
+  // hasn't been COMPLETED, they should be able to rejoin. The Daily.co
+  // URL stays valid until BE marks the session completed.
+  const canRejoin = !!roomUrl && !!onJoinRoom;
   return (
     <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
       <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
@@ -563,6 +568,15 @@ function InProgressStep({ roomUrl }: { roomUrl?: string }) {
           <p className="rounded-lg border border-blue-200 bg-white/60 px-4 py-2 font-mono text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
             Room URL ready
           </p>
+        )}
+        {canRejoin && (
+          <Button
+            type="button"
+            onClick={onJoinRoom}
+            className="gap-2 bg-blue-600 text-white hover:bg-blue-700">
+            <LogIn className="h-4 w-4" />
+            {t("userMentorReview.rejoinRoom")}
+          </Button>
         )}
       </CardContent>
     </Card>
@@ -1152,9 +1166,10 @@ export function ApplicationMentorReviewPage() {
           />
         )}
 
-        {/* In Progress */}
+        {/* In Progress — still has a valid roomUrl so the candidate can
+            rejoin if they closed the tab earlier. */}
         {bookingStatus === "IN_PROGRESS" && !isReviewed && booking && (
-          <InProgressStep roomUrl={roomUrl ?? undefined} />
+          <InProgressStep roomUrl={roomUrl ?? undefined} onJoinRoom={handleJoinRoom} />
         )}
 
         {/* Awaiting Mentor Assignment — admin has not yet assigned a mentor.

@@ -4108,7 +4108,8 @@
     "offlineBookedTitle": "オフライン面接が確定しました",
     "offlineBookedDesc": "予定時刻に会社のオフィスでメンターと会ってください。",
     "awaitingMentorTitle": "管理者によるメンター割り当て待ち",
-    "awaitingMentorDesc": "管理者がメンターを割り当てた後にもう一度アクセスしてください。割り当て後、日時と形式を選択できます。"
+    "awaitingMentorDesc": "管理者がメンターを割り当てた後にもう一度アクセスしてください。割り当て後、日時と形式を選択できます。",
+    "rejoinRoom": "ルームに再入室"
   },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",
