@@ -4098,7 +4098,15 @@
     "onlineConfirmed": "オンライン面接のスケジュールが確定しました！",
     "offlineConfirmed": "オフライン面接のスケジュールが確定しました！",
     "pickDateFirst": "先に日時を選択してください。",
-    "invalidDate": "無効な日時です。"
+    "invalidDate": "無効な日時です。",
+    "mentorMissing": "メンターがまだ割り当てられていません。管理者を待ってください。",
+    "roomReady": "面接室の準備ができました",
+    "roomReadyDesc": "Daily.coの面接室が作成されました。時間になったら参加できます。",
+    "dailyRoomUrl": "面接室のURL",
+    "dailyRoomUrlDesc": "オンライン面接に参加するDaily.coのURLです。",
+    "joinOnlineRoom": "オンライン面接室に参加",
+    "offlineBookedTitle": "オフライン面接が確定しました",
+    "offlineBookedDesc": "予定時刻に会社のオフィスでメンターと会ってください。"
   },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",

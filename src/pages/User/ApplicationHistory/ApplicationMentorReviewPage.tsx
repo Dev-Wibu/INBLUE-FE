@@ -8,16 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCurrentRound } from "@/hooks/useRound";
 import { useCreateRoundSession } from "@/hooks/useSession";
 import { fetchClient } from "@/lib/api";
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  KeyRound,
-  MapPin,
-  Send,
-  Video,
-} from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2, Clock, MapPin, Send, Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -31,6 +22,7 @@ type BookingStatus =
   | "AWAITING_MENTOR"
   | "MENTOR_ASSIGNED"
   | "ROOM_CREATED"
+  | "OFFLINE_CONFIRMED"
   | "IN_PROGRESS"
   | "COMPLETED"
   | "CANCELED";
@@ -122,9 +114,11 @@ async function fetchApplicationDetail(detailId: number): Promise<ApplicationDeta
 
 function SlotSelectionStep({
   applicationDetailId,
+  mentorId,
   onSuccess,
 }: {
   applicationDetailId: number;
+  mentorId?: number | null;
   onSuccess: (newBooking: MentorInterviewBooking) => void;
 }) {
   const { t } = useTranslation();
@@ -153,14 +147,15 @@ function SlotSelectionStep({
           : t("userMentorReview.onlineConfirmed")
       );
       // Build a MentorInterviewBooking snapshot so the downstream
-      // step components (AwaitingMentorStep / RoomReadyStep) can render
-      // without modification. OFFLINE → "AWAITING_MENTOR" (waiting card),
-      // ONLINE → "ROOM_CREATED" (room ready card with Daily.co link).
+      // step components (RoomReadyStep / InProgressStep) can render
+      // without modification. ONLINE → "ROOM_CREATED" (room ready
+      // card with Daily.co link). OFFLINE → "OFFLINE_CONFIRMED"
+      // (waiting card until mentor reviews on-site).
       const synthetic: MentorInterviewBooking = {
         id: session.id,
         applicationDetailId,
         sessionId: session.id,
-        status: meetingTypeRef.current === "OFFLINE" ? "AWAITING_MENTOR" : "ROOM_CREATED",
+        status: meetingTypeRef.current === "OFFLINE" ? "OFFLINE_CONFIRMED" : "ROOM_CREATED",
         scheduledStart: new Date(joinTimeLocal).toISOString(),
       };
       onSuccess(synthetic);
@@ -181,11 +176,16 @@ function SlotSelectionStep({
       toast.error(t("userMentorReview.invalidDate"));
       return;
     }
+    if (!mentorId) {
+      toast.error(t("userMentorReview.mentorMissing"));
+      return;
+    }
     // Native datetime-local gives a tz-naive string; convert to the
-    // ISO-8601 +07:00 the backend contract expects.
+    // ISO-8601 the backend contract expects (UTC with millis).
     const joinTime = parsed.toISOString();
     createRoundSessionMutation.mutate({
       applicationDetailId,
+      mentorId,
       joinTime,
       duration: 60,
       offline: meetingType === "OFFLINE",
@@ -382,10 +382,12 @@ function AwaitingMentorStep({
 
 function RoomReadyStep({
   booking,
-  onGoToKiosk,
+  roomUrl,
+  onJoinRoom,
 }: {
   booking: MentorInterviewBooking;
-  onGoToKiosk: () => void;
+  roomUrl?: string | null;
+  onJoinRoom: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -408,10 +410,10 @@ function RoomReadyStep({
           </div>
           <div>
             <p className="text-lg font-semibold text-green-700 dark:text-green-300">
-              {t("userKiosk.mentorAssigned")}
+              {t("userMentorReview.roomReady")}
             </p>
             <p className="mt-1 text-sm text-green-600 dark:text-green-400">
-              {t("userKiosk.mentorAssignedDesc")}
+              {t("userMentorReview.roomReadyDesc")}
             </p>
           </div>
           {scheduledTime && (
@@ -424,34 +426,75 @@ function RoomReadyStep({
         </CardContent>
       </Card>
 
-      {/* Session Key */}
-      {booking.sessionKey && (
+      {/* Daily.co room link */}
+      {roomUrl && (
         <Card className="border-[#0047AB]/30 bg-[#0047AB]/5">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <KeyRound className="h-4 w-4 text-[#0047AB]" />
-              {t("userKiosk.sessionKey")}
+              <Video className="h-4 w-4 text-[#0047AB]" />
+              {t("userMentorReview.dailyRoomUrl")}
             </CardTitle>
-            <CardDescription>{t("userKiosk.sessionKeyDescription")}</CardDescription>
+            <CardDescription>{t("userMentorReview.dailyRoomUrlDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border border-[#0047AB]/20 bg-white px-4 py-3 font-mono text-sm text-[#0047AB]">
-              {booking.sessionKey}
+            <div className="rounded-lg border border-[#0047AB]/20 bg-white px-4 py-3 font-mono text-xs break-all text-[#0047AB]">
+              {roomUrl}
             </div>
-            <p className="mt-2 text-xs text-slate-500">{t("userKiosk.sessionKeyHint")}</p>
           </CardContent>
         </Card>
       )}
 
-      {/* Go to Kiosk */}
+      {/* Join Daily.co room */}
       <Button
-        onClick={onGoToKiosk}
+        onClick={onJoinRoom}
         size="lg"
         className="w-full gap-2 bg-green-600 text-white hover:bg-green-700">
         <Video className="h-5 w-5" />
-        {t("userKiosk.goToKiosk")}
+        {t("userMentorReview.joinOnlineRoom")}
       </Button>
     </div>
+  );
+}
+
+// ============================================================
+// Offline confirmed — waiting for the in-person meeting
+// ============================================================
+
+function OfflineConfirmedStep({ booking }: { booking: MentorInterviewBooking }) {
+  const { t } = useTranslation();
+  const scheduledTime = booking.scheduledStart
+    ? new Date(booking.scheduledStart).toLocaleString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  return (
+    <Card className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950">
+      <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
+          <MapPin className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">
+            {t("userMentorReview.offlineBookedTitle")}
+          </p>
+          <p className="mt-1 text-sm text-emerald-600 dark:text-emerald-400">
+            {t("userMentorReview.offlineBookedDesc")}
+          </p>
+        </div>
+        {scheduledTime && (
+          <div className="rounded-lg border border-emerald-200 bg-white/60 px-4 py-2 dark:border-emerald-800 dark:bg-black/20">
+            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+              {t("userKiosk.interviewTime")}: {scheduledTime}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -919,19 +962,33 @@ export function ApplicationMentorReviewPage() {
     setApplicationDetail((prev) =>
       prev ? { ...prev, bookingId: newBooking.id, status: "SLOT_PICKED" } : prev
     );
+    // For ONLINE flow, immediately fetch the Session to get roomUrl.
+    if (newBooking.sessionId) {
+      void fetchSessionRoomUrl(newBooking.sessionId);
+    }
   };
 
-  // Go to kiosk (enter room)
-  const handleGoToKiosk = () => {
-    if (!booking?.sessionKey || !booking?.kioskId) return;
-    // Route is registered as `/user/kiosk/entry` (see `src/App.tsx`).
-    // We pass `sessionKey` + `kioskId` as query params for the kiosk entry page.
-    const params = new URLSearchParams({
-      sessionKey: booking.sessionKey,
-      kioskId: String(booking.kioskId),
-      applicationDetailId: String(applicationDetail?.id ?? 0),
-    });
-    navigate(`/user/kiosk/entry?${params.toString()}`);
+  // Join the Daily.co room for an ONLINE interview. Opens the roomUrl
+  // directly (the room is "public" per BE doc, so no token is needed).
+  const handleJoinRoom = () => {
+    const target = roomUrl ?? booking?.sessionKey;
+    if (!target) return;
+    // Use a new tab so the candidate can keep the page around to submit
+    // their mentor feedback once the interview is over.
+    window.open(target, "_blank", "noopener,noreferrer");
+  };
+
+  // Re-fetch roomUrl for a session (used after SlotSelectionStep success).
+  const fetchSessionRoomUrl = async (sessionId: number) => {
+    try {
+      const { data } = await fetchClient.GET("/api/sessions/{id}", {
+        params: { path: { id: sessionId } },
+      });
+      const room = (data as { roomUrl?: string } | undefined)?.roomUrl;
+      if (room && room !== "OFFLINE") setRoomUrl(room);
+    } catch {
+      // session may not be ready yet; ignore
+    }
   };
 
   // Cancel booking
@@ -1059,10 +1116,17 @@ export function ApplicationMentorReviewPage() {
           <InProgressStep roomUrl={roomUrl ?? undefined} />
         )}
 
-        {/* Room Created (mentor assigned, room ready) */}
+        {/* Room Created (ONLINE — Daily.co room ready) */}
         {(bookingStatus === "ROOM_CREATED" || bookingStatus === "MENTOR_ASSIGNED") &&
           !isReviewed &&
-          booking && <RoomReadyStep booking={booking} onGoToKiosk={handleGoToKiosk} />}
+          booking && (
+            <RoomReadyStep booking={booking} roomUrl={roomUrl} onJoinRoom={handleJoinRoom} />
+          )}
+
+        {/* OFFLINE confirmed — waiting for the in-person meeting */}
+        {bookingStatus === "OFFLINE_CONFIRMED" && !isReviewed && booking && (
+          <OfflineConfirmedStep booking={booking} />
+        )}
 
         {/* Awaiting Mentor (slot picked, waiting for admin to assign) */}
         {bookingStatus === "AWAITING_MENTOR" && !isReviewed && booking && (
@@ -1073,6 +1137,7 @@ export function ApplicationMentorReviewPage() {
         {!booking && !isReviewed && applicationDetailId > 0 && (
           <SlotSelectionStep
             applicationDetailId={applicationDetailId}
+            mentorId={applicationDetail?.mentorId ?? null}
             onSuccess={handleSlotPicked}
           />
         )}

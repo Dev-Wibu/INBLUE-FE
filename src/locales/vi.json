@@ -4104,7 +4104,15 @@
     "onlineConfirmed": "Lịch phỏng vấn Online đã xác nhận!",
     "offlineConfirmed": "Lịch phỏng vấn Offline đã xác nhận!",
     "pickDateFirst": "Vui lòng chọn thời gian trước.",
-    "invalidDate": "Thời gian không hợp lệ."
+    "invalidDate": "Thời gian không hợp lệ.",
+    "mentorMissing": "Bạn chưa được gán mentor. Vui lòng đợi admin phân công.",
+    "roomReady": "Phòng phỏng vấn đã sẵn sàng",
+    "roomReadyDesc": "Phòng họp Daily.co đã được tạo. Bạn có thể vào phòng khi đến giờ.",
+    "dailyRoomUrl": "Đường dẫn phòng họp",
+    "dailyRoomUrlDesc": "Đường dẫn Daily.co để tham gia phỏng vấn online.",
+    "joinOnlineRoom": "Vào phòng phỏng vấn online",
+    "offlineBookedTitle": "Lịch Offline đã xác nhận",
+    "offlineBookedDesc": "Vui lòng gặp mentor theo thời gian đã hẹn tại văn phòng công ty."
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

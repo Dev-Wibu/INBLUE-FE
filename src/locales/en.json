@@ -4108,7 +4108,15 @@
     "onlineConfirmed": "Online interview scheduled!",
     "offlineConfirmed": "Offline interview scheduled!",
     "pickDateFirst": "Please pick a time first.",
-    "invalidDate": "Invalid date."
+    "invalidDate": "Invalid date.",
+    "mentorMissing": "You have not been assigned a mentor yet. Please wait for the admin.",
+    "roomReady": "Interview room is ready",
+    "roomReadyDesc": "Your Daily.co room is ready. You can join when it's time.",
+    "dailyRoomUrl": "Room URL",
+    "dailyRoomUrlDesc": "The Daily.co URL to join the online interview.",
+    "joinOnlineRoom": "Join online interview room",
+    "offlineBookedTitle": "Offline interview confirmed",
+    "offlineBookedDesc": "Please meet your mentor at the company office at the scheduled time."
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",
