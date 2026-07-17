@@ -752,11 +752,19 @@ export function ApplicationMentorReviewPage() {
   // can offer a Retry / re-trigger instead of an infinite spinner when the
   // backend hasn't auto-created the ApplicationDetail for this round yet.
   const [detailsResolved, setDetailsResolved] = useState(false);
-  // Bump to force the fetch effect to re-run (manual retry button).
+  // Bump to force the fetch effect to re-run (was previously triggered by
+  // a manual Retry button; the button has been removed in 2026-07-17, but
+  // we keep the dependency in the fetch effect so future re-introductions
+  // of a Retry CTA only have to call the setter).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [retryToken, setRetryToken] = useState(0);
   // Tracks an explicit "no ApplicationDetail exists for this round" outcome
   // — surfaces a different UX (legacy data warning) than a network error.
-  const [detailMissing, setDetailMissing] = useState(false);
+  // 2026-07-17: legacy "Booking is not ready" empty-state card has been
+  // removed, so the read flag is no longer needed in JSX. The setter is
+  // still kept (and consumed) inside the fetch effect.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_detailMissing, _setDetailMissing] = useState(false);
 
   const { data: currentRound, isLoading: currentRoundLoading } = useCurrentRound(
     applicationId,
@@ -796,7 +804,7 @@ export function ApplicationMentorReviewPage() {
     const fetchData = async () => {
       setLoading(true);
       setDetailsResolved(false);
-      setDetailMissing(false);
+      _setDetailMissing(false);
       try {
         const detailRes = await fetchClient.GET(
           "/api/application-details/application/{applicationId}",
@@ -835,7 +843,7 @@ export function ApplicationMentorReviewPage() {
               detailCount: details.length,
               detailRoundIds: details.map((d) => d.roundId),
             });
-            setDetailMissing(true);
+            _setDetailMissing(true);
           }
 
           setApplicationDetail(currentDetail ?? null);
@@ -1091,64 +1099,13 @@ export function ApplicationMentorReviewPage() {
           />
         )}
 
-        {/* MENTOR_REVIEW round has no ApplicationDetail yet.
-            Two distinct sub-cases the UI has to differentiate:
-              1. `loading`           — the fetch hasn't settled; the detail
-                                      may simply arrive on a retry.
-              2. `detailMissing`     — the fetch settled but BE returned 0
-                                      details, so the row was never created
-                                      for this application. This typically
-                                      happens for applications created before
-                                      commit `ffa9814` (v062) on a JD whose
-                                      only round is MENTOR_REVIEW — see BE
-                                      bug report BACKEND_BUG_REPORT_MESSAGE_V2.
-                                      No client-side retry can recover; we
-                                      surface a contact-support hint instead
-                                      of an indefinite Retry loop.
-        */}
-        {!booking && !isReviewed && currentRound?.roundType === "MENTROR_REVIEW" && (
-          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-            <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-              <Clock className="h-10 w-10 text-amber-600 dark:text-amber-400" />
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                {loading
-                  ? t("userKiosk.loadingBooking")
-                  : detailMissing
-                    ? t(
-                        "userKiosk.detailMissingLegacy",
-                        "Booking system hasn't initialized for this application. Please contact support."
-                      )
-                    : t(
-                        "userKiosk.detailNotReady",
-                        "Booking is not ready yet. Please retry in a moment."
-                      )}
-              </p>
-              {!loading && !detailMissing && (
-                <p className="text-xs text-amber-600 dark:text-amber-400">
-                  {t(
-                    "userKiosk.detailNotReadyHint",
-                    "If the issue persists, the backend may not have created the round detail yet. Click Retry to refetch."
-                  )}
-                </p>
-              )}
-              {!loading && (
-                <div className="flex gap-2">
-                  {!detailMissing && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setRetryToken((n) => n + 1)}
-                      disabled={loading}>
-                      {t("common.retry", "Retry")}
-                    </Button>
-                  )}
-                  <Button variant="ghost" onClick={() => navigate(-1)}>
-                    {t("general.back")}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* MENTOR_REVIEW round has no ApplicationDetail yet — 2026-07-17 the
+            empty-state card (with Retry/Back) has been removed because the
+            new backend flow always creates an ApplicationDetail for the
+            Mentor Review round. If a legacy application still lacks a
+            detail, the candidate will see the regular SlotSelectionStep
+            below once the round resolves (or the i18n key
+            `userKiosk.detailNotReady` if the fetch is still in-flight). */}
 
         {/* Waiting for applicationDetail while currentRound is loading */}
         {!booking && !isReviewed && applicationDetailId === 0 && !detailsResolved && (
