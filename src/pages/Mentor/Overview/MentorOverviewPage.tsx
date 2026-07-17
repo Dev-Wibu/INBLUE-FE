@@ -9,6 +9,7 @@ import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
 import { formatCurrency, formatDateTime, toTimestamp, toVietnamDateKey } from "@/lib/formatting";
+import { isSessionMentor } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
@@ -229,7 +230,7 @@ export function MentorOverviewPage() {
     if (!mentorId) {
       return [];
     }
-    return allSessions.filter((session) => session.userId2 === mentorId);
+    return allSessions.filter((session) => isSessionMentor(session, mentorId));
   }, [allSessions, mentorId]);
   const calendarItems = useMemo(() => {
     return buildMentorCalendarSessions(allSessions, mentorId);

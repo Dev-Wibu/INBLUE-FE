@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserSessions } from "@/hooks/useSession";
 import { formatDateTime, toVietnamDateKey } from "@/lib/formatting";
+import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { format as formatDateFn } from "date-fns";
@@ -78,7 +79,7 @@ function AgendaSessionItem({
             {item.session.roomName || t("common.sessionVar0", { var_0: item.session.id })}
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            {t("common.mentorWithId", { id: item.session.userId2 || "-" })}
+            {t("common.mentorWithId", { id: getSessionMentorId(item.session) ?? "-" })}
           </p>
         </div>
         <Badge className={cn("shrink-0 border-0", status.badgeClass)}>{status.label}</Badge>

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
+import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import type { MentorReview } from "@/services/mentor-review.manager";
 import { Calendar, Edit, Trash2, User } from "lucide-react";
@@ -41,9 +42,10 @@ export function ReviewCard({
         var_0: review.session.userId,
       })
     : t("common.students");
-  const fallbackMentorName = review.session?.userId2
-    ? t("common.mentorWithId", { id: review.session.userId2 })
-    : t("common.mentor");
+  const fallbackMentorName =
+    getSessionMentorId(review.session) != null
+      ? t("common.mentorWithId", { id: getSessionMentorId(review.session) })
+      : t("common.mentor");
   const displayName = showUser
     ? review.user?.name || fallbackUserName
     : showMentor

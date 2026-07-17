@@ -26,15 +26,15 @@
 
 ### 1.1 Bảng Field
 
-| Field | Type | Lưu khi nào | Lưu bởi ai | Ai được track | Format |
-|---|---|---|---|---|---|
-| `joinTime` | Timestamp | Lúc student đặt lịch | FE request (lúc tạo session) | — | `"yyyy-MM-dd HH:mm:ss.SSS"` |
-| `startTime1` | Timestamp | **Student join phòng** | FE gọi `/join-session` (cơ chế 1) | Student (userId) | `"yyyy-MM-dd HH:mm:ss.SSS"` |
-| `endTime1` | Timestamp | **Student leave phòng** | Daily.co webhook (cơ chế 2) | Student (userId) | `"yyyy-MM-dd HH:mm:ss.SSS"` |
-| `startTime2` | Timestamp | **Mentor join phòng** | FE gọi `/join-session` (cơ chế 1) | Mentor (userId2) | `"yyyy-MM-dd HH:mm:ss.SSS"` |
-| `endTime2` | Timestamp | **Mentor leave phòng** | Daily.co webhook (cơ chế 2) | Mentor (userId2) | `"yyyy-MM-dd HH:mm:ss.SSS"` |
-| `durationSeconds1` | Long | **Sau khi student leave** | Backend tự tính (cơ chế 2) | Student | seconds (giây) |
-| `durationSeconds2` | Long | **Sau khi mentor leave** | Backend tự tính (cơ chế 2) | Mentor | seconds (giây) |
+| Field              | Type      | Lưu khi nào               | Lưu bởi ai                        | Ai được track    | Format                      |
+| ------------------ | --------- | ------------------------- | --------------------------------- | ---------------- | --------------------------- |
+| `joinTime`         | Timestamp | Lúc student đặt lịch      | FE request (lúc tạo session)      | —                | `"yyyy-MM-dd HH:mm:ss.SSS"` |
+| `startTime1`       | Timestamp | **Student join phòng**    | FE gọi `/join-session` (cơ chế 1) | Student (userId) | `"yyyy-MM-dd HH:mm:ss.SSS"` |
+| `endTime1`         | Timestamp | **Student leave phòng**   | Daily.co webhook (cơ chế 2)       | Student (userId) | `"yyyy-MM-dd HH:mm:ss.SSS"` |
+| `startTime2`       | Timestamp | **Mentor join phòng**     | FE gọi `/join-session` (cơ chế 1) | Mentor (userId2) | `"yyyy-MM-dd HH:mm:ss.SSS"` |
+| `endTime2`         | Timestamp | **Mentor leave phòng**    | Daily.co webhook (cơ chế 2)       | Mentor (userId2) | `"yyyy-MM-dd HH:mm:ss.SSS"` |
+| `durationSeconds1` | Long      | **Sau khi student leave** | Backend tự tính (cơ chế 2)        | Student          | seconds (giây)              |
+| `durationSeconds2` | Long      | **Sau khi mentor leave**  | Backend tự tính (cơ chế 2)        | Mentor           | seconds (giây)              |
 
 ### 1.2 Mapping với Entity
 
@@ -47,7 +47,7 @@ interface Session {
     private Timestamp startTime1;          // ★ LÚC STUDENT JOIN
     private Timestamp endTime1;            // ★ LÚC STUDENT LEAVE
     private Long durationSeconds1;         // ★ durationSeconds1 = (endTime1 - startTime1) / 1000
-    
+
     private int userId2;                   // Mentor ID (DB column)
     private String participantId2;         // Daily.co session_id của mentor
     private Timestamp startTime2;          // ★ LÚC MENTOR JOIN
@@ -109,13 +109,13 @@ interface Session {
 
 ### 2.1 Tóm Tắt Vai Trò Frontend
 
-| Hành động | Ai làm | Khi nào | Gọi API nào |
-|---|---|---|---|
-| Ghi nhận student join | **FE** (lắng nghe `joined-meeting`) | Sau khi Daily.co xác nhận user đã vào | `POST /api/sessions/join-session` với `isMentor: false` |
-| Ghi nhận mentor join | **FE** (lắng nghe `joined-meeting`) | Sau khi Daily.co xác nhận mentor đã vào | `POST /api/sessions/join-session` với `isMentor: true` |
-| Ghi nhận student leave | **Daily.co** (webhook tự động) | Khi user rời phòng | (FE không cần làm gì) |
-| Ghi nhận mentor leave | **Daily.co** (webhook tự động) | Khi mentor rời phòng | (FE không cần làm gì) |
-| Biết Session COMPLETED | **FE** (polling) | Sau khi 2 bên leave | `GET /api/sessions/{id}` định kỳ |
+| Hành động              | Ai làm                              | Khi nào                                 | Gọi API nào                                             |
+| ---------------------- | ----------------------------------- | --------------------------------------- | ------------------------------------------------------- |
+| Ghi nhận student join  | **FE** (lắng nghe `joined-meeting`) | Sau khi Daily.co xác nhận user đã vào   | `POST /api/sessions/join-session` với `isMentor: false` |
+| Ghi nhận mentor join   | **FE** (lắng nghe `joined-meeting`) | Sau khi Daily.co xác nhận mentor đã vào | `POST /api/sessions/join-session` với `isMentor: true`  |
+| Ghi nhận student leave | **Daily.co** (webhook tự động)      | Khi user rời phòng                      | (FE không cần làm gì)                                   |
+| Ghi nhận mentor leave  | **Daily.co** (webhook tự động)      | Khi mentor rời phòng                    | (FE không cần làm gì)                                   |
+| Biết Session COMPLETED | **FE** (polling)                    | Sau khi 2 bên leave                     | `GET /api/sessions/{id}` định kỳ                        |
 
 ---
 
@@ -133,72 +133,81 @@ Content-Type: application/json
 
 ```json
 {
-    "sessionName": "session-1721234567890",   // ← BẮT BUỘC, lấy từ session.roomName
-    "userId": 5,                              // ← BẮT BUỘC, ID của user đang join
-    "participantId": "xyz123abc-def456-789",  // ← BẮT BUỘC, Daily.co session_id
-    "isMentor": false                         // ← BẮT BUỘC, true cho mentor, false cho student
+  "sessionName": "session-1721234567890", // ← BẮT BUỘC, lấy từ session.roomName
+  "userId": 5, // ← BẮT BUỘC, ID của user đang join
+  "participantId": "xyz123abc-def456-789", // ← BẮT BUỘC, Daily.co session_id
+  "isMentor": false // ← BẮT BUỘC, true cho mentor, false cho student
 }
 ```
 
-| Field | Type | Required | Mô tả chi tiết |
-|---|---|---|---|
-| `sessionName` | string | ✅ | Tên phòng (không phải URL). Lấy từ `session.roomName` trong response của `GET /api/sessions/{id}`. Format: `"session-{timestamp}"` hoặc `"OFFLINE-{uuid}"` |
-| `userId` | int | ✅ | ID của student (`session.userId`) nếu `isMentor=false`. ID của mentor (`session.userId2`) nếu `isMentor=true` |
-| `participantId` | string | ✅ | Daily.co session_id của participant. Lấy từ `call.participants().local.session_id` |
-| `isMentor` | boolean | ✅ | `false` cho student, `true` cho mentor |
+| Field           | Type    | Required | Mô tả chi tiết                                                                                                                                             |
+| --------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sessionName`   | string  | ✅       | Tên phòng (không phải URL). Lấy từ `session.roomName` trong response của `GET /api/sessions/{id}`. Format: `"session-{timestamp}"` hoặc `"OFFLINE-{uuid}"` |
+| `userId`        | int     | ✅       | ID của student (`session.userId`) nếu `isMentor=false`. ID của mentor (`session.userId2`) nếu `isMentor=true`                                              |
+| `participantId` | string  | ✅       | Daily.co session_id của participant. Lấy từ `call.participants().local.session_id`                                                                         |
+| `isMentor`      | boolean | ✅       | `false` cho student, `true` cho mentor                                                                                                                     |
 
 ### 3.3 Response
 
 **Thành công (200 OK):** (no body)
 
 **Lỗi 404 Not Found:**
+
 ```json
 {
-    "message": "Không tìm thấy phòng họp !!"
+  "message": "Không tìm thấy phòng họp !!"
 }
 ```
+
 > Xảy ra khi `sessionName` không match bất kỳ session nào trong DB.
 
 **Lỗi 409 Conflict:**
+
 ```json
 {
-    "message": "Phòng họp chưa được duyệt"
+  "message": "Phòng họp chưa được duyệt"
 }
 ```
+
 > Xảy ra khi `session.status === "DRAFT"`. (Vòng Mentor Interview KHÔNG bao giờ ở DRAFT, lỗi này không xảy ra trong luồng Mentor Interview.)
 
 **Lỗi 403 Forbidden:**
+
 ```json
 { "message": "Mentor ID không khớp với Session" }
 ```
+
 > Xảy ra khi `isMentor=true` nhưng `userId` truyền lên không phải `session.userId2`.
 
 ```json
 { "message": "User ID không khớp với Session" }
 ```
+
 > Xảy ra khi `isMentor=false` nhưng `userId` truyền lên không phải `session.userId`.
 
 ### 3.4 Sau Khi Gọi Thành Công — Field Session Cập Nhật
 
 **Trường hợp Student join (lần đầu):**
+
 ```json
 {
-    "participantId1": "xyz123abc-def456-789",      // ← MỚI
-    "startTime1": "2026-07-20 10:05:23.456",       // ← MỚI (giờ VN)
-    "status": "ONGOING",                            // ← ĐỔI: SCHEDULED → ONGOING
-    "endTime1": null,                                // ← Vẫn null (chưa leave)
-    "durationSeconds1": null                         // ← Vẫn null
+  "participantId1": "xyz123abc-def456-789", // ← MỚI
+  "startTime1": "2026-07-20 10:05:23.456", // ← MỚI (giờ VN)
+  "status": "ONGOING", // ← ĐỔI: SCHEDULED → ONGOING
+  "endTime1": null, // ← Vẫn null (chưa leave)
+  "durationSeconds1": null // ← Vẫn null
 }
 ```
 
 **Trường hợp Mentor join (lần đầu):**
+
 ```json
 {
-    "participantId2": "abc789xyz-123abc-456",        // ← MỚI
-    "startTime2": "2026-07-20 10:06:00.123",         // ← MỚI (giờ VN)
-    "status": "ONGOING",                              // ← Giữ nguyên (đã ONGOING từ student)
-    "endTime2": null,                                  // ← Vẫn null
-    "durationSeconds2": null                           // ← Vẫn null
+  "participantId2": "abc789xyz-123abc-456", // ← MỚI
+  "startTime2": "2026-07-20 10:06:00.123", // ← MỚI (giờ VN)
+  "status": "ONGOING", // ← Giữ nguyên (đã ONGOING từ student)
+  "endTime2": null, // ← Vẫn null
+  "durationSeconds2": null // ← Vẫn null
 }
 ```
 
@@ -213,7 +222,7 @@ public void saveJoinRecord(JoinSessionDtoRequest request) {
     } else if (session.getStatus().equals(SessionStatus.DRAFT)) {
         throw new CustomException("Phòng họp chưa được duyệt", HttpStatus.CONFLICT);
     }
-    
+
     if (request.isMentor()) {
         // ★ Mentor
         if (session.getUserId2() == request.getUserId()) {
@@ -252,18 +261,19 @@ public void saveJoinRecord(JoinSessionDtoRequest request) {
 POST /api/sessions/webhooks/dailyco
 Content-Type: application/json
 ```
+
 > ⚠️ Daily.co tự động gọi endpoint này. **FRONTEND KHÔNG CẦN LÀM GÌ**.
 
 ### 4.2 Payload Daily.co Gửi
 
 ```json
 {
-    "type": "participant.left",
-    "payload": {
-        "room": "session-1721234567890",         // ← roomName
-        "session_id": "xyz123abc-def456-789",    // ← participantId (Daily.co session_id)
-        "recording_id": null
-    }
+  "type": "participant.left",
+  "payload": {
+    "room": "session-1721234567890", // ← roomName
+    "session_id": "xyz123abc-def456-789", // ← participantId (Daily.co session_id)
+    "recording_id": null
+  }
 }
 ```
 
@@ -282,16 +292,16 @@ public ResponseEntity<Void> handleDailyCoWebhook(@RequestBody DailyWebHookPayloa
 // SessionServiceImpl.updateLeaveRecord()
 public void updateLeaveRecord(DailyWebHookPayload payload) {
     if (payload == null || payload.getPayload() == null) return;
-    
+
     String roomName = payload.getPayload().getRoomName();
     String participantId = payload.getPayload().getParticipantId();
-    
+
     Session session = sessionRepository.findByRoomName(roomName);
     if (session == null) {
         System.err.println("Webhook Alert: Không tìm thấy Session cho room: " + roomName);
         return;                                                // ← Trả 200 cho Daily.co để ko retry
     }
-    
+
     if (participantId.equals(session.getParticipantId1())) {
         // ★ Student leave
         session.setEndTime1(helperConvertToVietNamTime());      // ← GHI NHẬN GIỜ LEAVE
@@ -307,7 +317,7 @@ public void updateLeaveRecord(DailyWebHookPayload payload) {
             session.setDurationSeconds2(duration);              // ← TÍNH DURATION (giây)
         }
     }
-    
+
     // ★ KHI CẢ 2 BÊN ĐỀU LEAVE → COMPLETED
     if (session.getEndTime1() != null && session.getEndTime2() != null) {
         session.setStatus(SessionStatus.COMPLETED);
@@ -319,24 +329,26 @@ public void updateLeaveRecord(DailyWebHookPayload payload) {
 ### 4.4 Sau Khi Webhook Xử Lý — Field Cập Nhật
 
 **Sau khi Student leave:**
+
 ```json
 {
-    "participantId1": "xyz123abc-def456-789",
-    "startTime1": "2026-07-20 10:05:23.456",        // ← Giữ nguyên
-    "endTime1": "2026-07-20 10:35:12.789",          // ← MỚI (giờ VN)
-    "durationSeconds1": 1789,                        // ← MỚI (≈ 29 phút 49 giây)
-    "status": "ONGOING"                              // ← Vẫn ONGOING (đợi mentor leave)
+  "participantId1": "xyz123abc-def456-789",
+  "startTime1": "2026-07-20 10:05:23.456", // ← Giữ nguyên
+  "endTime1": "2026-07-20 10:35:12.789", // ← MỚI (giờ VN)
+  "durationSeconds1": 1789, // ← MỚI (≈ 29 phút 49 giây)
+  "status": "ONGOING" // ← Vẫn ONGOING (đợi mentor leave)
 }
 ```
 
 **Sau khi Mentor leave (cả 2 xong):**
+
 ```json
 {
-    "participantId2": "abc789xyz-123abc-456",
-    "startTime2": "2026-07-20 10:06:00.123",        // ← Giữ nguyên
-    "endTime2": "2026-07-20 10:35:30.456",          // ← MỚI (giờ VN)
-    "durationSeconds2": 1770,                        // ← MỚI (≈ 29 phút 30 giây)
-    "status": "COMPLETED"                            // ← ĐỔI: ONGOING → COMPLETED
+  "participantId2": "abc789xyz-123abc-456",
+  "startTime2": "2026-07-20 10:06:00.123", // ← Giữ nguyên
+  "endTime2": "2026-07-20 10:35:30.456", // ← MỚI (giờ VN)
+  "durationSeconds2": 1770, // ← MỚI (≈ 29 phút 30 giây)
+  "status": "COMPLETED" // ← ĐỔI: ONGOING → COMPLETED
 }
 ```
 
@@ -344,25 +356,25 @@ public void updateLeaveRecord(DailyWebHookPayload payload) {
 
 ```json
 {
-    "id": 50,
-    "roomName": "session-1721234567890",
-    "userId": 5,                                    // Student ID
-    "userId2": 3,                                   // Mentor ID
-    "participantId1": "xyz123abc-def456-789",       // Daily.co ID của student
-    "participantId2": "abc789xyz-123abc-456",       // Daily.co ID của mentor
-    "startTime1": "2026-07-20 10:05:23.456",        // ★ Student join
-    "endTime1": "2026-07-20 10:35:12.789",          // ★ Student leave
-    "durationSeconds1": 1789,                       // ★ Student tham gia 1789s (29m49s)
-    "startTime2": "2026-07-20 10:06:00.123",        // ★ Mentor join
-    "endTime2": "2026-07-20 10:35:30.456",          // ★ Mentor leave
-    "durationSeconds2": 1770,                       // ★ Mentor tham gia 1770s (29m30s)
-    "joinTime": "2026-07-20 10:00:00.000",          // Lúc đặt lịch
-    "status": "COMPLETED",                          // ★ CẢ 2 ĐÃ LEAVE
-    "duration": 60,                                 // Thời lượng đặt lịch (phút)
-    "roomUrl": "https://inblue.daily.co/session-1721234567890",
-    "recordUrl": null,                              // Sau khi xử lý recording sẽ có URL
-    "mentorReview": null,                           // Sẽ fill sau khi mentor đánh giá
-    "mentorFeedback": null
+  "id": 50,
+  "roomName": "session-1721234567890",
+  "userId": 5, // Student ID
+  "userId2": 3, // Mentor ID
+  "participantId1": "xyz123abc-def456-789", // Daily.co ID của student
+  "participantId2": "abc789xyz-123abc-456", // Daily.co ID của mentor
+  "startTime1": "2026-07-20 10:05:23.456", // ★ Student join
+  "endTime1": "2026-07-20 10:35:12.789", // ★ Student leave
+  "durationSeconds1": 1789, // ★ Student tham gia 1789s (29m49s)
+  "startTime2": "2026-07-20 10:06:00.123", // ★ Mentor join
+  "endTime2": "2026-07-20 10:35:30.456", // ★ Mentor leave
+  "durationSeconds2": 1770, // ★ Mentor tham gia 1770s (29m30s)
+  "joinTime": "2026-07-20 10:00:00.000", // Lúc đặt lịch
+  "status": "COMPLETED", // ★ CẢ 2 ĐÃ LEAVE
+  "duration": 60, // Thời lượng đặt lịch (phút)
+  "roomUrl": "https://inblue.daily.co/session-1721234567890",
+  "recordUrl": null, // Sau khi xử lý recording sẽ có URL
+  "mentorReview": null, // Sẽ fill sau khi mentor đánh giá
+  "mentorFeedback": null
 }
 ```
 
@@ -374,104 +386,104 @@ public void updateLeaveRecord(DailyWebHookPayload payload) {
 
 ```typescript
 // hooks/useDailyTracking.ts
-import { useEffect, useRef, useState } from 'react';
-import DailyIframe from '@daily-co/daily-js';
+import { useEffect, useRef, useState } from "react";
+import DailyIframe from "@daily-co/daily-js";
 
 interface UseDailyTrackingParams {
-    roomUrl: string;                  // session.roomUrl
-    roomName: string;                 // session.roomName (không phải URL)
-    userId: number;                   // session.userId (student)
-    token: string;                    // JWT token
-    isMentor?: boolean;               // false cho student, true cho mentor
+  roomUrl: string; // session.roomUrl
+  roomName: string; // session.roomName (không phải URL)
+  userId: number; // session.userId (student)
+  token: string; // JWT token
+  isMentor?: boolean; // false cho student, true cho mentor
 }
 
 export function useDailyTracking({
-    roomUrl,
-    roomName,
-    userId,
-    token,
-    isMentor = false
+  roomUrl,
+  roomName,
+  userId,
+  token,
+  isMentor = false,
 }: UseDailyTrackingParams) {
-    const callRef = useRef<any>(null);
-    const [joinedAt, setJoinedAt] = useState<Date | null>(null);
-    const [leftAt, setLeftAt] = useState<Date | null>(null);
-    const [joinError, setJoinError] = useState<string | null>(null);
-    const [trackedParticipantId, setTrackedParticipantId] = useState<string | null>(null);
+  const callRef = useRef<any>(null);
+  const [joinedAt, setJoinedAt] = useState<Date | null>(null);
+  const [leftAt, setLeftAt] = useState<Date | null>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [trackedParticipantId, setTrackedParticipantId] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!roomUrl || roomUrl === 'OFFLINE') return;
+  useEffect(() => {
+    if (!roomUrl || roomUrl === "OFFLINE") return;
 
-        const call = DailyIframe.createCallObject({
-            url: roomUrl,
-            // Room public nên không cần token
-        });
-        callRef.current = call;
+    const call = DailyIframe.createCallObject({
+      url: roomUrl,
+      // Room public nên không cần token
+    });
+    callRef.current = call;
 
-        // ★ EVENT 1: Join thành công → gọi API track
-        call.on('joined-meeting', async () => {
-            const local = call.participants().local;
-            const participantId = local.session_id;
+    // ★ EVENT 1: Join thành công → gọi API track
+    call.on("joined-meeting", async () => {
+      const local = call.participants().local;
+      const participantId = local.session_id;
 
-            console.log('✅ Daily joined-meeting', { participantId, isMentor });
+      console.log("✅ Daily joined-meeting", { participantId, isMentor });
 
-            try {
-                const response = await fetch('/api/sessions/join-session', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        sessionName: roomName,
-                        userId,
-                        participantId,
-                        isMentor
-                    })
-                });
-
-                if (!response.ok) {
-                    const err = await response.json();
-                    const msg = err.message || 'Lỗi không xác định';
-                    console.error('❌ join-session failed:', msg);
-                    setJoinError(msg);
-                    return;
-                }
-
-                console.log('✅ Backend đã ghi nhận startTime');
-                setTrackedParticipantId(participantId);
-                setJoinedAt(new Date());   // local estimate
-            } catch (err: any) {
-                console.error('❌ join-session exception:', err);
-                setJoinError(err.message);
-            }
+      try {
+        const response = await fetch("/api/sessions/join-session", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionName: roomName,
+            userId,
+            participantId,
+            isMentor,
+          }),
         });
 
-        // ★ EVENT 2: Leave (Daily.co đã tự gọi webhook rồi, FE chỉ log)
-        call.on('left-meeting', () => {
-            console.log('👋 Daily left-meeting. Backend đã tự ghi nhận endTime qua webhook.');
-            setLeftAt(new Date());       // local estimate
-        });
+        if (!response.ok) {
+          const err = await response.json();
+          const msg = err.message || "Lỗi không xác định";
+          console.error("❌ join-session failed:", msg);
+          setJoinError(msg);
+          return;
+        }
 
-        // ★ EVENT 3: Bị kick / disconnect
-        call.on('error', (error: any) => {
-            console.error('❌ Daily error:', error);
-        });
+        console.log("✅ Backend đã ghi nhận startTime");
+        setTrackedParticipantId(participantId);
+        setJoinedAt(new Date()); // local estimate
+      } catch (err: any) {
+        console.error("❌ join-session exception:", err);
+        setJoinError(err.message);
+      }
+    });
 
-        // Auto join
-        call.join();
+    // ★ EVENT 2: Leave (Daily.co đã tự gọi webhook rồi, FE chỉ log)
+    call.on("left-meeting", () => {
+      console.log("👋 Daily left-meeting. Backend đã tự ghi nhận endTime qua webhook.");
+      setLeftAt(new Date()); // local estimate
+    });
 
-        return () => {
-            call.destroy();
-        };
-    }, [roomUrl, roomName, userId, token, isMentor]);
+    // ★ EVENT 3: Bị kick / disconnect
+    call.on("error", (error: any) => {
+      console.error("❌ Daily error:", error);
+    });
 
-    return {
-        joinedAt,
-        leftAt,
-        joinError,
-        trackedParticipantId,
-        leave: () => callRef.current?.leave()
+    // Auto join
+    call.join();
+
+    return () => {
+      call.destroy();
     };
+  }, [roomUrl, roomName, userId, token, isMentor]);
+
+  return {
+    joinedAt,
+    leftAt,
+    joinError,
+    trackedParticipantId,
+    leave: () => callRef.current?.leave(),
+  };
 }
 ```
 
@@ -479,84 +491,78 @@ export function useDailyTracking({
 
 ```tsx
 // components/StudentOnlineRoom.tsx
-import { useEffect, useState } from 'react';
-import { useDailyTracking } from '../hooks/useDailyTracking';
+import { useEffect, useState } from "react";
+import { useDailyTracking } from "../hooks/useDailyTracking";
 
 interface Props {
-    sessionId: number;
-    token: string;
-    studentId: number;
+  sessionId: number;
+  token: string;
+  studentId: number;
 }
 
 export function StudentOnlineRoom({ sessionId, token, studentId }: Props) {
-    const [session, setSession] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-    // 1. Lấy session detail (chứa roomUrl, roomName, userId, userId2)
-    useEffect(() => {
-        fetch(`/api/sessions/${sessionId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-            .then(r => r.json())
-            .then(data => {
-                setSession(data);
-                setLoading(false);
-            });
-    }, [sessionId, token]);
+  // 1. Lấy session detail (chứa roomUrl, roomName, userId, userId2)
+  useEffect(() => {
+    fetch(`/api/sessions/${sessionId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setSession(data);
+        setLoading(false);
+      });
+  }, [sessionId, token]);
 
-    // 2. Track thời gian khi vào phòng
-    const { joinedAt, leftAt, joinError, leave } = useDailyTracking({
-        roomUrl: session?.roomUrl,
-        roomName: session?.roomName,
-        userId: studentId,
-        token,
-        isMentor: false
-    });
+  // 2. Track thời gian khi vào phòng
+  const { joinedAt, leftAt, joinError, leave } = useDailyTracking({
+    roomUrl: session?.roomUrl,
+    roomName: session?.roomName,
+    userId: studentId,
+    token,
+    isMentor: false,
+  });
 
-    if (loading) return <Spin tip="Đang tải phòng..." />;
+  if (loading) return <Spin tip="Đang tải phòng..." />;
 
-    // Kiểm tra nếu session OFFLINE
-    if (session.roomUrl === 'OFFLINE') {
-        return <Alert type="warning" message="Phòng này là OFFLINE, không thể vào đây" />;
-    }
+  // Kiểm tra nếu session OFFLINE
+  if (session.roomUrl === "OFFLINE") {
+    return <Alert type="warning" message="Phòng này là OFFLINE, không thể vào đây" />;
+  }
 
-    return (
-        <Card title={`Phòng phỏng vấn: ${session.roomName}`}>
-            {joinError && (
-                <Alert type="error" message={`Lỗi tracking: ${joinError}`} />
-            )}
+  return (
+    <Card title={`Phòng phỏng vấn: ${session.roomName}`}>
+      {joinError && <Alert type="error" message={`Lỗi tracking: ${joinError}`} />}
 
-            <Descriptions column={2} bordered>
-                <Descriptions.Item label="Lúc đặt lịch">
-                    {session.joinTime ? formatVN(session.joinTime) : '-'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Thời lượng đặt lịch">
-                    {session.duration} phút
-                </Descriptions.Item>
-                <Descriptions.Item label="Bạn vào phòng">
-                    {joinedAt ? formatDateTime(joinedAt) : 'Đang chờ...'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Bạn rời phòng">
-                    {leftAt ? formatDateTime(leftAt) : 'Chưa rời'}
-                </Descriptions.Item>
-            </Descriptions>
+      <Descriptions column={2} bordered>
+        <Descriptions.Item label="Lúc đặt lịch">
+          {session.joinTime ? formatVN(session.joinTime) : "-"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Thời lượng đặt lịch">{session.duration} phút</Descriptions.Item>
+        <Descriptions.Item label="Bạn vào phòng">
+          {joinedAt ? formatDateTime(joinedAt) : "Đang chờ..."}
+        </Descriptions.Item>
+        <Descriptions.Item label="Bạn rời phòng">
+          {leftAt ? formatDateTime(leftAt) : "Chưa rời"}
+        </Descriptions.Item>
+      </Descriptions>
 
-            <Divider />
+      <Divider />
 
-            <Space>
-                <Button danger onClick={leave} disabled={!leftAt && !joinedAt}>
-                    Rời phòng
-                </Button>
-                <Text type="secondary">
-                    Thời gian tham gia sẽ được ghi nhận tự động
-                </Text>
-            </Space>
-        </Card>
-    );
+      <Space>
+        <Button danger onClick={leave} disabled={!leftAt && !joinedAt}>
+          Rời phòng
+        </Button>
+        <Text type="secondary">Thời gian tham gia sẽ được ghi nhận tự động</Text>
+      </Space>
+    </Card>
+  );
 }
 
 function formatDateTime(d: Date) {
-    return d.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+  return d.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 }
 ```
 
@@ -568,51 +574,47 @@ function formatDateTime(d: Date) {
 
 ```tsx
 // components/MentorOnlineRoom.tsx
-import { useDailyTracking } from '../hooks/useDailyTracking';
+import { useDailyTracking } from "../hooks/useDailyTracking";
 
 interface Props {
-    session: any;              // SessionDetail từ API
-    token: string;
-    mentorId: number;          // session.userId2
+  session: any; // SessionDetail từ API
+  token: string;
+  mentorId: number; // session.userId2
 }
 
 export function MentorOnlineRoom({ session, token, mentorId }: Props) {
-    const { joinedAt, leftAt, joinError, leave } = useDailyTracking({
-        roomUrl: session.roomUrl,
-        roomName: session.roomName,
-        userId: mentorId,             // ← Lấy từ session.userId2
-        token,
-        isMentor: true                // ← TRUE cho mentor
-    });
+  const { joinedAt, leftAt, joinError, leave } = useDailyTracking({
+    roomUrl: session.roomUrl,
+    roomName: session.roomName,
+    userId: mentorId, // ← Lấy từ session.userId2
+    token,
+    isMentor: true, // ← TRUE cho mentor
+  });
 
-    if (session.roomUrl === 'OFFLINE') {
-        return <OfflineScheduleConfirm session={session} />;
-    }
+  if (session.roomUrl === "OFFLINE") {
+    return <OfflineScheduleConfirm session={session} />;
+  }
 
-    return (
-        <Card title={`Phỏng vấn: ${session.roomName}`}>
-            {joinError && (
-                <Alert type="error" message={`Lỗi tracking: ${joinError}`} />
-            )}
+  return (
+    <Card title={`Phỏng vấn: ${session.roomName}`}>
+      {joinError && <Alert type="error" message={`Lỗi tracking: ${joinError}`} />}
 
-            <Descriptions column={2} bordered>
-                <Descriptions.Item label="Lúc đặt lịch">
-                    {formatVN(session.joinTime)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Bạn vào phòng">
-                    {joinedAt ? formatDateTime(joinedAt) : 'Đang chờ...'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Bạn rời phòng">
-                    {leftAt ? formatDateTime(leftAt) : 'Chưa rời'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Student ID">
-                    {session.userId}
-                </Descriptions.Item>
-            </Descriptions>
+      <Descriptions column={2} bordered>
+        <Descriptions.Item label="Lúc đặt lịch">{formatVN(session.joinTime)}</Descriptions.Item>
+        <Descriptions.Item label="Bạn vào phòng">
+          {joinedAt ? formatDateTime(joinedAt) : "Đang chờ..."}
+        </Descriptions.Item>
+        <Descriptions.Item label="Bạn rời phòng">
+          {leftAt ? formatDateTime(leftAt) : "Chưa rời"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Student ID">{session.userId}</Descriptions.Item>
+      </Descriptions>
 
-            <Button danger onClick={leave}>Rời phòng</Button>
-        </Card>
-    );
+      <Button danger onClick={leave}>
+        Rời phòng
+      </Button>
+    </Card>
+  );
 }
 ```
 
@@ -620,69 +622,75 @@ export function MentorOnlineRoom({ session, token, mentorId }: Props) {
 
 ```tsx
 // components/MentorSessionListWithTracking.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-export function MentorSessionListWithTracking({ mentorId, token }: { mentorId: number; token: string }) {
-    const [sessions, setSessions] = useState<any[]>([]);
+export function MentorSessionListWithTracking({
+  mentorId,
+  token,
+}: {
+  mentorId: number;
+  token: string;
+}) {
+  const [sessions, setSessions] = useState<any[]>([]);
 
-    useEffect(() => {
-        fetch(`/api/sessions/${mentorId}/by-user`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-            .then(r => r.json())
-            .then(data => setSessions(data.filter((s: any) => s.userId2 === mentorId)));
-    }, [mentorId, token]);
+  useEffect(() => {
+    fetch(`/api/sessions/${mentorId}/by-user`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setSessions(data.filter((s: any) => s.userId2 === mentorId)));
+  }, [mentorId, token]);
 
-    return (
-        <Table
-            dataSource={sessions}
-            rowKey="id"
-            columns={[
-                { title: 'Phòng', dataIndex: 'roomName' },
-                { title: 'Lúc đặt', dataIndex: 'joinTime', render: formatVN },
-                {
-                    title: 'Bạn vào',
-                    dataIndex: 'startTime2',
-                    render: (t: string) => t ? formatVN(t) : <Tag>Chưa</Tag>
-                },
-                {
-                    title: 'Bạn rời',
-                    dataIndex: 'endTime2',
-                    render: (t: string) => t ? formatVN(t) : <Tag>Chưa</Tag>
-                },
-                {
-                    title: 'Thời lượng',
-                    dataIndex: 'durationSeconds2',
-                    render: (s: number | null) => s != null ? formatSeconds(s) : '-'
-                },
-                {
-                    title: 'Student',
-                    dataIndex: 'userId'
-                },
-                {
-                    title: 'Trạng thái',
-                    dataIndex: 'status',
-                    render: (s: string) => <Tag color={statusColor(s)}>{s}</Tag>
-                }
-            ]}
-        />
-    );
+  return (
+    <Table
+      dataSource={sessions}
+      rowKey="id"
+      columns={[
+        { title: "Phòng", dataIndex: "roomName" },
+        { title: "Lúc đặt", dataIndex: "joinTime", render: formatVN },
+        {
+          title: "Bạn vào",
+          dataIndex: "startTime2",
+          render: (t: string) => (t ? formatVN(t) : <Tag>Chưa</Tag>),
+        },
+        {
+          title: "Bạn rời",
+          dataIndex: "endTime2",
+          render: (t: string) => (t ? formatVN(t) : <Tag>Chưa</Tag>),
+        },
+        {
+          title: "Thời lượng",
+          dataIndex: "durationSeconds2",
+          render: (s: number | null) => (s != null ? formatSeconds(s) : "-"),
+        },
+        {
+          title: "Student",
+          dataIndex: "userId",
+        },
+        {
+          title: "Trạng thái",
+          dataIndex: "status",
+          render: (s: string) => <Tag color={statusColor(s)}>{s}</Tag>,
+        },
+      ]}
+    />
+  );
 }
 
 function formatSeconds(s: number): string {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    if (h > 0) return `${h}h ${m}m ${sec}s`;
-    if (m > 0) return `${m}m ${sec}s`;
-    return `${sec}s`;
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return `${h}h ${m}m ${sec}s`;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${sec}s`;
 }
 
 function statusColor(s: string): string {
-    if (s === 'COMPLETED') return 'green';
-    if (s === 'ONGOING') return 'blue';
-    if (s === 'SCHEDULED') return 'gold';
-    return 'default';
+  if (s === "COMPLETED") return "green";
+  if (s === "ONGOING") return "blue";
+  if (s === "SCHEDULED") return "gold";
+  return "default";
 }
 ```
 
@@ -695,62 +703,61 @@ function statusColor(s: string): string {
 ```tsx
 // components/SessionTimeline.tsx
 interface Props {
-    session: any;
+  session: any;
 }
 
 export function SessionTimeline({ session }: Props) {
-    const studentStarted = session.startTime1;
-    const studentLeft = session.endTime1;
-    const mentorStarted = session.startTime2;
-    const mentorLeft = session.endTime2;
+  const studentStarted = session.startTime1;
+  const studentLeft = session.endTime1;
+  const mentorStarted = session.startTime2;
+  const mentorLeft = session.endTime2;
 
-    const isStudentCompleted = studentStarted && studentLeft;
-    const isMentorCompleted = mentorStarted && mentorLeft;
+  const isStudentCompleted = studentStarted && studentLeft;
+  const isMentorCompleted = mentorStarted && mentorLeft;
 
-    return (
-        <Card title="📊 Lịch sử tham gia phòng">
-            <Timeline>
-                <Timeline.Item color="green">
-                    <Text strong>Lúc đặt lịch:</Text> {formatVN(session.joinTime)}
-                </Timeline.Item>
+  return (
+    <Card title="📊 Lịch sử tham gia phòng">
+      <Timeline>
+        <Timeline.Item color="green">
+          <Text strong>Lúc đặt lịch:</Text> {formatVN(session.joinTime)}
+        </Timeline.Item>
 
-                <Timeline.Item color={studentStarted ? 'green' : 'gray'}>
-                    <Text strong>Student vào:</Text>{' '}
-                    {studentStarted ? formatVN(studentStarted) : <Tag>Chưa vào</Tag>}
-                </Timeline.Item>
+        <Timeline.Item color={studentStarted ? "green" : "gray"}>
+          <Text strong>Student vào:</Text>{" "}
+          {studentStarted ? formatVN(studentStarted) : <Tag>Chưa vào</Tag>}
+        </Timeline.Item>
 
-                <Timeline.Item color={mentorStarted ? 'green' : 'gray'}>
-                    <Text strong>Mentor vào:</Text>{' '}
-                    {mentorStarted ? formatVN(mentorStarted) : <Tag>Chưa vào</Tag>}
-                </Timeline.Item>
+        <Timeline.Item color={mentorStarted ? "green" : "gray"}>
+          <Text strong>Mentor vào:</Text>{" "}
+          {mentorStarted ? formatVN(mentorStarted) : <Tag>Chưa vào</Tag>}
+        </Timeline.Item>
 
-                <Timeline.Item color={studentLeft ? 'green' : 'gray'}>
-                    <Text strong>Student rời:</Text>{' '}
-                    {studentLeft ? formatVN(studentLeft) : <Tag>Chưa rời</Tag>}
-                    {isStudentCompleted && (
-                        <Tag color="blue" style={{ marginLeft: 8 }}>
-                            Tham gia {formatSeconds(session.durationSeconds1)}
-                        </Tag>
-                    )}
-                </Timeline.Item>
+        <Timeline.Item color={studentLeft ? "green" : "gray"}>
+          <Text strong>Student rời:</Text>{" "}
+          {studentLeft ? formatVN(studentLeft) : <Tag>Chưa rời</Tag>}
+          {isStudentCompleted && (
+            <Tag color="blue" style={{ marginLeft: 8 }}>
+              Tham gia {formatSeconds(session.durationSeconds1)}
+            </Tag>
+          )}
+        </Timeline.Item>
 
-                <Timeline.Item color={mentorLeft ? 'green' : 'gray'}>
-                    <Text strong>Mentor rời:</Text>{' '}
-                    {mentorLeft ? formatVN(mentorLeft) : <Tag>Chưa rời</Tag>}
-                    {isMentorCompleted && (
-                        <Tag color="blue" style={{ marginLeft: 8 }}>
-                            Tham gia {formatSeconds(session.durationSeconds2)}
-                        </Tag>
-                    )}
-                </Timeline.Item>
+        <Timeline.Item color={mentorLeft ? "green" : "gray"}>
+          <Text strong>Mentor rời:</Text> {mentorLeft ? formatVN(mentorLeft) : <Tag>Chưa rời</Tag>}
+          {isMentorCompleted && (
+            <Tag color="blue" style={{ marginLeft: 8 }}>
+              Tham gia {formatSeconds(session.durationSeconds2)}
+            </Tag>
+          )}
+        </Timeline.Item>
 
-                <Timeline.Item color={session.status === 'COMPLETED' ? 'green' : 'orange'}>
-                    <Text strong>Trạng thái:</Text>{' '}
-                    <Tag color={statusColor(session.status)}>{session.status}</Tag>
-                </Timeline.Item>
-            </Timeline>
-        </Card>
-    );
+        <Timeline.Item color={session.status === "COMPLETED" ? "green" : "orange"}>
+          <Text strong>Trạng thái:</Text>{" "}
+          <Tag color={statusColor(session.status)}>{session.status}</Tag>
+        </Timeline.Item>
+      </Timeline>
+    </Card>
+  );
 }
 ```
 
@@ -759,13 +766,13 @@ export function SessionTimeline({ session }: Props) {
 ```typescript
 // utils/formatDuration.ts
 export function formatSeconds(s: number | null | undefined): string {
-    if (s == null) return '-';
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    if (h > 0) return `${h} giờ ${m} phút ${sec} giây`;
-    if (m > 0) return `${m} phút ${sec} giây`;
-    return `${sec} giây`;
+  if (s == null) return "-";
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return `${h} giờ ${m} phút ${sec} giây`;
+  if (m > 0) return `${m} phút ${sec} giây`;
+  return `${sec} giây`;
 }
 
 // Ví dụ:
@@ -780,6 +787,7 @@ export function formatSeconds(s: number | null | undefined): string {
 ### 8.1 Vấn Đề Timezone
 
 Backend lưu `Timestamp` theo giờ VN (UTC+7) nhưng **response là string không có timezone suffix**:
+
 ```json
 "startTime1": "2026-07-20 10:05:23.456"
 ```
@@ -795,79 +803,79 @@ Nếu FE dùng `new Date("2026-07-20 10:05:23.456")` không có TZ → browser s
  * Parse timestamp string từ Backend (giờ VN, không có TZ suffix) → Date object.
  */
 export function parseVN(timestamp: string | null | undefined): Date | null {
-    if (!timestamp) return null;
-    // "2026-07-20 10:05:23.456" → "2026-07-20T10:05:23.456+07:00"
-    return new Date(timestamp.replace(' ', 'T') + '+07:00');
+  if (!timestamp) return null;
+  // "2026-07-20 10:05:23.456" → "2026-07-20T10:05:23.456+07:00"
+  return new Date(timestamp.replace(" ", "T") + "+07:00");
 }
 
 /**
  * Format Date object → string giờ VN hiển thị cho user.
  */
 export function formatVN(timestamp: string | null | undefined): string {
-    const date = parseVN(timestamp);
-    if (!date) return '-';
-    return date.toLocaleString('vi-VN', {
-        timeZone: 'Asia/Ho_Chi_Minh',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    });
+  const date = parseVN(timestamp);
+  if (!date) return "-";
+  return date.toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 }
 
 /**
  * Format chỉ giờ:phút:giây
  */
 export function formatVNTime(timestamp: string | null | undefined): string {
-    const date = parseVN(timestamp);
-    if (!date) return '-';
-    return date.toLocaleTimeString('vi-VN', {
-        timeZone: 'Asia/Ho_Chi_Minh',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    });
+  const date = parseVN(timestamp);
+  if (!date) return "-";
+  return date.toLocaleTimeString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 }
 
 /**
  * Format chỉ ngày
  */
 export function formatVNDate(timestamp: string | null | undefined): string {
-    const date = parseVN(timestamp);
-    if (!date) return '-';
-    return date.toLocaleDateString('vi-VN', {
-        timeZone: 'Asia/Ho_Chi_Minh',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
+  const date = parseVN(timestamp);
+  if (!date) return "-";
+  return date.toLocaleDateString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
 }
 
 /**
  * Tính duration giữa 2 timestamp
  */
 export function getDurationSec(startTs: string | null, endTs: string | null): number | null {
-    const start = parseVN(startTs);
-    const end = parseVN(endTs);
-    if (!start || !end) return null;
-    return Math.floor((end.getTime() - start.getTime()) / 1000);
+  const start = parseVN(startTs);
+  const end = parseVN(endTs);
+  if (!start || !end) return null;
+  return Math.floor((end.getTime() - start.getTime()) / 1000);
 }
 
 /**
  * Format seconds → human readable (VD: "1 giờ 30 phút 45 giây")
  */
 export function formatSecondsVN(seconds: number | null | undefined): string {
-    if (seconds == null) return '-';
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h} giờ ${m} phút ${s} giây`;
-    if (m > 0) return `${m} phút ${s} giây`;
-    return `${s} giây`;
+  if (seconds == null) return "-";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h} giờ ${m} phút ${s} giây`;
+  if (m > 0) return `${m} phút ${s} giây`;
+  return `${s} giây`;
 }
 ```
 
@@ -903,64 +911,64 @@ Vì FE không nhận được webhook Daily.co, cần polling để biết khi n
 
 ```typescript
 // hooks/useSessionPolling.ts
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface UseSessionPollingParams {
-    sessionId: number;
-    token: string;
-    intervalMs?: number;        // mặc định 10s
-    maxWaitMs?: number;         // mặc định 3 giờ
-    stopWhen?: (s: any) => boolean;
+  sessionId: number;
+  token: string;
+  intervalMs?: number; // mặc định 10s
+  maxWaitMs?: number; // mặc định 3 giờ
+  stopWhen?: (s: any) => boolean;
 }
 
 export function useSessionPolling({
-    sessionId,
-    token,
-    intervalMs = 10_000,
-    maxWaitMs = 3 * 60 * 60 * 1000,
-    stopWhen
+  sessionId,
+  token,
+  intervalMs = 10_000,
+  maxWaitMs = 3 * 60 * 60 * 1000,
+  stopWhen,
 }: UseSessionPollingParams) {
-    const [session, setSession] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [elapsed, setElapsed] = useState(0);
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [elapsed, setElapsed] = useState(0);
 
-    useEffect(() => {
-        let timer: any;
-        const startTime = Date.now();
+  useEffect(() => {
+    let timer: any;
+    const startTime = Date.now();
 
-        const poll = async () => {
-            const elapsedMs = Date.now() - startTime;
-            if (elapsedMs > maxWaitMs) {
-                console.warn('Polling timeout');
-                return;
-            }
+    const poll = async () => {
+      const elapsedMs = Date.now() - startTime;
+      if (elapsedMs > maxWaitMs) {
+        console.warn("Polling timeout");
+        return;
+      }
 
-            try {
-                const res = await fetch(`/api/sessions/${sessionId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                setSession(data);
-                setElapsed(elapsedMs);
+      try {
+        const res = await fetch(`/api/sessions/${sessionId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setSession(data);
+        setElapsed(elapsedMs);
 
-                if (stopWhen?.(data)) {
-                    setLoading(false);
-                    return;
-                }
+        if (stopWhen?.(data)) {
+          setLoading(false);
+          return;
+        }
 
-                timer = setTimeout(poll, intervalMs);
-            } catch (err) {
-                console.error('Polling error:', err);
-                timer = setTimeout(poll, intervalMs);
-            }
-        };
+        timer = setTimeout(poll, intervalMs);
+      } catch (err) {
+        console.error("Polling error:", err);
+        timer = setTimeout(poll, intervalMs);
+      }
+    };
 
-        poll();
+    poll();
 
-        return () => clearTimeout(timer);
-    }, [sessionId, token, intervalMs, maxWaitMs]);
+    return () => clearTimeout(timer);
+  }, [sessionId, token, intervalMs, maxWaitMs]);
 
-    return { session, loading, elapsed };
+  return { session, loading, elapsed };
 }
 ```
 
@@ -969,41 +977,39 @@ export function useSessionPolling({
 ```tsx
 // Trong MentorDashboardPage.tsx
 function MentorReviewTrigger({ sessionId, token }: { sessionId: number; token: string }) {
-    // Polling mỗi 10s, dừng khi status === 'COMPLETED'
-    const { session, loading, elapsed } = useSessionPolling({
-        sessionId,
-        token,
-        intervalMs: 10_000,
-        stopWhen: (s) => s.status === 'COMPLETED'
-    });
+  // Polling mỗi 10s, dừng khi status === 'COMPLETED'
+  const { session, loading, elapsed } = useSessionPolling({
+    sessionId,
+    token,
+    intervalMs: 10_000,
+    stopWhen: (s) => s.status === "COMPLETED",
+  });
 
-    if (loading) return <Spin tip="Đang chờ phỏng vấn kết thúc..." />;
+  if (loading) return <Spin tip="Đang chờ phỏng vấn kết thúc..." />;
 
-    // Kiểm tra đầy đủ điều kiện
-    const canReview = 
-        session.status === 'COMPLETED' &&
-        !session.mentorReview &&
-        !session.mentorFeedback;
+  // Kiểm tra đầy đủ điều kiện
+  const canReview =
+    session.status === "COMPLETED" && !session.mentorReview && !session.mentorFeedback;
 
-    if (canReview) {
-        return (
-            <Card>
-                <Title>✅ Phỏng vấn đã kết thúc</Title>
-                <Text>Student tham gia: {formatSecondsVN(session.durationSeconds1)}</Text>
-                <Text>Bạn tham gia: {formatSecondsVN(session.durationSeconds2)}</Text>
-                <Button type="primary" onClick={() => navigate(`/mentor/review/${sessionId}`)}>
-                    Đánh giá ứng viên
-                </Button>
-            </Card>
-        );
-    }
-
+  if (canReview) {
     return (
-        <Card>
-            <Text>Session vẫn đang diễn ra. Trạng thái: {session.status}</Text>
-            <Text>Đã chờ: {Math.floor(elapsed / 1000)}s</Text>
-        </Card>
+      <Card>
+        <Title>✅ Phỏng vấn đã kết thúc</Title>
+        <Text>Student tham gia: {formatSecondsVN(session.durationSeconds1)}</Text>
+        <Text>Bạn tham gia: {formatSecondsVN(session.durationSeconds2)}</Text>
+        <Button type="primary" onClick={() => navigate(`/mentor/review/${sessionId}`)}>
+          Đánh giá ứng viên
+        </Button>
+      </Card>
     );
+  }
+
+  return (
+    <Card>
+      <Text>Session vẫn đang diễn ra. Trạng thái: {session.status}</Text>
+      <Text>Đã chờ: {Math.floor(elapsed / 1000)}s</Text>
+    </Card>
+  );
 }
 ```
 
@@ -1011,29 +1017,25 @@ function MentorReviewTrigger({ sessionId, token }: { sessionId: number; token: s
 
 ```tsx
 function LiveTrackingDisplay({ session, isMentor }: { session: any; isMentor: boolean }) {
-    const myField = isMentor ? 'startTime2' : 'startTime1';
-    const started = !!session[myField];
+  const myField = isMentor ? "startTime2" : "startTime1";
+  const started = !!session[myField];
 
-    if (!started) {
-        return <Tag color="default">Bạn chưa vào phòng</Tag>;
-    }
+  if (!started) {
+    return <Tag color="default">Bạn chưa vào phòng</Tag>;
+  }
 
-    // Realtime elapsed since join
-    const [elapsed, setElapsed] = useState(0);
+  // Realtime elapsed since join
+  const [elapsed, setElapsed] = useState(0);
 
-    useEffect(() => {
-        const start = parseVN(session[myField])!.getTime();
-        const timer = setInterval(() => {
-            setElapsed(Math.floor((Date.now() - start) / 1000));
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [session[myField]]);
+  useEffect(() => {
+    const start = parseVN(session[myField])!.getTime();
+    const timer = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [session[myField]]);
 
-    return (
-        <Tag color="green">
-            ⏱️ Đã vào phòng {formatSecondsVN(elapsed)}
-        </Tag>
-    );
+  return <Tag color="green">⏱️ Đã vào phòng {formatSecondsVN(elapsed)}</Tag>;
 }
 ```
 
@@ -1044,6 +1046,7 @@ function LiveTrackingDisplay({ session, isMentor }: { session: any; isMentor: bo
 ### 10.1 User Refresh Trang / Join Lần 2
 
 **Hành vi Backend:**
+
 ```java
 if (session.getStartTime1() == null) {                     // ★ Chỉ set lần đầu
     session.setStartTime1(helperConvertToVietNamTime());
@@ -1052,6 +1055,7 @@ if (session.getStartTime1() == null) {                     // ★ Chỉ set lầ
 ```
 
 **Hành vi FE:**
+
 - `participantId1` bị overwrite bằng session_id mới (đúng, vì participant mới)
 - `startTime1` giữ nguyên (đúng, vì tracking thời gian thực tế)
 - `endTime1` sẽ được set khi leave (nếu user mới rời → set lại)
@@ -1059,6 +1063,7 @@ if (session.getStartTime1() == null) {                     // ★ Chỉ set lầ
 ### 10.2 User Mất Mạng / Tab Đóng Đột Ngột
 
 **Hành vi Daily.co:**
+
 - Daily.co tự động phát hiện user disconnect sau ~30s
 - Daily.co tự gọi webhook `participant.left` với session_id của user
 
@@ -1096,6 +1101,7 @@ if (session.getStartTime1() == null) {                     // ★ Chỉ set lầ
 ```
 
 → `status` không đổi sang COMPLETED. Nếu lúc này gọi `/api/mentor-reviews`:
+
 - Lỗi 400: "Cannot review mentor for a session that is not completed"
 
 ### 10.6 Cả 2 Leave Cùng Lúc (Hiếm)
@@ -1164,15 +1170,15 @@ Khi tracking không hoạt động, kiểm tra theo thứ tự:
 
 ### ✅ Test Cases Quan Trọng
 
-| Test Case | Expected |
-|---|---|
-| Student join rồi leave, mentor chưa join | status=ONGOING, endTime1 có, durationSeconds1 có, endTime2=null |
-| Mentor join trước, student join sau | startTime2 có, startTime1 có sau, status=ONGOING |
-| Cả 2 leave đúng thứ tự | endTime1/2 có, durationSeconds1/2 có, status=COMPLETED |
-| Student refresh trang 2 lần | startTime1 giữ nguyên (set lần đầu), participantId1 đổi |
-| Mentor gọi join-session với `isMentor=false` | Lỗi 403 |
-| Student gọi join-session với `isMentor=true` | Lỗi 403 |
-| Session OFFLINE | status=COMPLETED ngay, các field thời gian = null |
+| Test Case                                    | Expected                                                        |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| Student join rồi leave, mentor chưa join     | status=ONGOING, endTime1 có, durationSeconds1 có, endTime2=null |
+| Mentor join trước, student join sau          | startTime2 có, startTime1 có sau, status=ONGOING                |
+| Cả 2 leave đúng thứ tự                       | endTime1/2 có, durationSeconds1/2 có, status=COMPLETED          |
+| Student refresh trang 2 lần                  | startTime1 giữ nguyên (set lần đầu), participantId1 đổi         |
+| Mentor gọi join-session với `isMentor=false` | Lỗi 403                                                         |
+| Student gọi join-session với `isMentor=true` | Lỗi 403                                                         |
+| Session OFFLINE                              | status=COMPLETED ngay, các field thời gian = null               |
 
 ---
 

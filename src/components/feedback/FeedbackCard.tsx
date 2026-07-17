@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { StarRating } from "@/components/ui/star-rating";
 import { TimeAgo } from "@/components/ui/time-ago";
+import { getSessionMentorId } from "@/lib/session-mentor";
 import { cn } from "@/lib/utils";
 import type { MentorFeedback } from "@/services/mentor-feedback.manager";
 import { Calendar, Edit, MessageSquare, Trash2, User } from "lucide-react";
@@ -40,9 +41,10 @@ export function FeedbackCard({
         var_0: feedback.session.userId,
       })
     : t("common.students");
-  const fallbackMentorName = feedback.session?.userId2
-    ? t("common.mentorWithId", { id: feedback.session.userId2 })
-    : t("common.mentor");
+  const fallbackMentorName =
+    getSessionMentorId(feedback.session) != null
+      ? t("common.mentorWithId", { id: getSessionMentorId(feedback.session) })
+      : t("common.mentor");
   const displayName = showMentor
     ? feedback.mentor?.name || fallbackMentorName
     : showUser
