@@ -35,7 +35,7 @@ import {
 } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 import { Calendar, Check, Clock, LogIn, MessageSquare, Search, User, Video, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
