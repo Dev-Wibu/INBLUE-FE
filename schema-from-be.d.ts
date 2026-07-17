@@ -267,6 +267,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/application-details/{id}/assign-mentor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Gán mentor cho vòng Mentor Review
+         * @description Dành cho Admin để gán mentor cho vòng thi của ứng viên.
+         */
+        put: operations["assignMentor"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/proctoring/track": {
         parameters: {
             query?: never;
@@ -463,6 +483,26 @@ export interface paths {
          * @description json mẫu tạo 1 session họp với mentor(privacy ,enable_recording ko cần cho chọn mà gửi ẩn là public,cloud về, name khỏi cần cho điền cứ gửi như json mẫu, còn lại thì cho người dùng chọn )
          */
         post: operations["createSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sessions/create-for-round": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Tạo session và phòng họp cho một vòng Mentor Review (Online hoặc Offline)
+         * @description Ứng viên tự chọn thời gian và hình thức ONLINE/OFFLINE sau khi Admin đã gán mentor.
+         */
+        post: operations["createSessionForRound"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1001,7 +1041,7 @@ export interface paths {
          * Gán Mentor cho lịch phỏng vấn
          * @description Admin thực hiện gán Mentor cho một lượt phỏng vấn. Hệ thống kiểm tra trùng lịch Mentor, gọi Daily.co để tạo phòng, sinh mã sessionKey và gửi thông báo cho ứng viên (chỉ dành cho Admin).
          */
-        post: operations["assignMentor"];
+        post: operations["assignMentor_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2517,6 +2557,108 @@ export interface components {
             start_date?: string;
             end_date?: string;
         };
+        AiFeedback: {
+            generalComment?: string;
+            strengths?: string[];
+            weaknesses?: string[];
+            extraMetrics?: {
+                [key: string]: unknown;
+            };
+        };
+        ApplicationDetail: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int64 */
+            roundId?: number;
+            /** @enum {string} */
+            status?: "PENDING" | "AWAITING_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            /** Format: double */
+            finalScore?: number;
+            submissionData?: components["schemas"]["SubmissionData"];
+            /** Format: double */
+            aiScore?: number;
+            aiFeedback?: components["schemas"]["AiFeedback"];
+            /** Format: double */
+            hrScore?: number;
+            hrNote?: string;
+            /** @enum {string} */
+            finalResult?: "PASSED" | "FAILED";
+            /** Format: date-time */
+            startedAt?: string;
+            /** Format: date-time */
+            completedAt?: string;
+            mentorReview?: components["schemas"]["MentorReview"];
+            /** Format: int64 */
+            sessionId?: number;
+            /** Format: int64 */
+            bookingId?: number;
+            /** Format: int32 */
+            mentorId?: number;
+            sessionInfo?: components["schemas"]["RoundSessionInfo"];
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        CodeReviewSubmission: {
+            filename?: string;
+            /** Format: int32 */
+            lineNumber?: number;
+            severity?: string;
+            description?: string;
+        };
+        CodeSubmission: {
+            sourceCode?: string[];
+            testCases?: components["schemas"]["CompilerResponseDto"];
+        };
+        CompilerResponseDto: {
+            status?: string;
+            /** Format: int32 */
+            passedTestCases?: number;
+            /** Format: int32 */
+            totalTestCases?: number;
+            /** Format: int64 */
+            executionTimeMs?: number;
+            errorMessage?: string;
+            testCases?: components["schemas"]["TestCaseResult"][];
+        };
+        QuizAnswer: {
+            questionText?: string;
+            selectedAnswer?: string;
+            isCorrect?: boolean;
+        };
+        RoundSessionInfo: {
+            /** Format: int32 */
+            sessionId?: number;
+            /** @enum {string} */
+            meetingType?: "ONLINE" | "OFFLINE";
+            /** Format: date-time */
+            startTime?: string;
+            /** Format: date-time */
+            endTime?: string;
+        };
+        SubmissionData: {
+            textContent?: string;
+            fileUrl?: string;
+            quizAnswers?: components["schemas"]["QuizAnswer"][];
+            codeSubmissions?: components["schemas"]["CodeSubmission"][];
+            codeReviewSubmissions?: components["schemas"]["CodeReviewSubmission"][];
+            /** Format: int64 */
+            emailSubmissionId?: number;
+        };
+        TestCaseResult: {
+            /** Format: int32 */
+            index?: number;
+            status?: string;
+            input?: string;
+            expectedOutput?: string;
+            actualOutput?: string;
+            /** Format: int64 */
+            executionTimeMs?: number;
+            errorMessage?: string;
+        };
         FaceSnapshotRequest: {
             sessionKey?: string;
             /** Format: int32 */
@@ -2659,6 +2801,72 @@ export interface components {
             api_created?: unknown;
             created_at?: string;
             config?: components["schemas"]["RoomConfig"];
+        };
+        CreateRoundSessionRequest: {
+            /** Format: int64 */
+            applicationDetailId?: number;
+            /** Format: int32 */
+            mentorId?: number;
+            /** Format: date-time */
+            joinTime?: string;
+            /** Format: int32 */
+            duration?: number;
+            offline?: boolean;
+        };
+        MentorFeedbackResponse: {
+            /** Format: int32 */
+            rating?: number;
+            comment?: string;
+        };
+        MentorReviewResponse: {
+            /** Format: int32 */
+            rating?: number;
+            situationNote?: string;
+            taskNote?: string;
+            actionNote?: string;
+            resultNote?: string;
+            strength?: string;
+            weakness?: string;
+            improve?: string;
+        };
+        SessionDetailResponse: {
+            /** Format: int32 */
+            id?: number;
+            roomName?: string;
+            /** Format: int32 */
+            userId?: number;
+            participantId1?: string;
+            /** Format: date-time */
+            startTime1?: string;
+            /** Format: date-time */
+            endTime1?: string;
+            /** Format: int64 */
+            durationSeconds1?: number;
+            /** Format: int32 */
+            mentorId?: number;
+            participantId2?: string;
+            /** Format: date-time */
+            startTime2?: string;
+            /** Format: date-time */
+            endTime2?: string;
+            /** Format: int64 */
+            durationSeconds2?: number;
+            roomUrl?: string;
+            /** Format: date-time */
+            joinTime?: string;
+            recordUrl?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "SCHEDULED" | "PAID" | "REJECTED" | "ONGOING" | "COMPLETED" | "CANCELED";
+            /** Format: int32 */
+            duration?: number;
+            /** Format: int32 */
+            totalPrice?: number;
+            transactionCode?: string;
+            sessionKey?: string;
+            /** Format: int64 */
+            kioskId?: number;
+            mentorReview?: components["schemas"]["MentorReviewResponse"];
+            mentorFeedback?: components["schemas"]["MentorFeedbackResponse"];
         };
         WhiteboardQuestionDto: {
             title?: string;
@@ -3061,84 +3269,6 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
-        AiFeedback: {
-            generalComment?: string;
-            strengths?: string[];
-            weaknesses?: string[];
-            extraMetrics?: {
-                [key: string]: unknown;
-            };
-        };
-        ApplicationDetail: {
-            /** Format: int64 */
-            id?: number;
-            /** Format: int64 */
-            applicationId?: number;
-            /** Format: int64 */
-            roundId?: number;
-            /** @enum {string} */
-            status?: "PENDING" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
-            /** Format: double */
-            finalScore?: number;
-            submissionData?: components["schemas"]["SubmissionData"];
-            /** Format: double */
-            aiScore?: number;
-            aiFeedback?: components["schemas"]["AiFeedback"];
-            /** Format: double */
-            hrScore?: number;
-            hrNote?: string;
-            /** @enum {string} */
-            finalResult?: "PASSED" | "FAILED";
-            /** Format: date-time */
-            startedAt?: string;
-            /** Format: date-time */
-            completedAt?: string;
-            mentorReview?: components["schemas"]["MentorReview"];
-            /** Format: int64 */
-            sessionId?: number;
-            /** Format: int64 */
-            bookingId?: number;
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
-        CodeReviewSubmission: {
-            filename?: string;
-            /** Format: int32 */
-            lineNumber?: number;
-            severity?: string;
-            description?: string;
-        };
-        CodeSubmission: {
-            sourceCode?: string[];
-            testCases?: components["schemas"]["CompilerResponseDto"];
-        };
-        CompilerResponseDto: {
-            status?: string;
-            /** Format: int32 */
-            passedTestCases?: number;
-            /** Format: int32 */
-            totalTestCases?: number;
-            /** Format: int64 */
-            executionTimeMs?: number;
-            errorMessage?: string;
-            testCases?: components["schemas"]["TestCaseResult"][];
-        };
-        QuizAnswer: {
-            questionText?: string;
-            selectedAnswer?: string;
-            isCorrect?: boolean;
-        };
-        SubmissionData: {
-            textContent?: string;
-            fileUrl?: string;
-            quizAnswers?: components["schemas"]["QuizAnswer"][];
-            codeSubmissions?: components["schemas"]["CodeSubmission"][];
-            codeReviewSubmissions?: components["schemas"]["CodeReviewSubmission"][];
-            /** Format: int64 */
-            emailSubmissionId?: number;
-        };
         SubmissionResult: {
             /** @enum {string} */
             status?: "PENDING" | "COMPLETED";
@@ -3149,17 +3279,6 @@ export interface components {
             /** @enum {string} */
             roundResult?: "PASSED" | "FAILED";
             testCases?: components["schemas"]["TestCaseResult"][];
-        };
-        TestCaseResult: {
-            /** Format: int32 */
-            index?: number;
-            status?: string;
-            input?: string;
-            expectedOutput?: string;
-            actualOutput?: string;
-            /** Format: int64 */
-            executionTimeMs?: number;
-            errorMessage?: string;
         };
         CompileRequest: {
             /** Format: int64 */
@@ -3274,37 +3393,37 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            first?: boolean;
-            last?: boolean;
             empty?: boolean;
         };
         PageableObject: {
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3570,20 +3689,20 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            elIgnored?: string;
+            isXml?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
+            trimDirectiveWhitespaces?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             errorOnELNotFound?: string;
-            includePreludes?: string[];
-            trimDirectiveWhitespaces?: string;
-            includeCodas?: string[];
-            elIgnored?: string;
-            isXml?: string;
             defaultContentType?: string;
             urlPatterns?: string[];
             buffer?: string;
@@ -3609,22 +3728,17 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
+            propagateQueryProperties?: boolean;
             attributesMap?: {
                 [key: string]: unknown;
             };
+            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
@@ -3642,6 +3756,11 @@ export interface components {
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -3733,8 +3852,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
     };
     responses: never;
@@ -3826,7 +3945,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Session"][];
+                    "*/*": components["schemas"]["SessionDetailResponse"][];
                 };
             };
         };
@@ -4495,6 +4614,30 @@ export interface operations {
             };
         };
     };
+    assignMentor: {
+        parameters: {
+            query: {
+                mentorId: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApplicationDetail"];
+                };
+            };
+        };
+    };
     trackBehavior: {
         parameters: {
             query?: never;
@@ -4809,6 +4952,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SessionResponse"];
+                };
+            };
+        };
+    };
+    createSessionForRound: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRoundSessionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SessionDetailResponse"];
                 };
             };
         };
@@ -5660,7 +5827,7 @@ export interface operations {
             };
         };
     };
-    assignMentor: {
+    assignMentor_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -5889,7 +6056,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Session"][];
+                    "*/*": components["schemas"]["SessionDetailResponse"][];
                 };
             };
         };
@@ -5911,7 +6078,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Session"];
+                    "*/*": components["schemas"]["SessionDetailResponse"];
                 };
             };
         };

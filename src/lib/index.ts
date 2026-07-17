@@ -5,6 +5,7 @@
 export * from "./api";
 export * from "./application-detail-utils";
 export * from "./error-normalizer";
+export * from "./formatting";
 export * from "./payment-callback";
 export * from "./payment-recovery";
 export * from "./session-paid-status-sync";

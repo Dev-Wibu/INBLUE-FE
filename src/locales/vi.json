@@ -4582,6 +4582,7 @@
   },
   "grading": {
     "gradeSuccess": "Đã chấm điểm thành công!",
+    "assignmentSuccess": "Đã gán mentor thành công!",
     "details": "Chi tiết chấm bài",
     "template": "Mẫu chấm điểm",
     "invalidScore": "Vui lòng nhập điểm hợp lệ (0 - 100)",

@@ -31,6 +31,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
+import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment";
 import { HrMentorReviewApprovalPage } from "@/pages/Shared/HrMentorReviewApproval";
 import {
   ApplicationGradingDetailPage,
@@ -133,6 +134,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             type: "mentorReviewApprovals",
             icon: UserCheck,
             label: t("adminAdmindashboard.mentorReviewApprovals"),
+            color: "text-slate-400",
+          },
+          {
+            type: "mentor-review-assignment",
+            icon: UserCheck,
+            label: t("adminMentorReviewAssignment.sidebarLabel"),
             color: "text-slate-400",
           },
           {
@@ -347,18 +354,27 @@ export function AdminDashboardPage() {
                 path="applicationGrading"
                 element={
                   <ApplicationGradingPage
-                    onOpenGradingDetail={(appId) =>
-                      navigate(`/admin/grading-detail?appId=${appId}`)
+                    onOpenGradingDetail={(appId, extra) =>
+                      navigate(
+                        `/admin/grading-detail?appId=${appId}${
+                          extra?.candidateName
+                            ? `&name=${encodeURIComponent(extra.candidateName)}`
+                            : ""
+                        }${extra?.jdId ? `&jdId=${encodeURIComponent(extra.jdId)}` : ""}`
+                      )
                     }
                   />
                 }
               />
               <Route path="mentorReviewApprovals" element={<HrMentorReviewApprovalPage />} />
+              <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />
               <Route
                 path="grading-detail"
                 element={
                   <ApplicationGradingDetailPage
                     appId={new URLSearchParams(location.search).get("appId") || ""}
+                    candidateName={new URLSearchParams(location.search).get("name") || undefined}
+                    jdId={new URLSearchParams(location.search).get("jdId") || undefined}
                   />
                 }
               />

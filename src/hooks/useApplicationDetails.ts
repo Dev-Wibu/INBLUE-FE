@@ -105,3 +105,41 @@ export const useHrScore = (options?: {
     },
   });
 };
+
+/**
+ * Admin assigns a mentor to a candidate's Mentor Review round
+ * PUT /api/application-details/{id}/assign-mentor?mentorId=
+ */
+export const useAssignMentor = (options?: {
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { applicationDetailId: number; mentorId: number }) => {
+      const result = await applicationDetailManager.assignMentor(
+        params.applicationDetailId,
+        params.mentorId
+      );
+      if (!result.success) throw new Error(result.error);
+      return result.data!;
+    },
+    onSuccess: (_data, variables) => {
+      toast.success(t("grading.assignmentSuccess"));
+      queryClient.invalidateQueries({ queryKey: ["applicationDetails"] });
+      queryClient.invalidateQueries({
+        queryKey: ["applicationDetails", "byApplicationId", variables.applicationDetailId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["applicationDetails", "byId", variables.applicationDetailId],
+      });
+      options?.onSuccess?.();
+    },
+    onError: (error: Error) => {
+      const message = getNormalizedErrorMessage(error);
+      toast.error(message);
+      options?.onError?.(message);
+    },
+  });
+};

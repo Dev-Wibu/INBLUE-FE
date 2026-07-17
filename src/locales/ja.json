@@ -4578,6 +4578,7 @@
   },
   "grading": {
     "gradeSuccess": "採点に成功しました！",
+    "assignmentSuccess": "メンターの割り当てに成功しました！",
     "details": "採点の詳細",
     "template": "採点テンプレート",
     "invalidScore": "有効なスコアを入力してください（0 - 100）",

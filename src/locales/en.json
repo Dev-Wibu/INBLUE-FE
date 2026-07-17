@@ -4585,6 +4585,7 @@
   },
   "grading": {
     "gradeSuccess": "Graded successfully!",
+    "assignmentSuccess": "Mentor assigned successfully!",
     "details": "Grading Details",
     "template": "Grading Template",
     "invalidScore": "Please enter a valid score (0 - 100)",

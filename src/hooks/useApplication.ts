@@ -14,3 +14,13 @@ export const useMyApplications = (enabled = true) =>
   $api.useQuery("get", "/api/applications/me", undefined, { enabled });
 
 export const useApplyJobDescription = () => $api.useMutation("post", "/api/applications");
+
+export const useUserById = (userId: number, enabled = true) =>
+  $api.useQuery(
+    "get",
+    "/api/users/find-by-id/{userId}",
+    { params: { path: { userId } } },
+    { enabled: enabled && userId > 0 }
+  );
+
+export const useUsers = () => $api.useQuery("get", "/api/users");

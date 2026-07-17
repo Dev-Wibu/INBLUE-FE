@@ -8,6 +8,7 @@ const t = i18n.t.bind(i18n);
 import type { Session } from "@/interfaces";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type {
+  CreateRoundSessionRequest,
   JoinSessionRequest,
   LeaveSessionRequest,
   SessionCreationRequest,
@@ -132,6 +133,40 @@ export const useCreateSession = () => {
         queryKey: SESSION_QUERY_KEYS.all,
       });
       toast.success(t("general.scheduleRequestSentWaitFor"));
+    },
+    onError: (error: Error) => {
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToCreateInterviewSession")));
+    },
+  });
+};
+
+/**
+ * Mentor Review v2 — create a Session for an ApplicationDetail round.
+ * Wraps `POST /api/sessions/create-for-round`. Invalidates the
+ * application-detail + session caches so the caller sees the new
+ * sessionInfo + roomUrl immediately after the mutation resolves.
+ */
+export const useCreateRoundSession = (options?: { onSuccess?: (_session: Session) => void }) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: CreateRoundSessionRequest) => {
+      const response = await sessionManager.createForRound(data);
+      if (!response.success || !response.data) {
+        throw new Error(response.error || t("general.unableToCreateInterviewSession"));
+      }
+      return response.data;
+    },
+    onSuccess: (session) => {
+      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+      if (session?.id) {
+        queryClient.invalidateQueries({
+          queryKey: SESSION_QUERY_KEYS.byId(session.id),
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: ["application-details"],
+      });
+      options?.onSuccess?.(session);
     },
     onError: (error: Error) => {
       toast.error(getNormalizedErrorMessage(error, t("general.unableToCreateInterviewSession")));
