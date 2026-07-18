@@ -161,9 +161,9 @@ export function KioskBookingManagementPage() {
   };
 
   return (
-    <div className="bg-background flex h-full flex-col">
+    <div className="bg-background flex flex-col">
       {/* Toolbar */}
-      <div className="border-border bg-card flex flex-none flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
+      <div className="border-border bg-card flex flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl">
             <CalendarClock className="h-5 w-5" />
@@ -216,8 +216,8 @@ export function KioskBookingManagementPage() {
       </div>
 
       {/* Table */}
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
-        <div className="flex-1 overflow-auto p-4 sm:px-6 sm:py-6">
+      <div className="bg-slate-50 dark:bg-slate-950">
+        <div className="p-4 sm:px-6 sm:py-6">
           <BookingTable
             bookings={paginatedBookings}
             onViewDetails={handleViewDetails}
@@ -228,7 +228,7 @@ export function KioskBookingManagementPage() {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="border-border bg-card flex-none border-t px-4 py-3 sm:px-6">
+          <div className="border-border bg-card border-t px-4 py-3 sm:px-6">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-xs font-medium">
                 {t("common.showing")} {(pagination.currentPage - 1) * pagination.pageSize + 1}–

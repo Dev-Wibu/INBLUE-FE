@@ -214,7 +214,7 @@ export function QuestionBankCategoryTab({
     );
 
     return (
-      <div className="animate-in fade-in slide-in-from-right-4 flex h-full flex-col duration-300">
+      <div className="animate-in fade-in slide-in-from-right-4 flex flex-col duration-300">
         <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-3">
             <Button
@@ -237,7 +237,7 @@ export function QuestionBankCategoryTab({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950">
+        <div className="bg-slate-50 dark:bg-slate-950">
           {categoryQuestions.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center">
               <Folder className="mb-3 h-10 w-10 text-slate-300" />

@@ -186,9 +186,9 @@ export function KioskSchedulePage() {
   }
 
   return (
-    <div className="bg-background flex h-full flex-col">
+    <div className="bg-background flex flex-col">
       {/* Toolbar */}
-      <div className="border-border bg-card flex flex-none flex-col gap-4 border-b px-4 py-4 sm:px-6 sm:py-5">
+      <div className="border-border bg-card flex flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
         <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="ghost"
@@ -278,7 +278,7 @@ export function KioskSchedulePage() {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto p-4 sm:px-6 sm:py-6">
+      <div className="p-4 sm:px-6 sm:py-6">
         <ScheduleTable
           schedules={sortedSchedules}
           isLoading={isInitialLoading}

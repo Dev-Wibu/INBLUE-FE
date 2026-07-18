@@ -149,9 +149,9 @@ export function KioskManagementPage() {
   };
 
   return (
-    <div className="bg-background flex h-full flex-col">
+    <div className="bg-background flex flex-col">
       {/* Toolbar */}
-      <div className="border-border bg-card flex flex-none flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
+      <div className="border-border bg-card flex flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
         <div className="flex items-center gap-3">
           <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl">
             <Building2 className="h-5 w-5" />
@@ -193,7 +193,7 @@ export function KioskManagementPage() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto p-4 sm:px-6 sm:py-6">
+      <div className="p-4 sm:px-6 sm:py-6">
         {!isInitialLoading && filteredKiosks.length === 0 && (
           <div className="border-border bg-muted/30 text-muted-foreground mb-4 flex items-center gap-2 rounded-xl border border-dashed px-4 py-3 text-xs">
             <Search className="h-3.5 w-3.5" />

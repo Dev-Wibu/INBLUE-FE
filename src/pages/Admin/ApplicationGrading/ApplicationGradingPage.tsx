@@ -982,9 +982,9 @@ export function ApplicationGradingPage({
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
       {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">
             {t("adminApplicationGrading.pageTitle")}
@@ -1022,7 +1022,7 @@ export function ApplicationGradingPage({
       </div>
 
       {/* ── TABLE CONTENT ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
         {paginatedData.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center gap-4 border-y border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -1111,7 +1111,7 @@ export function ApplicationGradingPage({
               </Table>
             </div>
 
-            <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+            <div className="flex items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
               <PaginationControl pagination={pagination} />
             </div>
           </div>
@@ -1314,7 +1314,7 @@ export function ApplicationGradingDetailPage({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex flex-col">
       {/* Compact header — no sidebar, just back button */}
       <div className="flex h-14 shrink-0 items-center gap-3 overflow-hidden border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
         <Button
@@ -1381,7 +1381,7 @@ export function ApplicationGradingDetailPage({
       </div>
 
       {/* NEW LAYOUT: Single page with all rounds as expandable cards */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
         {/* Summary Stats Bar */}
         <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -1445,7 +1445,7 @@ export function ApplicationGradingDetailPage({
         )}
 
         {/* Expandable Round Cards */}
-        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="p-4 sm:p-6">
           {filteredDetails.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center text-center">
               <ClipboardCheck className="mb-4 h-12 w-12 text-slate-300" />
