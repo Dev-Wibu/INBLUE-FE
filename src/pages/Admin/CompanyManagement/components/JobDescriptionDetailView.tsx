@@ -89,32 +89,8 @@ export function JobDescriptionDetailView({
             correctAnswer: q.correctAnswer || "",
             points: Number(q.points ?? 0),
           })),
-          codingProblems:
-            r.configData?.codingProblemsId?.map((id) => {
-              const cp = r.configData?.codingProblems?.find(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (problem: any) => problem.problemId === id
-              );
-              return {
-                problemId: id,
-                title: cp?.title || `Bài tập #${id}`,
-                difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
-              };
-            }) ?? [],
-          codeReviewIds: r.configData?.codeReviewProblemsId || [],
-          codeReviewProblems:
-            r.configData?.codeReviewProblemsId?.map((id) => {
-              const cp = r.configData?.codeReviewProblems?.find(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (problem: any) => problem.problemId === id
-              );
-              return {
-                problemId: id,
-                title: cp?.title || `Bài tập #${id}`,
-                difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
-                language: cp?.language || "Java",
-              };
-            }) ?? [],
+          codingProblemsId: r.configData?.codingProblemsId ?? [],
+          codeReviewIds: r.configData?.codeReviewProblemsId ?? [],
         },
       }));
 

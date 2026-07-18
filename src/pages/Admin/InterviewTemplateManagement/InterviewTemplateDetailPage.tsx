@@ -167,30 +167,8 @@ export function InterviewTemplateDetailPage() {
               correctAnswer: q.correctAnswer || "",
               points: Number(q.points ?? 0),
             })),
-            codingProblems:
-              r.configData?.codingProblemsId?.map((id) => {
-                const cp = r.configData?.codingProblems?.find(
-                  (problem) => problem.problemId === id
-                );
-                return {
-                  problemId: id,
-                  title: cp?.title || t("common.exerciseId", { id }),
-                  difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
-                };
-              }) ?? [],
-            codeReviewIds: r.configData?.codeReviewProblemsId || [],
-            codeReviewProblems:
-              r.configData?.codeReviewProblemsId?.map((id) => {
-                const cp = r.configData?.codeReviewProblems?.find(
-                  (problem) => problem.problemId === id
-                );
-                return {
-                  problemId: id,
-                  title: cp?.title || t("common.exerciseId", { id }),
-                  difficulty: (cp?.difficulty as "EASY" | "MEDIUM" | "HARD") || "MEDIUM",
-                  language: cp?.language || "Java",
-                };
-              }) ?? [],
+            codingProblemsId: r.configData?.codingProblemsId ?? [],
+            codeReviewIds: r.configData?.codeReviewProblemsId ?? [],
           },
         })),
       };
