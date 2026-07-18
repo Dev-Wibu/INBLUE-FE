@@ -173,6 +173,12 @@ export function StudentSessionRoomPage() {
   //   matches how BE has historically distinguished the two flows.
   const handleJoined = async (participantId: string) => {
     if (hasJoinedTracking || !session?.roomName || !user?.id) return;
+    console.log("[StudentSessionRoomPage] handleJoined", {
+      sessionName: session.roomName,
+      userId: user.id,
+      participantId,
+      isMentor: false,
+    });
     try {
       await joinSessionMutation.mutateAsync({
         sessionName: session.roomName,
@@ -181,7 +187,9 @@ export function StudentSessionRoomPage() {
         mentor: false,
         isMentor: false,
       });
-    } catch {
+      console.log("[StudentSessionRoomPage] join-session SUCCESS");
+    } catch (err) {
+      console.error("[StudentSessionRoomPage] join-session FAILED", err);
       // mutation toast handles errors; we still want to record that we tried
     }
     queryClient.invalidateQueries({
@@ -320,7 +328,10 @@ export function StudentSessionRoomPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate("/user/sessions")}
+            onClick={() => {
+              console.log("[StudentSessionRoomPage] Back clicked, navigating to /user/sessions");
+              navigate("/user/sessions");
+            }}
             className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             {t("general.back")}

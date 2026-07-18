@@ -841,13 +841,13 @@ function RoundTimelineItem({
               {isCurrent &&
               !isEvaluating &&
               (round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
-              detail?.sessionId ? (
+              (detail?.sessionId ?? detail?.sessionInfo?.sessionId) ? (
                 // Mentor Interview round: delegate to the toggle button which
                 // shows "Vào phòng" / "Chờ mentor đánh giá" / "Đánh giá mentor"
                 // based on the live session state.
                 <MentorRoundActionButton
-                  sessionId={detail.sessionId}
-                  mentorId={detail.mentorId ?? null}
+                  sessionId={detail?.sessionId ?? detail?.sessionInfo?.sessionId}
+                  mentorId={detail?.mentorId ?? null}
                   compact
                 />
               ) : (

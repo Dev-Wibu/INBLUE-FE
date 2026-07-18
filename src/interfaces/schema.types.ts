@@ -198,6 +198,28 @@ export interface Session {
   duration?: number;
   totalPrice?: number;
   transactionCode?: string;
+  /** Mentor review of the student (set by mentor after session ends) */
+  mentorReview?: MentorReview | null;
+  /** Student feedback of the mentor (set by student after session ends) */
+  mentorFeedback?: MentorFeedback | null;
+}
+
+/** Mentor review of student (filled by mentor after session) */
+export interface MentorReview {
+  rating?: number;
+  situationNote?: string;
+  taskNote?: string;
+  actionNote?: string;
+  resultNote?: string;
+  strength?: string;
+  weakness?: string;
+  improve?: string;
+}
+
+/** Student feedback of mentor (filled by student after session) */
+export interface MentorFeedback {
+  rating?: number;
+  comment?: string;
 }
 
 /**

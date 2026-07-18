@@ -45,9 +45,15 @@ export function MentorRoundActionButton({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const hasSessionId = typeof sessionId === "number" && Number.isFinite(sessionId) && sessionId > 0;
+  // Parse sessionId - handle both number and string
+  const numericSessionId = sessionId != null && sessionId !== "" ? Number(sessionId) : null;
+  const hasSessionId =
+    typeof numericSessionId === "number" &&
+    Number.isFinite(numericSessionId) &&
+    numericSessionId > 0;
+
   const { state, session, loading, refetch } = useMentorRoundButtonState(
-    hasSessionId ? sessionId : null
+    hasSessionId ? numericSessionId : null
   );
   // We use a render counter instead of a boolean so each open cycle mounts
   // a fresh RateMentorModal — the modal owns its own open/close state and

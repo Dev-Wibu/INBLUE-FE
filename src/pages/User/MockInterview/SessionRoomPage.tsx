@@ -47,10 +47,12 @@ export function SessionRoomPage() {
   const pendingPaidSyncContext =
     session?.id && user?.id ? getPendingSessionPaidStatusSync(session.id, Number(user.id)) : null;
 
-  // Validate session and user
+  // Mentor interview sessions use status SCHEDULED (created by BE when
+  // student picks a slot). PAID/ONGOING are reserved for paid mock-interview
+  // sessions, so we accept all three shapes here.
   const canJoin =
     session &&
-    (session.status === "PAID" || session.status === "ONGOING") &&
+    (session.status === "PAID" || session.status === "ONGOING" || session.status === "SCHEDULED") &&
     session.roomUrl &&
     user;
 

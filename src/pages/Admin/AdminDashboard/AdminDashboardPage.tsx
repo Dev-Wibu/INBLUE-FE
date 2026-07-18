@@ -118,12 +118,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             color: "text-slate-400",
           },
           {
-            type: "mentor-review-assignment",
-            icon: UserCheck,
-            label: t("adminMentorReviewAssignment.sidebarLabel"),
-            color: "text-slate-400",
-          },
-          {
             type: "kiosk-bookings",
             icon: CalendarClock,
             label: t("adminKiosk.bookingRequests"),
@@ -182,6 +176,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         type: "mentorReviewApprovals",
         icon: UserCheck,
         label: t("adminAdmindashboard.mentorReviewApprovals"),
+        color: "text-slate-400",
+      },
+      {
+        type: "mentor-review-assignment",
+        icon: UserCheck,
+        label: t("adminMentorReviewAssignment.sidebarLabel"),
         color: "text-slate-400",
       },
       {

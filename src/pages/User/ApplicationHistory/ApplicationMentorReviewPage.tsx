@@ -1106,10 +1106,16 @@ export function ApplicationMentorReviewPage() {
           // the student should see the feedback form. Booking-derived state
           // is a derived optimisation; session-derived state is the source
           // of truth.
-          if (currentDetail?.sessionId) {
+          // sessionId lives in two places in the BE schema:
+          // 1. top-level `sessionId` (preferred, set by create-for-round)
+          // 2. nested `sessionInfo.sessionId` (always present when BE created a session)
+          // Use whichever is available so we can still fetch the session when (1) is null.
+          const sessionIdToFetch =
+            currentDetail?.sessionId ?? currentDetail?.sessionInfo?.sessionId ?? null;
+          if (sessionIdToFetch) {
             try {
               const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
-                params: { path: { id: currentDetail.sessionId } },
+                params: { path: { id: sessionIdToFetch } },
               });
               const live = (sessionRefetch.data ?? null) as {
                 roomUrl?: string;
@@ -1175,10 +1181,15 @@ export function ApplicationMentorReviewPage() {
             ...(prev ?? {}),
           }));
         }
-        if (fresh.sessionId) {
+        // Use either top-level sessionId or nested sessionInfo.sessionId.
+        const freshSessionId =
+          fresh.sessionId ??
+          (fresh.sessionInfo as { sessionId?: number } | null)?.sessionId ??
+          null;
+        if (freshSessionId) {
           try {
             const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
-              params: { path: { id: fresh.sessionId } },
+              params: { path: { id: freshSessionId } },
             });
             const live = (sessionRefetch.data ?? null) as {
               roomUrl?: string;
@@ -1190,7 +1201,14 @@ export function ApplicationMentorReviewPage() {
               endTime2?: string | null;
               durationSeconds1?: number | null;
               durationSeconds2?: number | null;
+              status?: string;
+              mentorReview?: unknown;
+              userId?: number;
             } | null;
+            // Update sessionRef so mentorReview is visible in the UI without F5.
+            sessionRef.current = live
+              ? { status: live.status, mentorReview: live.mentorReview, userId: live.userId }
+              : null;
             const room = live?.roomUrl;
             if (room) setRoomUrl(room);
             if (live) setSessionTiming(live);
@@ -1292,8 +1310,15 @@ export function ApplicationMentorReviewPage() {
               endTime2?: string | null;
               durationSeconds1?: number | null;
               durationSeconds2?: number | null;
+              status?: string;
+              mentorReview?: unknown;
+              userId?: number;
             }
           | undefined) ?? null;
+      // Keep sessionRef in sync so mentorReview/status changes propagate without F5.
+      sessionRef.current = live
+        ? { status: live.status, mentorReview: live.mentorReview, userId: live.userId }
+        : null;
       const room = live?.roomUrl;
       if (room === "OFFLINE") {
         setRoomUrl("OFFLINE");
@@ -1331,13 +1356,14 @@ export function ApplicationMentorReviewPage() {
   // reload before the first poll, or SlotSelectionStep completed in
   // a previous browser session), prime them from /api/sessions/{id}.
   // Without this the page rendered before but `RoomReadyStep` had no
-  // roomUrl to display.
+  // roomUrl to display. Supports both top-level sessionId and nested
+  // sessionInfo.sessionId (BE may populate either).
   useEffect(() => {
-    const sid = applicationDetail?.sessionId;
+    const sid = applicationDetail?.sessionId ?? applicationDetail?.sessionInfo?.sessionId ?? null;
     if (!sid) return;
     if (roomUrl) return;
     void fetchSessionRoomUrl(sid);
-  }, [applicationDetail?.sessionId, roomUrl]);
+  }, [applicationDetail?.sessionId, applicationDetail?.sessionInfo?.sessionId, roomUrl]);
 
   // Review submitted
   const handleReviewSubmitted = () => {
@@ -1355,12 +1381,15 @@ export function ApplicationMentorReviewPage() {
   // sessionTiming. UI branches then read from `bookingSnapshot` and
   // don't have to know whether the data came from
   // `MentorInterviewBooking` or `ApplicationDetail`.
+  // 2026-07-18: also fallback to sessionInfo.sessionId when top-level is null.
+  const effectiveSessionId =
+    applicationDetail?.sessionId ?? applicationDetail?.sessionInfo?.sessionId ?? null;
   const bookingSnapshot: MentorInterviewBooking | null =
     booking ??
-    (applicationDetail?.sessionId
+    (effectiveSessionId && applicationDetail
       ? ({
-          id: applicationDetail.bookingId ?? applicationDetail.sessionId,
-          sessionId: applicationDetail.sessionId,
+          id: applicationDetail.bookingId ?? effectiveSessionId,
+          sessionId: effectiveSessionId,
           mentorId: applicationDetail.mentorId,
           status: bookingStatusFromDetail(applicationDetail.status) ?? "ROOM_CREATED",
         } as MentorInterviewBooking)
@@ -1401,18 +1430,33 @@ export function ApplicationMentorReviewPage() {
   if (typeof window !== "undefined") {
     console.log("[MentorReviewPage]", {
       applicationId,
+      detailId: applicationDetail?.id,
       detailStatus: applicationDetail?.status,
+      detailSessionId: applicationDetail?.sessionId,
+      detailNestedSessionId: applicationDetail?.sessionInfo?.sessionId,
+      detailMentorId: applicationDetail?.mentorId,
+      detailMeetingType: applicationDetail?.sessionInfo?.meetingType,
       detailMentorReview: !!applicationDetail?.mentorReview,
       detailMentorFeedback: !!applicationDetail?.mentorFeedback,
+      bookingId: booking?.id,
+      bookingStatus: booking?.status,
       sessionMentorReview: !!sessionRef.current?.mentorReview,
       sessionStatus: sessionRef.current?.status,
       roomUrl: roomUrl ? roomUrl.slice(0, 40) : null,
+      sessionTiming: sessionTiming
+        ? {
+            startTime1: sessionTiming.startTime1,
+            endTime1: sessionTiming.endTime1,
+            startTime2: sessionTiming.startTime2,
+            endTime2: sessionTiming.endTime2,
+          }
+        : null,
       mentorReviewReceived,
       isReviewed,
       showFeedbackForm,
       isWrongRound,
-      currentRoundType: currentRound?.roundType,
       currentRoundId: currentRound?.id,
+      currentRoundType: currentRound?.roundType,
     });
   }
 
@@ -1523,17 +1567,18 @@ export function ApplicationMentorReviewPage() {
           bookingSnapshot && <OfflineConfirmedStep booking={bookingSnapshot} />}
 
         {/* ONLINE Room Ready — the interview is READY when:
-            1. ApplicationDetail carries a sessionId with a Daily.co URL, AND
+            1. ApplicationDetail carries a sessionId (top-level or sessionInfo.nested)
+               AND a Daily.co URL exists in the session, AND
             2. a mentor has been assigned (mentorId is non-null).
             We do NOT wait for BookingStatus === ROOM_CREATED because the
             BookingStatus is derived from ApplicationDetail.status which stays
             as SLOT_PICKED from the moment the student picks a slot. The
             session.rowUrl is the ground-truth readiness signal.
 
-            2026-07-18: skip this step when mentor has already reviewed the
-            student — we show ReviewFormStep instead so the student is not
-            redirected back to Daily.co for an interview that already ended. */}
-        {applicationDetail?.sessionId &&
+            2026-07-18: support both `sessionId` (top-level) and
+            `sessionInfo.sessionId` (nested) since BE schema doesn't always
+            populate the former. */}
+        {(applicationDetail?.sessionId || applicationDetail?.sessionInfo?.sessionId) &&
           roomUrl &&
           roomUrl !== "OFFLINE" &&
           applicationDetail?.mentorId &&

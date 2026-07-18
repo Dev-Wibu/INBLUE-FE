@@ -152,9 +152,17 @@ export const useCreateMentorFeedback = () => {
       }
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Invalidate all feedback queries
       queryClient.invalidateQueries({
         queryKey: FEEDBACK_QUERY_KEYS.all,
+      });
+      // Invalidate session-related queries so the button state updates
+      queryClient.invalidateQueries({
+        queryKey: ["mentor-round-session", variables.sessionId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["sessions"],
       });
       toast.success(t("general.responseSentSuccessfully"));
     },
