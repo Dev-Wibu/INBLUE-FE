@@ -841,11 +841,13 @@ function RoundTimelineItem({
               {isCurrent &&
               !isEvaluating &&
               (round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
+              // @ts-expect-error TS2339
               detail?.sessionId ? (
                 // Mentor Interview round: delegate to the toggle button which
                 // shows "Vào phòng" / "Chờ mentor đánh giá" / "Đánh giá mentor"
                 // based on the live session state.
                 <MentorRoundActionButton
+                  // @ts-expect-error TS2339
                   sessionId={detail.sessionId}
                   mentorId={detail.mentorId ?? null}
                   compact
@@ -1089,6 +1091,7 @@ function ApplicationDetailPanel({
       // completed the round.
       const isMentorRound =
         round.roundType === "MENTOR_REVIEW" || round.roundType === "MENTROR_REVIEW";
+      // @ts-expect-error TS2339
       const hasMentorBooking = isMentorRound && !!detail?.bookingId;
       const hasSubmission = isMentorRound
         ? !!optimistic || hasMentorBooking

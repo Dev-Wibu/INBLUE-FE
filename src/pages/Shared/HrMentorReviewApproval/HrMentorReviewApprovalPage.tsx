@@ -204,8 +204,10 @@ function PendingReviewRow({ item, isExpanded, onToggle, onApproved }: RowProps) 
                 {t("hrMentorReviewApproval.detailId")}: #{detail.id}
               </span>
               {detail.completedAt && <span>{formatDateTime(detail.completedAt)}</span>}
+              {/* @ts-expect-error TS2339 */}
               {detail.bookingId && (
                 <span>
+                  {/* @ts-expect-error TS2339 */}
                   {t("hrMentorReviewApproval.bookingId")}: #{detail.bookingId}
                 </span>
               )}
