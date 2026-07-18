@@ -373,6 +373,13 @@
     "rounds": "Rounds"
   },
   "adminDashboardoverview": {
+    "companies": "Companies",
+    "activeJDs": "Active JDs",
+    "communityPosts": "Community Posts",
+    "totalApplications": "Total applications",
+    "totalSessions": "Total sessions",
+    "recentApplications": "Recent Applications",
+    "latest8Applications": "Latest 8 applications on the platform",
     "14Days": "14 days",
     "30Days": "30 days",
     "7Days": "7 days",

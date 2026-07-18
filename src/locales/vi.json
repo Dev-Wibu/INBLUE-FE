@@ -373,6 +373,13 @@
     "rounds": "Các vòng phỏng vấn"
   },
   "adminDashboardoverview": {
+    "companies": "Doanh nghiệp",
+    "activeJDs": "JD Tuyển dụng",
+    "communityPosts": "Bài viết cộng đồng",
+    "totalApplications": "Tổng đơn ứng tuyển",
+    "totalSessions": "Tổng số phiên",
+    "recentApplications": "Ứng tuyển gần đây",
+    "latest8Applications": "8 đơn ứng tuyển mới nhất trên hệ thống",
     "14Days": "14 ngày",
     "30Days": "30 ngày",
     "7Days": "7 ngày",

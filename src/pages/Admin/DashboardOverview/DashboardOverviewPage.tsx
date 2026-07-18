@@ -13,11 +13,14 @@ import {
 } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { dashboardAdminManager } from "@/services";
+import { applicationService } from "@/services/application.manager";
+import { jobDescriptionManager } from "@/services/job-description.manager";
 import { useQuery } from "@tanstack/react-query";
 import { format, startOfDay, subDays } from "date-fns";
 import {
   Activity,
   Calendar as CalendarIcon,
+  ClipboardCheck,
   CreditCard,
   DollarSign,
   UserCheck,
@@ -39,6 +42,7 @@ type TrendPoint = {
   key: string;
   date: string;
   amount: number;
+  count: number;
 };
 type RangeMode = "7" | "14" | "30" | "custom";
 type EffectiveRange = {
@@ -107,10 +111,8 @@ const isWithinDateRange = (value: string | undefined, fromKey: string, toKey: st
   return dateKey >= fromKey && dateKey <= toKey;
 };
 const buildTrendData = (
-  records: Array<{
-    createdAt?: string;
-    amount?: number;
-  }>,
+  incomeRecords: Array<{ createdAt?: string; amount?: number }>,
+  applicationRecords: Array<{ createdAt?: string }>,
   fromKey: string,
   toKey: string
 ) => {
@@ -122,19 +124,24 @@ const buildTrendData = (
       key: cursorKey,
       date: formatDayMonth(cursorKey, ""),
       amount: 0,
+      count: 0,
     };
     pointMap[cursorKey] = point;
     points.push(point);
     cursorKey = shiftVietnamDateKey(cursorKey, 1);
   }
-  records.forEach((record) => {
+  incomeRecords.forEach((record) => {
     if (!record.createdAt) return;
     const dateKey = toVietnamDateKey(record.createdAt);
-    if (!dateKey) {
-      return;
-    }
-    if (pointMap[dateKey]) {
+    if (dateKey && pointMap[dateKey]) {
       pointMap[dateKey].amount += record.amount || 0;
+    }
+  });
+  applicationRecords.forEach((record) => {
+    if (!record.createdAt) return;
+    const dateKey = toVietnamDateKey(record.createdAt);
+    if (dateKey && pointMap[dateKey]) {
+      pointMap[dateKey].count += 1;
     }
   });
   return points;
@@ -188,6 +195,14 @@ export function DashboardOverviewPage() {
   const { data: incomeResponse, isLoading: loadingIncome } = useQuery({
     queryKey: ["admin", "total-income"],
     queryFn: () => dashboardAdminManager.getTotalIncome(),
+  });
+  const { data: applicationsResponse, isLoading: loadingApplications } = useQuery({
+    queryKey: ["admin", "applications"],
+    queryFn: () => applicationService.getAll(),
+  });
+  const { data: jdsResponse } = useQuery({
+    queryKey: ["admin", "jds"],
+    queryFn: () => jobDescriptionManager.getAll(),
   });
   const [rangeMode, setRangeMode] = useState<RangeMode>("30");
   const [customFrom, setCustomFrom] = useState<Date | undefined>(undefined);
@@ -276,12 +291,24 @@ export function DashboardOverviewPage() {
       directRevenue,
     };
   }, [filteredIncomeRecords]);
+  const filteredApplications = useMemo(
+    () =>
+      (applicationsResponse?.data || []).filter((record) =>
+        isWithinDateRange(record.createdAt, effectiveRange.fromKey, effectiveRange.toKey)
+      ),
+    [effectiveRange, applicationsResponse?.data]
+  );
   const incomeTrendData = useMemo(() => {
     const successfulIncome = filteredIncomeRecords.filter((payment) =>
       isSuccessPayment(payment.status)
     );
-    return buildTrendData(successfulIncome, effectiveRange.fromKey, effectiveRange.toKey);
-  }, [effectiveRange, filteredIncomeRecords]);
+    return buildTrendData(
+      successfulIncome,
+      filteredApplications,
+      effectiveRange.fromKey,
+      effectiveRange.toKey
+    );
+  }, [effectiveRange, filteredIncomeRecords, filteredApplications]);
   const overviewStats = [
     {
       title: t("adminDashboardoverview.totalUsers"),
@@ -308,6 +335,17 @@ export function DashboardOverviewPage() {
       color: "text-violet-600",
       bgColor: "bg-violet-50 dark:bg-violet-900/20",
     },
+    {
+      title: t("adminDashboardoverview.totalApplications") || "Total Applications",
+      value: loadingApplications
+        ? "..."
+        : (applicationsResponse?.data?.length || 0).toLocaleString(
+            i18n.language === "en" ? "en-US" : "vi-VN"
+          ),
+      icon: ClipboardCheck,
+      color: "text-amber-600",
+      bgColor: "bg-amber-50 dark:bg-amber-900/20",
+    },
   ];
   const recentTransactions = useMemo(() => {
     return filteredIncomeRecords
@@ -319,124 +357,37 @@ export function DashboardOverviewPage() {
         source: "INCOME" as const,
       }));
   }, [filteredIncomeRecords]);
+
+  const recentApplications = useMemo(() => {
+    return (applicationsResponse?.data || [])
+      .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
+      .slice(0, 8);
+  }, [applicationsResponse?.data]);
   return (
     <div className="min-h-screen bg-gray-50 p-6 dark:bg-slate-950">
       <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {t("adminDashboardoverview.systemOverview")}
+            {t("common.dashboard") || "Dashboard"}
           </h1>
           <p className="text-slate-500 dark:text-slate-400">
             {t("adminDashboardoverview.trackRecentRevenueAndTransactions")}
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-lg bg-white p-2 shadow-sm dark:bg-slate-900">
-          <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-md">
-            <Activity className="text-primary h-4 w-4" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500/10">
+            <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           </div>
           <span className="text-sm font-medium dark:text-slate-300">
             {t("adminDashboardoverview.system")}{" "}
-            <span className="font-bold text-emerald-500">
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">
               {t("adminDashboardoverview.stableOperation")}
             </span>
           </span>
         </div>
       </div>
 
-      <Card className="mb-8 border-0 shadow-sm dark:bg-slate-900">
-        <CardContent className="space-y-3 p-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                {t("adminDashboardoverview.analysisPeriod")}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {t("adminDashboardoverview.applicableRecentTradingAndChart")} {rangeLabel}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center rounded-lg border border-slate-200 p-1 dark:border-slate-700">
-                {RANGE_OPTIONS.map((option) => (
-                  <Button
-                    key={option.value}
-                    size="sm"
-                    variant={rangeMode === option.value ? "default" : "ghost"}
-                    onClick={() => setRangeMode(option.value)}>
-                    {option.label}
-                  </Button>
-                ))}
-              </div>
-
-              <Button
-                size="sm"
-                variant={rangeMode === "custom" ? "default" : "outline"}
-                onClick={() => setRangeMode("custom")}>
-                {t("adminDashboardoverview.customize")}
-              </Button>
-            </div>
-          </div>
-
-          {rangeMode === "custom" && (
-            <div className="grid gap-2 sm:grid-cols-[repeat(2,minmax(180px,auto))_auto] sm:items-center">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "justify-start",
-                      !customFrom && "text-slate-400 dark:text-slate-500"
-                    )}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {customFrom ? format(customFrom, "dd/MM/yyyy") : t("common.fromDate")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={customFrom} onSelect={handleCustomFromChange} />
-                </PopoverContent>
-              </Popover>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "justify-start",
-                      !customTo && "text-slate-400 dark:text-slate-500"
-                    )}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {customTo ? format(customTo, "dd/MM/yyyy") : t("common.comeDay")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={customTo} onSelect={handleCustomToChange} />
-                </PopoverContent>
-              </Popover>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="justify-self-start"
-                onClick={() => {
-                  setCustomFrom(undefined);
-                  setCustomTo(undefined);
-                }}>
-                {t("adminDashboardoverview.deleteCustomDates")}
-              </Button>
-            </div>
-          )}
-
-          {rangeMode === "custom" && (!customFrom || !customTo || customFrom > customTo) && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">
-              {t("adminDashboardoverview.pleaseSelectEnoughFromDate")}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {overviewStats.map((stat) => (
           <Card
             key={stat.title}
@@ -451,7 +402,7 @@ export function DashboardOverviewPage() {
                     {stat.value}
                   </p>
                 </div>
-                <div className={cn("rounded-xl p-3", stat.bgColor)}>
+                <div className={cn("shrink-0 rounded-xl p-3", stat.bgColor)}>
                   <stat.icon className={cn("h-6 w-6", stat.color)} />
                 </div>
               </div>
@@ -466,17 +417,84 @@ export function DashboardOverviewPage() {
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6">
         <Card className="border-0 shadow-sm dark:bg-slate-900">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg text-violet-600">
-              <DollarSign className="h-5 w-5" />
-              {t("adminDashboardoverview.liveRevenueTrends")}
-            </CardTitle>
-            <CardDescription>
-              {t("adminDashboardoverview.revenueFluctuationsIn")} {rangeDays}{" "}
-              {t("adminDashboardoverview.dateByFilter")}
-            </CardDescription>
+          <CardHeader className="flex flex-col space-y-4 pb-6 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg text-violet-600">
+                <DollarSign className="h-5 w-5" />
+                {t("adminDashboardoverview.liveRevenueTrends")}
+              </CardTitle>
+              <CardDescription>
+                {t("adminDashboardoverview.revenueFluctuationsIn")} {rangeDays}{" "}
+                {t("adminDashboardoverview.dateByFilter")} ({rangeLabel})
+              </CardDescription>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+              <div className="inline-flex shrink-0 items-center rounded-lg border border-slate-200 p-1 dark:border-slate-700">
+                {RANGE_OPTIONS.map((option) => (
+                  <Button
+                    key={option.value}
+                    size="sm"
+                    variant={rangeMode === option.value ? "default" : "ghost"}
+                    onClick={() => setRangeMode(option.value)}>
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant={rangeMode === "custom" ? "default" : "outline"}
+                    onClick={() => setRangeMode("custom")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {t("adminDashboardoverview.customize")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-4" align="end">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-medium text-slate-500">
+                          {t("common.fromDate")}
+                        </label>
+                        <Calendar
+                          mode="single"
+                          selected={customFrom}
+                          onSelect={handleCustomFromChange}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-medium text-slate-500">
+                          {t("common.comeDay")}
+                        </label>
+                        <Calendar
+                          mode="single"
+                          selected={customTo}
+                          onSelect={handleCustomToChange}
+                        />
+                      </div>
+                    </div>
+                    {(!customFrom || !customTo || customFrom > customTo) && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                        {t("adminDashboardoverview.pleaseSelectEnoughFromDate")}
+                      </p>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setCustomFrom(undefined);
+                        setCustomTo(undefined);
+                      }}>
+                      {t("adminDashboardoverview.deleteCustomDates")}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-[250px] w-full">
@@ -486,6 +504,10 @@ export function DashboardOverviewPage() {
                     <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorApplications" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -499,6 +521,7 @@ export function DashboardOverviewPage() {
                     }}
                   />
                   <YAxis
+                    yAxisId="left"
                     axisLine={false}
                     tickLine={false}
                     tick={{
@@ -507,30 +530,74 @@ export function DashboardOverviewPage() {
                     }}
                     tickFormatter={(value: number) => `${(value / 1_000_000).toFixed(1)}M`}
                   />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fontSize: 10,
+                      fill: "#64748b",
+                    }}
+                  />
                   <RechartsTooltip
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
-                      const item = payload[0] as {
-                        value?: number;
-                        payload?: TrendPoint;
-                      };
+                      const incomeItem = payload.find((p) => p.dataKey === "amount") as
+                        | { value: number }
+                        | undefined;
+                      const appsItem = payload.find((p) => p.dataKey === "count") as
+                        | { value: number }
+                        | undefined;
+                      const dateStr = payload[0]?.payload?.date;
                       return (
-                        <div className="rounded-lg border bg-white p-2 shadow-lg dark:border-slate-800 dark:bg-slate-900">
-                          <p className="text-xs font-bold">{item.payload?.date}</p>
-                          <p className="text-sm font-black text-violet-600">
-                            {formatCurrency(item.value || 0)}
+                        <div className="rounded-lg border bg-white p-3 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                          <p className="mb-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+                            {dateStr}
                           </p>
+                          <div className="flex flex-col gap-1">
+                            {incomeItem && (
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-violet-500" />
+                                <span className="text-xs text-slate-500">
+                                  {t("adminDashboardoverview.income")}:
+                                </span>
+                                <span className="text-xs font-black text-violet-600">
+                                  {formatCurrency(incomeItem.value || 0)}
+                                </span>
+                              </div>
+                            )}
+                            {appsItem && (
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                <span className="text-xs text-slate-500">Applications:</span>
+                                <span className="text-xs font-black text-emerald-600">
+                                  {appsItem.value || 0}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     }}
                   />
                   <Area
+                    yAxisId="left"
                     type="monotone"
                     dataKey="amount"
                     stroke="#8b5cf6"
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorIncome)"
+                  />
+                  <Area
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorApplications)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -539,68 +606,123 @@ export function DashboardOverviewPage() {
         </Card>
       </div>
 
-      <Card className="mt-8 border-0 shadow-sm dark:bg-slate-900">
-        <CardHeader>
-          <CardTitle className="text-lg">
-            {t("adminDashboardoverview.recentTransactions")}
-          </CardTitle>
-          <CardDescription>
-            {t("adminDashboardoverview.latest8DealsInApprox")} {rangeLabel}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            {!loadingIncome && recentTransactions.length === 0 ? (
-              <div className="col-span-2 py-10 text-center text-slate-400">
-                {t("adminDashboardoverview.noDataAvailable")}
-              </div>
-            ) : (
-              recentTransactions.map((record, index) => {
-                const statusLabel = getPaymentStatusLabel(record.status, t);
-                const successState = isSuccessPayment(record.status);
-                return (
-                  <div
-                    key={`${record.id || record.transactionCode || index}`}
-                    className="flex items-center justify-between rounded-xl border border-slate-100 p-4 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 text-violet-600">
-                        <CreditCard className="h-5 w-5" />
-                      </div>
-
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="max-w-[150px] truncate text-sm font-bold text-slate-900 dark:text-white">
-                            {record.description ||
-                              record.transactionCode ||
-                              t("adminDashboardoverview.noDescriptionAvailable")}
-                          </p>
-                          <Badge className="h-3.5 bg-violet-500 text-[8px]">
-                            {t("adminDashboardoverview.income")}
-                          </Badge>
+      <div className="mt-8 grid gap-6 xl:grid-cols-2">
+        <Card className="flex h-full flex-col border-0 shadow-sm dark:bg-slate-900">
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {t("adminDashboardoverview.recentTransactions")}
+            </CardTitle>
+            <CardDescription>
+              {t("adminDashboardoverview.latest8DealsInApprox")} {rangeLabel}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <div className="grid gap-3">
+              {!loadingIncome && recentTransactions.length === 0 ? (
+                <div className="py-10 text-center text-slate-400">
+                  {t("adminDashboardoverview.noDataAvailable")}
+                </div>
+              ) : (
+                recentTransactions.map((record, index) => {
+                  const statusLabel = getPaymentStatusLabel(record.status, t);
+                  const successState = isSuccessPayment(record.status);
+                  return (
+                    <div
+                      key={`${record.id || record.transactionCode || index}`}
+                      className="flex items-center justify-between rounded-xl border border-slate-100 p-4 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 text-violet-600">
+                          <CreditCard className="h-5 w-5" />
                         </div>
-                        <p className="text-xs text-slate-500">
-                          {formatTransactionTime(record.createdAt, t)}
+
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="max-w-[150px] truncate text-sm font-bold text-slate-900 dark:text-white">
+                              {record.description ||
+                                record.transactionCode ||
+                                t("adminDashboardoverview.noDescriptionAvailable")}
+                            </p>
+                            <Badge className="h-3.5 bg-violet-500 text-[8px]">
+                              {t("adminDashboardoverview.income")}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-slate-500">
+                            {formatTransactionTime(record.createdAt, t)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <p
+                          className={cn(
+                            "text-sm font-black",
+                            successState ? "text-emerald-600" : "text-amber-600"
+                          )}>
+                          {formatCurrency(record.amount || 0)}
                         </p>
+                        <p className="text-[10px] font-semibold text-slate-400">{statusLabel}</p>
                       </div>
                     </div>
+                  );
+                })
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-                    <div className="text-right">
-                      <p
-                        className={cn(
-                          "text-sm font-black",
-                          successState ? "text-emerald-600" : "text-amber-600"
-                        )}>
-                        {formatCurrency(record.amount || 0)}
-                      </p>
-                      <p className="text-[10px] font-semibold text-slate-400">{statusLabel}</p>
+        <Card className="flex h-full flex-col border-0 shadow-sm dark:bg-slate-900">
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {t("adminDashboardoverview.recentApplications") || "Recent Applications"}
+            </CardTitle>
+            <CardDescription>
+              {t("adminDashboardoverview.latest8Applications") ||
+                "Latest 8 applications on the platform"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <div className="grid gap-3">
+              {!loadingApplications && recentApplications.length === 0 ? (
+                <div className="py-10 text-center text-slate-400">
+                  {t("adminDashboardoverview.noDataAvailable")}
+                </div>
+              ) : (
+                recentApplications.map((record, index) => {
+                  const jdName =
+                    jdsResponse?.data?.find((jd) => jd.id === record.jdId)?.title ||
+                    `Application #${record.id}`;
+                  return (
+                    <div
+                      key={`app-${record.id || index}`}
+                      className="flex items-center justify-between rounded-xl border border-slate-100 p-4 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                          <ClipboardCheck className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="max-w-[150px] truncate text-sm font-bold text-slate-900 dark:text-white">
+                              {jdName}
+                            </p>
+                            <Badge
+                              variant="outline"
+                              className="h-3.5 text-[8px] font-semibold uppercase">
+                              {record.status || "NEW"}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-slate-500">
+                            {formatTransactionTime(record.createdAt, t)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                  );
+                })
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

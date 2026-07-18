@@ -340,6 +340,13 @@
     "rounds": "ラウンド"
   },
   "adminDashboardoverview": {
+    "companies": "企業",
+    "activeJDs": "求人情報",
+    "communityPosts": "コミュニティ投稿",
+    "totalApplications": "応募総数",
+    "totalSessions": "総セッション数",
+    "recentApplications": "最近の応募",
+    "latest8Applications": "最新8件の応募",
     "14Days": "14日間",
     "30Days": "30日間",
     "7Days": "7日間",
