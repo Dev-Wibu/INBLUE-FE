@@ -1082,16 +1082,16 @@ function ApplicationDetailPanel({
       if (!detail && orphanIdx < orphanedDetails.length) {
         detail = orphanedDetails[orphanIdx++];
       }
-      // For MENTOR_REVIEW rounds, a detail with status=PENDING and no bookingId
+      // For MENTOR_REVIEW rounds, a detail with status=PENDING and no sessionInfo.sessionId
       // means the user has not yet picked a kiosk slot — NOT a submission. Only
-      // consider it "submitted" once a bookingId (or non-PENDING status) exists,
+      // consider it "submitted" once a sessionInfo.sessionId (or non-PENDING status) exists,
       // otherwise the Enter Room button is hidden even though the user hasn't
       // completed the round.
       const isMentorRound =
         round.roundType === "MENTOR_REVIEW" || round.roundType === "MENTROR_REVIEW";
-      const hasMentorBooking = isMentorRound && !!detail?.bookingId;
+      const hasMentorSession = isMentorRound && !!detail?.sessionInfo?.sessionId;
       const hasSubmission = isMentorRound
-        ? !!optimistic || hasMentorBooking
+        ? !!optimistic || hasMentorSession
         : !!detail || !!optimistic;
 
       // This round is completed if:

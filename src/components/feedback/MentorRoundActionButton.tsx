@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 interface MentorRoundActionButtonProps {
-  sessionId?: number | null;
+  sessionId?: number | string | null;
   mentorId?: number | null;
   /** Optional mentor display name to surface in the rating modal. */
   mentorName?: string;
