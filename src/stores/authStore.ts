@@ -9,6 +9,26 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { User } from "@/interfaces/schema.types";
 import { getTokenExpiresAt, isSessionExpired } from "@/lib/auth-session";
 
+/**
+ * Parse avatarUrl from a JWT token's payload (base64url-decoded).
+ * Returns undefined if the token is invalid or avatarUrl is absent.
+ */
+function getAvatarUrlFromToken(token: string | null | undefined): string | undefined {
+  if (!token) return undefined;
+  try {
+    const raw = token.replace(/^Bearer\s+/i, "").trim();
+    const parts = raw.split(".");
+    if (parts.length < 2) return undefined;
+    const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
+    const url = payload.avatarUrl ?? payload.avatar;
+    return typeof url === "string" && url.trim().length > 0 ? url.trim() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export interface AuthState {
   // State
   isLoggedIn: boolean;
@@ -82,6 +102,12 @@ export const useAuthStore = create<AuthState>()(
 
           if (state.isLoggedIn && isSessionExpired(restoredExpiresAt)) {
             state.clearAuth();
+          } else if (state.isLoggedIn && state.user && !state.user.avatarUrl) {
+            // Patch avatarUrl from JWT token if user was persisted without it
+            const tokenAvatar = getAvatarUrlFromToken(state.token);
+            if (tokenAvatar) {
+              state.setUser({ ...state.user, avatarUrl: tokenAvatar });
+            }
           }
 
           state.setIsLoading(false);
