@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { LogOut, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -127,7 +127,31 @@ export function DashboardSidebar({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
   const clearAuth = useAuthStore((state) => state.clearAuth);
+
+  // Resolve avatar URL: prefer stored user.avatarUrl, fallback to parsing from JWT token
+  // This handles cases where user was persisted before avatarUrl was added to the user object
+  const resolvedAvatarUrl = useMemo(() => {
+    if (user?.avatarUrl) return user.avatarUrl;
+    if (!token) return undefined;
+    try {
+      const raw = token.replace(/^Bearer\s+/i, "").trim();
+      const parts = raw.split(".");
+      if (parts.length < 2) return undefined;
+      const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+      const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+      const binaryString = atob(padded);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+      const payload = JSON.parse(new TextDecoder("utf-8").decode(bytes)) as Record<string, unknown>;
+      const url = payload.avatarUrl ?? payload.avatar;
+      return typeof url === "string" && url.trim().length > 0 ? url.trim() : undefined;
+    } catch {
+      return undefined;
+    }
+  }, [user?.avatarUrl, token]);
+
   const isMobile = useIsMobile();
   const [internalCollapsed, setInternalCollapsed] = useState(() =>
     getInitialSidebarCollapsed(storageKey, legacyStorageKey)
@@ -410,9 +434,13 @@ export function DashboardSidebar({
               )}>
               <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
                 <Avatar className="h-8 w-8 shrink-0 border border-slate-200 shadow-sm dark:border-slate-700">
-                  <AvatarImage src={user.avatarUrl || ""} />
+                  <AvatarImage
+                    src={resolvedAvatarUrl || ""}
+                    alt={user.name || ""}
+                    referrerPolicy="no-referrer"
+                  />
                   <AvatarFallback className="bg-indigo-100 font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400">
-                    {user.name?.[0] || "U"}
+                    {user.name?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 {!isCollapsed && (
