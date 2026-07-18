@@ -45,8 +45,9 @@ export function MentorRoundActionButton({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  // Parse sessionId - handle both number and string
-  const numericSessionId = sessionId != null && sessionId !== "" ? Number(sessionId) : null;
+  // Parse sessionId - handle both number and string types
+  const numericSessionId =
+    sessionId !== null && sessionId !== undefined && sessionId !== "" ? Number(sessionId) : null;
   const hasSessionId =
     typeof numericSessionId === "number" &&
     Number.isFinite(numericSessionId) &&

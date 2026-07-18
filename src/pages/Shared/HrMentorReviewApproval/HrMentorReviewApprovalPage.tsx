@@ -204,9 +204,9 @@ function PendingReviewRow({ item, isExpanded, onToggle, onApproved }: RowProps) 
                 {t("hrMentorReviewApproval.detailId")}: #{detail.id}
               </span>
               {detail.completedAt && <span>{formatDateTime(detail.completedAt)}</span>}
-              {detail.bookingId && (
+              {detail.mentorId && (
                 <span>
-                  {t("hrMentorReviewApproval.bookingId")}: #{detail.bookingId}
+                  {t("hrMentorReviewApproval.bookingId")}: #{detail.mentorId}
                 </span>
               )}
             </div>
