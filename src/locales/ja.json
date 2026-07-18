@@ -4977,5 +4977,26 @@
     "saveChanges": "変更を保存"
   },
   "hour": "時間",
-  "minute": "分"
+  "minute": "分",
+  "userRateMentor": {
+    "modalTitle": "メンターを評価",
+    "modalDescription": "メンターとの面接の体験を共有し、システムの品質向上にご協力ください。",
+    "modalDescriptionWithMentor": "メンター{{name}}との面接はいかがでしたか?",
+    "ratingLabel": "評価 (1〜10)",
+    "ratingRequired": "1から10の評価を選択してください。",
+    "commentLabel": "詳細なコメント",
+    "commentPlaceholder": "メンターとの面接体験を共有してください(質問、態度、専門性、雰囲気など)...",
+    "commentHint": "最低{{count}}文字",
+    "commentTooShort": "コメントは{{count}}文字以上で入力してください。",
+    "submit": "評価を送信",
+    "notLoggedIn": "評価を送信するにはログインが必要です。",
+    "loading": "読み込み中...",
+    "joinRoom": "入室する",
+    "continueInterview": "面接を続ける",
+    "waitForMentorReview": "メンターの評価を待っています",
+    "rateMentor": "メンターを評価",
+    "done": "完了しました",
+    "notYet": "まだ時間外です ({{countdown}})",
+    "soon": "もうすぐ"
+  }
 }

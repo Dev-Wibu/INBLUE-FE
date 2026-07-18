@@ -1,3 +1,4 @@
+import { MentorRoundActionButton } from "@/components/feedback";
 import { ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -646,7 +647,6 @@ function RoundTimelineItem({
   isCurrent,
   isLocked,
   onEnterRoom,
-  onEnterMentorReview,
   onViewEmailSubmission,
   isPolling,
   optimistic,
@@ -659,7 +659,6 @@ function RoundTimelineItem({
   isCurrent: boolean;
   isLocked: boolean;
   onEnterRoom?: () => void;
-  onEnterMentorReview?: () => void;
   onViewEmailSubmission?: (_emailSubmissionId: number) => void;
   isPolling?: boolean;
   optimistic?: { isOptimistic: true; roundId: number; status: "SUBMITTED"; submittedAt: string };
@@ -838,27 +837,28 @@ function RoundTimelineItem({
                   </p>
                 </div>
               )}
-              {isCurrent && !isEvaluating && (
-                <Button
-                  onClick={onEnterRoom}
-                  size="sm"
-                  className="shrink-0 bg-[#0047AB] text-white hover:bg-[#003d91]">
-                  {t("userApplicationhistory.enterRoom")}
-                </Button>
-              )}
               {isCurrent &&
-                !isEvaluating &&
-                (round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
-                onEnterMentorReview && (
+              !isEvaluating &&
+              (round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
+              detail?.sessionId ? (
+                // Mentor Interview round: delegate to the toggle button which
+                // shows "Vào phòng" / "Chờ mentor đánh giá" / "Đánh giá mentor"
+                // based on the live session state.
+                <MentorRoundActionButton
+                  sessionId={detail.sessionId}
+                  mentorId={detail.mentorId ?? null}
+                  compact
+                />
+              ) : (
+                isCurrent && (
                   <Button
-                    onClick={onEnterMentorReview}
+                    onClick={onEnterRoom}
                     size="sm"
-                    variant="outline"
-                    className="shrink-0 border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-950">
-                    <Star className="mr-1 h-4 w-4" />
-                    {t("userApplicationhistory.mentorReview")}
+                    className="shrink-0 bg-[#0047AB] text-white hover:bg-[#003d91]">
+                    {t("userApplicationhistory.enterRoom")}
                   </Button>
-                )}
+                )
+              )}
             </div>
           </div>
         </div>
@@ -1063,15 +1063,25 @@ function ApplicationDetailPanel({
       // This round is completed if:
       // 1. Overall application is PASSED/FAILED/SOFT_FAILED, OR
       // 2. BE says this round is before current round (roundOrder < currentRoundOrder)
+      // 3. MENTOR_REVIEW round: detail.status === "COMPLETED" OR user has rated the mentor
+      //    (mentorFeedback != null) — even if the application hasn't been advanced to
+      //    PASSED yet, the student is done with this round once both sides have given
+      //    feedback, so the card should be visually marked as completed.
       // Note: AI_EVALUATED status alone does NOT mark a round as completed for user-facing UI
       // because HR review may still be pending. A round only "completes" when:
       //   - Application is overall PASSED, OR
       //   - Application is overall FAILED/SOFT_FAILED, OR
       //   - This round's roundOrder is strictly before currentRoundOrder (BE has officially advanced)
+      // MENTOR_REVIEW rounds: BE sets detail.status = "COMPLETED" once the round
+      // is fully done (meeting ended + mentor reviewed + student rated the mentor).
+      // We treat that as "round completed" even when the application is still
+      // IN_PROGRESS, so the card visually matches the other completed rounds.
+      const isMentorRoundFullyDone =
+        isMentorRound && (detail?.status as string | undefined) === "COMPLETED";
       const isCompleted =
         status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED"
           ? true
-          : (round.roundOrder ?? 0) < apiCurrentRoundOrder;
+          : isMentorRoundFullyDone || (round.roundOrder ?? 0) < apiCurrentRoundOrder;
 
       // This round is current if:
       // 1. No submission yet for this round
@@ -1260,13 +1270,6 @@ function ApplicationDetailPanel({
                 optimistic={item.optimistic}
                 onEnterRoom={
                   item.isCurrent ? () => handleEnterRoom(item.round, item.detail) : undefined
-                }
-                onEnterMentorReview={
-                  item.isCurrent &&
-                  (item.round?.roundType === "MENTOR_REVIEW" ||
-                    item.round?.roundType === "MENTROR_REVIEW")
-                    ? () => handleEnterRoom(item.round, item.detail)
-                    : undefined
                 }
                 onViewEmailSubmission={handleViewEmailSubmission}
               />

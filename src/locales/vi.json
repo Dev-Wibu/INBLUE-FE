@@ -4968,5 +4968,26 @@
     "saveChanges": "Lưu thay đổi"
   },
   "hour": "Giờ",
-  "minute": "Phút"
+  "minute": "Phút",
+  "userRateMentor": {
+    "modalTitle": "Đánh giá Mentor",
+    "modalDescription": "Chia sẻ trải nghiệm của bạn về buổi phỏng vấn với mentor để giúp hệ thống cải thiện chất lượng.",
+    "modalDescriptionWithMentor": "Bạn cảm thấy buổi phỏng vấn với mentor {{name}} thế nào?",
+    "ratingLabel": "Đánh giá (1–10)",
+    "ratingRequired": "Vui lòng chọn mức đánh giá từ 1 đến 10.",
+    "commentLabel": "Nhận xét chi tiết",
+    "commentPlaceholder": "Chia sẻ trải nghiệm của bạn về buổi phỏng vấn với mentor (câu hỏi, thái độ, chuyên môn, không khí, ...)...",
+    "commentHint": "Tối thiểu {{count}} ký tự",
+    "commentTooShort": "Nhận xét phải có ít nhất {{count}} ký tự.",
+    "submit": "Gửi đánh giá",
+    "notLoggedIn": "Bạn cần đăng nhập để gửi đánh giá.",
+    "loading": "Đang tải...",
+    "joinRoom": "Vào phòng",
+    "continueInterview": "Tiếp tục phỏng vấn",
+    "waitForMentorReview": "Chờ mentor đánh giá bạn",
+    "rateMentor": "Đánh giá Mentor",
+    "done": "Đã hoàn thành",
+    "notYet": "Chưa đến giờ ({{countdown}})",
+    "soon": "sắp tới"
+  }
 }

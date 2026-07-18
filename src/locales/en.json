@@ -4970,5 +4970,26 @@
     "saveChanges": "Save Changes"
   },
   "hour": "Hour",
-  "minute": "Minute"
+  "minute": "Minute",
+  "userRateMentor": {
+    "modalTitle": "Rate Mentor",
+    "modalDescription": "Share your experience of the interview with your mentor to help the system improve quality.",
+    "modalDescriptionWithMentor": "How was your interview with mentor {{name}}?",
+    "ratingLabel": "Rating (1–10)",
+    "ratingRequired": "Please choose a rating between 1 and 10.",
+    "commentLabel": "Detailed feedback",
+    "commentPlaceholder": "Share your interview experience with the mentor (questions, attitude, expertise, atmosphere, ...)...",
+    "commentHint": "Minimum {{count}} characters",
+    "commentTooShort": "Feedback must be at least {{count}} characters.",
+    "submit": "Submit rating",
+    "notLoggedIn": "You must be signed in to submit a rating.",
+    "loading": "Loading...",
+    "joinRoom": "Join room",
+    "continueInterview": "Continue interview",
+    "waitForMentorReview": "Waiting for mentor's review",
+    "rateMentor": "Rate Mentor",
+    "done": "Completed",
+    "notYet": "Not yet ({{countdown}})",
+    "soon": "soon"
+  }
 }
