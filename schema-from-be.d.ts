@@ -1244,6 +1244,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sessions/reactivate-webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["reactivateWebhook"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sessions/make-payment": {
         parameters: {
             query?: never;
@@ -1252,6 +1268,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["makePayment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sessions/check-webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["checkWebhook"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2590,10 +2622,6 @@ export interface components {
             /** Format: date-time */
             completedAt?: string;
             mentorReview?: components["schemas"]["MentorReview"];
-            /** Format: int64 */
-            sessionId?: number;
-            /** Format: int64 */
-            bookingId?: number;
             /** Format: int32 */
             mentorId?: number;
             sessionInfo?: components["schemas"]["RoundSessionInfo"];
@@ -3692,17 +3720,17 @@ export interface components {
         };
         JspPropertyGroupDescriptor: {
             trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
             elIgnored?: string;
             isXml?: string;
-            urlPatterns?: string[];
             defaultContentType?: string;
+            urlPatterns?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -6102,11 +6130,51 @@ export interface operations {
             };
         };
     };
+    reactivateWebhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
     makePayment: {
         parameters: {
             query: {
                 sessionId: number;
             };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    checkWebhook: {
+        parameters: {
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;

@@ -16,7 +16,7 @@ export function AdminHeader({ title, onToggleSidebar }: AdminHeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-gray-200/80 bg-white/85 px-4 shadow-sm backdrop-blur-md sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800/80 dark:bg-slate-900/85">
-        <div className="flex flex-1 items-center gap-4">
+        <div className="flex h-full flex-1 items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
@@ -50,7 +50,7 @@ export function AdminHeader({ title, onToggleSidebar }: AdminHeaderProps) {
           </h1>
         </div>
 
-        <div className="flex items-center gap-x-3 lg:gap-x-5">
+        <div className="flex h-full items-center gap-x-3 lg:gap-x-5">
           {/* Search bar */}
           <div className="group relative hidden max-w-xs items-center md:flex">
             <Search className="absolute left-3 h-4 w-4 text-gray-400 transition-colors group-focus-within:text-indigo-500" />
