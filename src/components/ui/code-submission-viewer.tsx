@@ -37,6 +37,39 @@ function getMonacoLanguage(language: string): string {
   return LANGUAGE_MAP[lang] ?? "plaintext";
 }
 
+/**
+ * Detect programming language from source code content.
+ *
+ * 2026-07-18: The BE's CodeSubmission schema does NOT include a `language`
+ * field, so the viewer previously hardcoded "python" as default and always
+ * showed the wrong language badge. This heuristic uses the BE-authored stub
+ * signatures (which contain language-specific keywords) to identify the
+ * language reliably. It is defensive — if detection fails it falls back to
+ * "unknown" with a neutral badge rather than a misleading "python".
+ */
+function detectLanguageFromCode(codeLines: string[]): string {
+  const joined = codeLines.join("\n");
+  // The BE code stubs have language-specific method signatures.
+  // Check in priority order — most distinctive patterns first.
+  if (/\bpublic\s+(class|interface)\s+\w+/.test(joined) && /public\s+\w+\s+solution\(/.test(joined))
+    return "JAVA";
+  if (/\bclass\s+Solution\b/.test(joined) && /def\s+solution\(/.test(joined)) return "SCALA";
+  if (/\bclass\s+Solution\b/.test(joined) && /^\s+fun\s+solution\(/.test(joined)) return "KOTLIN";
+  if (/\bclass\s+Solution\b/.test(joined) && /public\s+\w+\s+solution\(/.test(joined))
+    return "CSHARP";
+  if (/\bpublic\s+class\s+\w+\s*\{/.test(joined) && /public\s+static\s+void\s+main\(/.test(joined))
+    return "JAVA";
+  if (/\bclass\s+Solution\b/.test(joined) && /->\s*\w+/.test(joined)) return "TYPESCRIPT";
+  if (/\bfunction\s+solution\b/.test(joined)) return "JAVASCRIPT";
+  if (/\bdef\s+solution\b/.test(joined)) return "PYTHON";
+  if (/\bfunc\s+solution\b/.test(joined)) return "GO";
+  if (/\bfn\s+solution\b/.test(joined)) return "RUST";
+  if (/\bfunc\s+solution\b/.test(joined) && /_/.test(joined)) return "SWIFT";
+  if (/#include\s*<\w+\.h>/.test(joined)) return "CPP";
+  if (/\bprint\(/.test(joined) && !/System\.out\.print\(/.test(joined)) return "PYTHON";
+  return "UNKNOWN";
+}
+
 interface CodeSubmissionViewerProps {
   /** The submitted code (one submission per problem in CODING round) */
   codeSubmission: CodeSubmission;
@@ -58,7 +91,7 @@ interface CodeSubmissionViewerProps {
 
 export function CodeSubmissionViewer({
   codeSubmission,
-  language = "python",
+  language: languageProp,
   title,
   difficulty,
   timeLimitMs,
@@ -73,7 +106,11 @@ export function CodeSubmissionViewer({
 
   const codeLines = codeSubmission.sourceCode ?? [];
   const codeString = codeLines.join("\n");
-  const monacoLang = getMonacoLanguage(language);
+  // 2026-07-18: When the caller doesn't pass `language`, detect it from the
+  // submitted source code itself. This fixes the bug where the viewer always
+  // showed "python" because CodeSubmission has no language field in the BE schema.
+  const detectedLang = languageProp ?? detectLanguageFromCode(codeLines);
+  const monacoLang = getMonacoLanguage(detectedLang);
 
   const testCases = codeSubmission.testCases;
   const passedTests = testCases?.passedTestCases ?? 0;
@@ -124,7 +161,7 @@ export function CodeSubmissionViewer({
             </span>
           )}
           <span className="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
-            {language}
+            {detectedLang}
           </span>
         </div>
 

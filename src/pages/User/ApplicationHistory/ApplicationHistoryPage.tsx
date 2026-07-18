@@ -22,6 +22,7 @@ import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { applicationService } from "@/services/application.manager";
 import {
+  AlertCircle,
   Briefcase,
   Check,
   ChevronRight,
@@ -881,7 +882,29 @@ function ApplicationDetailPanel({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id, status } = application;
-  const rounds = useMemo(() => application.rounds ?? [], [application.rounds]);
+  // 2026-07-18: Track whether the BE /api/application-details/application/{id}
+  // call failed so the UI can surface a banner instead of silently falling
+  // back to JD-only rounds. BE returned 500 with "Could not deserialize
+  // string to java type:
+  // class fpt.org.inblue.model.ApplicationDetail$RoundSessionInfo" after a
+  // coding submission corrupted the persisted RoundSessionInfo blob.
+  // Without this guard the page silently displayed jd.rounds, which masked
+  // the BE bug and made every application of that JD look "wrong" (e.g.
+  // CODE_REVIEW shown as CODING).
+  const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState<boolean>(false);
+
+  // 2026-07-18: When the BE /api/application-details endpoint returns 5xx
+  // (e.g. "Could not deserialize ... RoundSessionInfo"), we cannot safely
+  // use jd.rounds as a fallback because every application sharing the same
+  // JD would visually misrepresent its first round (CODE_REVIEW rendered as
+  // CODING). Force an empty timeline + show the error banner so the user
+  // sees the real failure instead of stale/cross-application data.
+  const rounds = useMemo(
+    () => (detailsError ? [] : (application.rounds ?? [])),
+    [application.rounds, detailsError]
+  );
   const totalRounds = rounds.length;
 
   // Fetch current round from API as source of truth
@@ -897,9 +920,6 @@ function ApplicationDetailPanel({
     "apiCurrentRoundOrder:",
     apiCurrentRoundOrder
   );
-
-  const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
-  const [detailsLoading, setDetailsLoading] = useState(false);
 
   // DEBUG: Log rounds and details after state init
   console.log(
@@ -949,10 +969,20 @@ function ApplicationDetailPanel({
       if (result.response?.ok) {
         const data = result.data;
         setDetailsData(Array.isArray(data) ? (data as ApplicationDetail[]) : []);
+        setDetailsError(false);
         return Array.isArray(data) ? data : [];
       }
+      // Non-OK response (4xx/5xx). Capture status so banner can hint at cause.
+      console.warn(
+        "[fetchDetails] non-OK response for applicationId:",
+        id,
+        "status:",
+        result.response?.status
+      );
+      setDetailsError(true);
     } catch (err) {
       console.log("[DEBUG][fetchDetails] error:", err);
+      setDetailsError(true);
     } finally {
       if (!silent) setDetailsLoading(false);
     }
@@ -1021,6 +1051,10 @@ function ApplicationDetailPanel({
   // Stop polling when application changes
   useEffect(() => {
     stopPolling();
+    // Reset error state when switching applications so a previous BE failure
+    // does not leak into the new view.
+    setDetailsError(false);
+    setDetailsData([]);
     fetchDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -1244,6 +1278,19 @@ function ApplicationDetailPanel({
             {t("userApplicationhistory.interviewPipeline")}
           </CardTitle>
           <CardDescription>{t("userApplicationhistory.pageDescription")}</CardDescription>
+          {detailsError && (
+            <div
+              role="alert"
+              className="mt-3 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="font-medium">{t("userApplicationhistory.detailsLoadErrorTitle")}</p>
+                <p className="mt-0.5 text-xs text-red-600/90 dark:text-red-300/80">
+                  {t("userApplicationhistory.detailsLoadErrorHint")}
+                </p>
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {totalRounds === 0 ? (

@@ -10,8 +10,18 @@ import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import { cn } from "@/lib/utils";
 import { applicationDetailManager } from "@/services/application-detail.manager";
 import Editor from "@monaco-editor/react";
-import { BookOpen, CheckCircle2, Clock, Code2, FileCode2, Send, Terminal } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  Code2,
+  FileCode2,
+  Play,
+  Send,
+  Terminal,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { components } from "../../../schema-from-be";
 
@@ -28,19 +38,99 @@ const LANGUAGES = [
   { value: "GO", label: "Go", monaco: "go" },
   { value: "RUST", label: "Rust", monaco: "rust" },
   { value: "KOTLIN", label: "Kotlin", monaco: "kotlin" },
+  { value: "SCALA", label: "Scala", monaco: "scala" },
+  { value: "SWIFT", label: "Swift", monaco: "swift" },
 ];
 
-const DEFAULT_CODE: Record<string, string> = {
-  JAVA: `public class Solution {\n    public static void main(String[] args) {\n        // Write your solution here\n        \n    }\n}`,
-  PYTHON: `# Write your solution here\n`,
-  JAVASCRIPT: `// Write your solution here\n`,
-  TYPESCRIPT: `// Write your solution here\n`,
-  CPP: `#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    // Write your solution here\n    return 0;\n}`,
-  CSHARP: `using System;\n\nclass Solution {\n    static void Main() {\n        // Write your solution here\n    }\n}`,
-  GO: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Write your solution here\n}`,
-  RUST: `fn main() {\n    // Write your solution here\n}`,
-  KOTLIN: `fun main() {\n    // Write your solution here\n}`,
-};
+/**
+ * Resolve the starter template for a problem in the requested language.
+ *
+ * 2026-07-18: code stubs are now sourced exclusively from the backend
+ * (`problem.codeStubs`) so the candidate sees the same skeleton the admin
+ * authored. Key casing is inconsistent across problems (some admins store
+ * "JAVA", others "java", others "Solution.java") so we fall back to a
+ * case-insensitive lookup. If nothing matches we return an empty buffer —
+ * the LeetCode-style editor still renders, the candidate just starts blank.
+ */
+function getStubForLanguage(problem: CodingProblemSnapshot | undefined, language: string): string {
+  if (!problem?.codeStubs) return "";
+  const stubs = problem.codeStubs;
+  const direct = stubs[language];
+  if (typeof direct === "string") return direct;
+  const lower = language.toLowerCase();
+  for (const [key, value] of Object.entries(stubs)) {
+    if (typeof value !== "string") continue;
+    if (key.toLowerCase() === lower) return value;
+    // Allow filename-style keys, e.g. "Solution.java" → match JAVA.
+    if (key.toLowerCase().endsWith(`.${lower}`)) return value;
+    if (key.toLowerCase().endsWith(`${lower}.java`)) return value;
+  }
+  return "";
+}
+
+/**
+ * Poll `GET /api/application-details/application/{applicationId}` until
+ * the detail for this round flips to a terminal status, then return the
+ * matching `testCases` compiler response from `submissionData.codeSubmissions[]`.
+ *
+ * 2026-07-18: BE processes the Run Tests (`isTest: true`) call async via
+ * the same `@Async` event listener as Submit Final, so the only reliable
+ * way to surface PASSED/FAILED per test case is to keep polling the
+ * detail endpoint until `status === "COMPLETED"` (or any error state).
+ */
+const POLL_INTERVAL_MS = 1500;
+const POLL_MAX_ATTEMPTS = 60; // ~90s ceiling
+
+async function pollRunTestsResult(
+  applicationId: number,
+  roundId: number,
+  signal?: AbortSignal
+): Promise<{
+  status: "PENDING" | "COMPLETED" | "ERROR";
+  passed?: number;
+  total?: number;
+  testCases?: components["schemas"]["TestCaseResult"][];
+  errorMessage?: string;
+  compilerStatus?: string;
+}> {
+  for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS; attempt += 1) {
+    if (signal?.aborted) {
+      return { status: "ERROR", errorMessage: "Polling aborted" };
+    }
+    await new Promise((resolve) => {
+      setTimeout(resolve, POLL_INTERVAL_MS);
+    });
+    const res = await applicationDetailManager.getByApplicationId(applicationId);
+    if (!res.success || !res.data) {
+      continue;
+    }
+    const detail = res.data.find((d) => d.roundId === roundId);
+    if (!detail) {
+      continue;
+    }
+    if (detail.status === "PENDING" || detail.status === "SUBMITTED") {
+      continue;
+    }
+    // Terminal status — pull the latest testCases result from the
+    // submission payload. There is one CodeSubmission per problem we
+    // just submitted; pick the most recently updated one.
+    const subs = detail.submissionData?.codeSubmissions ?? [];
+    if (subs.length === 0) {
+      return { status: "ERROR", errorMessage: "No test results recorded" };
+    }
+    const latest = subs[subs.length - 1];
+    const tc = latest.testCases;
+    return {
+      status: "COMPLETED",
+      passed: tc?.passedTestCases,
+      total: tc?.totalTestCases,
+      testCases: tc?.testCases ?? [],
+      errorMessage: tc?.errorMessage ?? undefined,
+      compilerStatus: tc?.status,
+    };
+  }
+  return { status: "ERROR", errorMessage: "Polling timed out" };
+}
 
 export interface CodingSubmissionModalProps {
   open: boolean;
@@ -59,6 +149,7 @@ export function CodingSubmissionModal({
   open: _open,
   onOpenChange,
   applicationId,
+  roundId,
   roundName,
   codingProblems,
   codingProblemsId,
@@ -69,20 +160,43 @@ export function CodingSubmissionModal({
   const [language, setLanguage] = useState("JAVA");
   const [codes, setCodes] = useState<Record<number, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [activeTestTab, setActiveTestTab] = useState<"editor" | "test">("editor");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [problems, setProblems] = useState<CodingProblemSnapshot[]>(codingProblems);
   const monacoTheme = useMonacoTheme();
   const isDark = monacoTheme === "vs-dark";
 
+  // 2026-07-18: BE only returns `message: "Compile code thành công"`
+  // for `isTest: true`; the actual per-test-case results arrive
+  // asynchronously via `GET /api/application-details/application/{id}`.
+  // We poll that endpoint until the detail for `roundId` flips to a
+  // terminal status and then expose its `submissionData.codeSubmissions[].testCases`
+  // to the result panel.
+  type RunTestsPollState = {
+    status: "PENDING" | "COMPLETED" | "ERROR";
+    syncMessage?: string;
+    passed?: number;
+    total?: number;
+    testCases?: components["schemas"]["TestCaseResult"][];
+    errorMessage?: string;
+    compilerStatus?: string;
+  };
+  const [runStateByProblem, setRunStateByProblem] = useState<Record<number, RunTestsPollState>>({});
+
   // Initialize / fetch problems
+  // 2026-07-18: Pre-fill every problem's editor with the BE-provided code
+  // stub for the current language. Each problem can carry its own skeleton
+  // per language (problem.codeStubs[lang]) so the candidate starts with the
+  // exact contract the test runner expects. Switching the language dropdown
+  // swaps the stub in place via handleLanguageChange.
   useEffect(() => {
     setProblems(codingProblems);
     if (_open && codingProblems.length > 0) {
       const initialCodes: Record<number, string> = {};
       codingProblems.forEach((p, idx) => {
-        const lang = language;
-        initialCodes[p.problemId ?? idx] =
-          codes[p.problemId ?? idx] || DEFAULT_CODE[lang] || "// Write your solution here\n";
+        const pid = p.problemId ?? idx;
+        initialCodes[pid] = getStubForLanguage(p, language);
       });
       setCodes(initialCodes);
     }
@@ -107,11 +221,12 @@ export function CodingSubmissionModal({
         const fetched = results.filter(Boolean) as CodingProblemSnapshot[];
         if (fetched.length > 0) {
           setProblems(fetched);
+          // Pre-fill every freshly fetched problem with the active language's
+          // BE-authored code stub (or empty buffer if no stub is registered).
           const initialCodes: Record<number, string> = {};
           fetched.forEach((p, idx) => {
-            const lang = language;
-            initialCodes[p.problemId ?? idx] =
-              DEFAULT_CODE[lang] || "// Write your solution here\n";
+            const pid = p.problemId ?? idx;
+            initialCodes[pid] = getStubForLanguage(p, language);
           });
           setCodes(initialCodes);
         }
@@ -122,7 +237,9 @@ export function CodingSubmissionModal({
 
   const activeProblem = problems[activeProblemIdx];
   const activeProblemId = activeProblem?.problemId ?? activeProblemIdx;
-  const activeCode = codes[activeProblemId] ?? DEFAULT_CODE[language] ?? "";
+  // Fall back to the active language's BE-authored stub (or empty buffer) so
+  // Monaco never renders an empty editor with a missing cursor position.
+  const activeCode = codes[activeProblemId] ?? getStubForLanguage(activeProblem, language);
 
   const handleCodeChange = useCallback(
     (value: string | undefined) => {
@@ -137,19 +254,102 @@ export function CodingSubmissionModal({
   const handleLanguageChange = useCallback(
     (lang: string) => {
       setLanguage(lang);
-      const currentCode = codes[activeProblemId];
-      const isDefault =
-        !currentCode ||
-        Object.values(DEFAULT_CODE).some((tpl) => tpl.trim() === currentCode.trim());
-      if (isDefault) {
-        setCodes((prev) => ({
-          ...prev,
-          [activeProblemId]: DEFAULT_CODE[lang] ?? "",
-        }));
-      }
+      // 2026-07-18: LeetCode-style — switching the language ALWAYS swaps the
+      // editor buffer to the matching stub (sourced from
+      // `problem.codeStubs[lang]` on the backend). Any unsaved work in the
+      // previous language is replaced. If the BE has no stub for the chosen
+      // language we leave the buffer empty so the candidate can start fresh.
+      setCodes((prev) => {
+        const next: Record<number, string> = {};
+        problems.forEach((p, idx) => {
+          const pid = p.problemId ?? idx;
+          next[pid] = getStubForLanguage(p, lang);
+        });
+        // Keep any extra problem entries that don't appear in `problems`
+        // (defensive — should not happen but avoids data loss).
+        Object.keys(prev).forEach((k) => {
+          const key = Number(k);
+          if (!(key in next)) next[key] = prev[key];
+        });
+        return next;
+      });
     },
-    [codes, activeProblemId]
+    [problems]
   );
+
+  /**
+   * Run the candidate's current code against the visible examples.
+   * 2026-07-18: BE marks this with `isTest: true` so it executes against
+   * the problem's visible examples only (no DB persistence). Response is
+   * synchronous (no polling needed) and includes per-test PASSED/FAILED
+   * plus the actual output, so we can surface it inline below the editor.
+   */
+  const handleRunTests = async () => {
+    const target = problems[activeProblemIdx];
+    if (!target) {
+      toast.warning(t("compCodingSubmissionModal.noProblemsCannotSubmit"));
+      return;
+    }
+    const problemId = target.problemId ?? activeProblemIdx;
+    const code = codes[problemId] ?? "";
+    if (!code.trim()) {
+      toast.warning(t("compCodingSubmissionModal.pleaseWriteCodeBeforeRunning"));
+      return;
+    }
+
+    setIsRunning(true);
+    try {
+      const compileRequest = [
+        {
+          problemId,
+          language: language as CompileRequest["language"],
+          sourceCode: code.split("\n"),
+          isTest: true,
+        },
+      ];
+      const result = await applicationDetailManager.submit({
+        applicationId,
+        compileRequest,
+      });
+
+      if (!result.success) {
+        toast.error(
+          result.error ??
+            t("common.anErrorHasOccurred") ??
+            t("compCodingSubmissionModal.errorOccurred")
+        );
+        return;
+      }
+
+      // Surface the BE's sync message ("Compile code thành công") as a
+      // first signal, then kick off polling to fetch the per-test-case
+      // verdict.
+      const syncPayload = result.data as components["schemas"]["SubmissionResult"] | undefined;
+      const syncMessage = syncPayload?.message;
+      setRunStateByProblem((prev) => ({
+        ...prev,
+        [problemId]: { status: "PENDING", syncMessage },
+      }));
+      setActiveTestTab("test");
+      if (syncMessage) {
+        toast.info(syncMessage);
+      }
+
+      const polled = await pollRunTestsResult(applicationId, roundId);
+      setRunStateByProblem((prev) => ({
+        ...prev,
+        [problemId]: { ...polled, syncMessage: prev[problemId]?.syncMessage ?? syncMessage },
+      }));
+      if (polled.status === "COMPLETED" && polled.compilerStatus !== "COMPILE_ERROR") {
+        toast.success(t("compCodingSubmissionModal.runTestsSuccess"));
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error(t("common.anErrorHasOccurred") ?? t("compCodingSubmissionModal.errorOccurred"));
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (problems.length === 0) {
@@ -159,7 +359,7 @@ export function CodingSubmissionModal({
 
     const emptyProblems = problems.filter((p) => {
       const code = codes[p.problemId ?? problems.indexOf(p)] ?? "";
-      return !code.trim() || Object.values(DEFAULT_CODE).some((tpl) => tpl.trim() === code.trim());
+      return !code.trim();
     });
 
     if (emptyProblems.length > 0) {
@@ -171,7 +371,13 @@ export function CodingSubmissionModal({
 
     setIsSubmitting(true);
     try {
-      const compileRequest: CompileRequest[] = problems.map((p) => {
+      // 2026-07-18: Per backend confirmation, BE expects one
+      // `compileRequest[i]` multipart field per problem — each entry is
+      // its own JSON object with `problemId`, `language`, `sourceCode`
+      // (List<String>) and `isTest`. application-detail-manager.submit
+      // serialises them under indexed keys (compileRequest[0],
+      // compileRequest[1], ...) automatically.
+      const compileRequest = problems.map((p) => {
         const problemId = p.problemId ?? problems.indexOf(p);
         const code = codes[problemId] ?? "";
         const lines = code.split("\n");
@@ -185,7 +391,7 @@ export function CodingSubmissionModal({
 
       const result = await applicationDetailManager.submit({
         applicationId,
-        compileRequest: JSON.stringify(compileRequest),
+        compileRequest,
       });
 
       if (result.success) {
@@ -256,6 +462,26 @@ export function CodingSubmissionModal({
                   </span>
                 </div>
               )}
+              {/* Run Tests — chạy với visible examples, sync response, KHÔNG lưu DB */}
+              <Button
+                onClick={handleRunTests}
+                disabled={isRunning || isSubmitting}
+                size="sm"
+                variant="outline"
+                className="gap-2 border-blue-300 px-3 font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/20">
+                {isRunning ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span>{t("compCodingSubmissionModal.running")}</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-3.5 w-3.5" />
+                    <span>{t("compCodingSubmissionModal.runTests")}</span>
+                  </>
+                )}
+              </Button>
+              {/* Submit Final — chấm với hidden test cases, async (cần polling) */}
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
@@ -269,7 +495,7 @@ export function CodingSubmissionModal({
                 ) : (
                   <>
                     <Send className="h-3.5 w-3.5" />
-                    <span>{t("compCodingSubmissionModal.submitExam")}</span>
+                    <span>{t("compCodingSubmissionModal.submitFinal")}</span>
                   </>
                 )}
               </Button>
@@ -326,9 +552,11 @@ export function CodingSubmissionModal({
                   problems.map((problem, idx) => {
                     const problemId = problem.problemId ?? idx;
                     const code = codes[problemId] ?? "";
-                    const hasCode =
-                      code.trim() &&
-                      !Object.values(DEFAULT_CODE).some((tpl) => tpl.trim() === code.trim());
+                    // "hasCode" = user has typed something beyond the BE stub.
+                    // Comparing against the stub is unreliable since admins
+                    // can author empty or custom skeletons; simpler rule is:
+                    // anything non-empty after a trim counts as user input.
+                    const hasCode = code.trim().length > 0;
                     const isActive = activeProblemIdx === idx;
 
                     return (
@@ -461,32 +689,72 @@ export function CodingSubmissionModal({
               </div>
             </div>
 
-            {/* Monaco */}
-            <div className="flex-1 overflow-hidden">
-              <Editor
-                height="100%"
-                language={monacoLang}
-                value={activeCode}
-                onChange={handleCodeChange}
-                theme={monacoTheme}
-                options={{
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  fontSize: 14,
-                  lineHeight: 22,
-                  lineNumbers: "on",
-                  folding: true,
-                  wordWrap: "on",
-                  padding: { top: 16, bottom: 16 },
-                  scrollbar: { verticalScrollbarSize: 6, horizontalScrollbarSize: 6 },
-                  renderLineHighlight: "line",
-                  tabSize: 4,
-                  insertSpaces: true,
-                  automaticLayout: true,
-                  glyphMargin: false,
-                  fixedOverflowWidgets: true,
-                }}
-              />
+            {/* Editor + Test Results tabs */}
+            <div className="flex flex-1 flex-col overflow-hidden">
+              {/* Tab strip */}
+              <div className="flex shrink-0 items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 dark:border-slate-700 dark:bg-slate-900">
+                <button
+                  type="button"
+                  onClick={() => setActiveTestTab("editor")}
+                  className={cn(
+                    "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-semibold transition-colors",
+                    activeTestTab === "editor"
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                  )}>
+                  <Code2 className="h-3.5 w-3.5" />
+                  {t("compCodingSubmissionModal.submit")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTestTab("test")}
+                  className={cn(
+                    "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-xs font-semibold transition-colors",
+                    activeTestTab === "test"
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                  )}>
+                  <Terminal className="h-3.5 w-3.5" />
+                  {t("compCodingSubmissionModal.testResults")}
+                  {runStateByProblem[activeProblemId] && (
+                    <span className="ml-1 rounded-full bg-slate-200 px-1.5 text-[10px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                      {runStateByProblem[activeProblemId]?.testCases?.length ?? 0}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Tab content */}
+              {activeTestTab === "editor" ? (
+                <div className="flex-1 overflow-hidden">
+                  <Editor
+                    height="100%"
+                    language={monacoLang}
+                    value={activeCode}
+                    onChange={handleCodeChange}
+                    theme={monacoTheme}
+                    options={{
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      fontSize: 14,
+                      lineHeight: 22,
+                      lineNumbers: "on",
+                      folding: true,
+                      wordWrap: "on",
+                      padding: { top: 16, bottom: 16 },
+                      scrollbar: { verticalScrollbarSize: 6, horizontalScrollbarSize: 6 },
+                      renderLineHighlight: "line",
+                      tabSize: 4,
+                      insertSpaces: true,
+                      automaticLayout: true,
+                      glyphMargin: false,
+                      fixedOverflowWidgets: true,
+                    }}
+                  />
+                </div>
+              ) : (
+                <RunTestsPanel state={runStateByProblem[activeProblemId]} />
+              )}
             </div>
           </div>
 
@@ -621,28 +889,11 @@ function ProblemView({ problem }: { problem: CodingProblemSnapshot }) {
           </div>
         </div>
       )}
-
-      {/* Code stubs */}
-      {problem.codeStubs && Object.keys(problem.codeStubs).length > 0 && (
-        <div>
-          <SectionLabel>Code stub</SectionLabel>
-          <div className="rounded-lg border border-slate-200 bg-slate-900 p-3 dark:border-slate-700">
-            {Object.entries(problem.codeStubs).map(([filename, code]) => (
-              <div key={filename} className="mb-3 last:mb-0">
-                <div className="mb-1.5 flex items-center gap-1.5">
-                  <FileCode2 className="h-3.5 w-3.5 text-indigo-400" />
-                  <span className="font-mono text-[11px] font-semibold text-indigo-300">
-                    {filename}
-                  </span>
-                </div>
-                <pre className="overflow-x-auto font-mono text-[11px] leading-relaxed text-slate-300">
-                  {code}
-                </pre>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* 2026-07-18: removed the "Code stub" preview block. Candidates used to
+          have to copy/paste the skeleton from this panel into the editor;
+          now the stub is auto-applied on open + every language switch (see
+          getStubForLanguage). The right panel stays focused on the problem
+          statement + examples. */}
     </div>
   );
 }
@@ -680,5 +931,170 @@ function DifficultyPill({ difficulty, active }: { difficulty: string; active: bo
       )}>
       {labels[difficulty] ?? difficulty}
     </span>
+  );
+}
+
+/**
+ * Right-panel test result viewer. 2026-07-18: only renders when the
+ * candidate has hit "Run Tests" — surfaces per-test-case PASSED/FAILED,
+ * compile errors and any message from the BE controller.
+ */
+function RunTestsPanel({
+  state,
+}: {
+  state:
+    | {
+        status: "PENDING" | "COMPLETED" | "ERROR";
+        syncMessage?: string;
+        passed?: number;
+        total?: number;
+        testCases?: components["schemas"]["TestCaseResult"][];
+        errorMessage?: string;
+        compilerStatus?: string;
+      }
+    | undefined;
+}) {
+  const { t } = useTranslation();
+  const testCases = state?.testCases ?? [];
+  const hasResults = testCases.length > 0;
+  const passed = testCases.filter((tc) => tc.status?.toLowerCase() === "passed").length;
+  const failed = testCases.filter((tc) => tc.status?.toLowerCase() === "failed").length;
+  const errored = testCases.filter((tc) => tc.status?.toLowerCase() === "error").length;
+  const isPending = state?.status === "PENDING";
+  const compileError = state?.compilerStatus === "COMPILE_ERROR" && state?.errorMessage;
+
+  if (!state) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 bg-slate-50 p-8 text-center dark:bg-slate-900">
+        <Terminal className="h-10 w-10 text-slate-300 dark:text-slate-700" />
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+          {t("compCodingSubmissionModal.noTestResultsYet")}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-900">
+      {state.syncMessage && (
+        <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-300">
+          {state.syncMessage}
+        </div>
+      )}
+
+      {compileError && (
+        <pre className="mb-3 overflow-x-auto rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          {compileError}
+        </pre>
+      )}
+
+      {isPending && !hasResults && !compileError && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-3 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <Spinner size="sm" />
+          <span>{t("compCodingSubmissionModal.running")}</span>
+        </div>
+      )}
+
+      {hasResults && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+          <span className="text-xs font-bold text-green-600 dark:text-green-400">
+            {state.passed ?? passed}
+          </span>
+          <span className="text-xs text-slate-400">/</span>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+            {state.total ?? testCases.length}
+          </span>
+          <span className="text-[10px] text-slate-500">
+            {t("compCodingSubmissionModal.testPassed")}
+          </span>
+          {failed > 0 && (
+            <span className="ml-auto rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-900/30 dark:text-red-300">
+              {failed} {t("compCodingSubmissionModal.testFailed")}
+            </span>
+          )}
+          {errored > 0 && (
+            <span className="rounded bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+              {errored} {t("compCodingSubmissionModal.testError")}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {testCases.map((tc, idx) => {
+          const status = tc.status?.toUpperCase() ?? "UNKNOWN";
+          const isPassed = status === "PASSED";
+          const isError = status === "ERROR";
+          return (
+            <div
+              key={idx}
+              className={cn(
+                "rounded-lg border p-3 font-mono text-xs",
+                isPassed && "border-green-200 bg-white dark:border-green-900 dark:bg-green-950/20",
+                !isPassed &&
+                  !isError &&
+                  "border-red-200 bg-white dark:border-red-900 dark:bg-red-950/20",
+                isError && "border-orange-200 bg-white dark:border-orange-900 dark:bg-orange-950/20"
+              )}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold",
+                      isPassed && "bg-green-500 text-white",
+                      !isPassed && !isError && "bg-red-500 text-white",
+                      isError && "bg-orange-500 text-white"
+                    )}>
+                    {idx + 1}
+                  </span>
+                  <span
+                    className={cn(
+                      "font-bold",
+                      isPassed && "text-green-700 dark:text-green-300",
+                      !isPassed && !isError && "text-red-700 dark:text-red-300",
+                      isError && "text-orange-700 dark:text-orange-300"
+                    )}>
+                    {status}
+                  </span>
+                  {tc.executionTimeMs !== undefined && tc.executionTimeMs > 0 && (
+                    <span className="text-[10px] text-slate-400">({tc.executionTimeMs}ms)</span>
+                  )}
+                </div>
+                <span className="text-[10px] text-slate-400">{status}</span>
+              </div>
+              <div className="mt-2 grid grid-cols-1 gap-1">
+                {tc.input && (
+                  <div>
+                    <span className="font-bold text-slate-500">
+                      {t("compCodingSubmissionModal.testInput")}:{" "}
+                    </span>
+                    <span className="text-slate-700 dark:text-slate-300">{tc.input}</span>
+                  </div>
+                )}
+                <div>
+                  <span className="font-bold text-slate-500">
+                    {t("compCodingSubmissionModal.expectedOutput")}:{" "}
+                  </span>
+                  <span className="text-green-600 dark:text-green-300">{tc.expectedOutput}</span>
+                </div>
+                {!isPassed && tc.actualOutput && (
+                  <div>
+                    <span className="font-bold text-slate-500">
+                      {t("compCodingSubmissionModal.actualOutput")}:{" "}
+                    </span>
+                    <span className="text-red-600 dark:text-red-300">{tc.actualOutput}</span>
+                  </div>
+                )}
+                {tc.errorMessage && (
+                  <pre className="mt-1 overflow-x-auto rounded bg-red-100 p-2 text-[11px] text-red-700 dark:bg-red-950/30 dark:text-red-300">
+                    {tc.errorMessage}
+                  </pre>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

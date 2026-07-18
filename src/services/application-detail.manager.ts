@@ -13,7 +13,15 @@ export interface SubmitApplicationDetailParams {
   textContent?: string;
   file?: File;
   quizAnswers?: string[];
-  compileRequest?: string; // JSON string for coding submissions
+  /**
+   * One CompileRequest per problem. Per 2026-07-18 BE controller
+   * behaviour the whole array is JSON-encoded into a SINGLE multipart
+   * field named `compileRequest` (the controller does NOT expose the
+   * indexed getter that Spring multipart binding requires for
+   * `compileRequest[0]` shape, so indexed fields throw
+   * `Illegal attempt to get property 'compileRequest'`).
+   */
+  compileRequest?: components["schemas"]["CompileRequest"][];
 }
 
 export interface HrScoreParams {
@@ -70,8 +78,17 @@ export class ApplicationDetailManager {
       if (params.quizAnswers && params.quizAnswers.length > 0) {
         params.quizAnswers.forEach((ans) => formData.append("quizAnswers", ans));
       }
-      if (params.compileRequest) {
-        formData.append("compileRequest", params.compileRequest);
+      if (params.compileRequest && params.compileRequest.length > 0) {
+        // 2026-07-18: BE tried three different multipart shapes and only
+        // the single JSON-encoded array works against the current
+        // controller. Sending `compileRequest[0]` / `compileRequest[1]`
+        // throws `Illegal attempt to get property 'compileRequest'` on
+        // the BE side (see #compile-error-500). Sending nested
+        // `compileRequest[0].problemId` fields fails because Spring's
+        // multipart binding requires the DTO to expose indexed getters
+        // (`getCompileRequest(int)`) which the controller does not. So
+        // we send the canonical JSON-encoded array in a single field.
+        formData.append("compileRequest", JSON.stringify(params.compileRequest));
       }
 
       const response = await fetchClient
