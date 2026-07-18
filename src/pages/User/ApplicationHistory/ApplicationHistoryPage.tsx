@@ -838,28 +838,21 @@ function RoundTimelineItem({
                   </p>
                 </div>
               )}
-              {isCurrent &&
-              !isEvaluating &&
-              (round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
-              (detail?.sessionInfo?.sessionId ?? detail?.mentorId) ? (
-                // Mentor Interview round: delegate to the toggle button which
-                // shows "Vào phòng" / "Chờ mentor đánh giá" / "Đánh giá mentor"
-                // based on the live session state.
+              {/* Mentor Review rounds: always show the toggle button, even after completion */}
+              {round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW" ? (
                 <MentorRoundActionButton
                   sessionId={detail?.sessionInfo?.sessionId ?? undefined}
                   mentorId={detail?.mentorId ?? null}
                   compact
                 />
-              ) : (
-                isCurrent && (
-                  <Button
-                    onClick={onEnterRoom}
-                    size="sm"
-                    className="shrink-0 bg-[#0047AB] text-white hover:bg-[#003d91]">
-                    {t("userApplicationhistory.enterRoom")}
-                  </Button>
-                )
-              )}
+              ) : isCurrent && !isEvaluating ? (
+                <Button
+                  onClick={onEnterRoom}
+                  size="sm"
+                  className="shrink-0 bg-[#0047AB] text-white hover:bg-[#003d91]">
+                  {t("userApplicationhistory.enterRoom")}
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
