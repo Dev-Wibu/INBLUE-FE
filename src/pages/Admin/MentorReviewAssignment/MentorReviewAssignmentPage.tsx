@@ -138,7 +138,6 @@ export function MentorReviewAssignmentPage() {
   }, [applicationDetails, searchQuery]);
 
   const handleAssign = async (mentorId: number, _notes: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     void _notes;
     if (!selectedDetail) return;
 

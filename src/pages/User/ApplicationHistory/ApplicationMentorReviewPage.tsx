@@ -42,12 +42,14 @@ type ApplicationDetailStatus =
   | "SUBMITTED"
   | "AI_EVALUATED"
   | "COMPLETED"
-  | "ERROR";
+  | "ERROR"
+  | "AWAITING_MENTOR";
 
 interface ApplicationDetail {
   id?: number;
   applicationId?: number;
   roundId?: number;
+  roundType?: string;
   status?: ApplicationDetailStatus;
   bookingId?: number;
   sessionId?: number;
@@ -136,7 +138,7 @@ function SlotSelectionStep({
 }: {
   applicationDetailId: number;
   mentorId?: number | null;
-  onSuccess: (newBooking: MentorInterviewBooking) => void;
+  onSuccess: (_newBooking: MentorInterviewBooking) => void;
 }) {
   const { t } = useTranslation();
   // Mentor Review v2 (2026-07-17): no kiosk. Candidate picks joinTime +
@@ -582,6 +584,7 @@ function TimingChip({
   endAt?: string | null;
   durationSeconds?: number | null;
 }) {
+  const { t } = useTranslation();
   if (!startAt) {
     return (
       <div className="rounded-lg border border-blue-200 bg-white/60 px-3 py-2 text-xs text-blue-700 dark:border-blue-800 dark:bg-black/20">
@@ -605,20 +608,20 @@ function TimingChip({
       )}
       {typeof durationSeconds === "number" && (
         <p className="font-mono">
-          {t("userMentorReview.duration")}: {formatVnDuration(durationSeconds)}
+          {t("userMentorReview.duration")}: {formatVnDuration(durationSeconds, t)}
         </p>
       )}
     </div>
   );
 }
 
-function formatVnDuration(seconds: number): string {
+function formatVnDuration(seconds: number, t: (key: string) => string): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  if (h > 0) return `${h} giờ ${m} phút ${s} giây`;
-  if (m > 0) return `${m} phút ${s} giây`;
-  return `${s} giây`;
+  if (h > 0) return `${h} ${t("hour")} ${m} ${t("minute")} ${s} ${t("general.second") || "giây"}`;
+  if (m > 0) return `${m} ${t("minute")} ${s} ${t("general.second") || "giây"}`;
+  return `${s} ${t("general.second") || "giây"}`;
 }
 
 /**
@@ -958,15 +961,14 @@ export function ApplicationMentorReviewPage() {
   // a manual Retry button; the button has been removed in 2026-07-17, but
   // we keep the dependency in the fetch effect so future re-introductions
   // of a Retry CTA only have to call the setter).
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [retryToken, setRetryToken] = useState(0);
+  const [retryToken] = useState(0);
   // Tracks an explicit "no ApplicationDetail exists for this round" outcome
   // — surfaces a different UX (legacy data warning) than a network error.
   // 2026-07-17: legacy "Booking is not ready" empty-state card has been
   // removed, so the read flag is no longer needed in JSX. The setter is
   // still kept (and consumed) inside the fetch effect.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_detailMissing, _setDetailMissing] = useState(false);
+
+  const [, _setDetailMissing] = useState(false);
 
   const { data: currentRound, isLoading: currentRoundLoading } = useCurrentRound(
     applicationId,
@@ -1310,7 +1312,7 @@ export function ApplicationMentorReviewPage() {
   // cancel-session endpoint we no-op + warn instead of deleting a
   // non-existent booking — otherwise the user gets a silent 404 every
   // time. TODO: hook this up once POST /api/sessions/{id}/cancel exists.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  /*
   const _handleCancelBooking = async () => {
     if (typeof window !== "undefined") {
       console.warn(
@@ -1322,6 +1324,7 @@ export function ApplicationMentorReviewPage() {
         " (tính năng tạm thời chưa khả dụng — đang chờ BE bổ sung API cancel)"
     );
   };
+  */
 
   // 2026-07-18: when ApplicationDetail carries a sessionId but the
   // local roomUrl / sessionTiming caches are still empty (e.g. hard

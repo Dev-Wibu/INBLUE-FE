@@ -46,7 +46,7 @@ import {
   Video,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 type StatusKey = "ONGOING" | "PAID" | "SCHEDULED" | "COMPLETED" | "CANCELED" | "REJECTED" | "DRAFT";
@@ -67,7 +67,10 @@ const STATUS_STYLES: Record<StatusKey, string> = {
     "bg-amber-100 text-amber-700 ring-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:ring-amber-800",
 };
 
-const STATUS_ICON: Record<StatusKey, JSX.Element> = {} as never as Record<StatusKey, JSX.Element>;
+const STATUS_ICON: Record<StatusKey, React.ReactNode> = {} as never as Record<
+  StatusKey,
+  React.ReactNode
+>;
 
 export function StudentSessionRoomPage() {
   const { t, i18n } = useTranslation();
@@ -147,7 +150,7 @@ export function StudentSessionRoomPage() {
       minute: "2-digit",
       second: "2-digit",
       hour12: false,
-    }).format(new Date(treatZuluAsVietnamLocal(zulu)));
+    }).format(new Date(treatZuluAsVietnamLocal(zulu) as string));
   };
 
   // When Daily reports we joined, POST /api/sessions/join-session so BE
@@ -443,7 +446,7 @@ export function StudentSessionRoomPage() {
                   <InfoCell
                     icon={<UserIcon className="h-4 w-4" />}
                     label={t("common.room")}
-                    value={session.roomName}
+                    value={session.roomName ?? "—"}
                   />
                   {session.joinTime && (
                     <InfoCell

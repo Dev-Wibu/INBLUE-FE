@@ -75,7 +75,9 @@
     "roomCreated": "ルーム作成済み",
     "inProgress": "進行中",
     "completed": "完了",
-    "cancelled": "キャンセル済み"
+    "cancelled": "キャンセル済み",
+    "unableToAssignMentorNoScheduledTime": "予定時間がないため、メンターを割り当てられません",
+    "candidate": "候補者"
   },
   "adminKioskManagement": {
     "title": "キオスク管理",
@@ -322,7 +324,20 @@
     "templateNamePlaceholder": "テンプレート名 *",
     "searchTemplateAndCategory": "テンプレート、カテゴリを検索...",
     "roundsCount": "{{count}} ラウンド",
-    "roundIndex": "ラウンド {{index}}"
+    "roundIndex": "ラウンド {{index}}",
+    "nameAndCategoryRequired": "名前とカテゴリが必要です",
+    "companyManagement": "会社管理",
+    "manageCompaniesDesc": "会社を管理",
+    "addCompany": "会社を追加",
+    "successfullyUpdatedCompany": "会社を正常に更新しました",
+    "successfullyDeletedCompany": "会社を正常に削除しました",
+    "addJd": "JDを追加",
+    "createJdDescription": "JDの説明を作成",
+    "noCompaniesAvailable": "利用可能な会社はありません",
+    "clickAddCompanyToCreate": "会社を追加をクリックして作成",
+    "editCompanyInfo": "会社情報を編集",
+    "updateInfoOfPartner": "パートナーの情報を更新",
+    "rounds": "ラウンド"
   },
   "adminDashboardoverview": {
     "14Days": "14日間",
@@ -426,7 +441,8 @@
     "welcomeToInblueAi": "INBLUE AIへようこそ！",
     "yourAccountHasBeenRecorded": "利用規約違反が記録されました。アカウントがロックされないよう、規定を確認・遵守してください。",
     "yourInterviewSessionHasBeen": "面接セッションが確認されました",
-    "yourServicePackageWillExpire": "サービスパッケージが3日後に期限切れになります。全機能を継続してご利用になるには、更新してください。"
+    "yourServicePackageWillExpire": "サービスパッケージが3日後に期限切れになります。全機能を継続してご利用になるには、更新してください。",
+    "thereAreNoNotificationsMatchingThe": "一致する通知はありません"
   },
   "adminPostmanagement": {
     "allCards": "すべてのカード",
@@ -460,7 +476,10 @@
     "totalArticle": "記事合計",
     "trackEngagementAndModerateComments": "エンゲージメントの追跡とコメントのモデレーションを一元管理。",
     "unableToUpdatePostStatus": "記事ステータスを更新できません",
-    "viewListOfLikes": "いいね一覧を表示"
+    "viewListOfLikes": "いいね一覧を表示",
+    "loadingArticleList": "記事リストを読み込み中",
+    "noArticlesFoundMatchingTheSelected": "一致する記事が見つかりません",
+    "showingResultsFor": "の結果を表示"
   },
   "adminPracticequestionmanagement": {
     "addNewQuestion": "新しい問題を追加",
@@ -613,7 +632,9 @@
     "searchByMentorNameCandidate": "メンター名、候補者、セッションで検索...",
     "seeTheListOfMentor": "候補者に送信されたメンター評価一覧を確認",
     "thisActionCannotBeUndone": "を削除してもよろしいですか？この操作は取り消せません。",
-    "weakness": "弱点"
+    "weakness": "弱点",
+    "starMethodEvaluation": "STAR法による評価",
+    "feedbackAndImprovement": "フィードバックと改善"
   },
   "adminSessionmanagement": {
     "actionThisCannotBeUndone": "「？この操作は取り消せません。",
@@ -666,7 +687,8 @@
     "unableToUpdateLesson": "レッスンを更新できません",
     "updateLessonInformation": "レッスン情報を更新します。",
     "userId": "ユーザーID",
-    "userInformation": "ユーザー情報"
+    "userInformation": "ユーザー情報",
+    "setup": "セットアップ"
   },
   "adminTransactionpaymentmanagement": {
     "allPurpose": "すべての用途",
@@ -1572,7 +1594,42 @@
     "userDetail": "ユーザー詳細",
     "inactive": "非アクティブ",
     "loading": "読み込み中...",
-    "invalidId": "無効なIDです。"
+    "invalidId": "無効なIDです。",
+    "application": "応募",
+    "search": "検索",
+    "featureUnderDevelopment": "開発中の機能",
+    "updateSuccess": "更新成功",
+    "updateFailed": "更新失敗",
+    "cannotCreateJd": "JDを作成できません",
+    "cannotUpdateCompany": "会社を更新できません",
+    "cannotDeleteCompany": "会社を削除できません",
+    "noResultsFound": "結果が見つかりません",
+    "tryAdjustingYourSearch": "検索を調整してみてください",
+    "save": "保存",
+    "requirements": "要件",
+    "benefits": "利点",
+    "interviewProcess": "面接プロセス",
+    "applicant": "応募者",
+    "review": "レビュー",
+    "exerciseId": "演習ID",
+    "stt": "番号",
+    "action": "アクション",
+    "viewDetails": "詳細を表示",
+    "basicInfo": "基本情報",
+    "professionalInfo": "専門情報",
+    "mentorDetail": "メンター詳細",
+    "navigation": "ナビゲーション",
+    "showingResultsFor": "の結果を表示",
+    "overallRating": "総合評価",
+    "leaveBlankToKeepCurrent": "現在の状態を維持するには空白のままにします",
+    "bookThisMentor": "このメンターを予約",
+    "reviewsFromStudents": "学生からのレビュー",
+    "noReviewsYet": "レビューはまだありません",
+    "goodMorning": "おはようございます",
+    "goodAfternoon": "こんにちは",
+    "goodEvening": "こんばんは",
+    "refused": "拒否されました",
+    "viewFeedback": "フィードバックを表示"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -1933,7 +1990,8 @@
     "thisMeetingRoomIsNo": "この会議室は利用できません（期限切れまたはクローズ）。",
     "thisRoomLinkHasExpired": "ルームリンクの有効期限が切れたか、システムからルームがクローズされています。現在のリンクでは参加できません。",
     "unableToJoinMeetingRoom": "会議室に参加できません。",
-    "youHaveLeftTheMeeting": "会議室を退出しました。"
+    "youHaveLeftTheMeeting": "会議室を退出しました。",
+    "goBack": "戻る"
   },
   "enterpriseCompanydetail": {
     "about": "概要",
@@ -2509,7 +2567,12 @@
     "selectDifficulty": "難易度を選択",
     "addNew": "新規追加",
     "selectDateTime": "日時を選択",
-    "score": "スコア"
+    "score": "スコア",
+    "minute": "分",
+    "retry": "再試行",
+    "anErrorHasOccurred": "エラーが発生しました",
+    "mentorReviewAlreadyExists": "メンターレビューはすでに存在します",
+    "second": "秒"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50人以上のプロメンター",
@@ -3304,7 +3367,8 @@
     "userIdNotFound": "ユーザーIDが見つかりません",
     "viewCurrentCv": "現在のCVを表示",
     "youHaveNotParticipatedIn": "まだ任何の面接に参加していません。",
-    "viewYourPastInterviewSessions": "過去の面接セッションを表示する"
+    "viewYourPastInterviewSessions": "過去の面接セッションを表示する",
+    "managePreferencesAndSecurity": "設定とセキュリティの管理"
   },
   "userAiinterview": {
     "14Days": "14日",
@@ -3816,7 +3880,10 @@
     "verificationDocuments": "認証書類",
     "verificationStatus": "認証ステータス",
     "viewProfile": "プロフィールを見る",
-    "yearsOfExperience": "年の経験"
+    "yearsOfExperience": "年の経験",
+    "mentorOverview": "メンター概要",
+    "rating": "評価",
+    "sessionsAccompanied": "参加したセッション"
   },
   "userMentorlist": {
     "anErrorOccurredWhileLoading": "一覧の読み込み中にエラーが発生しました",
@@ -4009,7 +4076,7 @@
     "noBookingsYet": "まだ予約がありません",
     "noBookingsYetDescription": "Kiosk面接の予約はまだありません。",
     "bookNow": "今すぐ予約",
-    "bookNewKiosk": "新しいKioskを予約",
+    "bookNewKiosk": "新規キオスク予約",
     "booking": "予約",
     "kiosk": "Kiosk",
     "sessionKey": "セッションキー",
@@ -4054,7 +4121,6 @@
     "yourUpcomingInterviews": "今後の面接",
     "iHaveSessionKey": "セッションキーを持っています",
     "iHaveSessionKeyDescription": "メールまたは電話で送信されたセッションキーを入力してください。",
-    "bookNewKiosk": "新規キオスク予約",
     "bookNewKioskDescription": "お近くのキオスクで新しい面接を予約してください。",
     "joinInterview": "面接に参加",
     "noScheduledTime": "予定時間なし",
@@ -4095,7 +4161,10 @@
     "pickWeeklySlot": "今週の日時を選択してください",
     "slotTakenJustNow": "この枠は他の方に予約されました。別の時間を選んでください。",
     "detailNotReady": "予約はまだ準備中です。少し経ってから再試行してください。",
-    "detailNotReadyHint": "それでも解決しない場合、バックエンドがこのラウンドの詳細を作成していない可能性があります。再試行をクリックしてください。"
+    "detailNotReadyHint": "それでも解決しない場合、バックエンドがこのラウンドの詳細を作成していない可能性があります。再試行をクリックしてください。",
+    "mentorReviewInProgress": "メンター評価中",
+    "mentorReviewInProgressHint": "申請が審査されています。",
+    "mentorReviewInProgressAction": "お待ちください。"
   },
   "userMentorReview": {
     "chooseSchedule": "面接スケジュールを選択",
@@ -4495,7 +4564,10 @@
     "aiInterview": {
       "title": "Phỏng vấn AI",
       "description": "Phỏng vấn giả lập tự động với Trợ lý AI."
-    }
+    },
+    "name": "名前",
+    "category": "カテゴリ",
+    "description": "説明"
   },
   "compCodeReviewEditor": {
     "exampleApiTokenLeak": "Ví dụ: Rò rỉ API Token",
@@ -4669,7 +4741,8 @@
     "searchById": "応募IDで検索...",
     "selectValid": "有効な応募を選択してください。",
     "detailsId": "応募の詳細 #",
-    "noRounds": "この応募に利用できるラウンドはありません。"
+    "noRounds": "この応募に利用できるラウンドはありません。",
+    "searchByUserOrJob": "ユーザーまたは仕事で検索"
   },
   "status": {
     "pendingSubmit": "提出待ち",
@@ -4773,7 +4846,8 @@
     "emailScenario": "問題 / メールシミュレーションシナリオ",
     "exampleEmailScenario": "例：&#10;From: guest_kdz@domain.com&#10;Subject: 注文品質の苦情 #12345&#10;&#10;内容：注文を2日遅れで受け取りました。箱がへこんでいました。理由を尋ねたところ、配送業者は非常に不機嫌な態度を取りました...",
     "exampleEmailCriteria": "例：&#10;- 完全な冒頭の挨拶と丁寧な結びの言葉で手紙が書かれている場合は10ポイントを追加します。&#10;- 3つ以上のスペルミスがある場合は5ポイントを減点します。&#10;- スマートで柔軟な解決策を優先します。",
-    "unsavedChangesWarning2": "この採用プロセスには未保存の変更があります。終了する前に面接設定を保存しますか？"
+    "unsavedChangesWarning2": "この採用プロセスには未保存の変更があります。終了する前に面接設定を保存しますか？",
+    "quizRoundNotConfigured": "クイズラウンドが設定されていません"
   },
   "question": {
     "multipleChoice": "選択式の質問",
@@ -4839,5 +4913,69 @@
     "overrideFail": "不合格に変更",
     "notePlaceholder": "HR 記録用のメモ(例:「面接は短かったが質が高かった」)",
     "confirmAndMove": "確定して次ラウンドへ"
-  }
+  },
+  "adminFeedback": {
+    "session": "セッション",
+    "sentDate": "送信日"
+  },
+  "mentorKiosk": {
+    "readyToJoin": "参加準備完了",
+    "joinSessionTitle": "セッションに参加",
+    "joinSessionDescription": "セッションに参加しようとしています。"
+  },
+  "userSettings": {
+    "title": "設定",
+    "subtitle": "設定を管理する",
+    "openSettings": "設定を開く",
+    "openSettingsDescription": "設定ページを開く",
+    "unableToLoadSettings": "設定を読み込めません",
+    "settingsSavedSuccessfully": "設定が正常に保存されました",
+    "unableToUpdateSettings": "設定を更新できません",
+    "loggedOutSuccessfully": "正常にログアウトしました",
+    "unableToLogout": "ログアウトできません",
+    "settingsTabsLabel": "設定",
+    "colorTheme": "カラーテーマ",
+    "fontSize": "フォントサイズ",
+    "muteSoundNotifications": "サウンド通知をミュート",
+    "muteSoundNotificationsDescription": "すべてのサウンド通知をミュート",
+    "muteToastNotifications": "トースト通知をミュート",
+    "muteToastNotificationsDescription": "すべてのトースト通知をミュート",
+    "security": "セキュリティ",
+    "securityDescription": "セキュリティ設定を管理",
+    "changePassword": "パスワードを変更",
+    "logout": "ログアウト",
+    "logoutDescription": "アカウントからログアウト",
+    "unsavedChanges": "未保存の変更",
+    "allChangesSaved": "すべての変更が保存されました",
+    "saveChanges": "変更を保存",
+    "confirmLogoutTitle": "ログアウトの確認",
+    "confirmLogoutDescription": "ログアウトしてもよろしいですか？"
+  },
+  "changePassword": {
+    "confirmPasswordDoesNotMatch": "パスワードが一致しません",
+    "currentPasswordIsRequired": "現在のパスワードが必要です",
+    "newPasswordIsRequired": "新しいパスワードが必要です",
+    "newPasswordMinLength": "新しいパスワードは8文字以上である必要があります",
+    "newPasswordMustBeDifferent": "新しいパスワードは異なる必要があります",
+    "passwordUpdatedSuccessfully": "パスワードが正常に更新されました",
+    "unableToUpdatePassword": "パスワードを更新できません",
+    "title": "設定",
+    "subtitle": "設定を管理する",
+    "currentPassword": "現在のパスワード",
+    "currentPasswordPlaceholder": "現在のパスワードを入力",
+    "hideCurrentPassword": "パスワードを隠す",
+    "showCurrentPassword": "パスワードを表示",
+    "newPassword": "新しいパスワード",
+    "newPasswordPlaceholder": "新しいパスワードを入力",
+    "hideNewPassword": "パスワードを隠す",
+    "showNewPassword": "パスワードを表示",
+    "newPasswordHint": "パスワードには文字と数字を含める必要があります",
+    "confirmPassword": "パスワードを確認",
+    "confirmPasswordPlaceholder": "新しいパスワードを再入力",
+    "hideConfirmPassword": "パスワードを隠す",
+    "showConfirmPassword": "パスワードを表示",
+    "saveChanges": "変更を保存"
+  },
+  "hour": "時間",
+  "minute": "分"
 }

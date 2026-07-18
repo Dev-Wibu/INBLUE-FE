@@ -441,7 +441,6 @@ export class SessionManager implements BaseManager<Session> {
         }));
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch (SessionDetailResponse shape)
         data: response.data as Session,
       };
     } catch (error) {

@@ -109,7 +109,8 @@
     "roomCreated": "Room Created",
     "inProgress": "In Progress",
     "completed": "Completed",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "candidate": "Candidate"
   },
   "adminKioskManagement": {
     "title": "Kiosk Management",
@@ -356,7 +357,20 @@
     "templateNamePlaceholder": "Template name *",
     "searchTemplateAndCategory": "Search template, category...",
     "roundsCount": "{{count}} rounds",
-    "roundIndex": "Round {{index}}"
+    "roundIndex": "Round {{index}}",
+    "nameAndCategoryRequired": "Name and category required",
+    "companyManagement": "Company Management",
+    "manageCompaniesDesc": "Manage companies",
+    "addCompany": "Add Company",
+    "successfullyUpdatedCompany": "Successfully updated company",
+    "successfullyDeletedCompany": "Successfully deleted company",
+    "addJd": "Add JD",
+    "createJdDescription": "Create JD description",
+    "noCompaniesAvailable": "No companies available",
+    "clickAddCompanyToCreate": "Click Add company to create",
+    "editCompanyInfo": "Edit company info",
+    "updateInfoOfPartner": "Update info of partner",
+    "rounds": "Rounds"
   },
   "adminDashboardoverview": {
     "14Days": "14 days",
@@ -460,7 +474,8 @@
     "welcomeToInblueAi": "Welcome to INBLUE AI!",
     "yourAccountHasBeenRecorded": "Your account has been recorded for violating the usage policy. Please check and comply with the regulations to avoid having your account locked.",
     "yourInterviewSessionHasBeen": "Your interview session has been confirmed",
-    "yourServicePackageWillExpire": "Your service package will expire in 3 days. Please renew to continue using full features."
+    "yourServicePackageWillExpire": "Your service package will expire in 3 days. Please renew to continue using full features.",
+    "thereAreNoNotificationsMatchingThe": "There are no notifications matching"
   },
   "adminPostmanagement": {
     "allCards": "All cards",
@@ -494,7 +509,10 @@
     "totalArticle": "Total article",
     "trackEngagementAndModerateComments": "Track engagement and moderate comments in one place.",
     "unableToUpdatePostStatus": "Unable to update post status",
-    "viewListOfLikes": "View list of likes"
+    "viewListOfLikes": "View list of likes",
+    "loadingArticleList": "Loading article list",
+    "noArticlesFoundMatchingTheSelected": "No articles found matching",
+    "showingResultsFor": "Showing results for"
   },
   "adminPracticequestionmanagement": {
     "addNewQuestion": "Add New Question",
@@ -647,7 +665,9 @@
     "searchByMentorNameCandidate": "Search by mentor name, candidate, session...",
     "seeTheListOfMentor": "See the list of mentor evaluations sent to candidates",
     "thisActionCannotBeUndone": "? This action cannot be undone work.",
-    "weakness": "Weakness"
+    "weakness": "Weakness",
+    "starMethodEvaluation": "STAR method evaluation",
+    "feedbackAndImprovement": "Feedback and improvement"
   },
   "adminSessionmanagement": {
     "actionThisCannotBeUndone": "\"? Action This cannot be undone.",
@@ -700,7 +720,8 @@
     "unableToUpdateLesson": "Unable to update lesson",
     "updateLessonInformation": "Update lesson information.",
     "userId": "User ID",
-    "userInformation": "User Information"
+    "userInformation": "User Information",
+    "setup": "Setup"
   },
   "adminTransactionpaymentmanagement": {
     "allPurpose": "All purposes",
@@ -901,9 +922,9 @@
   "common": {
     "generalInformation": "General Information",
     "mentorInformation": "Mentor Information",
-    "roomName1": "Room Name",
+    "roomName1": "Room name",
     "idMentor": "Mentor ID",
-    "transactionCode": "Transaction Code",
+    "transactionCode": "Transaction code",
     "action": "Action",
     "viewDetails": "View details",
     "stt": "No.",
@@ -1140,7 +1161,6 @@
     "mediumLevel": "Medium",
     "hard": "Hard",
     "interface": "Interface",
-    "interview": "Interview",
     "interviewDetails": "Interview details",
     "interviewExpert": "Interview expert",
     "interviewHistory": "Interview History",
@@ -1218,11 +1238,9 @@
     "id": "ID",
     "identity": "Identity",
     "identityCard": "ID Card / Passport",
-    "idMentor": "Mentor ID",
     "degreecertificate": "Degree Certificate",
     "otherDocuments": "Other Documents",
     "mentorEmailCopied": "Mentor email copied",
-    "mentorInformation": "Mentor Information",
     "mentorInterview": "Mentor Interview",
     "mentorIsCurrentlyInactive": "Mentor is currently inactive",
     "mentorManagement": "Mentors",
@@ -1392,7 +1410,6 @@
     "roleUxDesigner": "UX Designer",
     "room": "Room:",
     "roomName": "Room name:",
-    "roomName1": "Room name",
     "roundVar0": "Round {{var_0}}",
     "route": "Route",
     "salary": "Salary",
@@ -1495,7 +1512,6 @@
     "totalSession": "Total session",
     "trainingSet": "Training set",
     "tranMinhDuc": "Tran Minh Duc",
-    "transactionCode": "Transaction code",
     "transactionCode1": "Transaction code:",
     "trialInterview": "Trial interview",
     "tryChangingTheDateOrAdjustingTheF": "Try changing the date or adjusting the filters to see more relevant sessions.",
@@ -1614,7 +1630,38 @@
     "userDetail": "User Detail",
     "inactive": "Inactive",
     "loading": "Loading...",
-    "invalidId": "Invalid ID."
+    "invalidId": "Invalid ID.",
+    "search": "Search",
+    "featureUnderDevelopment": "Feature under development",
+    "updateSuccess": "Update success",
+    "updateFailed": "Update failed",
+    "cannotCreateJd": "Cannot create JD",
+    "cannotUpdateCompany": "Cannot update company",
+    "cannotDeleteCompany": "Cannot delete company",
+    "noResultsFound": "No results found",
+    "tryAdjustingYourSearch": "Try adjusting your search",
+    "save": "Save",
+    "requirements": "Requirements",
+    "benefits": "Benefits",
+    "interviewProcess": "Interview Process",
+    "applicant": "Applicant",
+    "review": "Review",
+    "exerciseId": "Exercise ID",
+    "basicInfo": "Basic Info",
+    "professionalInfo": "Professional Info",
+    "mentorDetail": "Mentor Detail",
+    "navigation": "Navigation",
+    "showingResultsFor": "Showing results for",
+    "overallRating": "Overall rating",
+    "leaveBlankToKeepCurrent": "Leave blank to keep current",
+    "bookThisMentor": "Book this mentor",
+    "reviewsFromStudents": "Reviews from students",
+    "noReviewsYet": "No reviews yet",
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "refused": "Refused",
+    "viewFeedback": "View feedback"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -1975,7 +2022,8 @@
     "youHaveLeftTheMeeting": "You have left the meeting room.",
     "camera": "Camera",
     "cameraN": "Camera {{number}}",
-    "microphone": "Microphone"
+    "microphone": "Microphone",
+    "goBack": "Go back"
   },
   "enterpriseCompanydetail": {
     "about": "About",
@@ -2531,7 +2579,11 @@
     "selectDifficulty": "Select difficulty",
     "addNew": "Add New",
     "selectDateTime": "Select Date and Time",
-    "score": "Score"
+    "score": "Score",
+    "retry": "Retry",
+    "anErrorHasOccurred": "An error has occurred",
+    "mentorReviewAlreadyExists": "Mentor review already exists",
+    "second": "Second"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50+ professional Mentors",
@@ -3317,7 +3369,8 @@
     "userIdNotFound": "User ID not found",
     "viewCurrentCv": "View current CV",
     "youHaveNotParticipatedIn": "You have not participated in any interviews yet.",
-    "viewYourPastInterviewSessions": "View your past interview sessions"
+    "viewYourPastInterviewSessions": "View your past interview sessions",
+    "managePreferencesAndSecurity": "Manage preferences and security"
   },
   "userAiinterview": {
     "14Days": "14 Days",
@@ -3826,7 +3879,10 @@
     "verificationDocuments": "Verification documents",
     "verificationStatus": "Verification status",
     "viewProfile": "View profile",
-    "yearsOfExperience": "years of experience"
+    "yearsOfExperience": "years of experience",
+    "mentorOverview": "Mentor Overview",
+    "rating": "Rating",
+    "sessionsAccompanied": "Sessions Accompanied"
   },
   "userMentorlist": {
     "anErrorOccurredWhileLoading": "An error occurred while loading the list",
@@ -4019,7 +4075,7 @@
     "noBookingsYet": "No bookings yet",
     "noBookingsYetDescription": "You have not booked any kiosk interview slots.",
     "bookNow": "Book Now",
-    "bookNewKiosk": "Book New Kiosk",
+    "bookNewKiosk": "Book a New Kiosk",
     "booking": "Booking",
     "kiosk": "Kiosk",
     "sessionKey": "Session Key",
@@ -4064,7 +4120,6 @@
     "yourUpcomingInterviews": "Your Upcoming Interviews",
     "iHaveSessionKey": "I have a session key",
     "iHaveSessionKeyDescription": "Enter the session key sent to your email or phone.",
-    "bookNewKiosk": "Book a New Kiosk",
     "bookNewKioskDescription": "Schedule a new interview session at a kiosk near you.",
     "joinInterview": "Join Interview",
     "noScheduledTime": "No scheduled time",
@@ -4105,7 +4160,10 @@
     "pickWeeklySlot": "Pick a day and time in this week",
     "slotTakenJustNow": "This slot was just booked by someone else. Please pick another time.",
     "detailNotReady": "Booking is not ready yet. Please retry in a moment.",
-    "detailNotReadyHint": "If the issue persists, the backend may not have created the round detail yet. Click Retry to refetch."
+    "detailNotReadyHint": "If the issue persists, the backend may not have created the round detail yet. Click Retry to refetch.",
+    "mentorReviewInProgress": "Mentor Review In Progress",
+    "mentorReviewInProgressHint": "Your application is being reviewed.",
+    "mentorReviewInProgressAction": "Please wait."
   },
   "userMentorReview": {
     "chooseSchedule": "Schedule Interview",
@@ -4676,7 +4734,8 @@
     "searchById": "Search by Application ID...",
     "selectValid": "Please select a valid application.",
     "detailsId": "Application Details #",
-    "noRounds": "No rounds available for this application."
+    "noRounds": "No rounds available for this application.",
+    "searchByUserOrJob": "Search by user or job"
   },
   "status": {
     "pendingSubmit": "Pending Submission",
@@ -4780,7 +4839,8 @@
     "emailScenario": "Problem / Email Simulation Scenario",
     "exampleEmailScenario": "Example:&#10;From: guest_kdz@domain.com&#10;Subject: Complaint about order quality #12345&#10;&#10;Content: I received the order 2 days late, the box was dented. When I asked for the reason, the shipper had a very grumpy attitude...",
     "exampleEmailCriteria": "Example:&#10;- Add 10 points if the letter is written with a full opening greeting and polite closing wishes.&#10;- Deduct 5 points if there are more than 3 spelling mistakes.&#10;- Prioritize smart, flexible solutions.",
-    "unsavedChangesWarning2": "You have unsaved changes in this recruitment process. Do you want to save the interview settings before exiting?"
+    "unsavedChangesWarning2": "You have unsaved changes in this recruitment process. Do you want to save the interview settings before exiting?",
+    "quizRoundNotConfigured": "Quiz round is not configured"
   },
   "question": {
     "multipleChoice": "multiple-choice questions",
@@ -4846,5 +4906,69 @@
     "overrideFail": "Override FAILED",
     "notePlaceholder": "Optional note for HR record (e.g. \"Interview was short but well-conducted\")",
     "confirmAndMove": "Confirm & Move to Next Round"
-  }
+  },
+  "adminFeedback": {
+    "session": "Session",
+    "sentDate": "Sent Date"
+  },
+  "mentorKiosk": {
+    "readyToJoin": "Ready to join",
+    "joinSessionTitle": "Join Session",
+    "joinSessionDescription": "You are about to join the session."
+  },
+  "userSettings": {
+    "title": "Settings",
+    "subtitle": "Manage your preferences",
+    "openSettings": "Open Settings",
+    "openSettingsDescription": "Open settings page",
+    "unableToLoadSettings": "Unable to load settings",
+    "settingsSavedSuccessfully": "Settings saved successfully",
+    "unableToUpdateSettings": "Unable to update settings",
+    "loggedOutSuccessfully": "Logged out successfully",
+    "unableToLogout": "Unable to logout",
+    "settingsTabsLabel": "Settings",
+    "colorTheme": "Color Theme",
+    "fontSize": "Font Size",
+    "muteSoundNotifications": "Mute Sound Notifications",
+    "muteSoundNotificationsDescription": "Mute all sound notifications",
+    "muteToastNotifications": "Mute Toast Notifications",
+    "muteToastNotificationsDescription": "Mute all toast notifications",
+    "security": "Security",
+    "securityDescription": "Manage security settings",
+    "changePassword": "Change Password",
+    "logout": "Logout",
+    "logoutDescription": "Logout from your account",
+    "unsavedChanges": "Unsaved Changes",
+    "allChangesSaved": "All changes saved",
+    "saveChanges": "Save Changes",
+    "confirmLogoutTitle": "Confirm Logout",
+    "confirmLogoutDescription": "Are you sure you want to logout?"
+  },
+  "changePassword": {
+    "confirmPasswordDoesNotMatch": "Passwords do not match",
+    "currentPasswordIsRequired": "Current password is required",
+    "newPasswordIsRequired": "New password is required",
+    "newPasswordMinLength": "New password must be at least 8 characters",
+    "newPasswordMustBeDifferent": "New password must be different",
+    "passwordUpdatedSuccessfully": "Password updated successfully",
+    "unableToUpdatePassword": "Unable to update password",
+    "title": "Settings",
+    "subtitle": "Manage your preferences",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter current password",
+    "hideCurrentPassword": "Hide password",
+    "showCurrentPassword": "Show password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "hideNewPassword": "Hide password",
+    "showNewPassword": "Show password",
+    "newPasswordHint": "Password should contain letters and numbers",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "hideConfirmPassword": "Hide password",
+    "showConfirmPassword": "Show password",
+    "saveChanges": "Save Changes"
+  },
+  "hour": "Hour",
+  "minute": "Minute"
 }

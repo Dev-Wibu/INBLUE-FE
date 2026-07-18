@@ -109,7 +109,8 @@
     "roomCreated": "Phòng đã tạo",
     "inProgress": "Đang diễn ra",
     "completed": "Hoàn thành",
-    "cancelled": "Đã hủy"
+    "cancelled": "Đã hủy",
+    "candidate": "Ứng viên"
   },
   "adminKioskManagement": {
     "title": "Quản lý Kiosk",
@@ -356,7 +357,20 @@
     "templateNamePlaceholder": "Tên mẫu quy trình *",
     "searchTemplateAndCategory": "Tìm kiếm mẫu, danh mục...",
     "roundsCount": "{{count}} vòng",
-    "roundIndex": "Vòng {{index}}"
+    "roundIndex": "Vòng {{index}}",
+    "nameAndCategoryRequired": "Cần nhập tên và danh mục",
+    "companyManagement": "Quản lý công ty",
+    "manageCompaniesDesc": "Quản lý danh sách công ty",
+    "addCompany": "Thêm công ty",
+    "successfullyUpdatedCompany": "Cập nhật công ty thành công",
+    "successfullyDeletedCompany": "Xóa công ty thành công",
+    "addJd": "Thêm JD",
+    "createJdDescription": "Mô tả tạo JD",
+    "noCompaniesAvailable": "Không có công ty nào",
+    "clickAddCompanyToCreate": "Nhấn Thêm công ty để tạo mới",
+    "editCompanyInfo": "Sửa thông tin công ty",
+    "updateInfoOfPartner": "Cập nhật thông tin đối tác",
+    "rounds": "Các vòng phỏng vấn"
   },
   "adminDashboardoverview": {
     "14Days": "14 ngày",
@@ -460,7 +474,8 @@
     "welcomeToInblueAi": "Chào mừng bạn đến với INBLUE AI!",
     "yourAccountHasBeenRecorded": "Tài khoản của bạn đã bị ghi nhận vi phạm chính sách sử dụng. Vui lòng kiểm tra và tuân thủ các quy định để tránh bị khóa tài khoản.",
     "yourInterviewSessionHasBeen": "Phiên phỏng vấn của bạn đã được xác nhận",
-    "yourServicePackageWillExpire": "Gói dịch vụ của bạn sẽ hết hạn trong 3 ngày nữa. Vui lòng gia hạn để tiếp tục sử dụng đầy đủ các tính năng."
+    "yourServicePackageWillExpire": "Gói dịch vụ của bạn sẽ hết hạn trong 3 ngày nữa. Vui lòng gia hạn để tiếp tục sử dụng đầy đủ các tính năng.",
+    "thereAreNoNotificationsMatchingThe": "Không có thông báo phù hợp"
   },
   "adminPostmanagement": {
     "allCards": "Tất cả thẻ",
@@ -494,7 +509,10 @@
     "totalArticle": "Tổng bài viết",
     "trackEngagementAndModerateComments": "Theo dõi tương tác và kiểm duyệt bình luận tại một nơi.",
     "unableToUpdatePostStatus": "Không thể cập nhật trạng thái bài viết",
-    "viewListOfLikes": "Xem danh sách lượt thích"
+    "viewListOfLikes": "Xem danh sách lượt thích",
+    "loadingArticleList": "Đang tải danh sách bài viết",
+    "noArticlesFoundMatchingTheSelected": "Không tìm thấy bài viết phù hợp",
+    "showingResultsFor": "Hiển thị kết quả cho"
   },
   "adminPracticequestionmanagement": {
     "addNewQuestion": "Thêm Câu Hỏi Mới",
@@ -644,7 +662,9 @@
     "searchByMentorNameCandidate": "Tìm theo tên mentor, ứng viên, phiên...",
     "seeTheListOfMentor": "Xem danh sách đánh giá mentor gửi cho ứng viên",
     "thisActionCannotBeUndone": "? Hành động này không thể hoàn tác.",
-    "weakness": "Điểm yếu"
+    "weakness": "Điểm yếu",
+    "starMethodEvaluation": "Đánh giá theo phương pháp STAR",
+    "feedbackAndImprovement": "Phản hồi và cải thiện"
   },
   "adminSessionmanagement": {
     "actionThisCannotBeUndone": "\"? Hành động này không thể hoàn tác.",
@@ -697,7 +717,8 @@
     "unableToUpdateLesson": "Không thể cập nhật buổi học",
     "updateLessonInformation": "Cập nhật thông tin buổi học.",
     "userId": "ID Người dùng",
-    "userInformation": "Thông Tin Người Dùng"
+    "userInformation": "Thông Tin Người Dùng",
+    "setup": "Cài đặt"
   },
   "adminTransactionpaymentmanagement": {
     "allPurpose": "Tất cả mục đích",
@@ -897,7 +918,7 @@
   },
   "common": {
     "generalInformation": "Thông tin chung",
-    "mentorInformation": "Thông tin Mentor",
+    "mentorInformation": "Thông Tin Mentor",
     "roomName1": "Tên phòng",
     "idMentor": "ID Mentor",
     "transactionCode": "Mã giao dịch",
@@ -1214,11 +1235,9 @@
     "id": "ID",
     "identity": "Giấy tờ",
     "identityCard": "CMND/CCCD",
-    "idMentor": "ID Mentor",
     "degreecertificate": "Bằng cấp",
     "otherDocuments": "Giấy tờ khác",
     "mentorEmailCopied": "Đã sao chép email mentor",
-    "mentorInformation": "Thông Tin Mentor",
     "mentorInterview": "Phỏng vấn Mentor",
     "mentorIsCurrentlyInactive": "Mentor hiện không hoạt động",
     "mentorManagement": "Mentor",
@@ -1388,7 +1407,6 @@
     "roleUxDesigner": "Nhà thiết kế UX",
     "room": "Phòng:",
     "roomName": "Tên phòng:",
-    "roomName1": "Tên phòng",
     "roundVar0": "Vòng {{var_0}}",
     "route": "Lộ trình",
     "salary": "Mức lương",
@@ -1491,7 +1509,6 @@
     "totalSession": "Tổng phiên",
     "trainingSet": "Bộ luyện tập",
     "tranMinhDuc": "Trần Minh Đức",
-    "transactionCode": "Mã giao dịch",
     "transactionCode1": "Mã giao dịch:",
     "trialInterview": "Phỏng vấn thử",
     "tryChangingTheDateOrAdjustingTheF": "Thử đổi ngày hoặc điều chỉnh bộ lọc để xem thêm phiên phù hợp.",
@@ -1610,7 +1627,38 @@
     "userDetail": "Chi tiết người dùng",
     "inactive": "Không hoạt động",
     "loading": "Đang tải...",
-    "invalidId": "ID không hợp lệ."
+    "invalidId": "ID không hợp lệ.",
+    "search": "Tìm kiếm",
+    "featureUnderDevelopment": "Tính năng đang phát triển",
+    "updateSuccess": "Cập nhật thành công",
+    "updateFailed": "Cập nhật thất bại",
+    "cannotCreateJd": "Không thể tạo JD",
+    "cannotUpdateCompany": "Không thể cập nhật công ty",
+    "cannotDeleteCompany": "Không thể xóa công ty",
+    "noResultsFound": "Không tìm thấy kết quả",
+    "tryAdjustingYourSearch": "Vui lòng thử điều chỉnh tìm kiếm",
+    "save": "Lưu",
+    "requirements": "Yêu cầu",
+    "benefits": "Phúc lợi",
+    "interviewProcess": "Quy trình phỏng vấn",
+    "applicant": "Ứng viên",
+    "review": "Đánh giá",
+    "exerciseId": "Mã bài tập",
+    "basicInfo": "Thông tin cơ bản",
+    "professionalInfo": "Thông tin chuyên môn",
+    "mentorDetail": "Chi tiết Mentor",
+    "navigation": "Điều hướng",
+    "showingResultsFor": "Hiển thị kết quả cho",
+    "overallRating": "Đánh giá tổng quan",
+    "leaveBlankToKeepCurrent": "Bỏ trống để giữ nguyên",
+    "bookThisMentor": "Đặt lịch Mentor này",
+    "reviewsFromStudents": "Đánh giá từ sinh viên",
+    "noReviewsYet": "Chưa có đánh giá",
+    "goodMorning": "Chào buổi sáng",
+    "goodAfternoon": "Chào buổi chiều",
+    "goodEvening": "Chào buổi tối",
+    "refused": "Từ chối",
+    "viewFeedback": "Xem phản hồi"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -1971,7 +2019,8 @@
     "youHaveLeftTheMeeting": "Bạn đã rời khỏi phòng họp.",
     "camera": "Camera",
     "cameraN": "Camera {{number}}",
-    "microphone": "Micrô"
+    "microphone": "Micrô",
+    "goBack": "Quay lại"
   },
   "enterpriseCompanydetail": {
     "about": "Giới thiệu về",
@@ -2527,7 +2576,11 @@
     "selectDifficulty": "Chọn độ khó",
     "addNew": "Thêm mới",
     "selectDateTime": "Chọn ngày giờ",
-    "score": "Điểm"
+    "score": "Điểm",
+    "retry": "Thử lại",
+    "anErrorHasOccurred": "Đã xảy ra lỗi",
+    "mentorReviewAlreadyExists": "Đánh giá Mentor đã tồn tại",
+    "second": "Giây"
   },
   "homepageFeatures": {
     "50ProfessionalMentors": "50+ Mentor chuyên nghiệp",
@@ -3313,7 +3366,8 @@
     "userIdNotFound": "Không tìm thấy ID người dùng",
     "viewCurrentCv": "Xem CV hiện tại",
     "youHaveNotParticipatedIn": "Bạn chưa tham gia buổi phỏng vấn nào.",
-    "viewYourPastInterviewSessions": "Xem lại các phiên phỏng vấn đã qua của bạn"
+    "viewYourPastInterviewSessions": "Xem lại các phiên phỏng vấn đã qua của bạn",
+    "managePreferencesAndSecurity": "Quản lý tùy chọn và bảo mật"
   },
   "userAiinterview": {
     "14Days": "14 Ngày",
@@ -3822,7 +3876,10 @@
     "verificationDocuments": "Tài liệu xác minh",
     "verificationStatus": "Trạng thái xác minh",
     "viewProfile": "Xem hồ sơ",
-    "yearsOfExperience": "năm kinh nghiệm"
+    "yearsOfExperience": "năm kinh nghiệm",
+    "mentorOverview": "Tổng quan Mentor",
+    "rating": "Đánh giá",
+    "sessionsAccompanied": "Số phiên đã tham gia"
   },
   "userMentorlist": {
     "anErrorOccurredWhileLoading": "Đã xảy ra lỗi khi tải danh sách",
@@ -4015,7 +4072,7 @@
     "noBookingsYet": "Chưa có lịch đặt nào",
     "noBookingsYetDescription": "Bạn chưa đặt khung giờ phỏng vấn tại Kiosk nào.",
     "bookNow": "Đặt lịch ngay",
-    "bookNewKiosk": "Đặt lịch mới",
+    "bookNewKiosk": "Đặt Kiosk Mới",
     "booking": "Lịch đặt",
     "kiosk": "Kiosk",
     "sessionKey": "Mã phiên",
@@ -4060,7 +4117,6 @@
     "yourUpcomingInterviews": "Buổi phỏng vấn sắp tới",
     "iHaveSessionKey": "Tôi có mã phiên",
     "iHaveSessionKeyDescription": "Nhập mã phiên đã được gửi đến email hoặc điện thoại của bạn.",
-    "bookNewKiosk": "Đặt Kiosk Mới",
     "bookNewKioskDescription": "Đặt lịch phỏng vấn mới tại kiosk gần bạn.",
     "joinInterview": "Tham gia phỏng vấn",
     "noScheduledTime": "Chưa có giờ hẹn",
@@ -4101,7 +4157,10 @@
     "pickWeeklySlot": "Chọn một ngày và giờ trong tuần này",
     "slotTakenJustNow": "Slot vừa được người khác đặt. Vui lòng chọn thời gian khác.",
     "detailNotReady": "Booking chưa sẵn sàng. Vui lòng thử lại sau giây lát.",
-    "detailNotReadyHint": "Nếu vẫn không được, có thể backend chưa tạo detail cho vòng này. Nhấn Thử lại để gọi lại."
+    "detailNotReadyHint": "Nếu vẫn không được, có thể backend chưa tạo detail cho vòng này. Nhấn Thử lại để gọi lại.",
+    "mentorReviewInProgress": "Mentor đang đánh giá",
+    "mentorReviewInProgressHint": "Đơn của bạn đang được đánh giá.",
+    "mentorReviewInProgressAction": "Vui lòng chờ."
   },
   "userMentorReview": {
     "chooseSchedule": "Chọn lịch phỏng vấn",
@@ -4673,7 +4732,8 @@
     "searchById": "Tìm theo ID đơn...",
     "selectValid": "Vui lòng chọn một đơn ứng tuyển hợp lệ.",
     "detailsId": "Chi tiết đơn #",
-    "noRounds": "Chưa có vòng thi nào cho đơn ứng tuyển này."
+    "noRounds": "Chưa có vòng thi nào cho đơn ứng tuyển này.",
+    "searchByUserOrJob": "Tìm kiếm theo người dùng hoặc công việc"
   },
   "status": {
     "pendingSubmit": "Chờ nộp",
@@ -4777,7 +4837,8 @@
     "emailScenario": "Đề bài / Tình huống giả lập Email (Scenario)",
     "exampleEmailScenario": "Ví dụ:&#10;From: guest_kdz@domain.com&#10;Subject: Phàn nàn về chất lượng đơn hàng #12345&#10;&#10;Nội dung: Tôi nhận được đơn hàng trễ 2 ngày, hộp bị móp méo. Khi tôi hỏi lý do thì shipper tỏ thái độ rất cộc cằn...",
     "exampleEmailCriteria": "Ví dụ:&#10;- Cộng thêm 10 điểm nếu viết thư đầy đủ lời chào mở đầu và lời chúc kết thúc lịch sự.&#10;- Trừ 5 điểm nếu viết sai chính tả quá 3 lỗi.&#10;- Ưu tiên cách giải quyết thông minh, linh hoạt.",
-    "unsavedChangesWarning2": "Bạn có các thay đổi chưa được lưu trong quy trình tuyển dụng này. Bạn có muốn lưu lại\r\n              thiết lập phỏng vấn trước khi thoát không?"
+    "unsavedChangesWarning2": "Bạn có các thay đổi chưa được lưu trong quy trình tuyển dụng này. Bạn có muốn lưu lại\r\n              thiết lập phỏng vấn trước khi thoát không?",
+    "quizRoundNotConfigured": "Vòng trắc nghiệm chưa được cấu hình"
   },
   "question": {
     "multipleChoice": "câu hỏi trắc\r\n                                    nghiệm",
@@ -4843,5 +4904,69 @@
     "overrideFail": "Đánh trượt",
     "notePlaceholder": "Ghi chú cho hồ sơ HR (ví dụ: \"Buổi phỏng vấn ngắn nhưng chất lượng\")",
     "confirmAndMove": "Xác nhận & chuyển vòng"
-  }
+  },
+  "adminFeedback": {
+    "session": "Phiên",
+    "sentDate": "Ngày gửi"
+  },
+  "mentorKiosk": {
+    "readyToJoin": "Sẵn sàng tham gia",
+    "joinSessionTitle": "Tham gia phiên",
+    "joinSessionDescription": "Bạn chuẩn bị tham gia phiên."
+  },
+  "userSettings": {
+    "title": "Cài đặt",
+    "subtitle": "Quản lý tùy chọn của bạn",
+    "openSettings": "Mở cài đặt",
+    "openSettingsDescription": "Mở trang cài đặt",
+    "unableToLoadSettings": "Không thể tải cài đặt",
+    "settingsSavedSuccessfully": "Lưu cài đặt thành công",
+    "unableToUpdateSettings": "Không thể cập nhật cài đặt",
+    "loggedOutSuccessfully": "Đăng xuất thành công",
+    "unableToLogout": "Không thể đăng xuất",
+    "settingsTabsLabel": "Cài đặt",
+    "colorTheme": "Giao diện màu",
+    "fontSize": "Cỡ chữ",
+    "muteSoundNotifications": "Tắt âm thanh thông báo",
+    "muteSoundNotificationsDescription": "Tắt tất cả âm thanh thông báo",
+    "muteToastNotifications": "Tắt thông báo nổi",
+    "muteToastNotificationsDescription": "Tắt tất cả thông báo nổi",
+    "security": "Bảo mật",
+    "securityDescription": "Quản lý cài đặt bảo mật",
+    "changePassword": "Đổi mật khẩu",
+    "logout": "Đăng xuất",
+    "logoutDescription": "Đăng xuất khỏi tài khoản",
+    "unsavedChanges": "Thay đổi chưa lưu",
+    "allChangesSaved": "Tất cả thay đổi đã được lưu",
+    "saveChanges": "Lưu thay đổi",
+    "confirmLogoutTitle": "Xác nhận đăng xuất",
+    "confirmLogoutDescription": "Bạn có chắc chắn muốn đăng xuất?"
+  },
+  "changePassword": {
+    "confirmPasswordDoesNotMatch": "Mật khẩu không khớp",
+    "currentPasswordIsRequired": "Cần nhập mật khẩu hiện tại",
+    "newPasswordIsRequired": "Cần nhập mật khẩu mới",
+    "newPasswordMinLength": "Mật khẩu mới phải có ít nhất 8 ký tự",
+    "newPasswordMustBeDifferent": "Mật khẩu mới phải khác mật khẩu cũ",
+    "passwordUpdatedSuccessfully": "Cập nhật mật khẩu thành công",
+    "unableToUpdatePassword": "Không thể cập nhật mật khẩu",
+    "title": "Cài đặt",
+    "subtitle": "Quản lý tùy chọn của bạn",
+    "currentPassword": "Mật khẩu hiện tại",
+    "currentPasswordPlaceholder": "Nhập mật khẩu hiện tại",
+    "hideCurrentPassword": "Ẩn mật khẩu",
+    "showCurrentPassword": "Hiện mật khẩu",
+    "newPassword": "Mật khẩu mới",
+    "newPasswordPlaceholder": "Nhập mật khẩu mới",
+    "hideNewPassword": "Ẩn mật khẩu",
+    "showNewPassword": "Hiện mật khẩu",
+    "newPasswordHint": "Mật khẩu nên chứa chữ và số",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+    "hideConfirmPassword": "Ẩn mật khẩu",
+    "showConfirmPassword": "Hiện mật khẩu",
+    "saveChanges": "Lưu thay đổi"
+  },
+  "hour": "Giờ",
+  "minute": "Phút"
 }
