@@ -493,6 +493,12 @@ export class AuthManager {
         };
       }
       const payload = this.parseLoginResponse(normalizedData, credentials.email.trim());
+      // DEBUG: remove after fix verified
+      console.log("[AuthManager.login] parsed payload.user:", {
+        fullName: payload.user.fullName,
+        avatar: payload.user.avatar,
+        role: payload.user.role,
+      });
       return {
         success: true,
         data: payload,

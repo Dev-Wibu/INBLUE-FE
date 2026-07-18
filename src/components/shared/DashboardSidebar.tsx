@@ -146,11 +146,25 @@ export function DashboardSidebar({
       for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
       const payload = JSON.parse(new TextDecoder("utf-8").decode(bytes)) as Record<string, unknown>;
       const url = payload.avatarUrl ?? payload.avatar;
+      // DEBUG: remove after fix verified
+      console.log("[Sidebar] token payload:", {
+        avatarUrl: payload.avatarUrl,
+        avatar: payload.avatar,
+        url,
+      });
       return typeof url === "string" && url.trim().length > 0 ? url.trim() : undefined;
     } catch {
       return undefined;
     }
   }, [user?.avatarUrl, token]);
+
+  // DEBUG: remove after fix verified
+  console.log(
+    "[Sidebar] user.avatarUrl:",
+    user?.avatarUrl,
+    "| resolvedAvatarUrl:",
+    resolvedAvatarUrl
+  );
 
   const isMobile = useIsMobile();
   const [internalCollapsed, setInternalCollapsed] = useState(() =>
