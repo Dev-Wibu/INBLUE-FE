@@ -306,6 +306,11 @@ export class AuthManager {
         role: "USER",
       };
     }
+    // If the body user has no avatar but the JWT token payload does, merge it in.
+    // This handles APIs that include avatarUrl in the token claims but not in the response body.
+    if (user && !user.avatar && userFromToken?.avatar) {
+      user = { ...user, avatar: userFromToken.avatar };
+    }
     return {
       user,
       token,
