@@ -452,6 +452,57 @@ export class SessionManager implements BaseManager<Session> {
   }
 
   /**
+   * Check Daily.co webhook status.
+   * GET /api/sessions/check-webhook — returns a status string from the BE
+   * (e.g. "ACTIVE", "INACTIVE", or a human-readable diagnostic).
+   * Wired per BACKEND_CHANGES_2026-07-17_18.md so the FE can surface
+   * "Webhook offline" indicators for the session-debug / admin views.
+   */
+  async checkWebhook(): Promise<ApiResponse<string>> {
+    try {
+      const response = await fetchClient.GET("/api/sessions/check-webhook").then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      return {
+        success: true,
+        data: (response.data ?? "") as string,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("general.unableToCheckWebhook"),
+      };
+    }
+  }
+
+  /**
+   * Reactivate the Daily.co webhook.
+   * GET /api/sessions/reactivate-webhook — BE re-registers the Daily.co
+   * webhook and returns a confirmation string. Used as a one-click recovery
+   * action when sessions are stuck because the webhook was disabled.
+   */
+  async reactivateWebhook(): Promise<ApiResponse<string>> {
+    try {
+      const response = await fetchClient.GET("/api/sessions/reactivate-webhook").then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
+      return {
+        success: true,
+        data: (response.data ?? "") as string,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("general.unableToReactivateWebhook"),
+      };
+    }
+  }
+
+  /**
    * Update session
    * PUT /api/sessions (JSON body with Session object)
    */

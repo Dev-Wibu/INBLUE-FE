@@ -51,6 +51,13 @@ interface ApplicationDetail {
   roundId?: number;
   roundType?: string;
   status?: ApplicationDetailStatus;
+  // Note: `bookingId` was removed from the BE `ApplicationDetail` schema on
+  // 2026-07-18 (BACKEND_CHANGES_2026-07-17_18.md, §2). The v062/v063
+  // round persisted it but never read it back. We keep the field here as a
+  // tolerated optional so legacy snapshots don't crash, but on the v063
+  // BE the value is always `undefined` — derive everything from
+  // `sessionId` / `sessionInfo.sessionId` / `mentorId` instead.
+  /** @deprecated Removed from BE schema 2026-07-18; use {@link sessionId} + {@link sessionInfo} */
   bookingId?: number;
   sessionId?: number;
   mentorId?: number | null;

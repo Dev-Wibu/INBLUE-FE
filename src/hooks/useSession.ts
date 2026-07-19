@@ -265,6 +265,55 @@ export const useJoinSession = () => {
   });
 };
 
+/**
+ * Hook to reactivate the Daily.co webhook via
+ * GET /api/sessions/reactivate-webhook. Added per
+ * BACKEND_CHANGES_2026-07-17_18.md so admins / dev-ops can recover from a
+ * disabled webhook without a backend deploy. Invalidates the session cache
+ * once the mutation resolves so any session stuck in ONGOING polls the
+ * latest status.
+ */
+export const useReactivateWebhook = (options?: { onSuccess?: (_result: string) => void }) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const response = await sessionManager.reactivateWebhook();
+      if (!response.success || response.data === undefined) {
+        throw new Error(response.error || t("general.unableToReactivateWebhook"));
+      }
+      return response.data;
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+      toast.success(result || t("general.webhookReactivated"));
+      options?.onSuccess?.(result);
+    },
+    onError: (error: Error) => {
+      toast.error(getNormalizedErrorMessage(error, t("general.unableToReactivateWebhook")));
+    },
+  });
+};
+
+/**
+ * Hook to query the Daily.co webhook state via
+ * GET /api/sessions/check-webhook. Returns the raw status string from BE
+ * so callers can decide how to render it (badge, banner, dev-tools panel).
+ */
+export const useCheckWebhook = (options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: [...SESSION_QUERY_KEYS.all, "webhook-status"] as const,
+    queryFn: async (): Promise<string> => {
+      const response = await sessionManager.checkWebhook();
+      if (!response.success || response.data === undefined) {
+        throw new Error(response.error || t("general.unableToCheckWebhook"));
+      }
+      return response.data;
+    },
+    enabled: options?.enabled ?? true,
+    staleTime: 60_000,
+  });
+};
+
 // Re-export types
 export type { JoinSessionRequest, LeaveSessionRequest, Session, SessionCreationRequest };
 
