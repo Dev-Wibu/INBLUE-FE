@@ -28,7 +28,6 @@ import { useTranslation } from "react-i18next";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment";
-import { HrMentorReviewApprovalPage } from "@/pages/Shared/HrMentorReviewApproval";
 import {
   ApplicationGradingDetailPage,
   ApplicationGradingPage,
@@ -112,12 +111,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
             color: "text-slate-400",
           },
           {
-            type: "mentorReviewApprovals",
-            icon: UserCheck,
-            label: t("adminAdmindashboard.mentorReviewApprovals"),
-            color: "text-slate-400",
-          },
-          {
             type: "kiosk-bookings",
             icon: CalendarClock,
             label: t("adminKiosk.bookingRequests"),
@@ -170,12 +163,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         type: "applicationGrading",
         icon: ClipboardCheck,
         label: t("adminAdmindashboard.candidateGrading"),
-        color: "text-slate-400",
-      },
-      {
-        type: "mentorReviewApprovals",
-        icon: UserCheck,
-        label: t("adminAdmindashboard.mentorReviewApprovals"),
         color: "text-slate-400",
       },
       {
@@ -391,7 +378,6 @@ export function AdminDashboardPage() {
                   />
                 }
               />
-              <Route path="mentorReviewApprovals" element={<HrMentorReviewApprovalPage />} />
               <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />
               <Route
                 path="grading-detail"
