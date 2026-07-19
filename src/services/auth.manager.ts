@@ -297,7 +297,19 @@ export class AuthManager {
     const userCandidate = this.extractUserCandidate(data);
     const userFromCandidate = this.mapUserFromUnknown(userCandidate, emailFallback);
     const userFromToken = token ? this.buildUserFromToken(token, emailFallback) : undefined;
-    let user = userFromCandidate || userFromToken;
+    let user = userFromToken || userFromCandidate;
+
+    // Merge fallback properties if token is missing some
+    if (userFromCandidate && userFromToken) {
+      user = {
+        ...userFromCandidate,
+        ...userFromToken,
+        fullName: userFromToken.fullName || userFromCandidate.fullName,
+        avatar: userFromToken.avatar || userFromCandidate.avatar,
+        role: userFromToken.role || userFromCandidate.role,
+      };
+    }
+
     if (!user) {
       user = {
         id: emailFallback,

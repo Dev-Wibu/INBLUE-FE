@@ -13,7 +13,9 @@ import { getTokenExpiresAt, isSessionExpired } from "@/lib/auth-session";
  * Parse avatarUrl from a JWT token's payload (base64url-decoded).
  * Returns undefined if the token is invalid or avatarUrl is absent.
  */
-function getAvatarUrlFromToken(token: string | null | undefined): string | undefined {
+function getPayloadFromToken(
+  token: string | null | undefined
+): Record<string, unknown> | undefined {
   if (!token) return undefined;
   try {
     const raw = token.replace(/^Bearer\s+/i, "").trim();
@@ -21,9 +23,12 @@ function getAvatarUrlFromToken(token: string | null | undefined): string | undef
     if (parts.length < 2) return undefined;
     const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
     const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
-    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
-    const url = payload.avatarUrl ?? payload.avatar;
-    return typeof url === "string" && url.trim().length > 0 ? url.trim() : undefined;
+    const binaryString = atob(padded);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return JSON.parse(new TextDecoder("utf-8").decode(bytes)) as Record<string, unknown>;
   } catch {
     return undefined;
   }
@@ -102,11 +107,38 @@ export const useAuthStore = create<AuthState>()(
 
           if (state.isLoggedIn && isSessionExpired(restoredExpiresAt)) {
             state.clearAuth();
-          } else if (state.isLoggedIn && state.user && !state.user.avatarUrl) {
-            // Patch avatarUrl from JWT token if user was persisted without it
-            const tokenAvatar = getAvatarUrlFromToken(state.token);
-            if (tokenAvatar) {
-              state.setUser({ ...state.user, avatarUrl: tokenAvatar });
+          } else if (state.isLoggedIn && state.user && state.token) {
+            // Patch user info from JWT token since the previous state might have
+            // corrupted UTF-8 names or missing avatarUrl due to old parsing logic.
+            const payload = getPayloadFromToken(state.token);
+            if (payload) {
+              const tokenAvatar = payload.avatarUrl ?? payload.avatar;
+              const tokenName = payload.name ?? payload.fullName ?? payload.preferred_username;
+
+              let shouldUpdate = false;
+              const updatedUser = { ...state.user };
+
+              if (
+                typeof tokenAvatar === "string" &&
+                tokenAvatar.trim().length > 0 &&
+                tokenAvatar.trim() !== state.user.avatarUrl
+              ) {
+                updatedUser.avatarUrl = tokenAvatar.trim();
+                shouldUpdate = true;
+              }
+
+              if (
+                typeof tokenName === "string" &&
+                tokenName.trim().length > 0 &&
+                tokenName.trim() !== state.user.name
+              ) {
+                updatedUser.name = tokenName.trim();
+                shouldUpdate = true;
+              }
+
+              if (shouldUpdate) {
+                state.setUser(updatedUser);
+              }
             }
           }
 
