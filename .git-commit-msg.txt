@@ -1,25 +1,7 @@
-fix(mentor-review): unwrap reviewer payload, expose pick-schedule CTA, surface mentor review card
+chore: restore .git-commit-msg.txt accidentally clobbered by previous commit
 
-Three related fixes for the Mentor Review flow on the student side:
-
-1. application-detail.manager: BE returns { data: ApplicationDetail[], traceId }
-   from GET /api/application-details/reviewer instead of a bare array, so the
-   Staff grading list was empty. Also defensive unwrap on getByApplicationId
-   so Admin doesn't regress if BE ever wraps that response too.
-
-2. MentorRoundActionButton: previously returned null when no sessionId was
-   present, leaving the candidate with no entry point on the Pipeline row
-   after admin assigned a mentor. Now renders a 'Chọn lịch phỏng vấn'
-   button that deep-links to the Mentor Review page where the
-   DateTimePicker + ONLINE/OFFLINE form lives. Falls back to a disabled
-   'Đang chờ phân công mentor' pill when applicationId is also missing.
-
-3. ApplicationHistoryPage: new MentorReviewCard component renders the
-   mentor's STAR-form review (rating + situation/task/action/result +
-   strength/weakness/improvement) inline on the timeline row, so the
-   candidate no longer needs to open the detail page to see what the
-   mentor said about them. Rating mapped from BE's 1-10 scale onto the
-   1-5 star UI used everywhere else.
-
-i18n: vi/en/ja additions for awaitingMentor, pickSchedule,
-mentorReviewFromMentor, mentorReviewEmpty.
+The previous fix(mentor-review) commit used `.git-commit-msg.txt` as a
+Heredoc workaround for PowerShell and inadvertently staged an overwrite
+of that file. This commit restores the file to its previous content so
+`main` is functionally identical to the original (the 6 application
+files in the parent commit are unchanged).
