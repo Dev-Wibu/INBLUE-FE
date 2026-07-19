@@ -956,7 +956,7 @@ export function RoundCanvasEditorDialog({
                                     autoFocus
                                     value={
                                       selectedRound.roundType === "MENTROR_REVIEW" ||
-                                      selectedRound.roundType === "MENTOR_REVIEW"
+                                      (selectedRound.roundType as string) === "MENTOR_REVIEW"
                                         ? (selectedRound.configData?.timeLimitMinutes ?? 0) / 1440
                                         : (selectedRound.configData?.timeLimitMinutes ?? 0)
                                     }
@@ -966,7 +966,7 @@ export function RoundCanvasEditorDialog({
                                         selectedRoundIndex,
                                         "timeLimitMinutes",
                                         selectedRound.roundType === "MENTROR_REVIEW" ||
-                                          selectedRound.roundType === "MENTOR_REVIEW"
+                                          (selectedRound.roundType as string) === "MENTOR_REVIEW"
                                           ? val * 1440
                                           : val
                                       );
@@ -979,7 +979,7 @@ export function RoundCanvasEditorDialog({
                                   />
                                   <span className="shrink-0 text-[9px] text-slate-400">
                                     {selectedRound.roundType === "MENTROR_REVIEW" ||
-                                    selectedRound.roundType === "MENTOR_REVIEW"
+                                    (selectedRound.roundType as string) === "MENTOR_REVIEW"
                                       ? "ngày"
                                       : t("common.minute")}
                                   </span>
@@ -992,7 +992,7 @@ export function RoundCanvasEditorDialog({
                                   <Clock className="h-4 w-4 text-slate-400" />
                                   {(selectedRound.configData?.timeLimitMinutes ?? 0) > 0
                                     ? selectedRound.roundType === "MENTROR_REVIEW" ||
-                                      selectedRound.roundType === "MENTOR_REVIEW"
+                                      (selectedRound.roundType as string) === "MENTOR_REVIEW"
                                       ? `${(selectedRound.configData?.timeLimitMinutes ?? 0) / 1440} ngày`
                                       : `${selectedRound.configData?.timeLimitMinutes} phút`
                                     : t("adminCompanymanagement.noLimit")}
