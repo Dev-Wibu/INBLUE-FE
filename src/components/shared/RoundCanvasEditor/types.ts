@@ -5,6 +5,7 @@ export type RoundType =
   | "CODING"
   | "CODE_REVIEW"
   | "MENTROR_REVIEW"
+  | "MENTOR_REVIEW"
   | "AI_INTERVIEW";
 
 export interface UIRoundConfig {
