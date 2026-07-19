@@ -955,7 +955,8 @@ export function RoundCanvasEditorDialog({
                                     min={0}
                                     autoFocus
                                     value={
-                                      selectedRound.roundType === "MENTROR_REVIEW"
+                                      selectedRound.roundType === "MENTROR_REVIEW" ||
+                                      selectedRound.roundType === "MENTOR_REVIEW"
                                         ? (selectedRound.configData?.timeLimitMinutes ?? 0) / 1440
                                         : (selectedRound.configData?.timeLimitMinutes ?? 0)
                                     }
@@ -964,7 +965,8 @@ export function RoundCanvasEditorDialog({
                                       updateRoundConfigField(
                                         selectedRoundIndex,
                                         "timeLimitMinutes",
-                                        selectedRound.roundType === "MENTROR_REVIEW"
+                                        selectedRound.roundType === "MENTROR_REVIEW" ||
+                                          selectedRound.roundType === "MENTOR_REVIEW"
                                           ? val * 1440
                                           : val
                                       );
@@ -976,7 +978,8 @@ export function RoundCanvasEditorDialog({
                                     className="h-11 w-full [appearance:textfield] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-800 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                   />
                                   <span className="shrink-0 text-[9px] text-slate-400">
-                                    {selectedRound.roundType === "MENTROR_REVIEW"
+                                    {selectedRound.roundType === "MENTROR_REVIEW" ||
+                                    selectedRound.roundType === "MENTOR_REVIEW"
                                       ? "ngày"
                                       : t("common.minute")}
                                   </span>
@@ -988,7 +991,8 @@ export function RoundCanvasEditorDialog({
                                   className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400">
                                   <Clock className="h-4 w-4 text-slate-400" />
                                   {(selectedRound.configData?.timeLimitMinutes ?? 0) > 0
-                                    ? selectedRound.roundType === "MENTROR_REVIEW"
+                                    ? selectedRound.roundType === "MENTROR_REVIEW" ||
+                                      selectedRound.roundType === "MENTOR_REVIEW"
                                       ? `${(selectedRound.configData?.timeLimitMinutes ?? 0) / 1440} ngày`
                                       : `${selectedRound.configData?.timeLimitMinutes} phút`
                                     : t("adminCompanymanagement.noLimit")}
