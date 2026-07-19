@@ -159,6 +159,10 @@ export class ApplicationDetailManager {
   /**
    * Get all application details (all rounds) for a specific application
    * GET /api/application-details/application/{applicationId}
+   *
+   * Defensive unwrap: BE currently returns a bare array, but if it ever
+   * switches to a `{ data: [...] }` wrapper the page would silently go
+   * empty — handle both shapes here so the UI never breaks.
    */
   async getByApplicationId(applicationId: number): Promise<ApiResponse<ApplicationDetail[]>> {
     try {
@@ -168,9 +172,11 @@ export class ApplicationDetailManager {
           params: { path: { applicationId } },
         }
       );
+      const raw = response.data as unknown;
+      const list = Array.isArray(raw) ? (raw as ApplicationDetail[]) : unwrapReviewerPayload(raw);
       return {
         success: true,
-        data: (response.data ?? []) as ApplicationDetail[],
+        data: list,
       };
     } catch (error) {
       console.error("[ApplicationDetailManager] getByApplicationId error:", error);
@@ -237,13 +243,18 @@ export class ApplicationDetailManager {
   /**
    * Get all application details assigned to current reviewer (Staff)
    * GET /api/application-details/reviewer
+   *
+   * The BE response is wrapped as `{ data: ApplicationDetail[], traceId?: string }`,
+   * not a bare array, so we unwrap it here.
    */
   async getForReviewer(): Promise<ApiResponse<ApplicationDetail[]>> {
     try {
       const response = await fetchClient.GET("/api/application-details/reviewer", {});
+      const raw = response.data as unknown;
+      const list = unwrapReviewerPayload(raw);
       return {
         success: true,
-        data: (response.data ?? []) as ApplicationDetail[],
+        data: list,
       };
     } catch (error) {
       console.error("[ApplicationDetailManager] getForReviewer error:", error);
@@ -281,6 +292,32 @@ export class ApplicationDetailManager {
       };
     }
   }
+}
+
+/**
+ * Unwrap the BE reviewer payload into a flat ApplicationDetail[].
+ *
+ * The BE returns either:
+ *   - `{ data: ApplicationDetail[], traceId?: string }` (current behaviour)
+ *   - a bare `ApplicationDetail[]`
+ *   - `null` / `undefined` (no items)
+ *
+ * Anything that doesn't look like an array falls through to `[]` so the
+ * UI shows the empty-state instead of crashing.
+ */
+function unwrapReviewerPayload(raw: unknown): ApplicationDetail[] {
+  if (Array.isArray(raw)) return raw as ApplicationDetail[];
+  if (raw && typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    const candidate = obj["data"] ?? obj["items"] ?? obj["content"] ?? obj["results"];
+    if (Array.isArray(candidate)) return candidate as ApplicationDetail[];
+    if (candidate && typeof candidate === "object") {
+      const nested = candidate as Record<string, unknown>;
+      const inner = nested["data"] ?? nested["items"] ?? nested["content"];
+      if (Array.isArray(inner)) return inner as ApplicationDetail[];
+    }
+  }
+  return [];
 }
 
 export const applicationDetailManager = new ApplicationDetailManager();

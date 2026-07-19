@@ -3767,6 +3767,8 @@
     "describeTheTask": "面接でのタスクを説明してください...",
     "describeTheAction": "メンターがどのように руководствしましたか...",
     "describeTheResult": "結果と教訓...",
+    "mentorReviewFromMentor": "メンターからの評価",
+    "mentorReviewEmpty": "メンターから詳細なフィードバックはまだありません。",
     "reviewSubmittedSuccessfully": "メンターへのレビューが正常に提出されました！",
     "aiInterviewRound": "AIインタビュー ラウンド",
     "aiInterviewCompleted": "AIインタビューが完了しました",
@@ -4995,6 +4997,8 @@
     "rateMentor": "メンターを評価",
     "done": "完了しました",
     "notYet": "まだ時間外です ({{countdown}})",
-    "soon": "もうすぐ"
+    "soon": "もうすぐ",
+    "awaitingMentor": "メンター割り当て待ち",
+    "pickSchedule": "面接スケジュールを選択"
   }
 }

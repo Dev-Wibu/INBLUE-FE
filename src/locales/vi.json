@@ -3763,6 +3763,8 @@
     "describeTheTask": "Mô tả nhiệm vụ của bạn trong buổi phỏng vấn...",
     "describeTheAction": "Mentor đã hướng dẫn như thế nào...",
     "describeTheResult": "Kết quả và bài học từ buổi phỏng vấn...",
+    "mentorReviewFromMentor": "Đánh giá từ mentor",
+    "mentorReviewEmpty": "Mentor chưa để lại nhận xét chi tiết.",
     "reviewSubmittedSuccessfully": "Đánh giá mentor đã được nộp thành công!",
     "aiInterviewRound": "Vòng Phỏng vấn AI",
     "aiInterviewCompleted": "Phỏng vấn AI hoàn thành",
@@ -4986,6 +4988,8 @@
     "rateMentor": "Đánh giá Mentor",
     "done": "Đã hoàn thành",
     "notYet": "Chưa đến giờ ({{countdown}})",
-    "soon": "sắp tới"
+    "soon": "sắp tới",
+    "awaitingMentor": "Đang chờ phân công mentor",
+    "pickSchedule": "Chọn lịch phỏng vấn"
   }
 }

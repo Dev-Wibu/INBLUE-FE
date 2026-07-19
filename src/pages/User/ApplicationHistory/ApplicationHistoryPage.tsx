@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StarRating } from "@/components/ui/star-rating";
 import { useCurrentRound } from "@/hooks/useRound";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
@@ -349,6 +350,114 @@ function SubmissionPreview({
 // ============================================================
 // AI Feedback Card
 // ============================================================
+// Mentor Review Card — surfaces the mentor's STAR-form review that was
+// returned in `ApplicationDetail.mentorReview`. Previously this only lived
+// inside the Mentor Review detail page, so the timeline row on
+// ApplicationHistoryPage showed just a status badge with no context for
+// the candidate.
+// ============================================================
+
+function MentorReviewCard({ review }: { review: NonNullable<ApplicationDetail["mentorReview"]> }) {
+  const { t } = useTranslation();
+
+  const ratingValue =
+    typeof review.rating === "number" && review.rating > 0
+      ? // Backend stores mentor review on a 1–10 scale (see MentorFeedback
+        // spec), but the UI consistently renders out-of-10 stars. Map 1–10
+        // onto 1–5 stars so a 5/10 mentor review renders as 2.5/5, etc.
+        Math.max(0, Math.min(5, review.rating / 2))
+      : 0;
+
+  const starRows: { label: string; value?: string | null }[] = [
+    { label: t("userApplicationhistory.situation"), value: review.situationNote },
+    { label: t("userApplicationhistory.task"), value: review.taskNote },
+    { label: t("userApplicationhistory.action"), value: review.actionNote },
+    { label: t("userApplicationhistory.result"), value: review.resultNote },
+  ];
+
+  const hasAnyNote = starRows.some((row) => !!row.value && row.value.trim().length > 0);
+  const hasStrengthFeedback = !!review.strength || !!review.weakness || !!review.improve;
+
+  return (
+    <div className="mt-3 space-y-3 rounded-lg border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-800/60 dark:bg-amber-950/20">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+          <p className="text-xs font-semibold tracking-wide text-amber-700 uppercase dark:text-amber-300">
+            {t("userApplicationhistory.mentorReviewFromMentor")}
+          </p>
+        </div>
+        {ratingValue > 0 && (
+          <div className="flex items-center gap-2">
+            <StarRating value={ratingValue} size="sm" readOnly />
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+              {ratingValue.toFixed(1)}/5
+            </span>
+          </div>
+        )}
+      </div>
+
+      {hasAnyNote && (
+        <div className="space-y-2">
+          {starRows.map((row) => {
+            if (!row.value || row.value.trim().length === 0) return null;
+            return (
+              <div key={row.label} className="text-xs">
+                <p className="font-semibold text-amber-700 dark:text-amber-300">{row.label}</p>
+                <p className="mt-0.5 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                  {row.value}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {hasStrengthFeedback && (
+        <div className="grid gap-2 sm:grid-cols-3">
+          {review.strength && (
+            <div className="rounded-md border border-green-200 bg-white/70 p-2 text-xs dark:border-green-800 dark:bg-slate-900/30">
+              <p className="font-semibold text-green-700 dark:text-green-300">
+                {t("userApplicationhistory.strength")}
+              </p>
+              <p className="mt-0.5 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                {review.strength}
+              </p>
+            </div>
+          )}
+          {review.weakness && (
+            <div className="rounded-md border border-red-200 bg-white/70 p-2 text-xs dark:border-red-800 dark:bg-slate-900/30">
+              <p className="font-semibold text-red-700 dark:text-red-300">
+                {t("userApplicationhistory.weakness")}
+              </p>
+              <p className="mt-0.5 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                {review.weakness}
+              </p>
+            </div>
+          )}
+          {review.improve && (
+            <div className="rounded-md border border-blue-200 bg-white/70 p-2 text-xs dark:border-blue-800 dark:bg-slate-900/30">
+              <p className="font-semibold text-blue-700 dark:text-blue-300">
+                {t("userApplicationhistory.improvementSuggestion")}
+              </p>
+              <p className="mt-0.5 whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                {review.improve}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!hasAnyNote && !hasStrengthFeedback && (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {t("userApplicationhistory.mentorReviewEmpty")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
 
 function AIFeedbackCard({
   feedback,
@@ -647,6 +756,7 @@ function RoundTimelineItem({
   isCompleted,
   isCurrent,
   isLocked,
+  applicationId,
   onEnterRoom,
   onViewEmailSubmission,
   isPolling,
@@ -659,6 +769,8 @@ function RoundTimelineItem({
   isCompleted: boolean;
   isCurrent: boolean;
   isLocked: boolean;
+  /** Application id forwarded to MentorRoundActionButton for the "Pick schedule" deep link. */
+  applicationId?: number;
   onEnterRoom?: () => void;
   onViewEmailSubmission?: (_emailSubmissionId: number) => void;
   isPolling?: boolean;
@@ -801,6 +913,11 @@ function RoundTimelineItem({
                   />
                 )}
 
+              {/* Surface the mentor's STAR-form review on the timeline row so
+                  the candidate can see it without opening the detail page. */}
+              {(round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
+                detail?.mentorReview && <MentorReviewCard review={detail.mentorReview} />}
+
               {(round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
                 effectiveStatus === "SLOT_PICKED" &&
                 !isCompleted && (
@@ -838,11 +955,15 @@ function RoundTimelineItem({
                   </p>
                 </div>
               )}
-              {/* Mentor Review rounds: always show the toggle button, even after completion */}
+              {/* Mentor Review rounds: always show the toggle button, even after completion.
+                  `applicationId` is forwarded so the button can offer a "Chọn lịch"
+                  entry point when the student hasn't created a session yet
+                  (mentor assigned → user picks dateTime + ONLINE/OFFLINE). */}
               {round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW" ? (
                 <MentorRoundActionButton
                   sessionId={detail?.sessionInfo?.sessionId ?? undefined}
                   mentorId={detail?.mentorId ?? null}
+                  applicationId={applicationId}
                   compact
                 />
               ) : isCurrent && !isEvaluating ? (
@@ -1306,6 +1427,7 @@ function ApplicationDetailPanel({
                 isCompleted={item.isCompleted}
                 isCurrent={item.isCurrent}
                 isLocked={item.isLocked}
+                applicationId={application?.id}
                 isPolling={isPolling}
                 optimistic={item.optimistic}
                 onEnterRoom={

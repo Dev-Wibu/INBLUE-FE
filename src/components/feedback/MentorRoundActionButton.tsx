@@ -30,6 +30,13 @@ interface MentorRoundActionButtonProps {
   /** Optional mentor display name to surface in the rating modal. */
   mentorName?: string;
   /**
+   * Application id used to deep-link the user to the Mentor Review page when
+   * they haven't picked a slot yet. The Mentor Review page itself owns the
+   * DateTimePicker + ONLINE/OFFLINE form. The button is rendered whenever a
+   * session id is missing so the user always has an entry point.
+   */
+  applicationId?: number | string | null;
+  /**
    * When true the button renders a compact variant sized for inline use
    * inside `RoundTimelineItem` (default: true).
    */
@@ -40,6 +47,7 @@ export function MentorRoundActionButton({
   sessionId,
   mentorId,
   mentorName,
+  applicationId,
   compact = true,
 }: MentorRoundActionButtonProps) {
   const { t } = useTranslation();
@@ -61,13 +69,18 @@ export function MentorRoundActionButton({
   // we don't have to forward props.
   const [modalRenderKey, setModalRenderKey] = useState<number | null>(null);
 
-  // Defensive: when no sessionId is provided we cannot drive the toggle.
-  // Render nothing so the timeline layout doesn't shift.
-  if (!hasSessionId) return null;
-
   const handleJoinRoom = () => {
     if (!session?.id) return;
     navigate(`/user/sessions/room/${session.id}`);
+  };
+
+  // No session yet: route the candidate to the Mentor Review page where
+  // the DateTimePicker + ONLINE/OFFLINE form lives. Previously we rendered
+  // nothing here, which left the student staring at a "Chờ xử lý" chip
+  // with no entry point.
+  const handlePickSchedule = () => {
+    if (!applicationId) return;
+    navigate(`/user/application/${applicationId}/mentor-review`);
   };
 
   const handleRated = () => {
@@ -80,6 +93,30 @@ export function MentorRoundActionButton({
   const sizeClass = compact ? "size-sm" : "size-default";
 
   const renderButton = () => {
+    if (!hasSessionId) {
+      // Two sub-states:
+      //  - applicationId present: let the candidate pick a slot right away.
+      //  - no applicationId (defensive): show a disabled "Chờ phân công mentor"
+      //    pill so the timeline row stays stable.
+      if (!applicationId) {
+        return (
+          <Button variant="outline" size="sm" disabled className="gap-2">
+            <Hourglass className="h-4 w-4" />
+            {t("userRateMentor.awaitingMentor")}
+          </Button>
+        );
+      }
+      return (
+        <Button
+          size="sm"
+          onClick={handlePickSchedule}
+          className="gap-2 bg-indigo-600 text-white hover:bg-indigo-700">
+          <LogIn className="h-4 w-4" />
+          {t("userRateMentor.pickSchedule")}
+        </Button>
+      );
+    }
+
     if (loading) {
       return (
         <Button variant="outline" size="sm" disabled className="gap-2">

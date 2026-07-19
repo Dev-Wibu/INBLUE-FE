@@ -3766,6 +3766,8 @@
     "describeTheTask": "Describe your task in the interview...",
     "describeTheAction": "How did the mentor guide you...",
     "describeTheResult": "Results and lessons learned...",
+    "mentorReviewFromMentor": "Mentor's review",
+    "mentorReviewEmpty": "Mentor has not left any detailed feedback yet.",
     "reviewSubmittedSuccessfully": "Mentor review submitted successfully!",
     "aiInterviewRound": "AI Interview Round",
     "aiInterviewCompleted": "AI Interview Completed",
@@ -4985,6 +4987,8 @@
     "rateMentor": "Rate Mentor",
     "done": "Completed",
     "notYet": "Not yet ({{countdown}})",
-    "soon": "soon"
+    "soon": "soon",
+    "awaitingMentor": "Awaiting mentor assignment",
+    "pickSchedule": "Pick interview schedule"
   }
 }
