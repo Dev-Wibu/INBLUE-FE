@@ -707,7 +707,10 @@ export function RoundCanvasEditorDialog({
                                     <Clock className="h-3 w-3 opacity-60" />
                                     <span>
                                       {round.configData?.timeLimitMinutes
-                                        ? `${round.configData.timeLimitMinutes}p`
+                                        ? round.roundType === "MENTOR_REVIEW" ||
+                                          round.roundType === "MENTROR_REVIEW"
+                                          ? `${round.configData.timeLimitMinutes / 1440} ngày`
+                                          : `${round.configData.timeLimitMinutes}p`
                                         : "∞"}
                                     </span>
                                   </div>

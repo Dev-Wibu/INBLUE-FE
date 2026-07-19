@@ -216,7 +216,10 @@ export function JobDescriptionDetailView({
                   <div className="mt-1 flex items-center gap-1.5 text-lg font-bold text-slate-900 dark:text-white">
                     <Clock className="h-4 w-4 text-slate-400" />
                     {selectedRound.configData?.timeLimitMinutes
-                      ? `${selectedRound.configData.timeLimitMinutes} Phút`
+                      ? selectedRound.roundType === "MENTOR_REVIEW" ||
+                        selectedRound.roundType === "MENTROR_REVIEW"
+                        ? `${selectedRound.configData.timeLimitMinutes / 1440} Ngày`
+                        : `${selectedRound.configData.timeLimitMinutes} Phút`
                       : "Không giới hạn"}
                   </div>
                 </div>
@@ -383,7 +386,10 @@ export function JobDescriptionDetailView({
                       <div className="text-xs text-slate-500 dark:text-slate-400">
                         {meta?.title} •{" "}
                         {round.configData?.timeLimitMinutes
-                          ? `${round.configData.timeLimitMinutes}m`
+                          ? round.roundType === "MENTOR_REVIEW" ||
+                            round.roundType === "MENTROR_REVIEW"
+                            ? `${round.configData.timeLimitMinutes / 1440} ngày`
+                            : `${round.configData.timeLimitMinutes}m`
                           : "∞"}
                       </div>
                     </div>
