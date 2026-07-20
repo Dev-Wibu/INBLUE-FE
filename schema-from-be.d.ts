@@ -692,26 +692,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/mentor-bookings/pick-slot": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Ứng viên đặt lịch phỏng vấn tại Kiosk
-         * @description Cho phép ứng viên chọn một trạm Kiosk và slot thời gian còn trống để đặt lịch phỏng vấn (tạo booking trạng thái AWAITING_MENTOR).
-         */
-        post: operations["pickSlot"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/mails/send-generic": {
         parameters: {
             query?: never;
@@ -787,9 +767,29 @@ export interface paths {
         put?: never;
         /**
          * Kiosk xác thực và vào phòng phỏng vấn
-         * @description Máy Kiosk vật lý gửi sessionKey và kioskId để xác thực. Hệ thống kiểm tra thời gian hợp lệ (±15 phút so với giờ hẹn) và sinh Daily.co meetingToken cho ứng viên.
+         * @description Máy Kiosk vật lý gửi sessionKey và kioskId để xác thực. Hệ thống kiểm tra thời gian hợp lệ (±15 phút so với giờ hẹn) và gọi orchestrator để lấy AI Session.
          */
         post: operations["enterKiosk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kiosk-bookings/pick-slot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ứng viên đặt lịch phỏng vấn AI tại Kiosk
+         * @description Cho phép ứng viên chọn một trạm Kiosk và slot thời gian còn trống để đặt lịch phỏng vấn AI.
+         */
+        post: operations["pickSlot"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1022,26 +1022,6 @@ export interface paths {
          * @description Xử lý chấm điểm trực tiếp bài review code của ứng viên thông qua AnythingLLM với workspace CODE_REVIEW.
          */
         post: operations["evaluateCodeReview"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/mentor-bookings/{bookingId}/assign-mentor": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Gán Mentor cho lịch phỏng vấn
-         * @description Admin thực hiện gán Mentor cho một lượt phỏng vấn. Hệ thống kiểm tra trùng lịch Mentor, gọi Daily.co để tạo phòng, sinh mã sessionKey và gửi thông báo cho ứng viên (chỉ dành cho Admin).
-         */
-        post: operations["assignMentor_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2056,26 +2036,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/admin/mentor-bookings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Lấy danh sách các lượt phỏng vấn theo trạng thái
-         * @description Lấy toàn bộ các lượt đặt lịch phỏng vấn dựa theo trạng thái lọc (chỉ dành cho Admin/Staff). Mặc định là AWAITING_MENTOR.
-         */
-        get: operations["getBookingsByStatus"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/posts/likes/{postId}/{userId}": {
         parameters: {
             query?: never;
@@ -2096,7 +2056,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/mentor-bookings/{bookingId}": {
+    "/api/kiosk-bookings/{bookingId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -2107,7 +2067,7 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * Hủy/đổi lịch phỏng vấn
+         * Hủy/đổi lịch phỏng vấn Kiosk
          * @description Hủy lịch phỏng vấn hiện tại. Chuyển trạng thái booking thành CANCELLED và reset trạng thái vòng thi ứng tuyển về PENDING để ứng viên có thể chọn lại slot mới.
          */
         delete: operations["cancelBooking"];
@@ -2626,6 +2586,8 @@ export interface components {
             mentorId?: number;
             /** Format: int32 */
             sessionId?: number;
+            /** Format: int32 */
+            aiInterviewSessionId?: number;
             sessionInfo?: components["schemas"]["RoundSessionInfo"];
             /** Format: date-time */
             createdAt?: string;
@@ -3062,6 +3024,21 @@ export interface components {
             rating?: number;
             comment?: string;
         };
+        GenericEmailRequest: {
+            toEmail?: string;
+            subject?: string;
+            body?: string;
+        };
+        KioskEnterDtoRequest: {
+            sessionKey?: string;
+            /** Format: int64 */
+            kioskId?: number;
+        };
+        KioskEnterDtoResponse: {
+            type?: string;
+            roomUrl?: string;
+            aiSessionKey?: string;
+        };
         PickSlotDtoRequest: {
             /** Format: int64 */
             applicationDetailId?: number;
@@ -3072,7 +3049,7 @@ export interface components {
             /** Format: date-time */
             scheduledEnd?: string;
         };
-        MentorInterviewBooking: {
+        KioskBooking: {
             /** Format: int64 */
             id?: number;
             /** Format: int64 */
@@ -3085,10 +3062,6 @@ export interface components {
             scheduledStart?: string;
             /** Format: date-time */
             scheduledEnd?: string;
-            /** Format: int32 */
-            mentorId?: number;
-            /** Format: int32 */
-            sessionId?: number;
             /** @enum {string} */
             status?: "AWAITING_MENTOR" | "MENTOR_ASSIGNED" | "ROOM_CREATED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
             sessionKey?: string;
@@ -3097,19 +3070,6 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
-        };
-        GenericEmailRequest: {
-            toEmail?: string;
-            subject?: string;
-            body?: string;
-        };
-        KioskEnterDtoRequest: {
-            sessionKey?: string;
-            /** Format: int64 */
-            kioskId?: number;
-        };
-        KioskEnterDtoResponse: {
-            roomUrl?: string;
         };
         CreateJobDescriptionRequest: {
             title?: string;
@@ -3148,6 +3108,8 @@ export interface components {
         InterviewSetupRequest: {
             /** Format: int32 */
             user_id?: number;
+            /** Format: int64 */
+            application_detail_id?: number;
             candidate_profile?: components["schemas"]["CandidateProfile"];
             job_requirement?: components["schemas"]["JobRequirementData"];
             session_config?: components["schemas"]["SessionConfigData"];
@@ -3332,11 +3294,6 @@ export interface components {
             roundId?: number;
             submissions?: components["schemas"]["CodeReviewSubmission"][];
         };
-        AssignMentorDtoRequest: {
-            /** Format: int32 */
-            mentorId?: number;
-            notes?: string;
-        };
         UserResponse: {
             /** Format: int32 */
             id?: number;
@@ -3421,15 +3378,15 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3537,6 +3494,8 @@ export interface components {
             /** Format: int32 */
             id?: number;
             sessionKey?: string;
+            /** Format: int64 */
+            applicationDetailId?: number;
             user?: components["schemas"]["User"];
             blueprint?: components["schemas"]["InterviewBlueprintResponse"];
             candidateProfile?: components["schemas"]["CandidateProfile"];
@@ -3709,11 +3668,11 @@ export interface components {
         /** @enum {unknown} */
         HttpStatus: "100 CONTINUE" | "101 SWITCHING_PROTOCOLS" | "102 PROCESSING" | "103 EARLY_HINTS" | "200 OK" | "201 CREATED" | "202 ACCEPTED" | "203 NON_AUTHORITATIVE_INFORMATION" | "204 NO_CONTENT" | "205 RESET_CONTENT" | "206 PARTIAL_CONTENT" | "207 MULTI_STATUS" | "208 ALREADY_REPORTED" | "226 IM_USED" | "300 MULTIPLE_CHOICES" | "301 MOVED_PERMANENTLY" | "302 FOUND" | "303 SEE_OTHER" | "304 NOT_MODIFIED" | "307 TEMPORARY_REDIRECT" | "308 PERMANENT_REDIRECT" | "400 BAD_REQUEST" | "401 UNAUTHORIZED" | "402 PAYMENT_REQUIRED" | "403 FORBIDDEN" | "404 NOT_FOUND" | "405 METHOD_NOT_ALLOWED" | "406 NOT_ACCEPTABLE" | "407 PROXY_AUTHENTICATION_REQUIRED" | "408 REQUEST_TIMEOUT" | "409 CONFLICT" | "410 GONE" | "411 LENGTH_REQUIRED" | "412 PRECONDITION_FAILED" | "413 CONTENT_TOO_LARGE" | "413 PAYLOAD_TOO_LARGE" | "414 URI_TOO_LONG" | "415 UNSUPPORTED_MEDIA_TYPE" | "416 REQUESTED_RANGE_NOT_SATISFIABLE" | "417 EXPECTATION_FAILED" | "418 I_AM_A_TEAPOT" | "421 MISDIRECTED_REQUEST" | "422 UNPROCESSABLE_CONTENT" | "422 UNPROCESSABLE_ENTITY" | "423 LOCKED" | "424 FAILED_DEPENDENCY" | "425 TOO_EARLY" | "426 UPGRADE_REQUIRED" | "428 PRECONDITION_REQUIRED" | "429 TOO_MANY_REQUESTS" | "431 REQUEST_HEADER_FIELDS_TOO_LARGE" | "451 UNAVAILABLE_FOR_LEGAL_REASONS" | "500 INTERNAL_SERVER_ERROR" | "501 NOT_IMPLEMENTED" | "502 BAD_GATEWAY" | "503 SERVICE_UNAVAILABLE" | "504 GATEWAY_TIMEOUT" | "505 HTTP_VERSION_NOT_SUPPORTED" | "506 VARIANT_ALSO_NEGOTIATES" | "507 INSUFFICIENT_STORAGE" | "508 LOOP_DETECTED" | "509 BANDWIDTH_LIMIT_EXCEEDED" | "510 NOT_EXTENDED" | "511 NETWORK_AUTHENTICATION_REQUIRED";
         HttpStatusCode: {
-            is4xxClientError?: boolean;
-            is5xxServerError?: boolean;
             is1xxInformational?: boolean;
             is2xxSuccessful?: boolean;
             is3xxRedirection?: boolean;
+            is4xxClientError?: boolean;
+            is5xxServerError?: boolean;
             error?: boolean;
         };
         JspConfigDescriptor: {
@@ -3721,18 +3680,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            trimDirectiveWhitespaces?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
+            includePreludes?: string[];
             errorOnELNotFound?: string;
             pageEncoding?: string;
-            scriptingInvalid?: string;
-            includePreludes?: string[];
+            trimDirectiveWhitespaces?: string;
+            urlPatterns?: string[];
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            defaultContentType?: string;
             includeCodas?: string[];
             elIgnored?: string;
             isXml?: string;
-            defaultContentType?: string;
-            urlPatterns?: string[];
+            scriptingInvalid?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -3756,23 +3715,20 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
+            propagateQueryProperties?: boolean;
             attributesMap?: {
                 [key: string]: unknown;
             };
+            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
         };
         ServletContext: {
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -3787,8 +3743,11 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            serverInfo?: string;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -3869,9 +3828,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
+            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -5310,30 +5269,6 @@ export interface operations {
             };
         };
     };
-    pickSlot: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PickSlotDtoRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MentorInterviewBooking"];
-                };
-            };
-        };
-    };
     sendGenericEmail: {
         parameters: {
             query?: never;
@@ -5444,6 +5379,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["KioskEnterDtoResponse"];
+                };
+            };
+        };
+    };
+    pickSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PickSlotDtoRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["KioskBooking"];
                 };
             };
         };
@@ -5851,32 +5810,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApplicationDetail"];
-                };
-            };
-        };
-    };
-    assignMentor_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                bookingId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AssignMentorDtoRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MentorInterviewBooking"];
                 };
             };
         };
@@ -7236,28 +7169,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": Record<string, never>;
-                };
-            };
-        };
-    };
-    getBookingsByStatus: {
-        parameters: {
-            query?: {
-                status?: "AWAITING_MENTOR" | "MENTOR_ASSIGNED" | "ROOM_CREATED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MentorInterviewBooking"][];
                 };
             };
         };

@@ -215,7 +215,7 @@ export function QuestionBankManagementPage() {
                   onDelete={handleDeleteClick}
                 />
                 {questions.length > 0 && (
-                  <div className="flex items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                     <PaginationControl
                       pagination={pagination}
                       onPageSizeChange={(nextPageSize) => {

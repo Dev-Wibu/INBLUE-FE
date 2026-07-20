@@ -84,10 +84,12 @@ export function QuestionBankTable({
               <TableCell className="font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                 #{q.id}
               </TableCell>
-              <TableCell className="max-w-[400px]">
-                <p className="line-clamp-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {q.questionText || "Chưa có nội dung"}
-                </p>
+              <TableCell>
+                <div className="max-w-[400px] whitespace-normal">
+                  <p className="line-clamp-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                    {q.questionText || "Chưa có nội dung"}
+                  </p>
+                </div>
               </TableCell>
               <TableCell>
                 <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
