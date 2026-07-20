@@ -28,6 +28,8 @@ export interface EnrichedKioskBooking extends KioskBooking {
   kioskLocation?: string;
   mentorName?: string;
   mentorExpertise?: string;
+  mentorId?: number;
+  sessionId?: number;
 }
 
 export interface AssignMentorPayload {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ApiResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
 import type { KioskBooking, Mentor } from "@/pages/Admin/KioskBookingManagement/types";
@@ -5,10 +6,12 @@ import type { KioskBooking, Mentor } from "@/pages/Admin/KioskBookingManagement/
 export class KioskBookingManager {
   async getAllBookings(): Promise<ApiResponse<KioskBooking[]>> {
     try {
-      const response = await fetchClient.GET("/api/admin/mentor-bookings", {}).then((res) => ({
-        data: res.data,
-        status: res.response?.status,
-      }));
+      const response = await fetchClient
+        .GET("/api/admin/mentor-bookings" as any, {})
+        .then((res) => ({
+          data: res.data as any,
+          status: res.response?.status,
+        }));
       if (response.data) {
         return { success: true, data: response.data };
       }
@@ -24,12 +27,15 @@ export class KioskBookingManager {
 
   async getBookingsByUser(userId: number): Promise<ApiResponse<KioskBooking[]>> {
     try {
-      const response = await fetchClient.GET("/api/admin/mentor-bookings", {}).then((res) => ({
-        data: res.data,
-        status: res.response?.status,
-      }));
+      const response = await fetchClient
+        .GET("/api/admin/mentor-bookings" as any, {})
+        .then((res) => ({
+          data: res.data as any,
+          status: res.response?.status,
+        }));
       if (response.data) {
-        const filtered = response.data.filter((b) => b.applicantUserId === userId);
+        const dataArr = response.data as any[];
+        const filtered = dataArr.filter((b: any) => b.applicantUserId === userId);
         return { success: true, data: filtered };
       }
       return {
@@ -67,8 +73,8 @@ export class KioskBookingManager {
   ): Promise<ApiResponse<unknown>> {
     try {
       const response = await fetchClient
-        .POST("/api/admin/mentor-bookings/{bookingId}/assign-mentor", {
-          params: { path: { bookingId } },
+        .POST("/api/admin/mentor-bookings/{bookingId}/assign-mentor" as any, {
+          params: { path: { bookingId } } as any,
           body: payload as never,
         })
         .then((res) => ({
@@ -91,7 +97,7 @@ export class KioskBookingManager {
   async cancelBooking(bookingId: number): Promise<ApiResponse<unknown>> {
     try {
       const response = await fetchClient
-        .DELETE("/api/mentor-bookings/{bookingId}", {
+        .DELETE("/api/kiosk-bookings/{bookingId}", {
           params: { path: { bookingId } },
         })
         .then((res) => ({

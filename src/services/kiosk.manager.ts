@@ -8,7 +8,7 @@ export type Kiosk = components["schemas"]["Kiosk"];
 export type KioskSchedule = components["schemas"]["KioskSchedule"];
 export type SlotDto = components["schemas"]["SlotDto"];
 export type PickSlotDtoRequest = components["schemas"]["PickSlotDtoRequest"];
-export type MentorInterviewBooking = components["schemas"]["MentorInterviewBooking"];
+export type MentorInterviewBooking = components["schemas"]["KioskBooking"];
 export type KioskEnterDtoRequest = components["schemas"]["KioskEnterDtoRequest"];
 export type KioskEnterDtoResponse = components["schemas"]["KioskEnterDtoResponse"];
 
@@ -234,7 +234,7 @@ export class KioskManager {
   async pickSlot(body: PickSlotDtoRequest): Promise<ApiResponse<MentorInterviewBooking>> {
     try {
       const response = await fetchClient
-        .POST("/api/mentor-bookings/pick-slot", {
+        .POST("/api/kiosk-bookings/pick-slot", {
           body: {
             applicationDetailId: body.applicationDetailId,
             kioskId: body.kioskId,

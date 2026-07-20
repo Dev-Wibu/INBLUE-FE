@@ -116,7 +116,8 @@ export function KioskBookingManagementPage() {
       companyName: undefined,
       kioskName: `Kiosk #${booking.kioskId}`,
       kioskLocation: undefined,
-      mentorName: booking.mentorId ? `Mentor #${booking.mentorId}` : undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mentorName: (booking as any).mentorId ? `Mentor #${(booking as any).mentorId}` : undefined,
       mentorExpertise: undefined,
     }));
 

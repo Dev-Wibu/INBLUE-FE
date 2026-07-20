@@ -106,7 +106,8 @@ function BookingFlow({ bookingId }: { bookingId: number }) {
   const hasJoinedTrackingRef = useRef(false);
 
   const { data: booking, isLoading, error } = useKioskBooking(bookingId);
-  const sessionId = booking?.sessionId;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sessionId = (booking as any)?.sessionId;
   const { data: session } = useSessionById(sessionId ?? 0);
 
   const enterMutation = useEnterKiosk();
