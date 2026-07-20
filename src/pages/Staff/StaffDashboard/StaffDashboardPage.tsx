@@ -15,7 +15,7 @@ import {
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useTabsState, type Tab } from "@/hooks/useTabsState";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { ClipboardCheck, FileText, LayoutDashboard, Trash2 } from "lucide-react";
+import { ClipboardCheck, FileText, LayoutDashboard, Trash2, User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -24,11 +24,12 @@ import {
   ApplicationGradingDetailPage,
   ApplicationGradingPage,
 } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
+import { StaffAccountPage } from "../Account/StaffAccountPage";
 import { StaffOverviewPage } from "./StaffOverviewPage";
 
-type TabType = "dashboard" | "applicationGrading" | "grading-detail";
+type TabType = "dashboard" | "applicationGrading" | "grading-detail" | "account";
 
-const VALID_TAB_TYPES: TabType[] = ["dashboard", "applicationGrading", "grading-detail"];
+const VALID_TAB_TYPES: TabType[] = ["dashboard", "applicationGrading", "grading-detail", "account"];
 
 const isValidTabType = (value: string): value is TabType => {
   return VALID_TAB_TYPES.includes(value as TabType);
@@ -43,18 +44,24 @@ const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; la
     type: "applicationGrading",
     label: t("adminApplicationGrading.applicationGrading"),
   },
+  {
+    type: "account",
+    label: t("common.account"),
+  },
 ];
 
 const TAB_ICONS: Record<TabType, React.ElementType> = {
   dashboard: LayoutDashboard,
   applicationGrading: ClipboardCheck,
   "grading-detail": FileText,
+  account: User,
 };
 
 const TAB_COLORS: Record<TabType, string> = {
   dashboard: "text-green-600",
   applicationGrading: "text-orange-600",
   "grading-detail": "text-orange-600",
+  account: "text-gray-600",
 };
 
 const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup[] => [
@@ -99,6 +106,18 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         label: t("adminApplicationGrading.applicationGrading"),
         color: "text-orange-600",
         description: t("adminApplicationGrading.gradeApplications"),
+      },
+    ],
+  },
+  {
+    label: t("common.individual"),
+    items: [
+      {
+        type: "account",
+        icon: User,
+        label: t("common.account"),
+        color: "text-gray-600",
+        description: t("userAccount.updateYourProfileEducationAnd"),
       },
     ],
   },
@@ -331,6 +350,8 @@ export function StaffDashboardPage() {
           />
         );
       }
+      case "account":
+        return <StaffAccountPage />;
       default:
         return <StaffOverviewPage />;
     }
