@@ -28,6 +28,7 @@ import { useTranslation } from "react-i18next";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment";
+import { AdminAccountPage } from "../Account/AdminAccountPage";
 import {
   ApplicationGradingDetailPage,
   ApplicationGradingPage,
@@ -259,6 +260,7 @@ export function AdminDashboardPage() {
         menuGroups={sidebarMenuGroups}
         activeTab={activeTab}
         onNavigate={handleSidebarNavigate}
+        onProfileClick={() => navigate("/admin/account")}
         storageKey="admin_sidebar_collapsed"
         legacyStorageKey="manager_sidebar_collapsed"
         collapsed={isSidebarCollapsed}
@@ -311,6 +313,7 @@ export function AdminDashboardPage() {
           <AdminGradingTabProvider openGradingTab={() => {}}>
             <Routes>
               <Route path="/" element={<DashboardOverviewPage />} />
+              <Route path="account" element={<AdminAccountPage />} />
               <Route path="users" element={<UserManagementPage />} />
               <Route path="mentors" element={<MentorManagementPage />} />
               <Route path="sessions" element={<SessionManagementPage />} />

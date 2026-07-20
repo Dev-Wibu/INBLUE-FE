@@ -75,6 +75,8 @@ export interface DashboardSidebarProps {
   settingsCollapsedClass?: string;
   /** Callback invoked when the Settings button is clicked */
   onSettingsClick?: () => void;
+  /** Callback invoked when the Profile avatar/info is clicked */
+  onProfileClick?: () => void;
   theme: DashboardSidebarTheme;
 }
 export interface DashboardSidebarToggleProps {
@@ -122,6 +124,7 @@ export function DashboardSidebar({
   settingsExpandedClass = "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
   settingsCollapsedClass = "flex items-center justify-center rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
   onSettingsClick,
+  onProfileClick,
   theme,
 }: DashboardSidebarProps) {
   const { t } = useTranslation();
@@ -432,7 +435,13 @@ export function DashboardSidebar({
                 "flex-shrink-0 border-b border-slate-200/60 dark:border-slate-800",
                 isCollapsed ? "flex justify-center px-2 py-4" : "px-8 py-4"
               )}>
-              <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
+              <div
+                className={cn(
+                  "flex items-center gap-3",
+                  isCollapsed && "justify-center",
+                  onProfileClick && "cursor-pointer transition-opacity hover:opacity-80"
+                )}
+                onClick={onProfileClick}>
                 <Avatar className="h-8 w-8 shrink-0 border border-slate-200 shadow-sm dark:border-slate-700">
                   <AvatarImage
                     src={resolvedAvatarUrl || ""}
