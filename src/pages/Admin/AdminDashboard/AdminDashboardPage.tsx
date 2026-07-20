@@ -84,50 +84,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         icon: Building2,
         label: t("common.company"),
         color: "text-indigo-600 dark:text-indigo-500",
-        children: [
-          {
-            type: "sessions",
-            icon: Video,
-            label: t("common.interviewSession"),
-            color: "text-rose-600 dark:text-rose-500",
-          },
-          {
-            type: "interviewTemplates",
-            icon: LayoutTemplate,
-            label: t("adminAdmindashboard.processTemplate"),
-            color: "text-teal-600 dark:text-teal-500",
-          },
-          {
-            type: "reviews",
-            icon: Star,
-            label: t("common.reviewFromMentor"),
-            color: "text-yellow-600 dark:text-yellow-500",
-          },
-          {
-            type: "feedback",
-            icon: MessageSquare,
-            label: t("common.feedbackFromCandidates"),
-            color: "text-cyan-600 dark:text-cyan-500",
-          },
-          {
-            type: "applicationGrading",
-            icon: ClipboardCheck,
-            label: t("adminAdmindashboard.candidateGrading"),
-            color: "text-emerald-600 dark:text-emerald-500",
-          },
-          {
-            type: "kiosk-bookings",
-            icon: CalendarClock,
-            label: t("adminKiosk.bookingRequests"),
-            color: "text-amber-600 dark:text-amber-500",
-          },
-          {
-            type: "kiosk-management",
-            icon: CalendarDays,
-            label: t("adminKioskManagement.title"),
-            color: "text-pink-600 dark:text-pink-500",
-          },
-        ],
       },
       {
         type: "notifications",
