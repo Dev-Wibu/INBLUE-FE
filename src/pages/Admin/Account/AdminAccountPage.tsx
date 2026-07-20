@@ -37,10 +37,8 @@ export function AdminAccountPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password Form State
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
@@ -144,8 +142,8 @@ export function AdminAccountPage() {
   const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!currentPassword || !newPassword) {
-      toast.error(t("changePassword.currentPasswordIsRequired"));
+    if (!newPassword) {
+      toast.error(t("changePassword.newPasswordMinLength"));
       return;
     }
     if (newPassword.length < 8) {
@@ -157,12 +155,16 @@ export function AdminAccountPage() {
       return;
     }
 
+    if (!profile?.id) {
+      toast.error("Profile ID not found");
+      return;
+    }
+
     setIsSavingPassword(true);
     try {
-      const result = await userManager.updatePassword(currentPassword, newPassword);
+      const result = await usersAdminManager.update(profile.id, { password: newPassword });
       if (result.success) {
         toast.success(t("changePassword.passwordUpdatedSuccessfully"));
-        setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
@@ -326,28 +328,7 @@ export function AdminAccountPage() {
           <Card className="flex flex-1 flex-col border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <form onSubmit={handleSavePassword} className="flex flex-1 flex-col p-6 sm:p-8">
               <div className="flex-1 space-y-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={`${passwordId}-current`}
-                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {t("changePassword.currentPassword")}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id={`${passwordId}-current`}
-                      type={showCurrentPassword ? "text" : "password"}
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      className={INPUT_CLASSES}
-                      placeholder={t("changePassword.currentPasswordPlaceholder")}
-                    />
-                    {renderPasswordToggle(
-                      () => setShowCurrentPassword(!showCurrentPassword),
-                      showCurrentPassword
-                    )}
-                  </div>
-                </div>
-
+                {" "}
                 <div className="space-y-2">
                   <Label
                     htmlFor={`${passwordId}-new`}
@@ -369,7 +350,6 @@ export function AdminAccountPage() {
                     )}
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label
                     htmlFor={`${passwordId}-confirm`}
