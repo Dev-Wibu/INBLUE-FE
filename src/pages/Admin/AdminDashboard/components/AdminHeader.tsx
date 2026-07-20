@@ -6,11 +6,12 @@ import { useState } from "react";
 
 interface AdminHeaderProps {
   title: string;
+  category?: string;
   onToggleSidebar: () => void;
   isSidebarCollapsed: boolean;
 }
 
-export function AdminHeader({ title, onToggleSidebar }: AdminHeaderProps) {
+export function AdminHeader({ title, category, onToggleSidebar }: AdminHeaderProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -30,7 +31,7 @@ export function AdminHeader({ title, onToggleSidebar }: AdminHeaderProps) {
             <ol role="list" className="flex items-center space-x-2">
               <li>
                 <span className="text-sm font-medium text-slate-400 dark:text-slate-500">
-                  Admin
+                  {category || "Admin"}
                 </span>
               </li>
               <li>

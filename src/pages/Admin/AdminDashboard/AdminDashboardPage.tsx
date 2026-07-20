@@ -254,18 +254,22 @@ export function AdminDashboardPage() {
     navigate(`/admin/${type === "dashboard" ? "" : type}`);
   };
 
-  // Find current title for header
-  const currentTitle = useMemo(() => {
+  // Find current title and category for header
+  const { currentTitle, currentCategory } = useMemo(() => {
     for (const group of sidebarMenuGroups) {
       for (const item of group.items) {
-        if (item.type === activeTab) return item.label;
+        if (item.type === activeTab) {
+          return { currentTitle: item.label, currentCategory: group.label };
+        }
         if (item.children) {
           const child = item.children.find((c) => c.type === activeTab);
-          if (child) return child.label;
+          if (child) {
+            return { currentTitle: child.label, currentCategory: group.label };
+          }
         }
       }
     }
-    return t("common.dashboard");
+    return { currentTitle: t("common.dashboard"), currentCategory: undefined };
   }, [activeTab, sidebarMenuGroups, t]);
 
   const ADMIN_SIDEBAR_LOGO = useMemo(
@@ -342,6 +346,7 @@ export function AdminDashboardPage() {
       <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
         <AdminHeader
           title={currentTitle}
+          category={currentCategory}
           onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           isSidebarCollapsed={isSidebarCollapsed}
         />
