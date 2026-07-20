@@ -95,15 +95,6 @@ export function AdminHeader({ title, category, onToggleSidebar }: AdminHeaderPro
               <Settings className="h-4 w-4" />
             </Button>
           </div>
-
-          {/* Profile */}
-          <div className="flex items-center">
-            <button className="flex items-center gap-2 rounded-full transition-all hover:ring-2 hover:ring-indigo-500 hover:ring-offset-2 dark:hover:ring-indigo-400 dark:hover:ring-offset-slate-900">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 shadow-sm">
-                <span className="text-xs font-semibold text-white">AD</span>
-              </div>
-            </button>
-          </div>
         </div>
       </header>
 
