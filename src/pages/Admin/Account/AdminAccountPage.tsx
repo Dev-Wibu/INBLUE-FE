@@ -376,9 +376,7 @@ export function AdminAccountPage() {
               <div className="mt-8 flex justify-end">
                 <Button
                   type="submit"
-                  disabled={
-                    isSavingPassword || !currentPassword || !newPassword || !confirmPassword
-                  }
+                  disabled={isSavingPassword || !newPassword || !confirmPassword}
                   className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
                   {isSavingPassword ? (
                     <SpinnerBlock size="sm" className="mr-2 text-white/70" />
