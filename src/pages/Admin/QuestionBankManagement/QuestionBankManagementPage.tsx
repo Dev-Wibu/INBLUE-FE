@@ -153,7 +153,7 @@ export function QuestionBankManagementPage() {
   };
 
   return (
-    <div className="flex flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col gap-0">
         <div className="flex flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:px-6 sm:py-4 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800 dark:bg-slate-900">
           <div>
