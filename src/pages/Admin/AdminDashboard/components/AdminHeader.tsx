@@ -15,7 +15,7 @@ export function AdminHeader({ title, onToggleSidebar }: AdminHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex h-full flex-1 items-center gap-4">
           <Button
             variant="ghost"
@@ -97,7 +97,7 @@ export function AdminHeader({ title, onToggleSidebar }: AdminHeaderProps) {
 
           {/* Profile */}
           <div className="flex items-center">
-            <button className="flex items-center gap-2 rounded-full transition-all hover:ring-2 hover:ring-indigo-500 hover:ring-offset-2 dark:hover:ring-indigo-400 dark:hover:ring-offset-slate-950">
+            <button className="flex items-center gap-2 rounded-full transition-all hover:ring-2 hover:ring-indigo-500 hover:ring-offset-2 dark:hover:ring-indigo-400 dark:hover:ring-offset-slate-900">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 shadow-sm">
                 <span className="text-xs font-semibold text-white">AD</span>
               </div>
