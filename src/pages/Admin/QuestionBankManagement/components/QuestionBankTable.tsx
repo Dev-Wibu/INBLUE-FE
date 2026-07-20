@@ -68,7 +68,7 @@ export function QuestionBankTable({
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
             <TableHead className="w-[80px] font-medium text-slate-500">ID</TableHead>
-            <TableHead className="min-w-[300px] font-medium text-slate-500">
+            <TableHead className="w-full min-w-[300px] font-medium text-slate-500">
               Nội dung câu hỏi
             </TableHead>
             <TableHead className="w-[150px] font-medium text-slate-500">Danh mục</TableHead>
@@ -85,7 +85,7 @@ export function QuestionBankTable({
                 #{q.id}
               </TableCell>
               <TableCell>
-                <div className="max-w-[400px] whitespace-normal">
+                <div className="pr-4 whitespace-normal">
                   <p className="line-clamp-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                     {q.questionText || "Chưa có nội dung"}
                   </p>
