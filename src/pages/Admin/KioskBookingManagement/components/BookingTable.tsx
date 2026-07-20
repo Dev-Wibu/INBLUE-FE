@@ -69,7 +69,7 @@ export function BookingTable({
     <div className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40 border-border border-b">
+          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
             <TableHead className="w-16 text-xs font-semibold tracking-wider uppercase">
               {t("common.id")}
             </TableHead>

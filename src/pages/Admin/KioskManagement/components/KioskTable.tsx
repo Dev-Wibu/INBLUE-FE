@@ -89,7 +89,7 @@ export function KioskTable({
     <div className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
+          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
             <TableHead className="font-semibold">{t("adminKioskManagement.nameColumn")}</TableHead>
             <TableHead className="hidden font-semibold md:table-cell">
               {t("adminKioskManagement.locationColumn")}

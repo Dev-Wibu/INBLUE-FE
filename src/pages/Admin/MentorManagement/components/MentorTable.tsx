@@ -47,7 +47,7 @@ export function MentorTable({
     <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
             <TableHead className="w-16">{t("common.id")}</TableHead>
             <TableHead>
               {getSortProps ? (
