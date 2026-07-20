@@ -197,43 +197,34 @@ export function StaffAccountPage() {
   const currentAvatar = avatarPreview || profile.avatar;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {t("userAccount.personalInfo")}
-        </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {t("userAccount.updateYourProfileEducationAnd")}
-        </p>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Cover Profile Section */}
+      <Card className="glass-card mb-8 overflow-hidden border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/80">
+        {/* Cover Banner */}
+        <div className="h-20 bg-gradient-to-r from-blue-600 to-blue-800 sm:h-25 dark:from-slate-800 dark:to-slate-900"></div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Left Column: Profile Summary */}
-        <div className="lg:col-span-1">
-          <Card className="overflow-hidden border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            {/* Banner */}
-            <div className="h-28 bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 dark:from-indigo-600 dark:via-purple-700 dark:to-indigo-800"></div>
-
-            <div className="relative px-6 pb-6 text-center">
-              {/* Avatar position offset */}
-              <div className="relative mx-auto -mt-14 h-28 w-28 rounded-full border-4 border-white bg-slate-50 shadow-sm dark:border-slate-900 dark:bg-slate-800">
-                {currentAvatar ? (
-                  <img
-                    src={currentAvatar}
-                    alt={profile.name}
-                    className="h-full w-full rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center rounded-full bg-indigo-50 dark:bg-slate-800">
-                    <User className="h-10 w-10 text-indigo-300 dark:text-slate-500" />
-                  </div>
-                )}
+        <div className="relative px-6 pb-4 sm:px-10">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            {/* Avatar & Basic Info */}
+            <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-end">
+              <div className="relative -mt-12 sm:-mt-16">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-md ring-4 ring-white sm:h-32 sm:w-32 dark:bg-slate-900 dark:ring-slate-900">
+                  {currentAvatar ? (
+                    <img
+                      src={currentAvatar}
+                      alt={profile.name}
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-12 w-12 text-indigo-400 sm:h-16 sm:w-16 dark:text-slate-500" />
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute right-0 bottom-0 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  className="absolute right-0 bottom-2 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-md transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                   aria-label="Change avatar">
-                  <Camera className="h-4 w-4" />
+                  <Camera className="h-5 w-5" />
                 </button>
                 <input
                   type="file"
@@ -244,166 +235,180 @@ export function StaffAccountPage() {
                 />
               </div>
 
-              <div className="mt-4">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{profile.name}</h2>
-                <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{profile.email}</p>
-              </div>
-
-              <div className="mt-6 flex items-center justify-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400">
-                <ShieldCheck className="h-4 w-4" />
-                <span className="font-medium">Staff Administrator</span>
+              <div className="text-center sm:mb-2 sm:text-left">
+                <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl dark:text-white">
+                  {profile.name}
+                </h2>
+                <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row sm:items-center">
+                  <p className="text-slate-600 dark:text-slate-400">{profile.email}</p>
+                  <span className="hidden h-1.5 w-1.5 rounded-full bg-slate-300 sm:block dark:bg-slate-600"></span>
+                  <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span className="font-medium">Staff Administrator</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Extra Info (ID) */}
+            <div className="flex items-center justify-center rounded-xl border border-slate-100 bg-slate-50/50 px-6 py-4 sm:mb-2 dark:border-slate-800/50 dark:bg-slate-900/20">
+              <div className="flex flex-col items-center sm:items-end">
+                <span className="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-500">
+                  Staff ID
+                </span>
+                <span className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-200">
+                  {profile.id}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Forms Section */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* Column 1: Personal Information Form */}
+        <section className="flex flex-col space-y-4">
+          <h3 className="text-lg font-medium text-slate-900 dark:text-white">
+            {t("common.personalInformation")}
+          </h3>
+          <Card className="flex flex-1 flex-col border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <form onSubmit={handleSaveProfile} className="flex flex-1 flex-col p-6 sm:p-8">
+              <div className="flex-1 space-y-6">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="name"
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {t("common.fullName")}
+                  </Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className={INPUT_CLASSES}
+                    placeholder={t("common.fullName")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {t("common.email")}
+                  </Label>
+                  <Input id="email" value={profile.email} disabled className={INPUT_CLASSES} />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {t("userAccount.emailCannotBeChanged")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={isSavingProfile || !name.trim()}
+                  className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
+                  {isSavingProfile ? (
+                    <SpinnerBlock size="sm" className="mr-2 text-white/70" />
+                  ) : null}
+                  {t("general.save")}
+                </Button>
+              </div>
+            </form>
           </Card>
-        </div>
+        </section>
 
-        {/* Right Column: Forms */}
-        <div className="space-y-8 lg:col-span-2">
-          {/* Personal Information Form */}
-          <section className="space-y-4">
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-              {t("common.personalInformation")}
-            </h3>
-            <Card className="border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <form onSubmit={handleSaveProfile} className="p-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label
-                      htmlFor="name"
-                      className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {t("common.fullName")}
-                    </Label>
+        {/* Column 2: Change Password Form */}
+        <section className="flex flex-col space-y-4">
+          <h3 className="text-lg font-medium text-slate-900 dark:text-white">
+            {t("common.changePassword")}
+          </h3>
+          <Card className="flex flex-1 flex-col border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <form onSubmit={handleSavePassword} className="flex flex-1 flex-col p-6 sm:p-8">
+              <div className="flex-1 space-y-6">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`${passwordId}-current`}
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {t("changePassword.currentPassword")}
+                  </Label>
+                  <div className="relative">
                     <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      id={`${passwordId}-current`}
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
                       className={INPUT_CLASSES}
-                      placeholder={t("common.fullName")}
+                      placeholder={t("changePassword.currentPasswordPlaceholder")}
                     />
-                  </div>
-
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {t("common.email")}
-                    </Label>
-                    <Input id="email" value={profile.email} disabled className={INPUT_CLASSES} />
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {t("userAccount.emailCannotBeChanged")}
-                    </p>
+                    {renderPasswordToggle(
+                      () => setShowCurrentPassword(!showCurrentPassword),
+                      showCurrentPassword
+                    )}
                   </div>
                 </div>
 
-                <div className="mt-8 flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={isSavingProfile || !name.trim()}
-                    className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
-                    {isSavingProfile ? (
-                      <SpinnerBlock size="sm" className="mr-2 text-white/70" />
-                    ) : null}
-                    {t("general.save")}
-                  </Button>
-                </div>
-              </form>
-            </Card>
-          </section>
-
-          {/* Change Password Form */}
-          <section className="space-y-4">
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-              {t("common.changePassword")}
-            </h3>
-            <Card className="border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <form onSubmit={handleSavePassword} className="p-6">
-                <div className="space-y-6">
-                  <div className="max-w-md space-y-2">
-                    <Label
-                      htmlFor={`${passwordId}-current`}
-                      className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {t("changePassword.currentPassword")}
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id={`${passwordId}-current`}
-                        type={showCurrentPassword ? "text" : "password"}
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        className={INPUT_CLASSES}
-                        placeholder={t("changePassword.currentPasswordPlaceholder")}
-                      />
-                      {renderPasswordToggle(
-                        () => setShowCurrentPassword(!showCurrentPassword),
-                        showCurrentPassword
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor={`${passwordId}-new`}
-                        className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {t("changePassword.newPassword")}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id={`${passwordId}-new`}
-                          type={showNewPassword ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          className={INPUT_CLASSES}
-                          placeholder={t("changePassword.newPasswordPlaceholder")}
-                        />
-                        {renderPasswordToggle(
-                          () => setShowNewPassword(!showNewPassword),
-                          showNewPassword
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor={`${passwordId}-confirm`}
-                        className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {t("changePassword.confirmPassword")}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id={`${passwordId}-confirm`}
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          className={INPUT_CLASSES}
-                          placeholder={t("changePassword.confirmPasswordPlaceholder")}
-                        />
-                        {renderPasswordToggle(
-                          () => setShowConfirmPassword(!showConfirmPassword),
-                          showConfirmPassword
-                        )}
-                      </div>
-                    </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`${passwordId}-new`}
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {t("changePassword.newPassword")}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id={`${passwordId}-new`}
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className={INPUT_CLASSES}
+                      placeholder={t("changePassword.newPasswordPlaceholder")}
+                    />
+                    {renderPasswordToggle(
+                      () => setShowNewPassword(!showNewPassword),
+                      showNewPassword
+                    )}
                   </div>
                 </div>
 
-                <div className="mt-8 flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={
-                      isSavingPassword || !currentPassword || !newPassword || !confirmPassword
-                    }
-                    className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
-                    {isSavingPassword ? (
-                      <SpinnerBlock size="sm" className="mr-2 text-white/70" />
-                    ) : null}
-                    {t("changePassword.saveChanges")}
-                  </Button>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`${passwordId}-confirm`}
+                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {t("changePassword.confirmPassword")}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id={`${passwordId}-confirm`}
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={INPUT_CLASSES}
+                      placeholder={t("changePassword.confirmPasswordPlaceholder")}
+                    />
+                    {renderPasswordToggle(
+                      () => setShowConfirmPassword(!showConfirmPassword),
+                      showConfirmPassword
+                    )}
+                  </div>
                 </div>
-              </form>
-            </Card>
-          </section>
-        </div>
+              </div>
+
+              <div className="mt-8 flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={
+                    isSavingPassword || !currentPassword || !newPassword || !confirmPassword
+                  }
+                  className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
+                  {isSavingPassword ? (
+                    <SpinnerBlock size="sm" className="mr-2 text-white/70" />
+                  ) : null}
+                  {t("changePassword.saveChanges")}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </section>
       </div>
     </div>
   );
