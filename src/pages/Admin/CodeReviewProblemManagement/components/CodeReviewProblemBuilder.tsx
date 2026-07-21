@@ -447,7 +447,10 @@ export function CodeReviewProblemBuilder({
           difficulty: aiDifficulty,
           language: data.language || aiLanguage,
           problemStatement: data.problemStatement || "",
-          files: data.files || [],
+          files: (data.files || []).map((f) => ({
+            ...f,
+            content: f.content ? f.content.replace(/\\n/g, "\n").replace(/\\r/g, "") : "",
+          })),
           expectedIssues: data.expectedIssues || [],
         });
         setIsGenerating(false);
