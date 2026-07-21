@@ -521,7 +521,6 @@ export function CodeReviewProblemManagementPage() {
               <CodeReviewProblemTable
                 problems={pageItems}
                 onViewDetail={handleViewDetail}
-                onEdit={handleEditProblem}
                 onToggleStatus={handleToggleStatus}
               />
             </div>

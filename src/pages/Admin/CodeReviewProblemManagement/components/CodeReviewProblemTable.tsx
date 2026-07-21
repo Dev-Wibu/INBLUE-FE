@@ -1,10 +1,3 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -16,13 +9,11 @@ import {
 } from "@/components/ui/table";
 import type { CodeReviewProblem } from "@/services/code-review-problem.manager";
 import { format } from "date-fns";
-import { BookOpen, Bug, Circle, Edit2, Eye, FileCode2, MoreHorizontal, Trash2 } from "lucide-react";
+import { BookOpen, Bug, Circle, FileCode2 } from "lucide-react";
 
 interface CodeReviewProblemTableProps {
   problems: CodeReviewProblem[];
   onViewDetail: (problem: CodeReviewProblem) => void;
-  onEdit: (problem: CodeReviewProblem) => void;
-  onDelete?: (problem: CodeReviewProblem) => void;
   onToggleStatus?: (problem: CodeReviewProblem, isActive: boolean) => void;
 }
 
@@ -56,8 +47,6 @@ function formatDate(s?: string) {
 export function CodeReviewProblemTable({
   problems,
   onViewDetail,
-  onEdit,
-  onDelete,
   onToggleStatus,
 }: CodeReviewProblemTableProps) {
   if (problems.length === 0) {
@@ -76,16 +65,16 @@ export function CodeReviewProblemTable({
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-[80px] font-medium text-slate-500">ID</TableHead>
+            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
             <TableHead className="min-w-[200px] font-medium text-slate-500">Bài tập</TableHead>
+            <TableHead className="w-[120px] font-medium text-slate-500">Ngôn ngữ</TableHead>
             <TableHead className="w-[110px] font-medium text-slate-500">Độ khó</TableHead>
             <TableHead className="w-[180px] font-medium text-slate-500">Cấu hình</TableHead>
             <TableHead className="w-[100px] text-center font-medium text-slate-500">
               Bật/Tắt
             </TableHead>
             <TableHead className="w-[130px] font-medium text-slate-500">Ngày tạo</TableHead>
-            <TableHead className="w-[130px] font-medium text-slate-500">Cập nhật</TableHead>
-            <TableHead className="w-[80px] text-right font-medium text-slate-500"></TableHead>
+            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">Cập nhật</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -100,7 +89,7 @@ export function CodeReviewProblemTable({
                 className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
                   !isActive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
-                <TableCell className="font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                   #{p.id}
                 </TableCell>
                 <TableCell>
@@ -109,11 +98,11 @@ export function CodeReviewProblemTable({
                     title={p.title}>
                     {p.title}
                   </p>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                      {p.language || "N/A"}
-                    </span>
-                  </div>
+                </TableCell>
+                <TableCell>
+                  <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {p.language || "N/A"}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <div className={`flex items-center gap-1.5 text-xs font-bold ${diff.cls}`}>
@@ -156,7 +145,7 @@ export function CodeReviewProblemTable({
                     <span className="text-xs text-slate-400">—</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="pr-6">
                   {p.updatedAt ? (
                     <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                       {formatDate(p.updatedAt)}
@@ -164,39 +153,6 @@ export function CodeReviewProblemTable({
                   ) : (
                     <span className="text-xs text-slate-400">—</span>
                   )}
-                </TableCell>
-                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
-                        <span className="sr-only">Mở menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
-                      <DropdownMenuItem
-                        onClick={() => onViewDetail(p)}
-                        className="cursor-pointer gap-2">
-                        <Eye className="h-4 w-4 text-slate-500" />
-                        <span>Xem chi tiết</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(p)} className="cursor-pointer gap-2">
-                        <Edit2 className="h-4 w-4 text-slate-500" />
-                        <span>Chỉnh sửa</span>
-                      </DropdownMenuItem>
-                      {onDelete && (
-                        <DropdownMenuItem
-                          onClick={() => onDelete(p)}
-                          className="cursor-pointer gap-2 text-rose-600 focus:text-rose-700 dark:text-rose-500 dark:focus:text-rose-400">
-                          <Trash2 className="h-4 w-4" />
-                          <span>Xoá</span>
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             );
