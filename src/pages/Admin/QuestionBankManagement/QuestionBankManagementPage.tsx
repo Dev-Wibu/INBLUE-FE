@@ -152,6 +152,37 @@ export function QuestionBankManagementPage() {
     }
   };
 
+  const handleToggleStatus = async (question: QuestionBank, isActive: boolean) => {
+    if (!question.id) return;
+    const toastId = toast.loading(t("common.updating", "Đang cập nhật..."));
+
+    const categoryId =
+      (question.questionCategory as unknown as { id?: number })?.id ||
+      (question as unknown as { questionCategoryId?: number }).questionCategoryId ||
+      0;
+
+    const payload = {
+      questionCategoryId: categoryId,
+      questionLevel: question.questionLevel,
+      questionText: question.questionText,
+      options: question.options,
+      correctAnswer: question.correctAnswer,
+      isDeleted: !isActive,
+    };
+
+    try {
+      const res = await questionBankManager.update(question.id, payload);
+      if (res.success) {
+        toast.success(t("common.updateSuccess", "Cập nhật thành công!"), { id: toastId });
+        await loadData();
+      } else {
+        toast.error(res.error || t("error.systemError"), { id: toastId });
+      }
+    } catch {
+      toast.error(t("error.systemError"), { id: toastId });
+    }
+  };
+
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       <Tabs
@@ -216,6 +247,7 @@ export function QuestionBankManagementPage() {
                     questions={pageItems}
                     categories={categories}
                     onEdit={handleEdit}
+                    onToggleStatus={handleToggleStatus}
                   />
                 </div>
                 {questions.length > 0 && (

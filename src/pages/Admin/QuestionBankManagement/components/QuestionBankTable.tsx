@@ -1,3 +1,4 @@
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -15,6 +16,7 @@ interface QuestionBankTableProps {
   questions: QuestionBank[];
   categories?: QuestionCategory[];
   onEdit: (_question: QuestionBank) => void;
+  onToggleStatus?: (problem: QuestionBank, isActive: boolean) => void;
 }
 
 const DIFF_CONFIG = {
@@ -44,7 +46,12 @@ function formatDate(s?: string | Date) {
   }
 }
 
-export function QuestionBankTable({ questions, categories = [], onEdit }: QuestionBankTableProps) {
+export function QuestionBankTable({
+  questions,
+  categories = [],
+  onEdit,
+  onToggleStatus,
+}: QuestionBankTableProps) {
   const { t } = useTranslation();
 
   const getCategoryName = (q: QuestionBank) => {
@@ -82,28 +89,37 @@ export function QuestionBankTable({ questions, categories = [], onEdit }: Questi
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-[100px] pl-6 font-medium text-slate-500">ID</TableHead>
-            <TableHead className="min-w-[300px] font-medium text-slate-500">
+            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
+            <TableHead className="min-w-[400px] font-medium text-slate-500">
               Nội dung câu hỏi
             </TableHead>
             <TableHead className="w-[150px] font-medium text-slate-500">Danh mục</TableHead>
-            <TableHead className="w-[120px] font-medium text-slate-500">Độ khó</TableHead>
-            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">Ngày tạo</TableHead>
+            <TableHead className="w-[110px] font-medium text-slate-500">Độ khó</TableHead>
+            <TableHead className="w-[100px] text-center font-medium text-slate-500">
+              Bật/Tắt
+            </TableHead>
+            <TableHead className="w-[130px] font-medium text-slate-500">Ngày tạo</TableHead>
+            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">Cập nhật</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {questions.map((q) => {
             const diff = DIFF_CONFIG[q.questionLevel || "MEDIUM"] ?? DIFF_CONFIG.MEDIUM;
+            const isActive =
+              (q as unknown as { isDeleted?: boolean }).isDeleted === false ||
+              (q as unknown as { isDeleted?: boolean }).isDeleted === undefined;
             return (
               <TableRow
                 key={q.id}
                 onClick={() => onEdit(q)}
-                className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                  !isActive ? "opacity-60 grayscale-[30%]" : ""
+                }`}>
                 <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                   #{q.id}
                 </TableCell>
                 <TableCell>
-                  <div className="max-w-[400px]">
+                  <div className="max-w-[800px]">
                     <p
                       className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
                       title={q.questionText}>
@@ -122,12 +138,37 @@ export function QuestionBankTable({ questions, categories = [], onEdit }: Questi
                     {diff.label}
                   </div>
                 </TableCell>
-                <TableCell className="pr-6">
+                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                  {onToggleStatus ? (
+                    <Switch
+                      checked={isActive}
+                      onCheckedChange={(val) => onToggleStatus(q, val)}
+                      className="shadow-sm data-[state=checked]:bg-emerald-500"
+                    />
+                  ) : (
+                    <span
+                      className={`text-xs font-semibold ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
+                      {isActive ? "Bật" : "Tắt"}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell>
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {(q as any).createdAt ? (
                     <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {formatDate((q as any).createdAt)}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="pr-6">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {(q as any).updatedAt ? (
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {formatDate((q as any).updatedAt)}
                     </span>
                   ) : (
                     <span className="text-xs text-slate-400">—</span>

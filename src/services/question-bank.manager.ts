@@ -32,6 +32,7 @@ export interface QuestionBankFormData {
   questionText?: string;
   options?: string[];
   correctAnswer?: string;
+  isDeleted?: boolean;
 }
 
 export class QuestionBankManager {
@@ -99,13 +100,19 @@ export class QuestionBankManager {
   async update(id: number, payload: QuestionBankFormData): Promise<ApiResponse<QuestionBank>> {
     try {
       const endpoint = buildEndpoint(API_ENDPOINTS.QUESTION_BANKS.DETAIL, { id });
-      const body = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const body: Record<string, any> = {
         questionCategoryId: payload.questionCategoryId ?? 0,
         questionLevel: payload.questionLevel ?? "EASY",
         questionText: payload.questionText ?? "",
         options: payload.options ?? [],
         correctAnswer: payload.correctAnswer ?? "",
       };
+
+      if (payload.isDeleted !== undefined) {
+        body.isDeleted = payload.isDeleted;
+      }
+
       // @ts-expect-error dynamic path
       const { data, error } = await fetchClient.PUT(endpoint, {
         body: body as never,
