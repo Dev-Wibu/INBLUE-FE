@@ -1,3 +1,4 @@
+import { registerInblueMonacoThemes } from "@/hooks/useMonacoTheme";
 import Editor, { type OnMount, useMonaco } from "@monaco-editor/react";
 import { useEffect, useRef, useState } from "react";
 
