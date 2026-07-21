@@ -19,7 +19,16 @@ import {
   type ExpectedIssue,
 } from "@/services/code-review-problem.manager";
 import Editor, { useMonaco } from "@monaco-editor/react";
-import { ChevronDown, FileCode2, Loader2, Plus, Settings, Sparkles, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  FileCode2,
+  Loader2,
+  Pencil,
+  Plus,
+  Settings,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 const t = (k: string, opts?: string | Record<string, unknown>): string =>
@@ -441,7 +450,7 @@ export function CodeReviewProblemBuilder({
           files: data.files || [],
           expectedIssues: data.expectedIssues || [],
         });
-        setAiGenerating(false);
+        setIsGenerating(false);
         setCreationMode("manual");
 
         setCreateActiveFileIdx(0);
