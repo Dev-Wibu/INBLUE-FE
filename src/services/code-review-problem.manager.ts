@@ -28,6 +28,16 @@ export interface CodeReviewProblem {
   updatedAt?: string;
 }
 
+const fixProblemNewlines = <T extends Partial<CodeReviewProblem>>(problem: T): T => {
+  if (problem && problem.files) {
+    problem.files = problem.files.map((f) => ({
+      ...f,
+      content: f.content ? f.content.replace(/\\n/g, "\n").replace(/\\r/g, "") : "",
+    }));
+  }
+  return problem;
+};
+
 export class CodeReviewProblemManager {
   /**
    * Get all code review problems
@@ -40,8 +50,9 @@ export class CodeReviewProblemManager {
         status: res.response?.status,
         headers: res.response?.headers,
       }));
+      const data = (response.data || []).map(fixProblemNewlines);
       // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data || [] };
+      return { success: true, data };
     } catch (error) {
       return {
         success: false,
@@ -63,7 +74,12 @@ export class CodeReviewProblemManager {
         status: res.response?.status,
         headers: res.response?.headers,
       }));
-      return { success: true, data: response.data };
+      return {
+        success: true,
+        data: response.data
+          ? fixProblemNewlines(response.data as CodeReviewProblem)
+          : response.data,
+      };
     } catch (error) {
       return {
         success: false,
@@ -89,7 +105,12 @@ export class CodeReviewProblemManager {
           headers: res.response?.headers,
         }));
       // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data };
+      return {
+        success: true,
+        data: response.data
+          ? fixProblemNewlines(response.data as CodeReviewProblem)
+          : response.data,
+      };
     } catch (error) {
       return {
         success: false,
@@ -118,7 +139,12 @@ export class CodeReviewProblemManager {
           headers: res.response?.headers,
         }));
       // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data };
+      return {
+        success: true,
+        data: response.data
+          ? fixProblemNewlines(response.data as CodeReviewProblem)
+          : response.data,
+      };
     } catch (error) {
       return {
         success: false,
@@ -154,7 +180,12 @@ export class CodeReviewProblemManager {
           headers: res.response?.headers,
         }));
       // @ts-expect-error: Backend Swagger schema mismatch
-      return { success: true, data: response.data };
+      return {
+        success: true,
+        data: response.data
+          ? fixProblemNewlines(response.data as Partial<CodeReviewProblem>)
+          : response.data,
+      };
     } catch (error) {
       return {
         success: false,
