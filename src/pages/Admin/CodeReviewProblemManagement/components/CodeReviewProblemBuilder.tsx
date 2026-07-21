@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useMonacoTheme } from "@/hooks/useMonacoTheme";
+import { registerInblueMonacoThemes, useMonacoTheme } from "@/hooks/useMonacoTheme";
 import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -840,6 +840,7 @@ export function CodeReviewProblemBuilder({
                         }
                         theme={monacoTheme}
                         value={newProblem.files[createActiveFileIdx].content}
+                        beforeMount={registerInblueMonacoThemes}
                         onMount={handleEditorDidMount}
                         onChange={(val) => {
                           const files = [...newProblem.files];

@@ -100,78 +100,72 @@ export function MonacoCodeReviewViewer({
           glyphMarginClassName: isExpanded
             ? "bug-glyph-margin-icon-expanded"
             : "bug-glyph-margin-icon",
-          glyphMarginHoverMessage: { value: "Click to view issue detail" },
+          glyphMarginHoverMessage: { value: "**Issue Details**\nClick to toggle description." },
         },
       };
     });
 
-    const decs = editorInstance.deltaDecorations(decorationsRef.current, newDecorations);
-    decorationsRef.current = decs;
+    decorationsRef.current = editorInstance.deltaDecorations(
+      decorationsRef.current,
+      newDecorations
+    );
   };
 
   const updateViewZones = () => {
-    if (!editorInstance) return;
+    if (!editorInstance || !monaco) return;
 
-    editorInstance.changeViewZones(
-      (changeAccessor: Parameters<Parameters<typeof editorInstance.changeViewZones>[0]>[0]) => {
-        // Remove all existing zones
-        Object.values(viewZonesRef.current).forEach((id) => {
-          changeAccessor.removeZone(id);
-        });
-        viewZonesRef.current = {};
+    editorInstance.changeViewZones((changeAccessor) => {
+      // Remove all existing zones
+      Object.values(viewZonesRef.current).forEach((id) => changeAccessor.removeZone(id));
+      viewZonesRef.current = {};
 
-        // Add expanded zones
-        issues.forEach((issue) => {
-          if (expandedIssues[issue.lineNumber]) {
-            const domNode = document.createElement("div");
+      // Add zones for expanded issues
+      issues.forEach((issue) => {
+        if (expandedIssues[issue.lineNumber]) {
+          const domNode = document.createElement("div");
+          const severityClass = issue.severity ? issue.severity.toLowerCase() : "warning";
+          domNode.className = `monaco-issue-zone-container ${severityClass}`;
 
-            let severityClass = "critical";
-            let badgeColor = "#ef4444";
-            let textColor = "#fca5a5";
+          // Create the content based on dark/light mode context (we can inject style directly)
+          // For simplicity we use standard colors that work reasonably well on both
+          const isDark = theme && theme.includes("dark");
+          const textColor = isDark ? "#f8fafc" : "#1e293b";
+          const titleColor =
+            severityClass === "warning"
+              ? "#f59e0b"
+              : severityClass === "error"
+                ? "#ef4444"
+                : "#3b82f6";
 
-            if (issue.severity === "WARNING") {
-              severityClass = "warning";
-              badgeColor = "#f59e0b"; // amber-500
-              textColor = "#fde68a"; // amber-200
-            } else if (issue.severity === "INFO") {
-              severityClass = "info";
-              badgeColor = "#3b82f6"; // blue-500
-              textColor = "#bfdbfe"; // blue-200
-            }
-
-            domNode.className = `monaco-issue-zone-container ${severityClass}`;
-
-            domNode.innerHTML = `
-            <div style="display: flex; flex-direction: column; gap: 8px; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="background-color: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">${issue.severity}</span>
-                <span style="font-size: 12px; font-weight: 500; color: #cbd5e1;">Issue on line ${issue.lineNumber}</span>
+          domNode.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-weight: 600; font-size: 13px; color: ${titleColor}; display: flex; align-items: center; gap: 6px;">
+                <span>${issue.severity || "Issue"} at line ${issue.lineNumber}</span>
               </div>
               <p style="font-size: 13px; color: ${textColor}; line-height: 1.5; margin: 0; padding-right: 16px; white-space: pre-wrap; word-break: break-word;">${escapeHtml(issue.description)}</p>
             </div>
           `;
 
-            // Estimate height dynamically based on description length
-            const charsPerLine = 90; // Approximate chars per line in editor
-            const descLines = Math.ceil(issue.description.length / charsPerLine);
-            const headerPx = 36; // padding + header + gap
-            const descPx = descLines * 20; // 13px font * 1.5 line height
-            const totalPx = headerPx + descPx + 16; // + bottom padding
-            const editorLineHeight = 19; // Default editor line height
-            const estimatedLines = Math.max(4, Math.ceil(totalPx / editorLineHeight));
+          // Estimate height dynamically based on description length
+          const charsPerLine = 90; // Approximate chars per line in editor
+          const descLines = Math.ceil(issue.description.length / charsPerLine);
+          const headerPx = 36; // padding + header + gap
+          const descPx = descLines * 20; // 13px font * 1.5 line height
+          const totalPx = headerPx + descPx + 16; // + bottom padding
+          const editorLineHeight = 19; // Default editor line height
+          const estimatedLines = Math.max(4, Math.ceil(totalPx / editorLineHeight));
 
-            const zoneId = changeAccessor.addZone({
-              afterLineNumber: issue.lineNumber,
-              heightInLines: estimatedLines,
-              domNode: domNode,
-              marginDomNode: null,
-            });
+          const zoneId = changeAccessor.addZone({
+            afterLineNumber: issue.lineNumber,
+            heightInLines: estimatedLines,
+            domNode: domNode,
+            marginDomNode: null,
+          });
 
-            viewZonesRef.current[issue.lineNumber] = zoneId;
-          }
-        });
-      }
-    );
+          viewZonesRef.current[issue.lineNumber] = zoneId;
+        }
+      });
+    });
   };
 
   // Safe HTML escaping for description
@@ -219,6 +213,7 @@ export function MonacoCodeReviewViewer({
       language={language}
       value={formattedContent}
       theme={theme}
+      beforeMount={registerInblueMonacoThemes}
       onMount={handleEditorDidMount}
       options={{
         readOnly: true,
