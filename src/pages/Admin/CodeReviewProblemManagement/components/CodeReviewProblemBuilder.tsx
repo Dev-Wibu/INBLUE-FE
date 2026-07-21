@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useMonacoTheme } from "@/hooks/useMonacoTheme";
 import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -53,10 +54,10 @@ function StyledSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full appearance-none rounded-md border border-slate-200 bg-white py-1 pr-8 pl-3 text-xs shadow-sm transition-colors focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+        className="h-9 w-full appearance-none rounded-md border border-slate-200 bg-white py-1 pr-8 pl-3 text-xs shadow-sm transition-colors hover:bg-slate-50 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/80">
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute top-2.5 right-2.5 h-3.5 w-3.5 text-slate-400" />
+      <ChevronDown className="pointer-events-none absolute top-2.5 right-3 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
     </div>
   );
 }
@@ -506,35 +507,36 @@ export function CodeReviewProblemBuilder({
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
-      <div className="flex w-[380px] shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-          <div className="flex items-center gap-2 font-sans text-sm font-bold text-slate-700 dark:text-slate-200">
-            <Settings className="h-4 w-4 text-emerald-500" />
+      <div className="flex w-[420px] shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/40">
+        <div className="flex flex-none items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800/60">
+          <div className="flex items-center gap-2 font-sans text-sm font-bold text-slate-800 dark:text-slate-200">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-500/10">
+              <Settings className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+            </div>
             {t("adminCodeReviewProblem.problemSetup")}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="space-y-4 font-sans text-xs">
+        <div className="flex-1 overflow-y-auto p-5">
+          <div className="space-y-6 font-sans text-xs">
             <div>
-              <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
+              <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
                 {t("adminCodeReviewProblem.problemTitleStar")}
               </Label>
               <Input
                 value={newProblem.title}
                 onChange={(e) => setNewProblem({ ...newProblem, title: e.target.value })}
                 placeholder={t("adminCodeReviewProblem.exampleApiTokenLeak")}
-                className="mt-1 h-8 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                className="h-9 border-slate-200 bg-slate-50 text-xs font-medium text-slate-900 transition-colors focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:text-white dark:focus:bg-slate-900"
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
+                <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
                   {t("adminCodeReviewProblem.programmingLanguage")}
                 </Label>
                 <StyledSelect
                   value={newProblem.language}
-                  className="mt-1"
                   onChange={(v) => setNewProblem({ ...newProblem, language: v })}>
                   <option value="Java">Java</option>
                   <option value="Javascript">Javascript</option>
@@ -546,12 +548,11 @@ export function CodeReviewProblemBuilder({
                 </StyledSelect>
               </div>
               <div>
-                <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
+                <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
                   {t("adminCodeReviewProblem.difficulty")}
                 </Label>
                 <StyledSelect
                   value={newProblem.difficulty}
-                  className="mt-1"
                   onChange={(v) =>
                     setNewProblem({ ...newProblem, difficulty: v as "EASY" | "MEDIUM" | "HARD" })
                   }>
@@ -564,27 +565,31 @@ export function CodeReviewProblemBuilder({
               </div>
             </div>
             <div>
-              <Label className="font-sans text-[10px] font-bold text-slate-400 uppercase dark:text-slate-500">
+              <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
                 {t("adminCodeReviewProblem.requirementContext")}
               </Label>
-              <textarea
+              <Textarea
                 value={newProblem.problemStatement}
                 onChange={(e) => setNewProblem({ ...newProblem, problemStatement: e.target.value })}
-                rows={5}
+                rows={12}
                 placeholder={t("adminCodeReviewProblem.contextPlaceholder")}
-                className="mt-1 flex min-h-[120px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                className="min-h-[220px] resize-y border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 transition-colors focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:focus:bg-slate-900"
               />
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-          <Button variant="outline" className="flex-1" onClick={onCancel} disabled={submitting}>
+        <div className="flex flex-none items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800/60 dark:bg-slate-900/20">
+          <Button
+            variant="outline"
+            className="flex-1 bg-white text-xs dark:bg-slate-900 dark:hover:bg-slate-800"
+            onClick={onCancel}
+            disabled={submitting}>
             {t("general.cancel", t("common.cancel"))}
           </Button>
           <Button
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+            className="flex-1 bg-indigo-600 text-xs text-white shadow-sm hover:bg-indigo-700"
             onClick={handleSave}
             disabled={submitting || isGenerating}>
             {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -747,27 +752,27 @@ export function CodeReviewProblemBuilder({
             <div className="flex flex-1 flex-col overflow-hidden bg-slate-950/60">
               <div className="flex-1 overflow-y-auto">
                 <div className="flex h-full flex-col">
-                  <div className="flex items-center gap-1 border-b border-slate-800 bg-slate-900/80 px-2 py-1.5">
-                    <div className="flex flex-1 overflow-x-auto">
+                  <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                    <div className="flex flex-1 overflow-x-auto px-1 pt-1">
                       {newProblem.files.map((f, fIdx) => (
                         <div
                           key={fIdx}
                           className={cn(
-                            "group flex items-center gap-1.5 border-r border-slate-800 px-3 py-1.5 transition-colors",
+                            "group flex cursor-pointer items-center gap-1.5 rounded-t-lg border-b-2 px-4 py-2 transition-colors",
                             createActiveFileIdx === fIdx
-                              ? "bg-slate-800/80 text-white"
-                              : "text-slate-500 hover:bg-slate-800/40 hover:text-slate-300"
+                              ? "border-b-indigo-500 bg-white dark:border-b-indigo-400 dark:bg-slate-950"
+                              : "border-b-transparent hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                           )}>
                           <button
                             type="button"
                             onClick={() => setCreateActiveFileIdx(fIdx)}
-                            className="flex items-center gap-1.5 text-xs font-medium">
-                            <FileCode2
-                              className={cn(
-                                "h-3.5 w-3.5",
-                                createActiveFileIdx === fIdx ? "text-indigo-400" : ""
-                              )}
-                            />
+                            className={cn(
+                              "flex items-center gap-1.5 text-xs font-semibold",
+                              createActiveFileIdx === fIdx
+                                ? "text-indigo-600 dark:text-indigo-400"
+                                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                            )}>
+                            <FileCode2 className="h-3.5 w-3.5" />
                             {f.filename || "Untitled"}
                           </button>
                           {newProblem.files.length > 1 && (
@@ -783,21 +788,19 @@ export function CodeReviewProblemBuilder({
                                   setCreateActiveFileIdx(createActiveFileIdx - 1);
                                 }
                               }}
-                              className="ml-1 rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-700">
-                              <Trash2 className="h-3 w-3 text-slate-400 hover:text-red-400" />
+                              className="ml-1 rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400">
+                              <Trash2 className="h-3 w-3" />
                             </button>
                           )}
                         </div>
                       ))}
+                      <button
+                        type="button"
+                        onClick={handleAddFile}
+                        className="mb-1 ml-1 flex h-7 w-7 items-center justify-center self-end rounded-md text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                        <Plus className="h-4 w-4" />
+                      </button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleAddFile}
-                      className="h-7 w-7 shrink-0 text-slate-400 hover:bg-slate-800 hover:text-white">
-                      <Plus className="h-4 w-4" />
-                    </Button>
                   </div>
 
                   <div className="flex flex-1 flex-col">

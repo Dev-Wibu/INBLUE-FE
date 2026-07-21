@@ -1,12 +1,5 @@
 import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { MonacoCodeReviewViewer } from "@/components/ui/monaco-code-review-viewer";
 import {
@@ -25,7 +18,6 @@ import {
   codeReviewProblemManager,
   type CodeReviewProblem,
 } from "@/services/code-review-problem.manager";
-import { useThemeStore } from "@/stores/themeStore";
 import {
   AlertTriangle,
   ChevronLeft,
@@ -61,10 +53,6 @@ type SortKey = "newest" | "oldest" | "title_asc" | "title_desc";
 export function CodeReviewProblemManagementPage() {
   const { t } = useTranslation();
   const monacoTheme = useMonacoTheme();
-  const theme = useThemeStore((state) => state.theme);
-  const isDark =
-    theme === "dark" ||
-    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [view, setView] = useState<ViewState>({ mode: "list" });
   const [problems, setProblems] = useState<CodeReviewProblem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -229,124 +217,142 @@ export function CodeReviewProblemManagementPage() {
   if (view.mode === "detail" && selectedProblem) {
     return (
       <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-        <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleBack}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              {selectedProblem.title}
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {selectedProblem.problemStatement && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20">
-                    <Lightbulb className="h-4 w-4" />
-                    Đề bài
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-xl">
-                      <Lightbulb className="h-5 w-5 text-amber-500" />
-                      Yêu cầu Code Review
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="prose prose-sm dark:prose-invert mt-4 max-w-none font-sans whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                    {selectedProblem.problemStatement}
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
-            <button
-              type="button"
-              onClick={() => handleEditProblem(selectedProblem)}
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700">
-              <Pencil className="h-4 w-4" />
-              Chỉnh sửa
-            </button>
-          </div>
-        </div>
-
-        {/* IDE-like File Viewer Section */}
-        {selectedProblem.files && selectedProblem.files.length > 0 ? (
-          <div
-            className={cn("flex flex-1 overflow-hidden", isDark ? "bg-slate-950" : "bg-slate-100")}>
-            <div className="relative flex min-w-0 flex-1 flex-col">
-              {/* File Tabs */}
-              <div
-                className={cn(
-                  "flex items-center justify-between border-b px-2",
-                  isDark ? "border-slate-800 bg-slate-950" : "border-slate-200 bg-slate-50"
-                )}>
-                <div className="flex overflow-x-auto">
-                  {(selectedProblem.files || []).map((f, fIdx) => (
-                    <button
-                      key={fIdx}
-                      onClick={() => setViewActiveFileIdx(fIdx)}
-                      className={cn(
-                        "flex items-center gap-2 border-r px-4 py-3 text-sm font-semibold transition-all",
-                        isDark ? "border-slate-800" : "border-slate-200",
-                        viewActiveFileIdx === fIdx
-                          ? isDark
-                            ? "border-b-2 border-b-indigo-500 text-indigo-400"
-                            : "border-b-2 border-b-indigo-600 text-indigo-700"
-                          : isDark
-                            ? "text-slate-500 hover:bg-slate-900 hover:text-slate-300"
-                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
-                      )}>
-                      <FileCode2
-                        className={cn(
-                          "h-4 w-4",
-                          viewActiveFileIdx === fIdx
-                            ? isDark
-                              ? "text-indigo-400"
-                              : "text-indigo-600"
-                            : ""
-                        )}
-                      />
-                      {f.filename || "Untitled"}
-                    </button>
-                  ))}
+        <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+          {/* Read-only Sidebar */}
+          <div className="flex w-[420px] shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/40">
+            <div className="flex flex-none items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800/60">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleBack}
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <div className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200">
+                  {t("common.details", "Chi tiết")}
                 </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEditProblem(selectedProblem)}
+                className="h-8 gap-1.5 bg-white text-xs dark:bg-slate-900">
+                <Pencil className="h-3.5 w-3.5" />
+                {t("general.edit", "Chỉnh sửa")}
+              </Button>
+            </div>
 
-              {/* Monaco Editor */}
-              <div className="relative flex-1 overflow-hidden">
-                <MonacoCodeReviewViewer
-                  content={selectedProblem.files[viewActiveFileIdx]?.content || ""}
-                  language={(
-                    selectedProblem.files[viewActiveFileIdx]?.language || "java"
-                  ).toLowerCase()}
-                  issues={(selectedProblem.expectedIssues || [])
-                    .filter(
-                      (iss) =>
-                        iss.filename === selectedProblem.files?.[viewActiveFileIdx]?.filename &&
-                        iss.lineNumber !== undefined &&
-                        iss.severity !== undefined &&
-                        iss.description !== undefined
-                    )
-                    .map((iss) => ({
-                      filename: iss.filename || "",
-                      lineNumber: iss.lineNumber as number,
-                      severity: iss.severity as string,
-                      description: iss.description as string,
-                    }))}
-                  theme={monacoTheme}
-                />
+            <div className="flex-1 overflow-y-auto p-5">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
+                    {selectedProblem.title}
+                  </h2>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400">
+                      {selectedProblem.language || "N/A"}
+                    </span>
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                        selectedProblem.difficulty === "EASY"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                          : selectedProblem.difficulty === "MEDIUM"
+                            ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                            : "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"
+                      )}>
+                      {selectedProblem.difficulty === "EASY"
+                        ? t("common.difficultyEasy", "Dễ")
+                        : selectedProblem.difficulty === "MEDIUM"
+                          ? t("common.difficultyMedium", "Trung bình")
+                          : t("common.difficultyHard", "Khó")}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      <AlertTriangle className="h-3 w-3 text-slate-400" />
+                      {selectedProblem.expectedIssues?.length || 0} Lỗi
+                    </span>
+                  </div>
+                </div>
+
+                {selectedProblem.problemStatement && (
+                  <div>
+                    <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-slate-100">
+                      <Lightbulb className="h-4 w-4 text-amber-500" />
+                      Yêu cầu Code Review
+                    </h3>
+                    <div className="prose prose-sm dark:prose-invert max-w-none rounded-xl border border-slate-100 bg-slate-50/50 p-4 font-sans whitespace-pre-wrap text-slate-700 dark:border-slate-800/60 dark:bg-slate-900/30 dark:text-slate-300">
+                      {selectedProblem.problemStatement}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        ) : (
-          <div className="flex flex-1 items-center justify-center p-8">
-            <p className="text-slate-500">Chưa có mã nguồn để review.</p>
+
+          {/* Read-only IDE */}
+          <div className="relative flex min-w-0 flex-1 flex-col bg-slate-100 dark:bg-[#0f111a]">
+            {selectedProblem.files && selectedProblem.files.length > 0 ? (
+              <>
+                {/* File Tabs */}
+                <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex flex-1 overflow-x-auto px-1 pt-1">
+                    {(selectedProblem.files || []).map((f, fIdx) => (
+                      <div
+                        key={fIdx}
+                        onClick={() => setViewActiveFileIdx(fIdx)}
+                        className={cn(
+                          "group flex cursor-pointer items-center gap-1.5 rounded-t-lg border-b-2 px-4 py-2 transition-colors",
+                          viewActiveFileIdx === fIdx
+                            ? "border-b-indigo-500 bg-white dark:border-b-indigo-400 dark:bg-slate-950"
+                            : "border-b-transparent hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                        )}>
+                        <div
+                          className={cn(
+                            "flex items-center gap-1.5 text-xs font-semibold",
+                            viewActiveFileIdx === fIdx
+                              ? "text-indigo-600 dark:text-indigo-400"
+                              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                          )}>
+                          <FileCode2 className="h-3.5 w-3.5" />
+                          {f.filename || "Untitled"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Monaco Editor */}
+                <div className="relative flex-1 overflow-hidden">
+                  <MonacoCodeReviewViewer
+                    content={selectedProblem.files[viewActiveFileIdx]?.content || ""}
+                    language={(
+                      selectedProblem.files[viewActiveFileIdx]?.language || "java"
+                    ).toLowerCase()}
+                    issues={(selectedProblem.expectedIssues || [])
+                      .filter(
+                        (iss) =>
+                          iss.filename === selectedProblem.files?.[viewActiveFileIdx]?.filename &&
+                          iss.lineNumber !== undefined &&
+                          iss.severity !== undefined &&
+                          iss.description !== undefined
+                      )
+                      .map((iss) => ({
+                        filename: iss.filename || "",
+                        lineNumber: iss.lineNumber as number,
+                        severity: iss.severity as string,
+                        description: iss.description as string,
+                      }))}
+                    theme={monacoTheme}
+                    theme={monacoTheme}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-1 items-center justify-center p-8">
+                <p className="text-slate-500">Chưa có mã nguồn để review.</p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     );
   }
