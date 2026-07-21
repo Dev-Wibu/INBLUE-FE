@@ -21,9 +21,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useApplication, useApplications, useUsers } from "@/hooks/useApplication";
 import {
+  useAllPendingHRReviews,
   useApplicationDetail,
   useApplicationDetails,
-  useApplicationDetailsForReviewer,
   useHrScore,
 } from "@/hooks/useApplicationDetails";
 import { usePagination } from "@/hooks/usePagination";
@@ -838,10 +838,11 @@ export function ApplicationGradingPage({
   const { user } = useAuthStore();
   const isStaff = user?.role === "STAFF";
 
-  // Staff: dùng endpoint /reviewer (lấy bài được gán)
-  // Admin: dùng useApplications (lấy tất cả)
+  // Staff & Admin: lấy tất cả applications
   const { data: rawApps } = useApplications();
-  const { data: reviewerDetails = [] } = useApplicationDetailsForReviewer(isStaff);
+
+  // Staff: lấy tất cả application details đang chờ HR chấm (từ tất cả applications)
+  const { data: allPendingReviews = [] } = useAllPendingHRReviews(isStaff);
 
   const applications = useMemo(() => (Array.isArray(rawApps) ? rawApps : []), [rawApps]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -857,11 +858,12 @@ export function ApplicationGradingPage({
     return map;
   }, [applications]);
 
-  // Staff: transform reviewerDetails (ApplicationDetail[]) to display format
+  // Staff: transform ALL pending reviews từ tất cả applications
   // Admin: use filtered Applications
   const staffItems = useMemo((): GradingListItem[] => {
     if (!isStaff) return [];
-    return reviewerDetails.map((detail) => {
+    // allPendingReviews đã được filter ở manager: AI_EVALUATED + no hrScore + not auto-graded
+    return allPendingReviews.map((detail) => {
       const appInfo = applicationMap.get(detail.applicationId!);
       return {
         id: detail.applicationId!,
@@ -875,7 +877,7 @@ export function ApplicationGradingPage({
         detail,
       };
     });
-  }, [isStaff, reviewerDetails, applicationMap]);
+  }, [isStaff, allPendingReviews, applicationMap]);
 
   const { data: allUsers } = useUsers();
   const userMap = useMemo(() => {
@@ -944,7 +946,10 @@ export function ApplicationGradingPage({
       }));
   }, [isStaff, staffItems, applications, searchQuery, userMap]);
 
-  const { sortedData } = useSortable(filteredApplications);
+  const { sortedData } = useSortable(filteredApplications, {
+    // Staff items are pre-sorted by detailId (newest first), preserve that order
+    noSortBehavior: "preserve",
+  });
 
   const pagination = usePagination({
     totalCount: sortedData.length,

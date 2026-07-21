@@ -10,7 +10,6 @@ import {
   Building2,
   CalendarClock,
   CalendarDays,
-  ClipboardCheck,
   Code2,
   Database,
   LayoutDashboard,
@@ -29,10 +28,6 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment";
 import { AdminAccountPage } from "../Account/AdminAccountPage";
-import {
-  ApplicationGradingDetailPage,
-  ApplicationGradingPage,
-} from "../ApplicationGrading/ApplicationGradingPage";
 import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement";
 import { CodingProblemManagementPage } from "../CodingProblemManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
@@ -120,12 +115,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         icon: MessageSquare,
         label: t("common.feedbackFromCandidates"),
         color: "text-cyan-600 dark:text-cyan-500",
-      },
-      {
-        type: "applicationGrading",
-        icon: ClipboardCheck,
-        label: t("adminAdmindashboard.candidateGrading"),
-        color: "text-emerald-600 dark:text-emerald-500",
       },
       {
         type: "mentor-review-assignment",
