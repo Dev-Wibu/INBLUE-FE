@@ -17,8 +17,6 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StarRating } from "@/components/ui/star-rating";
-import type { MentorInterviewHubProps } from "@/components/user/MentorInterviewHub";
-import { MentorInterviewHub } from "@/components/user/MentorInterviewHub";
 import { useCurrentRound } from "@/hooks/useRound";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
@@ -1441,47 +1439,6 @@ function ApplicationDetailPanel({
           )}
         </CardContent>
       </Card>
-
-      {/* Mentor Interview Hub - Integrated into Application Detail */}
-      {(() => {
-        // Find mentor review round detail
-        const mentorRound = timelineRounds.find(
-          (item) =>
-            item.round?.roundType === "MENTOR_REVIEW" || item.round?.roundType === "MENTROR_REVIEW"
-        );
-        if (!mentorRound?.detail) return null;
-
-        // Access extended properties that may not be in the generated schema
-        const detail = mentorRound.detail as {
-          id?: number;
-          mentorId?: number | null;
-          sessionId?: number | null;
-          sessionInfo?: {
-            sessionId?: number | null;
-            meetingType?: "ONLINE" | "OFFLINE" | null;
-            startTime?: string | null;
-            endTime?: string | null;
-          } | null;
-          mentorReview?: MentorInterviewHubProps["mentorReview"];
-          mentorFeedback?: { id?: number };
-          status?: string;
-        };
-
-        return (
-          <MentorInterviewHub
-            applicationId={id ?? 0}
-            detailId={detail.id}
-            mentorId={detail.mentorId}
-            sessionId={detail.sessionId ?? detail.sessionInfo?.sessionId}
-            sessionInfo={detail.sessionInfo ?? null}
-            mentorReview={detail.mentorReview}
-            mentorFeedback={detail.mentorFeedback}
-            status={detail.status}
-            currentUserId={(application as unknown as { userId?: number }).userId}
-            onFeedbackSubmitted={onSubmissionSuccess}
-          />
-        );
-      })()}
 
       {/* Submission Dialog */}
       <RoundSubmissionDialog
