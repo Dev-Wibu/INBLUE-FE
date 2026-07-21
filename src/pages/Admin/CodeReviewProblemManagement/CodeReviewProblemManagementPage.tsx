@@ -342,7 +342,6 @@ export function CodeReviewProblemManagementPage() {
                         description: iss.description as string,
                       }))}
                     theme={monacoTheme}
-                    theme={monacoTheme}
                   />
                 </div>
               </>

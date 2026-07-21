@@ -19,16 +19,7 @@ import {
   type ExpectedIssue,
 } from "@/services/code-review-problem.manager";
 import Editor, { useMonaco } from "@monaco-editor/react";
-import {
-  ChevronDown,
-  FileCode2,
-  Loader2,
-  Plus,
-  Settings,
-  Sparkles,
-  Trash2,
-  Wand2,
-} from "lucide-react";
+import { ChevronDown, FileCode2, Loader2, Plus, Settings, Sparkles, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 const t = (k: string, opts?: string | Record<string, unknown>): string =>
@@ -73,7 +64,6 @@ export function CodeReviewProblemBuilder({
 }) {
   const monacoTheme = useMonacoTheme();
   const [creationMode, setCreationMode] = React.useState<"ai" | "manual">("manual");
-  const [aiGeneratedLoaded, setAiGeneratedLoaded] = React.useState(true);
   const monaco = useMonaco();
 
   // Monaco builder states
@@ -451,7 +441,7 @@ export function CodeReviewProblemBuilder({
           files: data.files || [],
           expectedIssues: data.expectedIssues || [],
         });
-        setAiGeneratedLoaded(true);
+        setAiGenerating(false);
         setCreationMode("manual");
 
         setCreateActiveFileIdx(0);
@@ -508,75 +498,196 @@ export function CodeReviewProblemBuilder({
   return (
     <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
       <div className="flex w-[420px] shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="flex flex-none items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800/60">
-          <div className="flex items-center gap-2 font-sans text-sm font-bold text-slate-800 dark:text-slate-200">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-500/10">
-              <Settings className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+        <div className="flex flex-none flex-col border-b border-slate-100 bg-slate-50/50 dark:border-slate-800/60 dark:bg-slate-900/20">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center gap-2 font-sans text-sm font-bold text-slate-800 dark:text-slate-200">
+              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-500/10">
+                <Settings className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              {t("adminCodeReviewProblem.problemSetup")}
             </div>
-            {t("adminCodeReviewProblem.problemSetup")}
+          </div>
+          <div className="px-5 pb-4">
+            <div className="flex rounded-lg bg-slate-200/50 p-1 dark:bg-slate-800/50">
+              <button
+                type="button"
+                onClick={() => {
+                  setCreationMode("ai");
+                }}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-1.5 text-xs font-bold transition-all",
+                  creationMode === "ai"
+                    ? "bg-white text-indigo-600 shadow-sm dark:bg-slate-950 dark:text-indigo-400"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                )}>
+                <div className="flex items-center justify-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {t("adminCodeReviewProblem.generateWithAI")}
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCreationMode("manual");
+                }}
+                className={cn(
+                  "flex-1 rounded-md px-3 py-1.5 text-xs font-bold transition-all",
+                  creationMode === "manual"
+                    ? "bg-white text-indigo-600 shadow-sm dark:bg-slate-950 dark:text-indigo-400"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                )}>
+                <div className="flex items-center justify-center gap-1.5">
+                  <Pencil className="h-3.5 w-3.5" />
+                  {t("adminCodeReviewProblem.manual")}
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
-          <div className="space-y-6 font-sans text-xs">
-            <div>
-              <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
-                {t("adminCodeReviewProblem.problemTitleStar")}
-              </Label>
-              <Input
-                value={newProblem.title}
-                onChange={(e) => setNewProblem({ ...newProblem, title: e.target.value })}
-                placeholder={t("adminCodeReviewProblem.exampleApiTokenLeak")}
-                className="h-9 border-slate-200 bg-slate-50 text-xs font-medium text-slate-900 transition-colors focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:text-white dark:focus:bg-slate-900"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          {creationMode === "manual" ? (
+            <div className="space-y-6 font-sans text-xs">
               <div>
                 <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
-                  {t("adminCodeReviewProblem.programmingLanguage")}
+                  {t("adminCodeReviewProblem.problemTitleStar")}
                 </Label>
-                <StyledSelect
-                  value={newProblem.language}
-                  onChange={(v) => setNewProblem({ ...newProblem, language: v })}>
-                  <option value="Java">Java</option>
-                  <option value="Javascript">Javascript</option>
-                  <option value="TypeScript">TypeScript</option>
-                  <option value="Python">Python</option>
-                  <option value="C#">C#</option>
-                  <option value="SQL">SQL</option>
-                  <option value="Go">Go</option>
-                </StyledSelect>
+                <Input
+                  value={newProblem.title}
+                  onChange={(e) => setNewProblem({ ...newProblem, title: e.target.value })}
+                  placeholder={t("adminCodeReviewProblem.exampleApiTokenLeak")}
+                  className="h-9 border-slate-200 bg-slate-50 text-xs font-medium text-slate-900 transition-colors focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:text-white dark:focus:bg-slate-900"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
+                    {t("adminCodeReviewProblem.programmingLanguage")}
+                  </Label>
+                  <StyledSelect
+                    value={newProblem.language}
+                    onChange={(v) => setNewProblem({ ...newProblem, language: v })}>
+                    <option value="Java">Java</option>
+                    <option value="Javascript">Javascript</option>
+                    <option value="TypeScript">TypeScript</option>
+                    <option value="Python">Python</option>
+                    <option value="C#">C#</option>
+                    <option value="SQL">SQL</option>
+                    <option value="Go">Go</option>
+                  </StyledSelect>
+                </div>
+                <div>
+                  <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
+                    {t("adminCodeReviewProblem.difficulty")}
+                  </Label>
+                  <StyledSelect
+                    value={newProblem.difficulty}
+                    onChange={(v) =>
+                      setNewProblem({ ...newProblem, difficulty: v as "EASY" | "MEDIUM" | "HARD" })
+                    }>
+                    <option value="EASY">{t("common.difficultyEasy", t("common.easy"))}</option>
+                    <option value="MEDIUM">
+                      {t("common.difficultyMedium", t("common.mediumLevel"))}
+                    </option>
+                    <option value="HARD">{t("common.difficultyHard", t("common.hard"))}</option>
+                  </StyledSelect>
+                </div>
               </div>
               <div>
                 <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
-                  {t("adminCodeReviewProblem.difficulty")}
+                  {t("adminCodeReviewProblem.requirementContext")}
                 </Label>
-                <StyledSelect
-                  value={newProblem.difficulty}
-                  onChange={(v) =>
-                    setNewProblem({ ...newProblem, difficulty: v as "EASY" | "MEDIUM" | "HARD" })
-                  }>
-                  <option value="EASY">{t("common.difficultyEasy", t("common.easy"))}</option>
-                  <option value="MEDIUM">
-                    {t("common.difficultyMedium", t("common.mediumLevel"))}
-                  </option>
-                  <option value="HARD">{t("common.difficultyHard", t("common.hard"))}</option>
-                </StyledSelect>
+                <Textarea
+                  value={newProblem.problemStatement}
+                  onChange={(e) =>
+                    setNewProblem({ ...newProblem, problemStatement: e.target.value })
+                  }
+                  rows={12}
+                  placeholder={t("adminCodeReviewProblem.contextPlaceholder")}
+                  className="min-h-[220px] resize-y border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 transition-colors focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:focus:bg-slate-900"
+                />
               </div>
             </div>
-            <div>
-              <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
-                {t("adminCodeReviewProblem.requirementContext")}
-              </Label>
-              <Textarea
-                value={newProblem.problemStatement}
-                onChange={(e) => setNewProblem({ ...newProblem, problemStatement: e.target.value })}
-                rows={12}
-                placeholder={t("adminCodeReviewProblem.contextPlaceholder")}
-                className="min-h-[220px] resize-y border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 transition-colors focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:focus:bg-slate-900"
-              />
+          ) : (
+            <div className="space-y-5 font-sans text-xs">
+              <div className="mb-2 flex items-start gap-3 rounded-lg border border-indigo-100 bg-indigo-50/50 p-3 dark:border-indigo-500/20 dark:bg-indigo-500/10">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                <p className="text-xs text-indigo-800 dark:text-indigo-300">
+                  {t("problem.aiGenerateInstruction2")}
+                </p>
+              </div>
+              <div>
+                <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
+                  {t("common.error")}
+                </Label>
+                <Input
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAiGenerate()}
+                  placeholder={t("adminCodeReviewProblem.exampleBugTypes")}
+                  className="h-9 border-slate-200 bg-slate-50 text-xs font-medium text-slate-900 transition-colors focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:text-white dark:focus:bg-slate-900"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
+                    {t("common.difficulty")}
+                  </Label>
+                  <StyledSelect
+                    value={aiDifficulty}
+                    onChange={(v) => setAiDifficulty(v as "EASY" | "MEDIUM" | "HARD")}>
+                    <option value="EASY">{t("common.easy")}</option>
+                    <option value="MEDIUM">{t("common.mediumLevel")}</option>
+                    <option value="HARD">{t("common.hard")}</option>
+                  </StyledSelect>
+                </div>
+                <div>
+                  <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
+                    {t("common.language")}
+                  </Label>
+                  <StyledSelect value={aiLanguage} onChange={setAiLanguage}>
+                    <option value="Java">Java</option>
+                    <option value="Javascript">Javascript</option>
+                    <option value="TypeScript">TypeScript</option>
+                    <option value="Python">Python</option>
+                    <option value="C#">C#</option>
+                    <option value="SQL">SQL</option>
+                    <option value="Go">Go</option>
+                  </StyledSelect>
+                </div>
+                <div className="col-span-2">
+                  <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
+                    {t("adminCodeReviewProblem.candidateLevel")}
+                  </Label>
+                  <StyledSelect value={aiLevel} onChange={setAiLevel}>
+                    <option value="Intern">Intern</option>
+                    <option value="Junior">Junior</option>
+                    <option value="Senior">Senior</option>
+                  </StyledSelect>
+                </div>
+              </div>
+              <div>
+                <Label className="mb-1.5 block text-[10px] font-bold text-slate-500 uppercase dark:text-slate-400">
+                  {t("general.additionalRequirements")}
+                </Label>
+                <Textarea
+                  value={aiRequirement}
+                  onChange={(e) => setAiRequirement(e.target.value)}
+                  rows={4}
+                  placeholder={t("adminCodeReviewProblem.describeProjectContext")}
+                  className="min-h-[100px] resize-y border-slate-200 bg-slate-50 p-3 text-xs text-slate-900 transition-colors focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:focus:bg-slate-900"
+                />
+              </div>
+              <Button
+                type="button"
+                disabled={isGenerating || !aiTopic}
+                onClick={handleAiGenerate}
+                className="mt-2 flex h-9 w-full items-center justify-center gap-2 bg-indigo-600 font-sans text-xs font-bold text-white shadow-sm transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
+                <Sparkles className="h-3.5 w-3.5" />
+                {t("adminCodeReviewProblem.startGeneratingByAi")}
+              </Button>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -611,264 +722,137 @@ export function CodeReviewProblemBuilder({
           </div>
         )}
 
-        <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/70 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Plus className="h-4 w-4 text-emerald-400" />
-            <h3 className="text-xs font-bold text-white">
-              {t("adminCodeReviewProblem.designNewCodeReview")}
-            </h3>
-            <div className="rounded-lg bg-slate-900 p-0.5">
-              <div className="flex gap-0.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCreationMode("ai");
-                    setAiGeneratedLoaded(false);
-                  }}
-                  className={cn(
-                    "rounded px-2.5 py-1 text-[10px] font-bold transition-all",
-                    creationMode === "ai" ? "bg-slate-800 text-indigo-400" : "text-slate-400"
-                  )}>
-                  {t("adminCodeReviewProblem.generateWithAI")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCreationMode("manual");
-                    setAiGeneratedLoaded(true);
-                  }}
-                  className={cn(
-                    "rounded px-2.5 py-1 text-[10px] font-bold transition-all",
-                    creationMode === "manual" ? "bg-slate-800 text-indigo-400" : "text-slate-400"
-                  )}>
-                  {t("adminCodeReviewProblem.manual")}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="flex flex-1 overflow-hidden">
-          {creationMode === "ai" && !aiGeneratedLoaded ? (
-            <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto bg-slate-900 p-6 font-sans text-slate-100">
-              <div className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-950/40 p-8 shadow-2xl backdrop-blur-sm">
-                <div className="mb-8 flex flex-col items-center space-y-4 text-center">
-                  <div className="relative inline-flex items-center justify-center rounded-2xl border border-indigo-800/40 bg-indigo-950/40 p-4 text-indigo-400 shadow-inner">
-                    <Sparkles className="h-10 w-10 animate-pulse text-indigo-400" />
-                    <Wand2 className="absolute -top-1 -right-1 h-5 w-5 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold tracking-wide text-white">
-                      {t("adminCodeReviewProblem.designByAi")}
-                    </h3>
-                    <p className="mt-2 max-w-md text-xs leading-relaxed text-slate-400">
-                      {t("problem.aiGenerateInstruction2")}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-left">
-                  <div>
-                    <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                      {/*Chủ đề /*/} {t("common.error")} {/*bảo mật cần review **/}
-                    </Label>
-                    <Input
-                      value={aiTopic}
-                      onChange={(e) => setAiTopic(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleAiGenerate()}
-                      placeholder={t("adminCodeReviewProblem.exampleBugTypes")}
-                      className="mt-1.5 h-10 border-slate-800 bg-slate-950/60 px-3 text-xs text-white focus:ring-1 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                        {t("common.difficulty")}
-                      </Label>
-                      <StyledSelect
-                        value={aiDifficulty}
-                        className="border-slate-850 mt-1.5 h-10 bg-slate-950/60 text-xs"
-                        onChange={(v) => setAiDifficulty(v as "EASY" | "MEDIUM" | "HARD")}>
-                        <option value="EASY">{t("common.easy")}</option>
-                        <option value="MEDIUM">{t("common.mediumLevel")}</option>
-                        <option value="HARD">{t("common.hard")}</option>
-                      </StyledSelect>
-                    </div>
-                    <div>
-                      <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                        {t("common.language")}
-                      </Label>
-                      <StyledSelect
-                        value={aiLanguage}
-                        className="border-slate-850 mt-1.5 h-10 bg-slate-950/60 text-xs"
-                        onChange={setAiLanguage}>
-                        <option value="Java">Java</option>
-                        <option value="Javascript">Javascript</option>
-                        <option value="TypeScript">TypeScript</option>
-                        <option value="Python">Python</option>
-                        <option value="C#">C#</option>
-                        <option value="SQL">SQL</option>
-                        <option value="Go">Go</option>
-                      </StyledSelect>
-                    </div>
-                    <div>
-                      <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                        {t("adminCodeReviewProblem.candidateLevel")}
-                      </Label>
-                      <StyledSelect
-                        value={aiLevel}
-                        className="border-slate-850 mt-1.5 h-10 bg-slate-950/60 text-xs"
-                        onChange={setAiLevel}>
-                        <option value="Intern">Intern</option>
-                        <option value="Junior">Junior</option>
-                        <option value="Senior">Senior</option>
-                      </StyledSelect>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="font-sans text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                      {t("general.additionalRequirements")}
-                    </Label>
-                    <textarea
-                      value={aiRequirement}
-                      onChange={(e) => setAiRequirement(e.target.value)}
-                      rows={4}
-                      placeholder={t("adminCodeReviewProblem.describeProjectContext")}
-                      className="border-slate-850 mt-1.5 flex w-full rounded-md border bg-slate-950/60 px-3 py-2 text-xs text-white focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    disabled={isGenerating || !aiTopic}
-                    onClick={handleAiGenerate}
-                    className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 font-sans text-xs font-bold text-white shadow-lg transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
-                    <Sparkles className="h-4 w-4" />
-                    {t("adminCodeReviewProblem.startGeneratingByAi")}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-1 flex-col overflow-hidden bg-slate-950/60">
-              <div className="flex-1 overflow-y-auto">
-                <div className="flex h-full flex-col">
-                  <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-                    <div className="flex flex-1 overflow-x-auto px-1 pt-1">
-                      {newProblem.files.map((f, fIdx) => (
-                        <div
-                          key={fIdx}
-                          className={cn(
-                            "group flex cursor-pointer items-center gap-1.5 rounded-t-lg border-b-2 px-4 py-2 transition-colors",
-                            createActiveFileIdx === fIdx
-                              ? "border-b-indigo-500 bg-white dark:border-b-indigo-400 dark:bg-slate-950"
-                              : "border-b-transparent hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
-                          )}>
+          <div className="flex flex-1 flex-col overflow-hidden bg-slate-950/60">
+            <div className="flex-1 overflow-y-auto">
+              <div className="flex h-full flex-col">
+                <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex flex-1 overflow-x-auto px-1 pt-1">
+                    {newProblem.files.map((f, fIdx) => (
+                      <div
+                        key={fIdx}
+                        className={cn(
+                          "group flex cursor-pointer items-center gap-1.5 rounded-t-lg border-b-2 px-4 py-2 transition-colors",
+                          createActiveFileIdx === fIdx
+                            ? "border-b-indigo-500 bg-white dark:border-b-indigo-400 dark:bg-slate-950"
+                            : "border-b-transparent hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                        )}>
+                        {createActiveFileIdx === fIdx ? (
+                          <div className="flex items-center gap-1.5">
+                            <FileCode2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                            <input
+                              type="text"
+                              value={f.filename}
+                              onChange={(e) => {
+                                const files = [...newProblem.files];
+                                files[fIdx].filename = e.target.value;
+                                setNewProblem({ ...newProblem, files });
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-6 w-[140px] bg-transparent text-xs font-semibold text-indigo-600 focus:outline-none dark:text-indigo-400"
+                              placeholder="Untitled"
+                              autoFocus
+                            />
+                          </div>
+                        ) : (
                           <button
                             type="button"
                             onClick={() => setCreateActiveFileIdx(fIdx)}
-                            className={cn(
-                              "flex items-center gap-1.5 text-xs font-semibold",
-                              createActiveFileIdx === fIdx
-                                ? "text-indigo-600 dark:text-indigo-400"
-                                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-                            )}>
+                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300">
                             <FileCode2 className="h-3.5 w-3.5" />
                             {f.filename || "Untitled"}
                           </button>
-                          {newProblem.files.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setNewProblem((prev) => ({
-                                  ...prev,
-                                  files: prev.files.filter((_, idx) => idx !== fIdx),
-                                }));
-                                if (createActiveFileIdx >= fIdx && createActiveFileIdx > 0) {
-                                  setCreateActiveFileIdx(createActiveFileIdx - 1);
-                                }
-                              }}
-                              className="ml-1 rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400">
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={handleAddFile}
-                        className="mb-1 ml-1 flex h-7 w-7 items-center justify-center self-end rounded-md text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300">
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-1 flex-col">
-                    {newProblem.files[createActiveFileIdx] && (
-                      <div className="flex flex-1 flex-col p-4">
-                        <div className="mb-3 grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-[10px] font-bold text-slate-500 uppercase">
-                              {t("adminCodeReviewProblem.fileName")}
-                            </Label>
-                            <Input
-                              value={newProblem.files[createActiveFileIdx].filename}
-                              onChange={(e) => {
-                                const files = [...newProblem.files];
-                                files[createActiveFileIdx].filename = e.target.value;
-                                setNewProblem({ ...newProblem, files });
-                              }}
-                              className="mt-1 h-8 border-slate-800 bg-slate-900 text-xs text-white focus-visible:ring-indigo-500"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-[10px] font-bold text-slate-500 uppercase">
-                              {t("adminCodeReviewProblem.highlightLanguage")}
-                            </Label>
-                            <Input
-                              value={newProblem.files[createActiveFileIdx].language}
-                              onChange={(e) => {
-                                const files = [...newProblem.files];
-                                files[createActiveFileIdx].language = e.target.value;
-                                setNewProblem({ ...newProblem, files });
-                              }}
-                              className="mt-1 h-8 border-slate-800 bg-slate-900 text-xs text-white focus-visible:ring-indigo-500"
-                            />
-                          </div>
-                        </div>
-                        <div className="relative flex-1 rounded-md border border-slate-800 bg-slate-950">
-                          <Editor
-                            height="100%"
-                            language={
-                              newProblem.files[createActiveFileIdx].language?.toLowerCase() ||
-                              "csharp"
-                            }
-                            theme={monacoTheme}
-                            value={newProblem.files[createActiveFileIdx].content}
-                            onMount={handleEditorDidMount}
-                            onChange={(val) => {
-                              const files = [...newProblem.files];
-                              files[createActiveFileIdx].content = val || "";
-                              setNewProblem({ ...newProblem, files });
+                        )}
+                        {newProblem.files.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setNewProblem((prev) => ({
+                                ...prev,
+                                files: prev.files.filter((_, idx) => idx !== fIdx),
+                              }));
+                              if (createActiveFileIdx >= fIdx && createActiveFileIdx > 0) {
+                                setCreateActiveFileIdx(createActiveFileIdx - 1);
+                              }
                             }}
-                            options={{
-                              minimap: { enabled: false },
-                              fontSize: 13,
-                              lineNumbers: "on",
-                              scrollBeyondLastLine: false,
-                              wordWrap: "on",
-                              automaticLayout: true,
-                              glyphMargin: true,
-                            }}
-                          />
-                        </div>
+                            className="ml-1 rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400">
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        )}
                       </div>
-                    )}
+                    ))}
+                    <button
+                      type="button"
+                      onClick={handleAddFile}
+                      className="mb-1 ml-1 flex h-7 w-7 items-center justify-center self-end rounded-md text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                      <Plus className="h-4 w-4" />
+                    </button>
                   </div>
+                </div>
+
+                <div className="flex flex-1 flex-col">
+                  {newProblem.files[createActiveFileIdx] && (
+                    <div className="relative flex-1 bg-slate-950">
+                      <Editor
+                        height="100%"
+                        language={
+                          newProblem.files[createActiveFileIdx].filename?.split(".").pop() ===
+                            "tsx" ||
+                          newProblem.files[createActiveFileIdx].filename?.split(".").pop() === "ts"
+                            ? "typescript"
+                            : newProblem.files[createActiveFileIdx].filename?.split(".").pop() ===
+                                  "js" ||
+                                newProblem.files[createActiveFileIdx].filename?.split(".").pop() ===
+                                  "jsx"
+                              ? "javascript"
+                              : newProblem.files[createActiveFileIdx].filename?.split(".").pop() ===
+                                  "py"
+                                ? "python"
+                                : newProblem.files[createActiveFileIdx].filename
+                                      ?.split(".")
+                                      .pop() === "java"
+                                  ? "java"
+                                  : newProblem.files[createActiveFileIdx].filename
+                                        ?.split(".")
+                                        .pop() === "cs"
+                                    ? "csharp"
+                                    : newProblem.files[createActiveFileIdx].filename
+                                          ?.split(".")
+                                          .pop() === "sql"
+                                      ? "sql"
+                                      : newProblem.files[createActiveFileIdx].filename
+                                            ?.split(".")
+                                            .pop() === "go"
+                                        ? "go"
+                                        : newProblem.files[
+                                            createActiveFileIdx
+                                          ].language?.toLowerCase() || "csharp"
+                        }
+                        theme={monacoTheme}
+                        value={newProblem.files[createActiveFileIdx].content}
+                        onMount={handleEditorDidMount}
+                        onChange={(val) => {
+                          const files = [...newProblem.files];
+                          files[createActiveFileIdx].content = val || "";
+                          setNewProblem({ ...newProblem, files });
+                        }}
+                        options={{
+                          minimap: { enabled: false },
+                          fontSize: 13,
+                          lineNumbers: "on",
+                          scrollBeyondLastLine: false,
+                          wordWrap: "on",
+                          automaticLayout: true,
+                          glyphMargin: true,
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
