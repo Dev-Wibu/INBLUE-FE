@@ -112,19 +112,25 @@ export function QuestionBankTable({
               <TableRow
                 key={q.id}
                 onClick={() => onEdit(q)}
-                className={`group h-[60px] cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
                   !isActive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
                 <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                   #{q.id}
                 </TableCell>
                 <TableCell>
-                  <div className="max-w-[800px]">
+                  <div className="flex max-w-[800px] flex-col gap-1">
                     <p
                       className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
                       title={q.questionText}>
                       {q.questionText || "Chưa có nội dung"}
                     </p>
+                    {/* Dummy element to force the exact same height as the Coding table's 2-line testcase block */}
+                    <div
+                      className="flex items-center gap-1.5 text-[11px] opacity-0"
+                      aria-hidden="true">
+                      <span>&nbsp;</span>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

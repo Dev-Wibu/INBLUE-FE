@@ -86,7 +86,7 @@ export function CodeReviewProblemTable({
               <TableRow
                 key={p.id}
                 onClick={() => onViewDetail(p)}
-                className={`group h-[60px] cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
                   !isActive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
                 <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -111,13 +111,13 @@ export function CodeReviewProblemTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-400">
-                      <FileCode2 className="h-4 w-4" />
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-indigo-700 dark:text-indigo-400">
+                      <FileCode2 className="h-3.5 w-3.5" />
                       <span>{p.files?.length ?? 0} file</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
-                      <Bug className="h-4 w-4" />
+                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-rose-600 dark:text-rose-400">
+                      <Bug className="h-3.5 w-3.5" />
                       <span>{p.expectedIssues?.length ?? 0} lỗi</span>
                     </div>
                   </div>
