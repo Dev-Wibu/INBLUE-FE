@@ -81,22 +81,22 @@ export function QuestionBankTable({
             <TableRow
               key={q.id}
               className="group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-              <TableCell className="font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+              <TableCell className="py-4 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                 #{q.id}
               </TableCell>
-              <TableCell>
+              <TableCell className="py-4">
                 <div className="pr-4 whitespace-normal">
-                  <p className="line-clamp-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <p className="line-clamp-3 text-sm leading-relaxed font-medium text-slate-700 dark:text-slate-200">
                     {q.questionText || "Chưa có nội dung"}
                   </p>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-4">
                 <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   {getCategoryName(q)}
                 </span>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-4">
                 <div
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 ${
                     q.questionLevel === "EASY"
@@ -111,7 +111,7 @@ export function QuestionBankTable({
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="py-4 text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
