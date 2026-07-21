@@ -69,11 +69,17 @@ interface CodingProblemEditorProps {
   initialData: Partial<CodingProblem> | null;
   onBack: () => void;
   onSaved: () => void;
+  onGenerateAI?: () => void;
 }
 
 type TabKey = "general" | "testcases" | "codestubs";
 
-export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProblemEditorProps) {
+export function CodingProblemEditor({
+  initialData,
+  onBack,
+  onSaved,
+  onGenerateAI,
+}: CodingProblemEditorProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [isLoadingData, setIsLoadingData] = useState(!!initialData?.id);
@@ -671,11 +677,20 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                   </div>
                 </div>
 
-                <div className="flex flex-none items-center justify-end border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800/50 dark:bg-slate-900/50">
+                <div className="grid grid-cols-2 gap-3 border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800/50 dark:bg-slate-900/50">
+                  {onGenerateAI && (
+                    <Button
+                      variant="outline"
+                      onClick={onGenerateAI}
+                      className="h-10 w-full rounded-xl border-indigo-200 bg-white font-bold text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-800 dark:bg-slate-900 dark:hover:bg-indigo-900/40">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Tạo AI
+                    </Button>
+                  )}
                   <Button
                     onClick={handleSave}
                     disabled={isSubmitting}
-                    className="h-10 w-full rounded-xl bg-indigo-600 px-4 font-bold text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-700">
+                    className={`h-10 w-full rounded-xl bg-indigo-600 px-4 font-bold text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-700 ${!onGenerateAI ? "col-span-2" : ""}`}>
                     {isSubmitting ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (

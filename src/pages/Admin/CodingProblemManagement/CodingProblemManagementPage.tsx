@@ -182,6 +182,7 @@ export function CodingProblemManagementPage() {
             setEditingProblem(null);
             fetchProblems(true);
           }}
+          onGenerateAI={() => setIsAiModalOpen(true)}
         />
       </div>
     );
@@ -274,13 +275,7 @@ export function CodingProblemManagementPage() {
               className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600">
               <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             </button>
-            <Button
-              variant="outline"
-              onClick={() => setIsAiModalOpen(true)}
-              className="h-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40">
-              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-              Tạo AI
-            </Button>
+
             <Button
               onClick={() => {
                 setEditingProblem(null);
