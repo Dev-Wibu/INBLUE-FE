@@ -54,15 +54,13 @@ export function QuestionBankTable({ questions, categories = [], onEdit }: Questi
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-[100px] font-medium text-slate-500">ID</TableHead>
+            <TableHead className="w-[100px] pl-6 font-medium text-slate-500">ID</TableHead>
             <TableHead className="min-w-[300px] font-medium text-slate-500">
               Nội dung câu hỏi
             </TableHead>
             <TableHead className="w-[150px] font-medium text-slate-500">Danh mục</TableHead>
             <TableHead className="w-[120px] font-medium text-slate-500">Độ khó</TableHead>
-            <TableHead className="w-[130px] text-right font-medium text-slate-500">
-              Ngày tạo
-            </TableHead>
+            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">Ngày tạo</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -71,7 +69,7 @@ export function QuestionBankTable({ questions, categories = [], onEdit }: Questi
               key={q.id}
               onClick={() => onEdit(q)}
               className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-              <TableCell className="py-4 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+              <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                 #{q.id}
               </TableCell>
               <TableCell className="py-4">
@@ -101,7 +99,7 @@ export function QuestionBankTable({ questions, categories = [], onEdit }: Questi
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="py-4 text-right font-mono text-xs text-slate-500">
+              <TableCell className="py-4 pr-6 text-sm font-medium text-slate-700 dark:text-slate-300">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {(q as any).createdAt
                   ? /* eslint-disable-next-line @typescript-eslint/no-explicit-any */

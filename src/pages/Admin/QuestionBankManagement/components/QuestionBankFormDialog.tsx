@@ -61,13 +61,10 @@ export function QuestionBankFormDialog({
   // Markdown Preview State
   const [textTab, setTextTab] = useState<"write" | "preview">("write");
 
-  // Simple Markdown Parser for Code Blocks
   const renderMarkdown = (rawText: string) => {
     if (!rawText) return null;
 
-    // Normalize literal "\n" strings (often returned by raw AI responses) into actual newlines
     const text = rawText.replace(/\\n/g, "\n");
-
     const parts = text.split(/(```[\s\S]*?```)/g);
     return parts.map((part, index) => {
       if (part.startsWith("```") && part.endsWith("```")) {
@@ -77,7 +74,7 @@ export function QuestionBankFormDialog({
         return (
           <div
             key={index}
-            className="relative my-3 overflow-hidden rounded-lg border border-slate-800 bg-slate-900">
+            className="relative my-3 overflow-hidden rounded-lg border border-slate-800 bg-slate-900 shadow-sm">
             {lang && (
               <div className="border-b border-slate-700/50 bg-slate-800/50 px-3 py-1 font-mono text-xs text-slate-400">
                 {lang}
@@ -89,11 +86,22 @@ export function QuestionBankFormDialog({
           </div>
         );
       }
+
+      const boldParts = part.split(/(\*\*.*?\*\*)/g);
       return (
         <p
           key={index}
-          className="text-[15px] leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-          {part}
+          className="mb-3 text-[15px] leading-relaxed whitespace-pre-wrap text-slate-800 last:mb-0 dark:text-slate-200">
+          {boldParts.map((bp, i) => {
+            if (bp.startsWith("**") && bp.endsWith("**")) {
+              return (
+                <strong key={i} className="font-semibold text-indigo-900 dark:text-indigo-200">
+                  {bp.slice(2, -2)}
+                </strong>
+              );
+            }
+            return bp;
+          })}
         </p>
       );
     });
@@ -195,7 +203,9 @@ export function QuestionBankFormDialog({
         <div className="flex-1 space-y-8 p-6 md:p-8">
           <SheetHeader className="space-y-2">
             <SheetTitle className="text-xl font-semibold tracking-tight">{title}</SheetTitle>
-            <SheetDescription className="text-slate-500">{description}</SheetDescription>
+            <SheetDescription className="text-slate-500 dark:text-slate-400">
+              {description}
+            </SheetDescription>
           </SheetHeader>
 
           {/* Form Content */}
@@ -204,7 +214,7 @@ export function QuestionBankFormDialog({
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                  <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     {t("general.category")}
                   </Label>
                   {onCreateCategory && !isCreatingCategory && (
@@ -277,7 +287,7 @@ export function QuestionBankFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   {t("common.difficulty")}
                 </Label>
                 <Select
@@ -299,7 +309,7 @@ export function QuestionBankFormDialog({
 
             {/* AI Magic Header */}
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+              <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {t("common.questionText")}
               </Label>
               <Button
@@ -318,7 +328,9 @@ export function QuestionBankFormDialog({
               <div className="animate-in slide-in-from-top-2 fade-in rounded-xl border border-indigo-100 bg-white p-5 shadow-sm dark:border-indigo-900/50 dark:bg-slate-900">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-xs">{t("question.relatedTopics")}</Label>
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                      {t("question.relatedTopics")}
+                    </Label>
                     <Input
                       placeholder="VD: Spring Boot, AOP, Transactional..."
                       value={aiTopics}
@@ -327,7 +339,9 @@ export function QuestionBankFormDialog({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">{t("question.additionalPrompt")}</Label>
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                      {t("question.additionalPrompt")}
+                    </Label>
                     <Textarea
                       placeholder={t("question.promptExample")}
                       rows={2}
@@ -357,7 +371,7 @@ export function QuestionBankFormDialog({
               <div className="animate-in fade-in space-y-8">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                    <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                       {t(
                         "adminPracticequestionmanagement.enterQuestionContent",
                         "Nội dung câu hỏi"
@@ -385,10 +399,10 @@ export function QuestionBankFormDialog({
                       rows={5}
                       value={formData.questionText || ""}
                       onChange={(e) => onFormChange({ ...formData, questionText: e.target.value })}
-                      className="resize-none font-mono text-[14px] leading-relaxed focus-visible:ring-indigo-500"
+                      className="resize-none border-slate-300 bg-white font-mono text-[14px] leading-relaxed text-slate-900 shadow-sm focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                     />
                   ) : (
-                    <div className="min-h-[126px] rounded-md border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+                    <div className="min-h-[126px] rounded-md border border-slate-300 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950">
                       {formData.questionText ? (
                         renderMarkdown(formData.questionText)
                       ) : (
@@ -402,7 +416,7 @@ export function QuestionBankFormDialog({
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800">
-                    <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                    <Label className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                       {t("question.answers")}
                     </Label>
                     <Button
@@ -439,10 +453,10 @@ export function QuestionBankFormDialog({
                             value={opt}
                             onChange={(e) => updateOption(idx, e.target.value)}
                             placeholder={`Nhập đáp án...`}
-                            className={`h-11 pr-9 pl-11 transition-colors focus-visible:ring-indigo-500 ${
+                            className={`h-11 pr-9 pl-11 text-slate-900 shadow-sm transition-colors focus-visible:ring-indigo-500 dark:text-slate-100 ${
                               isCorrect
                                 ? "border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20"
-                                : ""
+                                : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950"
                             }`}
                           />
                           <Button

@@ -237,7 +237,6 @@ export function QuestionBankManagementPage() {
             <QuestionBankCategoryTab
               questions={questions}
               onEditQuestion={handleEdit}
-              onDeleteQuestion={handleDeleteClick}
               isCreatingExternally={isCreatingCategory}
               onCancelCreateExternally={() => setIsCreatingCategory(false)}
             />

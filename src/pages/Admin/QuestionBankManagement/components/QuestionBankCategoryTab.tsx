@@ -19,7 +19,6 @@ import { QuestionBankTable } from "./QuestionBankTable";
 interface QuestionBankCategoryTabProps {
   questions?: QuestionBank[];
   onEditQuestion?: (q: QuestionBank) => void;
-  onDeleteQuestion?: (q: QuestionBank) => void;
   isCreatingExternally?: boolean;
   onCancelCreateExternally?: () => void;
 }
@@ -27,7 +26,6 @@ interface QuestionBankCategoryTabProps {
 export function QuestionBankCategoryTab({
   questions = [],
   onEditQuestion,
-  onDeleteQuestion,
   isCreatingExternally,
   onCancelCreateExternally,
 }: QuestionBankCategoryTabProps) {
@@ -246,14 +244,11 @@ export function QuestionBankCategoryTab({
               </p>
             </div>
           ) : (
-            <div>
-              <QuestionBankTable
-                questions={categoryQuestions}
-                categories={categories}
-                onEdit={onEditQuestion || (() => {})}
-                onDelete={onDeleteQuestion || (() => {})}
-              />
-            </div>
+            <QuestionBankTable
+              questions={categoryQuestions}
+              categories={categories}
+              onEdit={onEditQuestion || (() => {})}
+            />
           )}
         </div>
       </div>
