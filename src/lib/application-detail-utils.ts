@@ -1,7 +1,7 @@
 import type { components } from "../../schema-from-be";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
-type SubmissionData = components["schemas"]["SubmissionData"];
+export type SubmissionData = components["schemas"]["SubmissionData"];
 
 /**
  * Round types that do NOT require HR scoring.
