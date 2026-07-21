@@ -70,6 +70,26 @@ export const useApplicationDetailsForReviewer = (enabled = true) => {
   });
 };
 
+/**
+ * Get ALL application details from ALL applications that need HR scoring.
+ * This fetches ALL applications, then ALL details, then filters to AI_EVALUATED + no hrScore.
+ *
+ * Use this for Staff HR grading page to show ALL pending reviews
+ * (not just the ones assigned via /reviewer endpoint).
+ */
+export const useAllPendingHRReviews = (enabled = true) => {
+  return useQuery({
+    queryKey: ["applicationDetails", "allPendingHR"],
+    queryFn: async (): Promise<ApplicationDetail[]> => {
+      const result = await applicationDetailManager.getAllPendingHRReviews();
+      if (!result.success) throw new Error(result.error);
+      return result.data ?? [];
+    },
+    enabled,
+    staleTime: 30_000, // 30 seconds cache
+  });
+};
+
 // ============================================================
 // Mutation Hooks
 // ============================================================
@@ -99,9 +119,9 @@ export const useHrScore = (options?: {
       options?.onSuccess?.();
     },
     onError: (error: Error) => {
-      const message = getNormalizedErrorMessage(error);
-      toast.error(message);
-      options?.onError?.(message);
+      const _message = getNormalizedErrorMessage(error);
+      toast.error(_message);
+      options?.onError?.(_message);
     },
   });
 };
@@ -137,9 +157,9 @@ export const useAssignMentor = (options?: {
       options?.onSuccess?.();
     },
     onError: (error: Error) => {
-      const message = getNormalizedErrorMessage(error);
-      toast.error(message);
-      options?.onError?.(message);
+      const _message = getNormalizedErrorMessage(error);
+      toast.error(_message);
+      options?.onError?.(_message);
     },
   });
 };

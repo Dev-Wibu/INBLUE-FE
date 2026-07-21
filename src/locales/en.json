@@ -4213,7 +4213,12 @@
     "duration": "Duration",
     "interviewRoomTitle": "Interview room",
     "mentorJoined": "Mentor joined",
-    "youJoined": "You joined"
+    "youJoined": "You joined",
+    "scheduleConfirmed": "Schedule confirmed",
+    "waitingForRoom": "Waiting for room to be created...",
+    "reviewReceived": "Received review from mentor",
+    "pleaseRateMentor": "Please rate mentor",
+    "feedbackPlaceholder": "Share your experience with mentor..."
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",

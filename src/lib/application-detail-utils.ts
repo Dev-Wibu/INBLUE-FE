@@ -1,7 +1,7 @@
 import type { components } from "../../schema-from-be";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
-type SubmissionData = components["schemas"]["SubmissionData"];
+export type SubmissionData = components["schemas"]["SubmissionData"];
 
 /**
  * Round types that do NOT require HR scoring.
@@ -18,7 +18,7 @@ export const AUTO_GRADED_ROUND_TYPES = [
 /**
  * Round types that require HR scoring.
  */
-export const HR_SCORING_REQUIRED_ROUND_TYPES = ["CODING", "MENTOR_REVIEW"] as const;
+export const HR_SCORING_REQUIRED_ROUND_TYPES = ["CODING", "MENTOR_REVIEW", "CV_SCREENING"] as const;
 
 /**
  * Infer the round type from ApplicationDetail submission data.
@@ -64,7 +64,7 @@ export function isQuizRound(detail: ApplicationDetail): boolean {
 
 /**
  * Check if an ApplicationDetail is a round that should NOT be graded by HR.
- * Auto-graded rounds include: QUIZ, CV_SCREENING, EMAIL_SIMULATOR, CODE_REVIEW, AI_INTERVIEW
+ * Auto-graded rounds include: QUIZ, CODE_REVIEW, EMAIL_SIMULATOR
  * These rounds are handled by backend automatically.
  */
 export function isAutoGradedRound(detail: ApplicationDetail): boolean {
@@ -73,14 +73,10 @@ export function isAutoGradedRound(detail: ApplicationDetail): boolean {
   if (inferredType === "CODE_REVIEW") return true;
   if (inferredType === "EMAIL_SIMULATOR") return true;
 
-  // Additional check: rounds with finalScore but no hrScore might be auto-graded
-  // (This is a fallback for cases where we can't infer the type)
-  if (detail.finalScore !== undefined && detail.finalScore !== null) {
-    if (detail.hrScore === undefined || detail.hrScore === null) {
-      // Has score but no HR score - likely auto-graded
-      return true;
-    }
-  }
+  // IMPORTANT: CV_SCREENING has AI feedback but requires human HR review
+  // Do NOT auto-filter CV rounds even if they have finalScore
+  // The fallback below was incorrectly filtering CV_SCREENING as auto-graded
+  // CV_SCREENING rounds need human scoring, not backend automation
 
   return false;
 }

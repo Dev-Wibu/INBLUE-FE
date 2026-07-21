@@ -3767,6 +3767,9 @@
     "mentorReviewFromMentor": "Đánh giá từ mentor",
     "mentorReviewEmpty": "Mentor chưa để lại nhận xét chi tiết.",
     "reviewSubmittedSuccessfully": "Đánh giá mentor đã được nộp thành công!",
+    "reviewReceived": "Nhận được đánh giá từ mentor",
+    "pleaseRateMentor": "Vui lòng đánh giá mentor",
+    "feedbackPlaceholder": "Chia sẻ trải nghiệm của bạn với mentor...",
     "aiInterviewRound": "Vòng Phỏng vấn AI",
     "aiInterviewCompleted": "Phỏng vấn AI hoàn thành",
     "redirectingToInterview": "Đang chuyển hướng đến buổi phỏng vấn...",
@@ -4210,7 +4213,12 @@
     "duration": "Thời lượng",
     "interviewRoomTitle": "Phòng phỏng vấn",
     "mentorJoined": "Mentor vào lúc",
-    "youJoined": "Bạn vào lúc"
+    "youJoined": "Bạn vào lúc",
+    "scheduleConfirmed": "Lịch hẹn đã xác nhận",
+    "waitingForRoom": "Đang chờ tạo phòng...",
+    "reviewReceived": "Nhận được đánh giá từ mentor",
+    "pleaseRateMentor": "Vui lòng đánh giá mentor",
+    "feedbackPlaceholder": "Chia sẻ trải nghiệm của bạn với mentor..."
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

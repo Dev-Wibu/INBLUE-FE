@@ -3,14 +3,11 @@ import {
   getInitialSidebarCollapsed,
   type SidebarMenuGroup,
 } from "@/components/shared";
-import { AdminGradingTabProvider } from "@/contexts/AdminGradingTabContext";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
   Bell,
   Building2,
-  CalendarClock,
   CalendarDays,
-  ClipboardCheck,
   Code2,
   Database,
   LayoutDashboard,
@@ -29,10 +26,6 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment";
 import { AdminAccountPage } from "../Account/AdminAccountPage";
-import {
-  ApplicationGradingDetailPage,
-  ApplicationGradingPage,
-} from "../ApplicationGrading/ApplicationGradingPage";
 import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement";
 import { CodingProblemManagementPage } from "../CodingProblemManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
@@ -40,7 +33,6 @@ import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
 import { InterviewTemplateDetailPage } from "../InterviewTemplateManagement/InterviewTemplateDetailPage";
 import { InterviewTemplateManagementPage } from "../InterviewTemplateManagement/InterviewTemplateManagementPage";
-import { KioskBookingManagementPage } from "../KioskBookingManagement";
 import { KioskManagementPage, KioskSchedulePage } from "../KioskManagement";
 import { MentorManagementPage } from "../MentorManagement";
 import { NotificationManagementPage } from "../NotificationManagement";
@@ -122,22 +114,10 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         color: "text-cyan-600 dark:text-cyan-500",
       },
       {
-        type: "applicationGrading",
-        icon: ClipboardCheck,
-        label: t("adminAdmindashboard.candidateGrading"),
-        color: "text-emerald-600 dark:text-emerald-500",
-      },
-      {
         type: "mentor-review-assignment",
         icon: UserCheck,
         label: t("adminMentorReviewAssignment.sidebarLabel"),
         color: "text-blue-600 dark:text-blue-500",
-      },
-      {
-        type: "kiosk-bookings",
-        icon: CalendarClock,
-        label: t("adminKiosk.bookingRequests"),
-        color: "text-amber-600 dark:text-amber-500",
       },
       {
         type: "kiosk-management",
@@ -310,61 +290,32 @@ export function AdminDashboardPage() {
         />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <AdminGradingTabProvider openGradingTab={() => {}}>
-            <Routes>
-              <Route path="/" element={<DashboardOverviewPage />} />
-              <Route path="account" element={<AdminAccountPage />} />
-              <Route path="users" element={<UserManagementPage />} />
-              <Route path="mentors" element={<MentorManagementPage />} />
-              <Route path="sessions" element={<SessionManagementPage />} />
-              <Route path="sessions/create" element={<SessionFormPage />} />
-              <Route path="sessions/:id" element={<SessionFormPage />} />
-              <Route path="reviews" element={<ReviewManagementPage />} />
-              <Route path="feedback" element={<FeedbackManagementPage />} />
-              <Route path="notifications" element={<NotificationManagementPage />} />
-              <Route path="questionBanks" element={<QuestionBankManagementPage />} />
-              <Route path="questionMajors" element={<QuestionMajorManagementPage />} />
-              <Route path="practiceSets" element={<PracticeSetManagementPage />} />
-              <Route path="practiceQuestions" element={<PracticeQuestionManagementPage />} />
-              <Route path="posts" element={<PostManagementPage />} />
-              <Route path="companies" element={<CompanyManagementPage />} />
-              <Route path="companies/:companyId" element={<CompanyManagementPage />} />
-              <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
-              <Route path="interviewTemplates/:id" element={<InterviewTemplateDetailPage />} />
-              <Route
-                path="applicationGrading"
-                element={
-                  <ApplicationGradingPage
-                    onOpenGradingDetail={(appId, extra) =>
-                      navigate(
-                        `/admin/grading-detail?appId=${appId}${
-                          extra?.candidateName
-                            ? `&name=${encodeURIComponent(extra.candidateName)}`
-                            : ""
-                        }${extra?.jdId ? `&jdId=${encodeURIComponent(extra.jdId)}` : ""}`
-                      )
-                    }
-                  />
-                }
-              />
-              <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />
-              <Route
-                path="grading-detail"
-                element={
-                  <ApplicationGradingDetailPage
-                    appId={new URLSearchParams(location.search).get("appId") || ""}
-                    candidateName={new URLSearchParams(location.search).get("name") || undefined}
-                    jdId={new URLSearchParams(location.search).get("jdId") || undefined}
-                  />
-                }
-              />
-              <Route path="kiosk-bookings" element={<KioskBookingManagementPage />} />
-              <Route path="kiosk-management" element={<KioskManagementPage />} />
-              <Route path="kiosk-management/:kioskId/schedules" element={<KioskSchedulePage />} />
-              <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
-              <Route path="codingProblems" element={<CodingProblemManagementPage />} />
-            </Routes>
-          </AdminGradingTabProvider>
+          <Routes>
+            <Route path="/" element={<DashboardOverviewPage />} />
+            <Route path="account" element={<AdminAccountPage />} />
+            <Route path="users" element={<UserManagementPage />} />
+            <Route path="mentors" element={<MentorManagementPage />} />
+            <Route path="sessions" element={<SessionManagementPage />} />
+            <Route path="sessions/create" element={<SessionFormPage />} />
+            <Route path="sessions/:id" element={<SessionFormPage />} />
+            <Route path="reviews" element={<ReviewManagementPage />} />
+            <Route path="feedback" element={<FeedbackManagementPage />} />
+            <Route path="notifications" element={<NotificationManagementPage />} />
+            <Route path="questionBanks" element={<QuestionBankManagementPage />} />
+            <Route path="questionMajors" element={<QuestionMajorManagementPage />} />
+            <Route path="practiceSets" element={<PracticeSetManagementPage />} />
+            <Route path="practiceQuestions" element={<PracticeQuestionManagementPage />} />
+            <Route path="posts" element={<PostManagementPage />} />
+            <Route path="companies" element={<CompanyManagementPage />} />
+            <Route path="companies/:companyId" element={<CompanyManagementPage />} />
+            <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
+            <Route path="interviewTemplates/:id" element={<InterviewTemplateDetailPage />} />
+            <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />
+            <Route path="kiosk-management" element={<KioskManagementPage />} />
+            <Route path="kiosk-management/:kioskId/schedules" element={<KioskSchedulePage />} />
+            <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
+            <Route path="codingProblems" element={<CodingProblemManagementPage />} />
+          </Routes>
         </main>
       </div>
     </div>

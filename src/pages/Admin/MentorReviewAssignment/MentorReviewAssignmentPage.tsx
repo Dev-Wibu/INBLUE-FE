@@ -86,29 +86,42 @@ export function MentorReviewAssignmentPage() {
         const appIds = (appsData.data || appsData || []).map((app: { id: number }) => app.id);
 
         // Fetch application details for all applications
+        const errors: string[] = [];
         const detailsPromises = appIds.map(async (appId: number) => {
-          const detailsResponse = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/application-details/application/${appId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${
-                  localStorage.getItem("auth-storage")
-                    ? JSON.parse(localStorage.getItem("auth-storage") || "{}")?.state?.token
-                    : ""
-                }`,
-              },
-            }
-          );
+          try {
+            const detailsResponse = await fetch(
+              `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/application-details/application/${appId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${
+                    localStorage.getItem("auth-storage")
+                      ? JSON.parse(localStorage.getItem("auth-storage") || "{}")?.state?.token
+                      : ""
+                  }`,
+                },
+              }
+            );
 
-          if (!detailsResponse.ok) return [];
-          const detailsData = await detailsResponse.json();
-          return (detailsData.data || detailsData || []).filter(
-            (detail: ApplicationDetailItem) => detail.status === "AWAITING_MENTOR"
-          );
+            if (!detailsResponse.ok) {
+              errors.push(`App ${appId}: ${detailsResponse.status} ${detailsResponse.statusText}`);
+              return [];
+            }
+            const detailsData = await detailsResponse.json();
+            return (detailsData.data || detailsData || []).filter(
+              (detail: ApplicationDetailItem) => detail.status === "AWAITING_MENTOR"
+            );
+          } catch (err) {
+            errors.push(`App ${appId}: ${err instanceof Error ? err.message : "Unknown error"}`);
+            return [];
+          }
         });
 
         const allDetailsArrays = await Promise.all(detailsPromises);
         const allDetails = allDetailsArrays.flat();
+
+        if (errors.length > 0) {
+          console.warn("[MentorReviewAssignment] API errors:", errors);
+        }
 
         setApplicationDetails(allDetails);
       } catch (error) {
