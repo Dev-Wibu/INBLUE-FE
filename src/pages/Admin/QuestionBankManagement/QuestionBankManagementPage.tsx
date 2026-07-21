@@ -174,7 +174,7 @@ export function QuestionBankManagementPage() {
       const res = await questionBankManager.update(question.id, payload);
       if (res.success) {
         toast.success(t("common.updateSuccess", "Cập nhật thành công!"), { id: toastId });
-        await loadData();
+        await fetchData();
       } else {
         toast.error(res.error || t("error.systemError"), { id: toastId });
       }
