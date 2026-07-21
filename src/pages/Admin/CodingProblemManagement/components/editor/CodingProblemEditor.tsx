@@ -70,17 +70,11 @@ interface CodingProblemEditorProps {
   initialData: Partial<CodingProblem> | null;
   onBack: () => void;
   onSaved: () => void;
-  onGenerateAI?: () => void;
 }
 
 type TabKey = "general" | "testcases" | "codestubs";
 
-export function CodingProblemEditor({
-  initialData,
-  onBack,
-  onSaved,
-  onGenerateAI,
-}: CodingProblemEditorProps) {
+export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProblemEditorProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>("general");
   const [isLoadingData, setIsLoadingData] = useState(!!initialData?.id);
@@ -100,6 +94,15 @@ export function CodingProblemEditor({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeLang, setActiveLang] = useState("JAVA");
   const [expandedTc, setExpandedTc] = useState<number | null>(null);
+
+  // ── AI Form state ────────────────────────────────────────────────────────
+  const [isAiMode, setIsAiMode] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiDifficulty, setAiDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
+  const [aiJobTitle, setAiJobTitle] = useState("");
+  const [aiRequirement, setAiRequirement] = useState("");
+  const [aiPrompting, setAiPrompting] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const paramCount = formData.paramTypes?.length || 0;
 
@@ -127,6 +130,37 @@ export function CodingProblemEditor({
   };
 
   const patch = (u: Partial<CodingProblem>) => setFormData((p) => ({ ...p, ...u }));
+
+  const handleGenerateAI = async () => {
+    if (!aiTopic.trim()) {
+      toast.error("Vui lòng nhập chủ đề bài tập");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await codingProblemManager.generate({
+        topic: aiTopic,
+        difficulty: aiDifficulty,
+        targetLevel: "INTERMEDIATE",
+        context: {
+          jobTitle: aiJobTitle.trim() || undefined,
+          requirement: aiRequirement.trim() || undefined,
+          prompting: aiPrompting.trim() || undefined,
+        },
+      });
+      if (res.success && res.data) {
+        toast.success("Tạo tự động thành công!");
+        patch(res.data);
+        setIsAiMode(false);
+      } else {
+        toast.error(res.error || "Tạo thất bại");
+      }
+    } catch {
+      toast.error("Lỗi xảy ra trong quá trình tạo");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.title?.trim() || !formData.problemStatement?.trim()) {
@@ -262,25 +296,123 @@ export function CodingProblemEditor({
         {activeTab === "general" && (
           <div className="flex h-full p-6">
             <div className="mx-auto flex h-full w-full max-w-7xl gap-6">
-              {/* LEFT: Markdown editor (primary, takes most space) */}
+              {/* LEFT: Markdown editor or AI Config */}
               <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
-                <div className="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-900/50">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
-                      <FileText className="h-3.5 w-3.5" />
+                {isAiMode ? (
+                  <>
+                    <div className="flex flex-none items-center justify-between border-b border-indigo-100 bg-indigo-50/50 px-5 py-3 dark:border-indigo-800/50 dark:bg-indigo-900/20">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-500 text-white shadow-sm">
+                          <Sparkles className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-indigo-700 uppercase dark:text-indigo-300">
+                          Cấu Hình Đề Bài Bằng AI
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-medium text-indigo-500/70">
+                        Hỗ trợ sinh tự động
+                      </span>
                     </div>
-                    <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                      Nội dung đề bài
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-medium text-slate-400">Hỗ trợ Markdown</span>
-                </div>
-                <Textarea
-                  value={formData.problemStatement || ""}
-                  onChange={(e) => patch({ problemStatement: e.target.value })}
-                  placeholder="Mô tả bài toán chi tiết tại đây (hỗ trợ Markdown)..."
-                  className="flex-1 resize-none rounded-none border-0 bg-transparent p-6 font-mono text-[13px] leading-relaxed focus-visible:ring-0 dark:text-slate-200"
-                />
+                    <div className="flex-1 overflow-y-auto p-6">
+                      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                        <div className="space-y-5">
+                          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                            Thông tin bắt buộc
+                          </h3>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              Chủ đề bài toán
+                            </label>
+                            <Input
+                              placeholder="VD: Quy hoạch động, Đồ thị..."
+                              value={aiTopic}
+                              onChange={(e) => setAiTopic(e.target.value)}
+                              className="h-10 border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              Độ khó mong muốn
+                            </label>
+                            <Select
+                              value={aiDifficulty}
+                              onValueChange={(v: "EASY" | "MEDIUM" | "HARD") => setAiDifficulty(v)}>
+                              <SelectTrigger className="h-10 border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="EASY">Dễ (EASY)</SelectItem>
+                                <SelectItem value="MEDIUM">Trung bình (MEDIUM)</SelectItem>
+                                <SelectItem value="HARD">Khó (HARD)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="space-y-5">
+                          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                            Ngữ cảnh tuỳ chỉnh{" "}
+                            <span className="font-normal text-slate-400">(Tùy chọn)</span>
+                          </h3>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              Vị trí tuyển dụng
+                            </label>
+                            <Input
+                              placeholder="VD: Backend Developer"
+                              value={aiJobTitle}
+                              onChange={(e) => setAiJobTitle(e.target.value)}
+                              className="h-10 border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              Yêu cầu kỹ năng
+                            </label>
+                            <Input
+                              placeholder="VD: Tối ưu bộ nhớ, Concurrency"
+                              value={aiRequirement}
+                              onChange={(e) => setAiRequirement(e.target.value)}
+                              className="h-10 border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              Ghi chú riêng
+                            </label>
+                            <Textarea
+                              placeholder="Yêu cầu bẫy, edge cases..."
+                              value={aiPrompting}
+                              onChange={(e) => setAiPrompting(e.target.value)}
+                              className="h-20 resize-none border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-900/50">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
+                          <FileText className="h-3.5 w-3.5" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                          Nội dung đề bài
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-medium text-slate-400">
+                        Hỗ trợ Markdown
+                      </span>
+                    </div>
+                    <Textarea
+                      value={formData.problemStatement || ""}
+                      onChange={(e) => patch({ problemStatement: e.target.value })}
+                      placeholder="Mô tả bài toán chi tiết tại đây (hỗ trợ Markdown)..."
+                      className="flex-1 resize-none rounded-none border-0 bg-transparent p-6 font-mono text-[13px] leading-relaxed focus-visible:ring-0 dark:text-slate-200"
+                    />
+                  </>
+                )}
               </div>
 
               {/* RIGHT: Configuration */}
@@ -679,26 +811,39 @@ export function CodingProblemEditor({
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800/50 dark:bg-slate-900/50">
-                  {onGenerateAI && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAiMode((p) => !p)}
+                    className={`h-10 w-full rounded-xl border-indigo-200 bg-white font-bold transition-colors dark:border-indigo-800 dark:bg-slate-900 dark:hover:bg-indigo-900/40 ${isAiMode ? "bg-indigo-50 text-indigo-700 shadow-inner" : "text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"}`}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {isAiMode ? "Tắt Sinh AI" : "Tạo AI"}
+                  </Button>
+
+                  {isAiMode ? (
                     <Button
-                      variant="outline"
-                      onClick={onGenerateAI}
-                      className="h-10 w-full rounded-xl border-indigo-200 bg-white font-bold text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-800 dark:bg-slate-900 dark:hover:bg-indigo-900/40">
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Tạo AI
+                      onClick={handleGenerateAI}
+                      disabled={aiLoading}
+                      className="h-10 w-full rounded-xl bg-indigo-600 px-4 font-bold text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-700">
+                      {aiLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-2 h-4 w-4" />
+                      )}
+                      Bắt đầu tạo
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleSave}
+                      disabled={isSubmitting}
+                      className="h-10 w-full rounded-xl bg-indigo-600 px-4 font-bold text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-700">
+                      {isSubmitting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="mr-2 h-4 w-4" />
+                      )}
+                      Lưu Bài Tập
                     </Button>
                   )}
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSubmitting}
-                    className={`h-10 w-full rounded-xl bg-indigo-600 px-4 font-bold text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-700 ${!onGenerateAI ? "col-span-2" : ""}`}>
-                    {isSubmitting ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="mr-2 h-4 w-4" />
-                    )}
-                    Lưu Bài Tập
-                  </Button>
                 </div>
               </div>
             </div>
