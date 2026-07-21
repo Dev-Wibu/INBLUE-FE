@@ -170,7 +170,7 @@ export function CodingProblemManagementPage() {
   // ── Editor flow ──────────────────────────────────────────────────────────────
   if (isAuthoring) {
     return (
-      <div className="absolute inset-0 z-50 bg-slate-50 dark:bg-slate-950">
+      <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
         <CodingProblemEditor
           initialData={editingProblem}
           onBack={() => {
@@ -330,7 +330,6 @@ export function CodingProblemManagementPage() {
                   setEditingProblem(p);
                   setIsAuthoring(true);
                 }}
-                onDelete={undefined}
                 onToggleStatus={handleToggleStatus}
               />
             </div>
