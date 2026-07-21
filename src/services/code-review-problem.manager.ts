@@ -28,9 +28,11 @@ export interface CodeReviewProblem {
   updatedAt?: string;
 }
 
-const fixProblemNewlines = <T extends Partial<CodeReviewProblem>>(problem: T): T => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fixProblemNewlines = (problem: any): any => {
   if (problem && problem.files) {
-    problem.files = problem.files.map((f) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    problem.files = problem.files.map((f: any) => ({
       ...f,
       content: f.content ? f.content.replace(/\\n/g, "\n").replace(/\\r/g, "") : "",
     }));
@@ -51,7 +53,6 @@ export class CodeReviewProblemManager {
         headers: res.response?.headers,
       }));
       const data = (response.data || []).map(fixProblemNewlines);
-      // @ts-expect-error: Backend Swagger schema mismatch
       return { success: true, data };
     } catch (error) {
       return {
@@ -104,12 +105,9 @@ export class CodeReviewProblemManager {
           status: res.response?.status,
           headers: res.response?.headers,
         }));
-      // @ts-expect-error: Backend Swagger schema mismatch
       return {
         success: true,
-        data: response.data
-          ? fixProblemNewlines(response.data as CodeReviewProblem)
-          : response.data,
+        data: response.data ? fixProblemNewlines(response.data) : response.data,
       };
     } catch (error) {
       return {
@@ -138,12 +136,9 @@ export class CodeReviewProblemManager {
           status: res.response?.status,
           headers: res.response?.headers,
         }));
-      // @ts-expect-error: Backend Swagger schema mismatch
       return {
         success: true,
-        data: response.data
-          ? fixProblemNewlines(response.data as CodeReviewProblem)
-          : response.data,
+        data: response.data ? fixProblemNewlines(response.data) : response.data,
       };
     } catch (error) {
       return {
@@ -179,12 +174,9 @@ export class CodeReviewProblemManager {
           status: res.response?.status,
           headers: res.response?.headers,
         }));
-      // @ts-expect-error: Backend Swagger schema mismatch
       return {
         success: true,
-        data: response.data
-          ? fixProblemNewlines(response.data as Partial<CodeReviewProblem>)
-          : response.data,
+        data: response.data ? fixProblemNewlines(response.data) : response.data,
       };
     } catch (error) {
       return {
