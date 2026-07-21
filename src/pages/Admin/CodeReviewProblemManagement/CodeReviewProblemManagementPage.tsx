@@ -204,10 +204,27 @@ export function CodeReviewProblemManagementPage() {
           <CodeReviewProblemBuilder
             initialData={view.mode === "edit" ? view.problem : undefined}
             onSuccess={() => {
-              handleBack();
+              if (view.mode === "edit" && selectedProblem) {
+                void codeReviewProblemManager.getById(selectedProblem.id).then((res) => {
+                  if (res.success && res.data) {
+                    setSelectedProblem(res.data);
+                    setView({ mode: "detail", problemId: selectedProblem.id });
+                  } else {
+                    handleBack();
+                  }
+                });
+              } else {
+                handleBack();
+              }
               void loadProblems(true);
             }}
-            onCancel={handleBack}
+            onCancel={() => {
+              if (view.mode === "edit" && selectedProblem) {
+                setView({ mode: "detail", problemId: selectedProblem.id });
+              } else {
+                handleBack();
+              }
+            }}
           />
         </div>
       </div>
