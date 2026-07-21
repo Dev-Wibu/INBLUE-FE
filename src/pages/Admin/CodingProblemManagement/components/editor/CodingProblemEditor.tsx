@@ -190,38 +190,35 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
   return (
     <div className="flex h-full flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950">
       {/* ── TOP BAR ──────────────────────────────────────────────────────────── */}
-      <div className="flex h-14 flex-none items-center justify-between border-b border-slate-200/80 bg-white/80 px-6 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/80">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-none items-center justify-between border-b border-slate-200/60 bg-white/50 px-6 py-4 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-900/50">
+        <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="group flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100">
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-200">
+            <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
           <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
               {formData.title || "Tạo Bài Tập Mới"}
+              {formData.id ? ` (#${formData.id})` : ""}
             </h2>
-            <p className="text-[11px] font-medium text-slate-500">
-              {formData.id ? `ID: #${formData.id}` : "Chưa lưu"}
-            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
             onClick={onBack}
-            className="h-8 border-slate-200 bg-white text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+            className="h-9 border-slate-200 bg-white text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
             Hủy bỏ
           </Button>
           <Button
             onClick={handleSave}
             disabled={isSubmitting}
-            className="h-8 bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+            className="h-9 rounded-md bg-indigo-600 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700">
             {isSubmitting ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Save className="mr-1.5 h-3.5 w-3.5" />
+              <Save className="mr-2 h-4 w-4" />
             )}
             Lưu Bài Tập
           </Button>
