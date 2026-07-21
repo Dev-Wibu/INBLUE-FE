@@ -1,10 +1,3 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -13,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Edit, MoreHorizontal, Search, Trash2 } from "lucide-react";
+import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { QuestionBank, QuestionCategory } from "../types";
 
@@ -21,15 +14,9 @@ interface QuestionBankTableProps {
   questions: QuestionBank[];
   categories?: QuestionCategory[];
   onEdit: (_question: QuestionBank) => void;
-  onDelete: (_question: QuestionBank) => void;
 }
 
-export function QuestionBankTable({
-  questions,
-  categories = [],
-  onEdit,
-  onDelete,
-}: QuestionBankTableProps) {
+export function QuestionBankTable({ questions, categories = [], onEdit }: QuestionBankTableProps) {
   const { t } = useTranslation();
 
   const getCategoryName = (q: QuestionBank) => {
@@ -73,14 +60,17 @@ export function QuestionBankTable({
             </TableHead>
             <TableHead className="w-[150px] font-medium text-slate-500">Danh mục</TableHead>
             <TableHead className="w-[120px] font-medium text-slate-500">Độ khó</TableHead>
-            <TableHead className="w-[80px] text-right font-medium text-slate-500"></TableHead>
+            <TableHead className="w-[130px] text-right font-medium text-slate-500">
+              Ngày tạo
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {questions.map((q) => (
             <TableRow
               key={q.id}
-              className="group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+              onClick={() => onEdit(q)}
+              className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
               <TableCell className="py-4 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                 #{q.id}
               </TableCell>
@@ -111,30 +101,12 @@ export function QuestionBankTable({
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="py-4 text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
-                      <span className="sr-only">Mở menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem onClick={() => onEdit(q)} className="cursor-pointer gap-2">
-                      <Edit className="h-4 w-4 text-slate-500" />
-                      <span>{t("general.edit")}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onDelete(q)}
-                      className="cursor-pointer gap-2 text-rose-600 focus:text-rose-700 dark:text-rose-500 dark:focus:text-rose-400">
-                      <Trash2 className="h-4 w-4" />
-                      <span>{t("general.delete")}</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <TableCell className="py-4 text-right font-mono text-xs text-slate-500">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {(q as any).createdAt
+                  ? /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                    new Date((q as any).createdAt).toLocaleDateString("vi-VN")
+                  : "-"}
               </TableCell>
             </TableRow>
           ))}

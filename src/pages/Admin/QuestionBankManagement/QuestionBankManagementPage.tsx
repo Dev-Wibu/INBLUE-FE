@@ -216,7 +216,6 @@ export function QuestionBankManagementPage() {
                     questions={pageItems}
                     categories={categories}
                     onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
                   />
                 </div>
                 {questions.length > 0 && (
@@ -253,6 +252,14 @@ export function QuestionBankManagementPage() {
           onSubmit={handleFormSubmit}
           categories={categories}
           onCreateCategory={handleCreateCategory}
+          onDelete={
+            editingQuestion
+              ? () => {
+                  setIsFormOpen(false);
+                  handleDeleteClick(editingQuestion);
+                }
+              : undefined
+          }
           title={
             editingQuestion ? t("question.updateQuestion") : t("adminQuizProblem.addNewQuestion")
           }

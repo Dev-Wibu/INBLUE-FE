@@ -34,6 +34,7 @@ interface QuestionBankFormDialogProps {
   submitLabel: string;
   categories: QuestionCategory[];
   onCreateCategory?: (name: string) => Promise<number | undefined>;
+  onDelete?: () => void;
 }
 
 export function QuestionBankFormDialog({
@@ -47,6 +48,7 @@ export function QuestionBankFormDialog({
   submitLabel,
   categories,
   onCreateCategory,
+  onDelete,
 }: QuestionBankFormDialogProps) {
   const { t } = useTranslation();
 
@@ -462,16 +464,29 @@ export function QuestionBankFormDialog({
         </div>
 
         <div className="sticky bottom-0 border-t border-slate-200 bg-slate-50/80 p-6 backdrop-blur-md dark:border-slate-800 dark:bg-[#0F172A]/80">
-          <div className="flex items-center justify-end gap-3">
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              {t("general.cancel")}
-            </Button>
-            <Button
-              onClick={onSubmit}
-              disabled={aiLoading || !formData.questionCategoryId}
-              className="bg-indigo-600 text-white shadow-md hover:bg-indigo-700">
-              {submitLabel}
-            </Button>
+          <div className="flex items-center justify-between">
+            <div>
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  onClick={onDelete}
+                  className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {t("general.delete")}
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                {t("general.cancel")}
+              </Button>
+              <Button
+                onClick={onSubmit}
+                disabled={aiLoading || !formData.questionCategoryId}
+                className="bg-indigo-600 text-white shadow-md hover:bg-indigo-700">
+                {submitLabel}
+              </Button>
+            </div>
           </div>
         </div>
       </SheetContent>
