@@ -1619,6 +1619,11 @@ export function ApplicationMentorReviewPage() {
           <AwaitingMentorAssignmentStep />
         )}
 
+        {/* AI_EVALUATED status - mentor not yet assigned, show waiting message */}
+        {applicationDetail?.status === "AI_EVALUATED" &&
+          !applicationDetail?.mentorId &&
+          !isReviewed && <AwaitingMentorAssignmentStep />}
+
         {/* Slot selection — only when status === PENDING AND meetingType is unset.
             Outside of these preconditions the candidate is either waiting for
             admin to assign a mentor (AWAITING_MENTOR branch above) or already
