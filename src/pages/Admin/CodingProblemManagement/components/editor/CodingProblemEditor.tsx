@@ -19,6 +19,7 @@ import {
   PlaySquare,
   Plus,
   Save,
+  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
