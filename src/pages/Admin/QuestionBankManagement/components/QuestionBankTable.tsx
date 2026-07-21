@@ -119,17 +119,24 @@ export function QuestionBankTable({
                   #{q.id}
                 </TableCell>
                 <TableCell>
-                  <div className="flex max-w-[800px] flex-col gap-1">
+                  <div className="flex max-w-[800px] items-center">
                     <p
-                      className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
+                      className="flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
                       title={q.questionText}>
                       {q.questionText || "Chưa có nội dung"}
                     </p>
-                    {/* Dummy element to force the exact same height as the Coding table's 2-line testcase block */}
+                    {/* Dummy element to force exactly identical row height as Coding table */}
                     <div
-                      className="flex items-center gap-1.5 text-[11px] opacity-0"
+                      className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
                       aria-hidden="true">
-                      <span>&nbsp;</span>
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="h-3.5 w-3.5"></span>
+                        <span>ẩn</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="h-3.5 w-3.5"></span>
+                        <span>mẫu</span>
+                      </div>
                     </div>
                   </div>
                 </TableCell>
