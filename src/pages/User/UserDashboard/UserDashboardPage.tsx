@@ -30,15 +30,12 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import {
   Bot,
   Briefcase,
-  History,
   LayoutDashboard,
   LogOut,
   MessageSquare,
   Newspaper,
   UserCircle,
   User as UserIcon,
-  Users,
-  Video,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -46,25 +43,16 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { toast } from "sonner";
 import { AIInterviewListPage } from "../AIInterview";
 import { ApplicationHistoryPage } from "../ApplicationHistory";
-import { UserFeedbackListPage } from "../Feedback";
 import { HomeFeedPage } from "../HomeFeed";
-import { KioskBookingListPage } from "../Kiosk/KioskBookingListPage";
-import { KioskEntryPage } from "../Kiosk/KioskEntryPage";
 import { MentorListPage } from "../MentorList/MentorListPage";
 import { MessengerPage } from "../Messenger";
-import { MockInterviewListPage, SessionHistoryPage } from "../MockInterview";
 import { UserNotificationsPage } from "../Notifications";
 import { OverviewPage } from "../Overview";
 type TabType =
   | "homeFeed"
   | "overview"
   | "mentors"
-  | "mockInterview"
-  | "interviewHistory"
   | "applicationHistory"
-  | "feedback"
-  | "kioskBookings"
-  | "kioskEntry"
   | "aiInterview"
   | "notifications"
   | "messenger";
@@ -73,12 +61,7 @@ const isValidTabType = (value: string): value is TabType => {
     "homeFeed",
     "overview",
     "mentors",
-    "mockInterview",
-    "interviewHistory",
     "applicationHistory",
-    "feedback",
-    "kioskBookings",
-    "kioskEntry",
     "aiInterview",
     "notifications",
     "messenger",
@@ -103,28 +86,8 @@ const getAvailableTabs = (
     label: t("common.mentors"),
   },
   {
-    type: "mockInterview",
-    label: t("common.interviewWithMentor"),
-  },
-  {
-    type: "interviewHistory",
-    label: t("common.interviewHistory"),
-  },
-  {
     type: "applicationHistory",
     label: t("common.application"),
-  },
-  {
-    type: "feedback",
-    label: t("common.feedbackFromMentors"),
-  },
-  {
-    type: "kioskBookings",
-    label: t("common.myKioskBookings"),
-  },
-  {
-    type: "kioskEntry",
-    label: t("common.joinInterview"),
   },
   {
     type: "aiInterview",
@@ -171,36 +134,6 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
         icon: UserIcon,
         label: t("common.mentors"),
         color: "text-indigo-600",
-      },
-      {
-        type: "mockInterview",
-        icon: Users,
-        label: t("common.interviewWithMentor"),
-        color: "text-purple-600",
-      },
-      {
-        type: "interviewHistory",
-        icon: History,
-        label: t("common.interview"),
-        color: "text-orange-600",
-      },
-      {
-        type: "feedback",
-        icon: MessageSquare,
-        label: t("common.feedbackFromMentors"),
-        color: "text-cyan-600",
-      },
-      {
-        type: "kioskBookings",
-        icon: History,
-        label: t("common.myKioskBookings"),
-        color: "text-emerald-600",
-      },
-      {
-        type: "kioskEntry",
-        icon: Video,
-        label: t("common.joinInterview"),
-        color: "text-rose-600",
       },
     ],
   },
@@ -337,18 +270,8 @@ export function UserDashboardPage() {
         return <OverviewPage />;
       case "mentors":
         return <MentorListPage />;
-      case "mockInterview":
-        return <MockInterviewListPage />;
-      case "interviewHistory":
-        return <SessionHistoryPage />;
       case "applicationHistory":
         return <ApplicationHistoryPage />;
-      case "feedback":
-        return <UserFeedbackListPage />;
-      case "kioskBookings":
-        return <KioskBookingListPage />;
-      case "kioskEntry":
-        return <KioskEntryPage />;
       case "aiInterview":
         return <AIInterviewListPage />;
       case "notifications":
