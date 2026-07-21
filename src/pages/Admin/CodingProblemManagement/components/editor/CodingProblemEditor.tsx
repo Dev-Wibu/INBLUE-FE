@@ -199,29 +199,9 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
           </button>
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-              {formData.title || "Tạo Bài Tập Mới"}
-              {formData.id ? ` (#${formData.id})` : ""}
+              {formData.id ? "Chi tiết vòng coding" : "Tạo vòng coding mới"}
             </h2>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="h-9 border-slate-200 bg-white text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-            Hủy bỏ
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isSubmitting}
-            className="h-9 rounded-md bg-indigo-600 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700">
-            {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-4 w-4" />
-            )}
-            Lưu Bài Tập
-          </Button>
         </div>
       </div>
 
@@ -298,13 +278,20 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
               {/* RIGHT: Configuration */}
               <div className="flex w-[480px] shrink-0 flex-col overflow-y-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
-                <div className="flex flex-none items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-900/50">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
-                    <Code2 className="h-3.5 w-3.5" />
+                <div className="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800/50 dark:bg-slate-900/50">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                      <Code2 className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                      Cấu Hình Bài Tập
+                    </span>
                   </div>
-                  <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                    Cấu Hình Bài Tập
-                  </span>
+                  {formData.id && (
+                    <div className="flex items-center gap-1 rounded-md border border-indigo-100/50 bg-indigo-50 px-2.5 py-1 text-[11px] font-bold tracking-wide text-indigo-700 shadow-sm dark:border-indigo-800/30 dark:bg-indigo-900/30 dark:text-indigo-400">
+                      ID: #{formData.id}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-5">
@@ -682,6 +669,20 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                       )}
                     </div>
                   </div>
+                </div>
+
+                <div className="flex flex-none items-center justify-end border-t border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800/50 dark:bg-slate-900/50">
+                  <Button
+                    onClick={handleSave}
+                    disabled={isSubmitting}
+                    className="h-10 w-full rounded-xl bg-indigo-600 px-4 font-bold text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-700">
+                    {isSubmitting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="mr-2 h-4 w-4" />
+                    )}
+                    Lưu Bài Tập
+                  </Button>
                 </div>
               </div>
             </div>
