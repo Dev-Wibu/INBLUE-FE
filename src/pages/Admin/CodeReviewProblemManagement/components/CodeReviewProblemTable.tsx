@@ -86,7 +86,7 @@ export function CodeReviewProblemTable({
               <TableRow
                 key={p.id}
                 onClick={() => onViewDetail(p)}
-                className={`group h-[68px] cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                className={`group h-[60px] cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
                   !isActive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
                 <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
