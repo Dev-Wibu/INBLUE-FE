@@ -1,5 +1,5 @@
 export { KioskFormDialog } from "./KioskFormDialog";
-export { KioskHistoryDialog } from "./KioskHistoryDialog";
+export { KioskHistoryTab } from "./KioskHistoryTab";
+export { KioskScheduleGrid } from "./KioskScheduleGrid";
 export { KioskTable, type KioskTableRow } from "./KioskTable";
 export { ScheduleFormDialog } from "./ScheduleFormDialog";
-export { ScheduleTable } from "./ScheduleTable";

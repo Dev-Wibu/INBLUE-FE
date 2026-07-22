@@ -6,7 +6,7 @@ import { Building2, Plus, Search, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { KioskFormDialog, KioskHistoryDialog, KioskTable, type KioskTableRow } from "./components";
+import { KioskFormDialog, KioskTable, type KioskTableRow } from "./components";
 import type { Kiosk, KioskFormValues } from "./types";
 
 export function KioskManagementPage() {
@@ -19,9 +19,6 @@ export function KioskManagementPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingKiosk, setEditingKiosk] = useState<Kiosk | null>(null);
-
-  const [historyKiosk, setHistoryKiosk] = useState<Kiosk | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
 
   const filteredKiosks = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -89,11 +86,6 @@ export function KioskManagementPage() {
   const openEdit = (kiosk: Kiosk) => {
     setEditingKiosk(kiosk);
     setFormOpen(true);
-  };
-
-  const openHistory = (kiosk: Kiosk) => {
-    setHistoryKiosk(kiosk);
-    setHistoryOpen(true);
   };
 
   const closeForm = () => {
@@ -212,7 +204,6 @@ export function KioskManagementPage() {
           isLoading={isInitialLoading}
           onEdit={openEdit}
           onToggleStatus={handleToggleStatus}
-          onViewHistory={openHistory}
           onCreate={openCreate}
         />
       </div>
@@ -229,8 +220,6 @@ export function KioskManagementPage() {
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
       />
-
-      <KioskHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} kiosk={historyKiosk} />
     </div>
   );
 }

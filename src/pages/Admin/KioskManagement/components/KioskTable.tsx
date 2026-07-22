@@ -3,7 +3,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
@@ -16,20 +15,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import {
-  Building2,
-  CheckCircle2,
-  ChevronRight,
-  Clock4,
-  History,
-  MapPin,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  PowerOff,
-} from "lucide-react";
+import { Building2, Clock4, MapPin, MoreHorizontal, Pencil, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { Kiosk } from "../types";
 
 export interface KioskTableRow extends Kiosk {
@@ -41,7 +29,6 @@ interface KioskTableProps {
   isLoading?: boolean;
   onEdit: (kiosk: Kiosk) => void;
   onToggleStatus: (kiosk: Kiosk) => void;
-  onViewHistory?: (kiosk: Kiosk) => void;
   onCreate?: () => void;
   emptyMessage?: string;
 }
@@ -60,10 +47,10 @@ export function KioskTable({
   isLoading,
   onEdit,
   onToggleStatus,
-  onViewHistory,
   onCreate,
   emptyMessage,
 }: KioskTableProps) {
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -112,9 +99,6 @@ export function KioskTable({
             </TableHead>
             <TableHead className="min-w-[200px] font-medium text-slate-500">Vị trí trạm</TableHead>
             <TableHead className="w-[140px] font-medium text-slate-500">Lịch hoạt động</TableHead>
-            <TableHead className="w-[140px] font-medium text-slate-500">
-              Lịch sử phỏng vấn
-            </TableHead>
             <TableHead className="w-[100px] text-center font-medium text-slate-500">
               Bật/Tắt
             </TableHead>
@@ -133,7 +117,7 @@ export function KioskTable({
             return (
               <TableRow
                 key={kiosk.id}
-                onClick={() => onEdit(kiosk)}
+                onClick={() => navigate(`/admin/kiosk-management/${kiosk.id}`)}
                 className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
                   !isActive ? "opacity-60 grayscale-[30%]" : ""
                 }`}>
@@ -172,21 +156,6 @@ export function KioskTable({
                   </span>
                 </TableCell>
 
-                {/* Quick History trigger button */}
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  {onViewHistory && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onViewHistory(kiosk)}
-                      className="h-7 gap-1 border-slate-200 px-2 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 dark:border-slate-800 dark:text-indigo-400 dark:hover:bg-indigo-950/30">
-                      <History className="h-3 w-3" />
-                      Xem lịch sử
-                    </Button>
-                  )}
-                </TableCell>
-
                 {/* Status Switch */}
                 <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                   <Switch
@@ -218,49 +187,10 @@ export function KioskTable({
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52">
-                      {onViewHistory && (
-                        <DropdownMenuItem
-                          onClick={() => onViewHistory(kiosk)}
-                          className="cursor-pointer">
-                          <History className="mr-2 h-4 w-4 text-indigo-500" />
-                          Lịch sử đặt lịch
-                        </DropdownMenuItem>
-                      )}
-
-                      {kiosk.id && (
-                        <DropdownMenuItem asChild>
-                          <Link
-                            to={`/admin/kiosk-management/${kiosk.id}/schedules`}
-                            className="flex cursor-pointer items-center">
-                            <Clock4 className="mr-2 h-4 w-4 text-slate-500" />
-                            {t("adminKioskManagement.manageSchedules")}
-                            <ChevronRight className="ml-auto h-3.5 w-3.5 text-slate-400" />
-                          </Link>
-                        </DropdownMenuItem>
-                      )}
-
+                    <DropdownMenuContent align="end" className="w-44">
                       <DropdownMenuItem onClick={() => onEdit(kiosk)} className="cursor-pointer">
                         <Pencil className="mr-2 h-4 w-4 text-slate-500" />
                         {t("common.edit")}
-                      </DropdownMenuItem>
-
-                      <DropdownMenuSeparator />
-
-                      <DropdownMenuItem
-                        onClick={() => onToggleStatus(kiosk)}
-                        className="cursor-pointer">
-                        {isActive ? (
-                          <>
-                            <PowerOff className="mr-2 h-4 w-4 text-rose-500" />
-                            {t("adminKioskManagement.deactivate")}
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" />
-                            {t("adminKioskManagement.activate")}
-                          </>
-                        )}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

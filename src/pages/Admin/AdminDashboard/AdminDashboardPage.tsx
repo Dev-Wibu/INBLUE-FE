@@ -33,7 +33,7 @@ import { DashboardOverviewPage } from "../DashboardOverview";
 import { FeedbackManagementPage } from "../FeedbackManagement";
 import { InterviewTemplateDetailPage } from "../InterviewTemplateManagement/InterviewTemplateDetailPage";
 import { InterviewTemplateManagementPage } from "../InterviewTemplateManagement/InterviewTemplateManagementPage";
-import { KioskManagementPage, KioskSchedulePage } from "../KioskManagement";
+import { KioskDetailPage, KioskManagementPage } from "../KioskManagement";
 import { MentorManagementPage } from "../MentorManagement";
 import { NotificationManagementPage } from "../NotificationManagement";
 import { PostManagementPage } from "../PostManagement";
@@ -312,7 +312,7 @@ export function AdminDashboardPage() {
             <Route path="interviewTemplates/:id" element={<InterviewTemplateDetailPage />} />
             <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />
             <Route path="kiosk-management" element={<KioskManagementPage />} />
-            <Route path="kiosk-management/:kioskId/schedules" element={<KioskSchedulePage />} />
+            <Route path="kiosk-management/:kioskId" element={<KioskDetailPage />} />
             <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
             <Route path="codingProblems" element={<CodingProblemManagementPage />} />
           </Routes>
