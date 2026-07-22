@@ -720,7 +720,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Lấy danh sách các Kiosk đang hoạt động
+         * Lấy danh sách các Kiosk
          * @description Trả về danh sách tất cả các trạm Kiosk vật lý có trạng thái hoạt động (isActive = true).
          */
         get: operations["getAllKiosk"];
@@ -3501,10 +3501,10 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
             pageable?: components["schemas"]["PageableObject"];
             /** Format: int32 */
             numberOfElements?: number;
@@ -3519,19 +3519,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3591,6 +3591,33 @@ export interface components {
             endTime?: string;
             available?: boolean;
         };
+        CandidateInfoDto: {
+            /** Format: int32 */
+            userId?: number;
+            name?: string;
+            email?: string;
+            avatarUrl?: string;
+            cvUrl?: string;
+            targetRole?: string;
+            targetLevel?: string;
+            technicalSkills?: string[];
+        };
+        JobDescriptionInfoDto: {
+            /** Format: int64 */
+            jdId?: number;
+            title?: string;
+            /** @enum {string} */
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+            /** Format: double */
+            salaryMin?: number;
+            /** Format: double */
+            salaryMax?: number;
+            currency?: string;
+            /** Format: int64 */
+            companyId?: number;
+            companyName?: string;
+            companyLogo?: string;
+        };
         KioskHistoryResponseDto: {
             /** Format: int64 */
             bookingId?: number;
@@ -3598,16 +3625,10 @@ export interface components {
             kioskId?: number;
             /** Format: int64 */
             applicationDetailId?: number;
-            /** Format: int32 */
-            applicantUserId?: number;
-            applicantName?: string;
-            applicantEmail?: string;
-            avatarUrl?: string;
             /** Format: int64 */
             applicationId?: number;
-            /** Format: int64 */
-            jdId?: number;
-            jdTitle?: string;
+            candidateInfo?: components["schemas"]["CandidateInfoDto"];
+            jobDescriptionInfo?: components["schemas"]["JobDescriptionInfoDto"];
             /** Format: date-time */
             scheduledStart?: string;
             /** Format: date-time */
@@ -3618,6 +3639,8 @@ export interface components {
             notes?: string;
             /** Format: date-time */
             createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         JdPurchase: {
             /** Format: int64 */
@@ -3746,10 +3769,10 @@ export interface components {
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             environment?: components["schemas"]["Environment"];
             /** Format: int32 */
             beanDefinitionCount?: number;
@@ -3847,8 +3870,6 @@ export interface components {
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            elIgnored?: string;
-            isXml?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
             trimDirectiveWhitespaces?: string;
@@ -3859,6 +3880,8 @@ export interface components {
             includeCodas?: string[];
             urlPatterns?: string[];
             defaultContentType?: string;
+            elIgnored?: string;
+            isXml?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -3893,8 +3916,10 @@ export interface components {
             };
         };
         ServletContext: {
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
+            initParameterNames?: unknown;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -3902,20 +3927,18 @@ export interface components {
             /** Format: int32 */
             effectiveMinorVersion?: number;
             servletContextName?: string;
+            serverInfo?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            initParameterNames?: unknown;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -3993,9 +4016,9 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
+            secure?: boolean;
             /** Format: int32 */
             maxAge?: number;
-            secure?: boolean;
             domain?: string;
             httpOnly?: boolean;
             path?: string;
@@ -4006,8 +4029,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         AdminOpenJdResponseDto: {
             /** Format: int64 */
@@ -4167,30 +4190,6 @@ export interface components {
             appliedAt?: string;
             /** Format: date-time */
             updatedAt?: string;
-        };
-        CandidateInfoDto: {
-            /** Format: int32 */
-            userId?: number;
-            name?: string;
-            email?: string;
-            avatarUrl?: string;
-            cvUrl?: string;
-            profile?: components["schemas"]["CandidateProfile"];
-        };
-        JobDescriptionInfoDto: {
-            /** Format: int64 */
-            jdId?: number;
-            title?: string;
-            level?: string;
-            /** Format: double */
-            salaryMin?: number;
-            /** Format: double */
-            salaryMax?: number;
-            currency?: string;
-            /** Format: int64 */
-            companyId?: number;
-            companyName?: string;
-            companyLogo?: string;
         };
     };
     responses: never;
