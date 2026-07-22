@@ -11,7 +11,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { questionBankManager } from "@/services/question-bank.manager";
-import { Loader2, Plus, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { Loader2, Plus, Sparkles, Trash2, Wand2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -33,6 +33,22 @@ interface QuestionBankEditorProps {
   onSaved: () => void;
   onCreateCategory: (name: string) => Promise<number | undefined>;
 }
+
+const SUPPORTED_LANGUAGES = [
+  { label: "JavaScript", value: "javascript" },
+  { label: "TypeScript", value: "typescript" },
+  { label: "Java", value: "java" },
+  { label: "Python", value: "python" },
+  { label: "C++", value: "cpp" },
+  { label: "C#", value: "csharp" },
+  { label: "HTML", value: "html" },
+  { label: "CSS", value: "css" },
+  { label: "SQL", value: "sql" },
+  { label: "JSON", value: "json" },
+  { label: "Bash", value: "bash" },
+  { label: "Go", value: "go" },
+  { label: "PHP", value: "php" },
+];
 
 export function QuestionBankEditor({
   initialData,
@@ -190,12 +206,12 @@ export function QuestionBankEditor({
       if (!part) return;
       if (part.startsWith("```") && part.endsWith("```")) {
         const match = part.match(/```([^\n]*)\n([\s\S]*?)```/);
-        const lang = match && match[1] ? match[1].trim() : "java";
+        const lang = match && match[1] ? match[1].trim() : "javascript";
         const code = match ? match[2] : part.slice(3, -3);
         blocks.push({
           id: `b-${idx}`,
           type: "code",
-          lang,
+          lang: lang || "javascript",
           content: code,
         });
       } else {
@@ -206,7 +222,16 @@ export function QuestionBankEditor({
         });
       }
     });
-    return blocks.length > 0 ? blocks : [{ id: "b-0", type: "text" as const, content: "" }];
+
+    // Filter out redundant empty text blocks when multiple blocks exist
+    const filtered = blocks.filter((b) => {
+      if (b.type === "text" && b.content.trim() === "" && blocks.length > 1) {
+        return false;
+      }
+      return true;
+    });
+
+    return filtered.length > 0 ? filtered : [{ id: "b-0", type: "text" as const, content: "" }];
   };
 
   const serializeBlocks = (
@@ -215,7 +240,7 @@ export function QuestionBankEditor({
     return blocks
       .map((b) => {
         if (b.type === "code") {
-          return `\n\`\`\`${b.lang || "java"}\n${b.content}\n\`\`\`\n`;
+          return `\n\`\`\`${b.lang || "javascript"}\n${b.content}\n\`\`\`\n`;
         }
         return b.content;
       })
@@ -224,63 +249,57 @@ export function QuestionBankEditor({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] w-full max-w-6xl flex-col gap-0 overflow-hidden rounded-2xl p-0 [&>button]:hidden">
+      <DialogContent className="flex max-h-[90vh] w-full max-w-6xl flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 p-0 shadow-2xl dark:border-slate-800 [&>button]:hidden">
         <DialogHeader className="hidden">
           <DialogTitle>{initialData?.id ? "Chi tiết câu hỏi" : "Tạo câu hỏi mới"}</DialogTitle>
           <DialogDescription>Tạo hoặc chỉnh sửa câu hỏi trắc nghiệm</DialogDescription>
         </DialogHeader>
 
         <div className="flex h-full flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950">
-          {/* ── TOP BAR ──────────────────────────────────────────────────────────── */}
-          <div className="flex flex-none items-center justify-between border-b border-slate-200/60 bg-white/50 px-6 py-4 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-900/50">
-            <div className="flex items-center gap-4">
-              <div>
-                <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                  {initialData?.id ? "Chi tiết câu hỏi" : "Tạo câu hỏi mới"}
-                </h2>
-              </div>
-            </div>
+          {/* ── TOP BAR (Clean title + Close 'X' button) ────────────────────────── */}
+          <div className="flex flex-none items-center justify-between border-b border-slate-200/80 bg-white px-6 py-3.5 dark:border-slate-800/80 dark:bg-slate-900">
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-                className="h-9 px-4 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
-                {t("general.cancel")}
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting || aiLoading}
-                className="h-9 bg-indigo-600 px-6 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900">
-                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {initialData ? t("general.update", "Cập nhật") : t("general.save", "Lưu")}
-              </Button>
+              <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                {initialData?.id ? "Chi tiết câu hỏi" : "Tạo câu hỏi mới"}
+              </h2>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+              className="h-8 w-8 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+              <X className="h-5 w-5" />
+            </Button>
           </div>
 
-          {/* ── MAIN CONTENT (SPLIT PANE) ──────────────────────────────────────────────────────────── */}
-          <div className="flex min-h-[400px] flex-1 overflow-hidden">
+          {/* ── MAIN CONTENT (SPLIT PANE) ────────────────────────────────────────── */}
+          <div className="flex min-h-[420px] flex-1 overflow-hidden">
             {/* LEFT COLUMN: Question Text & AI */}
             <div className="flex flex-1 flex-col overflow-y-auto p-6 md:p-8">
               <div className="mx-auto w-full max-w-3xl space-y-5">
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-bold tracking-tight text-slate-800 dark:text-slate-200">
-                    Nội dung câu hỏi
+                  <Label className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                    Nội dung câu hỏi (Live Document)
                   </Label>
-                  <div className="flex items-center gap-3">
+                  {!showAI && (
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      onClick={() => setShowAI(!showAI)}
-                      className={`h-8 px-3 text-xs font-semibold transition-colors ${
-                        showAI
-                          ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300"
-                          : "text-slate-600 hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
-                      }`}>
-                      <Wand2 className="mr-1.5 h-3.5 w-3.5" />
-                      AI Magic
+                      className="h-7 gap-1 border-slate-200 px-2.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 dark:border-slate-800 dark:text-indigo-400 dark:hover:bg-indigo-950/30"
+                      onClick={() => {
+                        const blocks = parseBlocks(formData.questionText || "");
+                        blocks.push({
+                          id: `b-${Date.now()}`,
+                          type: "code",
+                          lang: "javascript",
+                          content: "// Thêm mã nguồn tại đây\n",
+                        });
+                        patch({ questionText: serializeBlocks(blocks) });
+                      }}>
+                      <Plus className="h-3.5 w-3.5" /> Chèn Code Block
                     </Button>
-                  </div>
+                  )}
                 </div>
 
                 {showAI && (
@@ -326,99 +345,94 @@ export function QuestionBankEditor({
                 )}
 
                 {!showAI && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                        Trình soạn thảo trực quan (Live Document)
-                      </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-7 gap-1 border-slate-200 px-2.5 text-xs hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
-                        onClick={() => {
-                          const blocks = parseBlocks(formData.questionText || "");
-                          blocks.push({
-                            id: `b-${Date.now()}`,
-                            type: "code",
-                            lang: "java",
-                            content: "// Thêm mã nguồn tại đây\n",
-                          });
-                          patch({ questionText: serializeBlocks(blocks) });
-                        }}>
-                        <Plus className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> Chèn Code
-                        Block
-                      </Button>
-                    </div>
-
-                    <div className="min-h-[320px] space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-                      {parseBlocks(formData.questionText || "").map((block, index, allBlocks) => {
-                        if (block.type === "code") {
-                          return (
-                            <div
-                              key={block.id}
-                              className="relative my-3 overflow-hidden rounded-xl border border-slate-800 bg-slate-900 shadow-md">
-                              <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/80 px-4 py-1.5 text-xs text-slate-400">
-                                <span className="font-mono font-bold text-emerald-400 uppercase">
-                                  {block.lang || "java"} CODE BLOCK
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const nextBlocks = allBlocks.filter((_, i) => i !== index);
+                  <div className="min-h-[360px] space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    {parseBlocks(formData.questionText || "").map((block, index, allBlocks) => {
+                      if (block.type === "code") {
+                        return (
+                          <div
+                            key={block.id}
+                            className="relative my-3 overflow-hidden rounded-xl border border-slate-800 bg-[#0f172a] shadow-md">
+                            <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/90 px-3.5 py-1.5 text-xs text-slate-400">
+                              <div className="flex items-center gap-2">
+                                <Select
+                                  value={block.lang || "javascript"}
+                                  onValueChange={(val) => {
+                                    const nextBlocks = [...allBlocks];
+                                    nextBlocks[index] = { ...block, lang: val };
                                     patch({ questionText: serializeBlocks(nextBlocks) });
-                                  }}
-                                  className="text-xs text-slate-500 hover:text-rose-400">
-                                  Xóa Code Block
-                                </button>
+                                  }}>
+                                  <SelectTrigger className="h-6 w-32 border-slate-700 bg-slate-900 font-mono text-xs font-bold text-emerald-400 focus:ring-0 dark:border-slate-700 dark:bg-slate-900">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent className="dark border-slate-800 bg-slate-900 text-slate-200">
+                                    {SUPPORTED_LANGUAGES.map((l) => (
+                                      <SelectItem
+                                        key={l.value}
+                                        value={l.value}
+                                        className="font-mono text-xs">
+                                        {l.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <span className="font-mono text-[10px] text-slate-500 uppercase">
+                                  CODE BLOCK
+                                </span>
                               </div>
-                              <Textarea
-                                value={block.content}
-                                onChange={(e) => {
-                                  const nextBlocks = [...allBlocks];
-                                  nextBlocks[index] = { ...block, content: e.target.value };
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const nextBlocks = allBlocks.filter((_, i) => i !== index);
                                   patch({ questionText: serializeBlocks(nextBlocks) });
                                 }}
-                                rows={Math.max(4, block.content.split("\n").length)}
-                                placeholder="Nhập mã nguồn..."
-                                className="w-full resize-y border-0 bg-transparent p-4 font-mono text-[13px] leading-relaxed text-emerald-400 focus:outline-none focus-visible:ring-0 dark:text-emerald-300"
-                              />
+                                className="text-xs text-slate-500 transition-colors hover:text-rose-400">
+                                Xóa Code Block
+                              </button>
                             </div>
-                          );
-                        }
-
-                        return (
-                          <Textarea
-                            key={block.id}
-                            value={block.content}
-                            onChange={(e) => {
-                              const nextBlocks = [...allBlocks];
-                              nextBlocks[index] = { ...block, content: e.target.value };
-                              patch({ questionText: serializeBlocks(nextBlocks) });
-                            }}
-                            rows={Math.max(3, block.content.split("\n").length)}
-                            placeholder="Nhập nội dung văn bản câu hỏi..."
-                            className="w-full resize-y rounded-xl border-slate-200 bg-slate-50/50 p-3.5 text-[14px] leading-relaxed text-slate-800 focus-visible:ring-indigo-500 dark:border-slate-800/60 dark:bg-slate-900/30 dark:text-slate-200"
-                          />
+                            <Textarea
+                              value={block.content}
+                              onChange={(e) => {
+                                const nextBlocks = [...allBlocks];
+                                nextBlocks[index] = { ...block, content: e.target.value };
+                                patch({ questionText: serializeBlocks(nextBlocks) });
+                              }}
+                              rows={Math.max(4, block.content.split("\n").length)}
+                              placeholder="Nhập mã nguồn..."
+                              className="w-full resize-y border-0 bg-transparent p-4 font-mono text-[13px] leading-relaxed text-emerald-400 focus:outline-none focus-visible:ring-0 dark:text-emerald-300"
+                            />
+                          </div>
                         );
-                      })}
-                    </div>
+                      }
+
+                      return (
+                        <Textarea
+                          key={block.id}
+                          value={block.content}
+                          onChange={(e) => {
+                            const nextBlocks = [...allBlocks];
+                            nextBlocks[index] = { ...block, content: e.target.value };
+                            patch({ questionText: serializeBlocks(nextBlocks) });
+                          }}
+                          rows={Math.max(3, block.content.split("\n").length)}
+                          placeholder="Nhập nội dung văn bản câu hỏi..."
+                          className="w-full resize-y rounded-xl border-slate-200 bg-slate-50/50 p-3.5 text-[14px] leading-relaxed text-slate-800 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* RIGHT COLUMN: Config & Options */}
-            <div className="w-[420px] flex-none overflow-y-auto border-l border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/30">
+            {/* RIGHT COLUMN: Config, Options & Footer Actions */}
+            <div className="w-[420px] flex-none overflow-y-auto border-l border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40">
               <div className="space-y-6 p-6">
                 {/* Category & Difficulty */}
-                <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                        {t("general.category")}
-                      </Label>
-                    </div>
+                <div className="space-y-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <div className="space-y-2.5">
+                    <Label className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                      {t("general.category")}
+                    </Label>
                     <Select
                       value={formData.questionCategoryId?.toString() || ""}
                       onValueChange={(val) => patch({ questionCategoryId: parseInt(val) })}>
@@ -465,7 +479,7 @@ export function QuestionBankEditor({
                     </Select>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <Label className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                       {t("common.difficulty")}
                     </Label>
@@ -478,17 +492,17 @@ export function QuestionBankEditor({
                       className="justify-start gap-2">
                       <ToggleGroupItem
                         value="EASY"
-                        className={`flex-1 rounded-lg border px-3 text-xs font-medium transition-colors data-[state=on]:border-emerald-500 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:bg-emerald-950/30 dark:data-[state=on]:text-emerald-400`}>
+                        className={`flex-1 rounded-lg border px-3 text-xs font-medium transition-colors data-[state=on]:border-emerald-500 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:bg-emerald-950/40 dark:data-[state=on]:text-emerald-400`}>
                         Dễ
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="MEDIUM"
-                        className={`flex-1 rounded-lg border px-3 text-xs font-medium transition-colors data-[state=on]:border-amber-500 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:bg-amber-950/30 dark:data-[state=on]:text-amber-400`}>
+                        className={`flex-1 rounded-lg border px-3 text-xs font-medium transition-colors data-[state=on]:border-amber-500 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:bg-amber-950/40 dark:data-[state=on]:text-amber-400`}>
                         TB
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value="HARD"
-                        className={`flex-1 rounded-lg border px-3 text-xs font-medium transition-colors data-[state=on]:border-rose-500 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:bg-rose-950/30 dark:data-[state=on]:text-rose-400`}>
+                        className={`flex-1 rounded-lg border px-3 text-xs font-medium transition-colors data-[state=on]:border-rose-500 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:bg-rose-950/40 dark:data-[state=on]:text-rose-400`}>
                         Khó
                       </ToggleGroupItem>
                     </ToggleGroup>
@@ -552,6 +566,43 @@ export function QuestionBankEditor({
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* FOOTER ACTIONS (AI Magic, Hủy, Lưu/Cập nhật) */}
+                <div className="space-y-3 border-t border-slate-200 pt-5 dark:border-slate-800">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAI(!showAI)}
+                    className={`h-9 w-full justify-center text-xs font-semibold transition-colors ${
+                      showAI
+                        ? "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-300"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                    }`}>
+                    <Wand2 className="mr-1.5 h-3.5 w-3.5 text-indigo-500" />
+                    {showAI ? "Ẩn AI Magic" : "Sinh câu hỏi bằng AI Magic"}
+                  </Button>
+
+                  <div className="flex items-center justify-end gap-2.5">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => onOpenChange(false)}
+                      className="h-9 px-4 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">
+                      {t("general.cancel")}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={isSubmitting || aiLoading}
+                      className="h-9 bg-indigo-600 px-5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+                      {isSubmitting ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : null}
+                      {initialData ? t("general.update", "Cập nhật") : t("general.save", "Lưu")}
+                    </Button>
                   </div>
                 </div>
               </div>

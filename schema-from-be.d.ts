@@ -1661,6 +1661,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/kiosks/{kioskId}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy lịch sử tham gia/đặt lịch của trạm Kiosk
+         * @description Trả về toàn bộ danh sách lịch sử đặt lịch và sử dụng phỏng vấn của trạm Kiosk chọn, bao gồm thông tin ứng viên và trạng thái đặt lịch.
+         */
+        get: operations["getKioskHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/job-descriptions/{id}": {
         parameters: {
             query?: never;
@@ -2060,6 +2080,66 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getApplicationDetailsByApplicationId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/open-jds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy danh sách các JD theo công ty (Hỗ trợ lọc theo trạng thái hoặc lấy tất cả)
+         * @description Trả về danh sách các Job Description kèm thông tin công ty sở hữu và thống kê lượt ứng tuyển. Nếu truyền query param `status` (VD: OPEN, CLOSED, DRAFT) thì lọc theo trạng thái đó, nếu để trống/null thì lấy tất cả các trạng thái (ALL).
+         */
+        get: operations["getOpenJds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/jds/{jdId}/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy danh sách các lượt apply của một JD cụ thể
+         * @description Trả về danh sách các ứng viên đã ứng tuyển vào JD được chọn, thông tin ứng viên, điểm số tổng quan và vòng thi hiện tại.
+         */
+        get: operations["getApplicationsByJdId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/applications/{applicationId}/detail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy chi tiết sâu toàn diện của một đơn ứng tuyển (Application Detail)
+         * @description Trả về bức tranh toàn cảnh của 1 ứng viên: Hồ sơ cá nhân (Candidate Profile), CV link, JD info và kết quả từng vòng thi (điểm AI, AI feedback, điểm HR, HR note, kết quả final, submission data).
+         */
+        get: operations["getApplicationFullDetail"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3426,10 +3506,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3439,19 +3519,19 @@ export interface components {
             empty?: boolean;
         };
         PageableObject: {
-            /** Format: int32 */
-            pageNumber?: number;
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
-            unpaged?: boolean;
+            /** Format: int32 */
+            pageNumber?: number;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3510,6 +3590,34 @@ export interface components {
             /** Format: date-time */
             endTime?: string;
             available?: boolean;
+        };
+        KioskHistoryResponseDto: {
+            /** Format: int64 */
+            bookingId?: number;
+            /** Format: int64 */
+            kioskId?: number;
+            /** Format: int64 */
+            applicationDetailId?: number;
+            /** Format: int32 */
+            applicantUserId?: number;
+            applicantName?: string;
+            applicantEmail?: string;
+            avatarUrl?: string;
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int64 */
+            jdId?: number;
+            jdTitle?: string;
+            /** Format: date-time */
+            scheduledStart?: string;
+            /** Format: date-time */
+            scheduledEnd?: string;
+            /** @enum {string} */
+            status?: "AWAITING_MENTOR" | "MENTOR_ASSIGNED" | "ROOM_CREATED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+            sessionKey?: string;
+            notes?: string;
+            /** Format: date-time */
+            createdAt?: string;
         };
         JdPurchase: {
             /** Format: int64 */
@@ -3635,9 +3743,9 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
+            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
@@ -3735,20 +3843,20 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
             taglibs?: components["schemas"]["TaglibDescriptor"][];
+            jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             elIgnored?: string;
-            trimDirectiveWhitespaces?: string;
+            isXml?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
+            trimDirectiveWhitespaces?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            isXml?: string;
             urlPatterns?: string[];
             defaultContentType?: string;
             buffer?: string;
@@ -3785,29 +3893,29 @@ export interface components {
             };
         };
         ServletContext: {
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
-            serverInfo?: string;
             servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             initParameterNames?: unknown;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -3887,11 +3995,11 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
-            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
-            name?: string;
+            httpOnly?: boolean;
             path?: string;
+            name?: string;
             attributes?: {
                 [key: string]: string;
             };
@@ -3900,6 +4008,189 @@ export interface components {
         TaglibDescriptor: {
             taglibURI?: string;
             taglibLocation?: string;
+        };
+        AdminOpenJdResponseDto: {
+            /** Format: int64 */
+            jdId?: number;
+            title?: string;
+            description?: string;
+            requirements?: string;
+            benefits?: string;
+            /** @enum {string} */
+            level?: "INTERN" | "FRESHER" | "JUNIOR" | "MIDDLE";
+            /** Format: double */
+            salaryMin?: number;
+            /** Format: double */
+            salaryMax?: number;
+            currency?: string;
+            /** Format: int64 */
+            price?: number;
+            /** @enum {string} */
+            status?: "OPEN" | "CLOSED" | "DRAFT";
+            /** Format: int32 */
+            roundsCount?: number;
+            /** Format: date-time */
+            deadlineAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            company?: components["schemas"]["CompanySummaryDto"];
+            statistics?: components["schemas"]["ApplicationStatisticsDto"];
+        };
+        ApplicationStatisticsDto: {
+            /** Format: int32 */
+            totalApplications?: number;
+            /** Format: int32 */
+            inProgressCount?: number;
+            /** Format: int32 */
+            passedCount?: number;
+            /** Format: int32 */
+            failedCount?: number;
+        };
+        CompanySummaryDto: {
+            /** Format: int64 */
+            id?: number;
+            name?: string;
+            logoUrl?: string;
+            bannerUrl?: string;
+            status?: string;
+        };
+        AdminApplicationSummaryDto: {
+            /** Format: int64 */
+            applicationId?: number;
+            /** Format: int32 */
+            userId?: number;
+            candidateName?: string;
+            candidateEmail?: string;
+            avatarUrl?: string;
+            targetRole?: string;
+            targetLevel?: string;
+            /** @enum {string} */
+            status?: "IN_PROGRESS" | "PASSED" | "FAILED" | "SOFT_FAILED";
+            /** Format: double */
+            overallScore?: number;
+            /** Format: int32 */
+            currentRoundOrder?: number;
+            currentRoundName?: string;
+            /** Format: date-time */
+            appliedAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        AdminJdApplicationsResponseDto: {
+            jdInfo?: components["schemas"]["JdSummaryDto"];
+            summaryStatistics?: components["schemas"]["SummaryStatisticsDto"];
+            applications?: components["schemas"]["AdminApplicationSummaryDto"][];
+        };
+        JdSummaryDto: {
+            /** Format: int64 */
+            jdId?: number;
+            jdTitle?: string;
+            companyName?: string;
+            companyLogo?: string;
+            /** Format: int32 */
+            totalRounds?: number;
+        };
+        SummaryStatisticsDto: {
+            /** Format: int32 */
+            totalApplications?: number;
+            /** Format: int32 */
+            inProgressCount?: number;
+            /** Format: int32 */
+            passedCount?: number;
+            /** Format: int32 */
+            failedCount?: number;
+            /** Format: double */
+            avgOverallScore?: number;
+        };
+        AdminApplicationFullDetailResponseDto: {
+            applicationOverview?: components["schemas"]["ApplicationOverviewDto"];
+            jobDescriptionInfo?: components["schemas"]["JobDescriptionInfoDto"];
+            candidateInfo?: components["schemas"]["CandidateInfoDto"];
+            roundDetails?: components["schemas"]["AdminRoundDetailDto"][];
+        };
+        AdminRoundDetailDto: {
+            /** Format: int64 */
+            applicationDetailId?: number;
+            /** Format: int64 */
+            roundId?: number;
+            /** Format: int32 */
+            roundOrder?: number;
+            roundName?: string;
+            /** @enum {string} */
+            roundType?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "CODING" | "CODE_REVIEW" | "MENTROR_REVIEW" | "AI_INTERVIEW";
+            /** Format: double */
+            passThreshold?: number;
+            /** Format: int32 */
+            reviewerId?: number;
+            roundConfig?: components["schemas"]["RoundConfig"];
+            /** @enum {string} */
+            status?: "PENDING" | "AWAITING_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            /** Format: double */
+            aiScore?: number;
+            aiFeedback?: components["schemas"]["AiFeedback"];
+            /** Format: double */
+            hrScore?: number;
+            hrNote?: string;
+            /** Format: double */
+            finalScore?: number;
+            /** @enum {string} */
+            finalResult?: "PASSED" | "FAILED";
+            submissionData?: components["schemas"]["SubmissionData"];
+            sessionInfo?: components["schemas"]["RoundSessionInfo"];
+            /** Format: int32 */
+            mentorId?: number;
+            mentorReview?: components["schemas"]["MentorReview"];
+            /** Format: date-time */
+            startedAt?: string;
+            /** Format: date-time */
+            completedAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        ApplicationOverviewDto: {
+            /** Format: int64 */
+            applicationId?: number;
+            /** @enum {string} */
+            status?: "IN_PROGRESS" | "PASSED" | "FAILED" | "SOFT_FAILED";
+            /** Format: double */
+            overallScore?: number;
+            /** Format: int32 */
+            currentRoundOrder?: number;
+            currentRoundName?: string;
+            /** Format: int32 */
+            totalRounds?: number;
+            /** Format: date-time */
+            appliedAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        CandidateInfoDto: {
+            /** Format: int32 */
+            userId?: number;
+            name?: string;
+            email?: string;
+            avatarUrl?: string;
+            cvUrl?: string;
+            profile?: components["schemas"]["CandidateProfile"];
+        };
+        JobDescriptionInfoDto: {
+            /** Format: int64 */
+            jdId?: number;
+            title?: string;
+            level?: string;
+            /** Format: double */
+            salaryMin?: number;
+            /** Format: double */
+            salaryMax?: number;
+            currency?: string;
+            /** Format: int64 */
+            companyId?: number;
+            companyName?: string;
+            companyLogo?: string;
         };
     };
     responses: never;
@@ -6714,6 +7005,28 @@ export interface operations {
             };
         };
     };
+    getKioskHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kioskId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["KioskHistoryResponseDto"][];
+                };
+            };
+        };
+    };
     getById: {
         parameters: {
             query?: never;
@@ -7268,6 +7581,72 @@ export interface operations {
                 };
                 content: {
                     "*/*": Record<string, never>;
+                };
+            };
+        };
+    };
+    getOpenJds: {
+        parameters: {
+            query?: {
+                status?: "OPEN" | "CLOSED" | "DRAFT";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminOpenJdResponseDto"][];
+                };
+            };
+        };
+    };
+    getApplicationsByJdId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jdId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminJdApplicationsResponseDto"];
+                };
+            };
+        };
+    };
+    getApplicationFullDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AdminApplicationFullDetailResponseDto"];
                 };
             };
         };
