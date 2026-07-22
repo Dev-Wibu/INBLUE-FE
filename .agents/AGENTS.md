@@ -17,11 +17,11 @@ Always use shadcn/ui `<Table>` components (Table, TableHeader, TableBody, TableR
 - Container: `border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950`
 - TableHeader: `bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50` with `font-medium text-slate-500` (ID column `pl-6`, last column `pr-6`).
 - TableRow: `group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80`.
-- ID Column: `#ID` in `font-mono text-xs font-medium text-slate-500 dark:text-slate-400`.
+- ID Column: `#ID` in `font-mono text-xs font-medium text-slate-500 dark:text-slate-400` with `pl-6`.
 - Difficulty: Colored `Circle` icon (`h-2.5 w-2.5 fill-...`) with label.
 - Category: Badge pill `bg-slate-100/80 dark:bg-slate-800 px-2 py-0.5 rounded-md text-xs font-medium`.
-- Status: `<Switch className="data-[state=checked]:bg-emerald-500" />`.
-- Row Height Alignment: Row heights across tables in the same tab set MUST be identical for seamless tab transitions.
+- Status: `<Switch className="data-[state=checked]:bg-emerald-500" />` with `onClick={(e) => e.stopPropagation()}`.
+- Row Height Alignment: Row heights across tables in the same tab set MUST be identical for seamless tab transitions (use dummy hidden spacers if a table has single-line text while other tabs have 2-line detail cells).
 - Row actions: Click row directly or use a `<DropdownMenu>` with `MoreHorizontal` icon trigger.
 
 **Pagination & Table Layout Standard:**
