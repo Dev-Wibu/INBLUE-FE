@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { kioskManager, type KioskHistoryResponseDto } from "@/services/kiosk.manager";
 import { format } from "date-fns";
-import { Clock, History, Key, Search, User } from "lucide-react";
+import { Clock, History, Hourglass, Key, Search, User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -280,7 +280,8 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      <Hourglass className="h-3 w-3 text-slate-400" />
                       {getDuration(item.scheduledStart, item.scheduledEnd)}
                     </span>
                   </TableCell>
