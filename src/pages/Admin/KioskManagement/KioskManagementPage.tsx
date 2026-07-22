@@ -1,12 +1,12 @@
 import { ReloadButton } from "@/components/shared";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { kioskManager } from "@/services/kiosk.manager";
 import { Building2, Plus, Search, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { KioskFormDialog, KioskTable, type KioskTableRow } from "./components";
+import { KioskFormDialog, KioskHistoryDialog, KioskTable, type KioskTableRow } from "./components";
 import type { Kiosk, KioskFormValues } from "./types";
 
 export function KioskManagementPage() {
@@ -19,6 +19,9 @@ export function KioskManagementPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingKiosk, setEditingKiosk] = useState<Kiosk | null>(null);
+
+  const [historyKiosk, setHistoryKiosk] = useState<Kiosk | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const filteredKiosks = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -36,10 +39,7 @@ export function KioskManagementPage() {
       else setIsInitialLoading(true);
 
       try {
-        const [kiosksRes, ...scheduleResults] = await Promise.all([
-          kioskManager.getActiveKiosks(),
-          ...([] as []),
-        ]);
+        const kiosksRes = await kioskManager.getActiveKiosks();
 
         if (!kiosksRes.success) {
           toast.error(kiosksRes.error || t("adminKioskManagement.unableToLoadKiosks"));
@@ -59,7 +59,6 @@ export function KioskManagementPage() {
             };
           })
         );
-        void scheduleResults;
 
         const countMap = new Map(counts.map((c) => [c.id, c.scheduleCount]));
         const enriched: KioskTableRow[] = raw.map((k) => ({
@@ -90,6 +89,11 @@ export function KioskManagementPage() {
   const openEdit = (kiosk: Kiosk) => {
     setEditingKiosk(kiosk);
     setFormOpen(true);
+  };
+
+  const openHistory = (kiosk: Kiosk) => {
+    setHistoryKiosk(kiosk);
+    setHistoryOpen(true);
   };
 
   const closeForm = () => {
@@ -149,62 +153,57 @@ export function KioskManagementPage() {
   };
 
   return (
-    <div className="bg-background flex flex-col">
-      {/* Toolbar */}
-      <div className="border-border bg-card flex flex-col gap-4 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
+    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+      {/* ── TOOLBAR ──────────────────────────────────────────────────────────── */}
+      <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-3.5 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-3">
-          <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-50 text-pink-600 dark:bg-pink-950/60 dark:text-pink-400">
             <Building2 className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wider uppercase">
-              <Sparkles className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-500 uppercase">
+              <Sparkles className="h-3.5 w-3.5 text-pink-500" />
               {t("common.administration")}
             </div>
-            <h1 className="mt-0.5 text-xl font-bold tracking-tight">
+            <h1 className="mt-0.5 text-lg font-bold tracking-tight text-slate-900 dark:text-white">
               {t("adminKioskManagement.title")}
             </h1>
-            <p className="text-muted-foreground text-xs sm:text-sm">
-              {t("adminKioskManagement.description")}
-            </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative w-full sm:w-64">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+        <div className="flex items-center gap-2.5">
+          <div className="relative w-64">
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               type="search"
               placeholder={t("adminKioskManagement.searchPlaceholder")}
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              className="h-9 w-full pl-9"
+              className="h-8 pl-9 text-xs focus-visible:ring-pink-500"
             />
           </div>
           <ReloadButton onReload={() => void loadData(true)} isLoading={isReloading} size="sm" />
-          <button
+          <Button
             type="button"
             onClick={openCreate}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium shadow-sm transition-colors">
+            className="h-8 gap-1.5 bg-indigo-600 px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
             <Plus className="h-4 w-4" />
             {t("adminKioskManagement.createKioskButton")}
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Body */}
-      <div className="p-4 sm:px-6 sm:py-6">
-        {!isInitialLoading && filteredKiosks.length === 0 && (
-          <div className="border-border bg-muted/30 text-muted-foreground mb-4 flex items-center gap-2 rounded-xl border border-dashed px-4 py-3 text-xs">
-            <Search className="h-3.5 w-3.5" />
-            {searchQuery.trim().length > 0
-              ? t("adminKioskManagement.noSearchResults")
-              : t("adminKioskManagement.noKiosksHint")}
-            <Link
-              to="/admin/kiosk-bookings"
-              className="text-primary ml-auto font-semibold hover:underline">
-              {t("adminKioskManagement.goToBookings")} →
-            </Link>
+      {/* ── SCROLLABLE CONTENT AREA ────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        {searchQuery.trim().length > 0 && (
+          <div className="mb-3 flex items-center gap-2 px-6 pt-4">
+            <span className="text-xs text-slate-500">
+              Hiển thị{" "}
+              <strong className="text-slate-800 dark:text-slate-200">
+                {filteredKiosks.length}
+              </strong>{" "}
+              / <strong>{kiosks.length}</strong> trạm Kiosk
+            </span>
           </div>
         )}
 
@@ -213,10 +212,12 @@ export function KioskManagementPage() {
           isLoading={isInitialLoading}
           onEdit={openEdit}
           onToggleStatus={handleToggleStatus}
+          onViewHistory={openHistory}
           onCreate={openCreate}
         />
       </div>
 
+      {/* ── DIALOGS ────────────────────────────────────────────────────────── */}
       <KioskFormDialog
         key={`kiosk-form-${editingKiosk?.id ?? "new"}-${formOpen}`}
         open={formOpen}
@@ -228,6 +229,8 @@ export function KioskManagementPage() {
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
       />
+
+      <KioskHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} kiosk={historyKiosk} />
     </div>
   );
 }

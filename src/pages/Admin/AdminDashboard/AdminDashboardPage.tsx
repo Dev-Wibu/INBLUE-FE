@@ -79,6 +79,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         color: "text-indigo-600 dark:text-indigo-500",
       },
       {
+        type: "kiosk-management",
+        icon: CalendarDays,
+        label: t("adminKioskManagement.title"),
+        color: "text-pink-600 dark:text-pink-500",
+      },
+      {
         type: "notifications",
         icon: Bell,
         label: t("common.notification"),
@@ -118,12 +124,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         icon: UserCheck,
         label: t("adminMentorReviewAssignment.sidebarLabel"),
         color: "text-blue-600 dark:text-blue-500",
-      },
-      {
-        type: "kiosk-management",
-        icon: CalendarDays,
-        label: t("adminKioskManagement.title"),
-        color: "text-pink-600 dark:text-pink-500",
       },
     ],
   },

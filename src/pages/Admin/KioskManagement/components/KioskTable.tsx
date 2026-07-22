@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,6 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -15,17 +15,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { format } from "date-fns";
 import {
   Building2,
   CheckCircle2,
   ChevronRight,
   Clock4,
+  History,
   MapPin,
   MoreHorizontal,
   Pencil,
   Plus,
   PowerOff,
-  XCircle,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -40,8 +41,18 @@ interface KioskTableProps {
   isLoading?: boolean;
   onEdit: (kiosk: Kiosk) => void;
   onToggleStatus: (kiosk: Kiosk) => void;
+  onViewHistory?: (kiosk: Kiosk) => void;
   onCreate?: () => void;
   emptyMessage?: string;
+}
+
+function formatDate(dateStr?: string) {
+  if (!dateStr) return null;
+  try {
+    return format(new Date(dateStr), "dd/MM/yyyy HH:mm");
+  } catch {
+    return null;
+  }
 }
 
 export function KioskTable({
@@ -49,6 +60,7 @@ export function KioskTable({
   isLoading,
   onEdit,
   onToggleStatus,
+  onViewHistory,
   onCreate,
   emptyMessage,
 }: KioskTableProps) {
@@ -56,9 +68,9 @@ export function KioskTable({
 
   if (isLoading) {
     return (
-      <div className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
+      <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <div className="flex h-64 items-center justify-center">
-          <div className="border-primary/30 border-t-primary h-8 w-8 animate-spin rounded-full border-4" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600 dark:border-indigo-900 dark:border-t-indigo-400" />
         </div>
       </div>
     );
@@ -66,16 +78,20 @@ export function KioskTable({
 
   if (kiosks.length === 0) {
     return (
-      <div className="border-border bg-card flex h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed">
-        <div className="bg-muted text-muted-foreground flex h-14 w-14 items-center justify-center rounded-full">
-          <Building2 className="h-7 w-7" />
+      <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+          <Building2 className="h-6 w-6 text-slate-400 dark:text-slate-500" />
         </div>
         <div className="space-y-1 text-center">
-          <p className="text-foreground text-sm font-semibold">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
             {emptyMessage ?? t("adminKioskManagement.noKiosks")}
           </p>
           {onCreate && (
-            <Button variant="link" size="sm" onClick={onCreate} className="text-primary">
+            <Button
+              variant="link"
+              size="sm"
+              onClick={onCreate}
+              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <Plus className="mr-1 h-3.5 w-3.5" />
               {t("adminKioskManagement.createKioskButton")}
             </Button>
@@ -86,22 +102,25 @@ export function KioskTable({
   }
 
   return (
-    <div className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
+    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="font-semibold">{t("adminKioskManagement.nameColumn")}</TableHead>
-            <TableHead className="hidden font-semibold md:table-cell">
-              {t("adminKioskManagement.locationColumn")}
+            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
+            <TableHead className="min-w-[240px] font-medium text-slate-500">
+              Tên trạm Kiosk
             </TableHead>
-            <TableHead className="hidden font-semibold sm:table-cell">
-              {t("adminKioskManagement.schedulesColumn")}
+            <TableHead className="min-w-[200px] font-medium text-slate-500">Vị trí trạm</TableHead>
+            <TableHead className="w-[140px] font-medium text-slate-500">Lịch hoạt động</TableHead>
+            <TableHead className="w-[140px] font-medium text-slate-500">
+              Lịch sử phỏng vấn
             </TableHead>
-            <TableHead className="font-semibold">
-              {t("adminKioskManagement.statusColumn")}
+            <TableHead className="w-[100px] text-center font-medium text-slate-500">
+              Bật/Tắt
             </TableHead>
-            <TableHead className="text-right font-semibold">
-              {t("adminKioskManagement.actionsColumn")}
+            <TableHead className="w-[130px] font-medium text-slate-500">Ngày tạo</TableHead>
+            <TableHead className="w-[80px] pr-6 text-right font-medium text-slate-500">
+              Thao tác
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -109,88 +128,136 @@ export function KioskTable({
           {kiosks.map((kiosk) => {
             const k = kiosk as unknown as { isActive?: boolean; active?: boolean };
             const isActive = k.isActive ?? k.active ?? false;
+            const createdAtFormatted = formatDate(kiosk.createdAt);
+
             return (
-              <TableRow key={kiosk.id} className="hover:bg-muted/30">
+              <TableRow
+                key={kiosk.id}
+                onClick={() => onEdit(kiosk)}
+                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                  !isActive ? "opacity-60 grayscale-[30%]" : ""
+                }`}>
+                {/* ID Column */}
+                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                  #{kiosk.id}
+                </TableCell>
+
+                {/* Name */}
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-lg">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
                       <Building2 className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-foreground truncate text-sm font-semibold">
-                        {kiosk.name ?? `Kiosk #${kiosk.id}`}
+                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {kiosk.name ?? `Trạm Kiosk #${kiosk.id}`}
                       </p>
-                      <p className="text-muted-foreground text-xs">#{kiosk.id}</p>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <span className="text-muted-foreground inline-flex items-center gap-1.5 text-sm">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {kiosk.location ?? "—"}
+
+                {/* Location */}
+                <TableCell>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <MapPin className="h-3.5 w-3.5 text-rose-500" />
+                    {kiosk.location || "Chưa cập nhật vị trí"}
                   </span>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <Badge variant="secondary" className="gap-1">
-                    <Clock4 className="h-3 w-3" />
-                    {kiosk.scheduleCount ?? 0}
-                  </Badge>
-                </TableCell>
+
+                {/* Schedules count */}
                 <TableCell>
-                  {isActive ? (
-                    <Badge
-                      variant="default"
-                      className="gap-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
-                      <CheckCircle2 className="h-3 w-3" />
-                      {t("adminKioskManagement.active")}
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="text-muted-foreground gap-1">
-                      <PowerOff className="h-3 w-3" />
-                      {t("adminKioskManagement.inactive")}
-                    </Badge>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    <Clock4 className="h-3 w-3 text-indigo-500" />
+                    {kiosk.scheduleCount ?? 0} khung giờ
+                  </span>
+                </TableCell>
+
+                {/* Quick History trigger button */}
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  {onViewHistory && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onViewHistory(kiosk)}
+                      className="h-7 gap-1 border-slate-200 px-2 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 dark:border-slate-800 dark:text-indigo-400 dark:hover:bg-indigo-950/30">
+                      <History className="h-3 w-3" />
+                      Xem lịch sử
+                    </Button>
                   )}
                 </TableCell>
-                <TableCell className="text-right">
+
+                {/* Status Switch */}
+                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={() => onToggleStatus(kiosk)}
+                    className="shadow-xs data-[state=checked]:bg-emerald-500"
+                  />
+                </TableCell>
+
+                {/* Created Date */}
+                <TableCell>
+                  {createdAtFormatted ? (
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                      {createdAtFormatted}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </TableCell>
+
+                {/* Actions Dropdown */}
+                <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem asChild>
-                        {kiosk.id ? (
+                    <DropdownMenuContent align="end" className="w-52">
+                      {onViewHistory && (
+                        <DropdownMenuItem
+                          onClick={() => onViewHistory(kiosk)}
+                          className="cursor-pointer">
+                          <History className="mr-2 h-4 w-4 text-indigo-500" />
+                          Lịch sử đặt lịch
+                        </DropdownMenuItem>
+                      )}
+
+                      {kiosk.id && (
+                        <DropdownMenuItem asChild>
                           <Link
                             to={`/admin/kiosk-management/${kiosk.id}/schedules`}
-                            className="flex cursor-pointer items-center gap-2">
-                            <Clock4 className="h-4 w-4" />
+                            className="flex cursor-pointer items-center">
+                            <Clock4 className="mr-2 h-4 w-4 text-slate-500" />
                             {t("adminKioskManagement.manageSchedules")}
-                            <ChevronRight className="ml-auto h-3.5 w-3.5" />
+                            <ChevronRight className="ml-auto h-3.5 w-3.5 text-slate-400" />
                           </Link>
-                        ) : (
-                          <span className="text-muted-foreground flex items-center gap-2">
-                            <XCircle className="h-4 w-4" />
-                            {t("common.unavailable")}
-                          </span>
-                        )}
-                      </DropdownMenuItem>
+                        </DropdownMenuItem>
+                      )}
+
                       <DropdownMenuItem onClick={() => onEdit(kiosk)} className="cursor-pointer">
-                        <Pencil className="mr-2 h-4 w-4" />
+                        <Pencil className="mr-2 h-4 w-4 text-slate-500" />
                         {t("common.edit")}
                       </DropdownMenuItem>
+
                       <DropdownMenuSeparator />
+
                       <DropdownMenuItem
                         onClick={() => onToggleStatus(kiosk)}
                         className="cursor-pointer">
                         {isActive ? (
                           <>
-                            <PowerOff className="mr-2 h-4 w-4" />
+                            <PowerOff className="mr-2 h-4 w-4 text-rose-500" />
                             {t("adminKioskManagement.deactivate")}
                           </>
                         ) : (
                           <>
-                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" />
                             {t("adminKioskManagement.activate")}
                           </>
                         )}

@@ -11,6 +11,7 @@ export type PickSlotDtoRequest = components["schemas"]["PickSlotDtoRequest"];
 export type MentorInterviewBooking = components["schemas"]["KioskBooking"];
 export type KioskEnterDtoRequest = components["schemas"]["KioskEnterDtoRequest"];
 export type KioskEnterDtoResponse = components["schemas"]["KioskEnterDtoResponse"];
+export type KioskHistoryResponseDto = components["schemas"]["KioskHistoryResponseDto"];
 
 const toApiUrl = (path: string) =>
   `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}${path}`;
@@ -305,6 +306,30 @@ export class KioskManager {
       };
     } catch (error) {
       console.error("[KioskManager] enterKiosk error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  async getKioskHistory(kioskId: number): Promise<ApiResponse<KioskHistoryResponseDto[]>> {
+    try {
+      const response = await fetchClient
+        .GET("/api/kiosks/{kioskId}/history", {
+          params: { path: { kioskId } },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return {
+        success: true,
+        data: (response.data ?? []) as KioskHistoryResponseDto[],
+      };
+    } catch (error) {
+      console.error("[KioskManager] getKioskHistory error:", error);
       return {
         success: false,
         error: this.extractErrorMessage(error),
