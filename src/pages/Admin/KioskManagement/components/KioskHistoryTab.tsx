@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { kioskManager, type KioskHistoryResponseDto } from "@/services/kiosk.manager";
-import { format } from "date-fns";
+import { differenceInMinutes, format } from "date-fns";
 import { Clock, History, Key, Search, User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -93,6 +93,31 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
     }
   };
 
+  const getDuration = (start?: string, end?: string) => {
+    if (!start || !end) return "—";
+    try {
+      const diff = differenceInMinutes(new Date(end), new Date(start));
+      return diff > 0 ? `${diff}p` : "—";
+    } catch {
+      return "—";
+    }
+  };
+
+  const getLevelColor = (level?: string) => {
+    const l = (level || "").toUpperCase();
+    if (l.includes("FRESHER"))
+      return "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400";
+    if (l.includes("JUNIOR"))
+      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400";
+    if (l.includes("MIDDLE") || l.includes("MID"))
+      return "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400";
+    if (l.includes("SENIOR") || l.includes("LEAD") || l.includes("MANAGER"))
+      return "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400";
+    if (l.includes("INTERN"))
+      return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400";
+    return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+  };
+
   const statusFilters = [
     { id: "ALL", label: t("common.all") },
     { id: "COMPLETED", label: "Hoàn thành" },
@@ -170,16 +195,15 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
             <TableHeader>
               <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
                 <TableHead className="w-[80px] pl-6 font-medium text-slate-500">Mã</TableHead>
-                <TableHead className="min-w-[200px] font-medium text-slate-500">Ứng viên</TableHead>
-                <TableHead className="min-w-[200px] font-medium text-slate-500">
+                <TableHead className="w-[220px] font-medium text-slate-500">Ứng viên</TableHead>
+                <TableHead className="w-[200px] font-medium text-slate-500">
                   Vị trí ứng tuyển
                 </TableHead>
-                <TableHead className="w-[120px] font-medium text-slate-500">Cấp độ</TableHead>
-                <TableHead className="min-w-[140px] font-medium text-slate-500">
-                  Thời gian phỏng vấn
-                </TableHead>
-                <TableHead className="w-[140px] font-medium text-slate-500">Trạng thái</TableHead>
-                <TableHead className="w-[130px] pr-6 font-medium text-slate-500">
+                <TableHead className="w-[100px] font-medium text-slate-500">Cấp độ</TableHead>
+                <TableHead className="w-[140px] font-medium text-slate-500">Thời gian</TableHead>
+                <TableHead className="w-[90px] font-medium text-slate-500">Thời lượng</TableHead>
+                <TableHead className="w-[130px] font-medium text-slate-500">Trạng thái</TableHead>
+                <TableHead className="w-[120px] pr-6 font-medium text-slate-500">
                   Session Key
                 </TableHead>
               </TableRow>
@@ -230,7 +254,8 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                    <span
+                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider ${getLevelColor(item.jobDescriptionInfo?.level || item.candidateInfo?.targetLevel)}`}>
                       {item.jobDescriptionInfo?.level || item.candidateInfo?.targetLevel || "—"}
                     </span>
                   </TableCell>
@@ -245,6 +270,11 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                         {item.scheduledEnd && ` - ${formatTimeOnly(item.scheduledEnd)}`}
                       </div>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                      {getDuration(item.scheduledStart, item.scheduledEnd)}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <KioskStatusBadge status={item.status} />
