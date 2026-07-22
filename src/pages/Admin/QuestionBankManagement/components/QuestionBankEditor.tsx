@@ -614,40 +614,29 @@ export function QuestionBankEditor({
                 </div>
               </div>
 
-              {/* FOOTER ACTIONS (AI Magic & Save/Cancel Buttons) */}
-              <div className="space-y-3 border-t border-slate-200/80 bg-white p-5 dark:border-slate-800/80 dark:bg-slate-900">
+              {/* FOOTER ACTIONS (Grid 2 cols: AI Magic & Save/Update - No Cancel button) */}
+              <div className="grid grid-cols-2 gap-3 border-t border-slate-200/80 bg-white p-4 dark:border-slate-800/80 dark:bg-slate-900">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setShowAI(!showAI)}
-                  className={`h-9 w-full justify-center gap-2 border text-xs font-semibold shadow-sm transition-all ${
+                  onClick={() => setShowAI((p) => !p)}
+                  className={`h-10 w-full rounded-xl border-indigo-200 bg-white text-xs font-bold transition-all dark:border-indigo-800 dark:bg-slate-900 dark:hover:bg-indigo-900/40 ${
                     showAI
-                      ? "border-indigo-300 bg-indigo-100 text-indigo-800 dark:border-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200"
-                      : "border-indigo-200 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800/60 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50"
+                      ? "border-indigo-300 bg-indigo-50 text-indigo-700 shadow-inner dark:bg-indigo-950/60 dark:text-indigo-200"
+                      : "text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-300"
                   }`}>
-                  <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  {showAI ? "Ẩn Sinh Cấu Hỏi AI" : "Sinh Bằng AI Magic"}
+                  <Sparkles className="mr-1.5 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  {showAI ? "Ẩn Sinh AI" : "Tạo AI"}
                 </Button>
 
-                <div className="flex items-center justify-end gap-2.5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => onOpenChange(false)}
-                    className="h-9 px-4 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800">
-                    {t("general.cancel")}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || aiLoading}
-                    className="h-9 bg-indigo-600 px-6 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500">
-                    {isSubmitting ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-                    {initialData
-                      ? t("general.update", "Cập nhật")
-                      : t("general.save", "Tạo câu hỏi")}
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || aiLoading}
+                  className="h-10 w-full rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-sm shadow-indigo-500/20 transition-all hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500">
+                  {isSubmitting ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                  {initialData ? t("general.update", "Cập nhật") : t("general.save", "Tạo câu hỏi")}
+                </Button>
               </div>
             </div>
           </div>
