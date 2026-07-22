@@ -60,7 +60,7 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
       if (statusFilter !== "ALL" && item.status !== statusFilter) return false;
       const query = searchQuery.trim().toLowerCase();
       if (!query) return true;
-      const candidateName = item.candidateInfo?.fullName?.toLowerCase() || "";
+      const candidateName = item.candidateInfo?.name?.toLowerCase() || "";
       const candidateEmail = item.candidateInfo?.email?.toLowerCase() || "";
       const jobTitle = item.jobDescriptionInfo?.title?.toLowerCase() || "";
       const sessionKey = item.sessionKey?.toLowerCase() || "";
@@ -170,11 +170,11 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
             <TableHeader>
               <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
                 <TableHead className="w-[80px] pl-6 font-medium text-slate-500">Mã</TableHead>
-                <TableHead className="min-w-[220px] font-medium text-slate-500">Ứng viên</TableHead>
-                <TableHead className="min-w-[180px] font-medium text-slate-500">
-                  Vị trí phỏng vấn
+                <TableHead className="min-w-[200px] font-medium text-slate-500">Ứng viên</TableHead>
+                <TableHead className="min-w-[200px] font-medium text-slate-500">
+                  Vị trí ứng tuyển
                 </TableHead>
-                <TableHead className="w-[180px] font-medium text-slate-500">
+                <TableHead className="min-w-[140px] font-medium text-slate-500">
                   Thời gian phỏng vấn
                 </TableHead>
                 <TableHead className="w-[140px] font-medium text-slate-500">Trạng thái</TableHead>
@@ -195,18 +195,18 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                     <div className="flex items-center gap-2.5">
                       <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-800">
                         <AvatarImage
-                          src={item.candidateInfo?.avatar || undefined}
-                          alt={item.candidateInfo?.fullName || "Candidate"}
+                          src={item.candidateInfo?.avatarUrl || undefined}
+                          alt={item.candidateInfo?.name || "Candidate"}
                         />
                         <AvatarFallback className="bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                          {item.candidateInfo?.fullName?.charAt(0) || (
+                          {item.candidateInfo?.name?.charAt(0)?.toUpperCase() || (
                             <User className="h-3.5 w-3.5" />
                           )}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                          {item.candidateInfo?.fullName || "Ứng viên ẩn danh"}
+                          {item.candidateInfo?.name || "Ứng viên ẩn danh"}
                         </p>
                         <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                           {item.candidateInfo?.email || "—"}
@@ -215,11 +215,20 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <p
-                      className="truncate text-xs font-medium text-slate-800 dark:text-slate-200"
-                      title={item.jobDescriptionInfo?.title}>
-                      {item.jobDescriptionInfo?.title || "Chưa có vị trí"}
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="truncate text-xs font-semibold text-slate-800 dark:text-slate-200"
+                        title={item.jobDescriptionInfo?.title}>
+                        {item.jobDescriptionInfo?.title ||
+                          item.candidateInfo?.targetRole ||
+                          "Chưa có vị trí"}
+                      </p>
+                      <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                        {item.jobDescriptionInfo?.companyName ||
+                          item.candidateInfo?.targetLevel ||
+                          "—"}
+                      </p>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-0.5">

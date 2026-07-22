@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { kioskManager } from "@/services/kiosk.manager";
-import { ArrowLeft, CalendarDays, History, MapPin, Pencil, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarDays, History, MapPin, Pencil, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -327,23 +327,14 @@ export function KioskDetailPage() {
       </div>
 
       {/* ── SCROLLABLE CONTENT ───────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-900/20">
         {/* ── SCHEDULE GRID SECTION ────────────────────────────────── */}
-        <div className="border-b border-slate-200 bg-white px-6 py-5 dark:border-slate-800 dark:bg-slate-900/50">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-                {t("adminKioskManagement.scheduleGridTitle")}
-              </h2>
-            </div>
-            <Button
-              type="button"
-              onClick={() => openCreateSchedule("MONDAY")}
-              className="h-8 gap-1.5 bg-indigo-600 px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
-              <Plus className="h-4 w-4" />
-              {t("adminKioskManagement.createScheduleButton")}
-            </Button>
+        <div className="px-6 py-6">
+          <div className="mb-4 flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+              {t("adminKioskManagement.scheduleGridTitle")}
+            </h2>
           </div>
 
           <KioskScheduleGrid
@@ -356,9 +347,11 @@ export function KioskDetailPage() {
           />
         </div>
 
+        <div className="h-px w-full bg-slate-200/60 dark:bg-slate-800/60" />
+
         {/* ── HISTORY SECTION ──────────────────────────────────────── */}
-        <div>
-          <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-6 py-3.5 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="pb-6">
+          <div className="flex items-center gap-2 px-6 pt-6 pb-3">
             <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
               {t("adminKioskManagement.historyTitle")}

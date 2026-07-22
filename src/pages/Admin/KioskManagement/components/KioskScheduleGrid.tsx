@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Clock, Hourglass, Pencil, Plus } from "lucide-react";
+import { Clock, Hourglass, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { DayOfWeek, KioskSchedule } from "../types";
 import { DAYS_OF_WEEK } from "../types";
@@ -63,18 +63,22 @@ export function KioskScheduleGrid({
             return (
               <div
                 key={day}
+                onClick={() => onEditSchedule(schedule)}
                 className={cn(
-                  "flex min-h-[148px] flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900",
+                  "group flex min-h-[148px] cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700",
                   !isActive && "opacity-60"
                 )}>
                 <div>
                   <div className="mb-3 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                    <span className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
                       {t(`adminKioskManagement.days.${day}`)}
                     </span>
                     <button
                       type="button"
-                      onClick={() => onToggleStatus(schedule)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleStatus(schedule);
+                      }}
                       className={cn(
                         "h-2.5 w-2.5 cursor-pointer rounded-full ring-offset-1 transition-all hover:ring-2",
                         isActive
@@ -104,14 +108,6 @@ export function KioskScheduleGrid({
                     <Hourglass className="h-3 w-3" />
                     {schedule.slotDurationMinutes ?? "—"} {t("adminKioskManagement.minutes")}
                   </span>
-
-                  <button
-                    type="button"
-                    onClick={() => onEditSchedule(schedule)}
-                    className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/50 dark:hover:text-indigo-400"
-                    title={t("adminKioskManagement.editSchedule")}>
-                    <Pencil className="h-4 w-4" />
-                  </button>
                 </div>
               </div>
             );
