@@ -185,7 +185,19 @@
       "FRIDAY": "Thứ Sáu",
       "SATURDAY": "Thứ Bảy",
       "SUNDAY": "Chủ Nhật"
-    }
+    },
+    "noLocation": "Chưa cập nhật vị trí",
+    "createdAt": "Ngày tạo",
+    "scheduleTab": "Lịch hoạt động",
+    "historyTab": "Lịch sử phỏng vấn",
+    "searchHistoryPlaceholder": "Tìm theo ứng viên, vị trí, mã...",
+    "noHistory": "Chưa có lịch sử đặt lịch nào",
+    "minutes": "phút",
+    "addSchedule": "Thêm lịch",
+    "daysWithSchedule": "ngày có lịch",
+    "activeScheduleSummary": "khung giờ đang hoạt động",
+    "scheduleGridTitle": "Lịch hoạt động theo tuần",
+    "historyTitle": "Lịch sử đặt lịch & phỏng vấn"
   },
   "adminMentorReviewAssignment": {
     "pageTitle": "Phân công Mentor Review",

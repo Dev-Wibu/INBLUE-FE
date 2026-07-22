@@ -2,7 +2,6 @@ import { ReloadButton } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { kioskManager } from "@/services/kiosk.manager";
 import { ArrowLeft, CalendarDays, History, MapPin, Pencil, Plus, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -327,26 +326,17 @@ export function KioskDetailPage() {
         )}
       </div>
 
-      {/* ── CONTENT WITH TABS ────────────────────────────────────────── */}
+      {/* ── SCROLLABLE CONTENT ───────────────────────────────────────── */}
       <div className="flex-1 overflow-auto">
-        <Tabs defaultValue="schedules" className="flex h-full flex-col">
-          <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 dark:border-slate-800 dark:bg-slate-900">
-            <TabsList className="h-auto gap-4 rounded-none border-b-0 bg-transparent p-0">
-              <TabsTrigger
-                value="schedules"
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-0 py-3 text-sm font-medium text-slate-500 shadow-none transition-none data-[state=active]:border-indigo-600 data-[state=active]:text-slate-900 data-[state=active]:shadow-none dark:text-slate-400 dark:data-[state=active]:border-indigo-400 dark:data-[state=active]:text-white">
-                <CalendarDays className="mr-1.5 h-4 w-4" />
-                {t("adminKioskManagement.scheduleTab")}
-              </TabsTrigger>
-              <TabsTrigger
-                value="history"
-                className="relative rounded-none border-b-2 border-transparent bg-transparent px-0 py-3 text-sm font-medium text-slate-500 shadow-none transition-none data-[state=active]:border-indigo-600 data-[state=active]:text-slate-900 data-[state=active]:shadow-none dark:text-slate-400 dark:data-[state=active]:border-indigo-400 dark:data-[state=active]:text-white">
-                <History className="mr-1.5 h-4 w-4" />
-                {t("adminKioskManagement.historyTab")}
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Quick add schedule button (visible only on schedules tab) */}
+        {/* ── SCHEDULE GRID SECTION ────────────────────────────────── */}
+        <div className="border-b border-slate-200 bg-white px-6 py-5 dark:border-slate-800 dark:bg-slate-900/50">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+                {t("adminKioskManagement.scheduleGridTitle")}
+              </h2>
+            </div>
             <Button
               type="button"
               onClick={() => openCreateSchedule("MONDAY")}
@@ -356,23 +346,27 @@ export function KioskDetailPage() {
             </Button>
           </div>
 
-          {/* ── Schedules Tab ─────────────────────────────────────── */}
-          <TabsContent value="schedules" className="mt-0 flex-1 overflow-auto p-6">
-            <KioskScheduleGrid
-              kioskId={kioskId}
-              schedules={sortedSchedules}
-              isLoading={isLoading}
-              onCreateSchedule={openCreateSchedule}
-              onEditSchedule={openEditSchedule}
-              onToggleStatus={handleToggleScheduleStatus}
-            />
-          </TabsContent>
+          <KioskScheduleGrid
+            kioskId={kioskId}
+            schedules={sortedSchedules}
+            isLoading={isLoading}
+            onCreateSchedule={openCreateSchedule}
+            onEditSchedule={openEditSchedule}
+            onToggleStatus={handleToggleScheduleStatus}
+          />
+        </div>
 
-          {/* ── History Tab ────────────────────────────────────────── */}
-          <TabsContent value="history" className="mt-0 flex-1 overflow-auto">
-            <KioskHistoryTab kioskId={kioskId} />
-          </TabsContent>
-        </Tabs>
+        {/* ── HISTORY SECTION ──────────────────────────────────────── */}
+        <div>
+          <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-6 py-3.5 dark:border-slate-800 dark:bg-slate-900/50">
+            <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+              {t("adminKioskManagement.historyTitle")}
+            </h2>
+          </div>
+
+          <KioskHistoryTab kioskId={kioskId} />
+        </div>
       </div>
 
       {/* ── DIALOGS ────────────────────────────────────────────────── */}

@@ -185,7 +185,19 @@
       "FRIDAY": "Friday",
       "SATURDAY": "Saturday",
       "SUNDAY": "Sunday"
-    }
+    },
+    "noLocation": "Location not set",
+    "createdAt": "Created",
+    "scheduleTab": "Operating Schedule",
+    "historyTab": "Interview History",
+    "searchHistoryPlaceholder": "Search by candidate, position, code...",
+    "noHistory": "No booking history yet",
+    "minutes": "min",
+    "addSchedule": "Add schedule",
+    "daysWithSchedule": "days scheduled",
+    "activeScheduleSummary": "active time slots",
+    "scheduleGridTitle": "Weekly Operating Schedule",
+    "historyTitle": "Booking & Interview History"
   },
   "adminMentorReviewAssignment": {
     "pageTitle": "Mentor Review Assignment",
