@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { kioskManager, type KioskHistoryResponseDto } from "@/services/kiosk.manager";
-import { differenceInMinutes, format } from "date-fns";
+import { format } from "date-fns";
 import { Clock, History, Key, Search, User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -96,7 +96,15 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
   const getDuration = (start?: string, end?: string) => {
     if (!start || !end) return "—";
     try {
-      const diff = differenceInMinutes(new Date(end), new Date(start));
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      let diff =
+        endDate.getHours() * 60 +
+        endDate.getMinutes() -
+        (startDate.getHours() * 60 + startDate.getMinutes());
+      if (diff <= 0) diff += 24 * 60; // Handle cross-midnight or same time
+
       return diff > 0 ? `${diff}p` : "—";
     } catch {
       return "—";
