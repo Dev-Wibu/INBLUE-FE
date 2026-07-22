@@ -1712,6 +1712,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/jd-purchases/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyPurchases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/jd-purchases/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["checkPurchased"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/interview-sessions/{sessionId}": {
         parameters: {
             query?: never;
@@ -2456,6 +2488,8 @@ export interface components {
             status?: "OPEN" | "CLOSED" | "DRAFT";
             /** Format: date-time */
             deadlineAt?: string;
+            /** Format: int64 */
+            price?: number;
         };
         JobDescription: {
             /** Format: int64 */
@@ -2470,6 +2504,8 @@ export interface components {
             salaryMin?: number;
             /** Format: double */
             salaryMax?: number;
+            /** Format: int64 */
+            price?: number;
             rounds?: components["schemas"]["Round"][];
             /** Format: int32 */
             appliedCount?: number;
@@ -3094,6 +3130,8 @@ export interface components {
             deadlineAt?: string;
             /** Format: int64 */
             companyId?: number;
+            /** Format: int64 */
+            price?: number;
         };
         BasicInfo: {
             job_title?: string;
@@ -3388,10 +3426,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3403,17 +3441,17 @@ export interface components {
         PageableObject: {
             /** Format: int32 */
             pageNumber?: number;
-            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
         };
         SortObject: {
-            unsorted?: boolean;
             sorted?: boolean;
+            unsorted?: boolean;
             empty?: boolean;
         };
         Payment: {
@@ -3428,8 +3466,8 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
             transactionCode?: string;
-            /** @enum {string} */
-            paymentPurpose?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "DB_DESIGN" | "AI_INTERVIEW" | "FULLY_PAID" | "MENTOR_INTERVIEW";
+            /** Format: int64 */
+            jdId?: number;
         };
         ChatMessage: {
             /** Format: int32 */
@@ -3472,6 +3510,22 @@ export interface components {
             /** Format: date-time */
             endTime?: string;
             available?: boolean;
+        };
+        JdPurchase: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int32 */
+            userId?: number;
+            /** Format: int64 */
+            jdId?: number;
+            /** Format: int32 */
+            paymentId?: number;
+            /** @enum {string} */
+            status?: "PURCHASED" | "USED";
+            /** Format: date-time */
+            purchasedAt?: string;
+            /** Format: date-time */
+            usedAt?: string;
         };
         InterviewBlueprintResponse: {
             strategy_analysis?: string;
@@ -3581,9 +3635,9 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            applicationName?: string;
             autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
@@ -3685,18 +3739,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            elIgnored?: string;
             trimDirectiveWhitespaces?: string;
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
-            includeCodas?: string[];
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
-            elIgnored?: string;
+            includeCodas?: string[];
             isXml?: string;
-            defaultContentType?: string;
             urlPatterns?: string[];
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -3720,12 +3774,12 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            redirectView?: boolean;
             propagateQueryProperties?: boolean;
+            redirectView?: boolean;
+            attributesCSV?: string;
             attributesMap?: {
                 [key: string]: unknown;
             };
-            attributesCSV?: string;
             attributes?: {
                 [key: string]: string;
             };
@@ -3742,6 +3796,7 @@ export interface components {
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
+            serverInfo?: string;
             servletContextName?: string;
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
@@ -3750,10 +3805,9 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            serverInfo?: string;
+            initParameterNames?: unknown;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
-            initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -3833,19 +3887,19 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
+            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
-            path?: string;
             name?: string;
+            path?: string;
             attributes?: {
                 [key: string]: string;
             };
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
     };
     responses: never;
@@ -5181,9 +5235,7 @@ export interface operations {
     createPayment: {
         parameters: {
             query: {
-                amount: number;
-                userId: number;
-                paymentPurpose: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "DB_DESIGN" | "AI_INTERVIEW" | "FULLY_PAID" | "MENTOR_INTERVIEW";
+                jdId: number;
             };
             header?: never;
             path?: never;
@@ -6728,6 +6780,48 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["JobDescription"][];
+                };
+            };
+        };
+    };
+    getMyPurchases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["JdPurchase"][];
+                };
+            };
+        };
+    };
+    checkPurchased: {
+        parameters: {
+            query: {
+                jdId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": boolean;
                 };
             };
         };

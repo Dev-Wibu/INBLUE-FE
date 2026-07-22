@@ -12,9 +12,9 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { DeleteQuestionBankDialog } from "./components/DeleteQuestionBankDialog";
 import { QuestionBankCategoryTab } from "./components/QuestionBankCategoryTab";
-import { QuestionBankFormDialog } from "./components/QuestionBankFormDialog";
+import { QuestionBankEditor } from "./components/QuestionBankEditor";
 import { QuestionBankTable } from "./components/QuestionBankTable";
-import type { QuestionBank, QuestionBankFormData, QuestionCategory } from "./types";
+import type { QuestionBank, QuestionCategory } from "./types";
 
 export function QuestionBankManagementPage() {
   const { t } = useTranslation();
@@ -38,10 +38,9 @@ export function QuestionBankManagementPage() {
   const pageItems = questions.slice(pagination.startIndex, pagination.endIndex + 1);
 
   // Form State
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isAuthoring, setIsAuthoring] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<QuestionBank | null>(null);
-  const [formData, setFormData] = useState<Partial<QuestionBankFormData>>({});
 
   useEffect(() => {
     fetchData();
@@ -70,8 +69,7 @@ export function QuestionBankManagementPage() {
 
   const handleCreate = () => {
     setEditingQuestion(null);
-    setFormData({ options: ["", "", "", ""] });
-    setIsFormOpen(true);
+    setIsAuthoring(true);
   };
 
   const handleCreateCategory = async (categoryName: string) => {
@@ -91,48 +89,7 @@ export function QuestionBankManagementPage() {
 
   const handleEdit = (q: QuestionBank) => {
     setEditingQuestion(q);
-    setFormData({
-      questionCategoryId: q.questionCategory?.id,
-      questionLevel: q.questionLevel,
-      questionText: q.questionText,
-      options: q.options || [],
-      correctAnswer: q.correctAnswer,
-    });
-    setIsFormOpen(true);
-  };
-
-  const handleDeleteClick = (q: QuestionBank) => {
-    setEditingQuestion(q);
-    setIsDeleteOpen(true);
-  };
-
-  const handleFormSubmit = async () => {
-    if (!formData.questionCategoryId || !formData.questionLevel || !formData.questionText) {
-      toast.error(t("question.enterAllFields"));
-      return;
-    }
-
-    try {
-      let res;
-      if (editingQuestion?.id) {
-        res = await questionBankManager.update(
-          editingQuestion.id,
-          formData as QuestionBankFormData
-        );
-      } else {
-        res = await questionBankManager.create(formData as QuestionBankFormData);
-      }
-
-      if (res.success) {
-        toast.success(editingQuestion ? t("general.updateSuccess") : t("general.addSuccess"));
-        setIsFormOpen(false);
-        fetchData();
-      } else {
-        toast.error(res.error || t("compCodingSubmissionModal.errorOccurred"));
-      }
-    } catch {
-      toast.error(t("error.systemError"));
-    }
+    setIsAuthoring(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -275,35 +232,6 @@ export function QuestionBankManagementPage() {
           </TabsContent>
         </div>
 
-        <QuestionBankFormDialog
-          isOpen={isFormOpen}
-          onOpenChange={setIsFormOpen}
-          formData={formData}
-          onFormChange={setFormData}
-          onSubmit={handleFormSubmit}
-          categories={categories}
-          onCreateCategory={handleCreateCategory}
-          onDelete={
-            editingQuestion
-              ? () => {
-                  setIsFormOpen(false);
-                  handleDeleteClick(editingQuestion);
-                }
-              : undefined
-          }
-          title={
-            editingQuestion ? t("question.updateQuestion") : t("adminQuizProblem.addNewQuestion")
-          }
-          description={
-            editingQuestion ? t("question.editInfoInstructions") : t("question.createOrAi")
-          }
-          submitLabel={
-            editingQuestion
-              ? t("general.update", t("general.update"))
-              : t("general.create", t("general.addNew"))
-          }
-        />
-
         <DeleteQuestionBankDialog
           isOpen={isDeleteOpen}
           onOpenChange={setIsDeleteOpen}
@@ -311,6 +239,22 @@ export function QuestionBankManagementPage() {
           onConfirm={handleDeleteConfirm}
         />
       </Tabs>
+
+      {/* Editor Modal */}
+      {isAuthoring && (
+        <QuestionBankEditor
+          initialData={editingQuestion}
+          categories={categories}
+          isOpen={isAuthoring}
+          onOpenChange={setIsAuthoring}
+          onCreateCategory={handleCreateCategory}
+          onSaved={() => {
+            setIsAuthoring(false);
+            setEditingQuestion(null);
+            fetchData();
+          }}
+        />
+      )}
     </div>
   );
 }
