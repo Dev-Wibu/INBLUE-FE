@@ -75,10 +75,10 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
     });
   }, [history, searchQuery, statusFilter]);
 
-  const formatDateTime = (dateStr?: string) => {
+  const formatDateOnly = (dateStr?: string) => {
     if (!dateStr) return "—";
     try {
-      return format(new Date(dateStr), "dd/MM/yyyy HH:mm");
+      return format(new Date(dateStr), "dd/MM/yyyy");
     } catch {
       return dateStr;
     }
@@ -174,6 +174,7 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                 <TableHead className="min-w-[200px] font-medium text-slate-500">
                   Vị trí ứng tuyển
                 </TableHead>
+                <TableHead className="w-[120px] font-medium text-slate-500">Cấp độ</TableHead>
                 <TableHead className="min-w-[140px] font-medium text-slate-500">
                   Thời gian phỏng vấn
                 </TableHead>
@@ -224,23 +225,25 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
                           "Chưa có vị trí"}
                       </p>
                       <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                        {item.jobDescriptionInfo?.companyName ||
-                          item.candidateInfo?.targetLevel ||
-                          "—"}
+                        {item.jobDescriptionInfo?.companyName || "—"}
                       </p>
                     </div>
                   </TableCell>
                   <TableCell>
+                    <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                      {item.jobDescriptionInfo?.level || item.candidateInfo?.targetLevel || "—"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex flex-col gap-0.5">
-                      <span className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
-                        <Clock className="h-3 w-3 text-slate-400" />
-                        {formatDateTime(item.scheduledStart)}
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        {formatDateOnly(item.scheduledStart)}
                       </span>
-                      {item.scheduledEnd && (
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          đến {formatTimeOnly(item.scheduledEnd)}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        <Clock className="h-3 w-3" />
+                        {formatTimeOnly(item.scheduledStart)}
+                        {item.scheduledEnd && ` - ${formatTimeOnly(item.scheduledEnd)}`}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>

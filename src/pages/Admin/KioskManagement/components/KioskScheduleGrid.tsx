@@ -49,9 +49,6 @@ export function KioskScheduleGrid({
     );
   }
 
-  const daysWithSchedule = new Set(schedules.map((s) => s.dayOfWeek).filter(Boolean));
-  const activeCount = schedules.filter((s) => getIsActive(s)).length;
-
   return (
     <div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
@@ -133,11 +130,6 @@ export function KioskScheduleGrid({
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-3 px-1 text-xs text-slate-500 dark:text-slate-400">
-        {daysWithSchedule.size}/7 {t("adminKioskManagement.daysWithSchedule")} · {activeCount}{" "}
-        {t("adminKioskManagement.activeScheduleSummary")}
       </div>
     </div>
   );
