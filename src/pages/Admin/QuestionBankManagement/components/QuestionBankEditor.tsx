@@ -212,12 +212,22 @@ export function QuestionBankEditor({
     const text = rawText.replace(/\\n/g, "\n");
     const parts = text.split(/(```[\s\S]*?```)/g);
     const blocks: { id: string; type: "text" | "code"; lang?: string; content: string }[] = [];
+
     parts.forEach((part, idx) => {
       if (!part) return;
       if (part.startsWith("```") && part.endsWith("```")) {
-        const match = part.match(/```([^\n]*)\n([\s\S]*?)```/);
-        const lang = match && match[1] ? match[1].trim() : "javascript";
-        const code = match ? match[2] : part.slice(3, -3);
+        const firstNewline = part.indexOf("\n");
+        let lang = "javascript";
+        let code = "";
+        if (firstNewline !== -1) {
+          lang = part.slice(3, firstNewline).trim() || "javascript";
+          code = part.slice(firstNewline + 1, -3);
+        } else {
+          code = part.slice(3, -3);
+        }
+        if (code.endsWith("\n")) {
+          code = code.slice(0, -1);
+        }
         blocks.push({
           id: `b-${idx}`,
           type: "code",
@@ -225,17 +235,22 @@ export function QuestionBankEditor({
           content: code,
         });
       } else {
-        blocks.push({
-          id: `b-${idx}`,
-          type: "text",
-          content: part,
-        });
+        let textContent = part;
+        if (textContent.startsWith("\n")) textContent = textContent.slice(1);
+        if (textContent.endsWith("\n")) textContent = textContent.slice(0, -1);
+
+        if (textContent !== "" || parts.length === 1) {
+          blocks.push({
+            id: `b-${idx}`,
+            type: "text",
+            content: textContent,
+          });
+        }
       }
     });
 
-    // Filter out redundant empty text blocks when multiple blocks exist
     const filtered = blocks.filter((b) => {
-      if (b.type === "text" && b.content.trim() === "" && blocks.length > 1) {
+      if (b.type === "text" && b.content === "" && blocks.length > 1) {
         return false;
       }
       return true;
@@ -250,11 +265,11 @@ export function QuestionBankEditor({
     return blocks
       .map((b) => {
         if (b.type === "code") {
-          return `\n\`\`\`${b.lang || "javascript"}\n${b.content}\n\`\`\`\n`;
+          return `\`\`\`${b.lang || "javascript"}\n${b.content}\n\`\`\``;
         }
         return b.content;
       })
-      .join("");
+      .join("\n");
   };
 
   return (
@@ -285,8 +300,8 @@ export function QuestionBankEditor({
           {/* ── MAIN CONTENT (SPLIT PANE) ────────────────────────────────────────── */}
           <div className="flex min-h-[420px] flex-1 overflow-hidden">
             {/* LEFT COLUMN: Question Text & AI */}
-            <div className="flex flex-1 flex-col overflow-y-auto p-6 md:p-8">
-              <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-5">
+            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto p-6 md:p-8">
+              <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
@@ -366,7 +381,7 @@ export function QuestionBankEditor({
                 )}
 
                 {!showAI && (
-                  <div className="min-h-[360px] space-y-4 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
+                  <div className="space-y-4 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900">
                     {parseBlocks(formData.questionText || "").map((block, index, allBlocks) => {
                       if (block.type === "code") {
                         return (
