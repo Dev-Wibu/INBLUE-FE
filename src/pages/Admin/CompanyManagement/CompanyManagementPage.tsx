@@ -126,18 +126,45 @@ export function CompanyManagementPage() {
   }, [processedJds, jdPagination.startIndex, jdPagination.endIndex]);
 
   const selectedCompany = useMemo(() => {
-    return companies.find((c) => c.id === selectedCompanyId);
+    if (!selectedCompanyId) return null;
+    return companies.find((c) => String(c.id) === String(selectedCompanyId)) || null;
   }, [companies, selectedCompanyId]);
+
+  const { data: directSelectedJd } = useQuery({
+    queryKey: ["admin", "jd-detail-header", selectedJdId],
+    queryFn: async () => {
+      if (!selectedJdId) return null;
+      const res = await jobDescriptionManager.getById(selectedJdId);
+      return res.success && res.data ? res.data : null;
+    },
+    enabled: !!selectedJdId,
+  });
 
   const selectedJd = useMemo(() => {
     if (!selectedJdId) return null;
-    return processedJds.find((j) => j.id === selectedJdId) || (allJds.find((j) => j.id === selectedJdId) as JobDescription);
-  }, [selectedJdId, processedJds, allJds]);
+    const foundInProcessed = processedJds.find((j) => String(j.id) === String(selectedJdId));
+    if (foundInProcessed) return foundInProcessed;
+    const foundInAll = allJds.find((j) => String(j.id) === String(selectedJdId));
+    if (foundInAll) return foundInAll as JobDescription;
+    if (directSelectedJd) return directSelectedJd;
+    return null;
+  }, [selectedJdId, processedJds, allJds, directSelectedJd]);
 
   const selectedJdCompany = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (selectedJd as any)?.companyName || selectedCompany?.name;
-  }, [selectedJd, selectedCompany]);
+    if (!selectedJd) return selectedCompany?.name || "";
+    // 1. Try companyName directly from mapped object
+    if ((selectedJd as any).companyName) return (selectedJd as any).companyName;
+    // 2. Try nested company.name
+    if ((selectedJd as any).company?.name) return (selectedJd as any).company.name;
+    // 3. Try finding company by companyId in companies array
+    const compId = (selectedJd as any).companyId || (selectedJd as any).company?.id;
+    if (compId) {
+      const matchedComp = companies.find((c) => String(c.id) === String(compId));
+      if (matchedComp?.name) return matchedComp.name;
+    }
+    // 4. Fallback to currently selected company if active
+    return selectedCompany?.name || "";
+  }, [selectedJd, selectedCompany, companies]);
 
   const handleCreateCompany = () => {
     setFormData({
