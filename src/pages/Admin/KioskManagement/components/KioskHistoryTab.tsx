@@ -1,5 +1,4 @@
 import { KioskStatusBadge, PaginationControl, ReloadButton } from "@/components/shared";
-import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { kioskManager, type KioskHistoryResponseDto } from "@/services/kiosk.manager";
 import { format } from "date-fns";
 import { Clock, History, Hourglass, Key, Search, User } from "lucide-react";

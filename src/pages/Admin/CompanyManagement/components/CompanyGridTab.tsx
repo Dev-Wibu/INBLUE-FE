@@ -1,8 +1,10 @@
+import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { companyManager, jobDescriptionManager } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Building2, Edit, Folder, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Folder, Plus } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -16,6 +18,7 @@ import type {
 } from "../types";
 import { CompanyDeleteDialog } from "./CompanyDeleteDialog";
 import { CompanyFormDialog } from "./CompanyFormDialog";
+import { CompanyTable } from "./CompanyTable";
 import { JobDescriptionDetailView } from "./JobDescriptionDetailView";
 import { JobDescriptionFormDialog } from "./JobDescriptionFormDialog";
 import { JobDescriptionTable } from "./JobDescriptionTable";
@@ -27,15 +30,11 @@ interface CompanyGridTabProps {
   onCreateCompany: () => void;
 }
 
-export function CompanyGridTab({
-  companies,
-  searchQuery,
-  onCompanyUpdate,
-  onCreateCompany,
-}: CompanyGridTabProps) {
+export function CompanyGridTab({ companies, searchQuery, onCompanyUpdate }: CompanyGridTabProps) {
   const { t } = useTranslation();
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
 
+  // Edit/Delete Company states
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,59 +45,45 @@ export function CompanyGridTab({
 
   const queryClient = useQueryClient();
 
-  // Drill-down JD Viewer
+  // JD states (Create/Edit)
   const [selectedJdId, setSelectedJdId] = useState<number | null>(null);
+  const [editingJd, setEditingJd] = useState<JobDescription | null>(null);
   const [isJdDialogOpen, setIsJdDialogOpen] = useState(false);
   const [jdFormData, setJdFormData] = useState<Partial<JobDescriptionFormData>>({});
-  const [isCreatingJd, setIsCreatingJd] = useState(false);
+  const [isSubmittingJd, setIsSubmittingJd] = useState(false);
 
-  const handleJdSubmit = async () => {
-    if (!selectedCompanyId) return;
-    try {
-      setIsCreatingJd(true);
-      const data: CreateJobDescriptionRequest = {
-        title: jdFormData.title,
-        description: jdFormData.description,
-        requirements: jdFormData.requirements,
-        benefits: jdFormData.benefits,
-        level: jdFormData.level,
-        salaryMin: jdFormData.salaryMin,
-        salaryMax: jdFormData.salaryMax,
-        currency: jdFormData.currency,
-        status: jdFormData.status,
-        deadlineAt: jdFormData.deadlineAt,
-        companyId: selectedCompanyId,
-      };
-      const res = await jobDescriptionManager.create(data);
-      if (res.success) {
-        toast.success(t("adminCompanymanagement.successfullyCreatedJd", "Thêm JD thành công"));
-        setIsJdDialogOpen(false);
-        setJdFormData({});
-        queryClient.invalidateQueries({
-          queryKey: ["admin", "companies", selectedCompanyId, "jds"],
-        });
-      } else {
-        toast.error(res.error || t("common.cannotCreateJd", "Không thể thêm JD"));
-      }
-    } catch {
-      toast.error(t("common.cannotCreateJd", "Không thể thêm JD"));
-    } finally {
-      setIsCreatingJd(false);
-    }
-  };
+  // Pagination for company table
+  const [companyPageSize, setCompanyPageSize] = useHybridPageSize({
+    key: "src_pages_admin_companymanagement_company_pagesize",
+    defaultPageSize: 10,
+  });
 
   const filteredCompanies = useMemo(() => {
     if (!searchQuery.trim()) return companies;
     const lowerQuery = searchQuery.toLowerCase();
-    return companies.filter((c) => c.name?.toLowerCase().includes(lowerQuery));
+    return companies.filter(
+      (c) =>
+        c.name?.toLowerCase().includes(lowerQuery) ||
+        c.description?.toLowerCase().includes(lowerQuery) ||
+        String(c.id).includes(lowerQuery)
+    );
   }, [companies, searchQuery]);
+
+  const companyPagination = usePagination({
+    totalCount: filteredCompanies.length,
+    pageSize: companyPageSize,
+  });
+
+  const pageCompanies = useMemo(() => {
+    return filteredCompanies.slice(companyPagination.startIndex, companyPagination.endIndex + 1);
+  }, [filteredCompanies, companyPagination.startIndex, companyPagination.endIndex]);
 
   const selectedCompany = useMemo(() => {
     return companies.find((c) => c.id === selectedCompanyId);
   }, [companies, selectedCompanyId]);
 
-  // Fetch JDs for the selected company
-  const { data: companyJds = [] } = useQuery({
+  // Fetch JDs for selected company
+  const { data: companyJds = [], refetch: refetchCompanyJds } = useQuery({
     queryKey: ["admin", "companies", selectedCompanyId, "jds"],
     queryFn: async () => {
       if (!selectedCompanyId) return [];
@@ -132,7 +117,27 @@ export function CompanyGridTab({
     setIsDeleteOpen(true);
   };
 
-  const handleSaveEdit = async () => {
+  const handleToggleCompanyStatus = async (company: Company, nextStatus: "ACTIVE" | "INACTIVE") => {
+    if (!company.id) return;
+    try {
+      const res = await companyManager.update({
+        data: {
+          id: company.id,
+          status: nextStatus,
+        },
+      });
+      if (res.success) {
+        toast.success(t("common.updateSuccess", "Cập nhật thành công"));
+        onCompanyUpdate?.();
+      } else {
+        toast.error(res.error || t("common.updateFailed", "Cập nhật thất bại"));
+      }
+    } catch {
+      toast.error(t("common.updateFailed", "Cập nhật thất bại"));
+    }
+  };
+
+  const handleSaveEditCompany = async () => {
     if (!editingCompany?.id) return;
     try {
       setIsSubmitting(true);
@@ -183,41 +188,125 @@ export function CompanyGridTab({
     }
   };
 
-  // Drill-down mode
-  if (selectedCompany !== undefined && selectedCompany !== null) {
+  // Open JD creation form
+  const handleOpenAddJd = () => {
+    setEditingJd(null);
+    setJdFormData({ status: "OPEN" });
+    setIsJdDialogOpen(true);
+  };
+
+  // Open JD edit form
+  const handleOpenEditJd = (jd: JobDescription) => {
+    setEditingJd(jd);
+    setJdFormData({
+      title: jd.title,
+      description: jd.description,
+      requirements: jd.requirements,
+      benefits: jd.benefits,
+      level: jd.level,
+      salaryMin: jd.salaryMin,
+      salaryMax: jd.salaryMax,
+      currency: jd.currency,
+      status: jd.status,
+      deadlineAt: jd.deadlineAt,
+    });
+    setIsJdDialogOpen(true);
+  };
+
+  // Submit JD (Create or Edit)
+  const handleJdSubmit = async () => {
+    if (!selectedCompanyId) return;
+    try {
+      setIsSubmittingJd(true);
+      if (editingJd?.id) {
+        // Edit existing JD
+        const res = await jobDescriptionManager.update({
+          id: editingJd.id,
+          title: jdFormData.title,
+          description: jdFormData.description,
+          requirements: jdFormData.requirements,
+          benefits: jdFormData.benefits,
+          level: jdFormData.level,
+          salaryMin: jdFormData.salaryMin,
+          salaryMax: jdFormData.salaryMax,
+          currency: jdFormData.currency,
+          status: jdFormData.status,
+          deadlineAt: jdFormData.deadlineAt,
+        });
+        if (res.success) {
+          toast.success(t("common.updateSuccess", "Cập nhật JD thành công"));
+          setIsJdDialogOpen(false);
+          setEditingJd(null);
+          setJdFormData({});
+          void refetchCompanyJds();
+          queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
+        } else {
+          toast.error(res.error || t("common.updateFailed", "Không thể cập nhật JD"));
+        }
+      } else {
+        // Create new JD
+        const data: CreateJobDescriptionRequest = {
+          title: jdFormData.title,
+          description: jdFormData.description,
+          requirements: jdFormData.requirements,
+          benefits: jdFormData.benefits,
+          level: jdFormData.level,
+          salaryMin: jdFormData.salaryMin,
+          salaryMax: jdFormData.salaryMax,
+          currency: jdFormData.currency,
+          status: jdFormData.status,
+          deadlineAt: jdFormData.deadlineAt,
+          companyId: selectedCompanyId,
+        };
+        const res = await jobDescriptionManager.create(data);
+        if (res.success) {
+          toast.success(t("adminCompanymanagement.successfullyCreatedJd", "Thêm JD thành công"));
+          setIsJdDialogOpen(false);
+          setJdFormData({});
+          void refetchCompanyJds();
+          queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
+        } else {
+          toast.error(res.error || t("common.cannotCreateJd", "Không thể thêm JD"));
+        }
+      }
+    } catch {
+      toast.error(t("common.cannotCreateJd", "Đã có lỗi xảy ra"));
+    } finally {
+      setIsSubmittingJd(false);
+    }
+  };
+
+  // Drill-down mode (Company Selected)
+  if (selectedCompany) {
     return (
-      <div className="animate-in fade-in slide-in-from-right-4 flex h-full flex-col duration-300">
-        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex h-full flex-col">
+        <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => {
                 if (selectedJdId) setSelectedJdId(null);
                 else setSelectedCompanyId(null);
               }}
-              className="h-8 gap-1.5 px-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+              className="h-8 gap-1.5 px-2 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
               <ArrowLeft className="h-4 w-4" />
               {t("common.back", "Quay lại")}
             </Button>
             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-            <div className="flex items-center gap-2 rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
-              <Folder className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-2 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+              <Folder className="h-3.5 w-3.5 text-slate-500" />
               {selectedCompany.name}
             </div>
           </div>
           {!selectedJdId && (
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={() => {
-                  setJdFormData({ status: "OPEN" });
-                  setIsJdDialogOpen(true);
-                }}
-                className="h-8 gap-1.5">
-                <Plus className="h-4 w-4" />
-                {t("adminCompanymanagement.addJd", "Thêm JD")}
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={handleOpenAddJd}
+              className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
+              <Plus className="h-3.5 w-3.5" />
+              {t("adminCompanymanagement.addJd", "Thêm JD")}
+            </Button>
           )}
         </div>
 
@@ -226,39 +315,30 @@ export function CompanyGridTab({
             <JobDescriptionDetailView
               jobDescription={selectedJd}
               onBack={() => setSelectedJdId(null)}
-              onEdit={() =>
-                toast.info(t("common.featureUnderDevelopment", "Tính năng đang phát triển"))
-              }
+              onEdit={(jd) => handleOpenEditJd(jd)}
             />
-          ) : companyJds.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center">
-              <Folder className="mb-3 h-10 w-10 text-slate-300" />
-              <p className="text-sm font-medium text-slate-500">
-                Chưa có thông tin tuyển dụng (JD) nào của công ty này.
-              </p>
-            </div>
           ) : (
-            <div>
-              <JobDescriptionTable
-                jobDescriptions={companyJds}
-                onView={(jd) => setSelectedJdId(jd.id!)}
-                onToggleStatus={async (job, nextStatus) => {
-                  try {
-                    const res = await jobDescriptionManager.update({
-                      id: job.id,
-                      status: nextStatus,
-                    });
-                    if (res.success) {
-                      toast.success(t("common.updateSuccess", "Cập nhật thành công"));
-                    } else {
-                      toast.error(t("common.updateFailed", "Cập nhật thất bại"));
-                    }
-                  } catch {
+            <JobDescriptionTable
+              jobDescriptions={companyJds}
+              onView={(jd) => setSelectedJdId(jd.id!)}
+              onToggleStatus={async (job, nextStatus) => {
+                try {
+                  const res = await jobDescriptionManager.update({
+                    id: job.id,
+                    status: nextStatus,
+                  });
+                  if (res.success) {
+                    toast.success(t("common.updateSuccess", "Cập nhật thành công"));
+                    void refetchCompanyJds();
+                    queryClient.invalidateQueries({ queryKey: ["admin", "all-jds"] });
+                  } else {
                     toast.error(t("common.updateFailed", "Cập nhật thất bại"));
                   }
-                }}
-              />
-            </div>
+                } catch {
+                  toast.error(t("common.updateFailed", "Cập nhật thất bại"));
+                }
+              }}
+            />
           )}
         </div>
 
@@ -268,105 +348,65 @@ export function CompanyGridTab({
           formData={jdFormData}
           onFormChange={(data) => setJdFormData((prev) => ({ ...prev, ...data }))}
           onSubmit={handleJdSubmit}
-          title={t("adminCompanymanagement.createJd", "Tạo Job Description")}
-          description={t(
-            "adminCompanymanagement.createJdDescription",
-            "Điền thông tin để tạo Job Description mới."
-          )}
+          title={
+            editingJd
+              ? t("adminCompanymanagement.editJd", "Chỉnh sửa Job Description")
+              : t("adminCompanymanagement.createJd", "Tạo Job Description")
+          }
+          description={
+            editingJd
+              ? t("adminCompanymanagement.editJdDescription", "Cập nhật thông tin Job Description.")
+              : t(
+                  "adminCompanymanagement.createJdDescription",
+                  "Điền thông tin để tạo Job Description mới."
+                )
+          }
           submitLabel={
-            isCreatingJd ? t("common.processing", "Đang xử lý...") : t("common.create", "Tạo mới")
+            isSubmittingJd
+              ? t("common.processing", "Đang xử lý...")
+              : editingJd
+                ? t("common.save", "Lưu thay đổi")
+                : t("common.create", "Tạo mới")
           }
         />
       </div>
     );
   }
 
+  // Company List View (Full-Bleed Table)
   return (
-    <div className="animate-in fade-in flex h-full flex-col p-4 duration-300 md:p-6 lg:p-8">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredCompanies.map((company) => (
-          <div
-            key={company.id}
-            onClick={() => setSelectedCompanyId(company.id!)}
-            className="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/50">
-            {/* Edit / Delete Buttons */}
-            <div className="absolute top-2 right-2 z-10 flex items-center opacity-0 transition-opacity group-hover:opacity-100">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
-                onClick={(e) => handleEditClick(company, e)}>
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
-                onClick={(e) => handleDeleteClick(company, e)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+    <div className="flex h-full flex-col">
+      {searchQuery && (
+        <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
+          <span className="text-xs text-slate-500">
+            Hiển thị{" "}
+            <strong className="text-slate-800 dark:text-slate-200">
+              {filteredCompanies.length}
+            </strong>{" "}
+            / <strong>{companies.length}</strong> kết quả
+          </span>
+        </div>
+      )}
 
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
-                {company.logoUrl ? (
-                  <img
-                    src={company.logoUrl}
-                    alt={company.name}
-                    className="h-full w-full object-contain"
-                  />
-                ) : (
-                  <Building2 className="h-6 w-6 text-slate-400" />
-                )}
-              </div>
-              <div className="flex-1 overflow-hidden pt-1">
-                <h3 className="truncate pr-12 font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                  {company.name}
-                </h3>
-                <div className="mt-1 flex items-center gap-2">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      company.status === "ACTIVE"
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
-                        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
-                    }`}>
-                    {company.status === "ACTIVE"
-                      ? t("common.active", "Hoạt động")
-                      : t("common.inactive", "Ngừng hoạt động")}
-                  </span>
-                </div>
-              </div>
-            </div>
-            {company.description && (
-              <p className="mt-4 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">
-                {company.description}
-              </p>
-            )}
-          </div>
-        ))}
+      <div className="flex-1 overflow-auto">
+        <CompanyTable
+          companies={pageCompanies}
+          onSelectCompany={(company) => setSelectedCompanyId(company.id!)}
+          onEditCompany={handleEditClick}
+          onDeleteCompany={handleDeleteClick}
+          onToggleStatus={handleToggleCompanyStatus}
+        />
       </div>
 
-      {filteredCompanies.length === 0 && (
-        <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 p-12 text-center dark:border-slate-800">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-            <Building2 className="h-8 w-8 text-slate-400" />
-          </div>
-          <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
-            {searchQuery
-              ? t("common.noResultsFound")
-              : t("adminCompanymanagement.noCompaniesAvailable")}
-          </h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {searchQuery
-              ? t("common.tryAdjustingYourSearch")
-              : t("adminCompanymanagement.clickAddCompanyToCreate")}
-          </p>
-          {!searchQuery && (
-            <Button onClick={onCreateCompany} variant="outline" className="mt-4 gap-2">
-              <Plus className="h-4 w-4" />
-              {t("adminCompanymanagement.addCompany", "Thêm công ty")}
-            </Button>
-          )}
+      {filteredCompanies.length > 0 && (
+        <div className="flex flex-none items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+          <PaginationControl
+            pagination={companyPagination}
+            onPageSizeChange={(size) => {
+              setCompanyPageSize(size);
+              companyPagination.goToFirstPage();
+            }}
+          />
         </div>
       )}
 
@@ -376,7 +416,7 @@ export function CompanyGridTab({
         onOpenChange={setIsFormOpen}
         formData={formData}
         onFormChange={setFormData}
-        onSubmit={handleSaveEdit}
+        onSubmit={handleSaveEditCompany}
         title={t("adminCompanymanagement.editCompanyInfo", "Chỉnh sửa thông tin công ty")}
         description={t(
           "adminCompanymanagement.updateInfoOfPartner",

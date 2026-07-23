@@ -65,7 +65,9 @@ export function MentorTable({
             <TableHead className="w-24 font-medium text-slate-500">Đánh giá</TableHead>
             <TableHead className="w-32 font-medium text-slate-500">Ngày tham gia</TableHead>
             <TableHead className="w-32 font-medium text-slate-500">Cập nhật lần cuối</TableHead>
-            <TableHead className="w-24 pr-6 font-medium text-slate-500">{t("common.status")}</TableHead>
+            <TableHead className="w-24 pr-6 font-medium text-slate-500">
+              {t("common.status")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,7 +96,9 @@ export function MentorTable({
               </TableCell>
               <TableCell className="text-muted-foreground">{mentor.email}</TableCell>
               <TableCell className="max-w-xs truncate">{mentor.expertise || "-"}</TableCell>
-              <TableCell className="text-muted-foreground">{mentor.yearsOfExperience ? `${mentor.yearsOfExperience} năm` : "—"}</TableCell>
+              <TableCell className="text-muted-foreground">
+                {mentor.yearsOfExperience ? `${mentor.yearsOfExperience} năm` : "—"}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1 font-medium text-amber-500">
                   <Star className="h-4 w-4 fill-amber-500 text-amber-500" />

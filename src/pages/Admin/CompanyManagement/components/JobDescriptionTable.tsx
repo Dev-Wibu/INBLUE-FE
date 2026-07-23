@@ -48,11 +48,18 @@ export function JobDescriptionTable({
 
   if (!jobDescriptions.length) {
     return (
-      <div className="border-border/50 bg-background/50 flex flex-1 flex-col items-center justify-center rounded-2xl border p-12 text-center shadow-sm">
-        <div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-          <Briefcase className="text-muted-foreground h-8 w-8 opacity-50" />
+      <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+          <Briefcase className="h-6 w-6 text-slate-400" />
         </div>
-        <p className="text-muted-foreground text-lg">{t("adminCompanymanagement.noJdYet")}</p>
+        <div className="text-center">
+          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            {t("adminCompanymanagement.noJdYet", "Chưa có JD nào")}
+          </p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {t("common.tryAdjustingYourSearch", "Thử thay đổi từ khóa tìm kiếm")}
+          </p>
+        </div>
       </div>
     );
   }
@@ -62,21 +69,21 @@ export function JobDescriptionTable({
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-20">
+            <TableHead className="w-20 pl-6 font-medium text-slate-500">
               {getSortProps ? (
                 <SortButton {...getSortProps("idSortValue")}>{t("common.id", "ID")}</SortButton>
               ) : (
                 t("common.id", "ID")
               )}
             </TableHead>
-            <TableHead>
+            <TableHead className="font-medium text-slate-500">
               {getSortProps ? (
                 <SortButton {...getSortProps("titleSortValue")}>{t("common.title")}</SortButton>
               ) : (
                 t("common.title")
               )}
             </TableHead>
-            <TableHead>
+            <TableHead className="font-medium text-slate-500">
               {getSortProps ? (
                 <SortButton {...getSortProps("levelSortValue")}>{t("common.level")}</SortButton>
               ) : (
@@ -84,10 +91,14 @@ export function JobDescriptionTable({
               )}
             </TableHead>
             {showCompany && (
-              <TableHead>{t("adminCompanymanagement.companyName", "Tên công ty")}</TableHead>
+              <TableHead className="font-medium text-slate-500">
+                {t("adminCompanymanagement.companyName", "Tên công ty")}
+              </TableHead>
             )}
-            <TableHead>{t("adminCompanymanagement.rounds", "Số vòng thi")}</TableHead>
-            <TableHead>
+            <TableHead className="font-medium text-slate-500">
+              {t("adminCompanymanagement.rounds", "Số vòng thi")}
+            </TableHead>
+            <TableHead className="font-medium text-slate-500">
               {getSortProps ? (
                 <SortButton {...getSortProps("updatedAtSortValue")}>
                   {t("adminCompanymanagement.deadline")}
@@ -96,7 +107,7 @@ export function JobDescriptionTable({
                 t("adminCompanymanagement.deadline")
               )}
             </TableHead>
-            <TableHead className="w-24 text-right">
+            <TableHead className="w-28 pr-6 text-right font-medium text-slate-500">
               {getSortProps ? (
                 <SortButton {...getSortProps("statusSortValue")}>{t("common.status")}</SortButton>
               ) : (
@@ -106,45 +117,52 @@ export function JobDescriptionTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {jobDescriptions.map((job) => (
-            <TableRow
-              key={job.id}
-              onClick={() => onView?.(job)}
-              className="cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-              <TableCell className="font-medium">#{job.id}</TableCell>
-              <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
-                {job.title || "—"}
-              </TableCell>
-              <TableCell>
-                {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
-              </TableCell>
-              {showCompany && (
-                <TableCell className="text-slate-600 dark:text-slate-300">
-                  {/* @ts-expect-error Company data comes from BE */}
-                  {job.company?.name || job.companyName || "—"}
+          {jobDescriptions.map((job) => {
+            const isClosed = job.status === "CLOSED";
+
+            return (
+              <TableRow
+                key={job.id}
+                onClick={() => onView?.(job)}
+                className={`group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80 ${
+                  isClosed ? "opacity-60 grayscale-[30%]" : ""
+                }`}>
+                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                  #{job.id}
                 </TableCell>
-              )}
-              <TableCell className="font-medium text-slate-900 dark:text-slate-100">
-                {job.rounds?.length || 0}
-              </TableCell>
-              <TableCell className="text-slate-500">{formatDate(job.deadlineAt)}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex items-center justify-end">
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center justify-center p-1">
-                    <Switch
-                      checked={job.status === "OPEN"}
-                      onCheckedChange={(checked) =>
-                        onToggleStatus?.(job, checked ? "OPEN" : "CLOSED")
-                      }
-                      aria-label={`Toggle status for ${job.title || job.id}`}
-                    />
-                  </div>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
+                  {job.title || "—"}
+                </TableCell>
+                <TableCell>
+                  {job.level ? <StatusBadge {...getJobDescriptionLevelBadge(job.level)} /> : "—"}
+                </TableCell>
+                {showCompany && (
+                  <TableCell className="text-slate-600 dark:text-slate-300">
+                    {/* @ts-expect-error Company data comes from BE */}
+                    {job.company?.name || job.companyName || "—"}
+                  </TableCell>
+                )}
+                <TableCell>
+                  <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {job.rounds?.length || 0} vòng
+                  </span>
+                </TableCell>
+                <TableCell className="text-xs text-slate-500">
+                  {formatDate(job.deadlineAt)}
+                </TableCell>
+                <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
+                  <Switch
+                    checked={job.status === "OPEN"}
+                    onCheckedChange={(checked) =>
+                      onToggleStatus?.(job, checked ? "OPEN" : "CLOSED")
+                    }
+                    className="shadow-sm data-[state=checked]:bg-emerald-500"
+                    aria-label={`Toggle status for ${job.title || job.id}`}
+                  />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
