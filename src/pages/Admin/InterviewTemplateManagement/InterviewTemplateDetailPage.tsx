@@ -388,8 +388,6 @@ export function InterviewTemplateDetailPage() {
           </div>
         )}
       </main>
-
-      </main>
     </div>
   );
 }
