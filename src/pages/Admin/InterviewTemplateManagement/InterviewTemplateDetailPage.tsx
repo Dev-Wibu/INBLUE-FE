@@ -199,6 +199,22 @@ export function InterviewTemplateDetailPage() {
     }
   };
 
+  if (isEditorOpen) {
+    return (
+      <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+        <RoundCanvasEditorWorkspace
+          isOpen={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+          initialRounds={editorRounds}
+          initialMetadata={editorMetadata}
+          showMetadataInputs={true}
+          isSaving={isSaving}
+          onSave={handleSaveTemplate}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -373,17 +389,7 @@ export function InterviewTemplateDetailPage() {
         )}
       </main>
 
-      {isEditorOpen && (
-        <RoundCanvasEditorWorkspace
-          isOpen={isEditorOpen}
-          onClose={() => setIsEditorOpen(false)}
-          initialRounds={editorRounds}
-          initialMetadata={editorMetadata}
-          showMetadataInputs={true}
-          isSaving={isSaving}
-          onSave={handleSaveTemplate}
-        />
-      )}
+      </main>
     </div>
   );
 }

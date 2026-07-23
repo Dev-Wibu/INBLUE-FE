@@ -412,7 +412,7 @@ export function RoundCanvasEditorWorkspace({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex h-screen w-screen flex-row gap-0 overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="relative flex flex-1 h-full w-full flex-row gap-0 overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* 1. Toolbox Sidebar (Left) */}
       <div className="flex h-full w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="flex h-[64px] shrink-0 flex-col justify-center border-b border-slate-200 bg-slate-100/50 px-5 dark:border-slate-800 dark:bg-slate-900/30">

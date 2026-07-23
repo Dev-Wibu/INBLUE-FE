@@ -165,6 +165,23 @@ export function JobDescriptionDetailView({
     (section) => (section.value?.length ?? 0) > 180
   );
 
+  if (isEditorOpen) {
+    return (
+      <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+        <RoundCanvasEditorWorkspace
+          isOpen={isEditorOpen}
+          onClose={() => setIsEditorOpen(false)}
+          initialRounds={initialRounds}
+          initialMetadata={{ name: currentJd.title, category: "", description: "" }}
+          title="Quy trình tuyển dụng JD"
+          showMetadataInputs={false}
+          isSaving={isSaving}
+          onSave={handleSaveRounds}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
       <div className="border-border/50 sticky top-0 z-10 border-b bg-white/80 px-6 py-4 backdrop-blur-xl dark:bg-slate-900/80">
@@ -466,18 +483,7 @@ export function JobDescriptionDetailView({
         </div>
       </div>
 
-      {isEditorOpen && (
-        <RoundCanvasEditorWorkspace
-          isOpen={isEditorOpen}
-          onClose={() => setIsEditorOpen(false)}
-          initialRounds={initialRounds}
-          initialMetadata={{ name: currentJd.title, category: "", description: "" }}
-          title="Quy trình tuyển dụng JD"
-          showMetadataInputs={false}
-          isSaving={isSaving}
-          onSave={handleSaveRounds}
-        />
-      )}
+      </div>
     </div>
   );
 }
