@@ -3784,6 +3784,9 @@
     "mentorReviewFromMentor": "Đánh giá từ mentor",
     "mentorReviewEmpty": "Mentor chưa để lại nhận xét chi tiết.",
     "reviewSubmittedSuccessfully": "Đánh giá mentor đã được nộp thành công!",
+    "feedbackUpdatedSuccessfully": "Phản hồi đã được cập nhật thành công!",
+    "editYourFeedback": "Chỉnh sửa phản hồi của bạn",
+    "yourFeedback": "Phản hồi của bạn",
     "reviewReceived": "Nhận được đánh giá từ mentor",
     "pleaseRateMentor": "Vui lòng đánh giá mentor",
     "feedbackPlaceholder": "Chia sẻ trải nghiệm của bạn với mentor...",
@@ -4221,6 +4224,9 @@
     "offlineBookedDesc": "Vui lòng gặp mentor theo thời gian đã hẹn tại văn phòng công ty.",
     "awaitingMentorTitle": "Đang đợi admin gán mentor",
     "awaitingMentorDesc": "Vui lòng quay lại sau khi admin phân công mentor. Sau khi được gán, bạn có thể chọn giờ và hình thức phỏng vấn.",
+    "awaitingReviewTitle": "Đang đợi phản hồi từ mentor",
+    "awaitingReviewDesc": "Buổi phỏng vấn đã kết thúc. Vui lòng đợi mentor cung cấp nhận xét và phản hồi.",
+    "rateMentorTitle": "Hãy đánh giá mentor của bạn",
     "rejoinRoom": "Vào lại phòng",
     "timingNotRecorded": "Chưa có dữ liệu thời gian cho session này.",
     "student": "Học viên",
@@ -4235,7 +4241,8 @@
     "waitingForRoom": "Đang chờ tạo phòng...",
     "reviewReceived": "Nhận được đánh giá từ mentor",
     "pleaseRateMentor": "Vui lòng đánh giá mentor",
-    "feedbackPlaceholder": "Chia sẻ trải nghiệm của bạn với mentor..."
+    "feedbackPlaceholder": "Chia sẻ trải nghiệm của bạn với mentor...",
+    "ratingAndFeedback": "Đánh giá & Phản hồi"
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

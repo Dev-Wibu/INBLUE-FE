@@ -3790,6 +3790,12 @@
     "mentorReviewFromMentor": "Mentor's review",
     "mentorReviewEmpty": "Mentor has not left any detailed feedback yet.",
     "reviewSubmittedSuccessfully": "Mentor review submitted successfully!",
+    "feedbackUpdatedSuccessfully": "Feedback updated successfully!",
+    "editYourFeedback": "Edit your feedback",
+    "yourFeedback": "Your feedback",
+    "reviewReceived": "Review received from mentor",
+    "pleaseRateMentor": "Please rate the mentor",
+    "feedbackPlaceholder": "Share your experience with the mentor...",
     "aiInterviewRound": "AI Interview Round",
     "aiInterviewCompleted": "AI Interview Completed",
     "redirectingToInterview": "Redirecting to interview...",
@@ -4224,6 +4230,9 @@
     "offlineBookedDesc": "Please meet your mentor at the company office at the scheduled time.",
     "awaitingMentorTitle": "Waiting for the admin to assign a mentor",
     "awaitingMentorDesc": "Please come back after the admin has assigned a mentor. Once assigned, you can pick a time and format.",
+    "awaitingReviewTitle": "Waiting for mentor feedback",
+    "awaitingReviewDesc": "Your interview has ended. Please wait for the mentor to provide their review and feedback.",
+    "rateMentorTitle": "Please rate your mentor",
     "rejoinRoom": "Rejoin room",
     "timingNotRecorded": "No timing data recorded for this session yet.",
     "student": "Candidate",
@@ -4238,7 +4247,8 @@
     "waitingForRoom": "Waiting for room to be created...",
     "reviewReceived": "Received review from mentor",
     "pleaseRateMentor": "Please rate mentor",
-    "feedbackPlaceholder": "Share your experience with mentor..."
+    "feedbackPlaceholder": "Share your experience with mentor...",
+    "ratingAndFeedback": "Rating & Feedback"
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",

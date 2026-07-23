@@ -24,7 +24,7 @@ import {
   Star,
   Video,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -56,7 +56,13 @@ interface MentorInterviewHubProps {
     improve?: string;
     mentor?: { id?: number; name?: string; avatarUrl?: string };
   };
-  mentorFeedback?: { id?: number };
+  mentorFeedback?: {
+    id?: number;
+    rating?: number;
+    comment?: string;
+    mentor?: { id?: number; name?: string; avatarUrl?: string };
+    createdAt?: string;
+  };
   status: string | undefined;
   /** True if the session has ended (user has joined and left the room) */
   sessionEnded?: boolean;
@@ -117,13 +123,17 @@ function deriveHubStatus(props: {
     situationNote?: string;
     taskNote?: string;
     actionNote?: string;
-    resultNote?: string;
     strength?: string;
     weakness?: string;
     improve?: string;
     mentor?: { id?: number; name?: string; avatarUrl?: string };
   };
-  mentorFeedback?: { id?: number };
+  mentorFeedback?: {
+    id?: number;
+    rating?: number;
+    comment?: string;
+    createdAt?: string;
+  };
   sessionEnded?: boolean;
   sessionStatus?: string;
 }): HubStatus {
@@ -137,29 +147,77 @@ function deriveHubStatus(props: {
     sessionStatus,
   } = props;
 
-  // If user already submitted feedback -> COMPLETED
-  if (mentorFeedback?.id) return "COMPLETED";
+  console.log("[DEBUG][deriveHubStatus] props:", {
+    status,
+    sessionId,
+    sessionInfo,
+    mentorReview,
+    mentorFeedback,
+    sessionEnded,
+    sessionStatus,
+  });
 
-  // If mentor has reviewed -> show review
-  if (mentorReview?.id) return "REVIEW_READY";
+  // If user already submitted feedback -> COMPLETED.
+  // The backend may return the feedback object without an explicit `id` field,
+  // so fall back to checking for any rating/comment content.
+  if (
+    mentorFeedback &&
+    (mentorFeedback.id ||
+      mentorFeedback.rating !== undefined ||
+      mentorFeedback.comment !== undefined)
+  ) {
+    console.log("[DEBUG][deriveHubStatus] -> COMPLETED (mentorFeedback exists)");
+    return "COMPLETED";
+  }
+
+  // If mentor has reviewed -> show review and prompt user to rate mentor
+  if (mentorReview && (mentorReview.id || mentorReview.rating)) {
+    console.log("[DEBUG][deriveHubStatus] -> RATE_MENTOR (mentorReview exists)");
+    return "RATE_MENTOR";
+  }
 
   // If session is COMPLETED (meeting ended) but no mentor review yet -> wait for mentor review
-  if (sessionStatus === "COMPLETED" || sessionEnded) return "AWAITING_MENTOR_REVIEW";
+  // Only check sessionEnded flag if sessionStatus wasn't explicitly set
+  if (sessionStatus === "COMPLETED") {
+    console.log("[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (sessionStatus === COMPLETED)");
+    return "AWAITING_MENTOR_REVIEW";
+  }
+  if (sessionEnded && !sessionStatus) {
+    console.log(
+      "[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (sessionEnded && !sessionStatus)"
+    );
+    return "AWAITING_MENTOR_REVIEW";
+  }
 
   // If mentor has session and meeting time set (ONLINE) -> room ready
-  if (sessionInfo?.meetingType === "ONLINE" && sessionId && sessionInfo?.startTime)
+  if (sessionInfo?.meetingType === "ONLINE" && sessionId && sessionInfo?.startTime) {
+    console.log("[DEBUG][deriveHubStatus] -> ROOM_READY");
     return "ROOM_READY";
+  }
 
   // If offline confirmed
-  if (sessionInfo?.meetingType === "OFFLINE" && sessionId) return "OFFLINE_CONFIRMED";
+  if (sessionInfo?.meetingType === "OFFLINE" && sessionId) {
+    console.log("[DEBUG][deriveHubStatus] -> OFFLINE_CONFIRMED");
+    return "OFFLINE_CONFIRMED";
+  }
 
   // If session exists or slot picked
-  if (sessionId || status === "SLOT_PICKED") return "SCHEDULE_CONFIRMED";
+  if (sessionId || status === "SLOT_PICKED") {
+    console.log("[DEBUG][deriveHubStatus] -> SCHEDULE_CONFIRMED");
+    return "SCHEDULE_CONFIRMED";
+  }
 
   // No session yet
-  if (status === "PENDING") return "NO_SLOT";
-  if (status === "AWAITING_MENTOR") return "AWAITING_MENTOR_REVIEW";
+  if (status === "PENDING") {
+    console.log("[DEBUG][deriveHubStatus] -> NO_SLOT (status === PENDING)");
+    return "NO_SLOT";
+  }
+  if (status === "AWAITING_MENTOR") {
+    console.log("[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (status === AWAITING_MENTOR)");
+    return "AWAITING_MENTOR_REVIEW";
+  }
 
+  console.log("[DEBUG][deriveHubStatus] -> NO_SLOT (fallback)");
   return "NO_SLOT";
 }
 
@@ -533,47 +591,89 @@ function RateMentorForm({
   sessionId,
   mentorId,
   userId,
+  feedbackId,
+  initialRating,
+  initialComment,
   onSubmitSuccess,
+  onCancel,
 }: {
   sessionId: number | null | undefined;
   mentorId: number | null | undefined;
   userId: number | undefined;
+  feedbackId?: number;
+  initialRating?: number;
+  initialComment?: string;
   onSubmitSuccess: () => void;
+  onCancel?: () => void;
 }) {
   const { t } = useTranslation();
-  const [rating, setRating] = useState<number>(0);
-  const [comment, setComment] = useState("");
+  const [rating, setRating] = useState<number>(initialRating ?? 0);
+  const [comment, setComment] = useState(initialComment ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Synchronous guard against double-submit. State updates are batched, so
+  // `isSubmitting` in the closure may still be `false` on a rapid second click
+  // before React applies the disabled state to the button.
+  const submittingRef = useRef(false);
 
+  // Treat as editing if we either have an explicit feedbackId (preferred) or
+  // any initial rating/comment data. The backend session endpoint may embed
+  // `mentorFeedback` without an explicit id, so we fall back to the content.
+  // Backend uses @MapsId, so feedback.id === sessionId when present.
+  const isEditing = !!feedbackId || initialRating !== undefined || initialComment !== undefined;
   const canSubmit = rating > 0;
+  const editId = feedbackId ?? (isEditing ? (sessionId ?? undefined) : undefined);
 
   const handleSubmit = async () => {
+    if (submittingRef.current) return;
     if (!canSubmit || !sessionId || !mentorId || !userId) {
       toast.error(t("common.anErrorHasOccurred"));
       return;
     }
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
-      const { response } = await fetchClient.POST("/api/mentor-feedbacks", {
-        body: { sessionId, mentorId, userId, rating, comment: comment || undefined },
-      });
-      if (!response.ok) throw new Error();
-      toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
+      if (isEditing && editId) {
+        const { response } = await fetchClient.PUT("/api/mentor-feedbacks", {
+          body: { id: editId, rating, comment: comment || undefined },
+        });
+        if (!response.ok) throw new Error();
+        toast.success(t("userApplicationhistory.feedbackUpdatedSuccessfully"));
+      } else {
+        const { response } = await fetchClient.POST("/api/mentor-feedbacks", {
+          body: { sessionId, mentorId, userId, rating, comment: comment || undefined },
+        });
+        if (!response.ok) throw new Error();
+        toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
+      }
       onSubmitSuccess();
     } catch {
       toast.error(t("common.anErrorHasOccurred"));
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
 
   return (
     <div className="space-y-4 rounded-lg border border-[#0047AB]/20 bg-[#0047AB]/5 p-4">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="h-4 w-4 text-[#0047AB]" />
-        <p className="text-sm font-medium text-[#0047AB]">
-          {t("userApplicationhistory.ratingAndFeedback")}
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-4 w-4 text-[#0047AB]" />
+          <p className="text-sm font-medium text-[#0047AB]">
+            {isEditing
+              ? t("userApplicationhistory.editYourFeedback")
+              : t("userApplicationhistory.ratingAndFeedback")}
+          </p>
+        </div>
+        {isEditing && onCancel && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            className="h-7 text-xs text-slate-500 hover:text-slate-700">
+            {t("common.cancel")}
+          </Button>
+        )}
       </div>
       <div className="space-y-3">
         <div className="space-y-1.5">
@@ -607,7 +707,7 @@ function RateMentorForm({
           ) : (
             <>
               <Send className="h-3.5 w-3.5" />
-              {t("common.submit")}
+              {isEditing ? t("common.update") : t("common.submit")}
             </>
           )}
         </Button>
@@ -637,6 +737,18 @@ export function MentorInterviewHub({
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isEditingFeedback, setIsEditingFeedback] = useState(false);
+
+  // Debug: log when props change
+  useEffect(() => {
+    console.log("[DEBUG][MentorInterviewHub] Props changed:", {
+      status,
+      sessionId,
+      sessionInfo,
+      sessionEnded,
+      sessionStatus,
+    });
+  }, [status, sessionId, sessionInfo, sessionEnded, sessionStatus]);
 
   const hubStatus = deriveHubStatus({
     status,
@@ -648,10 +760,12 @@ export function MentorInterviewHub({
     sessionStatus,
   });
 
+  // Debug: log computed hubStatus
+  console.log("[DEBUG][MentorInterviewHub] computed hubStatus:", hubStatus);
+
   const progressStep = (() => {
     switch (hubStatus) {
       case "NO_SLOT":
-      case "AWAITING_MENTOR_REVIEW":
         return 0;
       case "SCHEDULE_CONFIRMED":
       case "OFFLINE_CONFIRMED":
@@ -659,11 +773,13 @@ export function MentorInterviewHub({
       case "ROOM_READY":
       case "IN_PROGRESS":
         return 2;
-      case "REVIEW_READY":
+      case "AWAITING_MENTOR_REVIEW":
         return 3;
       case "RATE_MENTOR":
-      case "COMPLETED":
         return 4;
+      case "REVIEW_READY":
+      case "COMPLETED":
+        return 5;
       default:
         return 0;
     }
@@ -683,11 +799,22 @@ export function MentorInterviewHub({
   const getStatusBadge = () => {
     switch (hubStatus) {
       case "NO_SLOT":
-      case "AWAITING_MENTOR_REVIEW":
         return {
           label: t("userMentorReview.awaitingMentorTitle"),
           className: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
           icon: Hourglass,
+        };
+      case "AWAITING_MENTOR_REVIEW":
+        return {
+          label: t("userMentorReview.awaitingReviewTitle"),
+          className: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+          icon: Clock,
+        };
+      case "RATE_MENTOR":
+        return {
+          label: t("userApplicationhistory.pleaseRateMentor"),
+          className: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+          icon: Star,
         };
       case "SCHEDULE_CONFIRMED":
         return {
@@ -712,18 +839,6 @@ export function MentorInterviewHub({
           label: t("userKiosk.interviewInProgress"),
           className: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
           icon: Video,
-        };
-      case "REVIEW_READY":
-        return {
-          label: t("userApplicationhistory.reviewReceived"),
-          className: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-          icon: GraduationCap,
-        };
-      case "RATE_MENTOR":
-        return {
-          label: t("userApplicationhistory.pleaseRateMentor"),
-          className: "bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-blue-300",
-          icon: Star,
         };
       case "COMPLETED":
         return {
@@ -798,9 +913,9 @@ export function MentorInterviewHub({
             )}
             {hubStatus === "AWAITING_MENTOR_REVIEW" && (
               <div className="flex flex-col items-center gap-3 py-4 text-center">
-                <Hourglass className="h-10 w-10 text-amber-500" />
+                <Clock className="h-10 w-10 text-blue-500" />
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {t("userMentorReview.awaitingMentorDesc")}
+                  {t("userMentorReview.awaitingReviewDesc")}
                 </p>
               </div>
             )}
@@ -825,15 +940,72 @@ export function MentorInterviewHub({
                 />
               </div>
             )}
-            {hubStatus === "COMPLETED" && (
-              <div className="flex flex-col items-center gap-3 py-4 text-center">
-                <CheckCircle2 className="h-10 w-10 text-green-500" />
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                  {t("userApplicationhistory.reviewAlreadySubmitted")}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {t("userApplicationhistory.thankYouForYourFeedback")}
-                </p>
+            {hubStatus === "COMPLETED" && !isEditingFeedback && (
+              <div className="space-y-4 py-2">
+                {mentorReview && <MentorReviewCard review={mentorReview} />}
+                {mentorFeedback && (
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {t("userApplicationhistory.yourFeedback")}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditingFeedback(true)}
+                        className="h-7 text-xs text-[#0047AB] hover:text-[#003d91]">
+                        {t("common.edit")}
+                      </Button>
+                    </div>
+                    <div className="mb-2 flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={cn(
+                            "h-4 w-4",
+                            star <= (mentorFeedback.rating || 0)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "fill-transparent text-slate-300"
+                          )}
+                        />
+                      ))}
+                    </div>
+                    {mentorFeedback.comment && (
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {mentorFeedback.comment}
+                      </p>
+                    )}
+                    {mentorFeedback.createdAt && (
+                      <p className="mt-2 text-xs text-slate-400">
+                        {formatVnDateTime(mentorFeedback.createdAt)}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <CheckCircle2 className="h-8 w-8 text-green-500" />
+                  <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                    {t("userApplicationhistory.reviewAlreadySubmitted")}
+                  </p>
+                </div>
+              </div>
+            )}
+            {hubStatus === "COMPLETED" && isEditingFeedback && (
+              <div className="space-y-4">
+                {mentorReview && <MentorReviewCard review={mentorReview} />}
+                <RateMentorForm
+                  sessionId={sessionId}
+                  mentorId={mentorId}
+                  userId={currentUserId}
+                  feedbackId={mentorFeedback?.id}
+                  initialRating={mentorFeedback?.rating}
+                  initialComment={mentorFeedback?.comment}
+                  onSubmitSuccess={() => {
+                    setIsEditingFeedback(false);
+                    handleFeedbackSubmitted();
+                  }}
+                  onCancel={() => setIsEditingFeedback(false)}
+                />
               </div>
             )}
           </div>

@@ -18,6 +18,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { MentorInterviewHub } from "@/components/user/MentorInterviewHub";
 import { useCurrentRound } from "@/hooks/useRound";
+import type { MentorReview } from "@/interfaces/schema.types";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
@@ -655,6 +656,9 @@ function RoundTimelineItem({
   currentUserId,
   sessionEnded,
   sessionStatus,
+  mentorSessionReview,
+  mentorSessionFeedback,
+  onMentorFeedbackSubmitted,
 }: {
   detail?: ApplicationDetail;
   round?: JdRound;
@@ -672,6 +676,9 @@ function RoundTimelineItem({
   currentUserId?: number;
   sessionEnded?: boolean;
   sessionStatus?: string;
+  mentorSessionReview?: MentorReview;
+  mentorSessionFeedback?: { id?: number; rating?: number; comment?: string };
+  onMentorFeedbackSubmitted?: () => void;
 }) {
   const { t } = useTranslation();
   const status = detail?.status as RoundDetailStatus | undefined;
@@ -814,17 +821,19 @@ function RoundTimelineItem({
               {(round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
                 detail && (
                   <MentorInterviewHub
+                    key={`mentor-hub-${detail.id}-${sessionStatus ?? "loading"}-${mentorSessionFeedback?.id ?? "none"}`}
                     applicationId={applicationId ?? 0}
                     detailId={detail.id}
                     mentorId={detail.mentorId}
                     sessionId={detail.sessionId ?? detail.sessionInfo?.sessionId ?? undefined}
                     sessionInfo={detail.sessionInfo ?? null}
-                    mentorReview={detail.mentorReview}
-                    mentorFeedback={(detail as { mentorFeedback?: { id?: number } }).mentorFeedback}
+                    mentorReview={detail.mentorReview ?? mentorSessionReview ?? undefined}
+                    mentorFeedback={mentorSessionFeedback ?? undefined}
                     status={effectiveStatus}
                     sessionEnded={sessionEnded}
                     sessionStatus={sessionStatus}
                     currentUserId={currentUserId}
+                    onFeedbackSubmitted={onMentorFeedbackSubmitted}
                   />
                 )}
 
@@ -971,38 +980,138 @@ function ApplicationDetailPanel({
   // Track session end time for MENTOR_REVIEW rounds to determine if interview has ended
   const [mentorSessionEnded, setMentorSessionEnded] = useState(false);
   const [mentorSessionStatus, setMentorSessionStatus] = useState<string | null>(null);
+  const [mentorSessionReview, setMentorSessionReview] = useState<MentorReview | undefined>(
+    undefined
+  );
+  const [mentorSessionFeedback, setMentorSessionFeedback] = useState<
+    | {
+        id?: number;
+        rating?: number;
+        comment?: string;
+      }
+    | undefined
+  >(undefined);
 
   // Fetch session details to check if interview has ended (for MENTOR_REVIEW rounds)
   useEffect(() => {
     if (!id) return;
-    const details = detailsData as (ApplicationDetail & { roundType?: string })[];
-    const mentorDetail = details.find(
-      (d) => d.roundType === "MENTOR_REVIEW" || d.roundType === "MENTROR_REVIEW"
+    console.log("[DEBUG][MentorSession] === START ===");
+    console.log(
+      "[DEBUG][MentorSession] rounds:",
+      rounds.map((r) => ({ id: r.id, name: r.name, roundType: r.roundType }))
     );
+    console.log(
+      "[DEBUG][MentorSession] detailsData:",
+      detailsData.map((d) => ({
+        roundId: d.roundId,
+        sessionId: d.sessionId,
+        sessionInfo: d.sessionInfo,
+      }))
+    );
+
+    // roundType is on the round object (from JD), not on detail
+    // Find mentor round from rounds array first
+    const mentorRound = rounds.find(
+      (r) => r.roundType === "MENTOR_REVIEW" || r.roundType === "MENTROR_REVIEW"
+    );
+    console.log("[DEBUG][MentorSession] mentorRound:", mentorRound);
+    if (!mentorRound) {
+      console.log("[DEBUG][MentorSession] No mentor round found in rounds");
+      setMentorSessionEnded(false);
+      setMentorSessionStatus(null);
+      return;
+    }
+    // Then find the detail for that round
+    const mentorDetail = detailsData.find((d) => d.roundId === mentorRound.id);
+    console.log("[DEBUG][MentorSession] mentorDetail:", mentorDetail);
     if (!mentorDetail) {
+      console.log("[DEBUG][MentorSession] No detail found for mentor round");
       setMentorSessionEnded(false);
       setMentorSessionStatus(null);
       return;
     }
     const sessionIdToFetch = mentorDetail.sessionId ?? mentorDetail.sessionInfo?.sessionId ?? null;
+    console.log("[DEBUG][MentorSession] sessionIdToFetch:", sessionIdToFetch);
     if (!sessionIdToFetch) {
+      console.log("[DEBUG][MentorSession] No sessionId found");
       setMentorSessionEnded(false);
       setMentorSessionStatus(null);
       return;
     }
+    console.log("[DEBUG][MentorSession] Fetching session...");
     fetchClient
       .GET("/api/sessions/{id}", { params: { path: { id: sessionIdToFetch } } })
       .then((res) => {
+        console.log("[DEBUG][MentorSession] Session response:", res.data);
         if (res.response?.ok) {
-          const session = res.data as { endTime1?: string | null; status?: string };
+          const session = res.data as {
+            endTime1?: string | null;
+            status?: string;
+            mentorReview?: MentorReview;
+            mentorFeedback?: { id?: number; rating?: number; comment?: string };
+          };
+          console.log(
+            "[DEBUG][MentorSession] Session endTime1:",
+            session?.endTime1,
+            "status:",
+            session?.status,
+            "mentorReview:",
+            session?.mentorReview,
+            "mentorFeedback:",
+            session?.mentorFeedback
+          );
           setMentorSessionEnded(!!session?.endTime1);
           setMentorSessionStatus(session?.status ?? null);
+          setMentorSessionReview(session?.mentorReview ?? undefined);
+          setMentorSessionFeedback(session?.mentorFeedback ?? undefined);
+          console.log(
+            "[DEBUG][MentorSession] Set state: ended=",
+            !!session?.endTime1,
+            "status=",
+            session?.status
+          );
         }
       })
-      .catch(() => {
-        // ignore errors
+      .catch((err) => {
+        console.log("[DEBUG][MentorSession] Session fetch error:", err);
       });
-  }, [id, detailsData]);
+  }, [id, detailsData, rounds]);
+
+  // Refetch the mentor session and return the updated feedback (used after the
+  // user submits/edits a feedback so the parent state stays in sync with the
+  // newly created server-side record).
+  const refetchMentorSession = async () => {
+    if (!id) return undefined;
+    const mentorRound = rounds.find(
+      (r: JdRound) => r.roundType === "MENTOR_REVIEW" || r.roundType === "MENTROR_REVIEW"
+    );
+    if (!mentorRound) return undefined;
+    const mentorDetail = detailsData.find((d) => d.roundId === mentorRound.id);
+    if (!mentorDetail) return undefined;
+    const sessionIdToFetch = mentorDetail.sessionId ?? mentorDetail.sessionInfo?.sessionId ?? null;
+    if (!sessionIdToFetch) return undefined;
+    try {
+      const res = await fetchClient.GET("/api/sessions/{id}", {
+        params: { path: { id: sessionIdToFetch } },
+      });
+      if (res.response?.ok) {
+        const session = res.data as {
+          endTime1?: string | null;
+          status?: string;
+          mentorReview?: MentorReview;
+          mentorFeedback?: { id?: number; rating?: number; comment?: string };
+        };
+        setMentorSessionEnded(!!session?.endTime1);
+        setMentorSessionStatus(session?.status ?? null);
+        setMentorSessionReview(session?.mentorReview ?? undefined);
+        setMentorSessionFeedback(session?.mentorFeedback ?? undefined);
+        return session?.mentorFeedback ?? undefined;
+      }
+    } catch (err) {
+      console.log("[DEBUG][MentorSession] Refetch error:", err);
+    }
+    return undefined;
+  };
 
   const fetchDetails = async (silent = false) => {
     console.log("[DEBUG][fetchDetails] called for applicationId:", id, "silent:", silent);
@@ -1375,6 +1484,9 @@ function ApplicationDetailPanel({
                 currentUserId={currentUserId}
                 sessionEnded={mentorSessionEnded}
                 sessionStatus={mentorSessionStatus ?? undefined}
+                mentorSessionReview={mentorSessionReview ?? undefined}
+                mentorSessionFeedback={mentorSessionFeedback}
+                onMentorFeedbackSubmitted={refetchMentorSession}
               />
             ))
           )}
