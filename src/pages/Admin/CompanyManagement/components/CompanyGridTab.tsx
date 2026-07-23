@@ -2,7 +2,7 @@ import { PaginationControl } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
-import { companyManager, jobDescriptionManager } from "@/services";
+import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Folder, Plus } from "lucide-react";
 import React, { useMemo, useState } from "react";
@@ -96,9 +96,30 @@ export function CompanyGridTab({ companies, searchQuery, onCompanyUpdate }: Comp
     enabled: !!selectedCompanyId,
   });
 
+  const { data: openJds = [] } = useQuery({
+    queryKey: ["admin", "open-jds"],
+    queryFn: async () => {
+      const res = await adminApplicationManager.getOpenJds();
+      return res.success && res.data ? res.data : [];
+    },
+    enabled: !!selectedCompanyId,
+  });
+
+  const enrichedCompanyJds = useMemo(() => {
+    return companyJds.map((jd) => {
+      const openJdInfo = openJds.find((o) => (o.jdId || o.id) === jd.id);
+      return {
+        ...jd,
+        companyName: selectedCompany?.name || (jd as any).companyName,
+        companyLogoUrl: selectedCompany?.logoUrl || openJdInfo?.company?.logoUrl || (jd as any).companyLogoUrl,
+        applicationCount: openJdInfo?.statistics?.totalApplications ?? (jd as any).statistics?.totalApplications ?? (jd as any).totalApplications ?? (jd as any).applicationCount ?? (jd as any).applicationsCount ?? jd.applications?.length ?? 0,
+      };
+    });
+  }, [companyJds, selectedCompany, openJds]);
+
   const selectedJd = useMemo(() => {
-    return selectedJdId ? companyJds.find((j) => j.id === selectedJdId) : null;
-  }, [selectedJdId, companyJds]);
+    return selectedJdId ? enrichedCompanyJds.find((j) => j.id === selectedJdId) : null;
+  }, [selectedJdId, enrichedCompanyJds]);
 
   const handleEditClick = (company: Company, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -317,7 +338,7 @@ export function CompanyGridTab({ companies, searchQuery, onCompanyUpdate }: Comp
             />
           ) : (
             <JobDescriptionTable
-              jobDescriptions={companyJds}
+              jobDescriptions={enrichedCompanyJds}
               onView={(jd) => setSelectedJdId(jd.id!)}
               onToggleStatus={async (job, nextStatus) => {
                 try {

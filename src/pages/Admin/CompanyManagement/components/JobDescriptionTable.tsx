@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
-import { Briefcase, Calendar, Users } from "lucide-react";
+import { Briefcase, Calendar, Clock, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
 
@@ -127,11 +127,11 @@ export function JobDescriptionTable({
           {jobDescriptions.map((job) => {
             const isClosed = job.status === "CLOSED";
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const compName = (job as any).company?.name || (job as any).companyName || "—";
+            const compName = (job as any).companyName || (job as any).company?.name || "—";
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const compLogo = (job as any).company?.logoUrl || (job as any).companyLogo || (job as any).logoUrl;
+            const compLogo = (job as any).companyLogoUrl || (job as any).company?.logoUrl || (job as any).companyLogo || (job as any).logoUrl;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const appCount = (job as any).statistics?.totalApplications ?? (job as any).totalApplications ?? (job as any).applicationCount ?? (job as any).applicationsCount ?? job.applications?.length ?? 0;
+            const appCount = (job as any).applicationCount ?? (job as any).statistics?.totalApplications ?? (job as any).totalApplications ?? (job as any).applicationsCount ?? job.applications?.length ?? 0;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const createdDate = (job as any).createdAt || (job as any).createdDate || (job as any).createdAtDate;
 
@@ -154,13 +154,13 @@ export function JobDescriptionTable({
                 {showCompany && (
                   <TableCell className="text-slate-600 dark:text-slate-300">
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6 border border-slate-200 dark:border-slate-800">
+                      <Avatar className="h-6 w-6 border border-slate-200 shadow-2xs dark:border-slate-800">
                         <AvatarImage src={compLogo} alt={compName} />
                         <AvatarFallback className="bg-indigo-50 text-[10px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                           {compName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium text-slate-800 dark:text-slate-200">{compName}</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs">{compName}</span>
                     </div>
                   </TableCell>
                 )}
@@ -170,16 +170,22 @@ export function JobDescriptionTable({
                   </span>
                 </TableCell>
                 <TableCell>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50/80 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
-                    <Users className="h-3 w-3" />
+                  <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50/80 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
+                    <Users className="h-3 w-3 text-indigo-500" />
                     {appCount} lượt
                   </span>
                 </TableCell>
-                <TableCell className="text-xs text-slate-500">
-                  {formatDate(job.deadlineAt)}
+                <TableCell>
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                    <span>{formatDate(job.deadlineAt)}</span>
+                  </div>
                 </TableCell>
-                <TableCell className="text-xs text-slate-500">
-                  {formatDate(createdDate)}
+                <TableCell>
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <Calendar className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                    <span>{formatDate(createdDate)}</span>
+                  </div>
                 </TableCell>
                 <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <Switch

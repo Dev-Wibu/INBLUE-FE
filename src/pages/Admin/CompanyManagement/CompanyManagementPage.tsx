@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
-import { companyManager, jobDescriptionManager } from "@/services";
+import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -67,12 +67,32 @@ export function CompanyManagementPage() {
     enabled: activeTab === "jds",
   });
 
+  // Fetch open-jds stats to get live totalApplications & company info
+  const { data: openJds = [] } = useQuery({
+    queryKey: ["admin", "open-jds"],
+    queryFn: async () => {
+      const res = await adminApplicationManager.getOpenJds();
+      return res.success && res.data ? res.data : [];
+    },
+    enabled: activeTab === "jds",
+  });
+
   const processedJds = useMemo(() => {
     let result = allJds.map((jd) => {
-      const company = companies.find((c) => c.jobDescriptions?.some((j) => j.id === jd.id));
+      const openJdInfo = openJds.find((o) => (o.jdId || o.id) === jd.id);
+      const company = companies.find(
+        (c) =>
+          c.jobDescriptions?.some((j) => j.id === jd.id) ||
+          c.id === (jd as any).companyId ||
+          c.id === (jd as any).company?.id ||
+          (openJdInfo?.companyId && c.id === openJdInfo.companyId)
+      );
+
       return {
         ...jd,
-        companyName: company?.name,
+        companyName: company?.name || openJdInfo?.companyName || (jd as any).company?.name || (jd as any).companyName,
+        companyLogoUrl: company?.logoUrl || openJdInfo?.company?.logoUrl || (jd as any).company?.logoUrl || (jd as any).companyLogo,
+        applicationCount: openJdInfo?.statistics?.totalApplications ?? (jd as any).statistics?.totalApplications ?? (jd as any).totalApplications ?? (jd as any).applicationCount ?? (jd as any).applicationsCount ?? jd.applications?.length ?? 0,
       };
     });
 
@@ -87,7 +107,7 @@ export function CompanyManagementPage() {
     }
 
     return result;
-  }, [allJds, companies, jdSearchQuery]);
+  }, [allJds, companies, openJds, jdSearchQuery]);
 
   const jdPagination = usePagination({
     totalCount: processedJds.length,
