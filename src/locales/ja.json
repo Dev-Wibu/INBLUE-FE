@@ -901,6 +901,7 @@
     "yourApplicationHasBeenSubmitted": "申請が正常に送信されました"
   },
   "common": {
+    "free": "無料",
     "details": "詳細",
     "unableToLoadData": "データを読み込めません",
     "updating": "更新中...",

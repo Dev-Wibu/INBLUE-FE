@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
+import { formatCurrency } from "@/lib/formatting";
 import i18n from "@/lib/i18n";
 import { applicationService } from "@/services/application.manager";
 import { companyManager, type JobDescription } from "@/services/company.manager";
@@ -276,9 +277,12 @@ export function JobDescriptionDetailPage() {
       );
     }
 
-    const priceText = job?.salaryMax
-      ? formatSalary(job.salaryMin, job.salaryMax, job.currency)
-      : "99.000đ";
+    const priceText =
+      typeof job?.price === "number" && job.price > 0
+        ? formatCurrency(job.price)
+        : typeof job?.price === "number" && job.price === 0
+          ? t("common.free", "Miễn phí")
+          : "99.000đ";
 
     return (
       <Button

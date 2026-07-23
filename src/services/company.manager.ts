@@ -96,6 +96,7 @@ export interface JobDescription {
   // Computed field for company detail page
   companyId?: number;
   companyName?: string;
+  price?: number;
 }
 export interface CompanyDetail extends Company {
   jobDescriptions?: JobDescription[];

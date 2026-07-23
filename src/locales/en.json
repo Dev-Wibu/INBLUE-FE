@@ -938,6 +938,7 @@
     "yourApplicationHasBeenSubmitted": "Your application has been submitted successfully"
   },
   "common": {
+    "free": "Free",
     "generalInformation": "General Information",
     "mentorInformation": "Mentor Information",
     "roomName1": "Room name",
