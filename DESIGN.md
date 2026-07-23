@@ -54,19 +54,41 @@ Tất cả Admin pages đều dùng **full-bleed layout** — mở rộng ra kh�
 - Table nằm thẳng trong content area, không có card bao ngoài.
 - Pagination nằm cuối content area với `px-4 pb-4 sm:px-6 sm:pb-6`.
 
-### Detail / Create / Edit view
+### Detail / Nested / Drill-down view (Single Unified Header Standard)
 
-Khi chuyển sang view chi tiết hoặc form tạo/sửa, dùng cùng full-bleed wrapper:
+Khi chuyển sang view chi tiết hoặc màn hình phân cấp (Root -> Parent -> Child), tuân thủ tiêu chuẩn **Single Unified Header & Sleek 1-Line Inline Breadcrumb**:
 
 ```jsx
 <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-  {/* Toolbar with back button + title */}
-  <div className="flex flex-none items-center gap-4 border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-    <button className="flex h-9 w-9 items-center justify-center rounded-lg border ...">
-      <ChevronLeft className="h-5 w-5" />
-    </button>
-    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Page Title</h2>
+  {/* Unified Single Header (Single horizontal line, zero title duplication) */}
+  <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+    <div className="flex flex-wrap items-center gap-2 min-w-0">
+      <button className="text-xs font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400">
+        Quản lý công ty
+      </button>
+      <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+      <button className="text-xs font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400">
+        FBT Software
+      </button>
+      <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+      <h1 className="text-base font-bold text-slate-900 dark:text-white truncate">
+        Fresher Java Engineer
+      </h1>
+      <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30">OPEN</Badge>
+    </div>
+
+    {/* Header right side controls (Tab switchers + Action buttons) */}
+    <div className="flex items-center gap-3">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="h-8">
+          <TabsTrigger value="process">Quy trình & Thông tin JD</TabsTrigger>
+          <TabsTrigger value="applications">Đơn ứng tuyển ({count})</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <Button variant="outline" size="sm">Chỉnh sửa</Button>
+    </div>
   </div>
+
   {/* Scrollable content */}
   <div className="flex-1 overflow-auto">...</div>
 </div>

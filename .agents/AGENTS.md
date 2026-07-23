@@ -30,6 +30,18 @@ Always use shadcn/ui `<Table>` components (Table, TableHeader, TableBody, TableR
 - Result counts (e.g. `Hiển thị X/Y kết quả`) MUST be placed ABOVE the table (usually inside a `div.mb-3`), and ONLY displayed when a filter is active or required.
 - The `PaginationControl` MUST be placed immediately AFTER the table container. It must be wrapped in `<div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">`. Do not include result counts inside this pagination bar.
 
+### Single Unified Header & Nested Page Breadcrumb Standard
+
+All nested pages and drill-down views (Root -> Parent Entity -> Child Detail) MUST adhere to the following header rules:
+
+1. **Single Header Only**: NEVER render stacked or duplicated inner headers inside sub-components (e.g. `JobDescriptionDetailView`, `CompanyGridTab`). Only 1 single header is allowed at the top of the parent page.
+2. **Sleek 1-Line Inline Breadcrumb & Title**:
+   - Parent nodes (e.g., `Quản lý công ty`, `Company Name`) MUST be clickable link buttons (`text-xs font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400`).
+   - Current active node (e.g., `JD Title`) MUST sit at the end of the line as the main bold heading (`text-base font-bold text-slate-900 dark:text-white`).
+   - NEVER duplicate the active item title across multiple vertical lines. All breadcrumb elements, active title, and status badges MUST sit on a single horizontal row (`flex flex-wrap items-center gap-2 min-w-0`).
+3. **Header Right Actions & Tab Switchers**:
+   - Sub-view tab switchers (e.g., `Quy trình & Thông tin JD` vs `Đơn ứng tuyển (X)`) MUST be placed directly inside the right side of the main top header alongside action buttons (`Chỉnh sửa`, `Thêm JD`), eliminating secondary sub-header bars completely.
+
 ## Strict Inblue-FE Development Rules
 
 When modifying or creating code in this workspace, you MUST strictly obey:
