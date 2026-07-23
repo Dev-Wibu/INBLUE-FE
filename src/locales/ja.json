@@ -127,6 +127,14 @@
     "unableToUpdateSchedule": "スケジュールを更新できません",
     "unableToLoadSchedules": "スケジュールを読み込めません",
     "invalidKioskId": "無効なキオスクです",
+    "searchHistoryPlaceholder": "履歴を検索...",
+    "noHistory": "履歴がありません",
+    "minutes": "分",
+    "addSchedule": "スケジュールを追加",
+    "noLocation": "場所なし",
+    "createdAt": "作成日時",
+    "scheduleGridTitle": "スケジュールグリッド",
+    "historyTitle": "履歴",
     "dayColumn": "曜日",
     "openTimeColumn": "開店",
     "closeTimeColumn": "閉店",
@@ -893,6 +901,9 @@
     "yourApplicationHasBeenSubmitted": "申請が正常に送信されました"
   },
   "common": {
+    "details": "詳細",
+    "unableToLoadData": "データを読み込めません",
+    "updating": "更新中...",
     "exercises": "問題",
     "submitting": "提出中...",
     "clear": "クリア",
@@ -3631,6 +3642,10 @@
     "searchPlaceholder": "勤務地、企業名で検索...",
     "filterByStatus": "ステータスで絞り込む",
     "allStatus": "すべて",
+    "feedbackPlaceholder": "体験を共有してください...",
+    "reviewReceived": "レビューを受信しました",
+    "pleaseRateMentor": "メンターを評価してください",
+    "completed": "完了",
     "statusInterviewing": "面接中",
     "statusCompleted": "完了",
     "statusRejected": "不採用",
@@ -4193,6 +4208,8 @@
     "confirming": "確認中…",
     "onlineConfirmed": "オンライン面接のスケジュールが確定しました！",
     "offlineConfirmed": "オフライン面接のスケジュールが確定しました！",
+    "scheduleConfirmed": "面接スケジュールが確定しました",
+    "waitingForRoom": "面接ルームの準備を待っています",
     "pickDateFirst": "先に日時を選択してください。",
     "invalidDate": "無効な日時です。",
     "mentorMissing": "メンターがまだ割り当てられていません。管理者を待ってください。",
@@ -4892,6 +4909,7 @@
     "updateQuestion": "質問を更新",
     "editInfoInstructions": "質問情報を編集します。変更はすぐに更新されます。",
     "createOrAi": "新しい質問を作成するか、AIを使用して質問を自動的に生成します。",
+    "enterTopicsFirst": "最初にトピックを入力してください",
     "questions": "質問",
     "markAsCorrect": "正解とする"
   },
@@ -5001,5 +5019,14 @@
     "soon": "もうすぐ",
     "awaitingMentor": "メンター割り当て待ち",
     "pickSchedule": "面接スケジュールを選択"
+  },
+  "payment": {
+    "buyPackage": "パッケージを購入",
+    "buyPackageWithPrice": "パッケージを購入 — {{price}}",
+    "createPaymentFailed": "決済注文の作成に失敗しました。もう一度お試しください。",
+    "paymentRequiredToApply": "このJDに応募するには、まずパッケージを購入する必要があります。",
+    "purchaseJdSuccess": "JDパッケージの購入が完了しました！今すぐ応募できます。",
+    "paymentPendingWebhook": "決済を確認中です。しばらくしてから再度ご確認ください。",
+    "returnToJobPosition": "求人詳細ページに戻る"
   }
 }

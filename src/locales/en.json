@@ -943,6 +943,9 @@
     "roomName1": "Room name",
     "idMentor": "Mentor ID",
     "transactionCode": "Transaction code",
+    "details": "Details",
+    "unableToLoadData": "Unable to load data",
+    "updating": "Updating...",
     "action": "Action",
     "viewDetails": "View details",
     "stt": "No.",
@@ -3633,6 +3636,10 @@
     "searchPlaceholder": "Search by location, company...",
     "filterByStatus": "Filter by status",
     "allStatus": "All",
+    "feedbackPlaceholder": "Share your experience...",
+    "reviewReceived": "Received review",
+    "pleaseRateMentor": "Please rate the mentor",
+    "completed": "Completed",
     "statusInterviewing": "Interviewing",
     "statusCompleted": "Completed",
     "statusRejected": "Rejected",
@@ -4899,6 +4906,7 @@
     "updateQuestion": "Update Question",
     "editInfoInstructions": "Edit question information. Changes will be updated immediately.",
     "createOrAi": "Create a new question or use AI to automatically generate questions.",
+    "enterTopicsFirst": "Please enter topics first",
     "questions": "questions",
     "markAsCorrect": "Mark as correct"
   },
@@ -5008,5 +5016,14 @@
     "soon": "soon",
     "awaitingMentor": "Awaiting mentor assignment",
     "pickSchedule": "Pick interview schedule"
+  },
+  "payment": {
+    "buyPackage": "Buy Package",
+    "buyPackageWithPrice": "Buy Package — {{price}}",
+    "createPaymentFailed": "Failed to create payment order. Please try again.",
+    "paymentRequiredToApply": "You need to purchase an application package for this JD first.",
+    "purchaseJdSuccess": "JD package purchased successfully! You can apply now.",
+    "paymentPendingWebhook": "Payment is being confirmed. Please check back in a few moments.",
+    "returnToJobPosition": "Return to job description page"
   }
 }

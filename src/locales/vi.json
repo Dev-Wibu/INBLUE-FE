@@ -940,6 +940,9 @@
     "roomName1": "Tên phòng",
     "idMentor": "ID Mentor",
     "transactionCode": "Mã giao dịch",
+    "details": "Chi tiết",
+    "unableToLoadData": "Không thể tải dữ liệu",
+    "updating": "Đang cập nhật...",
     "action": "Hành động",
     "viewDetails": "Xem chi tiết",
     "stt": "STT",
@@ -3630,6 +3633,7 @@
     "searchPlaceholder": "Tìm kiếm theo vị trí, công ty...",
     "filterByStatus": "Lọc theo trạng thái",
     "allStatus": "Tất cả",
+    "completed": "Đã hoàn thành",
     "statusInterviewing": "Đang phỏng vấn",
     "statusCompleted": "Đã hoàn thành",
     "statusRejected": "Từ chối",
@@ -4903,6 +4907,7 @@
     "updateQuestion": "Cập nhật câu hỏi",
     "editInfoInstructions": "Chỉnh sửa thông tin câu hỏi. Các thay đổi sẽ được cập nhật ngay.",
     "createOrAi": "Tạo câu hỏi mới hoặc sử dụng AI để tự động tạo câu hỏi.",
+    "enterTopicsFirst": "Vui lòng nhập chủ đề trước",
     "questions": "câu hỏi",
     "markAsCorrect": "Đánh dấu đáp án đúng"
   },
@@ -5012,5 +5017,14 @@
     "soon": "sắp tới",
     "awaitingMentor": "Đang chờ phân công mentor",
     "pickSchedule": "Chọn lịch phỏng vấn"
+  },
+  "payment": {
+    "buyPackage": "Mua gói",
+    "buyPackageWithPrice": "Mua gói — {{price}}",
+    "createPaymentFailed": "Không thể tạo đơn thanh toán. Vui lòng thử lại.",
+    "paymentRequiredToApply": "Bạn cần mua gói apply cho JD này trước.",
+    "purchaseJdSuccess": "Mua gói JD thành công! Bạn có thể nộp đơn ngay.",
+    "paymentPendingWebhook": "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút.",
+    "returnToJobPosition": "Quay lại trang vị trí việc làm"
   }
 }
