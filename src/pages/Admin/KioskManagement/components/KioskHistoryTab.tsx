@@ -1,4 +1,5 @@
-import { KioskStatusBadge, ReloadButton } from "@/components/shared";
+import { KioskStatusBadge, PaginationControl, ReloadButton } from "@/components/shared";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import {
@@ -74,6 +75,20 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
       );
     });
   }, [history, searchQuery, statusFilter]);
+
+  const [pageSize, setPageSize] = useHybridPageSize({
+    key: "src_pages_admin_kioskmanagement_components_kioskhistorytab_tsx_pagesize",
+    defaultPageSize: 10,
+  });
+
+  const pagination = usePagination({
+    totalCount: filteredHistory.length,
+    pageSize,
+  });
+
+  const pageData = useMemo(() => {
+    return filteredHistory.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [filteredHistory, pagination.startIndex, pagination.endIndex]);
 
   const formatDateOnly = (dateStr?: string) => {
     if (!dateStr) return "—";
@@ -151,7 +166,10 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
           <Input
             placeholder={t("adminKioskManagement.searchHistoryPlaceholder")}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              pagination.goToFirstPage();
+            }}
             className="h-8 pl-8 text-xs focus-visible:ring-indigo-500"
           />
         </div>
@@ -162,7 +180,10 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
               <button
                 key={f.id}
                 type="button"
-                onClick={() => setStatusFilter(f.id)}
+                onClick={() => {
+                  setStatusFilter(f.id);
+                  pagination.goToFirstPage();
+                }}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
                   statusFilter === f.id
                     ? "bg-indigo-600 text-white shadow-xs"
@@ -217,7 +238,7 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredHistory.map((item) => (
+              {pageData.map((item) => (
                 <TableRow
                   key={item.bookingId || Math.random()}
                   className="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
@@ -308,6 +329,17 @@ export function KioskHistoryTab({ kioskId }: KioskHistoryTabProps) {
               ))}
             </TableBody>
           </Table>
+          {filteredHistory.length > 0 && (
+            <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              <PaginationControl
+                pagination={pagination}
+                onPageSizeChange={(nextPageSize) => {
+                  setPageSize(nextPageSize);
+                  pagination.goToFirstPage();
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

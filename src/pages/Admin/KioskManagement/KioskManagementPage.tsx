@@ -2,7 +2,7 @@ import { ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { kioskManager } from "@/services/kiosk.manager";
-import { Building2, Plus, Search, Sparkles } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -147,20 +147,14 @@ export function KioskManagementPage() {
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* ── TOOLBAR ──────────────────────────────────────────────────────────── */}
-      <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-3.5 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-50 text-pink-600 dark:bg-pink-950/60 dark:text-pink-400">
-            <Building2 className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-500 uppercase">
-              <Sparkles className="h-3.5 w-3.5 text-pink-500" />
-              {t("common.administration")}
-            </div>
-            <h1 className="mt-0.5 text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              {t("adminKioskManagement.title")}
-            </h1>
-          </div>
+      <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            {t("adminKioskManagement.title")}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Quản lý danh sách trạm Kiosk và lịch hoạt động
+          </p>
         </div>
 
         <div className="flex items-center gap-2.5">

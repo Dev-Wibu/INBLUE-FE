@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { kioskManager } from "@/services/kiosk.manager";
-import { ArrowLeft, CalendarDays, History, MapPin, Pencil, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarDays, History, MapPin, Pencil } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -265,12 +265,8 @@ export function KioskDetailPage() {
             </div>
           ) : (
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-500 uppercase">
-                <Sparkles className="h-3.5 w-3.5 text-pink-500" />
-                {t("adminKioskManagement.title")}
-              </div>
-              <div className="mt-0.5 flex flex-wrap items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                   {kiosk?.name || `Kiosk #${kioskId}`}
                 </h1>
                 <Badge
@@ -279,6 +275,9 @@ export function KioskDetailPage() {
                   #{kioskId}
                 </Badge>
               </div>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Chi tiết trạm Kiosk và lịch hoạt động phỏng vấn
+              </p>
             </div>
           )}
         </div>
