@@ -327,8 +327,6 @@ export function InterviewTemplateManagementPage() {
           </div>
         </div>
       </div>
-
-      </div>
     </div>
   );
 }
