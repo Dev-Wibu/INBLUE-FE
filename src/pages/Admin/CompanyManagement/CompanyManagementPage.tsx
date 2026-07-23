@@ -7,7 +7,7 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Folder, Plus, Search } from "lucide-react";
+import { ArrowLeft, Building2, ChevronRight, Folder, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -282,60 +282,71 @@ export function CompanyManagementPage() {
         setSelectedCompanyId(null);
       }}
       className="-m-4 flex h-[calc(100%+32px)] flex-col md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
-      {/* Unified Single Header (WITHOUT ICON) */}
+      {/* Unified Single Hierarchical Header */}
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-center gap-3 min-w-0">
           {selectedJd ? (
             /* Mode 3: Inside a specific JD detail view */
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackFromDetail}
-                className="h-8 gap-1.5 px-2 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-                <ArrowLeft className="h-4 w-4" />
-                {t("common.back", "Trở lại")}
-              </Button>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedJdId(null);
+                    setSelectedCompanyId(null);
+                  }}
+                  className="hover:text-indigo-600 hover:underline dark:hover:text-indigo-400">
+                  {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
+                </button>
+                <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
+                {selectedJdCompany && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedJdId(null)}
+                      className="flex items-center gap-1 hover:text-indigo-600 hover:underline dark:hover:text-indigo-400">
+                      <Building2 className="h-3 w-3 text-slate-400" />
+                      <span>{selectedJdCompany}</span>
+                    </button>
+                    <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
+                  </>
+                )}
+                <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
+                  {selectedJd.title}
+                </span>
+              </div>
 
-              {selectedJdCompany && (
-                <>
-                  <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                  <div className="flex items-center gap-2 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                    <Folder className="h-3.5 w-3.5 text-slate-500" />
-                    {selectedJdCompany}
-                  </div>
-                </>
-              )}
-
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-
-              <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white truncate">
-                {selectedJd.title}
-              </h2>
-              <Badge variant={selectedJd.status === "OPEN" ? "default" : "secondary"}>
-                {selectedJd.status}
-              </Badge>
-              {selectedJd.level && <Badge variant="outline">{selectedJd.level}</Badge>}
-            </>
+              <div className="flex items-center gap-3 mt-0.5">
+                <h1 className="text-lg font-bold text-slate-900 dark:text-white truncate">
+                  {selectedJd.title}
+                </h1>
+                <Badge variant={selectedJd.status === "OPEN" ? "default" : "secondary"}>
+                  {selectedJd.status}
+                </Badge>
+                {selectedJd.level && <Badge variant="outline">{selectedJd.level}</Badge>}
+              </div>
+            </div>
           ) : selectedCompany ? (
             /* Mode 2: Inside a specific Company's JD list view */
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedCompanyId(null)}
-                className="h-8 gap-1.5 px-2 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-                <ArrowLeft className="h-4 w-4" />
-                {t("common.back", "Trở lại")}
-              </Button>
-
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-
-              <div className="flex items-center gap-2 rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
-                <Folder className="h-3.5 w-3.5 text-indigo-500" />
-                <span>{selectedCompany.name}</span>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCompanyId(null)}
+                  className="hover:text-indigo-600 hover:underline dark:hover:text-indigo-400">
+                  {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
+                </button>
+                <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {selectedCompany.name}
+                </span>
               </div>
-            </>
+
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5 flex items-center gap-2">
+                <Building2 className="h-4.5 w-4.5 text-indigo-500" />
+                {selectedCompany.name}
+              </h1>
+            </div>
           ) : (
             /* Mode 1: Root Management view (WITHOUT ICON) */
             <div>
