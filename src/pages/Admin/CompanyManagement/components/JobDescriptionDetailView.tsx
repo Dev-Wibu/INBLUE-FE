@@ -1,7 +1,6 @@
 import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
-  getAvailableRoundsTemplates,
-  RoundCanvasEditorDialog,
+  RoundCanvasEditorWorkspace,
 } from "@/components/shared/RoundCanvasEditor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -467,10 +466,12 @@ export function JobDescriptionDetailView({
       </div>
 
       {isEditorOpen && (
-        <RoundCanvasEditorDialog
+        <RoundCanvasEditorWorkspace
           isOpen={isEditorOpen}
           onClose={() => setIsEditorOpen(false)}
           initialRounds={initialRounds}
+          initialMetadata={{ name: jd.title, category: "", description: "" }}
+          title="Quy trình tuyển dụng JD"
           showMetadataInputs={false}
           isSaving={isSaving}
           onSave={handleSaveRounds}

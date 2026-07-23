@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import type { UIRound } from "@/components/shared/RoundCanvasEditor";
-import { RoundCanvasEditorDialog } from "@/components/shared/RoundCanvasEditor";
+import { RoundCanvasEditorWorkspace } from "@/components/shared/RoundCanvasEditor";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -313,7 +313,7 @@ export function InterviewTemplateManagementPage() {
       </div>
 
       {isEditorOpen && (
-        <RoundCanvasEditorDialog
+        <RoundCanvasEditorWorkspace
           isOpen={isEditorOpen}
           onClose={() => setIsEditorOpen(false)}
           initialRounds={editorRounds}

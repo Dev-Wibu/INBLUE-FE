@@ -21,7 +21,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
   getAvailableRoundsTemplates,
-  RoundCanvasEditorDialog,
+  RoundCanvasEditorWorkspace,
 } from "@/components/shared/RoundCanvasEditor";
 
 export function InterviewTemplateDetailPage() {
@@ -374,7 +374,7 @@ export function InterviewTemplateDetailPage() {
       </main>
 
       {isEditorOpen && (
-        <RoundCanvasEditorDialog
+        <RoundCanvasEditorWorkspace
           isOpen={isEditorOpen}
           onClose={() => setIsEditorOpen(false)}
           initialRounds={editorRounds}
