@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Code2,
   Database,
+  FileCheck2,
   LayoutDashboard,
   LayoutTemplate,
   MessageSquare,
@@ -26,6 +27,7 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { MentorReviewAssignmentPage } from "@/pages/Admin/MentorReviewAssignment";
 import { AdminAccountPage } from "../Account/AdminAccountPage";
+import { AdminApplicationManagementPage } from "../ApplicationManagement/AdminApplicationManagementPage";
 import { CodeReviewProblemManagementPage } from "../CodeReviewProblemManagement";
 import { CodingProblemManagementPage } from "../CodingProblemManagement";
 import { CompanyManagementPage } from "../CompanyManagement";
@@ -95,6 +97,12 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
   {
     label: t("adminAdmindashboard.recruitment"),
     items: [
+      {
+        type: "applications",
+        icon: FileCheck2,
+        label: t("adminApplicationManagement.title", "Đơn ứng tuyển"),
+        color: "text-indigo-600 dark:text-indigo-500",
+      },
       {
         type: "sessions",
         icon: Video,
@@ -308,6 +316,7 @@ export function AdminDashboardPage() {
             <Route path="posts" element={<PostManagementPage />} />
             <Route path="companies" element={<CompanyManagementPage />} />
             <Route path="companies/:companyId" element={<CompanyManagementPage />} />
+            <Route path="applications" element={<AdminApplicationManagementPage />} />
             <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
             <Route path="interviewTemplates/:id" element={<InterviewTemplateDetailPage />} />
             <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />

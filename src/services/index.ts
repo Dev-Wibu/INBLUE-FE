@@ -13,6 +13,7 @@
  * }
  */
 
+export * from "./admin-application.manager";
 export * from "./application.manager";
 export * from "./auth.manager";
 export * from "./candidate-profile.manager";
