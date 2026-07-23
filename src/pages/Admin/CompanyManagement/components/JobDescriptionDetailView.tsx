@@ -482,8 +482,6 @@ export function JobDescriptionDetailView({
           </aside>
         </div>
       </div>
-
-      </div>
     </div>
   );
 }
