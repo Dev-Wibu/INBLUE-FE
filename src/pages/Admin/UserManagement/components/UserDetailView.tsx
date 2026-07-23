@@ -567,22 +567,21 @@ export function UserDetailView({
                       </a>
                     </nav>
                   </div>
-                </div>
               )}
             </div>
           )}
         </div>
-      </div>
 
-      <CVUploadModal
-        isOpen={isCvModalOpen}
-        onOpenChange={setIsCvModalOpen}
-        currentCvUrl={user?.cvUrl}
-        onUpload={handleCvUpload}
-        isUploading={isCvUploading}
-        title="Cập nhật CV"
-        description="Tải lên CV (định dạng PDF) cho ứng viên này."
-      />
+        <CVUploadModal
+          isOpen={isCvModalOpen}
+          onOpenChange={setIsCvModalOpen}
+          currentCvUrl={user?.cvUrl}
+          onUpload={handleCvUpload}
+          isUploading={isCvUploading}
+          title="Cập nhật CV"
+          description="Tải lên CV (định dạng PDF) cho ứng viên này."
+        />
+      </div>
     </div>
   );
 }
