@@ -657,6 +657,8 @@ function RoundTimelineItem({
   sessionEnded,
   sessionStatus,
   mentorSessionReview,
+  mentorSessionFeedback,
+  onMentorFeedbackSubmitted,
 }: {
   detail?: ApplicationDetail;
   round?: JdRound;
@@ -675,6 +677,8 @@ function RoundTimelineItem({
   sessionEnded?: boolean;
   sessionStatus?: string;
   mentorSessionReview?: MentorReview;
+  mentorSessionFeedback?: { id?: number; rating?: number; comment?: string };
+  onMentorFeedbackSubmitted?: () => void;
 }) {
   const { t } = useTranslation();
   const status = detail?.status as RoundDetailStatus | undefined;
@@ -817,18 +821,19 @@ function RoundTimelineItem({
               {(round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
                 detail && (
                   <MentorInterviewHub
-                    key={`mentor-hub-${detail.id}-${sessionStatus ?? "loading"}`}
+                    key={`mentor-hub-${detail.id}-${sessionStatus ?? "loading"}-${mentorSessionFeedback?.id ?? "none"}`}
                     applicationId={applicationId ?? 0}
                     detailId={detail.id}
                     mentorId={detail.mentorId}
                     sessionId={detail.sessionId ?? detail.sessionInfo?.sessionId ?? undefined}
                     sessionInfo={detail.sessionInfo ?? null}
                     mentorReview={detail.mentorReview ?? mentorSessionReview ?? undefined}
-                    mentorFeedback={(detail as { mentorFeedback?: { id?: number } }).mentorFeedback}
+                    mentorFeedback={mentorSessionFeedback ?? undefined}
                     status={effectiveStatus}
                     sessionEnded={sessionEnded}
                     sessionStatus={sessionStatus}
                     currentUserId={currentUserId}
+                    onFeedbackSubmitted={onMentorFeedbackSubmitted}
                   />
                 )}
 
@@ -975,7 +980,17 @@ function ApplicationDetailPanel({
   // Track session end time for MENTOR_REVIEW rounds to determine if interview has ended
   const [mentorSessionEnded, setMentorSessionEnded] = useState(false);
   const [mentorSessionStatus, setMentorSessionStatus] = useState<string | null>(null);
-  const [mentorSessionReview, setMentorSessionReview] = useState<MentorReview | null>(null);
+  const [mentorSessionReview, setMentorSessionReview] = useState<MentorReview | undefined>(
+    undefined
+  );
+  const [mentorSessionFeedback, setMentorSessionFeedback] = useState<
+    | {
+        id?: number;
+        rating?: number;
+        comment?: string;
+      }
+    | undefined
+  >(undefined);
 
   // Fetch session details to check if interview has ended (for MENTOR_REVIEW rounds)
   useEffect(() => {
@@ -1033,6 +1048,7 @@ function ApplicationDetailPanel({
             endTime1?: string | null;
             status?: string;
             mentorReview?: MentorReview;
+            mentorFeedback?: { id?: number; rating?: number; comment?: string };
           };
           console.log(
             "[DEBUG][MentorSession] Session endTime1:",
@@ -1040,11 +1056,14 @@ function ApplicationDetailPanel({
             "status:",
             session?.status,
             "mentorReview:",
-            session?.mentorReview
+            session?.mentorReview,
+            "mentorFeedback:",
+            session?.mentorFeedback
           );
           setMentorSessionEnded(!!session?.endTime1);
           setMentorSessionStatus(session?.status ?? null);
-          setMentorSessionReview(session?.mentorReview ?? null);
+          setMentorSessionReview(session?.mentorReview ?? undefined);
+          setMentorSessionFeedback(session?.mentorFeedback ?? undefined);
           console.log(
             "[DEBUG][MentorSession] Set state: ended=",
             !!session?.endTime1,
@@ -1057,6 +1076,42 @@ function ApplicationDetailPanel({
         console.log("[DEBUG][MentorSession] Session fetch error:", err);
       });
   }, [id, detailsData, rounds]);
+
+  // Refetch the mentor session and return the updated feedback (used after the
+  // user submits/edits a feedback so the parent state stays in sync with the
+  // newly created server-side record).
+  const refetchMentorSession = async () => {
+    if (!id) return undefined;
+    const mentorRound = rounds.find(
+      (r: JdRound) => r.roundType === "MENTOR_REVIEW" || r.roundType === "MENTROR_REVIEW"
+    );
+    if (!mentorRound) return undefined;
+    const mentorDetail = detailsData.find((d) => d.roundId === mentorRound.id);
+    if (!mentorDetail) return undefined;
+    const sessionIdToFetch = mentorDetail.sessionId ?? mentorDetail.sessionInfo?.sessionId ?? null;
+    if (!sessionIdToFetch) return undefined;
+    try {
+      const res = await fetchClient.GET("/api/sessions/{id}", {
+        params: { path: { id: sessionIdToFetch } },
+      });
+      if (res.response?.ok) {
+        const session = res.data as {
+          endTime1?: string | null;
+          status?: string;
+          mentorReview?: MentorReview;
+          mentorFeedback?: { id?: number; rating?: number; comment?: string };
+        };
+        setMentorSessionEnded(!!session?.endTime1);
+        setMentorSessionStatus(session?.status ?? null);
+        setMentorSessionReview(session?.mentorReview ?? undefined);
+        setMentorSessionFeedback(session?.mentorFeedback ?? undefined);
+        return session?.mentorFeedback ?? undefined;
+      }
+    } catch (err) {
+      console.log("[DEBUG][MentorSession] Refetch error:", err);
+    }
+    return undefined;
+  };
 
   const fetchDetails = async (silent = false) => {
     console.log("[DEBUG][fetchDetails] called for applicationId:", id, "silent:", silent);
@@ -1430,6 +1485,8 @@ function ApplicationDetailPanel({
                 sessionEnded={mentorSessionEnded}
                 sessionStatus={mentorSessionStatus ?? undefined}
                 mentorSessionReview={mentorSessionReview ?? undefined}
+                mentorSessionFeedback={mentorSessionFeedback}
+                onMentorFeedbackSubmitted={refetchMentorSession}
               />
             ))
           )}

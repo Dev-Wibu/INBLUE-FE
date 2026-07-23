@@ -24,7 +24,7 @@ import {
   Star,
   Video,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -56,7 +56,13 @@ interface MentorInterviewHubProps {
     improve?: string;
     mentor?: { id?: number; name?: string; avatarUrl?: string };
   };
-  mentorFeedback?: { id?: number };
+  mentorFeedback?: {
+    id?: number;
+    rating?: number;
+    comment?: string;
+    mentor?: { id?: number; name?: string; avatarUrl?: string };
+    createdAt?: string;
+  };
   status: string | undefined;
   /** True if the session has ended (user has joined and left the room) */
   sessionEnded?: boolean;
@@ -122,7 +128,12 @@ function deriveHubStatus(props: {
     improve?: string;
     mentor?: { id?: number; name?: string; avatarUrl?: string };
   };
-  mentorFeedback?: { id?: number };
+  mentorFeedback?: {
+    id?: number;
+    rating?: number;
+    comment?: string;
+    createdAt?: string;
+  };
   sessionEnded?: boolean;
   sessionStatus?: string;
 }): HubStatus {
@@ -146,8 +157,15 @@ function deriveHubStatus(props: {
     sessionStatus,
   });
 
-  // If user already submitted feedback -> COMPLETED
-  if (mentorFeedback?.id) {
+  // If user already submitted feedback -> COMPLETED.
+  // The backend may return the feedback object without an explicit `id` field,
+  // so fall back to checking for any rating/comment content.
+  if (
+    mentorFeedback &&
+    (mentorFeedback.id ||
+      mentorFeedback.rating !== undefined ||
+      mentorFeedback.comment !== undefined)
+  ) {
     console.log("[DEBUG][deriveHubStatus] -> COMPLETED (mentorFeedback exists)");
     return "COMPLETED";
   }
@@ -573,47 +591,89 @@ function RateMentorForm({
   sessionId,
   mentorId,
   userId,
+  feedbackId,
+  initialRating,
+  initialComment,
   onSubmitSuccess,
+  onCancel,
 }: {
   sessionId: number | null | undefined;
   mentorId: number | null | undefined;
   userId: number | undefined;
+  feedbackId?: number;
+  initialRating?: number;
+  initialComment?: string;
   onSubmitSuccess: () => void;
+  onCancel?: () => void;
 }) {
   const { t } = useTranslation();
-  const [rating, setRating] = useState<number>(0);
-  const [comment, setComment] = useState("");
+  const [rating, setRating] = useState<number>(initialRating ?? 0);
+  const [comment, setComment] = useState(initialComment ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Synchronous guard against double-submit. State updates are batched, so
+  // `isSubmitting` in the closure may still be `false` on a rapid second click
+  // before React applies the disabled state to the button.
+  const submittingRef = useRef(false);
 
+  // Treat as editing if we either have an explicit feedbackId (preferred) or
+  // any initial rating/comment data. The backend session endpoint may embed
+  // `mentorFeedback` without an explicit id, so we fall back to the content.
+  // Backend uses @MapsId, so feedback.id === sessionId when present.
+  const isEditing = !!feedbackId || initialRating !== undefined || initialComment !== undefined;
   const canSubmit = rating > 0;
+  const editId = feedbackId ?? (isEditing ? (sessionId ?? undefined) : undefined);
 
   const handleSubmit = async () => {
+    if (submittingRef.current) return;
     if (!canSubmit || !sessionId || !mentorId || !userId) {
       toast.error(t("common.anErrorHasOccurred"));
       return;
     }
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
-      const { response } = await fetchClient.POST("/api/mentor-feedbacks", {
-        body: { sessionId, mentorId, userId, rating, comment: comment || undefined },
-      });
-      if (!response.ok) throw new Error();
-      toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
+      if (isEditing && editId) {
+        const { response } = await fetchClient.PUT("/api/mentor-feedbacks", {
+          body: { id: editId, rating, comment: comment || undefined },
+        });
+        if (!response.ok) throw new Error();
+        toast.success(t("userApplicationhistory.feedbackUpdatedSuccessfully"));
+      } else {
+        const { response } = await fetchClient.POST("/api/mentor-feedbacks", {
+          body: { sessionId, mentorId, userId, rating, comment: comment || undefined },
+        });
+        if (!response.ok) throw new Error();
+        toast.success(t("userApplicationhistory.reviewSubmittedSuccessfully"));
+      }
       onSubmitSuccess();
     } catch {
       toast.error(t("common.anErrorHasOccurred"));
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };
 
   return (
     <div className="space-y-4 rounded-lg border border-[#0047AB]/20 bg-[#0047AB]/5 p-4">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="h-4 w-4 text-[#0047AB]" />
-        <p className="text-sm font-medium text-[#0047AB]">
-          {t("userApplicationhistory.ratingAndFeedback")}
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-4 w-4 text-[#0047AB]" />
+          <p className="text-sm font-medium text-[#0047AB]">
+            {isEditing
+              ? t("userApplicationhistory.editYourFeedback")
+              : t("userApplicationhistory.ratingAndFeedback")}
+          </p>
+        </div>
+        {isEditing && onCancel && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            className="h-7 text-xs text-slate-500 hover:text-slate-700">
+            {t("common.cancel")}
+          </Button>
+        )}
       </div>
       <div className="space-y-3">
         <div className="space-y-1.5">
@@ -647,7 +707,7 @@ function RateMentorForm({
           ) : (
             <>
               <Send className="h-3.5 w-3.5" />
-              {t("common.submit")}
+              {isEditing ? t("common.update") : t("common.submit")}
             </>
           )}
         </Button>
@@ -677,6 +737,7 @@ export function MentorInterviewHub({
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isEditingFeedback, setIsEditingFeedback] = useState(false);
 
   // Debug: log when props change
   useEffect(() => {
@@ -879,15 +940,72 @@ export function MentorInterviewHub({
                 />
               </div>
             )}
-            {hubStatus === "COMPLETED" && (
-              <div className="flex flex-col items-center gap-3 py-4 text-center">
-                <CheckCircle2 className="h-10 w-10 text-green-500" />
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                  {t("userApplicationhistory.reviewAlreadySubmitted")}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {t("userApplicationhistory.thankYouForYourFeedback")}
-                </p>
+            {hubStatus === "COMPLETED" && !isEditingFeedback && (
+              <div className="space-y-4 py-2">
+                {mentorReview && <MentorReviewCard review={mentorReview} />}
+                {mentorFeedback && (
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {t("userApplicationhistory.yourFeedback")}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditingFeedback(true)}
+                        className="h-7 text-xs text-[#0047AB] hover:text-[#003d91]">
+                        {t("common.edit")}
+                      </Button>
+                    </div>
+                    <div className="mb-2 flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={cn(
+                            "h-4 w-4",
+                            star <= (mentorFeedback.rating || 0)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "fill-transparent text-slate-300"
+                          )}
+                        />
+                      ))}
+                    </div>
+                    {mentorFeedback.comment && (
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {mentorFeedback.comment}
+                      </p>
+                    )}
+                    {mentorFeedback.createdAt && (
+                      <p className="mt-2 text-xs text-slate-400">
+                        {formatVnDateTime(mentorFeedback.createdAt)}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <CheckCircle2 className="h-8 w-8 text-green-500" />
+                  <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                    {t("userApplicationhistory.reviewAlreadySubmitted")}
+                  </p>
+                </div>
+              </div>
+            )}
+            {hubStatus === "COMPLETED" && isEditingFeedback && (
+              <div className="space-y-4">
+                {mentorReview && <MentorReviewCard review={mentorReview} />}
+                <RateMentorForm
+                  sessionId={sessionId}
+                  mentorId={mentorId}
+                  userId={currentUserId}
+                  feedbackId={mentorFeedback?.id}
+                  initialRating={mentorFeedback?.rating}
+                  initialComment={mentorFeedback?.comment}
+                  onSubmitSuccess={() => {
+                    setIsEditingFeedback(false);
+                    handleFeedbackSubmitted();
+                  }}
+                  onCancel={() => setIsEditingFeedback(false)}
+                />
               </div>
             )}
           </div>
