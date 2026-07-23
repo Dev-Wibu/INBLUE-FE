@@ -22,6 +22,7 @@ export * from "./company.manager";
 export * from "./dashboard-admin.manager";
 export * from "./interview-analysis.manager";
 export * from "./interview-session.manager";
+export * from "./jd-purchase.manager";
 export * from "./job-description.manager";
 export * from "./mentor-feedback.manager";
 export * from "./mentor-review.manager";

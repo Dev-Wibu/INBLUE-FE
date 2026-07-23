@@ -64,8 +64,10 @@ export type UserSubscriptionResponse = {
   practiceSetRemaining?: number | null;
   quizSetRemaining?: number | null;
 };
-export type PaymentEntity = components["schemas"]["Payment"];
-export type PaymentPurpose = NonNullable<components["schemas"]["Payment"]["paymentPurpose"]>;
+export type PaymentPurpose = "FULLY_PAID" | "MENTOR_INTERVIEW" | "JD_PURCHASE";
+export type PaymentEntity = components["schemas"]["Payment"] & {
+  paymentPurpose?: PaymentPurpose | null;
+};
 export type JobDescription = SchemaJobDescription;
 export type JobDescriptionLevel = NonNullable<SchemaJobDescription["level"]>;
 export type JobDescriptionStatus = NonNullable<SchemaJobDescription["status"]>;

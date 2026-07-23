@@ -363,7 +363,7 @@ export function PaymentManagementPage() {
                           {paymentStatusLabel(payment.status, t)}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
-                          {paymentPurposeLabel(payment.paymentPurpose, t)}
+                          {paymentPurposeLabel(payment.paymentPurpose || undefined, t)}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
                           {formatDateTime(payment.createdAt)}
