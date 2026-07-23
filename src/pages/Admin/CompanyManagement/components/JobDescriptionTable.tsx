@@ -1,6 +1,5 @@
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -12,7 +11,8 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
-import { Briefcase, Calendar, Clock, Users } from "lucide-react";
+import { Briefcase, Building2, Calendar, Clock, Users } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
 
@@ -46,6 +46,7 @@ export function JobDescriptionTable({
   showCompany,
 }: JobDescriptionTableProps) {
   const { t } = useTranslation();
+  const [failedImages, setFailedImages] = useState<Record<string | number, boolean>>({});
 
   if (!jobDescriptions.length) {
     return (
@@ -135,6 +136,8 @@ export function JobDescriptionTable({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const createdDate = (job as any).createdAt || (job as any).createdDate || (job as any).createdAtDate;
 
+            const isImageFailed = job.id ? failedImages[job.id] : false;
+
             return (
               <TableRow
                 key={job.id}
@@ -153,14 +156,26 @@ export function JobDescriptionTable({
                 </TableCell>
                 {showCompany && (
                   <TableCell className="text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6 border border-slate-200 shadow-2xs dark:border-slate-800">
-                        <AvatarImage src={compLogo} alt={compName} />
-                        <AvatarFallback className="bg-indigo-50 text-[10px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                          {compName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs">{compName}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                        {compLogo && !isImageFailed ? (
+                          <img
+                            src={compLogo}
+                            alt={compName}
+                            onError={() => {
+                              if (job.id) {
+                                setFailedImages((prev) => ({ ...prev, [job.id!]: true }));
+                              }
+                            }}
+                            className="h-full w-full object-contain p-1"
+                          />
+                        ) : (
+                          <Building2 className="h-4 w-4 text-slate-400" />
+                        )}
+                      </div>
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">
+                        {compName}
+                      </span>
                     </div>
                   </TableCell>
                 )}
