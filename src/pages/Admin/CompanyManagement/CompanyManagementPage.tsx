@@ -310,7 +310,7 @@ export function CompanyManagementPage() {
         setSelectedJdId(null);
         setSelectedCompanyId(null);
       }}
-      className="-m-4 flex h-[calc(100%+32px)] flex-col md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
+      className="-m-4 flex h-[calc(100%+32px)] flex-col gap-0 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
       {/* Unified Single Hierarchical Header (Fixed 68px height - Zero layout shift) */}
       <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-center gap-3 min-w-0">
@@ -477,7 +477,7 @@ export function CompanyManagementPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950">
+      <div className="flex-1 overflow-auto dark:bg-slate-950">
         <TabsContent value="jds" className="m-0 h-full">
           {selectedJd ? (
             <JobDescriptionDetailView
