@@ -4205,6 +4205,9 @@
     "offlineBookedDesc": "予定時刻に会社のオフィスでメンターと会ってください。",
     "awaitingMentorTitle": "管理者によるメンター割り当て待ち",
     "awaitingMentorDesc": "管理者がメンターを割り当てた後にもう一度アクセスしてください。割り当て後、日時と形式を選択できます。",
+    "awaitingReviewTitle": "メンターのフィードバック待ち",
+    "awaitingReviewDesc": "面接は終了しました。メンターからレビューとフィードバックがあるまでしばらくお待ちください。",
+    "rateMentorTitle": "メンターを評価してください",
     "rejoinRoom": "ルームに再入室",
     "timingNotRecorded": "このセッションにはまだ時刻データが記録されていません。",
     "student": "受講者",
@@ -4214,7 +4217,13 @@
     "duration": "所要時間",
     "interviewRoomTitle": "面接室",
     "mentorJoined": "メンター入室",
-    "youJoined": "入室時刻"
+    "youJoined": "入室時刻",
+    "scheduleConfirmed": "スケジュール確認済み",
+    "waitingForRoom": "ルーム作成待ち...",
+    "reviewReceived": "メンターからレビューを受け取りました",
+    "pleaseRateMentor": "メンターを評価してください",
+    "feedbackPlaceholder": "メンターとの体験を共有してください...",
+    "ratingAndFeedback": "評価とフィードバック"
   },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",

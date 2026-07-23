@@ -24,7 +24,7 @@ import {
   Star,
   Video,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -117,7 +117,6 @@ function deriveHubStatus(props: {
     situationNote?: string;
     taskNote?: string;
     actionNote?: string;
-    resultNote?: string;
     strength?: string;
     weakness?: string;
     improve?: string;
@@ -137,29 +136,70 @@ function deriveHubStatus(props: {
     sessionStatus,
   } = props;
 
-  // If user already submitted feedback -> COMPLETED
-  if (mentorFeedback?.id) return "COMPLETED";
+  console.log("[DEBUG][deriveHubStatus] props:", {
+    status,
+    sessionId,
+    sessionInfo,
+    mentorReview,
+    mentorFeedback,
+    sessionEnded,
+    sessionStatus,
+  });
 
-  // If mentor has reviewed -> show review
-  if (mentorReview?.id) return "REVIEW_READY";
+  // If user already submitted feedback -> COMPLETED
+  if (mentorFeedback?.id) {
+    console.log("[DEBUG][deriveHubStatus] -> COMPLETED (mentorFeedback exists)");
+    return "COMPLETED";
+  }
+
+  // If mentor has reviewed -> show review and prompt user to rate mentor
+  if (mentorReview && (mentorReview.id || mentorReview.rating)) {
+    console.log("[DEBUG][deriveHubStatus] -> RATE_MENTOR (mentorReview exists)");
+    return "RATE_MENTOR";
+  }
 
   // If session is COMPLETED (meeting ended) but no mentor review yet -> wait for mentor review
-  if (sessionStatus === "COMPLETED" || sessionEnded) return "AWAITING_MENTOR_REVIEW";
+  // Only check sessionEnded flag if sessionStatus wasn't explicitly set
+  if (sessionStatus === "COMPLETED") {
+    console.log("[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (sessionStatus === COMPLETED)");
+    return "AWAITING_MENTOR_REVIEW";
+  }
+  if (sessionEnded && !sessionStatus) {
+    console.log(
+      "[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (sessionEnded && !sessionStatus)"
+    );
+    return "AWAITING_MENTOR_REVIEW";
+  }
 
   // If mentor has session and meeting time set (ONLINE) -> room ready
-  if (sessionInfo?.meetingType === "ONLINE" && sessionId && sessionInfo?.startTime)
+  if (sessionInfo?.meetingType === "ONLINE" && sessionId && sessionInfo?.startTime) {
+    console.log("[DEBUG][deriveHubStatus] -> ROOM_READY");
     return "ROOM_READY";
+  }
 
   // If offline confirmed
-  if (sessionInfo?.meetingType === "OFFLINE" && sessionId) return "OFFLINE_CONFIRMED";
+  if (sessionInfo?.meetingType === "OFFLINE" && sessionId) {
+    console.log("[DEBUG][deriveHubStatus] -> OFFLINE_CONFIRMED");
+    return "OFFLINE_CONFIRMED";
+  }
 
   // If session exists or slot picked
-  if (sessionId || status === "SLOT_PICKED") return "SCHEDULE_CONFIRMED";
+  if (sessionId || status === "SLOT_PICKED") {
+    console.log("[DEBUG][deriveHubStatus] -> SCHEDULE_CONFIRMED");
+    return "SCHEDULE_CONFIRMED";
+  }
 
   // No session yet
-  if (status === "PENDING") return "NO_SLOT";
-  if (status === "AWAITING_MENTOR") return "AWAITING_MENTOR_REVIEW";
+  if (status === "PENDING") {
+    console.log("[DEBUG][deriveHubStatus] -> NO_SLOT (status === PENDING)");
+    return "NO_SLOT";
+  }
+  if (status === "AWAITING_MENTOR") {
+    console.log("[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (status === AWAITING_MENTOR)");
+    return "AWAITING_MENTOR_REVIEW";
+  }
 
+  console.log("[DEBUG][deriveHubStatus] -> NO_SLOT (fallback)");
   return "NO_SLOT";
 }
 
@@ -638,6 +678,17 @@ export function MentorInterviewHub({
   const [isExpanded, setIsExpanded] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Debug: log when props change
+  useEffect(() => {
+    console.log("[DEBUG][MentorInterviewHub] Props changed:", {
+      status,
+      sessionId,
+      sessionInfo,
+      sessionEnded,
+      sessionStatus,
+    });
+  }, [status, sessionId, sessionInfo, sessionEnded, sessionStatus]);
+
   const hubStatus = deriveHubStatus({
     status,
     sessionId,
@@ -648,10 +699,12 @@ export function MentorInterviewHub({
     sessionStatus,
   });
 
+  // Debug: log computed hubStatus
+  console.log("[DEBUG][MentorInterviewHub] computed hubStatus:", hubStatus);
+
   const progressStep = (() => {
     switch (hubStatus) {
       case "NO_SLOT":
-      case "AWAITING_MENTOR_REVIEW":
         return 0;
       case "SCHEDULE_CONFIRMED":
       case "OFFLINE_CONFIRMED":
@@ -659,11 +712,13 @@ export function MentorInterviewHub({
       case "ROOM_READY":
       case "IN_PROGRESS":
         return 2;
-      case "REVIEW_READY":
+      case "AWAITING_MENTOR_REVIEW":
         return 3;
       case "RATE_MENTOR":
-      case "COMPLETED":
         return 4;
+      case "REVIEW_READY":
+      case "COMPLETED":
+        return 5;
       default:
         return 0;
     }
@@ -683,11 +738,22 @@ export function MentorInterviewHub({
   const getStatusBadge = () => {
     switch (hubStatus) {
       case "NO_SLOT":
-      case "AWAITING_MENTOR_REVIEW":
         return {
           label: t("userMentorReview.awaitingMentorTitle"),
           className: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
           icon: Hourglass,
+        };
+      case "AWAITING_MENTOR_REVIEW":
+        return {
+          label: t("userMentorReview.awaitingReviewTitle"),
+          className: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+          icon: Clock,
+        };
+      case "RATE_MENTOR":
+        return {
+          label: t("userApplicationhistory.pleaseRateMentor"),
+          className: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+          icon: Star,
         };
       case "SCHEDULE_CONFIRMED":
         return {
@@ -712,18 +778,6 @@ export function MentorInterviewHub({
           label: t("userKiosk.interviewInProgress"),
           className: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
           icon: Video,
-        };
-      case "REVIEW_READY":
-        return {
-          label: t("userApplicationhistory.reviewReceived"),
-          className: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-          icon: GraduationCap,
-        };
-      case "RATE_MENTOR":
-        return {
-          label: t("userApplicationhistory.pleaseRateMentor"),
-          className: "bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-blue-300",
-          icon: Star,
         };
       case "COMPLETED":
         return {
@@ -798,9 +852,9 @@ export function MentorInterviewHub({
             )}
             {hubStatus === "AWAITING_MENTOR_REVIEW" && (
               <div className="flex flex-col items-center gap-3 py-4 text-center">
-                <Hourglass className="h-10 w-10 text-amber-500" />
+                <Clock className="h-10 w-10 text-blue-500" />
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {t("userMentorReview.awaitingMentorDesc")}
+                  {t("userMentorReview.awaitingReviewDesc")}
                 </p>
               </div>
             )}

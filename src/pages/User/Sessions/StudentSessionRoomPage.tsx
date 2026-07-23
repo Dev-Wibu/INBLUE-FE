@@ -203,29 +203,36 @@ export function StudentSessionRoomPage() {
   //   POST /leave-session so endTime1 is written even if Daily.co's
   //   webhook hasn't been delivered yet. The mutation tolerates 404/5xx
   //   so the user is never blocked.
+  // 2026-07-23: Use setTimeout to defer the API call and navigation away from
+  //   the video room unmount, preventing the query invalidation cascade from
+  //   freezing the page when the user clicks Leave.
   const handleLeave = () => {
-    if (
-      hasJoinedTracking &&
-      joinedParticipantId &&
-      session?.roomName &&
-      typeof user?.id === "number"
-    ) {
-      void leaveSessionMutation.mutate({
-        sessionName: session.roomName,
-        sessionId: numericSessionId,
-        userId: user.id,
-        participantId: joinedParticipantId,
-        mentor: false,
-        isMentor: false,
-      });
-    }
-    if (!Number.isNaN(numericSessionId)) {
-      queryClient.invalidateQueries({
-        queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),
-      });
-    }
-    queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
-    queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    setTimeout(() => {
+      if (
+        hasJoinedTracking &&
+        joinedParticipantId &&
+        session?.roomName &&
+        typeof user?.id === "number"
+      ) {
+        void leaveSessionMutation.mutate({
+          sessionName: session.roomName,
+          sessionId: numericSessionId,
+          userId: user.id,
+          participantId: joinedParticipantId,
+          mentor: false,
+          isMentor: false,
+        });
+      }
+      if (!Number.isNaN(numericSessionId)) {
+        queryClient.invalidateQueries({
+          queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    }, 0);
+    // Navigate immediately so the old room page unmounts before the
+    // query invalidation cascade causes heavy re-renders.
     navigate("/user/sessions");
   };
 
