@@ -189,13 +189,19 @@ export function AdminApplicationManagementPage() {
   }, [applications, openJds]);
 
   // Pagination
-  const hybridPageSize = useHybridPageSize({
-    key: "admin_applications",
+  const [pageSize] = useHybridPageSize({
+    key: "admin_applications_pagesize",
     defaultPageSize: 10,
   });
-  const pagination = usePagination(filteredApplications, {
-    pageSize: hybridPageSize,
+
+  const pagination = usePagination({
+    totalCount: filteredApplications.length,
+    pageSize,
   });
+
+  const pageData = useMemo(() => {
+    return filteredApplications.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [filteredApplications, pagination.startIndex, pagination.endIndex]);
 
   const handleViewDetail = (appId: number) => {
     setSelectedAppId(appId);
@@ -409,14 +415,14 @@ export function AdminApplicationManagementPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : pagination.paginatedItems.length === 0 ? (
+                ) : pageData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="h-48 text-center text-slate-400">
                       Không tìm thấy đơn ứng tuyển nào.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  pagination.paginatedItems.map((app) => {
+                  pageData.map((app) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const name = app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
