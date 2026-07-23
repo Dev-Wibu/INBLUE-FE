@@ -2,8 +2,7 @@
 
 echo "🚀 Đang tự động tạo Schema từ Backend..."
 pnpm run generate-schema
+git add schema-from-be.d.ts 2>/dev/null || true
 
 echo "💅 Đang format code cho các file được commit..."
 pnpm lint-staged
-
-git add .
