@@ -12,7 +12,8 @@ import { SpinnerBlock } from "@/components/ui/spinner";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { mentorManager } from "@/services";
-import { ChevronLeft, Plus, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -185,76 +186,131 @@ export function MentorManagementPage() {
   };
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      {/* ── TOOLBAR ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-            {t("adminMentormanagement.mentorManagement")}
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t("adminMentormanagement.manageAccountsProfilesAndMentor")}
-          </p>
+      {/* Unified Single Hierarchical Header (Fixed 68px height) */}
+      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-wrap items-center gap-3 min-w-0">
+          {viewMode === "detail" && selectedMentor ? (
+            /* Mode 2: Mentor Detail View (Sleek 1-line breadcrumb) */
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400 dark:hover:text-indigo-400">
+                {t("adminMentormanagement.mentorManagement", "Quản lý Mentor")}
+              </button>
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <h1 className="text-base font-bold text-slate-900 dark:text-white truncate">
+                {selectedMentor.name}
+              </h1>
+              <Badge
+                className={
+                  selectedMentor.status === "ACTIVE" || selectedMentor.isActive !== false
+                    ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400"
+                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                }>
+                {selectedMentor.status || "ACTIVE"}
+              </Badge>
+            </div>
+          ) : viewMode === "create" ? (
+            /* Mode 3: Create Mentor View */
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400 dark:hover:text-indigo-400">
+                {t("adminMentormanagement.mentorManagement", "Quản lý Mentor")}
+              </button>
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <h1 className="text-base font-bold text-slate-900 dark:text-white">
+                {t("adminMentormanagement.addNewMentor", "Thêm Mentor mới")}
+              </h1>
+            </div>
+          ) : (
+            /* Mode 1: Root Mentor Management List View */
+            <div className="flex flex-col justify-center">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                {t("adminMentormanagement.mentorManagement", "Quản lý Mentor")}
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+                {t("adminMentormanagement.manageAccountsProfilesAndMentor", "Quản lý tài khoản và hồ sơ Mentor.")}
+              </p>
+            </div>
+          )}
         </div>
 
+        {/* Header Right Action Controls */}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-64">
-            <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-            <Input
-              type="text"
-              placeholder={t("common.searchByNameEmailExpertise")}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                pagination.goToFirstPage();
-              }}
-              className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
-            />
-          </div>
-
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => {
-              setStatusFilter(value);
-              pagination.goToFirstPage();
-            }}>
-            <SelectTrigger className="h-8 w-32 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
-              <SelectValue placeholder={t("common.filterByStatus")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">{t("common.active")}</SelectItem>
-              <SelectItem value="inactive">{t("common.shutDown")}</SelectItem>
-              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {(searchQuery || statusFilter !== "active") && (
+          {viewMode === "detail" || viewMode === "create" ? (
             <Button
-              variant="ghost"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("active");
-                pagination.goToFirstPage();
-              }}
-              className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
-              {t("common.clearFilter")}
+              variant="outline"
+              size="sm"
+              onClick={() => setViewMode("list")}
+              className="h-8 gap-1.5 text-xs font-semibold">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {t("common.back", "Quay lại")}
             </Button>
+          ) : (
+            <>
+              <div className="relative w-64">
+                <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder={t("common.searchByNameEmailExpertise")}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    pagination.goToFirstPage();
+                  }}
+                  className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+                />
+              </div>
+
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value);
+                  pagination.goToFirstPage();
+                }}>
+                <SelectTrigger className="h-8 w-32 border-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 dark:border-slate-700">
+                  <SelectValue placeholder={t("common.filterByStatus")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">{t("common.active")}</SelectItem>
+                  <SelectItem value="inactive">{t("common.shutDown")}</SelectItem>
+                  <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {(searchQuery || statusFilter !== "active") && (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("active");
+                    pagination.goToFirstPage();
+                  }}
+                  className="h-8 px-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
+                  {t("common.clearFilter")}
+                </Button>
+              )}
+
+              <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+
+              <ReloadButton
+                onReload={() => loadMentors(true)}
+                isLoading={isReloading}
+                tooltip={t("common.reloadMentorList")}
+                className="h-8 w-8"
+              />
+
+              <Button
+                onClick={handleCreate}
+                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                {t("adminMentormanagement.addMentor")}
+              </Button>
+            </>
           )}
-
-          <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-
-          <ReloadButton
-            onReload={() => loadMentors(true)}
-            isLoading={isReloading}
-            tooltip={t("common.reloadMentorList")}
-            className="h-8 w-8"
-          />
-
-          <Button
-            onClick={handleCreate}
-            className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
-            <Plus className="mr-1.5 h-3.5 w-3.5" />
-            {t("adminMentormanagement.addMentor")}
-          </Button>
         </div>
       </div>
 

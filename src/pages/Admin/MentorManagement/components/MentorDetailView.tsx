@@ -82,23 +82,7 @@ export function MentorDetailView({
   };
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-4 border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-950">
-        <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8 rounded-full">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
-            {t("common.mentorDetail", "Chi tiết Mentor")}
-          </h2>
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-            <span>{mentor.name}</span>
-            <span>•</span>
-            <span>ID: {mentor.id}</span>
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-1 flex-col overflow-hidden">
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">

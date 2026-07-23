@@ -118,30 +118,7 @@ export function UserDetailView({
   };
 
   return (
-    <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50/50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      {/* Header */}
-      <div className="flex flex-none items-center gap-4 border-b border-slate-200/60 bg-white/50 px-6 py-4 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-900/50">
-        <button
-          onClick={() => {
-            if (isEditingUser) setIsEditingUser(false);
-            else if (isEditingProfile) setIsEditingProfile(false);
-            else onBack();
-          }}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-200">
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {isEditingUser
-              ? t("adminUsermanagement.userEditing")
-              : isEditingProfile
-                ? "Chỉnh sửa Hồ sơ"
-                : t("common.userDetail") || "User Details"}
-          </h2>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+    <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="w-full">
           {isEditingUser ? (
             <div className="mx-auto max-w-4xl">
