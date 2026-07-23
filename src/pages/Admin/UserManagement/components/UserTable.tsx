@@ -74,6 +74,7 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
               </TableHead>
               <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
               <TableHead className="w-32 font-medium text-slate-500">Ngày tham gia</TableHead>
+              <TableHead className="w-32 font-medium text-slate-500">Cập nhật lần cuối</TableHead>
               <TableHead className="w-24 font-medium text-slate-500">{t("common.role")}</TableHead>
               <TableHead className="w-24 pr-6 font-medium text-slate-500">
                 {t("common.status")}
@@ -107,6 +108,15 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                     ? formatDate(
                         ((user as Record<string, unknown>).createdAt ||
                           (user as Record<string, unknown>).created_at) as string
+                      )
+                    : "—"}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {(user as Record<string, unknown>).updatedAt ||
+                  (user as Record<string, unknown>).updated_at
+                    ? formatDate(
+                        ((user as Record<string, unknown>).updatedAt ||
+                          (user as Record<string, unknown>).updated_at) as string
                       )
                     : "—"}
                 </TableCell>
