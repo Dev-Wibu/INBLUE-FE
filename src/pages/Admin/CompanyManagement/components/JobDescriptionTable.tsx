@@ -1,5 +1,6 @@
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatting";
 import { getJobDescriptionLevelBadge } from "@/lib/status-utils";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Calendar, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescription } from "../types";
 
@@ -92,11 +93,14 @@ export function JobDescriptionTable({
             </TableHead>
             {showCompany && (
               <TableHead className="font-medium text-slate-500">
-                {t("adminCompanymanagement.companyName", "Tên công ty")}
+                {t("adminCompanymanagement.companyName", "Công ty")}
               </TableHead>
             )}
             <TableHead className="font-medium text-slate-500">
               {t("adminCompanymanagement.rounds", "Số vòng thi")}
+            </TableHead>
+            <TableHead className="font-medium text-slate-500">
+              {t("adminCompanymanagement.totalApplications", "Lượt ứng tuyển")}
             </TableHead>
             <TableHead className="font-medium text-slate-500">
               {getSortProps ? (
@@ -106,6 +110,9 @@ export function JobDescriptionTable({
               ) : (
                 t("adminCompanymanagement.deadline")
               )}
+            </TableHead>
+            <TableHead className="font-medium text-slate-500">
+              {t("common.createdAt", "Ngày tạo")}
             </TableHead>
             <TableHead className="w-28 pr-6 text-right font-medium text-slate-500">
               {getSortProps ? (
@@ -119,6 +126,14 @@ export function JobDescriptionTable({
         <TableBody>
           {jobDescriptions.map((job) => {
             const isClosed = job.status === "CLOSED";
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const compName = (job as any).company?.name || (job as any).companyName || "—";
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const compLogo = (job as any).company?.logoUrl || (job as any).companyLogo || (job as any).logoUrl;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const appCount = (job as any).statistics?.totalApplications ?? (job as any).totalApplications ?? (job as any).applicationCount ?? (job as any).applicationsCount ?? job.applications?.length ?? 0;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const createdDate = (job as any).createdAt || (job as any).createdDate || (job as any).createdAtDate;
 
             return (
               <TableRow
@@ -138,8 +153,15 @@ export function JobDescriptionTable({
                 </TableCell>
                 {showCompany && (
                   <TableCell className="text-slate-600 dark:text-slate-300">
-                    {/* @ts-expect-error Company data comes from BE */}
-                    {job.company?.name || job.companyName || "—"}
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6 border border-slate-200 dark:border-slate-800">
+                        <AvatarImage src={compLogo} alt={compName} />
+                        <AvatarFallback className="bg-indigo-50 text-[10px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                          {compName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{compName}</span>
+                    </div>
                   </TableCell>
                 )}
                 <TableCell>
@@ -147,8 +169,17 @@ export function JobDescriptionTable({
                     {job.rounds?.length || 0} vòng
                   </span>
                 </TableCell>
+                <TableCell>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50/80 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
+                    <Users className="h-3 w-3" />
+                    {appCount} lượt
+                  </span>
+                </TableCell>
                 <TableCell className="text-xs text-slate-500">
                   {formatDate(job.deadlineAt)}
+                </TableCell>
+                <TableCell className="text-xs text-slate-500">
+                  {formatDate(createdDate)}
                 </TableCell>
                 <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <Switch
