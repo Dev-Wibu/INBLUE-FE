@@ -59,6 +59,19 @@ export function PaymentCancelPage() {
     to: string;
     label: string;
   } => {
+    // JD Purchase support
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryJdId = queryParams.get("jdId");
+    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
+    const targetJdId = Number(queryJdId || storedJdId);
+
+    if (targetJdId && !isNaN(targetJdId)) {
+      return {
+        to: `/enterprise/job/${targetJdId}`,
+        label: t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm"),
+      };
+    }
+
     switch (purpose) {
       case "MENTOR_INTERVIEW":
         if (sessionId) {
@@ -547,7 +560,7 @@ export function PaymentCancelPage() {
             planId: context?.planId,
             planName: context?.planName,
             amount: context?.amount,
-            paymentPurpose: resolvedPurpose || cancelResult.data?.paymentPurpose,
+            paymentPurpose: resolvedPurpose || cancelResult.data?.paymentPurpose || undefined,
             sessionId: resolvedSessionId,
             checkoutUrl: context?.checkoutUrl,
             status: "CANCEL_CHAIN_SUCCESS",

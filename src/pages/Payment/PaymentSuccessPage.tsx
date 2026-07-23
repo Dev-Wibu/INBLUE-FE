@@ -17,6 +17,7 @@ import {
   upsertPaymentRecoveryContext,
 } from "@/lib";
 import { userManager } from "@/services";
+import { jdPurchaseManager } from "@/services/jd-purchase.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { CheckCircle2, ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -506,6 +507,42 @@ export function PaymentSuccessPage() {
       window.clearTimeout(timerId);
     };
   }, [handleResolveOrder, resolveExecutionKey]);
+
+  // Polling for JD Purchase confirmation from PayOS webhook
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryJdId = queryParams.get("jdId");
+    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
+    const targetJdId = Number(queryJdId || storedJdId);
+
+    if (!targetJdId || isNaN(targetJdId)) return;
+
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    const pollInterval = setInterval(async () => {
+      attempts++;
+      const isSuccess = await jdPurchaseManager.checkPurchased(targetJdId);
+
+      if (isSuccess) {
+        clearInterval(pollInterval);
+        localStorage.removeItem("pending_jd_purchase_id");
+        toast.success(
+          t("payment.purchaseJdSuccess", "Mua gói JD thành công! Bạn có thể nộp đơn ngay.")
+        );
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollInterval);
+        toast.warning(
+          t(
+            "payment.paymentPendingWebhook",
+            "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút."
+          )
+        );
+      }
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [t]);
   const handleConfirmSubscribe = useCallback(async () => {
     if (!recoveryContext || resolveState === "subscribing") {
       return;
