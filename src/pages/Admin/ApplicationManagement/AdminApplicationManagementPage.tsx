@@ -189,7 +189,10 @@ export function AdminApplicationManagementPage() {
   }, [applications, openJds]);
 
   // Pagination
-  const hybridPageSize = useHybridPageSize(10);
+  const hybridPageSize = useHybridPageSize({
+    key: "admin_applications",
+    defaultPageSize: 10,
+  });
   const pagination = usePagination(filteredApplications, {
     pageSize: hybridPageSize,
   });
