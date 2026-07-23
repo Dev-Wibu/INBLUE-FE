@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDate } from "@/lib/formatting";
 import { Search, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Mentor } from "../types";
@@ -62,6 +63,8 @@ export function MentorTable({
             <TableHead className="font-medium text-slate-500">{t("common.expertise")}</TableHead>
             <TableHead className="font-medium text-slate-500">Kinh nghiệm</TableHead>
             <TableHead className="w-24 font-medium text-slate-500">Đánh giá</TableHead>
+            <TableHead className="w-32 font-medium text-slate-500">Ngày tham gia</TableHead>
+            <TableHead className="w-32 font-medium text-slate-500">Cập nhật lần cuối</TableHead>
             <TableHead className="w-24 pr-6 font-medium text-slate-500">{t("common.status")}</TableHead>
           </TableRow>
         </TableHeader>
@@ -97,6 +100,24 @@ export function MentorTable({
                   <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
                   {mentor.averageRating || mentor.rate || "0"}
                 </div>
+              </TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {(mentor as Record<string, unknown>).createdAt ||
+                (mentor as Record<string, unknown>).created_at
+                  ? formatDate(
+                      ((mentor as Record<string, unknown>).createdAt ||
+                        (mentor as Record<string, unknown>).created_at) as string
+                    )
+                  : "—"}
+              </TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {(mentor as Record<string, unknown>).updatedAt ||
+                (mentor as Record<string, unknown>).updated_at
+                  ? formatDate(
+                      ((mentor as Record<string, unknown>).updatedAt ||
+                        (mentor as Record<string, unknown>).updated_at) as string
+                    )
+                  : "—"}
               </TableCell>
               <TableCell className="pr-6">
                 <Switch
