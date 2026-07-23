@@ -10,6 +10,7 @@ export * from "./useEmailSubmission";
 export * from "./useFeatureUsageLogs";
 export * from "./useInterviewAnalysis";
 export * from "./useInterviewSession";
+export * from "./useJdPurchaseStatus";
 export * from "./useJobDescription";
 export * from "./useMentor";
 export * from "./useMentorFeedback";
