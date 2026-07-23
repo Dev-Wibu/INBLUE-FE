@@ -278,7 +278,7 @@ export function MentorManagementPage() {
 
               {/* Pagination & Empty State */}
               {sortedData.length > 0 && (
-                <div className="flex flex-none items-center justify-end border-t border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                <div className="flex flex-none items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
                   <PaginationControl
                     pagination={pagination}
                     onPageSizeChange={(nextPageSize) => {

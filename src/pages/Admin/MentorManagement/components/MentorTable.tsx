@@ -48,17 +48,21 @@ export function MentorTable({
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-16">{t("common.id")}</TableHead>
-            <TableHead>
+            <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
+              {t("common.id")}
+            </TableHead>
+            <TableHead className="font-medium text-slate-500">
               {getSortProps ? (
                 <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
               ) : (
                 t("common.name")
               )}
             </TableHead>
-            <TableHead>{t("common.email")}</TableHead>
-            <TableHead>{t("common.expertise")}</TableHead>
-            <TableHead className="w-24">{t("common.status")}</TableHead>
+            <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
+            <TableHead className="font-medium text-slate-500">{t("common.expertise")}</TableHead>
+            <TableHead className="w-24 pr-6 font-medium text-slate-500">
+              {t("common.status")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -66,8 +70,10 @@ export function MentorTable({
             <TableRow
               key={mentor.id}
               onClick={() => onViewDetail(mentor)}
-              className="cursor-pointer bg-white transition-colors hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/50">
-              <TableCell className="font-medium">{mentor.id}</TableCell>
+              className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+              <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                #{mentor.id}
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
@@ -85,8 +91,9 @@ export function MentorTable({
               </TableCell>
               <TableCell className="text-muted-foreground">{mentor.email}</TableCell>
               <TableCell className="max-w-xs truncate">{mentor.expertise || "-"}</TableCell>
-              <TableCell>
+              <TableCell className="pr-6">
                 <Switch
+                  className="data-[state=checked]:bg-emerald-500"
                   checked={mentor.active !== false}
                   onCheckedChange={() => onToggleActive(mentor)}
                   aria-label="Toggle mentor status"

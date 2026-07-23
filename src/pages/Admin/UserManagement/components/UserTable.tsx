@@ -62,18 +62,22 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-              <TableHead className="w-16">{t("common.id")}</TableHead>
-              <TableHead>
+              <TableHead className="w-[80px] pl-6 font-medium text-slate-500">
+                {t("common.id")}
+              </TableHead>
+              <TableHead className="font-medium text-slate-500">
                 {getSortProps ? (
                   <SortButton {...getSortProps("name")}>{t("common.name")}</SortButton>
                 ) : (
                   t("common.name")
                 )}
               </TableHead>
-              <TableHead>{t("common.email")}</TableHead>
-              <TableHead className="w-32">Ngày tham gia</TableHead>
-              <TableHead className="w-24">{t("common.role")}</TableHead>
-              <TableHead className="w-24">{t("common.status")}</TableHead>
+              <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
+              <TableHead className="w-32 font-medium text-slate-500">Ngày tham gia</TableHead>
+              <TableHead className="w-24 font-medium text-slate-500">{t("common.role")}</TableHead>
+              <TableHead className="w-24 pr-6 font-medium text-slate-500">
+                {t("common.status")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -81,8 +85,10 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
               <TableRow
                 key={user.id}
                 onClick={() => onViewDetail(user)}
-                className="cursor-pointer bg-white transition-colors hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/50">
-                <TableCell className="font-medium">{user.id}</TableCell>
+                className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                  #{user.id}
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
@@ -109,8 +115,9 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="pr-6">
                   <Switch
+                    className="data-[state=checked]:bg-emerald-500"
                     checked={user.isActive !== false}
                     onCheckedChange={() => onDelete(user)}
                     aria-label="Toggle user status"
