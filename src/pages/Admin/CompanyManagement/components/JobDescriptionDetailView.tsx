@@ -471,7 +471,7 @@ export function JobDescriptionDetailView({
           isOpen={isEditorOpen}
           onClose={() => setIsEditorOpen(false)}
           initialRounds={initialRounds}
-          initialMetadata={{ name: jd.title, category: "", description: "" }}
+          initialMetadata={{ name: currentJd.title, category: "", description: "" }}
           title="Quy trình tuyển dụng JD"
           showMetadataInputs={false}
           isSaving={isSaving}
