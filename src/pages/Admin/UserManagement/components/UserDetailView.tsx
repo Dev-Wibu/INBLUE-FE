@@ -567,6 +567,7 @@ export function UserDetailView({
                       </a>
                     </nav>
                   </div>
+                </div>
               )}
             </div>
           )}
