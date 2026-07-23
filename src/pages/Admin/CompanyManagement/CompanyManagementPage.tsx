@@ -284,8 +284,8 @@ export function CompanyManagementPage() {
         setSelectedCompanyId(null);
       }}
       className="-m-4 flex h-[calc(100%+32px)] flex-col md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
-      {/* Unified Single Hierarchical Header */}
-      <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
+      {/* Unified Single Hierarchical Header (Fixed 68px height - Zero layout shift) */}
+      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-center gap-3 min-w-0">
           {selectedJd ? (
             /* Mode 3: Inside a specific JD detail view (Sleek 1-line breadcrumb & title) */
@@ -342,11 +342,11 @@ export function CompanyManagementPage() {
             </div>
           ) : (
             /* Mode 1: Root Management view (WITHOUT ICON) */
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            <div className="flex flex-col justify-center">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
                 {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
               </h1>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
                 {t(
                   "adminCompanymanagement.manageCompaniesDesc",
                   "Quản lý danh sách các công ty và thông tin tuyển dụng."
