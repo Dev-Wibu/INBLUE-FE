@@ -226,45 +226,7 @@ export function JobDescriptionDetailView({
 
   return (
     <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
-      {/* 1. Header Toolbar */}
-      <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="h-8 gap-1.5 px-2 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-            <ArrowLeft className="h-4 w-4" />
-            {t("common.back", "Quay lại")}
-          </Button>
-
-          {companyName && (
-            <>
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-              <div className="flex items-center gap-2 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                <Folder className="h-3.5 w-3.5 text-slate-500" />
-                {companyName}
-              </div>
-            </>
-          )}
-
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-
-          <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">
-            {currentJd.title}
-          </h2>
-          <Badge variant={currentJd.status === "OPEN" ? "default" : "secondary"}>
-            {currentJd.status}
-          </Badge>
-          {currentJd.level && <Badge variant="outline">{currentJd.level}</Badge>}
-        </div>
-
-        <Button variant="outline" size="sm" onClick={() => onEdit(currentJd)}>
-          {t("general.edit")}
-        </Button>
-      </div>
-
-      {/* 2. Main Tabbed Content Area */}
+      {/* Main Tabbed Content Area */}
       <Tabs defaultValue="process" className="flex flex-1 flex-col overflow-hidden">
         <div className="border-b border-slate-200 bg-white px-6 py-2 dark:border-slate-800 dark:bg-slate-900/60">
           <TabsList className="bg-slate-100 dark:bg-slate-800">

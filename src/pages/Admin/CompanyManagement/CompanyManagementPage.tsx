@@ -1,4 +1,5 @@
 import { PaginationControl } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +7,7 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Plus, Search } from "lucide-react";
+import { ArrowLeft, Folder, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -27,26 +28,31 @@ export function CompanyManagementPage() {
   const [formData, setFormData] = useState<CompanyFormData>({});
   const [isCreating, setIsCreating] = useState(false);
 
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
   const [selectedJdId, setSelectedJdId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // JD Tab states
+  const [jdSearchQuery, setJdSearchQuery] = useState("");
   const [editingJd, setEditingJd] = useState<JobDescription | null>(null);
+  const [isJdDialogOpen, setIsJdDialogOpen] = useState(false);
   const [isJdEditDialogOpen, setIsJdEditDialogOpen] = useState(false);
+  const [jdFormData, setJdFormData] = useState<Partial<JobDescriptionFormData>>({});
   const [jdEditFormData, setJdEditFormData] = useState<Partial<JobDescriptionFormData>>({});
   const [isSubmittingJd, setIsSubmittingJd] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [jdSearchQuery, setJdSearchQuery] = useState("");
-  const [jdPageSize, setJdPageSize] = useHybridPageSize({
+  // Pagination for JDs tab
+  const [jdPageSize] = useHybridPageSize({
     key: "src_pages_admin_companymanagement_jd_pagesize",
     defaultPageSize: 10,
   });
 
-  // Fetch all companies
+  // Fetch Companies
   const { data: companies = [], refetch: refetchCompanies } = useQuery({
     queryKey: ["admin", "companies"],
     queryFn: async () => {
       const response = await companyManager.getAll();
       if (response.success) {
-        // @ts-expect-error: Schema type mismatch between frontend and backend
         return extractDataArray<Company>(response);
       }
       toast.error(response.error || t("common.unableToLoadCompanyList"));
@@ -74,7 +80,6 @@ export function CompanyManagementPage() {
       const res = await adminApplicationManager.getOpenJds();
       return res.success && res.data ? res.data : [];
     },
-    enabled: activeTab === "jds",
   });
 
   const processedJds = useMemo(() => {
@@ -118,6 +123,20 @@ export function CompanyManagementPage() {
     return processedJds.slice(jdPagination.startIndex, jdPagination.endIndex + 1);
   }, [processedJds, jdPagination.startIndex, jdPagination.endIndex]);
 
+  const selectedCompany = useMemo(() => {
+    return companies.find((c) => c.id === selectedCompanyId);
+  }, [companies, selectedCompanyId]);
+
+  const selectedJd = useMemo(() => {
+    if (!selectedJdId) return null;
+    return processedJds.find((j) => j.id === selectedJdId) || (allJds.find((j) => j.id === selectedJdId) as JobDescription);
+  }, [selectedJdId, processedJds, allJds]);
+
+  const selectedJdCompany = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (selectedJd as any)?.companyName || selectedCompany?.name;
+  }, [selectedJd, selectedCompany]);
+
   const handleCreateCompany = () => {
     setFormData({
       status: "ACTIVE",
@@ -128,27 +147,76 @@ export function CompanyManagementPage() {
   const handleSubmitCreate = async () => {
     try {
       setIsCreating(true);
-      const response = await companyManager.create({
-        data: {
-          name: formData.name?.trim() || undefined,
-          description: formData.description?.trim() || undefined,
-          status: formData.status,
-        },
+      const res = await companyManager.create({
+        name: formData.name,
+        description: formData.description,
+        status: formData.status || "ACTIVE",
         logo: formData.logo,
         banner: formData.banner,
       });
-      if (response.success) {
-        toast.success(t("adminCompanymanagement.successfullyCreatedCompany"));
+
+      if (res.success) {
+        toast.success(t("common.createSuccess", "Tạo công ty thành công"));
         setIsCreateDialogOpen(false);
+        setFormData({});
         void refetchCompanies();
       } else {
-        toast.error(response.error || t("common.cannotCreateCompany"));
+        toast.error(res.error || t("common.createFailed", "Tạo công ty thất bại"));
       }
-    } catch (error) {
-      console.error("Error creating company:", error);
-      toast.error(t("common.cannotCreateCompany"));
+    } catch {
+      toast.error(t("common.createFailed", "Tạo công ty thất bại"));
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleOpenCreateJd = (companyId?: number) => {
+    setJdFormData({
+      status: "OPEN",
+      currency: "VND",
+    });
+    if (companyId) {
+      setSelectedCompanyId(companyId);
+    }
+    setIsJdDialogOpen(true);
+  };
+
+  const handleSubmitCreateJd = async () => {
+    try {
+      setIsSubmittingJd(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const targetCompanyId = selectedCompanyId || (jdFormData as any).companyId;
+      if (!targetCompanyId) {
+        toast.error("Vui lòng chọn công ty cho vị trí tuyển dụng này");
+        return;
+      }
+
+      const res = await jobDescriptionManager.create({
+        title: jdFormData.title,
+        description: jdFormData.description,
+        requirements: jdFormData.requirements,
+        benefits: jdFormData.benefits,
+        level: jdFormData.level,
+        salaryMin: jdFormData.salaryMin,
+        salaryMax: jdFormData.salaryMax,
+        currency: jdFormData.currency,
+        status: jdFormData.status,
+        deadlineAt: jdFormData.deadlineAt,
+        companyId: targetCompanyId,
+      });
+
+      if (res.success) {
+        toast.success(t("adminCompanymanagement.successfullyCreatedJd", "Tạo JD mới thành công"));
+        setIsJdDialogOpen(false);
+        setJdFormData({});
+        void refetchAllJds();
+      } else {
+        toast.error(res.error || t("common.cannotCreateJd", "Không thể tạo JD"));
+      }
+    } catch {
+      toast.error(t("common.cannotCreateJd", "Đã có lỗi xảy ra"));
+    } finally {
+      setIsSubmittingJd(false);
     }
   };
 
@@ -169,7 +237,7 @@ export function CompanyManagementPage() {
     setIsJdEditDialogOpen(true);
   };
 
-  const handleJdEditSubmit = async () => {
+  const handleSubmitEditJd = async () => {
     if (!editingJd?.id) return;
     try {
       setIsSubmittingJd(true);
@@ -201,7 +269,9 @@ export function CompanyManagementPage() {
     }
   };
 
-  const selectedJd = selectedJdId ? allJds.find((j) => j.id === selectedJdId) : null;
+  const handleBackFromDetail = () => {
+    setSelectedJdId(null);
+  };
 
   return (
     <Tabs
@@ -209,73 +279,151 @@ export function CompanyManagementPage() {
       onValueChange={(tab) => {
         setActiveTab(tab);
         setSelectedJdId(null);
+        setSelectedCompanyId(null);
       }}
       className="-m-4 flex h-[calc(100%+32px)] flex-col md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
+      {/* Unified Single Header (WITHOUT ICON) */}
       <div className="flex flex-none flex-col gap-4 border-b border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-            <Building2 className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
-            </h1>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {t(
-                "adminCompanymanagement.manageCompaniesDesc",
-                "Quản lý danh sách các công ty và thông tin tuyển dụng."
+        <div className="flex flex-wrap items-center gap-3 min-w-0">
+          {selectedJd ? (
+            /* Mode 3: Inside a specific JD detail view */
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackFromDetail}
+                className="h-8 gap-1.5 px-2 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+                <ArrowLeft className="h-4 w-4" />
+                {t("common.back", "Trở lại")}
+              </Button>
+
+              {selectedJdCompany && (
+                <>
+                  <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                  <div className="flex items-center gap-2 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                    <Folder className="h-3.5 w-3.5 text-slate-500" />
+                    {selectedJdCompany}
+                  </div>
+                </>
               )}
-            </p>
-          </div>
+
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+
+              <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white truncate">
+                {selectedJd.title}
+              </h2>
+              <Badge variant={selectedJd.status === "OPEN" ? "default" : "secondary"}>
+                {selectedJd.status}
+              </Badge>
+              {selectedJd.level && <Badge variant="outline">{selectedJd.level}</Badge>}
+            </>
+          ) : selectedCompany ? (
+            /* Mode 2: Inside a specific Company's JD list view */
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCompanyId(null)}
+                className="h-8 gap-1.5 px-2 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+                <ArrowLeft className="h-4 w-4" />
+                {t("common.back", "Trở lại")}
+              </Button>
+
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+
+              <div className="flex items-center gap-2 rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
+                <Folder className="h-3.5 w-3.5 text-indigo-500" />
+                <span>{selectedCompany.name}</span>
+              </div>
+            </>
+          ) : (
+            /* Mode 1: Root Management view (WITHOUT ICON) */
+            <div>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+                {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
+              </h1>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                {t(
+                  "adminCompanymanagement.manageCompaniesDesc",
+                  "Quản lý danh sách các công ty và thông tin tuyển dụng."
+                )}
+              </p>
+            </div>
+          )}
         </div>
 
+        {/* Header Right Action Controls */}
         <div className="flex flex-wrap items-center gap-3">
-          <TabsList className="h-8">
-            <TabsTrigger value="companies" className="text-xs">
-              {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
-            </TabsTrigger>
-            <TabsTrigger value="jds" className="text-xs">
-              {t("adminCompanymanagement.jdList", "Danh sách JD")}
-            </TabsTrigger>
-          </TabsList>
-
-          {activeTab === "companies" && (
+          {selectedJd ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleOpenEditJd(selectedJd)}
+              className="h-8 text-xs font-semibold">
+              {t("general.edit", "Chỉnh sửa")}
+            </Button>
+          ) : selectedCompany ? (
+            <Button
+              size="sm"
+              onClick={() => handleOpenCreateJd(selectedCompany.id)}
+              className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700 shadow-xs">
+              <Plus className="h-3.5 w-3.5" />
+              {t("adminCompanymanagement.addJd", "Thêm JD")}
+            </Button>
+          ) : (
             <>
-              <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-              <div className="relative">
-                <Search className="absolute top-2 left-2.5 h-4 w-4 text-slate-400" />
-                <Input
-                  type="text"
-                  placeholder={t("common.search")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8 w-full pl-9 text-xs sm:w-64"
-                />
-              </div>
-              <Button
-                onClick={handleCreateCompany}
-                className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                {t("adminCompanymanagement.addCompany", "Thêm công ty")}
-              </Button>
-            </>
-          )}
+              <TabsList className="h-8">
+                <TabsTrigger value="companies" className="text-xs">
+                  {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
+                </TabsTrigger>
+                <TabsTrigger value="jds" className="text-xs">
+                  {t("adminCompanymanagement.jdList", "Danh sách JD")}
+                </TabsTrigger>
+              </TabsList>
 
-          {activeTab === "jds" && (
-            <>
-              <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
-              <div className="relative w-64">
-                <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                <Input
-                  value={jdSearchQuery}
-                  onChange={(e) => {
-                    setJdSearchQuery(e.target.value);
-                    jdPagination.goToFirstPage();
-                  }}
-                  placeholder={t("common.search")}
-                  className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
-                />
-              </div>
+              {activeTab === "companies" ? (
+                <>
+                  <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+                  <div className="relative">
+                    <Search className="absolute top-2 left-2.5 h-4 w-4 text-slate-400" />
+                    <Input
+                      type="text"
+                      placeholder={t("common.search")}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-8 w-full pl-9 text-xs sm:w-64"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleCreateCompany}
+                    className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 shadow-xs">
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    {t("adminCompanymanagement.addCompany", "Thêm công ty")}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+                  <div className="relative w-64">
+                    <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      value={jdSearchQuery}
+                      onChange={(e) => {
+                        setJdSearchQuery(e.target.value);
+                        jdPagination.goToFirstPage();
+                      }}
+                      placeholder={t("common.search")}
+                      className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => handleOpenCreateJd()}
+                    className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 shadow-xs">
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    {t("adminCompanymanagement.createJd", "Tạo JD mới")}
+                  </Button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -286,7 +434,8 @@ export function CompanyManagementPage() {
           {selectedJd ? (
             <JobDescriptionDetailView
               jobDescription={selectedJd}
-              onBack={() => setSelectedJdId(null)}
+              companyName={selectedJdCompany}
+              onBack={handleBackFromDetail}
               onEdit={(jd) => handleOpenEditJd(jd)}
             />
           ) : (
@@ -322,7 +471,7 @@ export function CompanyManagementPage() {
                         toast.success(t("common.updateSuccess", "Cập nhật thành công"));
                         void refetchAllJds();
                       } else {
-                        toast.error(t("common.updateFailed", "Cập nhật thất bại"));
+                        toast.error(res.error || t("common.updateFailed", "Cập nhật thất bại"));
                       }
                     } catch {
                       toast.error(t("common.updateFailed", "Cập nhật thất bại"));
@@ -330,17 +479,9 @@ export function CompanyManagementPage() {
                   }}
                 />
               </div>
-              {processedJds.length > 0 && (
-                <div className="flex flex-none items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
-                  <PaginationControl
-                    pagination={jdPagination}
-                    onPageSizeChange={(size) => {
-                      setJdPageSize(size);
-                      jdPagination.goToFirstPage();
-                    }}
-                  />
-                </div>
-              )}
+              <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+                <PaginationControl pagination={jdPagination} />
+              </div>
             </div>
           )}
         </TabsContent>
@@ -351,6 +492,12 @@ export function CompanyManagementPage() {
             searchQuery={searchQuery}
             onCompanyUpdate={() => void refetchCompanies()}
             onCreateCompany={handleCreateCompany}
+            selectedCompanyId={selectedCompanyId}
+            onSelectCompanyId={setSelectedCompanyId}
+            selectedJdId={selectedJdId}
+            onSelectJdId={setSelectedJdId}
+            isAddJdDialogOpen={isJdDialogOpen}
+            onAddJdDialogChange={setIsJdDialogOpen}
           />
         </TabsContent>
       </div>
@@ -363,28 +510,31 @@ export function CompanyManagementPage() {
         onFormChange={setFormData}
         onSubmit={handleSubmitCreate}
         title={t("adminCompanymanagement.addNewPartners")}
-        description={t("adminCompanymanagement.fillInBasicInformationTo")}
-        submitLabel={t("adminCompanymanagement.createPartners")}
+        description={t("adminCompanymanagement.addNewPartnerDescription")}
         isSubmitting={isCreating}
       />
 
-      {/* Edit JD Dialog (Global) */}
+      {/* Create / Edit JD Dialog */}
+      <JobDescriptionFormDialog
+        isOpen={isJdDialogOpen}
+        onOpenChange={setIsJdDialogOpen}
+        formData={jdFormData}
+        onFormChange={setJdFormData}
+        onSubmit={handleSubmitCreateJd}
+        title={t("adminCompanymanagement.createJdTitle", "Tạo vị trí tuyển dụng (JD)")}
+        description={t("adminCompanymanagement.createJdDesc", "Nhập thông tin vị trí tuyển dụng mới.")}
+        isSubmitting={isSubmittingJd}
+      />
+
       <JobDescriptionFormDialog
         isOpen={isJdEditDialogOpen}
         onOpenChange={setIsJdEditDialogOpen}
         formData={jdEditFormData}
-        onFormChange={(data) => setJdEditFormData((prev) => ({ ...prev, ...data }))}
-        onSubmit={handleJdEditSubmit}
-        title={t("adminCompanymanagement.editJd", "Chỉnh sửa Job Description")}
-        description={t(
-          "adminCompanymanagement.editJdDescription",
-          "Cập nhật thông tin Job Description."
-        )}
-        submitLabel={
-          isSubmittingJd
-            ? t("common.processing", "Đang xử lý...")
-            : t("common.save", "Lưu thay đổi")
-        }
+        onFormChange={setJdEditFormData}
+        onSubmit={handleSubmitEditJd}
+        title={t("adminCompanymanagement.editJdTitle", "Chỉnh sửa vị trí tuyển dụng (JD)")}
+        description={t("adminCompanymanagement.editJdDesc", "Cập nhật thông tin chi tiết của vị trí tuyển dụng.")}
+        isSubmitting={isSubmittingJd}
       />
     </Tabs>
   );
