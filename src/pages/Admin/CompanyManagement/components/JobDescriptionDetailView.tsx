@@ -1,5 +1,6 @@
 import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
+  getAvailableRoundsTemplates,
   RoundCanvasEditorWorkspace,
 } from "@/components/shared/RoundCanvasEditor";
 import { Badge } from "@/components/ui/badge";
