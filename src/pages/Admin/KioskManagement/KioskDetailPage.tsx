@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { kioskManager } from "@/services/kiosk.manager";
-import { ArrowLeft, CalendarDays, History, MapPin, Pencil } from "lucide-react";
+import { CalendarDays, ChevronRight, History, MapPin, Pencil } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
@@ -247,41 +247,44 @@ export function KioskDetailPage() {
 
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-      {/* ── HEADER ───────────────────────────────────────────────────────── */}
-      <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-3.5 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="icon"
+      {/* Unified Single Hierarchical Header (Fixed 68px height) */}
+      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+        {/* Left: Breadcrumb */}
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          <button
+            type="button"
             onClick={() => navigate("/admin/kiosk-management")}
-            className="h-9 w-9 shrink-0 border-slate-200 dark:border-slate-800">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-
+            className="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400 dark:hover:text-indigo-400">
+            {t("adminKioskManagement.title", "Quản lý Kiosk")}
+          </button>
+          <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
           {isLoading ? (
-            <div className="space-y-1.5">
-              <div className="h-4 w-40 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-              <div className="h-3 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-            </div>
+            <div className="h-4 w-36 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
           ) : (
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                  {kiosk?.name || `Kiosk #${kioskId}`}
-                </h1>
-                <Badge
-                  variant="outline"
-                  className="gap-1 border-slate-200 font-mono text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                  #{kioskId}
-                </Badge>
-              </div>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Chi tiết trạm Kiosk và lịch hoạt động phỏng vấn
-              </p>
-            </div>
+            <>
+              <h1 className="text-base font-bold text-slate-900 dark:text-white truncate">
+                {kiosk?.name || `Kiosk #${kioskId}`}
+              </h1>
+              <Badge
+                variant="outline"
+                className="gap-1 border-slate-200 font-mono text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                #{kioskId}
+              </Badge>
+              <Badge
+                className={
+                  kioskStatus
+                    ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400"
+                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                }>
+                {kioskStatus
+                  ? t("adminKioskManagement.active", "Hoạt động")
+                  : t("adminKioskManagement.inactive", "Dừng hoạt động")}
+              </Badge>
+            </>
           )}
         </div>
 
+        {/* Right: Actions */}
         {!isLoading && kiosk && (
           <div className="flex items-center gap-3">
             {/* Location */}
@@ -289,13 +292,6 @@ export function KioskDetailPage() {
               <MapPin className="h-3.5 w-3.5 text-rose-500" />
               {kiosk.location || t("adminKioskManagement.noLocation")}
             </div>
-
-            {/* Created date */}
-            {createdAtFormatted && (
-              <span className="hidden text-xs text-slate-400 lg:inline">
-                {t("adminKioskManagement.createdAt")}: {createdAtFormatted}
-              </span>
-            )}
 
             {/* Status toggle */}
             <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 dark:border-slate-800">
