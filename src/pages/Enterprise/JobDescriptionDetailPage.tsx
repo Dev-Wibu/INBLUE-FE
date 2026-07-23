@@ -4,9 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
 import i18n from "@/lib/i18n";
 import { applicationService } from "@/services/application.manager";
 import { companyManager, type JobDescription } from "@/services/company.manager";
+import { jdPurchaseManager } from "@/services/jd-purchase.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   AlertCircle,
@@ -107,10 +109,15 @@ export function JobDescriptionDetailPage() {
   }>();
   const navigate = useNavigate();
   const { isLoggedIn } = useAuthStore();
+  const jdIdNum = Number(id);
+
+  const { hasPurchased, hasApplied, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(jdIdNum);
   const [job, setJob] = useState<JobDescription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBuying, setIsBuying] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchJob = async () => {
       if (!id) return;
@@ -123,8 +130,6 @@ export function JobDescriptionDetailPage() {
         } else {
           setError(t("enterpriseJobdescriptiondetailpage.noVacancyInformationFound"));
         }
-
-        // NOTE: Application check removed for testing - always allow applying
       } catch (err) {
         console.error("[JobDescriptionDetailPage] Error:", err);
         setError(t("enterpriseJobdescriptiondetailpage.errorLoadingInfo"));
@@ -134,12 +139,30 @@ export function JobDescriptionDetailPage() {
     };
     fetchJob();
   }, [id, isLoggedIn, t]);
-  // NOTE: For testing, always allow applying (no blocking check)
-  // const isApplicationActive =
-  //   existingApplication !== null &&
-  //   BLOCKING_APPLICATION_STATUSES.includes(
-  //     existingApplication.status as (typeof BLOCKING_APPLICATION_STATUSES)[number]
-  //   );
+
+  const handleBuyPackage = async () => {
+    if (!isLoggedIn) {
+      toast.error(t("enterpriseJobdescriptiondetailpage.pleaseLoginToApply"));
+      navigate(`/login?redirect=/enterprise/job/${id}`);
+      return;
+    }
+    if (!jdIdNum) return;
+
+    setIsBuying(true);
+    try {
+      localStorage.setItem("pending_jd_purchase_id", String(jdIdNum));
+      const checkoutUrl = await jdPurchaseManager.createPayment(jdIdNum);
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      console.error("[BuyPackage] Error:", err);
+      toast.error(
+        t("payment.createPaymentFailed", "Không thể tạo đơn thanh toán. Vui lòng thử lại.")
+      );
+    } finally {
+      setIsBuying(false);
+    }
+  };
+
   const handleApply = async () => {
     if (!isLoggedIn) {
       toast.error(t("enterpriseJobdescriptiondetailpage.pleaseLoginToApply"));
@@ -150,14 +173,15 @@ export function JobDescriptionDetailPage() {
       toast.warning(t("enterpriseJobdescriptiondetailpage.thisPositionIsCurrentlyNo"));
       return;
     }
-    if (!job?.id) return;
+    if (!jdIdNum) return;
+
     setIsApplying(true);
     try {
-      const result = await applicationService.apply(job.id);
+      const result = await applicationService.apply(jdIdNum);
       if (result.success) {
         toast.success(t("enterpriseJobdescriptiondetailpage.successfulApplicationGoodLuck"));
-        // Refresh job data to update applied count
-        const refreshResult = await companyManager.getJobById(job.id);
+        await refetchStatus();
+        const refreshResult = await companyManager.getJobById(jdIdNum);
         if (refreshResult.success && refreshResult.data) {
           setJob(refreshResult.data);
         }
@@ -169,12 +193,112 @@ export function JobDescriptionDetailPage() {
           duration: 5000,
         });
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("[Apply] Catch error:", err);
-      toast.error(t("enterpriseJobdescriptiondetailpage.errorApplyingPleaseTryAgain"));
+      const is402 =
+        (err &&
+          typeof err === "object" &&
+          "status" in err &&
+          (err as { status: number }).status === 402) ||
+        (err &&
+          typeof err === "object" &&
+          "response" in err &&
+          (err as { response?: { status?: number } }).response?.status === 402);
+      if (is402) {
+        toast.error(t("payment.paymentRequiredToApply", "Bạn cần mua gói apply cho JD này trước."));
+      } else {
+        toast.error(t("enterpriseJobdescriptiondetailpage.errorApplyingPleaseTryAgain"));
+      }
     } finally {
       setIsApplying(false);
     }
+  };
+
+  const renderActionButton = (fullWidth = false) => {
+    const widthClass = fullWidth ? "w-full" : "";
+
+    if (job?.status !== "OPEN") {
+      return (
+        <Button disabled className={`bg-slate-400 text-white ${widthClass}`} size="lg">
+          {t("enterpriseJobdescriptiondetailpage.recruitmentHasBeenClosed")}
+        </Button>
+      );
+    }
+
+    if (!isLoggedIn) {
+      return (
+        <Button
+          onClick={() => navigate(`/login?redirect=/enterprise/job/${id}`)}
+          className={`bg-[#0047AB] text-white hover:bg-[#003d8f] ${widthClass}`}
+          size="lg">
+          {t("enterpriseJobdescriptiondetailpage.loginToApply")}
+        </Button>
+      );
+    }
+
+    if (isLoadingStatus) {
+      return (
+        <Button disabled className={`bg-slate-400 text-white ${widthClass}`} size="lg">
+          <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          {t("common.checking", "Đang kiểm tra...")}
+        </Button>
+      );
+    }
+
+    if (hasApplied) {
+      return (
+        <Button
+          disabled
+          className={`bg-emerald-600 text-white dark:bg-emerald-700 ${widthClass}`}
+          size="lg">
+          <CheckCircle2 className="mr-2 h-5 w-5" />
+          {t("enterpriseJobdescriptiondetailpage.alreadyApplied", "Đã ứng tuyển")}
+        </Button>
+      );
+    }
+
+    if (hasPurchased) {
+      return (
+        <Button
+          onClick={handleApply}
+          disabled={isApplying}
+          className={`bg-[#0047AB] text-white hover:bg-[#003d8f] ${widthClass}`}
+          size="lg">
+          {isApplying ? (
+            <>
+              <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              {t("common.processing")}
+            </>
+          ) : (
+            t("enterpriseJobdescriptiondetailpage.applyNow")
+          )}
+        </Button>
+      );
+    }
+
+    const priceText = job?.salaryMax
+      ? formatSalary(job.salaryMin, job.salaryMax, job.currency)
+      : "99.000đ";
+
+    return (
+      <Button
+        onClick={handleBuyPackage}
+        disabled={isBuying}
+        className={`bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800 ${widthClass}`}
+        size="lg">
+        {isBuying ? (
+          <>
+            <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            {t("common.processing")}
+          </>
+        ) : (
+          t("payment.buyPackageWithPrice", {
+            defaultValue: `Mua gói — ${priceText}`,
+            price: priceText,
+          })
+        )}
+      </Button>
+    );
   };
   if (isLoading) {
     return (
@@ -266,25 +390,8 @@ export function JobDescriptionDetailPage() {
                 </div>
               </div>
 
-              {/* Action Buttons - Apply */}
-              <Button
-                onClick={handleApply}
-                disabled={isApplying || job.status !== "OPEN"}
-                className={`text-white ${job.status !== "OPEN" ? "cursor-not-allowed bg-green-600 hover:bg-green-600" : !isLoggedIn ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500" : "bg-[#0047AB] hover:bg-[#003d8f]"}`}
-                size="lg">
-                {isApplying ? (
-                  <>
-                    <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    {t("common.processing")}
-                  </>
-                ) : job.status !== "OPEN" ? (
-                  t("enterpriseJobdescriptiondetailpage.recruitmentHasBeenClosed")
-                ) : !isLoggedIn ? (
-                  t("enterpriseJobdescriptiondetailpage.loginToApply")
-                ) : (
-                  t("enterpriseJobdescriptiondetailpage.applyNow")
-                )}
-              </Button>
+              {/* Action Buttons - Apply or Buy Package */}
+              {renderActionButton(false)}
             </div>
 
             {/* Deadline */}
@@ -419,25 +526,8 @@ export function JobDescriptionDetailPage() {
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
-            {/* Apply Button */}
-            <Button
-              onClick={handleApply}
-              disabled={isApplying || job.status !== "OPEN"}
-              className={`w-full text-white ${job.status !== "OPEN" ? "cursor-not-allowed bg-green-600 hover:bg-green-600" : !isLoggedIn ? "cursor-not-allowed bg-slate-400 hover:bg-slate-500" : "bg-[#0047AB] hover:bg-[#003d8f]"}`}
-              size="lg">
-              {isApplying ? (
-                <>
-                  <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  {t("common.processing")}
-                </>
-              ) : job.status !== "OPEN" ? (
-                t("enterpriseJobdescriptiondetailpage.recruitmentHasBeenClosed")
-              ) : !isLoggedIn ? (
-                t("enterpriseJobdescriptiondetailpage.loginToApply")
-              ) : (
-                t("enterpriseJobdescriptiondetailpage.applyNow")
-              )}
-            </Button>
+            {/* Action Button - Apply or Buy Package */}
+            {renderActionButton(true)}
 
             {/* Job Overview */}
             <Card className="border-slate-200 dark:border-slate-700">
