@@ -7,7 +7,7 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Building2, ChevronRight, Folder, Plus, Search } from "lucide-react";
+import { ArrowLeft, Briefcase, Building2, ChevronRight, Folder, Plus, Search, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -34,6 +34,8 @@ export function CompanyManagementPage() {
 
   // JD Tab states
   const [jdSearchQuery, setJdSearchQuery] = useState("");
+  const [jdDetailTab, setJdDetailTab] = useState<string>("process");
+  const [jdApplicationsCount, setJdApplicationsCount] = useState<number>(0);
   const [editingJd, setEditingJd] = useState<JobDescription | null>(null);
   const [isJdDialogOpen, setIsJdDialogOpen] = useState(false);
   const [isJdEditDialogOpen, setIsJdEditDialogOpen] = useState(false);
@@ -366,13 +368,30 @@ export function CompanyManagementPage() {
         {/* Header Right Action Controls */}
         <div className="flex flex-wrap items-center gap-3">
           {selectedJd ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenEditJd(selectedJd)}
-              className="h-8 text-xs font-semibold">
-              {t("general.edit", "Chỉnh sửa")}
-            </Button>
+            <>
+              <Tabs value={jdDetailTab} onValueChange={setJdDetailTab}>
+                <TabsList className="h-8 bg-slate-100 dark:bg-slate-800">
+                  <TabsTrigger value="process" className="text-xs font-semibold gap-1.5 h-7">
+                    <Briefcase className="h-3.5 w-3.5" />
+                    Quy trình & Thông tin JD
+                  </TabsTrigger>
+                  <TabsTrigger value="applications" className="text-xs font-semibold gap-1.5 h-7">
+                    <Users className="h-3.5 w-3.5" />
+                    Đơn ứng tuyển ({jdApplicationsCount})
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenEditJd(selectedJd)}
+                className="h-8 text-xs font-semibold">
+                {t("general.edit", "Chỉnh sửa")}
+              </Button>
+            </>
           ) : selectedCompany ? (
             <Button
               size="sm"
@@ -448,6 +467,8 @@ export function CompanyManagementPage() {
               companyName={selectedJdCompany}
               onBack={handleBackFromDetail}
               onEdit={(jd) => handleOpenEditJd(jd)}
+              activeTab={jdDetailTab}
+              onApplicationsCountChange={setJdApplicationsCount}
             />
           ) : (
             <div className="flex h-full flex-col">
@@ -509,6 +530,8 @@ export function CompanyManagementPage() {
             onSelectJdId={setSelectedJdId}
             isAddJdDialogOpen={isJdDialogOpen}
             onAddJdDialogChange={setIsJdDialogOpen}
+            jdDetailTab={jdDetailTab}
+            onApplicationsCountChange={setJdApplicationsCount}
           />
         </TabsContent>
       </div>

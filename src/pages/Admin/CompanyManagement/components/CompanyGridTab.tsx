@@ -34,6 +34,8 @@ interface CompanyGridTabProps {
   onSelectJdId?: (id: number | null) => void;
   isAddJdDialogOpen?: boolean;
   onAddJdDialogChange?: (open: boolean) => void;
+  jdDetailTab?: string;
+  onApplicationsCountChange?: (count: number) => void;
 }
 
 export function CompanyGridTab({
@@ -46,6 +48,8 @@ export function CompanyGridTab({
   onSelectJdId,
   isAddJdDialogOpen,
   onAddJdDialogChange,
+  jdDetailTab,
+  onApplicationsCountChange,
 }: CompanyGridTabProps) {
   const { t } = useTranslation();
   const [internalSelectedCompanyId, setInternalSelectedCompanyId] = useState<number | null>(null);
@@ -331,6 +335,8 @@ export function CompanyGridTab({
               companyName={selectedCompany.name}
               onBack={() => setSelectedJdId(null)}
               onEdit={(jd) => handleOpenEditJd(jd)}
+              activeTab={jdDetailTab}
+              onApplicationsCountChange={onApplicationsCountChange}
             />
           ) : (
             <JobDescriptionTable
