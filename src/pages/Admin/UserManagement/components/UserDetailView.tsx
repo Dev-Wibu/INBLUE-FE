@@ -582,6 +582,5 @@ export function UserDetailView({
           description="Tải lên CV (định dạng PDF) cho ứng viên này."
         />
       </div>
-    </div>
-  );
+    );
 }
