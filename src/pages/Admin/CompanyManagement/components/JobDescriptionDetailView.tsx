@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { roundManager } from "@/services/round.manager";
-import { ArrowLeft, CheckCircle, ChevronLeft, Clock, Edit3, FileText } from "lucide-react";
+import { ArrowLeft, CheckCircle, ChevronLeft, Clock, Edit3, FileText, Folder } from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -15,12 +15,14 @@ import type { JobDescription } from "../types";
 
 interface JobDescriptionDetailViewProps {
   jobDescription: JobDescription;
+  companyName?: string;
   onBack: () => void;
   onEdit: (job: JobDescription) => void;
 }
 
 export function JobDescriptionDetailView({
   jobDescription,
+  companyName,
   onBack,
   onEdit,
 }: JobDescriptionDetailViewProps) {
@@ -184,30 +186,41 @@ export function JobDescriptionDetailView({
 
   return (
     <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
-      <div className="border-border/50 sticky top-0 z-10 border-b bg-white/80 px-6 py-4 backdrop-blur-xl dark:bg-slate-900/80">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={onBack}
-            className="h-8 w-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-            <ChevronLeft className="h-4 w-4" />
+            className="h-8 gap-1.5 px-2 text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
+            <ArrowLeft className="h-4 w-4" />
+            {t("common.back", "Quay lại")}
           </Button>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-xl font-bold tracking-tight break-words text-slate-900 dark:text-white">
-                {currentJd.title}
-              </h2>
-              <Badge variant={currentJd.status === "OPEN" ? "default" : "secondary"}>
-                {currentJd.status}
-              </Badge>
-              <Badge variant="outline">{currentJd.level}</Badge>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => onEdit(currentJd)}>
-            {t("general.edit")}
-          </Button>
+
+          {companyName && (
+            <>
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+              <div className="flex items-center gap-2 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                <Folder className="h-3.5 w-3.5 text-slate-500" />
+                {companyName}
+              </div>
+            </>
+          )}
+
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+
+          <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">
+            {currentJd.title}
+          </h2>
+          <Badge variant={currentJd.status === "OPEN" ? "default" : "secondary"}>
+            {currentJd.status}
+          </Badge>
+          {currentJd.level && <Badge variant="outline">{currentJd.level}</Badge>}
         </div>
+
+        <Button variant="outline" size="sm" onClick={() => onEdit(currentJd)}>
+          {t("general.edit")}
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto">

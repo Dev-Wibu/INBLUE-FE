@@ -311,6 +311,7 @@ export function CompanyGridTab({ companies, searchQuery, onCompanyUpdate }: Comp
           {selectedJd ? (
             <JobDescriptionDetailView
               jobDescription={selectedJd}
+              companyName={selectedCompany.name}
               onBack={() => setSelectedJdId(null)}
               onEdit={(jd) => handleOpenEditJd(jd)}
             />
