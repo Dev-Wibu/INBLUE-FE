@@ -28,6 +28,7 @@ import {
   Briefcase,
   Calendar,
   CheckCircle2,
+  ChevronRight,
   Clock,
   DollarSign,
   Edit3,
