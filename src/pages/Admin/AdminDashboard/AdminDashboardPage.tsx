@@ -305,6 +305,8 @@ export function AdminDashboardPage() {
             logoutIcon: "",
             logoutLabel: t("common.logout"),
           }}
+        />
+
         <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
           <AdminHeader
             title={currentTitle}
