@@ -5051,6 +5051,16 @@
     "purchaseJdSuccess": "Mua gói JD thành công! Bạn có thể nộp đơn ngay.",
     "paymentPendingWebhook": "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút.",
     "returnToJobPosition": "Quay lại trang vị trí việc làm",
-    "jdPurchaseCancelledMsg": "Bạn đã hủy giao dịch thanh toán mua gói JD."
+    "jdPurchaseCancelledMsg": "Bạn đã hủy giao dịch thanh toán mua gói JD.",
+    "retryPayment": "Thử thanh toán lại",
+    "jdPurchaseHistory": "Lịch sử gói JD",
+    "jdPurchaseStatus_PURCHASED": "Đã mua",
+    "jdPurchaseStatus_USED": "Đã dùng",
+    "jdPurchaseDate": "Ngày mua",
+    "jdPurchaseAmount": "Số tiền",
+    "jdPurchaseNoPurchases": "Bạn chưa mua gói JD nào.",
+    "jdPurchaseLoadError": "Không thể tải lịch sử mua gói JD.",
+    "jdPurchaseJdId": "JD #",
+    "jdPurchasePaymentId": "Mã thanh toán"
   }
 }

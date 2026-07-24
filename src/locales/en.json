@@ -5053,6 +5053,16 @@
     "purchaseJdSuccess": "JD package purchased successfully! You can apply now.",
     "paymentPendingWebhook": "Payment is being confirmed. Please check back in a few moments.",
     "returnToJobPosition": "Return to job description page",
-    "jdPurchaseCancelledMsg": "You have cancelled the JD package purchase transaction."
+    "jdPurchaseCancelledMsg": "You have cancelled the JD package purchase transaction.",
+    "retryPayment": "Retry Payment",
+    "jdPurchaseHistory": "JD Package History",
+    "jdPurchaseStatus_PURCHASED": "Purchased",
+    "jdPurchaseStatus_USED": "Used",
+    "jdPurchaseDate": "Purchase Date",
+    "jdPurchaseAmount": "Amount",
+    "jdPurchaseNoPurchases": "You have not purchased any JD package yet.",
+    "jdPurchaseLoadError": "Failed to load JD purchase history.",
+    "jdPurchaseJdId": "JD #",
+    "jdPurchasePaymentId": "Payment ID"
   }
 }

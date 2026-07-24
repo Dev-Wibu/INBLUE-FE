@@ -5061,6 +5061,16 @@
     "purchaseJdSuccess": "JDパッケージの購入が完了しました！今すぐ応募できます。",
     "paymentPendingWebhook": "決済を確認中です。しばらくしてから再度ご確認ください。",
     "returnToJobPosition": "求人詳細ページに戻る",
-    "jdPurchaseCancelledMsg": "JDパッケージ購入決済をキャンセルしました。"
+    "jdPurchaseCancelledMsg": "JDパッケージ購入決済をキャンセルしました。",
+    "retryPayment": "再度お支払いを試みる",
+    "jdPurchaseHistory": "JDパッケージ履歴",
+    "jdPurchaseStatus_PURCHASED": "購入済み",
+    "jdPurchaseStatus_USED": "使用済み",
+    "jdPurchaseDate": "購入日",
+    "jdPurchaseAmount": "金額",
+    "jdPurchaseNoPurchases": "JDパッケージをまだ購入していません。",
+    "jdPurchaseLoadError": "JD購入履歴の読み込みに失敗しました。",
+    "jdPurchaseJdId": "JD #",
+    "jdPurchasePaymentId": "支払いID"
   }
 }
