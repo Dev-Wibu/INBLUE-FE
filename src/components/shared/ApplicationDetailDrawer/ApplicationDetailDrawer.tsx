@@ -35,6 +35,8 @@ interface ApplicationDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onStatusChange?: () => void;
+}
+
 function renderAiFeedback(feedback: any) {
   if (!feedback) return null;
 
