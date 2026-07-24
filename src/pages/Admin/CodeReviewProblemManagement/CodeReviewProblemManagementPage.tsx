@@ -201,6 +201,46 @@ export function CodeReviewProblemManagementPage() {
   if (view.mode === "create" || view.mode === "edit") {
     return (
       <div className="-m-4 flex h-[calc(100%+32px)] flex-col overflow-hidden bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
+        {/* SINGLE UNIFIED TOP HEADER */}
+        <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (view.mode === "edit" && selectedProblem) {
+                  setView({ mode: "detail", problemId: selectedProblem.id });
+                } else {
+                  handleBack();
+                }
+              }}
+              className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+              Bài tập Code Review
+            </button>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+              {view.mode === "edit"
+                ? `Chỉnh sửa: ${view.problem.title}`
+                : "Tạo bài tập mới"}
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (view.mode === "edit" && selectedProblem) {
+                  setView({ mode: "detail", problemId: selectedProblem.id });
+                } else {
+                  handleBack();
+                }
+              }}
+              className="h-8 text-xs">
+              Quay lại
+            </Button>
+          </div>
+        </div>
+
         <div className="flex-1 overflow-hidden">
           <CodeReviewProblemBuilder
             initialData={view.mode === "edit" ? view.problem : undefined}
