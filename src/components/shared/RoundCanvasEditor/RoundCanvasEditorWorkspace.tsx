@@ -661,10 +661,7 @@ export function RoundCanvasEditorWorkspace({
                             return (
                               <path
                                 key={idx}
-                                d={
-                                  conn.path ||
-                                  `M ${conn.x1} ${conn.y1} C ${conn.cp1x} ${conn.cp1y}, ${conn.cp2x} ${conn.cp2y}, ${conn.x2} ${conn.y2}`
-                                }
+                                d={`M ${conn.x1} ${conn.y1} C ${conn.cp1x} ${conn.cp1y}, ${conn.cp2x} ${conn.cp2y}, ${conn.x2} ${conn.y2}`}
                                 stroke="#94a3b8"
                                 strokeWidth="1.8"
                                 strokeDasharray="6 4"

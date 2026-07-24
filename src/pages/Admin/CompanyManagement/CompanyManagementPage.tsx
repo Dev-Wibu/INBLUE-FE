@@ -502,8 +502,6 @@ export function CompanyManagementPage() {
               companyName={selectedJdCompany}
               onBack={handleBackFromDetail}
               onEdit={() => void refetchAllJds()}
-              activeTab={jdDetailTab}
-              onApplicationsCountChange={setJdApplicationsCount}
             />
           ) : (
             <div className="flex h-full flex-col">
@@ -565,8 +563,6 @@ export function CompanyManagementPage() {
             onSelectJdId={setSelectedJdId}
             isAddJdDialogOpen={isJdDialogOpen}
             onAddJdDialogChange={setIsJdDialogOpen}
-            jdDetailTab={jdDetailTab}
-            onApplicationsCountChange={setJdApplicationsCount}
           />
         </TabsContent>
       </div>
