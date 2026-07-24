@@ -337,7 +337,7 @@ export function CompanyGridTab({
               jobDescription={selectedJd}
               companyName={selectedCompany.name}
               onBack={() => setSelectedJdId(null)}
-              onEdit={(jd) => handleOpenEditJd(jd)}
+              onEdit={() => onCompanyUpdate()}
               activeTab={jdDetailTab}
               onApplicationsCountChange={onApplicationsCountChange}
             />

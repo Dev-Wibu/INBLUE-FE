@@ -479,7 +479,7 @@ export function CompanyManagementPage() {
               jobDescription={selectedJd}
               companyName={selectedJdCompany}
               onBack={handleBackFromDetail}
-              onEdit={(jd) => handleOpenEditJd(jd)}
+              onEdit={() => void refetchAllJds()}
               activeTab={jdDetailTab}
               onApplicationsCountChange={setJdApplicationsCount}
             />
