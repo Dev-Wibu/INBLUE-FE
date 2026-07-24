@@ -5063,6 +5063,8 @@
     "jdPurchaseNoPurchases": "You have not purchased any JD package yet.",
     "jdPurchaseLoadError": "Failed to load JD purchase history.",
     "jdPurchaseJdId": "JD #",
-    "jdPurchasePaymentId": "Payment ID"
+    "jdPurchasePaymentId": "Payment ID",
+    "jdPackage": "Job position package",
+    "confirmingJdPurchase": "Confirming JD package purchase transaction..."
   }
 }

@@ -5071,6 +5071,8 @@
     "jdPurchaseNoPurchases": "JDパッケージをまだ購入していません。",
     "jdPurchaseLoadError": "JD購入履歴の読み込みに失敗しました。",
     "jdPurchaseJdId": "JD #",
-    "jdPurchasePaymentId": "支払いID"
+    "jdPurchasePaymentId": "支払いID",
+    "jdPackage": "求人ポジションパッケージ",
+    "confirmingJdPurchase": "JDパッケージ購入取引を確認中..."
   }
 }

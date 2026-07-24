@@ -5061,6 +5061,8 @@
     "jdPurchaseNoPurchases": "Bạn chưa mua gói JD nào.",
     "jdPurchaseLoadError": "Không thể tải lịch sử mua gói JD.",
     "jdPurchaseJdId": "JD #",
-    "jdPurchasePaymentId": "Mã thanh toán"
+    "jdPurchasePaymentId": "Mã thanh toán",
+    "jdPackage": "Gói vị trí việc làm",
+    "confirmingJdPurchase": "Đang xác nhận giao dịch mua gói JD..."
   }
 }

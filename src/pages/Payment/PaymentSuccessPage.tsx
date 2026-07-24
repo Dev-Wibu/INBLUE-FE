@@ -149,6 +149,8 @@ export function PaymentSuccessPage() {
     () => getPendingSessionPaymentContext(currentUserId || undefined),
     [currentUserId]
   );
+  // JD purchase poll states (separate from subscription resolve states)
+  const [jdPollStatus, setJdPollStatus] = useState<"checking" | "success" | "pending">("checking");
   const [resolveState, setResolveState] = useState<ResolveState>("checking");
   const [resolveError, setResolveError] = useState<string>("");
   const [subscribeError, setSubscribeError] = useState<string>("");
@@ -200,6 +202,10 @@ export function PaymentSuccessPage() {
     [t]
   );
   const handleResolveOrder = useCallback(async () => {
+    // JD purchase flow is handled separately via polling — skip subscription resolve
+    if (pendingJdId) {
+      return;
+    }
     if (resolveInFlightRef.current) {
       return;
     }
@@ -504,6 +510,7 @@ export function PaymentSuccessPage() {
     getActivatedOrderCodes,
     orderCode,
     paid,
+    pendingJdId,
     pendingSessionPayment,
     queryTransactionCode,
     source,
@@ -511,6 +518,8 @@ export function PaymentSuccessPage() {
     t,
   ]);
   useEffect(() => {
+    // Skip subscription resolve flow entirely for JD purchases
+    if (pendingJdId) return;
     if (autoResolveKeyRef.current === resolveExecutionKey) {
       return;
     }
@@ -521,34 +530,37 @@ export function PaymentSuccessPage() {
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [handleResolveOrder, resolveExecutionKey]);
+  }, [handleResolveOrder, pendingJdId, resolveExecutionKey]);
 
-  // Polling for JD Purchase confirmation from PayOS webhook
+  // Polling for JD Purchase confirmation from PayOS webhook (per fe_guideline.md)
   useEffect(() => {
     if (!pendingJdId) return;
 
+    setJdPollStatus("checking");
     let attempts = 0;
     const maxAttempts = 5;
 
-    const pollInterval = setInterval(async () => {
+    const pollInterval = setInterval(() => {
       attempts++;
-      const isSuccess = await jdPurchaseManager.checkPurchased(pendingJdId);
-
-      if (isSuccess) {
-        clearInterval(pollInterval);
-        localStorage.removeItem("pending_jd_purchase_id");
-        toast.success(
-          t("payment.purchaseJdSuccess", "Mua gói JD thành công! Bạn có thể nộp đơn ngay.")
-        );
-      } else if (attempts >= maxAttempts) {
-        clearInterval(pollInterval);
-        toast.warning(
-          t(
-            "payment.paymentPendingWebhook",
-            "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút."
-          )
-        );
-      }
+      void jdPurchaseManager.checkPurchased(pendingJdId).then((isSuccess) => {
+        if (isSuccess) {
+          clearInterval(pollInterval);
+          localStorage.removeItem("pending_jd_purchase_id");
+          setJdPollStatus("success");
+          toast.success(
+            t("payment.purchaseJdSuccess", "Mua gói JD thành công! Bạn có thể nộp đơn ngay.")
+          );
+        } else if (attempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          setJdPollStatus("pending");
+          toast.warning(
+            t(
+              "payment.paymentPendingWebhook",
+              "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút."
+            )
+          );
+        }
+      });
     }, 2000);
 
     return () => clearInterval(pollInterval);
@@ -764,6 +776,66 @@ export function PaymentSuccessPage() {
     !!recoveryContext &&
     subscribeKey.length > 0 &&
     autoSubscribeKey === subscribeKey;
+  // ──────────────────────────────────────────────────────────────────────────
+  // JD Purchase Success UI (completely separate from subscription flow)
+  // Per fe_guideline.md: poll /api/jd-purchases/check, show status, then back
+  // ──────────────────────────────────────────────────────────────────────────
+  if (pendingJdId) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-emerald-50 to-blue-50 px-4 py-10 dark:from-slate-950 dark:to-slate-900">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 rounded-2xl border border-emerald-200 bg-white p-8 shadow-sm dark:border-emerald-900/40 dark:bg-slate-900">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <CheckCircle2 className="h-7 w-7" />
+            </div>
+            <div>
+              <h1 className="font-['Poppins'] text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+                {t("paymentPaymentsuccesspage.paymentSuccessful")}
+              </h1>
+              <p className="font-['Inter'] text-sm text-slate-500 dark:text-slate-400">
+                {t("payment.jdPackage", "Gói vị trí việc làm")}
+              </p>
+            </div>
+          </div>
+
+          {jdPollStatus === "checking" && (
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 font-['Inter'] text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              <Spinner size="sm" tone="muted" />
+              {t("payment.confirmingJdPurchase", "Đang xác nhận giao dịch mua gói JD...")}
+            </div>
+          )}
+
+          {jdPollStatus === "success" && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
+              <p className="font-['Inter'] text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                {t("payment.purchaseJdSuccess", "Mua gói JD thành công! Bạn có thể nộp đơn ngay.")}
+              </p>
+            </div>
+          )}
+
+          {jdPollStatus === "pending" && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/10">
+              <p className="font-['Inter'] text-sm text-amber-700 dark:text-amber-300">
+                {t(
+                  "payment.paymentPendingWebhook",
+                  "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút."
+                )}
+              </p>
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to={`/enterprise/job/${pendingJdId}`}
+              className="rounded-xl bg-[#0047AB] px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-[#003b8d]">
+              {t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm")}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-br from-emerald-50 to-blue-50 px-4 py-10 dark:from-slate-950 dark:to-slate-900">
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 rounded-2xl border border-emerald-200 bg-white p-8 shadow-sm dark:border-emerald-900/40 dark:bg-slate-900">
