@@ -100,7 +100,7 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
       {
         type: "applications",
         icon: FileCheck2,
-        label: t("adminApplicationManagement.title", "Đơn ứng tuyển"),
+        label: t("adminApplicationManagement.title"),
         color: "text-indigo-600 dark:text-indigo-500",
       },
       {

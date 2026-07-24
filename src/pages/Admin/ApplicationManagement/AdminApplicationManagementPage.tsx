@@ -27,7 +27,6 @@ import {
 } from "@/services/admin-application.manager";
 import {
   Briefcase,
-  CheckCircle2,
   Clock,
   Eye,
   FileCheck2,
@@ -37,9 +36,8 @@ import {
   Search,
   UserCheck,
   Users,
-  XCircle,
 } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -73,13 +71,13 @@ export function AdminApplicationManagementPage() {
         const res = await adminApplicationManager.getApplicationsByJdId(Number(selectedJdId));
         if (res.success && res.data) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setApplications((res.data.applications || res.data as any) as ApplicationListItemDto[]);
+          setApplications((res.data.applications || (res.data as any)) as ApplicationListItemDto[]);
         } else {
           setApplications([]);
         }
       } else {
         // Fetch applications from all open JDs in parallel
-        const jdIds = openJds.map((j) => j.id).filter((id): id is number => id !== undefined);
+        const jdIds = openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined);
         if (jdIds.length > 0) {
           const results = await Promise.all(
             jdIds.map((id) => adminApplicationManager.getApplicationsByJdId(id))
@@ -89,12 +87,12 @@ export function AdminApplicationManagementPage() {
             if (r.success && r.data) {
               const jdInfo = openJds[idx];
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const rawApps = (r.data.applications || r.data as any) as ApplicationListItemDto[];
+              const rawApps = (r.data.applications || (r.data as any)) as ApplicationListItemDto[];
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               rawApps.forEach((app: any) => {
                 allApps.push({
                   ...app,
-                  companyName: app.companyName || jdInfo.companyName,
+                  companyName: app.companyName || jdInfo.company?.name,
                   jobTitle: app.jobTitle || jdInfo.title,
                 });
               });
@@ -125,8 +123,8 @@ export function AdminApplicationManagementPage() {
   const companyOptions = useMemo(() => {
     const map = new Map<string, string>();
     openJds.forEach((j) => {
-      if (j.companyId && j.companyName) {
-        map.set(String(j.companyId), j.companyName);
+      if (j.company?.id && j.company?.name) {
+        map.set(String(j.company.id), j.company.name);
       }
     });
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
@@ -135,7 +133,7 @@ export function AdminApplicationManagementPage() {
   // Filtered JDs based on selected company
   const availableJds = useMemo(() => {
     if (selectedCompanyId === "ALL") return openJds;
-    return openJds.filter((j) => String(j.companyId) === selectedCompanyId);
+    return openJds.filter((j) => String(j.company?.id) === selectedCompanyId);
   }, [openJds, selectedCompanyId]);
 
   // Filtered applications
@@ -144,15 +142,23 @@ export function AdminApplicationManagementPage() {
       // Company filter
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const appCompanyId = (app as any).companyId;
-      if (selectedCompanyId !== "ALL" && appCompanyId && String(appCompanyId) !== selectedCompanyId) {
+      if (
+        selectedCompanyId !== "ALL" &&
+        appCompanyId &&
+        String(appCompanyId) !== selectedCompanyId
+      ) {
         return false;
       }
 
       // Status filter
       if (statusFilter !== "ALL") {
-        if (statusFilter === "PASSED" && app.status !== "PASSED" && app.status !== "ACCEPTED") return false;
-        if (statusFilter === "REJECTED" && app.status !== "REJECTED" && app.status !== "FAILED") return false;
-        if (statusFilter === "IN_PROGRESS" && app.status !== "IN_PROGRESS" && app.status !== "PENDING") return false;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const status = app.status as any;
+        if (statusFilter === "PASSED" && status !== "PASSED" && status !== "ACCEPTED") return false;
+        if (statusFilter === "REJECTED" && status !== "REJECTED" && status !== "FAILED")
+          return false;
+        if (statusFilter === "IN_PROGRESS" && status !== "IN_PROGRESS" && status !== "PENDING")
+          return false;
       }
 
       // Search query filter
@@ -162,15 +168,18 @@ export function AdminApplicationManagementPage() {
         const candidateName = (app.candidateName || (app as any).applicantName || "").toLowerCase();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const candidateEmail = (app.candidateEmail || (app as any).email || "").toLowerCase();
-        const jobTitle = (app.jobTitle || "").toLowerCase();
-        const companyName = (app.companyName || "").toLowerCase();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const jobTitle = ((app as any).jobTitle || "").toLowerCase();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const companyName = ((app as any).companyName || "").toLowerCase();
 
         return (
           candidateName.includes(q) ||
           candidateEmail.includes(q) ||
           jobTitle.includes(q) ||
           companyName.includes(q) ||
-          String(app.id).includes(q)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          String(app.applicationId || (app as any).id).includes(q)
         );
       }
 
@@ -181,8 +190,14 @@ export function AdminApplicationManagementPage() {
   // Metrics
   const stats = useMemo(() => {
     const totalApps = applications.length;
-    const inProgressApps = applications.filter((a) => a.status === "IN_PROGRESS" || a.status === "PENDING").length;
-    const passedApps = applications.filter((a) => a.status === "PASSED" || a.status === "ACCEPTED").length;
+    const inProgressApps = applications.filter(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (a) => (a.status as any) === "IN_PROGRESS" || (a.status as any) === "PENDING"
+    ).length;
+    const passedApps = applications.filter(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (a) => (a.status as any) === "PASSED" || (a.status as any) === "ACCEPTED"
+    ).length;
     const openJdCount = openJds.filter((j) => j.status === "OPEN").length;
 
     return { totalApps, inProgressApps, passedApps, openJdCount };
@@ -212,14 +227,24 @@ export function AdminApplicationManagementPage() {
     switch (status) {
       case "PASSED":
       case "ACCEPTED":
-        return <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400">ĐẠT</Badge>;
+        return (
+          <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+            ĐẠT
+          </Badge>
+        );
       case "REJECTED":
       case "FAILED":
         return <Badge variant="destructive">TỪ CHỐI</Badge>;
       case "IN_PROGRESS":
       case "PENDING":
       default:
-        return <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/30 dark:bg-amber-500/20 dark:text-amber-400">ĐANG XỬ LÝ</Badge>;
+        return (
+          <Badge
+            variant="secondary"
+            className="border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+            ĐANG XỬ LÝ
+          </Badge>
+        );
     }
   };
 
@@ -255,43 +280,59 @@ export function AdminApplicationManagementPage() {
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+      <div className="flex-1 space-y-6 overflow-y-auto p-4 sm:p-6">
         {/* Metric Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900 flex items-center justify-between">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">JD Đang mở</span>
-              <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{stats.openJdCount}</div>
+              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                JD Đang mở
+              </span>
+              <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                {stats.openJdCount}
+              </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
               <Briefcase className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900 flex items-center justify-between">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng đơn Apply</span>
-              <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{stats.totalApps}</div>
+              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                Tổng đơn Apply
+              </span>
+              <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                {stats.totalApps}
+              </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
               <Users className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900 flex items-center justify-between">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Đang phỏng vấn</span>
-              <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.inProgressApps}</div>
+              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                Đang phỏng vấn
+              </span>
+              <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
+                {stats.inProgressApps}
+              </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
               <Clock className="h-5 w-5" />
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900 flex items-center justify-between">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Đã trúng tuyển</span>
-              <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.passedApps}</div>
+              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                Đã trúng tuyển
+              </span>
+              <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {stats.passedApps}
+              </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
               <UserCheck className="h-5 w-5" />
@@ -301,9 +342,9 @@ export function AdminApplicationManagementPage() {
 
         {/* Filters Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
               <Input
                 value={searchQuery}
                 onChange={(e) => {
@@ -323,7 +364,7 @@ export function AdminApplicationManagementPage() {
                 setSelectedJdId("ALL");
                 pagination.goToFirstPage();
               }}>
-              <SelectTrigger className="h-8 w-44 text-xs border-slate-200 dark:border-slate-700">
+              <SelectTrigger className="h-8 w-44 border-slate-200 text-xs dark:border-slate-700">
                 <SelectValue placeholder="Tất cả công ty" />
               </SelectTrigger>
               <SelectContent>
@@ -343,14 +384,14 @@ export function AdminApplicationManagementPage() {
                 setSelectedJdId(val);
                 pagination.goToFirstPage();
               }}>
-              <SelectTrigger className="h-8 w-48 text-xs border-slate-200 dark:border-slate-700">
+              <SelectTrigger className="h-8 w-48 border-slate-200 text-xs dark:border-slate-700">
                 <SelectValue placeholder="Tất cả vị trí (JD)" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">Tất cả vị trí (JD)</SelectItem>
                 {availableJds.map((j) => (
-                  <SelectItem key={j.id} value={String(j.id)}>
-                    {j.title} ({j.companyName})
+                  <SelectItem key={j.jdId} value={String(j.jdId)}>
+                    {j.title} ({j.company?.name || "Chưa rõ công ty"})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -387,7 +428,11 @@ export function AdminApplicationManagementPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span>
-              Hiển thị <strong className="text-slate-800 dark:text-slate-200">{filteredApplications.length}</strong> đơn ứng tuyển
+              Hiển thị{" "}
+              <strong className="text-slate-800 dark:text-slate-200">
+                {filteredApplications.length}
+              </strong>{" "}
+              đơn ứng tuyển
             </span>
           </div>
 
@@ -395,14 +440,14 @@ export function AdminApplicationManagementPage() {
             <Table>
               <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
                 <TableRow>
-                  <TableHead className="pl-6 w-[80px]">#ID</TableHead>
+                  <TableHead className="w-[80px] pl-6">#ID</TableHead>
                   <TableHead className="min-w-[200px]">Ứng viên</TableHead>
                   <TableHead className="min-w-[160px]">Công ty</TableHead>
                   <TableHead className="min-w-[180px]">Vị trí tuyển dụng</TableHead>
                   <TableHead className="w-[140px]">Vòng hiện tại</TableHead>
                   <TableHead className="w-[100px] text-center">Điểm số</TableHead>
                   <TableHead className="w-[130px]">Trạng thái</TableHead>
-                  <TableHead className="pr-6 w-[100px] text-right">Thao tác</TableHead>
+                  <TableHead className="w-[100px] pr-6 text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -422,42 +467,45 @@ export function AdminApplicationManagementPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  pageData.map((app) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const name = app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const email = app.candidateEmail || (app as any).email || "Chưa có email";
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  pageData.map((app: any, idx: number) => {
+                    const name =
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
+                    const email =
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      app.candidateEmail || (app as any).email || "Chưa có email";
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const avatarUrl = (app as any).avatarUrl || (app as any).applicantAvatar;
 
                     return (
                       <TableRow
-                        key={app.id}
-                        onClick={() => handleViewDetail(app.id!)}
+                        key={app.applicationId || idx}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onClick={() => handleViewDetail(app.applicationId || (app as any).id)}
                         className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
                         <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                          #{app.id}
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}#
+                          {app.applicationId || (app as any).id}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-800">
                               <AvatarImage src={avatarUrl} alt={name} />
-                              <AvatarFallback className="bg-indigo-50 text-indigo-600 font-bold text-xs dark:bg-indigo-950 dark:text-indigo-400">
+                              <AvatarFallback className="bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                                 {name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <div className="font-semibold text-slate-900 dark:text-white text-xs">
+                              <div className="text-xs font-semibold text-slate-900 dark:text-white">
                                 {name}
                               </div>
-                              <div className="text-[11px] text-slate-400">
-                                {email}
-                              </div>
+                              <div className="text-[11px] text-slate-400">{email}</div>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                             <Folder className="h-3.5 w-3.5 text-slate-400" />
                             {app.companyName || "Chưa xác định"}
                           </div>
@@ -471,21 +519,21 @@ export function AdminApplicationManagementPage() {
                           <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
                             <Layers className="h-3.5 w-3.5 text-indigo-500" />
                             <span>
-                              {app.currentRoundName || (app.currentRoundOrder ? `Vòng ${app.currentRoundOrder}` : "—")}
+                              {app.currentRoundName ||
+                                (app.currentRoundOrder ? `Vòng ${app.currentRoundOrder}` : "—")}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
                           {app.overallScore !== undefined ? `${app.overallScore}/100` : "—"}
                         </TableCell>
-                        <TableCell>
-                          {getStatusBadge(app.status)}
-                        </TableCell>
+                        <TableCell>{getStatusBadge(app.status)}</TableCell>
                         <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleViewDetail(app.id!)}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            onClick={() => handleViewDetail(app.applicationId || (app as any).id)}
                             className="h-7 w-7 p-0 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">
                             <Eye className="h-4 w-4" />
                           </Button>
