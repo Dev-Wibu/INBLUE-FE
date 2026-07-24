@@ -35,6 +35,46 @@ interface ApplicationDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onStatusChange?: () => void;
+function renderAiFeedback(feedback: any) {
+  if (!feedback) return null;
+
+  let content: any = feedback;
+  if (typeof feedback === "string") {
+    try {
+      content = JSON.parse(feedback);
+    } catch {
+      return feedback;
+    }
+  }
+
+  if (typeof content === "object" && content !== null) {
+    if (content.generalComment || content.strengths || content.weaknesses) {
+      return (
+        <div className="mt-1 space-y-1.5">
+          {content.generalComment && (
+            <p className="font-medium text-slate-700 dark:text-slate-300">
+              {typeof content.generalComment === "string"
+                ? content.generalComment
+                : JSON.stringify(content.generalComment)}
+            </p>
+          )}
+          {Array.isArray(content.strengths) && content.strengths.length > 0 && (
+            <div className="text-emerald-600 dark:text-emerald-400">
+              <strong>Điểm mạnh:</strong> {content.strengths.join(", ")}
+            </div>
+          )}
+          {Array.isArray(content.weaknesses) && content.weaknesses.length > 0 && (
+            <div className="text-amber-600 dark:text-amber-400">
+              <strong>Cần cải thiện:</strong> {content.weaknesses.join(", ")}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return JSON.stringify(content);
+  }
+
+  return String(content);
 }
 
 export function ApplicationDetailDrawer({
@@ -256,7 +296,7 @@ export function ApplicationDetailDrawer({
                             <strong className="text-slate-800 dark:text-slate-200">
                               Đánh giá AI:{" "}
                             </strong>
-                            {round.aiFeedback}
+                            {renderAiFeedback(round.aiFeedback)}
                           </div>
                         )}
 
