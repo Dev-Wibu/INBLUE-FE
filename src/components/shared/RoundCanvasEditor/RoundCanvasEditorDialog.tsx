@@ -152,9 +152,20 @@ export function RoundCanvasEditorDialog({
 
   useEffect(() => {
     setPositions((prev) => {
+      const containerW = scrollContainerRef.current?.clientWidth;
+      const availableWidth =
+        containerW && containerW > 400
+          ? containerW
+          : typeof window !== "undefined"
+          ? Math.max(600, window.innerWidth - 360)
+          : 1000;
+      const maxCols = Math.max(1, Math.floor((availableWidth - 60) / 280));
+
       const next = prev.slice(0, rounds.length);
       for (let i = next.length; i < rounds.length; i++) {
-        next.push({ x: i * 280 + 40, y: 80 });
+        const col = i % maxCols;
+        const row = Math.floor(i / maxCols);
+        next.push({ x: col * 280 + 40, y: row * 210 + 40 });
       }
       return next;
     });
@@ -636,9 +647,17 @@ export function RoundCanvasEditorDialog({
 
                           {/* Round cards */}
                           {rounds.map((round, idx) => {
+                            const containerW = scrollContainerRef.current?.clientWidth;
+                            const availableWidth =
+                              containerW && containerW > 400
+                                ? containerW
+                                : typeof window !== "undefined"
+                                ? Math.max(600, window.innerWidth - 360)
+                                : 1000;
+                            const maxCols = Math.max(1, Math.floor((availableWidth - 60) / 280));
                             const pos = positions[idx] ?? {
-                              x: idx * 280 + 40,
-                              y: 80,
+                              x: (idx % maxCols) * 280 + 40,
+                              y: Math.floor(idx / maxCols) * 210 + 40,
                             };
                             const template = AVAILABLE_ROUNDS_TEMPLATES.find(
                               (t) => t.type === round.roundType
