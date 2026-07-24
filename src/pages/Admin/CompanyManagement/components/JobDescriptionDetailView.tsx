@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
   adminApplicationManager,
@@ -37,7 +36,9 @@ import {
   FileText,
   Gift,
   Pencil,
+  Plus,
   Sparkles,
+  Trash2,
   Users,
   X,
 } from "lucide-react";
@@ -122,6 +123,80 @@ function FormattedTextList({
         </li>
       ))}
     </ul>
+  );
+}
+
+function EditableTextList({
+  text,
+  onChange,
+  icon: Icon = CheckCircle2,
+  iconColor = "text-indigo-500",
+  placeholder = "Nhập nội dung...",
+}: {
+  text?: string;
+  onChange: (newText: string) => void;
+  icon?: React.ElementType;
+  iconColor?: string;
+  placeholder?: string;
+}) {
+  const lines = useMemo(() => {
+    const raw = (text || "")
+      .split(/\n+/)
+      .map((line) => line.trim().replace(/^[-*•\d+.]\s*/, ""))
+      .filter(Boolean);
+    return raw.length > 0 ? raw : [""];
+  }, [text]);
+
+  const handleLineChange = (index: number, val: string) => {
+    const newLines = [...lines];
+    newLines[index] = val;
+    onChange(newLines.join("\n"));
+  };
+
+  const handleAddLine = () => {
+    const newLines = [...lines, ""];
+    onChange(newLines.join("\n"));
+  };
+
+  const handleDeleteLine = (index: number) => {
+    const newLines = lines.filter((_, i) => i !== index);
+    onChange(newLines.join("\n"));
+  };
+
+  return (
+    <div className="space-y-2">
+      {lines.map((line, idx) => (
+        <div key={idx} className="group flex items-center gap-2.5">
+          <Icon className={cn("h-4 w-4 shrink-0", iconColor)} />
+          <Input
+            value={line}
+            onChange={(e) => handleLineChange(idx, e.target.value)}
+            placeholder={`${placeholder} (Dòng ${idx + 1})`}
+            className="h-8.5 flex-1 border-slate-200/80 bg-slate-100/60 text-sm font-medium text-slate-800 focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-100"
+          />
+          {lines.length > 1 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteLine(idx)}
+              className="h-8 w-8 p-0 text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/40 transition-all">
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+      ))}
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={handleAddLine}
+        className="mt-1 h-7 gap-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60">
+        <Plus className="h-3.5 w-3.5" />
+        <span>Thêm dòng mới</span>
+      </Button>
+    </div>
   );
 }
 
@@ -511,21 +586,21 @@ export function JobDescriptionDetailView({
 
               {isEditing && (
                 <Badge className="border-indigo-500/30 bg-indigo-500/15 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[11px] font-bold">
-                  Đang chỉnh sửa
+                  Đang chỉnh sửa dòng
                 </Badge>
               )}
             </div>
 
-            {/* Sub-Tab Content Body (Seamlessly Editable) */}
+            {/* Sub-Tab Content Body (Line-by-Line Editable) */}
             {detailTab === "description" && (
               <div>
                 {isEditing ? (
-                  <Textarea
-                    value={editFormData.description || ""}
-                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                    placeholder="Nhập nội dung mô tả công việc..."
-                    rows={8}
-                    className="w-full border-slate-200 bg-slate-50/50 text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                  <EditableTextList
+                    text={editFormData.description}
+                    onChange={(newText) => setEditFormData({ ...editFormData, description: newText })}
+                    icon={Sparkles}
+                    iconColor="text-indigo-500"
+                    placeholder="Mô tả nhiệm vụ công việc"
                   />
                 ) : currentJd.description ? (
                   <FormattedTextList
@@ -544,12 +619,12 @@ export function JobDescriptionDetailView({
             {detailTab === "requirements" && (
               <div>
                 {isEditing ? (
-                  <Textarea
-                    value={editFormData.requirements || ""}
-                    onChange={(e) => setEditFormData({ ...editFormData, requirements: e.target.value })}
-                    placeholder="Nhập yêu cầu ứng viên..."
-                    rows={8}
-                    className="w-full border-slate-200 bg-slate-50/50 text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                  <EditableTextList
+                    text={editFormData.requirements}
+                    onChange={(newText) => setEditFormData({ ...editFormData, requirements: newText })}
+                    icon={CheckCircle2}
+                    iconColor="text-emerald-500"
+                    placeholder="Yêu cầu kỹ năng / kinh nghiệm"
                   />
                 ) : (
                   <>
@@ -587,12 +662,12 @@ export function JobDescriptionDetailView({
             {detailTab === "benefits" && (
               <div>
                 {isEditing ? (
-                  <Textarea
-                    value={editFormData.benefits || ""}
-                    onChange={(e) => setEditFormData({ ...editFormData, benefits: e.target.value })}
-                    placeholder="Nhập đãi ngộ & phúc lợi..."
-                    rows={6}
-                    className="w-full border-slate-200 bg-slate-50/50 text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                  <EditableTextList
+                    text={editFormData.benefits}
+                    onChange={(newText) => setEditFormData({ ...editFormData, benefits: newText })}
+                    icon={Gift}
+                    iconColor="text-purple-500"
+                    placeholder="Quyền lợi & Phúc lợi"
                   />
                 ) : currentJd.benefits &&
                   currentJd.benefits.trim() &&
@@ -661,7 +736,7 @@ export function JobDescriptionDetailView({
               )}
             </div>
 
-            {/* Structured Rows (Exact same layout for both Read & Edit mode!) */}
+            {/* Structured Rows (Seamless Inline Styling) */}
             <div className="space-y-3.5 text-sm">
               {/* Row 1: Title */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
@@ -678,7 +753,7 @@ export function JobDescriptionDetailView({
                     value={editFormData.title || ""}
                     onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
                     placeholder="VD: Senior Java Engineer"
-                    className="h-7 w-48 text-right text-xs font-bold dark:bg-slate-950"
+                    className="h-7.5 w-48 border-slate-200/80 bg-slate-100/60 text-right text-xs font-bold text-slate-900 focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
                   />
                 )}
               </div>
@@ -705,7 +780,7 @@ export function JobDescriptionDetailView({
                         })
                       }
                       placeholder="Min"
-                      className="h-7 w-16 text-right font-mono text-xs px-1.5 dark:bg-slate-950"
+                      className="h-7.5 w-16 border-slate-200/80 bg-slate-100/60 text-right font-mono text-xs px-1.5 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
                     />
                     <span className="text-slate-400 text-xs">-</span>
                     <Input
@@ -718,7 +793,7 @@ export function JobDescriptionDetailView({
                         })
                       }
                       placeholder="Max"
-                      className="h-7 w-16 text-right font-mono text-xs px-1.5 dark:bg-slate-950"
+                      className="h-7.5 w-16 border-slate-200/80 bg-slate-100/60 text-right font-mono text-xs px-1.5 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
                     />
                     <Input
                       value={editFormData.currency || ""}
@@ -726,7 +801,7 @@ export function JobDescriptionDetailView({
                         setEditFormData({ ...editFormData, currency: e.target.value })
                       }
                       placeholder="USD"
-                      className="h-7 w-12 uppercase text-center font-mono text-xs px-1 dark:bg-slate-950"
+                      className="h-7.5 w-12 uppercase text-center font-mono text-xs px-1 border-slate-200/80 bg-slate-100/60 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
                     />
                   </div>
                 )}
@@ -748,7 +823,7 @@ export function JobDescriptionDetailView({
                     onValueChange={(val) =>
                       setEditFormData({ ...editFormData, level: val as JobDescriptionLevel })
                     }>
-                    <SelectTrigger className="h-7 w-32 text-xs font-bold dark:bg-slate-950">
+                    <SelectTrigger className="h-7.5 w-32 border-slate-200/80 bg-slate-100/60 text-xs font-bold text-slate-900 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white">
                       <SelectValue placeholder="Cấp bậc" />
                     </SelectTrigger>
                     <SelectContent>
@@ -820,7 +895,7 @@ export function JobDescriptionDetailView({
                     onValueChange={(val) =>
                       setEditFormData({ ...editFormData, status: val as JobDescriptionStatus })
                     }>
-                    <SelectTrigger className="h-7 w-28 text-xs font-semibold dark:bg-slate-950">
+                    <SelectTrigger className="h-7.5 w-28 border-slate-200/80 bg-slate-100/60 text-xs font-semibold text-slate-900 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white">
                       <SelectValue placeholder="Trạng thái" />
                     </SelectTrigger>
                     <SelectContent>
