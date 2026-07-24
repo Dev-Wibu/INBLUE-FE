@@ -51,7 +51,16 @@ export interface Round {
   id?: number;
   name?: string;
   roundOrder?: number;
-  roundType?: "CV_SCREENING" | "EMAIL_SIMULATOR" | "QUIZ" | "DB_DESIGN" | "AI_INTERVIEW";
+  roundType?:
+    | "CV_SCREENING"
+    | "EMAIL_SIMULATOR"
+    | "QUIZ"
+    | "CODING"
+    | "CODE_REVIEW"
+    | "MENTOR_REVIEW"
+    | "MENTROR_REVIEW"
+    | "DB_DESIGN"
+    | "AI_INTERVIEW";
   passThreshold?: number;
   configData?: RoundConfig;
   isDeleted?: boolean;
@@ -246,8 +255,7 @@ export class CompanyManager {
         }));
       return {
         success: true,
-        // @ts-expect-error: Schema type mismatch between frontend and backend
-        data: response.data,
+        data: response.data as unknown as Company,
       };
     } catch (error) {
       return {
@@ -279,8 +287,7 @@ export class CompanyManager {
         }));
       return {
         success: true,
-        // @ts-expect-error: Schema type mismatch between frontend and backend
-        data: response.data,
+        data: response.data as unknown as Company,
       };
     } catch (error) {
       return {
@@ -476,8 +483,7 @@ export class CompanyManager {
         }));
       return {
         success: true,
-        // @ts-expect-error: Schema type mismatch between frontend and backend
-        data: response.data,
+        data: response.data as unknown as JobDescription,
       };
     } catch (error) {
       return {
