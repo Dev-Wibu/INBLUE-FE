@@ -628,6 +628,8 @@ export function RoundCanvasEditorDialog({
                                     strokeDasharray="6 4"
                                     fill="none"
                                     markerEnd="url(#arrow-head)"
+                                  />
+                                );
                               })}
                             </svg>
                           )}
