@@ -9,7 +9,8 @@ import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, Building2, ChevronRight, Plus, Search, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -23,14 +24,57 @@ import type { Company, CompanyFormData, JobDescription, JobDescriptionFormData }
 
 export function CompanyManagementPage() {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState("companies");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [formData, setFormData] = useState<CompanyFormData>({});
   const [isCreating, setIsCreating] = useState(false);
 
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
-  const [selectedJdId, setSelectedJdId] = useState<number | null>(null);
+  const selectedCompanyId = searchParams.get("companyId")
+    ? Number(searchParams.get("companyId"))
+    : null;
+  const selectedJdId = searchParams.get("jdId")
+    ? Number(searchParams.get("jdId"))
+    : null;
+
+  const setSelectedCompanyId = useCallback(
+    (id: number | null) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (id) {
+            next.set("companyId", String(id));
+          } else {
+            next.delete("companyId");
+            next.delete("jdId");
+          }
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
+
+  const setSelectedJdId = useCallback(
+    (id: number | null) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (id) {
+            next.set("jdId", String(id));
+          } else {
+            next.delete("jdId");
+          }
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
+
   const [searchQuery, setSearchQuery] = useState("");
 
   // JD Tab states
