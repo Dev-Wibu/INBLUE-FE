@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Lock,
   Mail,
+  Receipt,
   Settings,
   Share2,
   User,
@@ -24,14 +25,19 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ProfileTab } from "./AccountTabs";
+import { JdPurchaseHistoryTab, ProfileTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
-type AccountSubTab = "profile" | "candidateProfile" | "settings";
+type AccountSubTab = "profile" | "candidateProfile" | "settings" | "jdPurchases";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
-  if (value === "profile" || value === "candidateProfile" || value === "settings") {
+  if (
+    value === "profile" ||
+    value === "candidateProfile" ||
+    value === "settings" ||
+    value === "jdPurchases"
+  ) {
     return value as AccountSubTab;
   }
   return null;
@@ -310,6 +316,12 @@ export function AccountPage() {
             </div>
           </Card>
         );
+      case "jdPurchases":
+        return (
+          <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
+            <JdPurchaseHistoryTab />
+          </Card>
+        );
       default:
         return userProfile ? (
           <ProfileTab
@@ -362,6 +374,12 @@ export function AccountPage() {
       label: t("common.candidateProfile"),
       description: t("userAccount.managePersonalRecruitmentRecords"),
       icon: FileText,
+    },
+    {
+      id: "jdPurchases",
+      label: t("payment.jdPurchaseHistory"),
+      description: t("payment.jdPurchaseNoPurchases"),
+      icon: Receipt,
     },
     {
       id: "settings",
