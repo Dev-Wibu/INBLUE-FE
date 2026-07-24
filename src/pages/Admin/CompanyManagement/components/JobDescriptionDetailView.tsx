@@ -294,16 +294,16 @@ export function JobDescriptionDetailView({
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
                     {initialRounds.map((round, index) => {
                       const meta = templates.find((template) => template.type === round.roundType);
                       const isLast = index === initialRounds.length - 1;
 
                       return (
-                        <div key={index} className="relative flex items-center">
+                        <div key={index} className="flex shrink-0 items-center gap-2.5">
                           <div
                             onClick={() => setIsEditorOpen(true)}
-                            className="group flex w-full cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
+                            className="group flex min-w-[200px] max-w-[240px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
                             {/* Round Header */}
                             <div className="flex items-center justify-between gap-2">
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -311,13 +311,13 @@ export function JobDescriptionDetailView({
                               </span>
                               <Badge
                                 variant="outline"
-                                className={cn("gap-1 text-[11px] font-semibold", meta?.color)}>
+                                className={cn("gap-1 text-[11px] font-semibold truncate", meta?.color)}>
                                 {meta?.title || round.roundType}
                               </Badge>
                             </div>
 
                             {/* Round Name */}
-                            <h4 className="mt-2 text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
+                            <h4 className="mt-2 text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
                               {round.name}
                             </h4>
 
@@ -333,9 +333,7 @@ export function JobDescriptionDetailView({
                           </div>
 
                           {!isLast && (
-                            <div className="hidden lg:block absolute -right-2.5 z-10 text-slate-300 dark:text-slate-700">
-                              <ArrowRight className="h-4 w-4" />
-                            </div>
+                            <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-700" />
                           )}
                         </div>
                       );
