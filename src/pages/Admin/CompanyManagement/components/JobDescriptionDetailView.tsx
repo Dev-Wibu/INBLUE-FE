@@ -358,39 +358,30 @@ export function JobDescriptionDetailView({
                 {initialRounds.map((round, index) => {
                   const meta = templates.find((template) => template.type === round.roundType);
                   const isLast = index === initialRounds.length - 1;
-                  const showMetaTag = meta?.title && meta.title.toLowerCase() !== (round.name || "").toLowerCase();
 
                   return (
                     <div key={index} className="flex shrink-0 items-center gap-2.5">
                       <div
                         onClick={() => setIsEditorOpen(true)}
-                        className="group flex min-w-[170px] max-w-[210px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
-                        {/* Round Header */}
+                        className="group flex min-w-[170px] max-w-[210px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
+                        {/* Round Header: Colorful Step Badge + Pass threshold */}
                         <div className="flex items-center justify-between gap-2">
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-[11px] font-extrabold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                            {index + 1}
-                          </span>
                           <Badge
                             variant="outline"
-                            className={cn("gap-1 text-[10px] font-bold truncate shadow-2xs", meta?.color)}>
-                            {meta?.title || round.roundType}
+                            className={cn("gap-1 text-[11px] font-bold shadow-2xs", meta?.color)}>
+                            Vòng {index + 1}
                           </Badge>
-                        </div>
-
-                        {/* Round Name */}
-                        <h4 className="mt-2 text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
-                          {round.name}
-                        </h4>
-
-                        {/* Pass Threshold */}
-                        {round.passThreshold !== undefined && (
-                          <div className="mt-2 flex items-center justify-between border-t border-slate-200/60 pt-1.5 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                            <span>Điểm đạt</span>
-                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          {round.passThreshold !== undefined && (
+                            <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                               {Math.round(round.passThreshold * 100)}%
                             </span>
-                          </div>
-                        )}
+                          )}
+                        </div>
+
+                        {/* Round Name (Single Title, Zero Duplication!) */}
+                        <h4 className="mt-2.5 text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
+                          {round.name}
+                        </h4>
                       </div>
 
                       {!isLast && (
