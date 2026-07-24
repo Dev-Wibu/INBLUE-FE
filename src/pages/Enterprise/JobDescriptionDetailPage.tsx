@@ -98,18 +98,13 @@ function getRoundTypeIcon(type?: string) {
       return <CheckCircle2 className="h-5 w-5" />;
   }
 }
-// Statuses that block a new application for the same JD.
-// FAILED / SOFT_FAILED allow the user to re-apply (start a fresh attempt).
-// NOTE: For testing purposes, we allow unlimited re-applications by not checking existing status.
-// const BLOCKING_APPLICATION_STATUSES = ["IN_PROGRESS", "PASSED"] as const;
-
 export function JobDescriptionDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{
     id: string;
   }>();
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuthStore();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const jdIdNum = Number(id);
 
   const { hasPurchased, hasApplied, applicationId, isLoadingStatus, refetchStatus } =
@@ -253,43 +248,6 @@ export function JobDescriptionDetailPage() {
       );
     }
 
-    if (hasApplied) {
-      return (
-        <Button
-          onClick={() => {
-            if (applicationId) {
-              navigate(`/user?tab=applicationHistory&appId=${applicationId}`);
-            } else {
-              navigate(`/user?tab=applicationHistory`);
-            }
-          }}
-          className={`bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 ${widthClass}`}
-          size="lg">
-          <CheckCircle2 className="mr-2 h-5 w-5" />
-          {t("enterpriseJobdescriptiondetailpage.alreadyAppliedView", "Xem đơn ứng tuyển")}
-        </Button>
-      );
-    }
-
-    if (hasPurchased) {
-      return (
-        <Button
-          onClick={handleApply}
-          disabled={isApplying}
-          className={`bg-[#0047AB] text-white hover:bg-[#003d8f] ${widthClass}`}
-          size="lg">
-          {isApplying ? (
-            <>
-              <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              {t("common.processing")}
-            </>
-          ) : (
-            t("enterpriseJobdescriptiondetailpage.applyNow")
-          )}
-        </Button>
-      );
-    }
-
     const priceText =
       typeof job?.price === "number" && job.price > 0
         ? formatCurrency(job.price)
@@ -297,7 +255,24 @@ export function JobDescriptionDetailPage() {
           ? t("common.free", "Miễn phí")
           : "99.000đ";
 
-    return (
+    const primaryAction = hasPurchased ? (
+      <Button
+        onClick={handleApply}
+        disabled={isApplying}
+        className={`bg-[#0047AB] text-white hover:bg-[#003d8f] ${widthClass}`}
+        size="lg">
+        {isApplying ? (
+          <>
+            <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            {t("common.processing")}
+          </>
+        ) : hasApplied ? (
+          t("enterpriseJobdescriptiondetailpage.reapply")
+        ) : (
+          t("enterpriseJobdescriptiondetailpage.applyNow")
+        )}
+      </Button>
+    ) : (
       <Button
         onClick={handleBuyPackage}
         disabled={isBuying}
@@ -315,6 +290,30 @@ export function JobDescriptionDetailPage() {
           })
         )}
       </Button>
+    );
+
+    if (!hasApplied) {
+      return primaryAction;
+    }
+
+    return (
+      <div className={`flex gap-2 ${fullWidth ? "w-full flex-col" : "flex-wrap"}`}>
+        {primaryAction}
+        <Button
+          variant="outline"
+          onClick={() =>
+            navigate(
+              applicationId
+                ? `/user?tab=applicationHistory&appId=${applicationId}`
+                : "/user?tab=applicationHistory"
+            )
+          }
+          className={widthClass}
+          size="lg">
+          <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          {t("enterpriseJobdescriptiondetailpage.alreadyAppliedView")}
+        </Button>
+      </div>
     );
   };
   if (isLoading) {

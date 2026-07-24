@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useCallback, useEffect, useState } from "react";
 
 export function useJdPurchaseStatus(jdId: number | undefined) {
-  const { isLoggedIn } = useAuthStore();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const [hasPurchased, setHasPurchased] = useState<boolean>(false);
   const [hasApplied, setHasApplied] = useState<boolean>(false);
   const [applicationId, setApplicationId] = useState<number | undefined>(undefined);
@@ -21,27 +21,19 @@ export function useJdPurchaseStatus(jdId: number | undefined) {
 
     setIsLoadingStatus(true);
     try {
-      // 1. Check if user already has an Application for this JD
-      const appResult = await applicationService.getMyApplications();
-      if (appResult.success && appResult.data) {
-        const existingApp = appResult.data.find((app) => app.jdId === jdId && !app.isDeleted);
-        if (
-          existingApp &&
-          (existingApp.status === "IN_PROGRESS" || existingApp.status === "PASSED")
-        ) {
-          setHasApplied(true);
-          setHasPurchased(true);
-          setApplicationId(existingApp.id);
-          setIsLoadingStatus(false);
-          return;
-        }
-      }
+      const [purchased, appResult] = await Promise.all([
+        jdPurchaseManager.checkPurchased(jdId),
+        applicationService.getMyApplications(),
+      ]);
+      const latestApplication = appResult.success
+        ? appResult.data
+            ?.filter((application) => application.jdId === jdId && !application.isDeleted)
+            .sort((a, b) => (b.id ?? 0) - (a.id ?? 0))[0]
+        : undefined;
 
-      // 2. Check if user has purchased the JD package but not yet applied
-      const purchased = await jdPurchaseManager.checkPurchased(jdId);
       setHasPurchased(purchased);
-      setHasApplied(false);
-      setApplicationId(undefined);
+      setHasApplied(Boolean(latestApplication));
+      setApplicationId(latestApplication?.id);
     } catch (err) {
       console.error("[useJdPurchaseStatus] Error checking status:", err);
       setHasPurchased(false);
