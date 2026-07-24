@@ -5064,6 +5064,7 @@
     "jdPurchaseLoadError": "Failed to load JD purchase history.",
     "jdPurchaseJdId": "JD #",
     "jdPurchasePaymentId": "Payment ID",
+    "jdPurchaseUsedDate": "Used Date",
     "jdPackage": "Job position package",
     "confirmingJdPurchase": "Confirming JD package purchase transaction..."
   }

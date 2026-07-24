@@ -5062,6 +5062,7 @@
     "jdPurchaseLoadError": "Không thể tải lịch sử mua gói JD.",
     "jdPurchaseJdId": "JD #",
     "jdPurchasePaymentId": "Mã thanh toán",
+    "jdPurchaseUsedDate": "Ngày sử dụng",
     "jdPackage": "Gói vị trí việc làm",
     "confirmingJdPurchase": "Đang xác nhận giao dịch mua gói JD..."
   }
