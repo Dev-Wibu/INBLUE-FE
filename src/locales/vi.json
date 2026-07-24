@@ -2100,6 +2100,7 @@
   },
   "enterpriseJobdescriptiondetailpage": {
     "alreadyApplied": "Đã ứng tuyển ✓",
+    "alreadyAppliedView": "Xem đơn ứng tuyển",
     "alreadyAppliedActive": "Bạn đang ứng tuyển vị trí này",
     "anErrorOccurredWhileApplying": "Đã xảy ra lỗi khi ứng tuyển. Vui lòng thử lại.",
     "anErrorOccurredWhileLoading": "Đã xảy ra lỗi khi tải thông tin",

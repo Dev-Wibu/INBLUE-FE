@@ -2103,6 +2103,7 @@
   },
   "enterpriseJobdescriptiondetailpage": {
     "alreadyApplied": "Already applied ✓",
+    "alreadyAppliedView": "View Application",
     "alreadyAppliedActive": "You are currently applying for this position",
     "anErrorOccurredWhileApplying": "An error occurred while applying. Please try again.",
     "anErrorOccurredWhileLoading": "An error occurred while loading information",

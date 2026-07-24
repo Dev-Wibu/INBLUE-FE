@@ -112,7 +112,8 @@ export function JobDescriptionDetailPage() {
   const { isLoggedIn } = useAuthStore();
   const jdIdNum = Number(id);
 
-  const { hasPurchased, hasApplied, isLoadingStatus, refetchStatus } = useJdPurchaseStatus(jdIdNum);
+  const { hasPurchased, hasApplied, applicationId, isLoadingStatus, refetchStatus } =
+    useJdPurchaseStatus(jdIdNum);
   const [job, setJob] = useState<JobDescription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBuying, setIsBuying] = useState(false);
@@ -186,6 +187,12 @@ export function JobDescriptionDetailPage() {
         if (refreshResult.success && refreshResult.data) {
           setJob(refreshResult.data);
         }
+        const createdAppId = result.data?.id;
+        if (createdAppId) {
+          navigate(`/user?tab=applicationHistory&appId=${createdAppId}`);
+        } else {
+          navigate(`/user?tab=applicationHistory`);
+        }
       } else {
         const errorMsg =
           result.error ||
@@ -249,11 +256,17 @@ export function JobDescriptionDetailPage() {
     if (hasApplied) {
       return (
         <Button
-          disabled
-          className={`bg-emerald-600 text-white dark:bg-emerald-700 ${widthClass}`}
+          onClick={() => {
+            if (applicationId) {
+              navigate(`/user?tab=applicationHistory&appId=${applicationId}`);
+            } else {
+              navigate(`/user?tab=applicationHistory`);
+            }
+          }}
+          className={`bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 ${widthClass}`}
           size="lg">
           <CheckCircle2 className="mr-2 h-5 w-5" />
-          {t("enterpriseJobdescriptiondetailpage.alreadyApplied", "Đã ứng tuyển")}
+          {t("enterpriseJobdescriptiondetailpage.alreadyAppliedView", "Xem đơn ứng tuyển")}
         </Button>
       );
     }

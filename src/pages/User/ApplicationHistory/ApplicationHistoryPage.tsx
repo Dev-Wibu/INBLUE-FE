@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
 
@@ -1587,9 +1587,20 @@ function ApplicationCard({
 export function ApplicationHistoryPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlAppId = Number(searchParams.get("appId") || searchParams.get("id"));
+
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
+  const [selectedAppId, setSelectedAppId] = useState<number | null>(
+    urlAppId && !isNaN(urlAppId) ? urlAppId : null
+  );
+
+  useEffect(() => {
+    if (urlAppId && !isNaN(urlAppId)) {
+      setSelectedAppId(urlAppId);
+    }
+  }, [urlAppId]);
 
   // Fetch applications
   const [apps, setApps] = useState<Application[]>([]);

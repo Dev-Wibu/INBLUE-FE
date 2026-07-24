@@ -2067,6 +2067,7 @@
   },
   "enterpriseJobdescriptiondetailpage": {
     "alreadyApplied": "応募済み ✓",
+    "alreadyAppliedView": "応募詳細を見る",
     "alreadyAppliedActive": "現在このポジションに応募中です",
     "anErrorOccurredWhileApplying": "応募中にエラーが発生しました。もう一度お試しください。",
     "anErrorOccurredWhileLoading": "情報の読み込み中にエラーが発生しました",

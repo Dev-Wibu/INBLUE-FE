@@ -7,12 +7,14 @@ export function useJdPurchaseStatus(jdId: number | undefined) {
   const { isLoggedIn } = useAuthStore();
   const [hasPurchased, setHasPurchased] = useState<boolean>(false);
   const [hasApplied, setHasApplied] = useState<boolean>(false);
+  const [applicationId, setApplicationId] = useState<number | undefined>(undefined);
   const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(true);
 
   const checkStatus = useCallback(async () => {
     if (!jdId || !isLoggedIn) {
       setHasPurchased(false);
       setHasApplied(false);
+      setApplicationId(undefined);
       setIsLoadingStatus(false);
       return;
     }
@@ -29,6 +31,7 @@ export function useJdPurchaseStatus(jdId: number | undefined) {
         ) {
           setHasApplied(true);
           setHasPurchased(true);
+          setApplicationId(existingApp.id);
           setIsLoadingStatus(false);
           return;
         }
@@ -38,9 +41,12 @@ export function useJdPurchaseStatus(jdId: number | undefined) {
       const purchased = await jdPurchaseManager.checkPurchased(jdId);
       setHasPurchased(purchased);
       setHasApplied(false);
+      setApplicationId(undefined);
     } catch (err) {
       console.error("[useJdPurchaseStatus] Error checking status:", err);
       setHasPurchased(false);
+      setHasApplied(false);
+      setApplicationId(undefined);
     } finally {
       setIsLoadingStatus(false);
     }
@@ -53,6 +59,7 @@ export function useJdPurchaseStatus(jdId: number | undefined) {
   return {
     hasPurchased,
     hasApplied,
+    applicationId,
     isLoadingStatus,
     refetchStatus: checkStatus,
   };
