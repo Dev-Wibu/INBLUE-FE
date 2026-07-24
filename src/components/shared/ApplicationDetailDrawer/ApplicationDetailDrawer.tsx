@@ -20,14 +20,13 @@ import {
   CheckCircle2,
   Clock,
   Download,
-  ExternalLink,
   FileText,
   Mail,
   Phone,
   User,
   XCircle,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -47,59 +46,81 @@ export function ApplicationDetailDrawer({
   const [detail, setDetail] = useState<AdminApplicationFullDetailResponseDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const loadDetail = useCallback(
+    async (id: number) => {
+      setIsLoading(true);
+      const res = await adminApplicationManager.getApplicationFullDetail(id);
+      if (res.success && res.data) {
+        setDetail(res.data);
+      } else {
+        toast.error(
+          res.error || t("common.unableToLoadData", "Không thể tải chi tiết đơn ứng tuyển")
+        );
+      }
+      setIsLoading(false);
+    },
+    [t]
+  );
+
   useEffect(() => {
     if (isOpen && applicationId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadDetail(applicationId);
     } else {
       setDetail(null);
     }
-  }, [isOpen, applicationId]);
-
-  const loadDetail = async (id: number) => {
-    setIsLoading(true);
-    const res = await adminApplicationManager.getApplicationFullDetail(id);
-    if (res.success && res.data) {
-      setDetail(res.data);
-    } else {
-      toast.error(res.error || t("common.unableToLoadData", "Không thể tải chi tiết đơn ứng tuyển"));
-    }
-    setIsLoading(false);
-  };
+  }, [isOpen, applicationId, loadDetail]);
 
   const getStatusBadge = (status?: string) => {
-    switch (status) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    switch (status as any) {
       case "PASSED":
       case "ACCEPTED":
       case "COMPLETED":
-        return <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400">ĐẠT (PASSED)</Badge>;
+        return (
+          <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+            ĐẠT (PASSED)
+          </Badge>
+        );
       case "REJECTED":
       case "FAILED":
         return <Badge variant="destructive">TỪ CHỐI (REJECTED)</Badge>;
       case "IN_PROGRESS":
       case "PENDING":
       default:
-        return <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/30 dark:bg-amber-500/20 dark:text-amber-400">ĐANG XỬ LÝ</Badge>;
+        return (
+          <Badge
+            variant="secondary"
+            className="border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+            ĐANG XỬ LÝ
+          </Badge>
+        );
     }
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl p-0 flex flex-col bg-slate-50 dark:bg-slate-950">
-        <SheetHeader className="p-6 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <SheetContent
+        side="right"
+        className="flex w-full flex-col bg-slate-50 p-0 sm:max-w-xl md:max-w-2xl dark:bg-slate-950">
+        <SheetHeader className="border-b border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-start justify-between gap-4 pr-6">
             <div>
               <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                 <Briefcase className="h-3.5 w-3.5" />
                 <span>Đơn ứng tuyển #{applicationId}</span>
               </div>
-              <SheetTitle className="text-xl font-bold text-slate-900 dark:text-white mt-1">
-                {detail?.candidateName || detail?.applicantName || "Chi tiết đơn ứng tuyển"}
+              <SheetTitle className="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+                {detail?.candidateInfo?.name || "Chi tiết đơn ứng tuyển"}
               </SheetTitle>
-              <SheetDescription className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Ứng tuyển vị trí: <strong className="text-slate-700 dark:text-slate-300">{detail?.jobTitle || detail?.jdTitle || "Chưa xác định"}</strong>
+              <SheetDescription className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Ứng tuyển vị trí:{" "}
+                <strong className="text-slate-700 dark:text-slate-300">
+                  {detail?.jobDescriptionInfo?.title || "Chưa xác định"}
+                </strong>
               </SheetDescription>
             </div>
-            {getStatusBadge(detail?.status)}
+            {getStatusBadge(detail?.applicationOverview?.status)}
           </div>
         </SheetHeader>
 
@@ -111,43 +132,45 @@ export function ApplicationDetailDrawer({
           <ScrollArea className="flex-1 p-6">
             <div className="space-y-6">
               {/* 1. Thông tin cá nhân ứng viên */}
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <h4 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-400 uppercase">
                   <User className="h-3.5 w-3.5 text-indigo-500" />
                   Thông tin ứng viên
                 </h4>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                    <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                    <span className="truncate">{detail?.candidateEmail || detail?.email || "Chưa có Email"}</span>
+                    <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                    <span className="truncate">
+                      {detail?.candidateInfo?.email || "Chưa có Email"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                    <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                    <span>{detail?.candidatePhone || detail?.phone || "Chưa có SDT"}</span>
+                    <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                    <span>{"Chưa có SDT"}</span>
                   </div>
-                  {detail?.major && (
+                  {detail?.candidateInfo?.targetRole && (
                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                      <BookOpen className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                      <span>Ngành: {detail.major}</span>
+                      <BookOpen className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                      <span>Vị trí mục tiêu: {detail.candidateInfo.targetRole}</span>
                     </div>
                   )}
-                  {detail?.experienceYears !== undefined && (
+                  {detail?.candidateInfo?.targetLevel && (
                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                      <Award className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                      <span>Kinh nghiệm: {detail.experienceYears} năm</span>
+                      <Award className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                      <span>Cấp độ: {detail.candidateInfo.targetLevel}</span>
                     </div>
                   )}
                 </div>
 
-                {(detail?.cvUrl || detail?.resumeUrl) && (
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
-                    <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                {detail?.candidateInfo?.cvUrl && (
+                  <div className="flex items-center justify-between border-t border-slate-100 pt-2 dark:border-slate-800/60">
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
                       <FileText className="h-3.5 w-3.5 text-indigo-500" />
                       File CV ứng tuyển
                     </span>
                     <a
-                      href={detail.cvUrl || detail.resumeUrl}
+                      href={detail.candidateInfo.cvUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:underline dark:text-indigo-400">
@@ -161,28 +184,39 @@ export function ApplicationDetailDrawer({
               {/* 2. Điểm số tổng quan */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-900">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase">Điểm tổng</span>
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase">
+                    Điểm tổng
+                  </span>
                   <div className="mt-1 text-lg font-extrabold text-indigo-600 dark:text-indigo-400">
-                    {detail?.overallScore !== undefined ? `${detail.overallScore} / 100` : "—"}
+                    {detail?.applicationOverview?.overallScore !== undefined
+                      ? `${detail.applicationOverview.overallScore} / 100`
+                      : "—"}
                   </div>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-900">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase">Vòng hiện tại</span>
-                  <div className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                    {detail?.currentRoundName || detail?.currentRoundOrder ? `Vòng ${detail.currentRoundOrder}` : "—"}
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase">
+                    Vòng hiện tại
+                  </span>
+                  <div className="mt-1 truncate text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {detail?.applicationOverview?.currentRoundName ||
+                      (detail?.applicationOverview?.currentRoundOrder
+                        ? `Vòng ${detail.applicationOverview.currentRoundOrder}`
+                        : "—")}
                   </div>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-3 text-center dark:border-slate-800 dark:bg-slate-900">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase">Trạng thái</span>
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase">
+                    Trạng thái
+                  </span>
                   <div className="mt-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                    {detail?.status || "IN_PROGRESS"}
+                    {detail?.applicationOverview?.status || "IN_PROGRESS"}
                   </div>
                 </div>
               </div>
 
               {/* 3. Chi tiết kết quả từng vòng tuyển dụng */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <h4 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-400 uppercase">
                   <Clock className="h-3.5 w-3.5 text-indigo-500" />
                   Kết quả từng vòng thi ({detail?.roundDetails?.length || 0} vòng)
                 </h4>
@@ -193,7 +227,7 @@ export function ApplicationDetailDrawer({
                     {detail.roundDetails.map((round: any, idx: number) => (
                       <div
                         key={idx}
-                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-2">
+                        className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
@@ -218,15 +252,19 @@ export function ApplicationDetailDrawer({
                         </div>
 
                         {round.aiFeedback && (
-                          <div className="rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600 dark:bg-slate-950/60 dark:text-slate-300 border border-slate-100 dark:border-slate-800">
-                            <strong className="text-slate-800 dark:text-slate-200">Đánh giá AI: </strong>
+                          <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300">
+                            <strong className="text-slate-800 dark:text-slate-200">
+                              Đánh giá AI:{" "}
+                            </strong>
                             {round.aiFeedback}
                           </div>
                         )}
 
                         {round.hrNotes && (
-                          <div className="rounded-lg bg-indigo-50/40 p-2.5 text-xs text-indigo-900 dark:bg-indigo-950/20 dark:text-indigo-200 border border-indigo-100 dark:border-indigo-900/50">
-                            <strong className="text-indigo-800 dark:text-indigo-300">Ghi chú HR: </strong>
+                          <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-2.5 text-xs text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/20 dark:text-indigo-200">
+                            <strong className="text-indigo-800 dark:text-indigo-300">
+                              Ghi chú HR:{" "}
+                            </strong>
                             {round.hrNotes}
                           </div>
                         )}
@@ -248,7 +286,7 @@ export function ApplicationDetailDrawer({
           </div>
         )}
 
-        <div className="p-4 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 flex items-center justify-end gap-3">
+        <div className="flex items-center justify-end gap-3 border-t border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <Button variant="outline" size="sm" onClick={onClose} className="h-8 text-xs">
             Đóng
           </Button>
