@@ -673,6 +673,20 @@ export function PaymentCancelPage() {
             className="rounded-xl bg-[#0047AB] px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-[#003b8d]">
             {primaryRedirect.label}
           </Link>
+          {(() => {
+            const qp = new URLSearchParams(window.location.search);
+            const qJdId = qp.get("jdId");
+            const sJdId = localStorage.getItem("pending_jd_purchase_id");
+            const retryJdId = Number(qJdId || sJdId);
+            if (!retryJdId || isNaN(retryJdId)) return null;
+            return (
+              <Link
+                to={`/enterprise/job/${retryJdId}`}
+                className="rounded-xl bg-amber-600 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-amber-700">
+                {t("payment.retryPayment", "Thử thanh toán lại")}
+              </Link>
+            );
+          })()}
           {resolvedPurpose === "FULLY_PAID" && (
             <Link
               to="/user?tab=account"
