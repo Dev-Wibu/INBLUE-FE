@@ -7,49 +7,86 @@ import { useState } from "react";
 interface AdminHeaderProps {
   title: string;
   category?: string;
+  subTitle?: string;
+  onBackSubTitle?: () => void;
   onToggleSidebar: () => void;
   isSidebarCollapsed: boolean;
 }
 
-export function AdminHeader({ title, category, onToggleSidebar }: AdminHeaderProps) {
+export function AdminHeader({
+  title,
+  category,
+  subTitle,
+  onBackSubTitle,
+  onToggleSidebar,
+}: AdminHeaderProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex h-full flex-1 items-center gap-4">
+        <div className="flex h-full flex-1 items-center gap-4 min-w-0">
           <Button
             variant="ghost"
             size="icon"
-            className="-ml-2 h-9 w-9 text-slate-500 hover:text-slate-900 md:hidden dark:text-slate-400 dark:hover:text-white"
+            className="-ml-2 h-9 w-9 text-slate-500 hover:text-slate-900 md:hidden dark:text-slate-400 dark:hover:text-white shrink-0"
             onClick={onToggleSidebar}>
             <Menu className="h-5 w-5" />
           </Button>
 
-          {/* Breadcrumb style title for Desktop */}
-          <nav className="hidden sm:flex" aria-label="Breadcrumb">
-            <ol role="list" className="flex items-center space-x-2">
+          {/* Dynamic Breadcrumb Header for Desktop */}
+          <nav className="hidden sm:flex min-w-0 items-center" aria-label="Breadcrumb">
+            <ol role="list" className="flex items-center min-w-0 space-x-2">
               <li>
-                <span className="text-sm font-medium text-slate-400 dark:text-slate-500">
+                <span className="text-sm font-medium text-slate-400 dark:text-slate-500 shrink-0">
                   {category || "Admin"}
                 </span>
               </li>
               <li>
-                <span className="mx-2 text-lg leading-none text-slate-300 dark:text-slate-600">
+                <span className="mx-1 text-sm text-slate-300 dark:text-slate-600 shrink-0">
                   /
                 </span>
               </li>
-              <li>
-                <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
-                  {title}
-                </span>
-              </li>
+              {subTitle ? (
+                <>
+                  <li className="shrink-0">
+                    {onBackSubTitle ? (
+                      <button
+                        type="button"
+                        onClick={onBackSubTitle}
+                        className="text-sm font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+                        {title}
+                      </button>
+                    ) : (
+                      <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                        {title}
+                      </span>
+                    )}
+                  </li>
+                  <li className="shrink-0">
+                    <span className="mx-1 text-sm text-slate-300 dark:text-slate-600">
+                      /
+                    </span>
+                  </li>
+                  <li className="min-w-0 truncate">
+                    <span className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                      {subTitle}
+                    </span>
+                  </li>
+                </>
+              ) : (
+                <li className="min-w-0 truncate">
+                  <span className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                    {title}
+                  </span>
+                </li>
+              )}
             </ol>
           </nav>
 
           {/* Mobile title */}
-          <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900 sm:hidden dark:text-white">
-            {title}
+          <h1 className="truncate text-base font-semibold tracking-tight text-slate-900 sm:hidden dark:text-white">
+            {subTitle ? `${title} / ${subTitle}` : title}
           </h1>
         </div>
 

@@ -171,11 +171,34 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
   },
 ];
 
+import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+
+export const AdminHeaderContext = createContext<{
+  setBreadcrumbSubTitle: (subTitle?: string, onBack?: () => void) => void;
+}>({
+  setBreadcrumbSubTitle: () => {},
+});
+
 export function AdminDashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
+
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [headerSubTitle, setHeaderSubTitle] = useState<string | undefined>(undefined);
+  const [onBackHeaderSubTitle, setOnBackHeaderSubTitle] = useState<(() => void) | undefined>(undefined);
+
+  // Reset breadcrumb subTitle on route change
+  useEffect(() => {
+    setHeaderSubTitle(undefined);
+    setOnBackHeaderSubTitle(undefined);
+  }, [location.pathname]);
+
+  const setBreadcrumbSubTitle = useCallback((subTitle?: string, onBack?: () => void) => {
+    setHeaderSubTitle(subTitle);
+    setOnBackHeaderSubTitle(() => onBack);
+  }, []);
 
   const sidebarMenuGroups = useMemo(() => getSidebarMenuGroups(t), [t]);
 
@@ -243,90 +266,87 @@ export function AdminDashboardPage() {
   );
 
   return (
-    <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
-      <DashboardSidebar
-        menuGroups={sidebarMenuGroups}
-        activeTab={activeTab}
-        onNavigate={handleSidebarNavigate}
-        onProfileClick={() => navigate("/admin/account")}
-        storageKey="admin_sidebar_collapsed"
-        legacyStorageKey="manager_sidebar_collapsed"
-        collapsed={isSidebarCollapsed}
-        onCollapsedChange={setIsSidebarCollapsed}
-        showDesktopToggle={false}
-        logo={ADMIN_SIDEBAR_LOGO}
-        collapsedLogo={ADMIN_SIDEBAR_LOGO_COLLAPSED}
-        showSettings={false}
-        theme={{
-          wrapper:
-            "h-full border-r border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900",
-          expandedWidth: "w-64",
-          collapsedWidth: "w-[72px]",
-          logoBorder: "border-b border-gray-200 dark:border-slate-800",
-          logoExpandedPadding: "h-16 gap-3 px-8",
-          logoCollapsedPadding: "h-16 justify-center px-2",
-          navWrapper: "flex-1 space-y-1 overflow-y-auto scrollbar-hide",
-          navExpandedPadding: "px-5 py-4",
-          navCollapsedPadding: "px-2 py-4",
-          sectionLabel:
-            "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-6 px-3 dark:text-slate-400",
-          divider: "border-gray-200 dark:border-slate-800",
-          itemPy: "py-2.5",
-          activeItem:
-            "bg-indigo-50 text-indigo-700 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20",
-          inactiveItem:
-            "text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
-          activeIconOverride: "text-indigo-600 dark:text-indigo-400",
-          footerBorder: "border-t border-gray-200 dark:border-slate-800",
-          footerExpandedPadding: "p-4",
-          footerCollapsedPadding: "p-3",
-          logoutExpandedBtn:
-            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
-          logoutCollapsedBtn:
-            "flex items-center justify-center rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
-          logoutIcon: "",
-          logoutLabel: t("common.logout"),
-        }}
-      />
+    <AdminHeaderContext.Provider value={{ setBreadcrumbSubTitle }}>
+      <div className="isolate flex h-screen bg-gray-50 dark:bg-slate-950">
+        <DashboardSidebar
+          menuGroups={sidebarMenuGroups}
+          activeTab={activeTab}
+          onNavigate={handleSidebarNavigate}
+          onProfileClick={() => navigate("/admin/account")}
+          storageKey="admin_sidebar_collapsed"
+          legacyStorageKey="manager_sidebar_collapsed"
+          collapsed={isSidebarCollapsed}
+          onCollapsedChange={setIsSidebarCollapsed}
+          showDesktopToggle={false}
+          logo={ADMIN_SIDEBAR_LOGO}
+          collapsedLogo={ADMIN_SIDEBAR_LOGO_COLLAPSED}
+          showSettings={false}
+          theme={{
+            sidebarBg: "bg-white border-r border-slate-200 dark:bg-slate-900 dark:border-slate-800",
+            sidebarWidth: "w-64",
+            headerPadding: "p-5 border-b border-gray-100 dark:border-slate-800",
+            navPadding: "px-3 py-4",
+            navCollapsedPadding: "px-2 py-4",
+            sectionLabel:
+              "text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-3 mt-6 px-3 dark:text-slate-400",
+            divider: "border-gray-200 dark:border-slate-800",
+            itemPy: "py-2.5",
+            activeItem:
+              "bg-indigo-50 text-indigo-700 font-semibold rounded-xl shadow-sm ring-1 ring-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 dark:ring-indigo-500/20",
+            inactiveItem:
+              "text-slate-600 rounded-xl hover:bg-slate-100 hover:text-slate-900 transition-all dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
+            activeIconOverride: "text-indigo-600 dark:text-indigo-400",
+            footerBorder: "border-t border-gray-200 dark:border-slate-800",
+            footerExpandedPadding: "p-4",
+            footerCollapsedPadding: "p-3",
+            logoutExpandedBtn:
+              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
+            logoutCollapsedBtn:
+              "flex items-center justify-center rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
+            logoutIcon: "",
+            logoutLabel: t("common.logout"),
+          }}
+        <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
+          <AdminHeader
+            title={currentTitle}
+            category={currentCategory}
+            subTitle={headerSubTitle}
+            onBackSubTitle={onBackHeaderSubTitle}
+            onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            isSidebarCollapsed={isSidebarCollapsed}
+          />
 
-      <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
-        <AdminHeader
-          title={currentTitle}
-          category={currentCategory}
-          onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          isSidebarCollapsed={isSidebarCollapsed}
-        />
-
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <Routes>
-            <Route path="/" element={<DashboardOverviewPage />} />
-            <Route path="account" element={<AdminAccountPage />} />
-            <Route path="users" element={<UserManagementPage />} />
-            <Route path="mentors" element={<MentorManagementPage />} />
-            <Route path="sessions" element={<SessionManagementPage />} />
-            <Route path="sessions/create" element={<SessionFormPage />} />
-            <Route path="sessions/:id" element={<SessionFormPage />} />
-            <Route path="reviews" element={<ReviewManagementPage />} />
-            <Route path="feedback" element={<FeedbackManagementPage />} />
-            <Route path="notifications" element={<NotificationManagementPage />} />
-            <Route path="questionBanks" element={<QuestionBankManagementPage />} />
-            <Route path="questionMajors" element={<QuestionMajorManagementPage />} />
-            <Route path="practiceSets" element={<PracticeSetManagementPage />} />
-            <Route path="practiceQuestions" element={<PracticeQuestionManagementPage />} />
-            <Route path="posts" element={<PostManagementPage />} />
-            <Route path="companies" element={<CompanyManagementPage />} />
-            <Route path="companies/:companyId" element={<CompanyManagementPage />} />
-            <Route path="applications" element={<AdminApplicationManagementPage />} />
-            <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
-            <Route path="interviewTemplates/:id" element={<InterviewTemplateDetailPage />} />
-            <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />
-            <Route path="kiosk-management" element={<KioskManagementPage />} />
-            <Route path="kiosk-management/:kioskId" element={<KioskDetailPage />} />
-            <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
-            <Route path="codingProblems" element={<CodingProblemManagementPage />} />
-          </Routes>
-        </main>
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            <Routes>
+              <Route path="/" element={<DashboardOverviewPage />} />
+              <Route path="account" element={<AdminAccountPage />} />
+              <Route path="users" element={<UserManagementPage />} />
+              <Route path="mentors" element={<MentorManagementPage />} />
+              <Route path="sessions" element={<SessionManagementPage />} />
+              <Route path="sessions/create" element={<SessionFormPage />} />
+              <Route path="sessions/:id" element={<SessionFormPage />} />
+              <Route path="reviews" element={<ReviewManagementPage />} />
+              <Route path="feedback" element={<FeedbackManagementPage />} />
+              <Route path="notifications" element={<NotificationManagementPage />} />
+              <Route path="questionBanks" element={<QuestionBankManagementPage />} />
+              <Route path="questionMajors" element={<QuestionMajorManagementPage />} />
+              <Route path="practiceSets" element={<PracticeSetManagementPage />} />
+              <Route path="practiceQuestions" element={<PracticeQuestionManagementPage />} />
+              <Route path="posts" element={<PostManagementPage />} />
+              <Route path="companies" element={<CompanyManagementPage />} />
+              <Route path="companies/:companyId" element={<CompanyManagementPage />} />
+              <Route path="applications" element={<AdminApplicationManagementPage />} />
+              <Route path="interviewTemplates" element={<InterviewTemplateManagementPage />} />
+              <Route path="interviewTemplates/:id" element={<InterviewTemplateDetailPage />} />
+              <Route path="mentor-review-assignment" element={<MentorReviewAssignmentPage />} />
+              <Route path="kiosk-management" element={<KioskManagementPage />} />
+              <Route path="kiosk-management/:kioskId" element={<KioskDetailPage />} />
+              <Route path="codeReviewProblems" element={<CodeReviewProblemManagementPage />} />
+              <Route path="codingProblems" element={<CodingProblemManagementPage />} />
+            </Routes>
+          </main>
+        </div>
       </div>
-    </div>
+    </AdminHeaderContext.Provider>
   );
 }

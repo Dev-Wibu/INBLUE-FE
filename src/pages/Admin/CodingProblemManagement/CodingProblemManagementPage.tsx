@@ -11,9 +11,10 @@ import {
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { codingProblemManager, type CodingProblem } from "@/services/coding-problem.manager";
 import { Loader2, Plus, RefreshCw, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { AdminHeaderContext } from "../AdminDashboard/AdminDashboardPage";
 import { CodingProblemTable } from "./components/CodingProblemTable";
 import { CodingProblemEditor } from "./components/editor/CodingProblemEditor";
 
@@ -34,6 +35,25 @@ export function CodingProblemManagementPage() {
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("ALL");
   const [sort, setSort] = useState<SortKey>("newest");
+
+  const { setBreadcrumbSubTitle } = useContext(AdminHeaderContext);
+
+  const handleCloseAuthoring = useCallback(() => {
+    setIsAuthoring(false);
+    setEditingProblem(null);
+  }, []);
+
+  useEffect(() => {
+    if (isAuthoring) {
+      if (editingProblem?.title) {
+        setBreadcrumbSubTitle(`Chỉnh sửa: ${editingProblem.title}`, handleCloseAuthoring);
+      } else {
+        setBreadcrumbSubTitle("Tạo bài tập mới", handleCloseAuthoring);
+      }
+    } else {
+      setBreadcrumbSubTitle(undefined);
+    }
+  }, [isAuthoring, editingProblem, setBreadcrumbSubTitle, handleCloseAuthoring]);
 
   useEffect(() => {
     fetchProblems();
