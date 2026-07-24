@@ -37,9 +37,11 @@ interface ApplicationDetailDrawerProps {
   onStatusChange?: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function renderAiFeedback(feedback: any) {
   if (!feedback) return null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let content: any = feedback;
   if (typeof feedback === "string") {
     try {

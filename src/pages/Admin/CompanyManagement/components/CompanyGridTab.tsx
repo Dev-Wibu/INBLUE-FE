@@ -243,25 +243,6 @@ export function CompanyGridTab({
     }
   };
 
-  // Open JD edit form
-  const handleOpenEditJd = (jd: JobDescription) => {
-    setEditingJd(jd);
-    setJdFormData({
-      title: jd.title,
-      description: jd.description,
-      requirements: jd.requirements,
-      benefits: jd.benefits,
-      level: jd.level,
-      salaryMin: jd.salaryMin,
-      salaryMax: jd.salaryMax,
-      price: jd.price,
-      currency: jd.currency,
-      status: jd.status,
-      deadlineAt: jd.deadlineAt,
-    });
-    setIsJdDialogOpen(true);
-  };
-
   // Submit JD (Create or Edit)
   const handleJdSubmit = async () => {
     if (!selectedCompanyId) return;
