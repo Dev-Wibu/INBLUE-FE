@@ -42,7 +42,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { JobDescription, JobDescriptionLevel, JobDescriptionStatus } from "../types";
@@ -139,28 +139,41 @@ function EditableTextList({
   iconColor?: string;
   placeholder?: string;
 }) {
-  const lines = useMemo(() => {
+  const [lines, setLines] = useState<string[]>(() => {
     const raw = (text || "")
-      .split(/\n+/)
-      .map((line) => line.trim().replace(/^[-*•\d+.]\s*/, ""))
-      .filter(Boolean);
+      .split("\n")
+      .map((line) => line.trim().replace(/^[-*•\d+.]\s*/, ""));
     return raw.length > 0 ? raw : [""];
+  });
+
+  const prevTextRef = useRef(text);
+  useEffect(() => {
+    if (prevTextRef.current !== text) {
+      prevTextRef.current = text;
+      const raw = (text || "")
+        .split("\n")
+        .map((line) => line.trim().replace(/^[-*•\d+.]\s*/, ""));
+      setLines(raw.length > 0 ? raw : [""]);
+    }
   }, [text]);
 
   const handleLineChange = (index: number, val: string) => {
-    const newLines = [...lines];
-    newLines[index] = val;
-    onChange(newLines.join("\n"));
+    const next = [...lines];
+    next[index] = val;
+    setLines(next);
+    onChange(next.filter((l) => l.trim() !== "").join("\n"));
   };
 
   const handleAddLine = () => {
-    const newLines = [...lines, ""];
-    onChange(newLines.join("\n"));
+    const next = [...lines, ""];
+    setLines(next);
   };
 
   const handleDeleteLine = (index: number) => {
-    const newLines = lines.filter((_, i) => i !== index);
-    onChange(newLines.join("\n"));
+    const next = lines.filter((_, i) => i !== index);
+    const finalLines = next.length > 0 ? next : [""];
+    setLines(finalLines);
+    onChange(finalLines.filter((l) => l.trim() !== "").join("\n"));
   };
 
   return (

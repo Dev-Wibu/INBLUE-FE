@@ -405,15 +405,7 @@ export function CompanyManagementPage() {
 
         {/* Header Right Action Controls */}
         <div className="flex flex-wrap items-center gap-3">
-          {selectedJd ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenEditJd(selectedJd)}
-              className="h-8 text-xs font-semibold">
-              {t("general.edit", "Chỉnh sửa")}
-            </Button>
-          ) : selectedCompany ? (
+          {selectedJd ? null : selectedCompany ? (
             <Button
               size="sm"
               onClick={() => handleOpenCreateJd(selectedCompany.id)}
