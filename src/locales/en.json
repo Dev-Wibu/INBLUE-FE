@@ -226,6 +226,8 @@
     "viewAndManageAllCandidate": "View and manage all candidate profiles in the system."
   },
   "adminCompanymanagement": {
+    "packagePrice": "JD Purchase Package Price (VND)",
+    "packagePricePlaceholder": "Enter package price (0 = free)",
     "addNewJd": "Add new JD",
     "addNewPartners": "Add new partners",
     "addPartner": "Add Partner",

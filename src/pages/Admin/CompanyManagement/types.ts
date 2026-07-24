@@ -36,6 +36,7 @@ export interface JobDescriptionFormData {
   status?: JobDescriptionStatus;
   salaryMin?: number;
   salaryMax?: number;
+  price?: number;
   currency?: string;
   deadlineAt?: string;
 }

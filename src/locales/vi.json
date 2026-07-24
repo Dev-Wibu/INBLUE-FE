@@ -226,6 +226,8 @@
     "viewAndManageAllCandidate": "Xem và quản lý tất cả hồ sơ ứng viên trong hệ thống."
   },
   "adminCompanymanagement": {
+    "packagePrice": "Giá gói mua JD (VNĐ)",
+    "packagePricePlaceholder": "Nhập giá gói (0 = miễn phí)",
     "addNewJd": "Thêm JD mới",
     "addNewPartners": "Thêm đối tác mới",
     "addPartner": "Thêm Đối tác",

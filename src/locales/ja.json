@@ -189,6 +189,8 @@
     "viewAndManageAllCandidate": "システム内のすべての候補者プロフィールを表示・管理します。"
   },
   "adminCompanymanagement": {
+    "packagePrice": "JDパッケージ購入価格 (VND)",
+    "packagePricePlaceholder": "パッケージ価格を入力 (0 = 無料)",
     "addNewJd": "新しいJDを追加",
     "addNewPartners": "新しいパートナーを追加",
     "addPartner": "パートナーを追加",

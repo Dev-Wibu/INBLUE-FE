@@ -1,10 +1,8 @@
 import { PaginationControl } from "@/components/shared";
-import { Button } from "@/components/ui/button";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Folder, Plus } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -53,7 +51,8 @@ export function CompanyGridTab({
 }: CompanyGridTabProps) {
   const { t } = useTranslation();
   const [internalSelectedCompanyId, setInternalSelectedCompanyId] = useState<number | null>(null);
-  const selectedCompanyId = propSelectedCompanyId !== undefined ? propSelectedCompanyId : internalSelectedCompanyId;
+  const selectedCompanyId =
+    propSelectedCompanyId !== undefined ? propSelectedCompanyId : internalSelectedCompanyId;
   const setSelectedCompanyId = onSelectCompanyId || setInternalSelectedCompanyId;
 
   const [internalSelectedJdId, setInternalSelectedJdId] = useState<number | null>(null);
@@ -138,8 +137,16 @@ export function CompanyGridTab({
       return {
         ...jd,
         companyName: selectedCompany?.name || (jd as any).companyName,
-        companyLogoUrl: selectedCompany?.logoUrl || openJdInfo?.company?.logoUrl || (jd as any).companyLogoUrl,
-        applicationCount: openJdInfo?.statistics?.totalApplications ?? (jd as any).statistics?.totalApplications ?? (jd as any).totalApplications ?? (jd as any).applicationCount ?? (jd as any).applicationsCount ?? jd.applications?.length ?? 0,
+        companyLogoUrl:
+          selectedCompany?.logoUrl || openJdInfo?.company?.logoUrl || (jd as any).companyLogoUrl,
+        applicationCount:
+          openJdInfo?.statistics?.totalApplications ??
+          (jd as any).statistics?.totalApplications ??
+          (jd as any).totalApplications ??
+          (jd as any).applicationCount ??
+          (jd as any).applicationsCount ??
+          jd.applications?.length ??
+          0,
       };
     });
   }, [companyJds, selectedCompany, openJds]);
@@ -254,6 +261,7 @@ export function CompanyGridTab({
       level: jd.level,
       salaryMin: jd.salaryMin,
       salaryMax: jd.salaryMax,
+      price: jd.price,
       currency: jd.currency,
       status: jd.status,
       deadlineAt: jd.deadlineAt,
@@ -277,6 +285,7 @@ export function CompanyGridTab({
           level: jdFormData.level,
           salaryMin: jdFormData.salaryMin,
           salaryMax: jdFormData.salaryMax,
+          price: jdFormData.price ?? 0,
           currency: jdFormData.currency,
           status: jdFormData.status,
           deadlineAt: jdFormData.deadlineAt,
@@ -301,6 +310,7 @@ export function CompanyGridTab({
           level: jdFormData.level,
           salaryMin: jdFormData.salaryMin,
           salaryMax: jdFormData.salaryMax,
+          price: jdFormData.price ?? 0,
           currency: jdFormData.currency,
           status: jdFormData.status,
           deadlineAt: jdFormData.deadlineAt,

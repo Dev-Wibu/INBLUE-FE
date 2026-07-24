@@ -7,7 +7,7 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Briefcase, Building2, ChevronRight, Folder, Plus, Search, Users } from "lucide-react";
+import { Briefcase, Building2, ChevronRight, Plus, Search, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -97,9 +97,24 @@ export function CompanyManagementPage() {
 
       return {
         ...jd,
-        companyName: company?.name || openJdInfo?.companyName || (jd as any).company?.name || (jd as any).companyName,
-        companyLogoUrl: company?.logoUrl || openJdInfo?.company?.logoUrl || (jd as any).company?.logoUrl || (jd as any).companyLogo,
-        applicationCount: openJdInfo?.statistics?.totalApplications ?? (jd as any).statistics?.totalApplications ?? (jd as any).totalApplications ?? (jd as any).applicationCount ?? (jd as any).applicationsCount ?? jd.applications?.length ?? 0,
+        companyName:
+          company?.name ||
+          openJdInfo?.companyName ||
+          (jd as any).company?.name ||
+          (jd as any).companyName,
+        companyLogoUrl:
+          company?.logoUrl ||
+          openJdInfo?.company?.logoUrl ||
+          (jd as any).company?.logoUrl ||
+          (jd as any).companyLogo,
+        applicationCount:
+          openJdInfo?.statistics?.totalApplications ??
+          (jd as any).statistics?.totalApplications ??
+          (jd as any).totalApplications ??
+          (jd as any).applicationCount ??
+          (jd as any).applicationsCount ??
+          jd.applications?.length ??
+          0,
       };
     });
 
@@ -228,6 +243,7 @@ export function CompanyManagementPage() {
         level: jdFormData.level,
         salaryMin: jdFormData.salaryMin,
         salaryMax: jdFormData.salaryMax,
+        price: jdFormData.price ?? 0,
         currency: jdFormData.currency,
         status: jdFormData.status,
         deadlineAt: jdFormData.deadlineAt,
@@ -259,6 +275,7 @@ export function CompanyManagementPage() {
       level: jd.level,
       salaryMin: jd.salaryMin,
       salaryMax: jd.salaryMax,
+      price: jd.price,
       currency: jd.currency,
       status: jd.status,
       deadlineAt: jd.deadlineAt,
@@ -279,6 +296,7 @@ export function CompanyManagementPage() {
         level: jdEditFormData.level,
         salaryMin: jdEditFormData.salaryMin,
         salaryMax: jdEditFormData.salaryMax,
+        price: jdEditFormData.price ?? 0,
         currency: jdEditFormData.currency,
         status: jdEditFormData.status,
         deadlineAt: jdEditFormData.deadlineAt,
@@ -313,39 +331,39 @@ export function CompanyManagementPage() {
       className="-m-4 flex h-[calc(100%+32px)] flex-col gap-0 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]">
       {/* Unified Single Hierarchical Header (Fixed 68px height - Zero layout shift) */}
       <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-wrap items-center gap-3 min-w-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
           {selectedJd ? (
             /* Mode 3: Inside a specific JD detail view (Sleek 1-line breadcrumb & title) */
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
                   setSelectedJdId(null);
                   setSelectedCompanyId(null);
                 }}
-                className="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400 dark:hover:text-indigo-400">
+                className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
                 {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
               </button>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
               {selectedJdCompany && (
                 <>
                   <button
                     type="button"
                     onClick={() => setSelectedJdId(null)}
-                    className="flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400 dark:hover:text-indigo-400">
+                    className="flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
                     <Building2 className="h-3.5 w-3.5 text-slate-400" />
                     <span>{selectedJdCompany}</span>
                   </button>
-                  <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                 </>
               )}
-              <h1 className="text-base font-bold text-slate-900 dark:text-white truncate max-w-xs sm:max-w-md">
+              <h1 className="max-w-xs truncate text-base font-bold text-slate-900 sm:max-w-md dark:text-white">
                 {selectedJd.title}
               </h1>
               <Badge
                 className={
                   selectedJd.status === "OPEN"
-                    ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400"
+                    ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
                     : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                 }>
                 {selectedJd.status}
@@ -354,14 +372,14 @@ export function CompanyManagementPage() {
             </div>
           ) : selectedCompany ? (
             /* Mode 2: Inside a specific Company's JD list view */
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => setSelectedCompanyId(null)}
-                className="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400 dark:hover:text-indigo-400">
+                className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
                 {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
               </button>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
               <div className="flex items-center gap-1.5 rounded-lg bg-indigo-50/80 px-2.5 py-1 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                 <Building2 className="h-3.5 w-3.5 text-indigo-500" />
                 <span>{selectedCompany.name}</span>
@@ -370,10 +388,10 @@ export function CompanyManagementPage() {
           ) : (
             /* Mode 1: Root Management view (WITHOUT ICON) */
             <div className="flex flex-col justify-center">
-              <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+              <h1 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
                 {t("adminCompanymanagement.companyManagement", "Quản lý công ty")}
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+              <p className="mt-0.5 text-xs leading-tight text-slate-500 dark:text-slate-400">
                 {t(
                   "adminCompanymanagement.manageCompaniesDesc",
                   "Quản lý danh sách các công ty và thông tin tuyển dụng."
@@ -389,11 +407,11 @@ export function CompanyManagementPage() {
             <>
               <Tabs value={jdDetailTab} onValueChange={setJdDetailTab}>
                 <TabsList className="h-8 bg-slate-100 dark:bg-slate-800">
-                  <TabsTrigger value="process" className="text-xs font-semibold gap-1.5 h-7">
+                  <TabsTrigger value="process" className="h-7 gap-1.5 text-xs font-semibold">
                     <Briefcase className="h-3.5 w-3.5" />
                     Quy trình & Thông tin JD
                   </TabsTrigger>
-                  <TabsTrigger value="applications" className="text-xs font-semibold gap-1.5 h-7">
+                  <TabsTrigger value="applications" className="h-7 gap-1.5 text-xs font-semibold">
                     <Users className="h-3.5 w-3.5" />
                     Đơn ứng tuyển ({jdApplicationsCount})
                   </TabsTrigger>
@@ -414,7 +432,7 @@ export function CompanyManagementPage() {
             <Button
               size="sm"
               onClick={() => handleOpenCreateJd(selectedCompany.id)}
-              className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700 shadow-xs">
+              className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
               <Plus className="h-3.5 w-3.5" />
               {t("adminCompanymanagement.addJd", "Thêm JD")}
             </Button>
@@ -444,7 +462,7 @@ export function CompanyManagementPage() {
                   </div>
                   <Button
                     onClick={handleCreateCompany}
-                    className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 shadow-xs">
+                    className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
                     <Plus className="mr-1.5 h-3.5 w-3.5" />
                     {t("adminCompanymanagement.addCompany", "Thêm công ty")}
                   </Button>
@@ -466,7 +484,7 @@ export function CompanyManagementPage() {
                   </div>
                   <Button
                     onClick={() => handleOpenCreateJd()}
-                    className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 shadow-xs">
+                    className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
                     <Plus className="mr-1.5 h-3.5 w-3.5" />
                     {t("adminCompanymanagement.createJd", "Tạo JD mới")}
                   </Button>
@@ -563,6 +581,7 @@ export function CompanyManagementPage() {
         onSubmit={handleSubmitCreate}
         title={t("adminCompanymanagement.addNewPartners")}
         description={t("adminCompanymanagement.addNewPartnerDescription")}
+        submitLabel={t("general.save", "Lưu")}
         isSubmitting={isCreating}
       />
 
@@ -574,7 +593,10 @@ export function CompanyManagementPage() {
         onFormChange={setJdFormData}
         onSubmit={handleSubmitCreateJd}
         title={t("adminCompanymanagement.createJdTitle", "Tạo vị trí tuyển dụng (JD)")}
-        description={t("adminCompanymanagement.createJdDesc", "Nhập thông tin vị trí tuyển dụng mới.")}
+        description={t(
+          "adminCompanymanagement.createJdDesc",
+          "Nhập thông tin vị trí tuyển dụng mới."
+        )}
         isSubmitting={isSubmittingJd}
       />
 
@@ -585,7 +607,10 @@ export function CompanyManagementPage() {
         onFormChange={setJdEditFormData}
         onSubmit={handleSubmitEditJd}
         title={t("adminCompanymanagement.editJdTitle", "Chỉnh sửa vị trí tuyển dụng (JD)")}
-        description={t("adminCompanymanagement.editJdDesc", "Cập nhật thông tin chi tiết của vị trí tuyển dụng.")}
+        description={t(
+          "adminCompanymanagement.editJdDesc",
+          "Cập nhật thông tin chi tiết của vị trí tuyển dụng."
+        )}
         isSubmitting={isSubmittingJd}
       />
     </Tabs>

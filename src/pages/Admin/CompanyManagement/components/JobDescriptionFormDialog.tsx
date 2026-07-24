@@ -29,7 +29,8 @@ interface JobDescriptionFormDialogProps {
   onSubmit: () => void;
   title: string;
   description: string;
-  submitLabel: string;
+  submitLabel?: string;
+  isSubmitting?: boolean;
 }
 const LEVEL_OPTIONS: JobDescriptionLevel[] = ["INTERN", "FRESHER", "JUNIOR", "MIDDLE"];
 const STATUS_OPTIONS: JobDescriptionStatus[] = ["OPEN", "CLOSED", "DRAFT"];
@@ -42,8 +43,10 @@ export function JobDescriptionFormDialog({
   title,
   description,
   submitLabel,
+  isSubmitting = false,
 }: JobDescriptionFormDialogProps) {
   const { t } = useTranslation();
+  const effectiveSubmitLabel = submitLabel || t("general.save", "Lưu");
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[92vh] max-w-5xl flex-col overflow-hidden p-0">
@@ -224,6 +227,28 @@ export function JobDescriptionFormDialog({
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <Label htmlFor="jd-price" className="font-semibold">
+                {t("adminCompanymanagement.packagePrice", "Giá gói mua JD (VNĐ)")}
+              </Label>
+              <Input
+                id="jd-price"
+                type="number"
+                min={0}
+                value={formData.price ?? ""}
+                onChange={(e) =>
+                  onFormChange({
+                    ...formData,
+                    price: e.target.value === "" ? undefined : Number(e.target.value),
+                  })
+                }
+                placeholder={t(
+                  "adminCompanymanagement.packagePricePlaceholder",
+                  "Nhập giá gói (0 = miễn phí)"
+                )}
+              />
+            </div>
+
             <div className="grid grid-cols-3 gap-4">
               <div className="col-span-1 space-y-1.5">
                 <Label htmlFor="jd-currency" className="font-semibold">
@@ -265,7 +290,16 @@ export function JobDescriptionFormDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("general.cancel")}
           </Button>
-          <Button onClick={onSubmit}>{submitLabel}</Button>
+          <Button onClick={onSubmit} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                {t("common.processing", "Đang xử lý...")}
+              </>
+            ) : (
+              effectiveSubmitLabel
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
