@@ -163,8 +163,9 @@ export function RoundCanvasEditorDialog({
 
       const next = prev.slice(0, rounds.length);
       for (let i = next.length; i < rounds.length; i++) {
-        const col = i % maxCols;
         const row = Math.floor(i / maxCols);
+        const colInRow = i % maxCols;
+        const col = row % 2 === 0 ? colInRow : maxCols - 1 - colInRow;
         next.push({ x: col * 280 + 40, y: row * 210 + 40 });
       }
       return next;
@@ -633,7 +634,10 @@ export function RoundCanvasEditorDialog({
                                 return (
                                   <path
                                     key={idx}
-                                    d={`M ${conn.x1} ${conn.y1} C ${conn.cp1x} ${conn.cp1y}, ${conn.cp2x} ${conn.cp2y}, ${conn.x2} ${conn.y2}`}
+                                    d={
+                                      conn.path ||
+                                      `M ${conn.x1} ${conn.y1} C ${conn.cp1x} ${conn.cp1y}, ${conn.cp2x} ${conn.cp2y}, ${conn.x2} ${conn.y2}`
+                                    }
                                     stroke="#94a3b8"
                                     strokeWidth="1.8"
                                     strokeDasharray="6 4"
@@ -655,9 +659,13 @@ export function RoundCanvasEditorDialog({
                                 ? Math.max(600, window.innerWidth - 360)
                                 : 1000;
                             const maxCols = Math.max(1, Math.floor((availableWidth - 60) / 280));
+                            const row = Math.floor(idx / maxCols);
+                            const colInRow = idx % maxCols;
+                            const col = row % 2 === 0 ? colInRow : maxCols - 1 - colInRow;
+
                             const pos = positions[idx] ?? {
-                              x: (idx % maxCols) * 280 + 40,
-                              y: Math.floor(idx / maxCols) * 210 + 40,
+                              x: col * 280 + 40,
+                              y: row * 210 + 40,
                             };
                             const template = AVAILABLE_ROUNDS_TEMPLATES.find(
                               (t) => t.type === round.roundType
