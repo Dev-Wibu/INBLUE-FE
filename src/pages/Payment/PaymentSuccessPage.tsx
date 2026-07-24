@@ -102,6 +102,19 @@ export function PaymentSuccessPage() {
     to: string;
     label: string;
   } => {
+    // JD Purchase: redirect back to the JD page instead of account
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryJdId = queryParams.get("jdId");
+    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
+    const targetJdId = Number(queryJdId || storedJdId);
+
+    if (targetJdId && !isNaN(targetJdId)) {
+      return {
+        to: `/enterprise/job/${targetJdId}`,
+        label: t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm"),
+      };
+    }
+
     switch (purpose) {
       case "MENTOR_INTERVIEW":
         return {
