@@ -149,11 +149,14 @@ export function KioskManagementPage() {
       {/* Unified Single Hierarchical Header (Fixed 68px height) */}
       <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col justify-center">
-          <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+          <h1 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
             {t("adminKioskManagement.title", "Quản lý Kiosk")}
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
-            {t("adminKioskManagement.description", "Quản lý danh sách trạm Kiosk và lịch hoạt động")}
+          <p className="mt-0.5 text-xs leading-tight text-slate-500 dark:text-slate-400">
+            {t(
+              "adminKioskManagement.description",
+              "Quản lý danh sách trạm Kiosk và lịch hoạt động"
+            )}
           </p>
         </div>
 
