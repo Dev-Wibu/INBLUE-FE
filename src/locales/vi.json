@@ -5035,6 +5035,7 @@
     "paymentRequiredToApply": "Bạn cần mua gói apply cho JD này trước.",
     "purchaseJdSuccess": "Mua gói JD thành công! Bạn có thể nộp đơn ngay.",
     "paymentPendingWebhook": "Thanh toán đang được hệ thống xác nhận. Vui lòng kiểm tra lại sau ít phút.",
-    "returnToJobPosition": "Quay lại trang vị trí việc làm"
+    "returnToJobPosition": "Quay lại trang vị trí việc làm",
+    "jdPurchaseCancelledMsg": "Bạn đã hủy giao dịch thanh toán mua gói JD."
   }
 }

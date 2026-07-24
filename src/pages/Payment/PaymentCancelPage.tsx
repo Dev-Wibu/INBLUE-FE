@@ -145,6 +145,21 @@ export function PaymentCancelPage() {
   );
   const runCancelChain = useCallback(
     async (options?: RunCancelChainOptions) => {
+      const queryParams = new URLSearchParams(window.location.search);
+      const queryJdId = queryParams.get("jdId");
+      const storedJdId = localStorage.getItem("pending_jd_purchase_id");
+      const targetJdId = Number(queryJdId || storedJdId);
+
+      if (targetJdId && !isNaN(targetJdId)) {
+        setProcessing(false);
+        setChainResult("success");
+        setResultMessage(
+          t("payment.jdPurchaseCancelledMsg", "Bạn đã hủy giao dịch thanh toán mua gói JD.")
+        );
+        localStorage.removeItem("pending_jd_purchase_id");
+        return;
+      }
+
       const userIdFilter = currentUserId > 0 ? currentUserId : undefined;
       let context: PaymentRecoveryContext | null = recoveryContextRef.current;
       let recoverySource: PaymentRecoveryLookupSource = context ? "existing-state" : "none";

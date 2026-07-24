@@ -5045,6 +5045,7 @@
     "paymentRequiredToApply": "このJDに応募するには、まずパッケージを購入する必要があります。",
     "purchaseJdSuccess": "JDパッケージの購入が完了しました！今すぐ応募できます。",
     "paymentPendingWebhook": "決済を確認中です。しばらくしてから再度ご確認ください。",
-    "returnToJobPosition": "求人詳細ページに戻る"
+    "returnToJobPosition": "求人詳細ページに戻る",
+    "jdPurchaseCancelledMsg": "JDパッケージ購入決済をキャンセルしました。"
   }
 }
