@@ -367,16 +367,14 @@ export function JobDescriptionDetailView({
                         className="group flex min-w-[170px] max-w-[210px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
                         {/* Round Header */}
                         <div className="flex items-center justify-between gap-2">
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-extrabold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-[11px] font-extrabold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                             {index + 1}
                           </span>
-                          {showMetaTag && (
-                            <Badge
-                              variant="outline"
-                              className={cn("gap-1 text-[10px] font-semibold truncate", meta?.color)}>
-                              {meta.title}
-                            </Badge>
-                          )}
+                          <Badge
+                            variant="outline"
+                            className={cn("gap-1 text-[10px] font-bold truncate shadow-2xs", meta?.color)}>
+                            {meta?.title || round.roundType}
+                          </Badge>
                         </div>
 
                         {/* Round Name */}
