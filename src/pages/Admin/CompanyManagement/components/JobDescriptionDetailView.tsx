@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -39,7 +38,6 @@ import {
   Gift,
   Pencil,
   Sparkles,
-  Tag,
   Users,
   X,
 } from "lucide-react";
@@ -512,22 +510,22 @@ export function JobDescriptionDetailView({
               </div>
 
               {isEditing && (
-                <Badge className="bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/30 text-[11px] font-bold">
-                  Chế độ chỉnh sửa
+                <Badge className="border-indigo-500/30 bg-indigo-500/15 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[11px] font-bold">
+                  Đang chỉnh sửa
                 </Badge>
               )}
             </div>
 
-            {/* Sub-Tab Content Body */}
+            {/* Sub-Tab Content Body (Seamlessly Editable) */}
             {detailTab === "description" && (
               <div>
                 {isEditing ? (
                   <Textarea
                     value={editFormData.description || ""}
                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                    placeholder="Nhập mô tả công việc..."
+                    placeholder="Nhập nội dung mô tả công việc..."
                     rows={8}
-                    className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                    className="w-full border-slate-200 bg-slate-50/50 text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                   />
                 ) : currentJd.description ? (
                   <FormattedTextList
@@ -551,7 +549,7 @@ export function JobDescriptionDetailView({
                     onChange={(e) => setEditFormData({ ...editFormData, requirements: e.target.value })}
                     placeholder="Nhập yêu cầu ứng viên..."
                     rows={8}
-                    className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                    className="w-full border-slate-200 bg-slate-50/50 text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                   />
                 ) : (
                   <>
@@ -594,7 +592,7 @@ export function JobDescriptionDetailView({
                     onChange={(e) => setEditFormData({ ...editFormData, benefits: e.target.value })}
                     placeholder="Nhập đãi ngộ & phúc lợi..."
                     rows={6}
-                    className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                    className="w-full border-slate-200 bg-slate-50/50 text-sm font-medium leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                   />
                 ) : currentJd.benefits &&
                   currentJd.benefits.trim() &&
@@ -663,70 +661,151 @@ export function JobDescriptionDetailView({
               )}
             </div>
 
-            {/* Read / Edit Form Fields */}
-            {!isEditing ? (
-              <div className="space-y-3.5 text-sm">
-                {/* Title */}
-                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                    <FileText className="h-4 w-4 text-indigo-500" />
-                    Vị trí
-                  </span>
+            {/* Structured Rows (Exact same layout for both Read & Edit mode!) */}
+            <div className="space-y-3.5 text-sm">
+              {/* Row 1: Title */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                  <FileText className="h-4 w-4 text-indigo-500" />
+                  Vị trí
+                </span>
+                {!isEditing ? (
                   <span className="font-bold text-slate-900 truncate max-w-[180px] dark:text-white">
                     {currentJd.title || "—"}
                   </span>
-                </div>
+                ) : (
+                  <Input
+                    value={editFormData.title || ""}
+                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                    placeholder="VD: Senior Java Engineer"
+                    className="h-7 w-48 text-right text-xs font-bold dark:bg-slate-950"
+                  />
+                )}
+              </div>
 
-                {/* Salary */}
-                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                    <DollarSign className="h-4 w-4 text-emerald-500" />
-                    Mức lương
-                  </span>
+              {/* Row 2: Salary */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                  <DollarSign className="h-4 w-4 text-emerald-500" />
+                  Mức lương
+                </span>
+                {!isEditing ? (
                   <span className="font-bold text-emerald-600 dark:text-emerald-400">
                     {formatSalary(currentJd.salaryMin, currentJd.salaryMax, currentJd.currency)}
                   </span>
-                </div>
+                ) : (
+                  <div className="flex items-center justify-end gap-1">
+                    <Input
+                      type="number"
+                      value={editFormData.salaryMin ?? ""}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          salaryMin: e.target.value === "" ? undefined : Number(e.target.value),
+                        })
+                      }
+                      placeholder="Min"
+                      className="h-7 w-16 text-right font-mono text-xs px-1.5 dark:bg-slate-950"
+                    />
+                    <span className="text-slate-400 text-xs">-</span>
+                    <Input
+                      type="number"
+                      value={editFormData.salaryMax ?? ""}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          salaryMax: e.target.value === "" ? undefined : Number(e.target.value),
+                        })
+                      }
+                      placeholder="Max"
+                      className="h-7 w-16 text-right font-mono text-xs px-1.5 dark:bg-slate-950"
+                    />
+                    <Input
+                      value={editFormData.currency || ""}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, currency: e.target.value })
+                      }
+                      placeholder="USD"
+                      className="h-7 w-12 uppercase text-center font-mono text-xs px-1 dark:bg-slate-950"
+                    />
+                  </div>
+                )}
+              </div>
 
-                {/* Level */}
-                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                    <Briefcase className="h-4 w-4 text-indigo-500" />
-                    Cấp bậc
-                  </span>
+              {/* Row 3: Level */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                  <Briefcase className="h-4 w-4 text-indigo-500" />
+                  Cấp bậc
+                </span>
+                {!isEditing ? (
                   <span className="font-bold text-slate-800 dark:text-slate-100">
                     {currentJd.level || "—"}
                   </span>
-                </div>
+                ) : (
+                  <Select
+                    value={editFormData.level}
+                    onValueChange={(val) =>
+                      setEditFormData({ ...editFormData, level: val as JobDescriptionLevel })
+                    }>
+                    <SelectTrigger className="h-7 w-32 text-xs font-bold dark:bg-slate-950">
+                      <SelectValue placeholder="Cấp bậc" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LEVEL_OPTIONS.map((lvl) => (
+                        <SelectItem key={lvl} value={lvl} className="text-xs font-semibold">
+                          {lvl}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
 
-                {/* Deadline */}
-                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                    <Calendar className="h-4 w-4 text-amber-500" />
-                    Hạn ứng tuyển
-                  </span>
+              {/* Row 4: Deadline */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                  <Calendar className="h-4 w-4 text-amber-500" />
+                  Hạn ứng tuyển
+                </span>
+                {!isEditing ? (
                   <span className="font-semibold text-slate-800 dark:text-slate-200">
                     {formatDeadline(currentJd.deadlineAt)}
                   </span>
-                </div>
+                ) : (
+                  <div className="w-40">
+                    <DateTimePicker
+                      value={editFormData.deadlineAt ? new Date(editFormData.deadlineAt) : null}
+                      onChange={(date) =>
+                        setEditFormData({
+                          ...editFormData,
+                          deadlineAt: date ? date.toISOString() : undefined,
+                        })
+                      }
+                      themeVariant="admin"
+                    />
+                  </div>
+                )}
+              </div>
 
-                {/* Applications count */}
-                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                    <Users className="h-4 w-4 text-purple-500" />
-                    Tổng ứng tuyển
-                  </span>
-                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                    {applications.length} ứng viên
-                  </span>
-                </div>
+              {/* Row 5: Applications count (Read-only) */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                  <Users className="h-4 w-4 text-purple-500" />
+                  Tổng ứng tuyển
+                </span>
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                  {applications.length} ứng viên
+                </span>
+              </div>
 
-                {/* Status */}
-                <div className="flex items-center justify-between gap-2 pt-0.5">
-                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                    <Clock className="h-4 w-4 text-slate-400" />
-                    Trạng thái
-                  </span>
+              {/* Row 6: Status */}
+              <div className="flex items-center justify-between gap-2 pt-0.5">
+                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                  <Clock className="h-4 w-4 text-slate-400" />
+                  Trạng thái
+                </span>
+                {!isEditing ? (
                   <Badge
                     className={
                       currentJd.status === "OPEN"
@@ -735,138 +814,26 @@ export function JobDescriptionDetailView({
                     }>
                     {currentJd.status || "OPEN"}
                   </Badge>
-                </div>
+                ) : (
+                  <Select
+                    value={editFormData.status}
+                    onValueChange={(val) =>
+                      setEditFormData({ ...editFormData, status: val as JobDescriptionStatus })
+                    }>
+                    <SelectTrigger className="h-7 w-28 text-xs font-semibold dark:bg-slate-950">
+                      <SelectValue placeholder="Trạng thái" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map((st) => (
+                        <SelectItem key={st} value={st} className="text-xs">
+                          {st}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
-            ) : (
-              /* Inline Edit Inputs */
-              <div className="space-y-3.5 text-xs">
-                {/* Title */}
-                <div className="space-y-1">
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Tên vị trí (Title)
-                  </Label>
-                  <Input
-                    value={editFormData.title || ""}
-                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                    placeholder="VD: Senior Java Engineer"
-                    className="h-8 text-xs dark:bg-slate-950"
-                  />
-                </div>
-
-                {/* Level & Status */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Cấp bậc
-                    </Label>
-                    <Select
-                      value={editFormData.level}
-                      onValueChange={(val) => setEditFormData({ ...editFormData, level: val as JobDescriptionLevel })}>
-                      <SelectTrigger className="h-8 text-xs dark:bg-slate-950">
-                        <SelectValue placeholder="Level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LEVEL_OPTIONS.map((lvl) => (
-                          <SelectItem key={lvl} value={lvl} className="text-xs">
-                            {lvl}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Trạng thái
-                    </Label>
-                    <Select
-                      value={editFormData.status}
-                      onValueChange={(val) => setEditFormData({ ...editFormData, status: val as JobDescriptionStatus })}>
-                      <SelectTrigger className="h-8 text-xs dark:bg-slate-950">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STATUS_OPTIONS.map((st) => (
-                          <SelectItem key={st} value={st} className="text-xs">
-                            {st}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Salary Min / Max */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Lương Min
-                    </Label>
-                    <Input
-                      type="number"
-                      value={editFormData.salaryMin ?? ""}
-                      onChange={(e) => setEditFormData({ ...editFormData, salaryMin: e.target.value === "" ? undefined : Number(e.target.value) })}
-                      placeholder="0"
-                      className="h-8 text-xs font-mono dark:bg-slate-950"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Lương Max
-                    </Label>
-                    <Input
-                      type="number"
-                      value={editFormData.salaryMax ?? ""}
-                      onChange={(e) => setEditFormData({ ...editFormData, salaryMax: e.target.value === "" ? undefined : Number(e.target.value) })}
-                      placeholder="0"
-                      className="h-8 text-xs font-mono dark:bg-slate-950"
-                    />
-                  </div>
-                </div>
-
-                {/* Currency & Package Price */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-1 space-y-1">
-                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Tiền tệ
-                    </Label>
-                    <Input
-                      value={editFormData.currency || ""}
-                      onChange={(e) => setEditFormData({ ...editFormData, currency: e.target.value })}
-                      placeholder="USD"
-                      className="h-8 text-xs font-mono dark:bg-slate-950"
-                    />
-                  </div>
-                  <div className="col-span-2 space-y-1">
-                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Giá gói (VNĐ)
-                    </Label>
-                    <div className="relative">
-                      <Tag className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                      <Input
-                        type="number"
-                        value={editFormData.price ?? ""}
-                        onChange={(e) => setEditFormData({ ...editFormData, price: e.target.value === "" ? undefined : Number(e.target.value) })}
-                        placeholder="0 = Miễn phí"
-                        className="h-8 pl-7 text-xs font-mono dark:bg-slate-950"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Deadline */}
-                <div className="space-y-1 pt-1">
-                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Hạn nộp ứng tuyển
-                  </Label>
-                  <DateTimePicker
-                    value={editFormData.deadlineAt ? new Date(editFormData.deadlineAt) : null}
-                    onChange={(date) => setEditFormData({ ...editFormData, deadlineAt: date ? date.toISOString() : undefined })}
-                    themeVariant="admin"
-                  />
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Card 2: Applications List (In Sidebar) */}
