@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ApplicationDetailDrawer } from "@/components/shared";
+import { ApplicationDetailDrawer, DateTimePicker } from "@/components/shared";
 import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
   getAvailableRoundsTemplates,
@@ -8,15 +8,27 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
   adminApplicationManager,
   type ApplicationListItemDto,
 } from "@/services/admin-application.manager";
+import { jobDescriptionManager } from "@/services/job-description.manager";
 import { roundManager } from "@/services/round.manager";
 import {
   Briefcase,
   Calendar,
+  Check,
   CheckCircle2,
   ChevronRight,
   Clock,
@@ -25,13 +37,16 @@ import {
   FileCheck,
   FileText,
   Gift,
+  Pencil,
   Sparkles,
+  Tag,
   Users,
+  X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import type { JobDescription } from "../types";
+import type { JobDescription, JobDescriptionLevel, JobDescriptionStatus } from "../types";
 
 const COMMON_TECH_KEYWORDS = [
   "Java",
@@ -59,6 +74,9 @@ const COMMON_TECH_KEYWORDS = [
   "Swagger",
   "XML",
 ];
+
+const LEVEL_OPTIONS: JobDescriptionLevel[] = ["INTERN", "FRESHER", "JUNIOR", "MIDDLE"];
+const STATUS_OPTIONS: JobDescriptionStatus[] = ["OPEN", "CLOSED", "DRAFT"];
 
 function extractTechStack(text?: string): string[] {
   if (!text) return [];
@@ -113,13 +131,14 @@ interface JobDescriptionDetailViewProps {
   jobDescription: JobDescription;
   companyName?: string;
   onBack: () => void;
-  onEdit: (job: JobDescription) => void;
+  onEdit?: (job: JobDescription) => void;
   activeTab?: string;
   onApplicationsCountChange?: (count: number) => void;
 }
 
 export function JobDescriptionDetailView({
   jobDescription,
+  onEdit,
   onApplicationsCountChange,
 }: JobDescriptionDetailViewProps) {
   const { t } = useTranslation();
@@ -127,6 +146,11 @@ export function JobDescriptionDetailView({
   const [isSaving, setIsSaving] = useState(false);
   const [currentJd, setCurrentJd] = useState<JobDescription>(jobDescription);
   const [detailTab, setDetailTab] = useState<"description" | "requirements" | "benefits">("description");
+
+  // Inline Editing State
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSavingJd, setIsSavingJd] = useState(false);
+  const [editFormData, setEditFormData] = useState<Partial<JobDescription>>(jobDescription);
 
   // Application list state
   const [applications, setApplications] = useState<ApplicationListItemDto[]>([]);
@@ -136,6 +160,7 @@ export function JobDescriptionDetailView({
 
   useEffect(() => {
     setCurrentJd(jobDescription);
+    setEditFormData(jobDescription);
   }, [jobDescription]);
 
   const loadApplications = useCallback(
@@ -160,6 +185,53 @@ export function JobDescriptionDetailView({
       loadApplications(currentJd.id);
     }
   }, [currentJd.id, loadApplications]);
+
+  const handleStartEdit = () => {
+    setEditFormData({ ...currentJd });
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditFormData({ ...currentJd });
+    setIsEditing(false);
+  };
+
+  const handleSaveJdInline = async () => {
+    if (!currentJd.id) return;
+    setIsSavingJd(true);
+    try {
+      const res = await jobDescriptionManager.update({
+        id: currentJd.id,
+        title: editFormData.title,
+        description: editFormData.description,
+        requirements: editFormData.requirements,
+        benefits: editFormData.benefits,
+        salaryMin: editFormData.salaryMin,
+        salaryMax: editFormData.salaryMax,
+        currency: editFormData.currency,
+        level: editFormData.level as any,
+        status: editFormData.status as any,
+        deadlineAt: editFormData.deadlineAt,
+        price: editFormData.price,
+      });
+
+      if (res.success && res.data) {
+        toast.success(t("general.updateSuccess", "Cập nhật thông tin công việc thành công!"));
+        const updated = res.data as unknown as JobDescription;
+        setCurrentJd(updated);
+        setEditFormData(updated);
+        setIsEditing(false);
+        onEdit?.(updated);
+      } else {
+        toast.error(res.error || t("errors.cannotUpdateJobDescription", "Cập nhật thất bại"));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(t("errors.cannotUpdateJobDescription", "Cập nhật thất bại"));
+    } finally {
+      setIsSavingJd(false);
+    }
+  };
 
   const initialRounds = useMemo(() => {
     const sortedRounds = [...(currentJd.rounds || [])].sort(
@@ -364,7 +436,7 @@ export function JobDescriptionDetailView({
                       <div
                         onClick={() => setIsEditorOpen(true)}
                         className="group flex min-w-[170px] max-w-[210px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
-                        {/* Round Header: Colorful Step Badge + Pass threshold */}
+                        {/* Round Header */}
                         <div className="flex items-center justify-between gap-2">
                           <Badge
                             variant="outline"
@@ -378,7 +450,7 @@ export function JobDescriptionDetailView({
                           )}
                         </div>
 
-                        {/* Round Name (Single Title, Zero Duplication!) */}
+                        {/* Round Name */}
                         <h4 className="mt-2.5 text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
                           {round.name}
                         </h4>
@@ -397,51 +469,67 @@ export function JobDescriptionDetailView({
           {/* SECTION 2: COMBINED SPECIFICATION TAB CARD (Mô tả / Yêu cầu / Phúc lợi in 1 card) */}
           <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
             {/* Sub-Tab Navigation Header */}
-            <div className="mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-              <button
-                type="button"
-                onClick={() => setDetailTab("description")}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
-                  detailTab === "description"
-                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shadow-2xs"
-                    : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-                )}>
-                <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
-                <span>Mô tả công việc</span>
-              </button>
+            <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setDetailTab("description")}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                    detailTab === "description"
+                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shadow-2xs"
+                      : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                  )}>
+                  <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
+                  <span>Mô tả công việc</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setDetailTab("requirements")}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
-                  detailTab === "requirements"
-                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 shadow-2xs"
-                    : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-                )}>
-                <FileCheck className="h-3.5 w-3.5 text-emerald-500" />
-                <span>Yêu cầu ứng viên</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setDetailTab("requirements")}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                    detailTab === "requirements"
+                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 shadow-2xs"
+                      : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                  )}>
+                  <FileCheck className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>Yêu cầu ứng viên</span>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setDetailTab("benefits")}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
-                  detailTab === "benefits"
-                    ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 shadow-2xs"
-                    : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-                )}>
-                <Gift className="h-3.5 w-3.5 text-purple-500" />
-                <span>Phúc lợi & Đãi ngộ</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setDetailTab("benefits")}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                    detailTab === "benefits"
+                      ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 shadow-2xs"
+                      : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                  )}>
+                  <Gift className="h-3.5 w-3.5 text-purple-500" />
+                  <span>Phúc lợi & Đãi ngộ</span>
+                </button>
+              </div>
+
+              {isEditing && (
+                <Badge className="bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/30 text-[11px] font-bold">
+                  Chế độ chỉnh sửa
+                </Badge>
+              )}
             </div>
 
             {/* Sub-Tab Content Body */}
             {detailTab === "description" && (
               <div>
-                {currentJd.description ? (
+                {isEditing ? (
+                  <Textarea
+                    value={editFormData.description || ""}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                    placeholder="Nhập mô tả công việc..."
+                    rows={8}
+                    className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                  />
+                ) : currentJd.description ? (
                   <FormattedTextList
                     text={currentJd.description}
                     icon={Sparkles}
@@ -457,40 +545,60 @@ export function JobDescriptionDetailView({
 
             {detailTab === "requirements" && (
               <div>
-                {detectedTechStack.length > 0 && (
-                  <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg bg-slate-50 p-2.5 border border-slate-100 dark:bg-slate-950/50 dark:border-slate-800/60">
-                    <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                      Công nghệ & Kỹ năng:
-                    </span>
-                    {detectedTechStack.map((tech) => (
-                      <Badge
-                        key={tech}
-                        className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold">
-                        {tech}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-
-                {currentJd.requirements ? (
-                  <FormattedTextList
-                    text={currentJd.requirements}
-                    icon={CheckCircle2}
-                    iconColor="text-emerald-500"
+                {isEditing ? (
+                  <Textarea
+                    value={editFormData.requirements || ""}
+                    onChange={(e) => setEditFormData({ ...editFormData, requirements: e.target.value })}
+                    placeholder="Nhập yêu cầu ứng viên..."
+                    rows={8}
+                    className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                   />
                 ) : (
-                  <p className="text-sm italic text-slate-400 dark:text-slate-500">
-                    Chưa cập nhật yêu cầu ứng viên.
-                  </p>
+                  <>
+                    {detectedTechStack.length > 0 && (
+                      <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg bg-slate-50 p-2.5 border border-slate-100 dark:bg-slate-950/50 dark:border-slate-800/60">
+                        <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
+                          Công nghệ & Kỹ năng:
+                        </span>
+                        {detectedTechStack.map((tech) => (
+                          <Badge
+                            key={tech}
+                            className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold">
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {currentJd.requirements ? (
+                      <FormattedTextList
+                        text={currentJd.requirements}
+                        icon={CheckCircle2}
+                        iconColor="text-emerald-500"
+                      />
+                    ) : (
+                      <p className="text-sm italic text-slate-400 dark:text-slate-500">
+                        Chưa cập nhật yêu cầu ứng viên.
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             )}
 
             {detailTab === "benefits" && (
               <div>
-                {currentJd.benefits &&
-                currentJd.benefits.trim() &&
-                currentJd.benefits !== "Không lương" ? (
+                {isEditing ? (
+                  <Textarea
+                    value={editFormData.benefits || ""}
+                    onChange={(e) => setEditFormData({ ...editFormData, benefits: e.target.value })}
+                    placeholder="Nhập đãi ngộ & phúc lợi..."
+                    rows={6}
+                    className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                  />
+                ) : currentJd.benefits &&
+                  currentJd.benefits.trim() &&
+                  currentJd.benefits !== "Không lương" ? (
                   <FormattedTextList
                     text={currentJd.benefits}
                     icon={Gift}
@@ -511,71 +619,254 @@ export function JobDescriptionDetailView({
         <aside className="space-y-4">
           {/* Card 1: Job Metadata Summary */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <h3 className="mb-4 text-base font-bold text-slate-900 dark:text-white">
-              Thông số tuyển dụng
-            </h3>
-
-            <div className="space-y-3.5 text-sm">
-              {/* Salary */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                  <DollarSign className="h-4 w-4 text-emerald-500" />
-                  Mức lương
-                </span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                  {formatSalary(currentJd.salaryMin, currentJd.salaryMax, currentJd.currency)}
-                </span>
-              </div>
-
-              {/* Level */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                  <Briefcase className="h-4 w-4 text-indigo-500" />
-                  Cấp bậc
-                </span>
-                <span className="font-bold text-slate-800 dark:text-slate-100">
-                  {currentJd.level || "—"}
-                </span>
-              </div>
-
-              {/* Deadline */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                  <Calendar className="h-4 w-4 text-amber-500" />
-                  Hạn ứng tuyển
-                </span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {formatDeadline(currentJd.deadlineAt)}
-                </span>
-              </div>
-
-              {/* Applications count */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                  <Users className="h-4 w-4 text-purple-500" />
-                  Tổng ứng tuyển
-                </span>
-                <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                  {applications.length} ứng viên
-                </span>
-              </div>
-
-              {/* Status */}
-              <div className="flex items-center justify-between gap-2 pt-0.5">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
-                  <Clock className="h-4 w-4 text-slate-400" />
-                  Trạng thái
-                </span>
-                <Badge
-                  className={
-                    currentJd.status === "OPEN"
-                      ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                  }>
-                  {currentJd.status || "OPEN"}
-                </Badge>
-              </div>
+            {/* Metadata Header with Pencil Button */}
+            <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Thông số tuyển dụng
+              </h3>
+              {!isEditing ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleStartEdit}
+                  title="Chỉnh sửa trực tiếp"
+                  className="h-8 gap-1.5 rounded-lg px-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950">
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span>Sửa</span>
+                </Button>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelEdit}
+                    disabled={isSavingJd}
+                    className="h-7 px-2 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                    <X className="mr-1 h-3.5 w-3.5" />
+                    Hủy
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveJdInline}
+                    disabled={isSavingJd}
+                    className="h-7 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
+                    {isSavingJd ? (
+                      <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <>
+                        <Check className="mr-1 h-3.5 w-3.5" />
+                        Lưu
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
+
+            {/* Read / Edit Form Fields */}
+            {!isEditing ? (
+              <div className="space-y-3.5 text-sm">
+                {/* Title */}
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
+                    <FileText className="h-4 w-4 text-indigo-500" />
+                    Vị trí
+                  </span>
+                  <span className="font-bold text-slate-900 truncate max-w-[180px] dark:text-white">
+                    {currentJd.title || "—"}
+                  </span>
+                </div>
+
+                {/* Salary */}
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
+                    <DollarSign className="h-4 w-4 text-emerald-500" />
+                    Mức lương
+                  </span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatSalary(currentJd.salaryMin, currentJd.salaryMax, currentJd.currency)}
+                  </span>
+                </div>
+
+                {/* Level */}
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
+                    <Briefcase className="h-4 w-4 text-indigo-500" />
+                    Cấp bậc
+                  </span>
+                  <span className="font-bold text-slate-800 dark:text-slate-100">
+                    {currentJd.level || "—"}
+                  </span>
+                </div>
+
+                {/* Deadline */}
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
+                    <Calendar className="h-4 w-4 text-amber-500" />
+                    Hạn ứng tuyển
+                  </span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    {formatDeadline(currentJd.deadlineAt)}
+                  </span>
+                </div>
+
+                {/* Applications count */}
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
+                    <Users className="h-4 w-4 text-purple-500" />
+                    Tổng ứng tuyển
+                  </span>
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                    {applications.length} ứng viên
+                  </span>
+                </div>
+
+                {/* Status */}
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
+                    <Clock className="h-4 w-4 text-slate-400" />
+                    Trạng thái
+                  </span>
+                  <Badge
+                    className={
+                      currentJd.status === "OPEN"
+                        ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                    }>
+                    {currentJd.status || "OPEN"}
+                  </Badge>
+                </div>
+              </div>
+            ) : (
+              /* Inline Edit Inputs */
+              <div className="space-y-3.5 text-xs">
+                {/* Title */}
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Tên vị trí (Title)
+                  </Label>
+                  <Input
+                    value={editFormData.title || ""}
+                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                    placeholder="VD: Senior Java Engineer"
+                    className="h-8 text-xs dark:bg-slate-950"
+                  />
+                </div>
+
+                {/* Level & Status */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Cấp bậc
+                    </Label>
+                    <Select
+                      value={editFormData.level}
+                      onValueChange={(val) => setEditFormData({ ...editFormData, level: val as JobDescriptionLevel })}>
+                      <SelectTrigger className="h-8 text-xs dark:bg-slate-950">
+                        <SelectValue placeholder="Level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEVEL_OPTIONS.map((lvl) => (
+                          <SelectItem key={lvl} value={lvl} className="text-xs">
+                            {lvl}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Trạng thái
+                    </Label>
+                    <Select
+                      value={editFormData.status}
+                      onValueChange={(val) => setEditFormData({ ...editFormData, status: val as JobDescriptionStatus })}>
+                      <SelectTrigger className="h-8 text-xs dark:bg-slate-950">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STATUS_OPTIONS.map((st) => (
+                          <SelectItem key={st} value={st} className="text-xs">
+                            {st}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Salary Min / Max */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Lương Min
+                    </Label>
+                    <Input
+                      type="number"
+                      value={editFormData.salaryMin ?? ""}
+                      onChange={(e) => setEditFormData({ ...editFormData, salaryMin: e.target.value === "" ? undefined : Number(e.target.value) })}
+                      placeholder="0"
+                      className="h-8 text-xs font-mono dark:bg-slate-950"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Lương Max
+                    </Label>
+                    <Input
+                      type="number"
+                      value={editFormData.salaryMax ?? ""}
+                      onChange={(e) => setEditFormData({ ...editFormData, salaryMax: e.target.value === "" ? undefined : Number(e.target.value) })}
+                      placeholder="0"
+                      className="h-8 text-xs font-mono dark:bg-slate-950"
+                    />
+                  </div>
+                </div>
+
+                {/* Currency & Package Price */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-1 space-y-1">
+                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Tiền tệ
+                    </Label>
+                    <Input
+                      value={editFormData.currency || ""}
+                      onChange={(e) => setEditFormData({ ...editFormData, currency: e.target.value })}
+                      placeholder="USD"
+                      className="h-8 text-xs font-mono dark:bg-slate-950"
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-1">
+                    <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Giá gói (VNĐ)
+                    </Label>
+                    <div className="relative">
+                      <Tag className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                      <Input
+                        type="number"
+                        value={editFormData.price ?? ""}
+                        onChange={(e) => setEditFormData({ ...editFormData, price: e.target.value === "" ? undefined : Number(e.target.value) })}
+                        placeholder="0 = Miễn phí"
+                        className="h-8 pl-7 text-xs font-mono dark:bg-slate-950"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Deadline */}
+                <div className="space-y-1 pt-1">
+                  <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Hạn nộp ứng tuyển
+                  </Label>
+                  <DateTimePicker
+                    value={editFormData.deadlineAt ? new Date(editFormData.deadlineAt) : null}
+                    onChange={(date) => setEditFormData({ ...editFormData, deadlineAt: date ? date.toISOString() : undefined })}
+                    themeVariant="admin"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Card 2: Applications List (In Sidebar) */}
