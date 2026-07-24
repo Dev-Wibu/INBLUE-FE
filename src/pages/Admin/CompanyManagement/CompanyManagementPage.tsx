@@ -406,30 +406,13 @@ export function CompanyManagementPage() {
         {/* Header Right Action Controls */}
         <div className="flex flex-wrap items-center gap-3">
           {selectedJd ? (
-            <>
-              <Tabs value={jdDetailTab} onValueChange={setJdDetailTab}>
-                <TabsList className="h-8 bg-slate-100 dark:bg-slate-800">
-                  <TabsTrigger value="process" className="h-7 gap-1.5 text-xs font-semibold">
-                    <Briefcase className="h-3.5 w-3.5" />
-                    Quy trình & Thông tin JD
-                  </TabsTrigger>
-                  <TabsTrigger value="applications" className="h-7 gap-1.5 text-xs font-semibold">
-                    <Users className="h-3.5 w-3.5" />
-                    Đơn ứng tuyển ({jdApplicationsCount})
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleOpenEditJd(selectedJd)}
-                className="h-8 text-xs font-semibold">
-                {t("general.edit", "Chỉnh sửa")}
-              </Button>
-            </>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleOpenEditJd(selectedJd)}
+              className="h-8 text-xs font-semibold">
+              {t("general.edit", "Chỉnh sửa")}
+            </Button>
           ) : selectedCompany ? (
             <Button
               size="sm"
