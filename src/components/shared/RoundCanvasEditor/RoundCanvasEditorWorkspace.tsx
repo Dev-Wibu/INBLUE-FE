@@ -153,7 +153,7 @@ export function RoundCanvasEditorWorkspace({
     setPositions((prev) => {
       const next = prev.slice(0, rounds.length);
       for (let i = next.length; i < rounds.length; i++) {
-        next.push({ x: (i % 3) * 300 + 40, y: Math.floor(i / 3) * 210 + 40 });
+        next.push({ x: i * 280 + 40, y: 80 });
       }
       return next;
     });
@@ -664,8 +664,8 @@ export function RoundCanvasEditorWorkspace({
                       {/* Round cards */}
                       {rounds.map((round, idx) => {
                         const pos = positions[idx] ?? {
-                          x: (idx % 3) * 300 + 40,
-                          y: Math.floor(idx / 3) * 210 + 40,
+                          x: idx * 280 + 40,
+                          y: 80,
                         };
                         const template = AVAILABLE_ROUNDS_TEMPLATES.find(
                           (t) => t.type === round.roundType
