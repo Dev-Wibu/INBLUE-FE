@@ -21,6 +21,7 @@ import {
 import {
   AlertTriangle,
   ChevronLeft,
+  ChevronRight,
   FileCode2,
   Lightbulb,
   Pencil,
