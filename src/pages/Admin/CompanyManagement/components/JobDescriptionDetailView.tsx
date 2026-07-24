@@ -127,53 +127,34 @@ function FormattedTextList({
 }
 
 function EditableTextList({
-  text,
+  value = "",
   onChange,
   icon: Icon = CheckCircle2,
   iconColor = "text-indigo-500",
   placeholder = "Nhập nội dung...",
 }: {
-  text?: string;
-  onChange: (newText: string) => void;
+  value?: string;
+  onChange: (newValue: string) => void;
   icon?: React.ElementType;
   iconColor?: string;
   placeholder?: string;
 }) {
-  const [lines, setLines] = useState<string[]>(() => {
-    const raw = (text || "")
-      .split("\n")
-      .map((line) => line.trim().replace(/^[-*•\d+.]\s*/, ""));
-    return raw.length > 0 ? raw : [""];
-  });
+  const lines = value ? value.split("\n") : [""];
 
-  const prevTextRef = useRef(text);
-  useEffect(() => {
-    if (prevTextRef.current !== text) {
-      prevTextRef.current = text;
-      const raw = (text || "")
-        .split("\n")
-        .map((line) => line.trim().replace(/^[-*•\d+.]\s*/, ""));
-      setLines(raw.length > 0 ? raw : [""]);
-    }
-  }, [text]);
-
-  const handleLineChange = (index: number, val: string) => {
-    const next = [...lines];
-    next[index] = val;
-    setLines(next);
-    onChange(next.filter((l) => l.trim() !== "").join("\n"));
+  const handleLineChange = (index: number, newContent: string) => {
+    const updated = [...lines];
+    updated[index] = newContent;
+    onChange(updated.join("\n"));
   };
 
   const handleAddLine = () => {
-    const next = [...lines, ""];
-    setLines(next);
+    const updated = [...lines, ""];
+    onChange(updated.join("\n"));
   };
 
   const handleDeleteLine = (index: number) => {
-    const next = lines.filter((_, i) => i !== index);
-    const finalLines = next.length > 0 ? next : [""];
-    setLines(finalLines);
-    onChange(finalLines.filter((l) => l.trim() !== "").join("\n"));
+    const updated = lines.filter((_, i) => i !== index);
+    onChange(updated.length > 0 ? updated.join("\n") : "");
   };
 
   return (
@@ -609,7 +590,7 @@ export function JobDescriptionDetailView({
               <div>
                 {isEditing ? (
                   <EditableTextList
-                    text={editFormData.description}
+                    value={editFormData.description}
                     onChange={(newText) => setEditFormData({ ...editFormData, description: newText })}
                     icon={Sparkles}
                     iconColor="text-indigo-500"
@@ -633,7 +614,7 @@ export function JobDescriptionDetailView({
               <div>
                 {isEditing ? (
                   <EditableTextList
-                    text={editFormData.requirements}
+                    value={editFormData.requirements}
                     onChange={(newText) => setEditFormData({ ...editFormData, requirements: newText })}
                     icon={CheckCircle2}
                     iconColor="text-emerald-500"
@@ -676,7 +657,7 @@ export function JobDescriptionDetailView({
               <div>
                 {isEditing ? (
                   <EditableTextList
-                    text={editFormData.benefits}
+                    value={editFormData.benefits}
                     onChange={(newText) => setEditFormData({ ...editFormData, benefits: newText })}
                     icon={Gift}
                     iconColor="text-purple-500"
