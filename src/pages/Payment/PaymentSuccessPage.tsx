@@ -96,21 +96,23 @@ export function PaymentSuccessPage() {
     }
   };
 
+  const pendingJdId = useMemo(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryJdId = queryParams.get("jdId");
+    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
+    const parsed = Number(queryJdId || storedJdId);
+    return parsed && !isNaN(parsed) ? parsed : null;
+  }, []);
+
   const getPrimaryRedirect = (
     purpose?: PaymentPurpose
   ): {
     to: string;
     label: string;
   } => {
-    // JD Purchase: redirect back to the JD page instead of account
-    const queryParams = new URLSearchParams(window.location.search);
-    const queryJdId = queryParams.get("jdId");
-    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
-    const targetJdId = Number(queryJdId || storedJdId);
-
-    if (targetJdId && !isNaN(targetJdId)) {
+    if (pendingJdId) {
       return {
-        to: `/enterprise/job/${targetJdId}`,
+        to: `/enterprise/job/${pendingJdId}`,
         label: t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm"),
       };
     }
@@ -523,19 +525,14 @@ export function PaymentSuccessPage() {
 
   // Polling for JD Purchase confirmation from PayOS webhook
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const queryJdId = queryParams.get("jdId");
-    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
-    const targetJdId = Number(queryJdId || storedJdId);
-
-    if (!targetJdId || isNaN(targetJdId)) return;
+    if (!pendingJdId) return;
 
     let attempts = 0;
     const maxAttempts = 5;
 
     const pollInterval = setInterval(async () => {
       attempts++;
-      const isSuccess = await jdPurchaseManager.checkPurchased(targetJdId);
+      const isSuccess = await jdPurchaseManager.checkPurchased(pendingJdId);
 
       if (isSuccess) {
         clearInterval(pollInterval);
@@ -555,7 +552,7 @@ export function PaymentSuccessPage() {
     }, 2000);
 
     return () => clearInterval(pollInterval);
-  }, [t]);
+  }, [pendingJdId, t]);
   const handleConfirmSubscribe = useCallback(async () => {
     if (!recoveryContext || resolveState === "subscribing") {
       return;

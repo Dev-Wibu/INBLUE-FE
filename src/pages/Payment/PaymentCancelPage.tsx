@@ -52,6 +52,14 @@ export function PaymentCancelPage() {
     [t]
   );
 
+  const pendingJdId = useMemo(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryJdId = queryParams.get("jdId");
+    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
+    const parsed = Number(queryJdId || storedJdId);
+    return parsed && !isNaN(parsed) ? parsed : null;
+  }, []);
+
   const getCancelPrimaryRedirect = (
     purpose?: PaymentPurpose,
     sessionId?: number
@@ -59,15 +67,9 @@ export function PaymentCancelPage() {
     to: string;
     label: string;
   } => {
-    // JD Purchase support
-    const queryParams = new URLSearchParams(window.location.search);
-    const queryJdId = queryParams.get("jdId");
-    const storedJdId = localStorage.getItem("pending_jd_purchase_id");
-    const targetJdId = Number(queryJdId || storedJdId);
-
-    if (targetJdId && !isNaN(targetJdId)) {
+    if (pendingJdId) {
       return {
-        to: `/enterprise/job/${targetJdId}`,
+        to: `/enterprise/job/${pendingJdId}`,
         label: t("payment.returnToJobPosition", "Quay lại trang vị trí việc làm"),
       };
     }
@@ -145,12 +147,7 @@ export function PaymentCancelPage() {
   );
   const runCancelChain = useCallback(
     async (options?: RunCancelChainOptions) => {
-      const queryParams = new URLSearchParams(window.location.search);
-      const queryJdId = queryParams.get("jdId");
-      const storedJdId = localStorage.getItem("pending_jd_purchase_id");
-      const targetJdId = Number(queryJdId || storedJdId);
-
-      if (targetJdId && !isNaN(targetJdId)) {
+      if (pendingJdId) {
         setProcessing(false);
         setChainResult("success");
         setResultMessage(
@@ -601,6 +598,7 @@ export function PaymentCancelPage() {
       currentUserId,
       isIdempotentHandledError,
       orderCode,
+      pendingJdId,
       pendingSessionPayment,
       queryTransactionCode,
       status,
@@ -673,20 +671,13 @@ export function PaymentCancelPage() {
             className="rounded-xl bg-[#0047AB] px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-[#003b8d]">
             {primaryRedirect.label}
           </Link>
-          {(() => {
-            const qp = new URLSearchParams(window.location.search);
-            const qJdId = qp.get("jdId");
-            const sJdId = localStorage.getItem("pending_jd_purchase_id");
-            const retryJdId = Number(qJdId || sJdId);
-            if (!retryJdId || isNaN(retryJdId)) return null;
-            return (
-              <Link
-                to={`/enterprise/job/${retryJdId}`}
-                className="rounded-xl bg-amber-600 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-amber-700">
-                {t("payment.retryPayment", "Thử thanh toán lại")}
-              </Link>
-            );
-          })()}
+          {pendingJdId && (
+            <Link
+              to={`/enterprise/job/${pendingJdId}`}
+              className="rounded-xl bg-amber-600 px-5 py-2.5 font-['Inter'] text-sm font-semibold text-white hover:bg-amber-700">
+              {t("payment.retryPayment", "Thử thanh toán lại")}
+            </Link>
+          )}
           {resolvedPurpose === "FULLY_PAID" && (
             <Link
               to="/user?tab=account"
