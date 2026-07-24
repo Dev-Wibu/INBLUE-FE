@@ -8,10 +8,10 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
 import { adminApplicationManager, companyManager, jobDescriptionManager } from "@/services";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, Building2, ChevronRight, Plus, Search, Users } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { Building2, ChevronRight, Plus, Search } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
   CompanyFormDialog,
@@ -34,9 +34,7 @@ export function CompanyManagementPage() {
   const selectedCompanyId = searchParams.get("companyId")
     ? Number(searchParams.get("companyId"))
     : null;
-  const selectedJdId = searchParams.get("jdId")
-    ? Number(searchParams.get("jdId"))
-    : null;
+  const selectedJdId = searchParams.get("jdId") ? Number(searchParams.get("jdId")) : null;
 
   const setSelectedCompanyId = useCallback(
     (id: number | null) => {
@@ -79,8 +77,6 @@ export function CompanyManagementPage() {
 
   // JD Tab states
   const [jdSearchQuery, setJdSearchQuery] = useState("");
-  const [jdDetailTab, setJdDetailTab] = useState<string>("process");
-  const [jdApplicationsCount, setJdApplicationsCount] = useState<number>(0);
   const [editingJd, setEditingJd] = useState<JobDescription | null>(null);
   const [isJdDialogOpen, setIsJdDialogOpen] = useState(false);
   const [isJdEditDialogOpen, setIsJdEditDialogOpen] = useState(false);
@@ -309,24 +305,6 @@ export function CompanyManagementPage() {
     } finally {
       setIsSubmittingJd(false);
     }
-  };
-
-  const handleOpenEditJd = (jd: JobDescription) => {
-    setEditingJd(jd);
-    setJdEditFormData({
-      title: jd.title,
-      description: jd.description,
-      requirements: jd.requirements,
-      benefits: jd.benefits,
-      level: jd.level,
-      salaryMin: jd.salaryMin,
-      salaryMax: jd.salaryMax,
-      price: jd.price,
-      currency: jd.currency,
-      status: jd.status,
-      deadlineAt: jd.deadlineAt,
-    });
-    setIsJdEditDialogOpen(true);
   };
 
   const handleSubmitEditJd = async () => {

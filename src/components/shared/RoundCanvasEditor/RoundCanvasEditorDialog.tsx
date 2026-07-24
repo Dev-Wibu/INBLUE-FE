@@ -157,8 +157,8 @@ export function RoundCanvasEditorDialog({
         containerW && containerW > 400
           ? containerW
           : typeof window !== "undefined"
-          ? Math.max(600, window.innerWidth - 360)
-          : 1000;
+            ? Math.max(600, window.innerWidth - 360)
+            : 1000;
       const maxCols = Math.max(1, Math.floor((availableWidth - 60) / 280));
 
       const next = prev.slice(0, rounds.length);
@@ -656,8 +656,8 @@ export function RoundCanvasEditorDialog({
                               containerW && containerW > 400
                                 ? containerW
                                 : typeof window !== "undefined"
-                                ? Math.max(600, window.innerWidth - 360)
-                                : 1000;
+                                  ? Math.max(600, window.innerWidth - 360)
+                                  : 1000;
                             const maxCols = Math.max(1, Math.floor((availableWidth - 60) / 280));
                             const row = Math.floor(idx / maxCols);
                             const colInRow = idx % maxCols;

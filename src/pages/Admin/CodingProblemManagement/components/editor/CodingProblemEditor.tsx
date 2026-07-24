@@ -9,11 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { codingProblemManager, type CodingProblem } from "@/services/coding-problem.manager";
 import Editor from "@monaco-editor/react";
-import { cn } from "@/lib/utils";
 import {
-  ArrowLeft,
   ChevronRight,
   Code2,
   FileText,
@@ -232,9 +231,19 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950">
-      {/* ── CLEAN SUB-TOOLBAR ─────────────────────────────────────────────────── */}
-      <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center gap-2">
+      {/* ── SINGLE UNIFIED TOP HEADER ──────────────────────────────────────────── */}
+      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+            Vòng Coding
+          </button>
+          <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+            {formData.title || (formData.id ? "Chi tiết bài tập" : "Tạo bài tập mới")}
+          </h1>
           {formData.difficulty && (
             <span
               className={cn(
@@ -250,7 +259,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
           )}
         </div>
 
-        {/* Tab switcher & Back action inline */}
+        {/* Tab switcher & Back action inline inside header */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
             {[

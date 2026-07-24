@@ -42,7 +42,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { JobDescription, JobDescriptionLevel, JobDescriptionStatus } from "../types";
@@ -81,7 +81,7 @@ function extractTechStack(text?: string): string[] {
   if (!text) return [];
   const found = new Set<string>();
   COMMON_TECH_KEYWORDS.forEach((keyword) => {
-    const escaped = keyword.replace(/[\/\.#]/g, "\\$&");
+    const escaped = keyword.replace(/[/.#]/g, "\\$&");
     const regex = new RegExp(`\\b${escaped}\\b`, "i");
     if (regex.test(text)) {
       found.add(keyword);
@@ -108,7 +108,7 @@ function FormattedTextList({
 
   if (lines.length <= 1) {
     return (
-      <div className="text-sm font-medium leading-relaxed text-slate-700 dark:text-slate-100">
+      <div className="text-sm leading-relaxed font-medium text-slate-700 dark:text-slate-100">
         {text}
       </div>
     );
@@ -117,7 +117,9 @@ function FormattedTextList({
   return (
     <ul className="space-y-2.5">
       {lines.map((line, idx) => (
-        <li key={idx} className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-100">
+        <li
+          key={idx}
+          className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-100">
           <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconColor)} />
           <span className="flex-1 font-medium">{line}</span>
         </li>
@@ -174,7 +176,7 @@ function EditableTextList({
               variant="ghost"
               size="sm"
               onClick={() => handleDeleteLine(idx)}
-              className="h-8 w-8 p-0 text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/40 transition-all">
+              className="h-8 w-8 p-0 text-slate-400 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/40">
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           )}
@@ -212,7 +214,9 @@ export function JobDescriptionDetailView({
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentJd, setCurrentJd] = useState<JobDescription>(jobDescription);
-  const [detailTab, setDetailTab] = useState<"description" | "requirements" | "benefits">("description");
+  const [detailTab, setDetailTab] = useState<"description" | "requirements" | "benefits">(
+    "description"
+  );
 
   // Inline Editing State
   const [isEditing, setIsEditing] = useState(false);
@@ -459,7 +463,7 @@ export function JobDescriptionDetailView({
         {/* ── LEFT COLUMN (2/3): RECRUITMENT PIPELINE & COMBINED SPEC TABS CARD ─ */}
         <main className="min-w-0 space-y-4">
           {/* SECTION 1: RECRUITMENT PIPELINE STEPPER */}
-          <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-3.5 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                 <Sparkles className="h-4 w-4 text-indigo-500" />
@@ -493,7 +497,7 @@ export function JobDescriptionDetailView({
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
+              <div className="scrollbar-thin flex items-center gap-2.5 overflow-x-auto pb-2">
                 {initialRounds.map((round, index) => {
                   const meta = templates.find((template) => template.type === round.roundType);
                   const isLast = index === initialRounds.length - 1;
@@ -502,7 +506,7 @@ export function JobDescriptionDetailView({
                     <div key={index} className="flex shrink-0 items-center gap-2.5">
                       <div
                         onClick={() => setIsEditorOpen(true)}
-                        className="group flex min-w-[170px] max-w-[210px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
+                        className="group flex max-w-[210px] min-w-[170px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
                         {/* Round Header */}
                         <div className="flex items-center justify-between gap-2">
                           <Badge
@@ -518,7 +522,7 @@ export function JobDescriptionDetailView({
                         </div>
 
                         {/* Round Name */}
-                        <h4 className="mt-2.5 text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
+                        <h4 className="mt-2.5 truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
                           {round.name}
                         </h4>
                       </div>
@@ -534,7 +538,7 @@ export function JobDescriptionDetailView({
           </section>
 
           {/* SECTION 2: COMBINED SPECIFICATION TAB CARD (Mô tả / Yêu cầu / Phúc lợi in 1 card) */}
-          <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             {/* Sub-Tab Navigation Header */}
             <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
               <div className="flex items-center gap-1.5">
@@ -544,7 +548,7 @@ export function JobDescriptionDetailView({
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
                     detailTab === "description"
-                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shadow-2xs"
+                      ? "bg-indigo-50 text-indigo-700 shadow-2xs dark:bg-indigo-950 dark:text-indigo-300"
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
@@ -557,7 +561,7 @@ export function JobDescriptionDetailView({
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
                     detailTab === "requirements"
-                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 shadow-2xs"
+                      ? "bg-emerald-50 text-emerald-700 shadow-2xs dark:bg-emerald-950 dark:text-emerald-300"
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <FileCheck className="h-3.5 w-3.5 text-emerald-500" />
@@ -570,7 +574,7 @@ export function JobDescriptionDetailView({
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
                     detailTab === "benefits"
-                      ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 shadow-2xs"
+                      ? "bg-purple-50 text-purple-700 shadow-2xs dark:bg-purple-950 dark:text-purple-300"
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <Gift className="h-3.5 w-3.5 text-purple-500" />
@@ -579,7 +583,7 @@ export function JobDescriptionDetailView({
               </div>
 
               {isEditing && (
-                <Badge className="border-indigo-500/30 bg-indigo-500/15 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[11px] font-bold">
+                <Badge className="border-indigo-500/30 bg-indigo-500/15 text-[11px] font-bold text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400">
                   Đang chỉnh sửa dòng
                 </Badge>
               )}
@@ -591,7 +595,9 @@ export function JobDescriptionDetailView({
                 {isEditing ? (
                   <EditableTextList
                     value={editFormData.description}
-                    onChange={(newText) => setEditFormData({ ...editFormData, description: newText })}
+                    onChange={(newText) =>
+                      setEditFormData({ ...editFormData, description: newText })
+                    }
                     icon={Sparkles}
                     iconColor="text-indigo-500"
                     placeholder="Mô tả nhiệm vụ công việc"
@@ -603,7 +609,7 @@ export function JobDescriptionDetailView({
                     iconColor="text-indigo-500"
                   />
                 ) : (
-                  <p className="text-sm italic text-slate-400 dark:text-slate-500">
+                  <p className="text-sm text-slate-400 italic dark:text-slate-500">
                     Chưa cập nhật mô tả công việc.
                   </p>
                 )}
@@ -615,7 +621,9 @@ export function JobDescriptionDetailView({
                 {isEditing ? (
                   <EditableTextList
                     value={editFormData.requirements}
-                    onChange={(newText) => setEditFormData({ ...editFormData, requirements: newText })}
+                    onChange={(newText) =>
+                      setEditFormData({ ...editFormData, requirements: newText })
+                    }
                     icon={CheckCircle2}
                     iconColor="text-emerald-500"
                     placeholder="Yêu cầu kỹ năng / kinh nghiệm"
@@ -623,14 +631,14 @@ export function JobDescriptionDetailView({
                 ) : (
                   <>
                     {detectedTechStack.length > 0 && (
-                      <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg bg-slate-50 p-2.5 border border-slate-100 dark:bg-slate-950/50 dark:border-slate-800/60">
+                      <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 p-2.5 dark:border-slate-800/60 dark:bg-slate-950/50">
                         <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
                           Công nghệ & Kỹ năng:
                         </span>
                         {detectedTechStack.map((tech) => (
                           <Badge
                             key={tech}
-                            className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold">
+                            className="border-indigo-200/60 bg-indigo-50 text-xs font-bold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800/60 dark:bg-indigo-950/80 dark:text-indigo-300">
                             {tech}
                           </Badge>
                         ))}
@@ -644,7 +652,7 @@ export function JobDescriptionDetailView({
                         iconColor="text-emerald-500"
                       />
                     ) : (
-                      <p className="text-sm italic text-slate-400 dark:text-slate-500">
+                      <p className="text-sm text-slate-400 italic dark:text-slate-500">
                         Chưa cập nhật yêu cầu ứng viên.
                       </p>
                     )}
@@ -673,7 +681,7 @@ export function JobDescriptionDetailView({
                   />
                 ) : (
                   <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm font-medium text-slate-600 dark:bg-slate-950/50 dark:text-slate-300">
-                    <Gift className="h-4 w-4 text-purple-400 shrink-0" />
+                    <Gift className="h-4 w-4 shrink-0 text-purple-400" />
                     <span>{currentJd.benefits || "Thỏa thuận theo chính sách công ty"}</span>
                   </div>
                 )}
@@ -685,7 +693,7 @@ export function JobDescriptionDetailView({
         {/* ── RIGHT COLUMN (1/3): JOB OVERVIEW METADATA & APPLICATIONS LIST ───────── */}
         <aside className="space-y-4">
           {/* Card 1: Job Metadata Summary */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             {/* Metadata Header with Pencil Button */}
             <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -734,12 +742,12 @@ export function JobDescriptionDetailView({
             <div className="space-y-3.5 text-sm">
               {/* Row 1: Title */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <FileText className="h-4 w-4 text-indigo-500" />
                   Vị trí
                 </span>
                 {!isEditing ? (
-                  <span className="font-bold text-slate-900 truncate max-w-[180px] dark:text-white">
+                  <span className="max-w-[180px] truncate font-bold text-slate-900 dark:text-white">
                     {currentJd.title || "—"}
                   </span>
                 ) : (
@@ -754,7 +762,7 @@ export function JobDescriptionDetailView({
 
               {/* Row 2: Salary */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <DollarSign className="h-4 w-4 text-emerald-500" />
                   Mức lương
                 </span>
@@ -774,9 +782,9 @@ export function JobDescriptionDetailView({
                         })
                       }
                       placeholder="Min"
-                      className="h-7.5 w-16 border-slate-200/80 bg-slate-100/60 text-right font-mono text-xs px-1.5 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                      className="h-7.5 w-16 border-slate-200/80 bg-slate-100/60 px-1.5 text-right font-mono text-xs dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
                     />
-                    <span className="text-slate-400 text-xs">-</span>
+                    <span className="text-xs text-slate-400">-</span>
                     <Input
                       type="number"
                       value={editFormData.salaryMax ?? ""}
@@ -787,7 +795,7 @@ export function JobDescriptionDetailView({
                         })
                       }
                       placeholder="Max"
-                      className="h-7.5 w-16 border-slate-200/80 bg-slate-100/60 text-right font-mono text-xs px-1.5 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                      className="h-7.5 w-16 border-slate-200/80 bg-slate-100/60 px-1.5 text-right font-mono text-xs dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
                     />
                     <Input
                       value={editFormData.currency || ""}
@@ -795,7 +803,7 @@ export function JobDescriptionDetailView({
                         setEditFormData({ ...editFormData, currency: e.target.value })
                       }
                       placeholder="USD"
-                      className="h-7.5 w-12 uppercase text-center font-mono text-xs px-1 border-slate-200/80 bg-slate-100/60 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                      className="h-7.5 w-12 border-slate-200/80 bg-slate-100/60 px-1 text-center font-mono text-xs uppercase dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
                     />
                   </div>
                 )}
@@ -803,7 +811,7 @@ export function JobDescriptionDetailView({
 
               {/* Row 3: Level */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Briefcase className="h-4 w-4 text-indigo-500" />
                   Cấp bậc
                 </span>
@@ -833,7 +841,7 @@ export function JobDescriptionDetailView({
 
               {/* Row 4: Deadline */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Calendar className="h-4 w-4 text-amber-500" />
                   Hạn ứng tuyển
                 </span>
@@ -859,7 +867,7 @@ export function JobDescriptionDetailView({
 
               {/* Row 5: Applications count (Read-only) */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Users className="h-4 w-4 text-purple-500" />
                   Tổng ứng tuyển
                 </span>
@@ -870,7 +878,7 @@ export function JobDescriptionDetailView({
 
               {/* Row 6: Status */}
               <div className="flex items-center justify-between gap-2 pt-0.5">
-                <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Clock className="h-4 w-4 text-slate-400" />
                   Trạng thái
                 </span>
@@ -906,7 +914,7 @@ export function JobDescriptionDetailView({
           </div>
 
           {/* Card 2: Applications List (In Sidebar) */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-3.5 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
               <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                 <Users className="h-4 w-4 text-purple-500" />
@@ -938,8 +946,8 @@ export function JobDescriptionDetailView({
                         setSelectedAppId(app.applicationId || (app as any).id);
                         setIsDrawerOpen(true);
                       }}
-                      className="group flex cursor-pointer items-center justify-between gap-3 py-3 transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40 px-1 rounded-lg">
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      className="group flex cursor-pointer items-center justify-between gap-3 rounded-lg px-1 py-3 transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                      <div className="flex min-w-0 items-center gap-2.5">
                         <Avatar className="h-8 w-8 shrink-0 border border-slate-200 dark:border-slate-800">
                           <AvatarImage src={avatarUrl} alt={name} />
                           <AvatarFallback className="bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">

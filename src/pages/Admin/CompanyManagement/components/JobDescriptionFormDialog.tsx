@@ -20,16 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Briefcase,
-  Calendar,
-  DollarSign,
-  FileCheck,
-  Gift,
-  Layers,
-  Sparkles,
-  Tag,
-} from "lucide-react";
+import { Briefcase, DollarSign, FileCheck, Gift, Sparkles, Tag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescriptionFormData, JobDescriptionLevel, JobDescriptionStatus } from "../types";
 
@@ -64,7 +55,7 @@ export function JobDescriptionFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92vh] max-w-5xl flex-col overflow-hidden p-0 border-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-xl">
+      <DialogContent className="flex max-h-[92vh] max-w-5xl flex-col overflow-hidden border-slate-200 p-0 shadow-xl dark:border-slate-800 dark:bg-slate-900">
         {/* ── HEADER ────────────────────────────────────────────────────────── */}
         <DialogHeader className="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800/80 dark:bg-slate-900/80">
           <div className="flex items-center gap-3">
@@ -83,7 +74,7 @@ export function JobDescriptionFormDialog({
         </DialogHeader>
 
         {/* ── TWO-COLUMN FORM BODY ──────────────────────────────────────────── */}
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden p-6 lg:grid-cols-5 bg-white dark:bg-slate-900">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden bg-white p-6 lg:grid-cols-5 dark:bg-slate-900">
           {/* Left Column: Long Text Content Fields (Col-span 3) */}
           <ScrollArea className="max-h-[60vh] pr-3 lg:col-span-3">
             <div className="space-y-5 pb-2">
@@ -91,7 +82,9 @@ export function JobDescriptionFormDialog({
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-indigo-500" />
-                  <Label htmlFor="jd-description" className="text-xs font-bold text-slate-900 dark:text-white">
+                  <Label
+                    htmlFor="jd-description"
+                    className="text-xs font-bold text-slate-900 dark:text-white">
                     {t("common.describe", "Mô tả công việc")}
                   </Label>
                 </div>
@@ -104,7 +97,10 @@ export function JobDescriptionFormDialog({
                       description: e.target.value,
                     })
                   }
-                  placeholder={t("common.jobDescription", "Nhập chi tiết các nhiệm vụ và trách nhiệm công việc...")}
+                  placeholder={t(
+                    "common.jobDescription",
+                    "Nhập chi tiết các nhiệm vụ và trách nhiệm công việc..."
+                  )}
                   rows={5}
                   className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 />
@@ -114,7 +110,9 @@ export function JobDescriptionFormDialog({
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <FileCheck className="h-4 w-4 text-emerald-500" />
-                  <Label htmlFor="jd-requirements" className="text-xs font-bold text-slate-900 dark:text-white">
+                  <Label
+                    htmlFor="jd-requirements"
+                    className="text-xs font-bold text-slate-900 dark:text-white">
                     {t("adminCompanymanagement.request", "Yêu cầu ứng viên")}
                   </Label>
                 </div>
@@ -127,7 +125,10 @@ export function JobDescriptionFormDialog({
                       requirements: e.target.value,
                     })
                   }
-                  placeholder={t("common.candidateRequirements", "Nhập các kỹ năng, kinh nghiệm và bằng cấp bắt buộc...")}
+                  placeholder={t(
+                    "common.candidateRequirements",
+                    "Nhập các kỹ năng, kinh nghiệm và bằng cấp bắt buộc..."
+                  )}
                   rows={5}
                   className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 />
@@ -137,7 +138,9 @@ export function JobDescriptionFormDialog({
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Gift className="h-4 w-4 text-purple-500" />
-                  <Label htmlFor="jd-benefits" className="text-xs font-bold text-slate-900 dark:text-white">
+                  <Label
+                    htmlFor="jd-benefits"
+                    className="text-xs font-bold text-slate-900 dark:text-white">
                     {t("common.welfare", "Phúc lợi & Đãi ngộ")}
                   </Label>
                 </div>
@@ -150,7 +153,10 @@ export function JobDescriptionFormDialog({
                       benefits: e.target.value,
                     })
                   }
-                  placeholder={t("adminCompanymanagement.welfareBenefits", "Nhập thông tin lương thưởng, bảo hiểm, đào tạo...")}
+                  placeholder={t(
+                    "adminCompanymanagement.welfareBenefits",
+                    "Nhập thông tin lương thưởng, bảo hiểm, đào tạo..."
+                  )}
                   rows={4}
                   className="border-slate-200 text-sm leading-relaxed focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 />
@@ -160,13 +166,15 @@ export function JobDescriptionFormDialog({
 
           {/* Right Column: General Job Settings Fields (Col-span 2) */}
           <div className="space-y-4 rounded-xl border border-slate-100 bg-slate-50/50 p-4 lg:col-span-2 dark:border-slate-800/80 dark:bg-slate-950/40">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <h4 className="text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-white">
               Thông số thiết lập
             </h4>
 
             {/* Title */}
             <div className="space-y-1.5">
-              <Label htmlFor="jd-title" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <Label
+                htmlFor="jd-title"
+                className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 {t("common.title1", "Tên vị trí (Title)")}
               </Label>
               <Input
@@ -186,7 +194,9 @@ export function JobDescriptionFormDialog({
             {/* Level & Status */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="jd-level" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label
+                  htmlFor="jd-level"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {t("general.level", "Cấp bậc")}
                 </Label>
                 <Select
@@ -197,7 +207,9 @@ export function JobDescriptionFormDialog({
                       level: value as JobDescriptionLevel,
                     })
                   }>
-                  <SelectTrigger id="jd-level" className="h-9 border-slate-200 text-xs dark:border-slate-800 dark:bg-slate-900">
+                  <SelectTrigger
+                    id="jd-level"
+                    className="h-9 border-slate-200 text-xs dark:border-slate-800 dark:bg-slate-900">
                     <SelectValue placeholder={t("common.chooseLevel", "Chọn level")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -211,7 +223,9 @@ export function JobDescriptionFormDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="jd-status" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label
+                  htmlFor="jd-status"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {t("general.status", "Trạng thái")}
                 </Label>
                 <Select
@@ -222,7 +236,9 @@ export function JobDescriptionFormDialog({
                       status: value as JobDescriptionStatus,
                     })
                   }>
-                  <SelectTrigger id="jd-status" className="h-9 border-slate-200 text-xs dark:border-slate-800 dark:bg-slate-900">
+                  <SelectTrigger
+                    id="jd-status"
+                    className="h-9 border-slate-200 text-xs dark:border-slate-800 dark:bg-slate-900">
                     <SelectValue placeholder={t("common.selectStatus", "Trạng thái")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -233,8 +249,8 @@ export function JobDescriptionFormDialog({
                             status === "OPEN"
                               ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
                               : status === "CLOSED"
-                              ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                              : "border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400"
+                                ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                                : "border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400"
                           }>
                           {status}
                         </Badge>
@@ -248,11 +264,13 @@ export function JobDescriptionFormDialog({
             {/* Salary Range */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="jd-salary-min" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label
+                  htmlFor="jd-salary-min"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {t("adminCompanymanagement.minimumWage", "Lương tối thiểu")}
                 </Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                  <DollarSign className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                   <Input
                     id="jd-salary-min"
                     type="number"
@@ -265,17 +283,19 @@ export function JobDescriptionFormDialog({
                       })
                     }
                     placeholder="0"
-                    className="h-9 border-slate-200 pl-8 text-xs font-mono dark:border-slate-800 dark:bg-slate-900"
+                    className="h-9 border-slate-200 pl-8 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="jd-salary-max" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label
+                  htmlFor="jd-salary-max"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {t("adminCompanymanagement.maximumSalary", "Lương tối đa")}
                 </Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                  <DollarSign className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                   <Input
                     id="jd-salary-max"
                     type="number"
@@ -288,7 +308,7 @@ export function JobDescriptionFormDialog({
                       })
                     }
                     placeholder="0"
-                    className="h-9 border-slate-200 pl-8 text-xs font-mono dark:border-slate-800 dark:bg-slate-900"
+                    className="h-9 border-slate-200 pl-8 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
                   />
                 </div>
               </div>
@@ -297,7 +317,9 @@ export function JobDescriptionFormDialog({
             {/* Currency & Package Price */}
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-1 space-y-1.5">
-                <Label htmlFor="jd-currency" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label
+                  htmlFor="jd-currency"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {t("adminCompanymanagement.currencyUnit", "Tiền tệ")}
                 </Label>
                 <Input
@@ -310,16 +332,18 @@ export function JobDescriptionFormDialog({
                     })
                   }
                   placeholder="USD"
-                  className="h-9 border-slate-200 text-xs font-mono dark:border-slate-800 dark:bg-slate-900"
+                  className="h-9 border-slate-200 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
                 />
               </div>
 
               <div className="col-span-2 space-y-1.5">
-                <Label htmlFor="jd-price" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <Label
+                  htmlFor="jd-price"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {t("adminCompanymanagement.packagePrice", "Giá gói mua (VNĐ)")}
                 </Label>
                 <div className="relative">
-                  <Tag className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                  <Tag className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                   <Input
                     id="jd-price"
                     type="number"
@@ -332,7 +356,7 @@ export function JobDescriptionFormDialog({
                       })
                     }
                     placeholder="0 = Miễn phí"
-                    className="h-9 border-slate-200 pl-8 text-xs font-mono dark:border-slate-800 dark:bg-slate-900"
+                    className="h-9 border-slate-200 pl-8 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
                   />
                 </div>
               </div>
@@ -340,7 +364,9 @@ export function JobDescriptionFormDialog({
 
             {/* Deadline */}
             <div className="space-y-1.5">
-              <Label htmlFor="jd-deadline" className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <Label
+                htmlFor="jd-deadline"
+                className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 {t("adminCompanymanagement.applicationDeadline", "Hạn nộp ứng tuyển")}
               </Label>
               <DateTimePicker

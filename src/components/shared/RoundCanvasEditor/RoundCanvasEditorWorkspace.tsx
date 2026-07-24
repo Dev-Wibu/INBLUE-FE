@@ -156,8 +156,8 @@ export function RoundCanvasEditorWorkspace({
         containerW && containerW > 400
           ? containerW
           : typeof window !== "undefined"
-          ? Math.max(600, window.innerWidth - 320)
-          : 1000;
+            ? Math.max(600, window.innerWidth - 320)
+            : 1000;
       const maxCols = Math.max(1, Math.floor((availableWidth - 60) / 280));
 
       const next = prev.slice(0, rounds.length);
@@ -652,7 +652,7 @@ export function RoundCanvasEditorWorkspace({
                               orient="auto">
                               <path d="M0,0 L0,6 L6,3 z" fill="#94a3b8" />
                             </marker>
-                  </defs>
+                          </defs>
                           {rounds.slice(0, -1).map((_, idx) => {
                             const from = positions[idx];
                             const to = positions[idx + 1];
@@ -683,8 +683,8 @@ export function RoundCanvasEditorWorkspace({
                           containerW && containerW > 400
                             ? containerW
                             : typeof window !== "undefined"
-                            ? Math.max(600, window.innerWidth - 320)
-                            : 1000;
+                              ? Math.max(600, window.innerWidth - 320)
+                              : 1000;
                         const maxCols = Math.max(1, Math.floor((availableWidth - 60) / 280));
                         const row = Math.floor(idx / maxCols);
                         const colInRow = idx % maxCols;
