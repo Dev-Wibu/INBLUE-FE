@@ -11,8 +11,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { codingProblemManager, type CodingProblem } from "@/services/coding-problem.manager";
 import Editor from "@monaco-editor/react";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
+  ChevronRight,
   Code2,
   FileText,
   Loader2,
@@ -230,63 +232,78 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950">
-      {/* ── TOP BAR ──────────────────────────────────────────────────────────── */}
-      <div className="flex flex-none items-center justify-between border-b border-slate-200/60 bg-white/50 px-6 py-4 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-900/50">
-        <div className="flex items-center gap-4">
+      {/* ── SINGLE UNIFIED TOP HEADER ──────────────────────────────────────────── */}
+      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <button
+            type="button"
             onClick={onBack}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-200">
-            <ArrowLeft className="h-5 w-5" />
+            className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+            Vòng Coding
           </button>
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
-              {formData.id ? "Chi tiết vòng coding" : "Tạo vòng coding mới"}
-            </h2>
-          </div>
+          <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+            {formData.title || (formData.id ? "Chi tiết bài tập" : "Tạo bài tập mới")}
+          </h1>
+          {formData.difficulty && (
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                formData.difficulty === "EASY"
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                  : formData.difficulty === "MEDIUM"
+                    ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                    : "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"
+              )}>
+              {formData.difficulty}
+            </span>
+          )}
         </div>
-      </div>
 
-      {/* ── TAB BAR ──────────────────────────────────────────────────────────── */}
-      <div className="flex flex-none justify-center border-b border-slate-200/80 bg-white/50 px-6 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/50">
-        <div className="flex gap-6">
-          {[
-            { id: "general", label: "Đề bài & Cấu hình", icon: FileText },
-            {
-              id: "testcases",
-              label: "Test Cases Ẩn",
-              icon: PlaySquare,
-              badge: formData.hiddenTestCases?.length,
-            },
-            { id: "codestubs", label: "Mã nguồn Mẫu", icon: Code2 },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabKey)}
-                className={`relative flex items-center gap-2 py-3.5 text-xs font-bold transition-colors ${
-                  isActive
-                    ? "text-indigo-600 dark:text-indigo-400"
-                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-                }`}>
-                <tab.icon className={`h-4 w-4 ${isActive ? "text-indigo-500" : ""}`} />
-                {tab.label}
-                {"badge" in tab && tab.badge !== undefined && (
-                  <span
-                    className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold ${
-                      isActive
-                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
-                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                    }`}>
-                    {tab.badge}
-                  </span>
-                )}
-                {isActive && (
-                  <span className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-full bg-indigo-600 dark:bg-indigo-400" />
-                )}
-              </button>
-            );
-          })}
+        {/* Tab switcher & Back action inline inside header */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+            {[
+              { id: "general", label: "Đề bài & Cấu hình", icon: FileText },
+              {
+                id: "testcases",
+                label: "Test Cases Ẩn",
+                icon: PlaySquare,
+                badge: formData.hiddenTestCases?.length,
+              },
+              { id: "codestubs", label: "Mã nguồn Mẫu", icon: Code2 },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as TabKey)}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
+                    isActive
+                      ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-900 dark:text-indigo-400"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}>
+                  <tab.icon className="h-3.5 w-3.5" />
+                  {tab.label}
+                  {"badge" in tab && tab.badge !== undefined && (
+                    <span
+                      className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold ${
+                        isActive
+                          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                          : "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                      }`}>
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <Button variant="outline" size="sm" onClick={onBack} className="h-8 text-xs">
+            Quay lại
+          </Button>
         </div>
       </div>
 

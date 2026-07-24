@@ -234,30 +234,57 @@ export function CodeReviewProblemManagementPage() {
   if (view.mode === "detail" && selectedProblem) {
     return (
       <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
-        <div className="flex h-full w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+        {/* SINGLE UNIFIED TOP HEADER */}
+        <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+              Bài tập Code Review
+            </button>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
+              {selectedProblem.title}
+            </h1>
+            <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400">
+              {selectedProblem.language || "Java"}
+            </span>
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                selectedProblem.difficulty === "EASY"
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                  : selectedProblem.difficulty === "MEDIUM"
+                    ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                    : "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400"
+              )}>
+              {selectedProblem.difficulty}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleEditProblem(selectedProblem)}
+              className="h-8 gap-1.5 bg-white text-xs dark:bg-slate-900">
+              <Pencil className="h-3.5 w-3.5" />
+              {t("general.edit", "Chỉnh sửa")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBack}
+              className="h-8 text-xs">
+              Quay lại
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden bg-slate-50 dark:bg-slate-950">
           {/* Read-only Sidebar */}
           <div className="flex w-[420px] shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/40">
-            <div className="flex flex-none items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800/60">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleBack}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <div className="font-sans text-sm font-bold text-slate-800 dark:text-slate-200">
-                  {t("common.details", "Chi tiết")}
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleEditProblem(selectedProblem)}
-                className="h-8 gap-1.5 bg-white text-xs dark:bg-slate-900">
-                <Pencil className="h-3.5 w-3.5" />
-                {t("general.edit", "Chỉnh sửa")}
-              </Button>
-            </div>
-
             <div className="flex-1 overflow-y-auto p-5">
               <div className="space-y-6">
                 <div>
