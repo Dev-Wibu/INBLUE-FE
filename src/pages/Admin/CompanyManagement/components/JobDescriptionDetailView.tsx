@@ -25,7 +25,6 @@ import {
   FileCheck,
   FileText,
   Gift,
-  Layers,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -92,7 +91,7 @@ function FormattedTextList({
 
   if (lines.length <= 1) {
     return (
-      <div className="text-sm font-medium leading-relaxed text-slate-800 dark:text-slate-100">
+      <div className="text-sm font-medium leading-relaxed text-slate-700 dark:text-slate-100">
         {text}
       </div>
     );
@@ -101,7 +100,7 @@ function FormattedTextList({
   return (
     <ul className="space-y-2.5">
       {lines.map((line, idx) => (
-        <li key={idx} className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-800 dark:text-slate-100">
+        <li key={idx} className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-slate-100">
           <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconColor)} />
           <span className="flex-1 font-medium">{line}</span>
         </li>
@@ -127,6 +126,7 @@ export function JobDescriptionDetailView({
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentJd, setCurrentJd] = useState<JobDescription>(jobDescription);
+  const [detailTab, setDetailTab] = useState<"description" | "requirements" | "benefits">("description");
 
   // Application list state
   const [applications, setApplications] = useState<ApplicationListItemDto[]>([]);
@@ -299,7 +299,7 @@ export function JobDescriptionDetailView({
 
   if (isEditorOpen) {
     return (
-      <div className="flex h-full w-full flex-col bg-white dark:bg-slate-900">
+      <div className="flex h-full w-full flex-col bg-slate-50 dark:bg-slate-950">
         <RoundCanvasEditorWorkspace
           isOpen={isEditorOpen}
           onClose={() => setIsEditorOpen(false)}
@@ -315,15 +315,14 @@ export function JobDescriptionDetailView({
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-slate-900">
-      {/* ── SEAMLESS FLUSH DIVIDED PANEL LAYOUT ───────────────────────────────────── */}
-      <div className="grid flex-1 overflow-hidden grid-cols-1 lg:grid-cols-[minmax(0,1.8fr)_minmax(320px,0.85fr)] divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800">
-        {/* ── LEFT PANEL (2/3): RECRUITMENT PIPELINE, SPECS & BENEFITS ─────────── */}
-        <main className="flex flex-col overflow-y-auto divide-y divide-slate-200 dark:divide-slate-800">
+    <div className="flex h-full flex-col overflow-y-auto bg-slate-50 p-4 lg:p-5 dark:bg-slate-950">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
+        {/* ── LEFT COLUMN (2/3): RECRUITMENT PIPELINE & COMBINED SPEC TABS CARD ─ */}
+        <main className="min-w-0 space-y-4">
           {/* SECTION 1: RECRUITMENT PIPELINE STEPPER */}
-          <section className="p-5 bg-white dark:bg-slate-900">
+          <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-3.5 flex items-center justify-between">
-              <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+              <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                 <Sparkles className="h-4 w-4 text-indigo-500" />
                 Quy trình tuyển dụng
               </h3>
@@ -336,12 +335,12 @@ export function JobDescriptionDetailView({
             </div>
 
             {!initialRounds || initialRounds.length === 0 ? (
-              <div className="flex min-h-[140px] flex-col items-center justify-center gap-2.5 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-5 text-center dark:border-slate-800 dark:bg-slate-950/40">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-50 text-indigo-500 dark:bg-indigo-950 dark:text-indigo-400">
-                  <FileText className="h-4 w-4" />
+              <div className="flex min-h-[160px] flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center dark:border-slate-800 dark:bg-slate-900/50">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-500 dark:bg-indigo-950 dark:text-indigo-400">
+                  <FileText className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-900 dark:text-white">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     Chưa cấu hình vòng phỏng vấn nào
                   </p>
                   <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
@@ -355,45 +354,42 @@ export function JobDescriptionDetailView({
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-thin">
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
                 {initialRounds.map((round, index) => {
-                  const meta = templates.find((t) => t.type === round.roundType);
+                  const meta = templates.find((template) => template.type === round.roundType);
                   const isLast = index === initialRounds.length - 1;
-                  const titleText = meta?.title || round.roundType;
-                  const showCustomName =
-                    round.name &&
-                    round.name.trim().toLowerCase() !== titleText.trim().toLowerCase();
+                  const showMetaTag = meta?.title && meta.title.toLowerCase() !== (round.name || "").toLowerCase();
 
                   return (
                     <div key={index} className="flex shrink-0 items-center gap-2.5">
                       <div
                         onClick={() => setIsEditorOpen(true)}
-                        className="group flex min-w-[160px] max-w-[200px] flex-1 cursor-pointer flex-col justify-between rounded-lg border border-slate-200 bg-slate-50/70 p-3 transition-all hover:border-indigo-500 hover:bg-indigo-50/30 dark:border-slate-800 dark:bg-slate-950/60 dark:hover:border-indigo-500 dark:hover:bg-indigo-950/20">
+                        className="group flex min-w-[170px] max-w-[210px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
                         {/* Round Header */}
-                        <div className="flex items-center justify-between gap-1.5">
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-extrabold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                             {index + 1}
                           </span>
-                          <Badge
-                            variant="outline"
-                            className={cn("gap-1 text-[11px] font-bold truncate", meta?.color)}>
-                            {titleText}
-                          </Badge>
+                          {showMetaTag && (
+                            <Badge
+                              variant="outline"
+                              className={cn("gap-1 text-[10px] font-semibold truncate", meta?.color)}>
+                              {meta.title}
+                            </Badge>
+                          )}
                         </div>
 
-                        {/* Round Custom Name (Only if different from title) */}
-                        {showCustomName && (
-                          <div className="mt-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
-                            {round.name}
-                          </div>
-                        )}
+                        {/* Round Name */}
+                        <h4 className="mt-2 text-xs font-bold text-slate-900 truncate group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
+                          {round.name}
+                        </h4>
 
                         {/* Pass Threshold */}
                         {round.passThreshold !== undefined && (
-                          <div className="mt-2 flex items-center justify-between border-t border-slate-200/60 pt-1.5 text-[11px] text-slate-500 dark:border-slate-800/80 dark:text-slate-400">
+                          <div className="mt-2 flex items-center justify-between border-t border-slate-200/60 pt-1.5 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
                             <span>Điểm đạt</span>
                             <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                              {Math.round((round.passThreshold ?? 0.8) * 100)}%
+                              {Math.round(round.passThreshold * 100)}%
                             </span>
                           </div>
                         )}
@@ -409,100 +405,130 @@ export function JobDescriptionDetailView({
             )}
           </section>
 
-          {/* SECTION 2: JOB DESCRIPTION */}
-          <section className="p-5 bg-white dark:bg-slate-900">
-            <div className="mb-3.5 flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-indigo-500" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                {t("common.description", "Mô tả công việc")}
-              </h3>
-            </div>
-            {currentJd.description ? (
-              <FormattedTextList
-                text={currentJd.description}
-                icon={Sparkles}
-                iconColor="text-indigo-500"
-              />
-            ) : (
-              <p className="text-xs italic text-slate-400 dark:text-slate-500">
-                Chưa cập nhật mô tả công việc.
-              </p>
-            )}
-          </section>
+          {/* SECTION 2: COMBINED SPECIFICATION TAB CARD (Mô tả / Yêu cầu / Phúc lợi in 1 card) */}
+          <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            {/* Sub-Tab Navigation Header */}
+            <div className="mb-4 flex items-center gap-1.5 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+              <button
+                type="button"
+                onClick={() => setDetailTab("description")}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                  detailTab === "description"
+                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 shadow-2xs"
+                    : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                )}>
+                <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
+                <span>Mô tả công việc</span>
+              </button>
 
-          {/* SECTION 3: REQUIREMENTS */}
-          <section className="p-5 bg-white dark:bg-slate-900">
-            <div className="mb-3.5 flex items-center gap-2">
-              <FileCheck className="h-4 w-4 text-emerald-500" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                {t("common.requirements", "Yêu cầu ứng viên")}
-              </h3>
+              <button
+                type="button"
+                onClick={() => setDetailTab("requirements")}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                  detailTab === "requirements"
+                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 shadow-2xs"
+                    : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                )}>
+                <FileCheck className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Yêu cầu ứng viên</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDetailTab("benefits")}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                  detailTab === "benefits"
+                    ? "bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 shadow-2xs"
+                    : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                )}>
+                <Gift className="h-3.5 w-3.5 text-purple-500" />
+                <span>Phúc lợi & Đãi ngộ</span>
+              </button>
             </div>
 
-            {detectedTechStack.length > 0 && (
-              <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg bg-slate-50 p-2.5 border border-slate-100 dark:bg-slate-950/50 dark:border-slate-800/60">
-                <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                  Công nghệ & Kỹ năng:
-                </span>
-                {detectedTechStack.map((tech) => (
-                  <Badge
-                    key={tech}
-                    className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold">
-                    {tech}
-                  </Badge>
-                ))}
+            {/* Sub-Tab Content Body */}
+            {detailTab === "description" && (
+              <div>
+                {currentJd.description ? (
+                  <FormattedTextList
+                    text={currentJd.description}
+                    icon={Sparkles}
+                    iconColor="text-indigo-500"
+                  />
+                ) : (
+                  <p className="text-sm italic text-slate-400 dark:text-slate-500">
+                    Chưa cập nhật mô tả công việc.
+                  </p>
+                )}
               </div>
             )}
 
-            {currentJd.requirements ? (
-              <FormattedTextList
-                text={currentJd.requirements}
-                icon={CheckCircle2}
-                iconColor="text-emerald-500"
-              />
-            ) : (
-              <p className="text-xs italic text-slate-400 dark:text-slate-500">
-                Chưa cập nhật yêu cầu ứng viên.
-              </p>
-            )}
-          </section>
+            {detailTab === "requirements" && (
+              <div>
+                {detectedTechStack.length > 0 && (
+                  <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg bg-slate-50 p-2.5 border border-slate-100 dark:bg-slate-950/50 dark:border-slate-800/60">
+                    <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
+                      Công nghệ & Kỹ năng:
+                    </span>
+                    {detectedTechStack.map((tech) => (
+                      <Badge
+                        key={tech}
+                        className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold">
+                        {tech}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
 
-          {/* SECTION 4: BENEFITS (In Left Column) */}
-          <section className="p-5 bg-white dark:bg-slate-900">
-            <div className="mb-3.5 flex items-center gap-2">
-              <Gift className="h-4 w-4 text-purple-500" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                {t("common.benefits", "Phúc lợi & Đãi ngộ")}
-              </h3>
-            </div>
-            {currentJd.benefits &&
-            currentJd.benefits.trim() &&
-            currentJd.benefits !== "Không lương" ? (
-              <FormattedTextList
-                text={currentJd.benefits}
-                icon={Gift}
-                iconColor="text-purple-500"
-              />
-            ) : (
-              <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-xs font-medium text-slate-600 dark:bg-slate-950/50 dark:text-slate-300">
-                <Gift className="h-4 w-4 text-purple-400 shrink-0" />
-                <span>{currentJd.benefits || "Thỏa thuận theo chính sách công ty"}</span>
+                {currentJd.requirements ? (
+                  <FormattedTextList
+                    text={currentJd.requirements}
+                    icon={CheckCircle2}
+                    iconColor="text-emerald-500"
+                  />
+                ) : (
+                  <p className="text-sm italic text-slate-400 dark:text-slate-500">
+                    Chưa cập nhật yêu cầu ứng viên.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {detailTab === "benefits" && (
+              <div>
+                {currentJd.benefits &&
+                currentJd.benefits.trim() &&
+                currentJd.benefits !== "Không lương" ? (
+                  <FormattedTextList
+                    text={currentJd.benefits}
+                    icon={Gift}
+                    iconColor="text-purple-500"
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm font-medium text-slate-600 dark:bg-slate-950/50 dark:text-slate-300">
+                    <Gift className="h-4 w-4 text-purple-400 shrink-0" />
+                    <span>{currentJd.benefits || "Thỏa thuận theo chính sách công ty"}</span>
+                  </div>
+                )}
               </div>
             )}
           </section>
         </main>
 
-        {/* ── RIGHT PANEL (1/3): JOB OVERVIEW METADATA & APPLICATIONS LIST ──────── */}
-        <aside className="flex flex-col overflow-y-auto divide-y divide-slate-200 bg-slate-50/40 dark:divide-slate-800 dark:bg-slate-900/50">
-          {/* Section 1: Job Metadata Summary */}
-          <div className="p-5">
-            <h3 className="mb-4 text-sm font-bold text-slate-900 dark:text-white">
+        {/* ── RIGHT COLUMN (1/3): JOB OVERVIEW METADATA & APPLICATIONS LIST ───────── */}
+        <aside className="space-y-4">
+          {/* Card 1: Job Metadata Summary */}
+          <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="mb-4 text-base font-bold text-slate-900 dark:text-white">
               Thông số tuyển dụng
             </h3>
 
-            <div className="space-y-3.5 text-xs">
+            <div className="space-y-3.5 text-sm">
               {/* Salary */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-3 dark:border-slate-800/80">
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <DollarSign className="h-4 w-4 text-emerald-500" />
                   Mức lương
@@ -513,7 +539,7 @@ export function JobDescriptionDetailView({
               </div>
 
               {/* Level */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-3 dark:border-slate-800/80">
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Briefcase className="h-4 w-4 text-indigo-500" />
                   Cấp bậc
@@ -524,7 +550,7 @@ export function JobDescriptionDetailView({
               </div>
 
               {/* Deadline */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-3 dark:border-slate-800/80">
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Calendar className="h-4 w-4 text-amber-500" />
                   Hạn ứng tuyển
@@ -535,7 +561,7 @@ export function JobDescriptionDetailView({
               </div>
 
               {/* Applications count */}
-              <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 pb-3 dark:border-slate-800/80">
+              <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Users className="h-4 w-4 text-purple-500" />
                   Tổng ứng tuyển
@@ -563,10 +589,10 @@ export function JobDescriptionDetailView({
             </div>
           </div>
 
-          {/* Section 2: Applications List (In Sidebar) */}
-          <div className="p-5">
-            <div className="mb-3.5 flex items-center justify-between border-b border-slate-200/60 pb-3 dark:border-slate-800/80">
-              <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+          {/* Card 2: Applications List (In Sidebar) */}
+          <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="mb-3.5 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
+              <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                 <Users className="h-4 w-4 text-purple-500" />
                 Đơn ứng tuyển ({applications.length})
               </h3>
@@ -578,11 +604,11 @@ export function JobDescriptionDetailView({
                 <span>Đang tải danh sách...</span>
               </div>
             ) : applications.length === 0 ? (
-              <div className="flex h-24 items-center justify-center text-xs text-slate-400 dark:text-slate-500">
+              <div className="flex h-28 items-center justify-center text-xs text-slate-400 dark:text-slate-500">
                 Chưa có ứng viên nào nộp đơn.
               </div>
             ) : (
-              <div className="divide-y divide-slate-200/60 dark:divide-slate-800/80">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
                 {applications.map((app, index) => {
                   const name =
                     app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
@@ -596,7 +622,7 @@ export function JobDescriptionDetailView({
                         setSelectedAppId(app.applicationId || (app as any).id);
                         setIsDrawerOpen(true);
                       }}
-                      className="group flex cursor-pointer items-center justify-between gap-3 py-3 transition-colors hover:bg-slate-100/60 dark:hover:bg-slate-800/50 px-1 rounded-lg">
+                      className="group flex cursor-pointer items-center justify-between gap-3 py-3 transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40 px-1 rounded-lg">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <Avatar className="h-8 w-8 shrink-0 border border-slate-200 dark:border-slate-800">
                           <AvatarImage src={avatarUrl} alt={name} />
