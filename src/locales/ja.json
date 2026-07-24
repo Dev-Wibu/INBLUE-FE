@@ -188,7 +188,18 @@
     "searchByNameEmailRole": "名前、メール、役割で検索...",
     "viewAndManageAllCandidate": "システム内のすべての候補者プロフィールを表示・管理します。"
   },
+  "adminApplicationManagement": {
+    "title": "応募管理"
+  },
   "adminCompanymanagement": {
+    "addNewPartnerDescription": "新しい企業パートナーをシステムに追加するために詳細を入力してください",
+    "createJdTitle": "求人票(JD)を作成",
+    "createJdDesc": "パートナーの新しい求人を作成",
+    "editJdTitle": "求人票(JD)を編集",
+    "editJdDesc": "求人情報を更新",
+    "editJdDescription": "求人詳細情報を更新",
+    "jdCount": "JD数",
+    "totalApplications": "総応募数",
     "packagePrice": "JDパッケージ購入価格 (VND)",
     "packagePricePlaceholder": "パッケージ価格を入力 (0 = 無料)",
     "addNewJd": "新しいJDを追加",
@@ -903,6 +914,10 @@
     "yourApplicationHasBeenSubmitted": "申請が正常に送信されました"
   },
   "common": {
+    "createSuccess": "作成に成功しました",
+    "createFailed": "作成に失敗しました",
+    "actions": "操作",
+    "createdAt": "作成日",
     "free": "無料",
     "details": "詳細",
     "unableToLoadData": "データを読み込めません",

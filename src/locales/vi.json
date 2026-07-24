@@ -225,7 +225,18 @@
     "searchByNameEmailRole": "Tìm kiếm theo tên, email, vai trò...",
     "viewAndManageAllCandidate": "Xem và quản lý tất cả hồ sơ ứng viên trong hệ thống."
   },
+  "adminApplicationManagement": {
+    "title": "Quản lý đơn ứng tuyển"
+  },
   "adminCompanymanagement": {
+    "addNewPartnerDescription": "Điền thông tin chi tiết để thêm đối tác doanh nghiệp mới vào hệ thống",
+    "createJdTitle": "Tạo Job Description (JD)",
+    "createJdDesc": "Tạo tuyển dụng mới cho đối tác",
+    "editJdTitle": "Chỉnh sửa Job Description (JD)",
+    "editJdDesc": "Cập nhật thông tin tuyển dụng",
+    "editJdDescription": "Cập nhật thông tin chi tiết vị trí tuyển dụng",
+    "jdCount": "Số lượng JD",
+    "totalApplications": "Tổng lượt ứng tuyển",
     "packagePrice": "Giá gói mua JD (VNĐ)",
     "packagePricePlaceholder": "Nhập giá gói (0 = miễn phí)",
     "addNewJd": "Thêm JD mới",
@@ -937,6 +948,10 @@
     "yourApplicationHasBeenSubmitted": "Đơn đăng ký của bạn đã được gửi thành công"
   },
   "common": {
+    "createSuccess": "Tạo thành công",
+    "createFailed": "Tạo thất bại",
+    "actions": "Thao tác",
+    "createdAt": "Ngày tạo",
     "free": "Miễn phí",
     "generalInformation": "Thông tin chung",
     "mentorInformation": "Thông Tin Mentor",

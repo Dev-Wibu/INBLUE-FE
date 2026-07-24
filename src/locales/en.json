@@ -225,7 +225,18 @@
     "searchByNameEmailRole": "Search by name, email, role...",
     "viewAndManageAllCandidate": "View and manage all candidate profiles in the system."
   },
+  "adminApplicationManagement": {
+    "title": "Application Management"
+  },
   "adminCompanymanagement": {
+    "addNewPartnerDescription": "Fill in details to add a new corporate partner to the system",
+    "createJdTitle": "Create Job Description (JD)",
+    "createJdDesc": "Create a new job posting for partner",
+    "editJdTitle": "Edit Job Description (JD)",
+    "editJdDesc": "Update job posting details",
+    "editJdDescription": "Update detailed job opening information",
+    "jdCount": "JD Count",
+    "totalApplications": "Total Applications",
     "packagePrice": "JD Purchase Package Price (VND)",
     "packagePricePlaceholder": "Enter package price (0 = free)",
     "addNewJd": "Add new JD",
@@ -940,6 +951,10 @@
     "yourApplicationHasBeenSubmitted": "Your application has been submitted successfully"
   },
   "common": {
+    "createSuccess": "Created successfully",
+    "createFailed": "Create failed",
+    "actions": "Actions",
+    "createdAt": "Created At",
     "free": "Free",
     "generalInformation": "General Information",
     "mentorInformation": "Mentor Information",

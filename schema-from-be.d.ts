@@ -267,6 +267,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/application-details/{id}/select-mentor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Ứng viên chọn 1 mentor cho vòng phỏng vấn
+         * @description Dành cho Ứng viên chọn 1 mentor trong số các mentor được Admin đề xuất.
+         */
+        put: operations["selectMentor"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/application-details/{id}/assign-mentors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Gán danh sách nhiều mentor cho vòng Mentor Review
+         * @description Dành cho Admin để đề xuất danh sách nhiều mentor cho ứng viên tự chọn 1 người.
+         */
+        put: operations["assignMentors"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/application-details/{id}/assign-mentor": {
         parameters: {
             query?: never;
@@ -276,8 +316,8 @@ export interface paths {
         };
         get?: never;
         /**
-         * Gán mentor cho vòng Mentor Review
-         * @description Dành cho Admin để gán mentor cho vòng thi của ứng viên.
+         * Gán 1 mentor cho vòng Mentor Review
+         * @description Dành cho Admin để gán trực tiếp 1 mentor cho vòng thi của ứng viên.
          */
         put: operations["assignMentor"];
         post?: never;
@@ -2052,6 +2092,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/application-details/{id}/assigned-mentors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lấy danh sách các mentor được đề xuất cho vòng này
+         * @description Dành cho Ứng viên xem danh sách profile các mentor do Admin đề xuất.
+         */
+        get: operations["getAssignedMentors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/application-details/reviewer": {
         parameters: {
             query?: never;
@@ -2491,6 +2551,10 @@ export interface components {
             averageRating?: number;
             /** Format: int32 */
             pricePerMinute?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
             active?: boolean;
         };
         MentorReview: {
@@ -2686,7 +2750,7 @@ export interface components {
             /** Format: int64 */
             roundId?: number;
             /** @enum {string} */
-            status?: "PENDING" | "AWAITING_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
             /** Format: double */
             finalScore?: number;
             submissionData?: components["schemas"]["SubmissionData"];
@@ -2705,6 +2769,7 @@ export interface components {
             mentorReview?: components["schemas"]["MentorReview"];
             /** Format: int32 */
             mentorId?: number;
+            assignedMentorIds?: number[];
             /** Format: int32 */
             sessionId?: number;
             /** Format: int32 */
@@ -2771,6 +2836,9 @@ export interface components {
             /** Format: int64 */
             executionTimeMs?: number;
             errorMessage?: string;
+        };
+        AssignMentorsRequestDto: {
+            mentorIds?: number[];
         };
         FaceSnapshotRequest: {
             sessionKey?: string;
@@ -3501,15 +3569,15 @@ export interface components {
             postComments?: components["schemas"]["PostCommentResponse"][];
         };
         PagePostResponse: {
-            /** Format: int64 */
-            totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+            /** Format: int64 */
+            totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3582,6 +3650,10 @@ export interface components {
             averageRating?: number;
             /** Format: int32 */
             pricePerMinute?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
             active?: boolean;
         };
         SlotDto: {
@@ -3769,10 +3841,10 @@ export interface components {
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             environment?: components["schemas"]["Environment"];
             /** Format: int32 */
             beanDefinitionCount?: number;
@@ -3866,22 +3938,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
             deferredSyntaxAllowedAsLiteral?: string;
-            errorOnUndeclaredNamespace?: string;
             trimDirectiveWhitespaces?: string;
-            errorOnELNotFound?: string;
-            pageEncoding?: string;
             scriptingInvalid?: string;
-            includePreludes?: string[];
+            errorOnELNotFound?: string;
             includeCodas?: string[];
-            urlPatterns?: string[];
-            defaultContentType?: string;
             elIgnored?: string;
             isXml?: string;
+            urlPatterns?: string[];
+            pageEncoding?: string;
+            errorOnUndeclaredNamespace?: string;
+            defaultContentType?: string;
+            includePreludes?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -3916,20 +3988,18 @@ export interface components {
             };
         };
         ServletContext: {
-            initParameterNames?: unknown;
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
             effectiveMinorVersion?: number;
             servletContextName?: string;
-            serverInfo?: string;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             servletRegistrations?: {
                 [key: string]: components["schemas"]["ServletRegistration"];
             };
@@ -3937,9 +4007,11 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
             contextPath?: string;
+            initParameterNames?: unknown;
             attributeNames?: unknown;
             classLoader?: {
                 name?: string;
@@ -4016,9 +4088,9 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
-            secure?: boolean;
             /** Format: int32 */
             maxAge?: number;
+            secure?: boolean;
             domain?: string;
             httpOnly?: boolean;
             path?: string;
@@ -4149,7 +4221,7 @@ export interface components {
             reviewerId?: number;
             roundConfig?: components["schemas"]["RoundConfig"];
             /** @enum {string} */
-            status?: "PENDING" | "AWAITING_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
+            status?: "PENDING" | "AWAITING_MENTOR" | "AWAITING_CANDIDATE_SELECT_MENTOR" | "SLOT_PICKED" | "SUBMITTED" | "AI_EVALUATED" | "COMPLETED";
             /** Format: double */
             aiScore?: number;
             aiFeedback?: components["schemas"]["AiFeedback"];
@@ -4164,6 +4236,8 @@ export interface components {
             sessionInfo?: components["schemas"]["RoundSessionInfo"];
             /** Format: int32 */
             mentorId?: number;
+            assignedMentorIds?: number[];
+            assignedMentors?: components["schemas"]["MentorResponse"][];
             mentorReview?: components["schemas"]["MentorReview"];
             /** Format: date-time */
             startedAt?: string;
@@ -4946,6 +5020,56 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CandidateProfile"];
+                };
+            };
+        };
+    };
+    selectMentor: {
+        parameters: {
+            query: {
+                mentorId: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApplicationDetail"];
+                };
+            };
+        };
+    };
+    assignMentors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignMentorsRequestDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApplicationDetail"];
                 };
             };
         };
@@ -7538,6 +7662,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApplicationDetail"];
+                };
+            };
+        };
+    };
+    getAssignedMentors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MentorResponse"][];
                 };
             };
         };
