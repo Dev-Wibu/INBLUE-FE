@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/formatting";
 import {
   Briefcase,
   ChevronDown,
-  ChevronLeft,
   ChevronUp,
   Code,
   Edit,
@@ -24,7 +24,6 @@ interface MentorDetailViewProps {
   onSubmit: () => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }: any) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
@@ -52,7 +51,6 @@ function CollapsibleCard({ title, icon: Icon, children, defaultOpen = true, id }
 
 export function MentorDetailView({
   mentor,
-  onBack,
   formData,
   onFormChange,
   onSubmit,
@@ -83,7 +81,6 @@ export function MentorDetailView({
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar - Sticky Profile Info */}

@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PaginationControl, ReloadButton } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +15,6 @@ import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { candidateProfileManager, usersAdminManager } from "@/services";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -210,10 +211,10 @@ export function UserManagementPage() {
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* Unified Single Hierarchical Header (Fixed 68px height) */}
       <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-wrap items-center gap-3 min-w-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
           {viewMode === "detail" && selectedUser ? (
             /* Mode 2: User Detail View (Sleek 1-line breadcrumb) */
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -221,33 +222,35 @@ export function UserManagementPage() {
                   setSelectedUser(null);
                   setSelectedProfileData(null);
                 }}
-                className="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400 dark:hover:text-indigo-400">
+                className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
                 {t("adminUsermanagement.userManagement", "Quản lý người dùng")}
               </button>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-              <h1 className="text-base font-bold text-slate-900 dark:text-white truncate">
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
                 {selectedUser.name}
               </h1>
               <Badge
                 className={
-                  selectedUser.status === "ACTIVE" || selectedUser.isActive !== false
-                    ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400"
+                  (selectedUser as any).status === "ACTIVE" ||
+                  (selectedUser as any).isActive !== false ||
+                  (selectedUser as any).active !== false
+                    ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
                     : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                 }>
-                {selectedUser.status || "ACTIVE"}
+                {(selectedUser as any).status || "ACTIVE"}
               </Badge>
               {selectedUser.role && <Badge variant="outline">{selectedUser.role}</Badge>}
             </div>
           ) : viewMode === "create" ? (
             /* Mode 3: Create User View */
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
-                className="text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors dark:text-slate-400 dark:hover:text-indigo-400">
+                className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
                 {t("adminUsermanagement.userManagement", "Quản lý người dùng")}
               </button>
-              <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
               <h1 className="text-base font-bold text-slate-900 dark:text-white">
                 {t("adminUsermanagement.addNewUser", "Thêm người dùng mới")}
               </h1>
@@ -255,11 +258,14 @@ export function UserManagementPage() {
           ) : (
             /* Mode 1: Root User Management List View */
             <div className="flex flex-col justify-center">
-              <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+              <h1 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
                 {t("adminUsermanagement.userManagement", "Quản lý người dùng")}
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
-                {t("adminUsermanagement.manageUserAccountsRolesAnd", "Quản lý tài khoản, vai trò và quyền hạn người dùng")}
+              <p className="mt-0.5 text-xs leading-tight text-slate-500 dark:text-slate-400">
+                {t(
+                  "adminUsermanagement.manageUserAccountsRolesAnd",
+                  "Quản lý tài khoản, vai trò và quyền hạn người dùng"
+                )}
               </p>
             </div>
           )}
