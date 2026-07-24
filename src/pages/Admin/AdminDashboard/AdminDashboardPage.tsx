@@ -185,7 +185,6 @@ export function AdminDashboardPage() {
   const location = useLocation();
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
 
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [headerSubTitle, setHeaderSubTitle] = useState<string | undefined>(undefined);
   const [onBackHeaderSubTitle, setOnBackHeaderSubTitle] = useState<(() => void) | undefined>(undefined);
 
