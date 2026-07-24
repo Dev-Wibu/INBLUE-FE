@@ -395,7 +395,7 @@ export function JobDescriptionDetailView({
   }, [currentJd.requirements]);
 
   const formatSalary = (min?: number, max?: number, currency?: string) => {
-    if (!min && !max) return t("common.negotiable", "Thỏa thuận");
+    if (!min && !max) return t("enterpriseJobdescriptiondetailpage.salaryAgreement");
     const curr = currency || "USD";
     if (min && max) return `${min.toLocaleString()} - ${max.toLocaleString()} ${curr}`;
     if (min) return `Từ ${min.toLocaleString()} ${curr}`;
@@ -403,7 +403,7 @@ export function JobDescriptionDetailView({
   };
 
   const formatDeadline = (dateStr?: string) => {
-    if (!dateStr) return t("common.noDeadline", "Không giới hạn");
+    if (!dateStr) return t("common.unlimited");
     try {
       return new Intl.DateTimeFormat("vi-VN", {
         day: "2-digit",
