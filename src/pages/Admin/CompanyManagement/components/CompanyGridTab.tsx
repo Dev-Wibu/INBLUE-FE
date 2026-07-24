@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PaginationControl } from "@/components/shared";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { extractDataArray } from "@/lib/utils";
@@ -133,7 +134,7 @@ export function CompanyGridTab({
 
   const enrichedCompanyJds = useMemo(() => {
     return companyJds.map((jd) => {
-      const openJdInfo = openJds.find((o) => (o.jdId || o.id) === jd.id);
+      const openJdInfo = openJds.find((o) => o.jdId === jd.id);
       return {
         ...jd,
         companyName: selectedCompany?.name || (jd as any).companyName,
@@ -145,7 +146,6 @@ export function CompanyGridTab({
           (jd as any).totalApplications ??
           (jd as any).applicationCount ??
           (jd as any).applicationsCount ??
-          jd.applications?.length ??
           0,
       };
     });
@@ -241,13 +241,6 @@ export function CompanyGridTab({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Open JD creation form
-  const handleOpenAddJd = () => {
-    setEditingJd(null);
-    setJdFormData({ status: "OPEN" });
-    setIsJdDialogOpen(true);
   };
 
   // Open JD edit form

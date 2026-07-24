@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApplicationDetailDrawer } from "@/components/shared";
 import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
@@ -7,26 +8,23 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   adminApplicationManager,
   type ApplicationListItemDto,
 } from "@/services/admin-application.manager";
 import { roundManager } from "@/services/round.manager";
-import {
-  ArrowLeft,
-  Briefcase,
-  Edit3,
-  Eye,
-  FileText,
-  Folder,
-  Layers,
-  Sparkles,
-  Users,
-} from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Edit3, Eye, FileText, Layers, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { JobDescription } from "../types";
@@ -42,9 +40,6 @@ interface JobDescriptionDetailViewProps {
 
 export function JobDescriptionDetailView({
   jobDescription,
-  companyName,
-  onBack,
-  onEdit,
   activeTab,
   onApplicationsCountChange,
 }: JobDescriptionDetailViewProps) {
@@ -65,20 +60,22 @@ export function JobDescriptionDetailView({
     setIsJdInfoExpanded(false);
   }, [jobDescription]);
 
-  const loadApplications = useCallback(async (jdId: number) => {
-    setIsLoadingApps(true);
-    const res = await adminApplicationManager.getApplicationsByJdId(jdId);
-    if (res.success && res.data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const apps = (res.data.applications || res.data as any) as ApplicationListItemDto[];
-      setApplications(apps);
-      onApplicationsCountChange?.(apps.length);
-    } else {
-      setApplications([]);
-      onApplicationsCountChange?.(0);
-    }
-    setIsLoadingApps(false);
-  }, [onApplicationsCountChange]);
+  const loadApplications = useCallback(
+    async (jdId: number) => {
+      setIsLoadingApps(true);
+      const res = await adminApplicationManager.getApplicationsByJdId(jdId);
+      if (res.success && res.data) {
+        const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
+        setApplications(apps);
+        onApplicationsCountChange?.(apps.length);
+      } else {
+        setApplications([]);
+        onApplicationsCountChange?.(0);
+      }
+      setIsLoadingApps(false);
+    },
+    [onApplicationsCountChange]
+  );
 
   useEffect(() => {
     if (currentJd.id) {
@@ -99,16 +96,16 @@ export function JobDescriptionDetailView({
         ...r.configData,
         codingProblemsId:
           r.configData?.codingProblems
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             ?.map((cp: any) => cp.problemId)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             .filter((id: any): id is number => id !== undefined) ?? [],
         codingProblems: r.configData?.codingProblems ?? [],
         codeReviewProblemsId:
           r.configData?.codeReviewProblems
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             ?.map((cp: any) => cp.problemId)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             .filter((id: any): id is number => id !== undefined) ?? [],
         codeReviewProblems: r.configData?.codeReviewProblems ?? [],
       },
@@ -121,7 +118,7 @@ export function JobDescriptionDetailView({
       const payloadRounds = rounds.map((r, idx) => ({
         name: r.name || `Vòng ${idx + 1}`,
         roundOrder: idx + 1,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         roundType: r.roundType as any,
         passThreshold: Number(r.passThreshold ?? 0.8),
         configData: {
@@ -131,7 +128,7 @@ export function JobDescriptionDetailView({
           maxScore: Number(r.configData?.maxScore ?? 100),
           aiSystemPrompt: r.configData?.aiSystemPrompt || "",
           evaluationCriteria: r.configData?.evaluationCriteria || "",
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           quizQuestions: (r.configData?.quizQuestions || []).map((q: any) => ({
             questionText: q.questionText || "",
             options: q.options || [],
@@ -203,14 +200,24 @@ export function JobDescriptionDetailView({
     switch (status) {
       case "PASSED":
       case "ACCEPTED":
-        return <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400">ĐẠT</Badge>;
+        return (
+          <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+            ĐẠT
+          </Badge>
+        );
       case "REJECTED":
       case "FAILED":
         return <Badge variant="destructive">TỪ CHỐI</Badge>;
       case "IN_PROGRESS":
       case "PENDING":
       default:
-        return <Badge variant="secondary" className="bg-amber-500/15 text-amber-600 border-amber-500/30 dark:bg-amber-500/20 dark:text-amber-400">ĐANG XỬ LÝ</Badge>;
+        return (
+          <Badge
+            variant="secondary"
+            className="border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+            ĐANG XỬ LÝ
+          </Badge>
+        );
     }
   };
 
@@ -221,7 +228,7 @@ export function JobDescriptionDetailView({
           isOpen={isEditorOpen}
           onClose={() => setIsEditorOpen(false)}
           initialRounds={initialRounds}
-          initialMetadata={{ name: currentJd.title, category: "", description: "" }}
+          initialMetadata={{ name: currentJd.title || "", category: "", description: "" }}
           title="Quy trình tuyển dụng JD"
           showMetadataInputs={false}
           isSaving={isSaving}
@@ -240,9 +247,9 @@ export function JobDescriptionDetailView({
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
             {/* Cột trái: Quy trình tuyển dụng */}
             <main className="min-w-0 space-y-5">
-              <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-2xs sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                     <Sparkles className="h-4 w-4 text-indigo-500" />
                     Quy trình tuyển dụng ({initialRounds.length} vòng)
                   </h3>
@@ -252,7 +259,7 @@ export function JobDescriptionDetailView({
                 </div>
                 <Button
                   onClick={() => setIsEditorOpen(true)}
-                  className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold shadow-xs">
+                  className="gap-2 bg-indigo-600 text-xs font-semibold shadow-xs hover:bg-indigo-700">
                   <Edit3 className="h-3.5 w-3.5" />
                   Chỉnh sửa quy trình bằng Studio Workspace
                 </Button>
@@ -273,7 +280,7 @@ export function JobDescriptionDetailView({
                   </div>
                   <Button
                     onClick={() => setIsEditorOpen(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold">
+                    className="bg-indigo-600 text-xs font-semibold hover:bg-indigo-700">
                     + Thêm vòng phỏng vấn
                   </Button>
                 </div>
@@ -301,7 +308,9 @@ export function JobDescriptionDetailView({
                             <span className="text-xs font-bold text-slate-400">
                               Vòng {index + 1}
                             </span>
-                            <Badge variant="outline" className={cn("gap-1.5 text-[11px]", meta?.color)}>
+                            <Badge
+                              variant="outline"
+                              className={cn("gap-1.5 text-[11px]", meta?.color)}>
                               {meta?.title}
                             </Badge>
                           </div>
@@ -310,7 +319,10 @@ export function JobDescriptionDetailView({
                           </h4>
                           {round.passThreshold !== undefined && (
                             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                              Điểm đạt: <strong className="text-indigo-600 dark:text-indigo-400">{Math.round(round.passThreshold * 100)}%</strong>
+                              Điểm đạt:{" "}
+                              <strong className="text-indigo-600 dark:text-indigo-400">
+                                {Math.round(round.passThreshold * 100)}%
+                              </strong>
                             </p>
                           )}
                         </div>
@@ -349,15 +361,13 @@ export function JobDescriptionDetailView({
                   )}>
                   {jdInfoSections.map((section) => (
                     <section key={section.key} className="space-y-1.5">
-                      <h4 className="font-bold text-slate-900 dark:text-white">
-                        {section.label}
-                      </h4>
+                      <h4 className="font-bold text-slate-900 dark:text-white">{section.label}</h4>
                       {section.value ? (
-                        <p className="whitespace-pre-line leading-relaxed text-slate-500 dark:text-slate-400">
+                        <p className="leading-relaxed whitespace-pre-line text-slate-500 dark:text-slate-400">
                           {section.value}
                         </p>
                       ) : (
-                        <p className="italic text-slate-400 dark:text-slate-500">
+                        <p className="text-slate-400 italic dark:text-slate-500">
                           Chưa có thông tin
                         </p>
                       )}
@@ -381,7 +391,9 @@ export function JobDescriptionDetailView({
         </TabsContent>
 
         {/* Tab 2: Đơn ứng tuyển */}
-        <TabsContent value="applications" className="m-0 flex-1 overflow-y-auto p-4 lg:p-6 space-y-4">
+        <TabsContent
+          value="applications"
+          className="m-0 flex-1 space-y-4 overflow-y-auto p-4 lg:p-6">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Danh sách ứng viên nộp đơn cho vị trí này ({applications.length})
@@ -392,12 +404,12 @@ export function JobDescriptionDetailView({
             <Table>
               <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
                 <TableRow>
-                  <TableHead className="pl-6 w-[80px]">#ID</TableHead>
+                  <TableHead className="w-[80px] pl-6">#ID</TableHead>
                   <TableHead className="min-w-[200px]">Ứng viên</TableHead>
                   <TableHead className="w-[140px]">Vòng hiện tại</TableHead>
                   <TableHead className="w-[100px] text-center">Điểm số</TableHead>
                   <TableHead className="w-[130px]">Trạng thái</TableHead>
-                  <TableHead className="pr-6 w-[100px] text-right">Thao tác</TableHead>
+                  <TableHead className="w-[100px] pr-6 text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -412,45 +424,43 @@ export function JobDescriptionDetailView({
                   </TableRow>
                 ) : applications.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-40 text-center text-slate-400 text-xs">
+                    <TableCell colSpan={6} className="h-40 text-center text-xs text-slate-400">
                       Chưa có ứng viên nào ứng tuyển vị trí này.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  applications.map((app) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const name = app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  applications.map((app, index) => {
+                    const name =
+                      app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
+
                     const email = app.candidateEmail || (app as any).email || "Chưa có email";
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                     const avatarUrl = (app as any).avatarUrl || (app as any).applicantAvatar;
 
                     return (
                       <TableRow
-                        key={app.id}
+                        key={app.applicationId ?? index}
                         onClick={() => {
-                          setSelectedAppId(app.id!);
+                          setSelectedAppId(app.applicationId || (app as any).id);
                           setIsDrawerOpen(true);
                         }}
                         className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
                         <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                          #{app.id}
+                          #{app.applicationId || (app as any).id}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8 border border-slate-200 dark:border-slate-800">
                               <AvatarImage src={avatarUrl} alt={name} />
-                              <AvatarFallback className="bg-indigo-50 text-indigo-600 font-bold text-xs dark:bg-indigo-950 dark:text-indigo-400">
+                              <AvatarFallback className="bg-indigo-50 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                                 {name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <div className="font-semibold text-slate-900 dark:text-white text-xs">
+                              <div className="text-xs font-semibold text-slate-900 dark:text-white">
                                 {name}
                               </div>
-                              <div className="text-[11px] text-slate-400">
-                                {email}
-                              </div>
+                              <div className="text-[11px] text-slate-400">{email}</div>
                             </div>
                           </div>
                         </TableCell>
@@ -458,22 +468,21 @@ export function JobDescriptionDetailView({
                           <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
                             <Layers className="h-3.5 w-3.5 text-indigo-500" />
                             <span>
-                              {app.currentRoundName || (app.currentRoundOrder ? `Vòng ${app.currentRoundOrder}` : "—")}
+                              {app.currentRoundName ||
+                                (app.currentRoundOrder ? `Vòng ${app.currentRoundOrder}` : "—")}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-center font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
                           {app.overallScore !== undefined ? `${app.overallScore}/100` : "—"}
                         </TableCell>
-                        <TableCell>
-                          {getStatusBadge(app.status)}
-                        </TableCell>
+                        <TableCell>{getStatusBadge(app.status)}</TableCell>
                         <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              setSelectedAppId(app.id!);
+                              setSelectedAppId(app.applicationId || (app as any).id);
                               setIsDrawerOpen(true);
                             }}
                             className="h-7 w-7 p-0 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">

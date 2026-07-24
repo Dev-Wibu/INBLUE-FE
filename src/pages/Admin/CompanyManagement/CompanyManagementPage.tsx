@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PaginationControl } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ export function CompanyManagementPage() {
     queryFn: async () => {
       const response = await companyManager.getAll();
       if (response.success) {
-        return extractDataArray<Company>(response);
+        return extractDataArray<Company>(response as any);
       }
       toast.error(response.error || t("common.unableToLoadCompanyList"));
       return [];
@@ -68,7 +69,7 @@ export function CompanyManagementPage() {
     queryFn: async () => {
       const response = await jobDescriptionManager.getAll();
       if (response.success) {
-        return extractDataArray<JobDescription>(response);
+        return extractDataArray<JobDescription>(response as any);
       }
       return [];
     },
@@ -86,20 +87,20 @@ export function CompanyManagementPage() {
 
   const processedJds = useMemo(() => {
     let result = allJds.map((jd) => {
-      const openJdInfo = openJds.find((o) => (o.jdId || o.id) === jd.id);
+      const openJdInfo = openJds.find((o) => o.jdId === jd.id);
       const company = companies.find(
         (c) =>
           c.jobDescriptions?.some((j) => j.id === jd.id) ||
           c.id === (jd as any).companyId ||
           c.id === (jd as any).company?.id ||
-          (openJdInfo?.companyId && c.id === openJdInfo.companyId)
+          (openJdInfo?.company?.id && c.id === openJdInfo.company.id)
       );
 
       return {
         ...jd,
         companyName:
           company?.name ||
-          openJdInfo?.companyName ||
+          openJdInfo?.company?.name ||
           (jd as any).company?.name ||
           (jd as any).companyName,
         companyLogoUrl:
@@ -113,7 +114,6 @@ export function CompanyManagementPage() {
           (jd as any).totalApplications ??
           (jd as any).applicationCount ??
           (jd as any).applicationsCount ??
-          jd.applications?.length ??
           0,
       };
     });
@@ -192,9 +192,11 @@ export function CompanyManagementPage() {
     try {
       setIsCreating(true);
       const res = await companyManager.create({
-        name: formData.name,
-        description: formData.description,
-        status: formData.status || "ACTIVE",
+        data: {
+          name: formData.name || "",
+          description: formData.description,
+          status: formData.status || "ACTIVE",
+        },
         logo: formData.logo,
         banner: formData.banner,
       });
@@ -228,7 +230,7 @@ export function CompanyManagementPage() {
   const handleSubmitCreateJd = async () => {
     try {
       setIsSubmittingJd(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const targetCompanyId = selectedCompanyId || (jdFormData as any).companyId;
       if (!targetCompanyId) {
         toast.error("Vui lòng chọn công ty cho vị trí tuyển dụng này");

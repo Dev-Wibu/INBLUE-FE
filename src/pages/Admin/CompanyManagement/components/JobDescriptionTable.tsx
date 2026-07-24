@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SortButton, type SortDirection } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Switch } from "@/components/ui/switch";
@@ -127,14 +128,24 @@ export function JobDescriptionTable({
         <TableBody>
           {jobDescriptions.map((job) => {
             const isClosed = job.status === "CLOSED";
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             const compName = (job as any).companyName || (job as any).company?.name || "—";
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const compLogo = (job as any).companyLogoUrl || (job as any).company?.logoUrl || (job as any).companyLogo || (job as any).logoUrl;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const appCount = (job as any).applicationCount ?? (job as any).statistics?.totalApplications ?? (job as any).totalApplications ?? (job as any).applicationsCount ?? job.applications?.length ?? 0;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const createdDate = (job as any).createdAt || (job as any).createdDate || (job as any).createdAtDate;
+
+            const compLogo =
+              (job as any).companyLogoUrl ||
+              (job as any).company?.logoUrl ||
+              (job as any).companyLogo ||
+              (job as any).logoUrl;
+
+            const appCount =
+              (job as any).applicationCount ??
+              (job as any).statistics?.totalApplications ??
+              (job as any).totalApplications ??
+              (job as any).applicationsCount ??
+              0;
+
+            const createdDate =
+              (job as any).createdAt || (job as any).createdDate || (job as any).createdAtDate;
 
             const isImageFailed = job.id ? failedImages[job.id] : false;
 
@@ -192,13 +203,13 @@ export function JobDescriptionTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                     <span>{formatDate(job.deadlineAt)}</span>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    <Calendar className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                    <Calendar className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
                     <span>{formatDate(createdDate)}</span>
                   </div>
                 </TableCell>
