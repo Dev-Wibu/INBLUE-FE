@@ -1765,7 +1765,10 @@
     "thereAreNoCompaniesYet": "There are no companies yet. Please come back later.",
     "tipsFromExperts": "Tips from experts",
     "tryAdjustingYourSearchKeywords": "Try adjusting your search keywords or removing filters",
-    "under10Million": "Under 10 million"
+    "under10Million": "Under 10 million",
+    "salaryUnitSuffixEn": "USD",
+    "salaryUnitSuffixVi": "VND",
+    "salaryUnitSuffixJa": "JPY"
   },
   "compNotification": {
     "loadingMoreNotifications": "Loading more notifications",

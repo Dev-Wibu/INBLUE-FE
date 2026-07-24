@@ -16,7 +16,14 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 export function JobSearchSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const localeSuffixKey = (() => {
+    const lang = (i18n.language || "vi").split("-")[0];
+    if (lang === "en") return "compHomepageRedesign.salaryUnitSuffixEn";
+    if (lang === "ja") return "compHomepageRedesign.salaryUnitSuffixJa";
+    return "compHomepageRedesign.salaryUnitSuffixVi";
+  })();
+  const salaryUnitSuffix = t(localeSuffixKey);
   const [keyword, setKeyword] = useState("");
   const [level, setLevel] = useState<string>("all");
   const [salaryMin, setSalaryMin] = useState("");
@@ -148,7 +155,6 @@ export function JobSearchSection() {
                 {t("adminCompanymanagement.minimumWage")}
               </label>
               <div className="relative">
-                <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -158,10 +164,10 @@ export function JobSearchSection() {
                     const raw = e.target.value.replace(/[^\d]/g, "");
                     setSalaryMin(raw);
                   }}
-                  className="h-10 w-full pr-10 pl-9 text-sm"
+                  className="h-10 w-full pr-20 pl-3 text-sm"
                 />
                 <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">
-                  {t("general.million")}
+                  {salaryUnitSuffix}
                 </span>
               </div>
             </div>
@@ -172,7 +178,6 @@ export function JobSearchSection() {
                 {t("adminCompanymanagement.maximumSalary")}
               </label>
               <div className="relative">
-                <DollarSign className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -182,10 +187,10 @@ export function JobSearchSection() {
                     const raw = e.target.value.replace(/[^\d]/g, "");
                     setSalaryMax(raw);
                   }}
-                  className="h-10 w-full pr-10 pl-9 text-sm"
+                  className="h-10 w-full pr-20 pl-3 text-sm"
                 />
                 <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-slate-400">
-                  {t("general.million")}
+                  {salaryUnitSuffix}
                 </span>
               </div>
             </div>

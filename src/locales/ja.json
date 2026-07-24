@@ -1729,7 +1729,10 @@
     "thereAreNoCompaniesYet": "まだ企業がありません。しばらくしてからもう一度お試しください。",
     "tipsFromExperts": "エキスパートからのヒント",
     "tryAdjustingYourSearchKeywords": "検索キーワードを調整するか、フィルターを解除してみてください",
-    "under10Million": "1,000万未満"
+    "under10Million": "1,000万未満",
+    "salaryUnitSuffixEn": "USD",
+    "salaryUnitSuffixVi": "VND",
+    "salaryUnitSuffixJa": "JPY"
   },
   "compNotification": {
     "loadingMoreNotifications": "通知をさらに読み込み中",

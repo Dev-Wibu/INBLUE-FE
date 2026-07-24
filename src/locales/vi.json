@@ -1762,7 +1762,10 @@
     "thereAreNoCompaniesYet": "Chưa có công ty nào. Vui lòng quay lại sau.",
     "tipsFromExperts": "Bí quyết từ chuyên gia",
     "tryAdjustingYourSearchKeywords": "Thử điều chỉnh từ khóa tìm kiếm hoặc bỏ bớt bộ lọc",
-    "under10Million": "Dưới 10 triệu"
+    "under10Million": "Dưới 10 triệu",
+    "salaryUnitSuffixEn": "USD",
+    "salaryUnitSuffixVi": "VND",
+    "salaryUnitSuffixJa": "JPY"
   },
   "compNotification": {
     "loadingMoreNotifications": "Đang tải thêm thông báo",
