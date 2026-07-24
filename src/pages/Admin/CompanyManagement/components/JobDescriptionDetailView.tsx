@@ -45,6 +45,82 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { JobDescription } from "../types";
 
+const COMMON_TECH_KEYWORDS = [
+  "Java",
+  "Spring Boot",
+  "Spring",
+  "Microservices",
+  "Docker",
+  "Kubernetes",
+  "RESTful",
+  "Kafka",
+  "RabbitMQ",
+  "SQL",
+  "PostgreSQL",
+  "MySQL",
+  "MongoDB",
+  "React",
+  "TypeScript",
+  "JavaScript",
+  "Python",
+  "AWS",
+  "GCP",
+  "CI/CD",
+  "Git",
+  "JSON",
+  "Swagger",
+  "XML",
+];
+
+function extractTechStack(text?: string): string[] {
+  if (!text) return [];
+  const found = new Set<string>();
+  COMMON_TECH_KEYWORDS.forEach((keyword) => {
+    const escaped = keyword.replace(/[\/\.#]/g, "\\$&");
+    const regex = new RegExp(`\\b${escaped}\\b`, "i");
+    if (regex.test(text)) {
+      found.add(keyword);
+    }
+  });
+  return Array.from(found);
+}
+
+function FormattedTextList({
+  text,
+  icon: Icon = CheckCircle2,
+  iconColor = "text-indigo-500",
+}: {
+  text?: string;
+  icon?: React.ElementType;
+  iconColor?: string;
+}) {
+  if (!text || !text.trim()) return null;
+
+  const lines = text
+    .split(/\n+/)
+    .map((line) => line.trim().replace(/^[-*•\d+.]\s*/, ""))
+    .filter(Boolean);
+
+  if (lines.length <= 1) {
+    return (
+      <div className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+        {text}
+      </div>
+    );
+  }
+
+  return (
+    <ul className="space-y-2.5">
+      {lines.map((line, idx) => (
+        <li key={idx} className="flex items-start gap-2.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+          <Icon className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", iconColor)} />
+          <span className="flex-1">{line}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 interface JobDescriptionDetailViewProps {
   jobDescription: JobDescription;
   companyName?: string;
@@ -182,6 +258,10 @@ export function JobDescriptionDetailView({
   };
 
   const templates = getAvailableRoundsTemplates(t);
+
+  const detectedTechStack = useMemo(() => {
+    return extractTechStack(currentJd.requirements);
+  }, [currentJd.requirements]);
 
   const formatSalary = (min?: number, max?: number, currency?: string) => {
     if (!min && !max) return t("common.negotiable", "Thỏa thuận");
@@ -345,16 +425,18 @@ export function JobDescriptionDetailView({
 
               {/* SECTION 2: JOB DESCRIPTION */}
               <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <div className="mb-3.5 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                   <Briefcase className="h-4 w-4 text-indigo-500" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     {t("common.description", "Mô tả công việc")}
                   </h3>
                 </div>
                 {currentJd.description ? (
-                  <div className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
-                    {currentJd.description}
-                  </div>
+                  <FormattedTextList
+                    text={currentJd.description}
+                    icon={Sparkles}
+                    iconColor="text-indigo-500"
+                  />
                 ) : (
                   <p className="text-xs italic text-slate-400 dark:text-slate-500">
                     Chưa cập nhật mô tả công việc.
@@ -364,16 +446,34 @@ export function JobDescriptionDetailView({
 
               {/* SECTION 3: REQUIREMENTS */}
               <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                <div className="mb-3.5 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                   <FileCheck className="h-4 w-4 text-emerald-500" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     {t("common.requirements", "Yêu cầu ứng viên")}
                   </h3>
                 </div>
-                {currentJd.requirements ? (
-                  <div className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
-                    {currentJd.requirements}
+
+                {detectedTechStack.length > 0 && (
+                  <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg bg-slate-50 p-2.5 border border-slate-100 dark:bg-slate-950/50 dark:border-slate-800/60">
+                    <span className="mr-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                      Công nghệ & Kỹ năng:
+                    </span>
+                    {detectedTechStack.map((tech) => (
+                      <Badge
+                        key={tech}
+                        className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60 text-[11px] font-bold">
+                        {tech}
+                      </Badge>
+                    ))}
                   </div>
+                )}
+
+                {currentJd.requirements ? (
+                  <FormattedTextList
+                    text={currentJd.requirements}
+                    icon={CheckCircle2}
+                    iconColor="text-emerald-500"
+                  />
                 ) : (
                   <p className="text-xs italic text-slate-400 dark:text-slate-500">
                     Chưa cập nhật yêu cầu ứng viên.
@@ -461,14 +561,19 @@ export function JobDescriptionDetailView({
                     {t("common.benefits", "Phúc lợi & Đãi ngộ")}
                   </h3>
                 </div>
-                {currentJd.benefits ? (
-                  <div className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
-                    {currentJd.benefits}
-                  </div>
+                {currentJd.benefits &&
+                currentJd.benefits.trim() &&
+                currentJd.benefits !== "Không lương" ? (
+                  <FormattedTextList
+                    text={currentJd.benefits}
+                    icon={Gift}
+                    iconColor="text-purple-500"
+                  />
                 ) : (
-                  <p className="text-xs italic text-slate-400 dark:text-slate-500">
-                    Chưa cập nhật thông tin phúc lợi.
-                  </p>
+                  <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-500 dark:bg-slate-950/50 dark:text-slate-400">
+                    <Gift className="h-4 w-4 text-purple-400 shrink-0" />
+                    <span>{currentJd.benefits || "Thỏa thuận theo chính sách công ty"}</span>
+                  </div>
                 )}
               </div>
             </aside>
