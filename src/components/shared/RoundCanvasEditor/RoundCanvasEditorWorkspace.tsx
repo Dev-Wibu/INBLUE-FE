@@ -412,7 +412,7 @@ export function RoundCanvasEditorWorkspace({
   if (!isOpen) return null;
 
   return (
-    <div className="relative flex flex-1 h-full w-full flex-row gap-0 overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="relative flex h-full w-full flex-1 flex-row gap-0 overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* 1. Toolbox Sidebar (Left) */}
       <div className="flex h-full w-[28%] max-w-[340px] min-w-[300px] shrink-0 flex-col border-r border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="flex h-[64px] shrink-0 flex-col justify-center border-b border-slate-200 bg-slate-100/50 px-5 dark:border-slate-800 dark:bg-slate-900/30">
@@ -440,7 +440,7 @@ export function RoundCanvasEditorWorkspace({
                   {template.icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-bold leading-tight text-slate-800 transition-colors group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
+                  <h4 className="text-sm leading-tight font-bold text-slate-800 transition-colors group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
                     {template.title}
                   </h4>
                   <p className="mt-1 text-xs leading-normal text-slate-500 group-hover:text-slate-600 dark:text-slate-400 dark:group-hover:text-slate-300">
@@ -457,7 +457,7 @@ export function RoundCanvasEditorWorkspace({
       <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
         {/* Studio Top Header Toolbar */}
         <div className="flex h-[64px] shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 dark:border-slate-800 dark:bg-slate-900/60">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <Button
               variant="outline"
               size="icon"
@@ -468,7 +468,7 @@ export function RoundCanvasEditorWorkspace({
             </Button>
 
             {showMetadataInputs ? (
-              <div className="flex items-center gap-2 flex-1 max-w-2xl">
+              <div className="flex max-w-2xl flex-1 items-center gap-2">
                 <Input
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
@@ -485,7 +485,7 @@ export function RoundCanvasEditorWorkspace({
                   value={templateDescription}
                   onChange={(e) => setTemplateDescription(e.target.value)}
                   placeholder={t("template.descriptionPlaceholder")}
-                  className="hidden md:block h-8 flex-1 border-slate-200 bg-slate-50 text-xs dark:border-slate-800 dark:bg-slate-950"
+                  className="hidden h-8 flex-1 border-slate-200 bg-slate-50 text-xs md:block dark:border-slate-800 dark:bg-slate-950"
                 />
               </div>
             ) : (
@@ -494,7 +494,7 @@ export function RoundCanvasEditorWorkspace({
                   <Sparkles className="h-3 w-3 text-indigo-500" />
                   {title || t("adminCompanymanagement.recruitmentRoundTemplate")}
                 </div>
-                <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white truncate">
+                <h1 className="truncate text-sm font-bold tracking-tight text-slate-900 dark:text-white">
                   {initialMetadata.name || "Chỉnh sửa quy trình vòng tuyển dụng"}
                 </h1>
               </div>
@@ -502,7 +502,7 @@ export function RoundCanvasEditorWorkspace({
           </div>
 
           {/* Zoom controls & Save action buttons */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex shrink-0 items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
                 {rounds.length} {t("userApplicationhistory.rounds")}

@@ -62,19 +62,19 @@ Khi chuyển sang view chi tiết hoặc màn hình phân cấp (Root -> Parent 
 <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
   {/* Unified Single Header (Single horizontal line, zero title duplication) */}
   <div className="flex flex-none items-center justify-between border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-    <div className="flex flex-wrap items-center gap-2 min-w-0">
+    <div className="flex min-w-0 flex-wrap items-center gap-2">
       <button className="text-xs font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400">
         Quản lý công ty
       </button>
-      <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
       <button className="text-xs font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400">
         FBT Software
       </button>
-      <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-      <h1 className="text-base font-bold text-slate-900 dark:text-white truncate">
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+      <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
         Fresher Java Engineer
       </h1>
-      <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30">OPEN</Badge>
+      <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-600">OPEN</Badge>
     </div>
 
     {/* Header right side controls (Tab switchers + Action buttons) */}
@@ -85,7 +85,9 @@ Khi chuyển sang view chi tiết hoặc màn hình phân cấp (Root -> Parent 
           <TabsTrigger value="applications">Đơn ứng tuyển ({count})</TabsTrigger>
         </TabsList>
       </Tabs>
-      <Button variant="outline" size="sm">Chỉnh sửa</Button>
+      <Button variant="outline" size="sm">
+        Chỉnh sửa
+      </Button>
     </div>
   </div>
 
