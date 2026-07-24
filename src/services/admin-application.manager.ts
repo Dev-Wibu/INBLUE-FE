@@ -3,10 +3,12 @@ import { fetchClient } from "@/lib/api";
 import type { components } from "../../schema-from-be";
 
 export type AdminOpenJdResponseDto = components["schemas"]["AdminOpenJdResponseDto"];
-export type AdminJdApplicationsResponseDto = components["schemas"]["AdminJdApplicationsResponseDto"];
-export type AdminApplicationFullDetailResponseDto = components["schemas"]["AdminApplicationFullDetailResponseDto"];
-export type ApplicationListItemDto = components["schemas"]["ApplicationListItemDto"];
-export type CandidateRoundDetailDto = components["schemas"]["CandidateRoundDetailDto"];
+export type AdminJdApplicationsResponseDto =
+  components["schemas"]["AdminJdApplicationsResponseDto"];
+export type AdminApplicationFullDetailResponseDto =
+  components["schemas"]["AdminApplicationFullDetailResponseDto"];
+export type ApplicationListItemDto = components["schemas"]["AdminApplicationSummaryDto"];
+export type CandidateRoundDetailDto = components["schemas"]["AdminRoundDetailDto"];
 
 export class AdminApplicationManager {
   /**
@@ -45,9 +47,7 @@ export class AdminApplicationManager {
    * GET /api/admin/jds/{jdId}/applications
    * Lấy danh sách các lượt apply của một JD cụ thể
    */
-  async getApplicationsByJdId(
-    jdId: number
-  ): Promise<ApiResponse<AdminJdApplicationsResponseDto>> {
+  async getApplicationsByJdId(jdId: number): Promise<ApiResponse<AdminJdApplicationsResponseDto>> {
     try {
       const response = await fetchClient.GET("/api/admin/jds/{jdId}/applications", {
         params: {
@@ -83,14 +83,11 @@ export class AdminApplicationManager {
     applicationId: number
   ): Promise<ApiResponse<AdminApplicationFullDetailResponseDto>> {
     try {
-      const response = await fetchClient.GET(
-        "/api/admin/applications/{applicationId}/detail",
-        {
-          params: {
-            path: { applicationId },
-          },
-        }
-      );
+      const response = await fetchClient.GET("/api/admin/applications/{applicationId}/detail", {
+        params: {
+          path: { applicationId },
+        },
+      });
 
       if (response.data) {
         return {
