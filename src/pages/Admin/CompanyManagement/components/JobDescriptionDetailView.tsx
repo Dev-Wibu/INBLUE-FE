@@ -28,6 +28,7 @@ import {
   Briefcase,
   Calendar,
   CheckCircle2,
+  Clock,
   DollarSign,
   Edit3,
   Eye,
@@ -246,210 +247,232 @@ export function JobDescriptionDetailView({
 
   return (
     <div className="flex h-full flex-col bg-slate-50 dark:bg-slate-950">
-      {/* ── HERO COMMAND STRIP (Key Job Attributes Overview) ──────────────────────── */}
-      <div className="border-b border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Key Metric Chips */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Salary Pill */}
-            <div className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-50/80 px-3 py-1 text-xs font-bold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/60 dark:text-emerald-300">
-              <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-              <span>{formatSalary(currentJd.salaryMin, currentJd.salaryMax, currentJd.currency)}</span>
-            </div>
-
-            {/* Level Pill */}
-            {currentJd.level && (
-              <div className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/20 bg-indigo-50/80 px-3 py-1 text-xs font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-950/60 dark:text-indigo-300">
-                <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
-                <span>{currentJd.level}</span>
-              </div>
-            )}
-
-            {/* Deadline Pill */}
-            <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100/70 px-3 py-1 text-xs font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300">
-              <Calendar className="h-3.5 w-3.5 text-slate-400" />
-              <span>Hạn: {formatDeadline(currentJd.deadlineAt)}</span>
-            </div>
-
-            {/* Application Count Pill */}
-            <div className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/20 bg-purple-50/80 px-3 py-1 text-xs font-semibold text-purple-700 dark:border-purple-500/30 dark:bg-purple-950/60 dark:text-purple-300">
-              <Users className="h-3.5 w-3.5 text-purple-500" />
-              <span>{applications.length} Ứng viên</span>
-            </div>
-          </div>
-
-          {/* Action: Studio Workspace Button */}
-          <Button
-            onClick={() => setIsEditorOpen(true)}
-            className="h-8 gap-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 px-3.5 text-xs font-bold text-white shadow-sm shadow-indigo-500/20 hover:from-indigo-700 hover:to-indigo-800">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Studio Workspace sơ đồ</span>
-          </Button>
-        </div>
-      </div>
-
       {/* Main Tabbed Content Area */}
       <Tabs value={activeTab || "process"} className="flex flex-1 flex-col overflow-hidden">
         {/* Tab 1: Quy trình tuyển dụng & Thông tin JD */}
         <TabsContent value="process" className="m-0 flex-1 overflow-y-auto p-4 lg:p-6">
-          <div className="mx-auto space-y-6">
-            {/* ── SECTION 1: RECRUITMENT PIPELINE STEPPER ───────────────────────────── */}
-            <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                    <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    Quy trình tuyển dụng ({initialRounds.length} vòng phỏng vấn)
-                  </h3>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    Sơ đồ các bước đánh giá tự động & phỏng vấn trực tiếp dành cho ứng viên
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditorOpen(true)}
-                  className="h-8 gap-1.5 border-indigo-200 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:border-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950">
-                  <Edit3 className="h-3.5 w-3.5" />
-                  Chỉnh sửa quy trình
-                </Button>
-              </div>
-
-              {!initialRounds || initialRounds.length === 0 ? (
-                <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center dark:border-slate-800 dark:bg-slate-900/50">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-500 dark:bg-indigo-950 dark:text-indigo-400">
-                    <FileText className="h-6 w-6" />
-                  </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.8fr)]">
+            {/* ── LEFT COLUMN (2/3): RECRUITMENT PIPELINE & JOB SPECS ───────────────── */}
+            <main className="min-w-0 space-y-6">
+              {/* SECTION 1: RECRUITMENT PIPELINE STEPPER */}
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="font-semibold text-slate-900 dark:text-white">
-                      Chưa cấu hình vòng phỏng vấn nào
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      Thiết lập các vòng phỏng vấn kéo thả trực quan để hệ thống tự động chấm bài.
+                    <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                      <Sparkles className="h-4 w-4 text-indigo-500" />
+                      Quy trình tuyển dụng ({initialRounds.length} vòng phỏng vấn)
+                    </h3>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      Sơ đồ đánh giá tự động & phỏng vấn trực tiếp dành cho ứng viên
                     </p>
                   </div>
                   <Button
                     onClick={() => setIsEditorOpen(true)}
-                    className="h-8 bg-indigo-600 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
-                    + Cấu hình quy trình tuyển dụng
+                    className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Studio Workspace sơ đồ
                   </Button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {initialRounds.map((round, index) => {
-                    const meta = templates.find((template) => template.type === round.roundType);
-                    const isLast = index === initialRounds.length - 1;
 
-                    return (
-                      <div key={index} className="relative flex items-center">
-                        <div
-                          onClick={() => setIsEditorOpen(true)}
-                          className="group relative flex w-full cursor-pointer flex-col justify-between rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-all hover:border-indigo-400 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-600 dark:hover:bg-slate-900">
-                          {/* Round Header */}
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-extrabold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                              {index + 1}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className={cn("gap-1 text-[11px] font-bold", meta?.color)}>
-                              {meta?.title || round.roundType}
-                            </Badge>
+                {!initialRounds || initialRounds.length === 0 ? (
+                  <div className="flex min-h-[180px] flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center dark:border-slate-800 dark:bg-slate-900/50">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-500 dark:bg-indigo-950 dark:text-indigo-400">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        Chưa cấu hình vòng phỏng vấn nào
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                        Thiết lập các vòng phỏng vấn để hệ thống tự động chấm bài.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => setIsEditorOpen(true)}
+                      className="h-7 bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
+                      + Cấu hình quy trình tuyển dụng
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {initialRounds.map((round, index) => {
+                      const meta = templates.find((template) => template.type === round.roundType);
+                      const isLast = index === initialRounds.length - 1;
+
+                      return (
+                        <div key={index} className="relative flex items-center">
+                          <div
+                            onClick={() => setIsEditorOpen(true)}
+                            className="group flex w-full cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
+                            {/* Round Header */}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                {index + 1}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={cn("gap-1 text-[11px] font-semibold", meta?.color)}>
+                                {meta?.title || round.roundType}
+                              </Badge>
+                            </div>
+
+                            {/* Round Name */}
+                            <h4 className="mt-2 text-xs font-bold text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
+                              {round.name}
+                            </h4>
+
+                            {/* Pass Threshold */}
+                            {round.passThreshold !== undefined && (
+                              <div className="mt-2.5 flex items-center justify-between border-t border-slate-200/60 pt-2 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                                <span>Điểm đạt</span>
+                                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                  {Math.round(round.passThreshold * 100)}%
+                                </span>
+                              </div>
+                            )}
                           </div>
 
-                          {/* Round Name */}
-                          <h4 className="mt-3 text-sm font-bold text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">
-                            {round.name}
-                          </h4>
-
-                          {/* Pass Threshold Badge */}
-                          {round.passThreshold !== undefined && (
-                            <div className="mt-3 flex items-center justify-between border-t border-slate-200/60 pt-2.5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                              <span>Điểm đạt</span>
-                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                {Math.round(round.passThreshold * 100)}%
-                              </span>
+                          {!isLast && (
+                            <div className="hidden lg:block absolute -right-2.5 z-10 text-slate-300 dark:text-slate-700">
+                              <ArrowRight className="h-4 w-4" />
                             </div>
                           )}
                         </div>
-
-                        {!isLast && (
-                          <div className="hidden lg:block absolute -right-3.5 z-10 text-slate-300 dark:text-slate-700">
-                            <ArrowRight className="h-5 w-5" />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-
-            {/* ── SECTION 2: THREE DEDICATED JOB SPECIFICATION CARDS ───────────────── */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {/* Card 1: Mô Tả Công Việc */}
-              <div className="flex flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                    <Briefcase className="h-4 w-4" />
+                      );
+                    })}
                   </div>
+                )}
+              </section>
+
+              {/* SECTION 2: JOB DESCRIPTION */}
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <Briefcase className="h-4 w-4 text-indigo-500" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     {t("common.description", "Mô tả công việc")}
                   </h3>
                 </div>
                 {currentJd.description ? (
-                  <p className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
+                  <div className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
                     {currentJd.description}
-                  </p>
+                  </div>
                 ) : (
                   <p className="text-xs italic text-slate-400 dark:text-slate-500">
                     Chưa cập nhật mô tả công việc.
                   </p>
                 )}
-              </div>
+              </section>
 
-              {/* Card 2: Yêu Cầu Ứng Viên */}
-              <div className="flex flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-                    <FileCheck className="h-4 w-4" />
-                  </div>
+              {/* SECTION 3: REQUIREMENTS */}
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <FileCheck className="h-4 w-4 text-emerald-500" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     {t("common.requirements", "Yêu cầu ứng viên")}
                   </h3>
                 </div>
                 {currentJd.requirements ? (
-                  <p className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
+                  <div className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
                     {currentJd.requirements}
-                  </p>
+                  </div>
                 ) : (
                   <p className="text-xs italic text-slate-400 dark:text-slate-500">
-                    Chưa cập nhật yêu cầu công việc.
+                    Chưa cập nhật yêu cầu ứng viên.
                   </p>
                 )}
+              </section>
+            </main>
+
+            {/* ── RIGHT COLUMN (1/3): JOB OVERVIEW METADATA & BENEFITS ─────────────── */}
+            <aside className="space-y-6">
+              {/* Card 1: Job Metadata Summary */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                <h3 className="mb-4 text-sm font-bold text-slate-900 dark:text-white">
+                  Thông số tuyển dụng
+                </h3>
+
+                <div className="space-y-3.5 text-xs">
+                  {/* Salary */}
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                    <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                      <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                      Mức lương
+                    </span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                      {formatSalary(currentJd.salaryMin, currentJd.salaryMax, currentJd.currency)}
+                    </span>
+                  </div>
+
+                  {/* Level */}
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                    <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                      <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
+                      Cấp bậc
+                    </span>
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {currentJd.level || "—"}
+                    </span>
+                  </div>
+
+                  {/* Deadline */}
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                    <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                      <Calendar className="h-3.5 w-3.5 text-amber-500" />
+                      Hạn ứng tuyển
+                    </span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {formatDeadline(currentJd.deadlineAt)}
+                    </span>
+                  </div>
+
+                  {/* Applications count */}
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                    <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                      <Users className="h-3.5 w-3.5 text-purple-500" />
+                      Tổng ứng tuyển
+                    </span>
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                      {applications.length} ứng viên
+                    </span>
+                  </div>
+
+                  {/* Status */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    <span className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                      <Clock className="h-3.5 w-3.5 text-slate-400" />
+                      Trạng thái
+                    </span>
+                    <Badge
+                      className={
+                        currentJd.status === "OPEN"
+                          ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                      }>
+                      {currentJd.status || "OPEN"}
+                    </Badge>
+                  </div>
+                </div>
               </div>
 
-              {/* Card 3: Quyền Lợi Được Hưởng */}
-              <div className="flex flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-                    <Gift className="h-4 w-4" />
-                  </div>
+              {/* Card 2: Benefits */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
+                  <Gift className="h-4 w-4 text-purple-500" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    {t("common.benefits", "Quyền lợi được hưởng")}
+                    {t("common.benefits", "Phúc lợi & Đãi ngộ")}
                   </h3>
                 </div>
                 {currentJd.benefits ? (
-                  <p className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
+                  <div className="text-xs leading-relaxed whitespace-pre-line text-slate-600 dark:text-slate-300">
                     {currentJd.benefits}
-                  </p>
+                  </div>
                 ) : (
                   <p className="text-xs italic text-slate-400 dark:text-slate-500">
-                    Chưa cập nhật quyền lợi.
+                    Chưa cập nhật thông tin phúc lợi.
                   </p>
                 )}
               </div>
-            </div>
+            </aside>
           </div>
         </TabsContent>
 
