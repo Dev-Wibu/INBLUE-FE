@@ -258,7 +258,7 @@ describe("SessionManager", () => {
 
       expect(result.success).toBe(true);
       expect(mockGet).toHaveBeenCalledWith("/api/sessions/update-status", {
-        params: { sessionId: 1, isApproved: true },
+        params: { query: { sessionId: 1, isApproved: true } },
       });
     });
 

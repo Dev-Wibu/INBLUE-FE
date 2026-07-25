@@ -612,8 +612,7 @@ export class SessionManager implements BaseManager<Session> {
     try {
       await fetchClient
         .GET("/api/sessions/update-status", {
-          // @ts-expect-error: Backend Swagger schema mismatch
-          params: { sessionId, isApproved },
+          params: { query: { sessionId, isApproved } },
         })
         .then((res) => ({
           data: res.data,
