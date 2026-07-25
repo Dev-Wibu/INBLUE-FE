@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
 import { SpinnerBlock } from "@/components/ui/spinner";
@@ -18,6 +19,7 @@ import {
   Receipt,
   Settings,
   User,
+  Pencil,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -283,7 +285,16 @@ export function AccountPage() {
           <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
             {/* Profile Card — Impeccable Design */}
             <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-              <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10" />
+              <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate("/user/settings")}
+                  className="absolute top-2.5 right-2.5 h-8 w-8 rounded-full bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                  title={t("general.edit") || "Chỉnh sửa"}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
               <div className="relative px-5 pb-5 text-center">
                 <div className="-mt-12 mb-3 inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
                   {summaryAvatar ? (
