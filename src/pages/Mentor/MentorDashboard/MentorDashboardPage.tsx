@@ -24,7 +24,6 @@ import {
   Star,
   User,
   Users,
-  Video,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -158,12 +157,6 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
         icon: MessageSquare,
         label: t("common.responseReceived"),
         color: "text-cyan-600",
-      },
-      {
-        type: "kioskEntry",
-        icon: Video,
-        label: t("common.joinInterview"),
-        color: "text-rose-600",
       },
     ],
   },
