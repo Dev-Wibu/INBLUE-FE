@@ -4263,7 +4263,12 @@
     "reviewReceived": "Nhận được đánh giá từ mentor",
     "pleaseRateMentor": "Vui lòng đánh giá mentor",
     "feedbackPlaceholder": "Chia sẻ trải nghiệm của bạn với mentor...",
-    "ratingAndFeedback": "Đánh giá & Phản hồi"
+    "ratingAndFeedback": "Đánh giá & Phản hồi",
+    "stepAwaitingAssignment": "Chờ gán mentor",
+    "stepPickSchedule": "Chọn lịch",
+    "stepInterview": "Phỏng vấn",
+    "stepReview": "Nhận review",
+    "stepRate": "Đánh giá"
   },
   "userPractice": {
     "aiTestCreated": "Đã tạo bài kiểm tra AI!",

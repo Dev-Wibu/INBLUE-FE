@@ -4269,7 +4269,12 @@
     "reviewReceived": "Received review from mentor",
     "pleaseRateMentor": "Please rate mentor",
     "feedbackPlaceholder": "Share your experience with mentor...",
-    "ratingAndFeedback": "Rating & Feedback"
+    "ratingAndFeedback": "Rating & Feedback",
+    "stepAwaitingAssignment": "Waiting for mentor",
+    "stepPickSchedule": "Pick schedule",
+    "stepInterview": "Interview",
+    "stepReview": "Get review",
+    "stepRate": "Rate mentor"
   },
   "userPractice": {
     "aiTestCreated": "AI test created!",

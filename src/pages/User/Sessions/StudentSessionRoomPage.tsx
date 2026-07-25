@@ -233,7 +233,7 @@ export function StudentSessionRoomPage() {
     }, 0);
     // Navigate immediately so the old room page unmounts before the
     // query invalidation cascade causes heavy re-renders.
-    navigate("/user/sessions");
+    navigate("/user?tab=applicationHistory");
   };
 
   const handleError = (errorMessage: string) => {
@@ -257,7 +257,7 @@ export function StudentSessionRoomPage() {
 
   useEffect(() => {
     if (!isLoading && !session) {
-      navigate("/user/sessions");
+      navigate("/user?tab=applicationHistory");
     }
   }, [isLoading, session, navigate]);
 
@@ -337,7 +337,7 @@ export function StudentSessionRoomPage() {
             size="sm"
             onClick={() => {
               console.log("[StudentSessionRoomPage] Back clicked, navigating to /user/sessions");
-              navigate("/user/sessions");
+              navigate("/user?tab=applicationHistory");
             }}
             className="gap-2">
             <ArrowLeft className="h-4 w-4" />
@@ -353,7 +353,10 @@ export function StudentSessionRoomPage() {
           </span>
           <div className="ml-auto flex items-center gap-2">
             {sessionStatus === "COMPLETED" && (
-              <Button size="sm" onClick={() => navigate("/user/sessions")} className="gap-2">
+              <Button
+                size="sm"
+                onClick={() => navigate("/user?tab=applicationHistory")}
+                className="gap-2">
                 <CheckCircle2 className="h-4 w-4" />
                 {t("common.viewFeedback")}
               </Button>
@@ -609,7 +612,7 @@ export function StudentSessionRoomPage() {
               <CheckCircle2 className="h-3.5 w-3.5" />
               {t("common.itsOver")}
             </Badge>
-            <Button onClick={() => navigate("/user/sessions")} className="gap-2">
+            <Button onClick={() => navigate("/user?tab=applicationHistory")} className="gap-2">
               {t("common.viewFeedback")}
             </Button>
           </div>

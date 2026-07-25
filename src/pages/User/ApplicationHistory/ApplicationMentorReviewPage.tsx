@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
@@ -960,6 +961,11 @@ export function ApplicationMentorReviewPage() {
     participantId2?: string | null;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  // Distinct from `loading`: tracks the in-flight Session fetch that powers
+  // the RoomReadyStep (`fetchSessionRoomUrl`). The initial detail fetch can
+  // already be settled while we're still waiting for the Session row to land,
+  // so we surface a skeleton in that gap instead of an empty page.
+  const [sessionInfoLoading, setSessionInfoLoading] = useState(false);
   // Distinguishes "still fetching" from "fetched but BE returned []" so we
   // can offer a Retry / re-trigger instead of an infinite spinner when the
   // backend hasn't auto-created the ApplicationDetail for this round yet.
@@ -1120,6 +1126,7 @@ export function ApplicationMentorReviewPage() {
           const sessionIdToFetch =
             currentDetail?.sessionId ?? currentDetail?.sessionInfo?.sessionId ?? null;
           if (sessionIdToFetch) {
+            setSessionInfoLoading(true);
             try {
               const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
                 params: { path: { id: sessionIdToFetch } },
@@ -1146,6 +1153,8 @@ export function ApplicationMentorReviewPage() {
               if (live) setSessionTiming(live);
             } catch {
               // session may not be ready
+            } finally {
+              setSessionInfoLoading(false);
             }
           }
         }
@@ -1194,6 +1203,7 @@ export function ApplicationMentorReviewPage() {
           (fresh.sessionInfo as { sessionId?: number } | null)?.sessionId ??
           null;
         if (freshSessionId) {
+          setSessionInfoLoading(true);
           try {
             const sessionRefetch = await fetchClient.GET("/api/sessions/{id}", {
               params: { path: { id: freshSessionId } },
@@ -1221,6 +1231,8 @@ export function ApplicationMentorReviewPage() {
             if (live) setSessionTiming(live);
           } catch {
             // session endpoint might 404 briefly after admin assign; ignore.
+          } finally {
+            setSessionInfoLoading(false);
           }
         }
       } catch (err) {
@@ -1301,6 +1313,7 @@ export function ApplicationMentorReviewPage() {
 
   // Re-fetch roomUrl for a session (used after SlotSelectionStep success).
   const fetchSessionRoomUrl = async (sessionId: number) => {
+    setSessionInfoLoading(true);
     try {
       const { data } = await fetchClient.GET("/api/sessions/{id}", {
         params: { path: { id: sessionId } },
@@ -1335,6 +1348,8 @@ export function ApplicationMentorReviewPage() {
       if (live) setSessionTiming(live);
     } catch {
       // session may not be ready yet; ignore
+    } finally {
+      setSessionInfoLoading(false);
     }
   };
 
@@ -1572,6 +1587,45 @@ export function ApplicationMentorReviewPage() {
         {(roomUrl === "OFFLINE" || applicationDetail?.sessionInfo?.meetingType === "OFFLINE") &&
           !isReviewed &&
           bookingSnapshot && <OfflineConfirmedStep booking={bookingSnapshot} />}
+
+        {/* Skeleton: a booking snapshot exists (or the detail already carries
+            a sessionId from a previous tab) but the Session row is still being
+            fetched (e.g. right after SlotSelectionStep, while the BE is
+            creating the Daily.co room). The previous implementation left
+            the page blank for that gap, making the user think the page was
+            broken. We mirror the RoomReadyStep layout with a pulsing skeleton
+            so the user sees feedback that data is on its way. Covers both:
+              (a) fresh slot pick → local booking is set, roomUrl still null
+              (b) soft reload → detail.sessionId is set but roomUrl not primed yet */}
+        {(bookingSnapshot ??
+          (applicationDetail?.sessionId || applicationDetail?.sessionInfo?.sessionId)) &&
+          !isReviewed &&
+          !showFeedbackForm &&
+          sessionInfoLoading &&
+          roomUrl === null && (
+            <Card className="border-emerald-200 bg-emerald-50/50 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base text-emerald-700 dark:text-emerald-300">
+                  <Spinner size="sm" tone="primary" />
+                  {t("userMentorReview.roomReady")}
+                </CardTitle>
+                <CardDescription className="text-emerald-600 dark:text-emerald-400">
+                  {t("userMentorReview.roomReadyDesc")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
+                  <Spinner size="lg" tone="primary" />
+                </div>
+                <div className="w-full space-y-2">
+                  <Skeleton className="mx-auto h-5 w-56" />
+                  <Skeleton className="mx-auto h-4 w-72" />
+                </div>
+                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-11 w-full rounded-md" />
+              </CardContent>
+            </Card>
+          )}
 
         {/* ONLINE Room Ready — the interview is READY when:
             1. ApplicationDetail carries a sessionId (top-level or sessionInfo.nested)

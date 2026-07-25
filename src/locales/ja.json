@@ -4268,7 +4268,12 @@
     "reviewReceived": "メンターからレビューを受け取りました",
     "pleaseRateMentor": "メンターを評価してください",
     "feedbackPlaceholder": "メンターとの体験を共有してください...",
-    "ratingAndFeedback": "評価とフィードバック"
+    "ratingAndFeedback": "評価とフィードバック",
+    "stepAwaitingAssignment": "メンター割り当て待ち",
+    "stepPickSchedule": "日程を選択",
+    "stepInterview": "面接",
+    "stepReview": "レビューを受け取る",
+    "stepRate": "評価する"
   },
   "userPractice": {
     "aiQuizWithId": "AIクイズ #{{id}}",

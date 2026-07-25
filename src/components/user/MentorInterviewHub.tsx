@@ -73,6 +73,7 @@ interface MentorInterviewHubProps {
 }
 
 type HubStatus =
+  | "AWAITING_MENTOR_ASSIGNMENT"
   | "NO_SLOT"
   | "SCHEDULE_CONFIRMED"
   | "ROOM_READY"
@@ -110,6 +111,7 @@ function formatVnDateTime(input: string | null | undefined): string {
 
 function deriveHubStatus(props: {
   status: string | undefined;
+  mentorId: number | null | undefined;
   sessionId: number | null | undefined;
   sessionInfo: {
     sessionId?: number | null;
@@ -139,6 +141,7 @@ function deriveHubStatus(props: {
 }): HubStatus {
   const {
     status,
+    mentorId,
     sessionId,
     sessionInfo,
     mentorReview,
@@ -149,6 +152,7 @@ function deriveHubStatus(props: {
 
   console.log("[DEBUG][deriveHubStatus] props:", {
     status,
+    mentorId,
     sessionId,
     sessionInfo,
     mentorReview,
@@ -207,14 +211,21 @@ function deriveHubStatus(props: {
     return "SCHEDULE_CONFIRMED";
   }
 
+  // Student has not yet been assigned a mentor by admin — must NOT be
+  // confused with "AWAITING_MENTOR_REVIEW" (which means waiting for the
+  // mentor's post-interview feedback). Keep these as two distinct states so
+  // the progress step indicator and content cards stay accurate.
+  if (status === "AWAITING_MENTOR" || !mentorId) {
+    console.log(
+      "[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_ASSIGNMENT (status === AWAITING_MENTOR || !mentorId)"
+    );
+    return "AWAITING_MENTOR_ASSIGNMENT";
+  }
+
   // No session yet
   if (status === "PENDING") {
     console.log("[DEBUG][deriveHubStatus] -> NO_SLOT (status === PENDING)");
     return "NO_SLOT";
-  }
-  if (status === "AWAITING_MENTOR") {
-    console.log("[DEBUG][deriveHubStatus] -> AWAITING_MENTOR_REVIEW (status === AWAITING_MENTOR)");
-    return "AWAITING_MENTOR_REVIEW";
   }
 
   console.log("[DEBUG][deriveHubStatus] -> NO_SLOT (fallback)");
@@ -225,18 +236,31 @@ function deriveHubStatus(props: {
 // Progress Step Indicator
 // ============================================================
 
-const PROGRESS_STEPS = [
-  { key: "pick_slot", label: "Chọn lịch", icon: Calendar },
-  { key: "wait_room", label: "Chờ phòng", icon: Hourglass },
-  { key: "interview", label: "Phỏng vấn", icon: Video },
-  { key: "review", label: "Nhận review", icon: GraduationCap },
-  { key: "rate", label: "Đánh giá", icon: Star },
+type ProgressStepIcon = React.ComponentType<{ className?: string }>;
+
+interface ProgressStepDef {
+  key: string;
+  labelKey: string;
+  icon: ProgressStepIcon;
+}
+
+const PROGRESS_STEP_DEFS: ProgressStepDef[] = [
+  {
+    key: "awaiting_assignment",
+    labelKey: "userMentorReview.stepAwaitingAssignment",
+    icon: Hourglass,
+  },
+  { key: "pick_slot", labelKey: "userMentorReview.stepPickSchedule", icon: Calendar },
+  { key: "interview", labelKey: "userMentorReview.stepInterview", icon: Video },
+  { key: "review", labelKey: "userMentorReview.stepReview", icon: GraduationCap },
+  { key: "rate", labelKey: "userMentorReview.stepRate", icon: Star },
 ];
 
 function ProgressIndicator({ currentStep }: { currentStep: number }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between px-2 py-3">
-      {PROGRESS_STEPS.map((step, idx) => {
+      {PROGRESS_STEP_DEFS.map((step, idx) => {
         const isCompleted = idx < currentStep;
         const isCurrent = idx === currentStep;
         const Icon = step.icon;
@@ -261,10 +285,10 @@ function ProgressIndicator({ currentStep }: { currentStep: number }) {
                   isCurrent && "text-[#0047AB] dark:text-blue-400",
                   !isCompleted && !isCurrent && "text-slate-400 dark:text-slate-500"
                 )}>
-                {step.label}
+                {t(step.labelKey)}
               </span>
             </div>
-            {idx < PROGRESS_STEPS.length - 1 && (
+            {idx < PROGRESS_STEP_DEFS.length - 1 && (
               <div
                 className={cn(
                   "mx-1 h-0.5 flex-1 transition-all",
@@ -752,6 +776,7 @@ export function MentorInterviewHub({
 
   const hubStatus = deriveHubStatus({
     status,
+    mentorId,
     sessionId,
     sessionInfo,
     mentorReview,
@@ -765,21 +790,23 @@ export function MentorInterviewHub({
 
   const progressStep = (() => {
     switch (hubStatus) {
-      case "NO_SLOT":
+      case "AWAITING_MENTOR_ASSIGNMENT":
         return 0;
+      case "NO_SLOT":
+        return 1;
       case "SCHEDULE_CONFIRMED":
       case "OFFLINE_CONFIRMED":
-        return 1;
+        return 2;
       case "ROOM_READY":
       case "IN_PROGRESS":
-        return 2;
-      case "AWAITING_MENTOR_REVIEW":
         return 3;
-      case "RATE_MENTOR":
+      case "AWAITING_MENTOR_REVIEW":
         return 4;
+      case "RATE_MENTOR":
+        return 5;
       case "REVIEW_READY":
       case "COMPLETED":
-        return 5;
+        return 6;
       default:
         return 0;
     }
@@ -798,9 +825,15 @@ export function MentorInterviewHub({
 
   const getStatusBadge = () => {
     switch (hubStatus) {
-      case "NO_SLOT":
+      case "AWAITING_MENTOR_ASSIGNMENT":
         return {
           label: t("userMentorReview.awaitingMentorTitle"),
+          className: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+          icon: Hourglass,
+        };
+      case "NO_SLOT":
+        return {
+          label: t("userMentorReview.chooseSchedule"),
           className: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
           icon: Hourglass,
         };
@@ -896,6 +929,17 @@ export function MentorInterviewHub({
             <ProgressIndicator currentStep={progressStep} />
           </div>
           <div className="p-4">
+            {hubStatus === "AWAITING_MENTOR_ASSIGNMENT" && (
+              <div className="flex flex-col items-center gap-3 py-4 text-center">
+                <Hourglass className="h-10 w-10 text-amber-500" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {t("userMentorReview.awaitingMentorTitle")}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {t("userMentorReview.awaitingMentorDesc")}
+                </p>
+              </div>
+            )}
             {hubStatus === "NO_SLOT" && !mentorId && (
               <div className="flex flex-col items-center gap-3 py-4 text-center">
                 <Hourglass className="h-10 w-10 text-amber-500" />
