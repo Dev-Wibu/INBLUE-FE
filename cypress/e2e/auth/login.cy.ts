@@ -37,7 +37,7 @@ describe("Login Page", () => {
   it("should login successfully with USER credentials", () => {
     cy.visit("/login");
     cy.get('input[type="email"], input[name="email"], input[placeholder*="email" i]').type(
-      "binhan@gmail.com"
+      "nha36978@gmail.com"
     );
     cy.get('input[type="password"], input[name="password"]').type("123");
     cy.get('button[type="submit"]').click();
@@ -107,7 +107,7 @@ describe("Login Page", () => {
 
     cy.visit("/login");
     cy.get('input[type="email"], input[name="email"], input[placeholder*="email" i]').type(
-      "binhan@gmail.com"
+      "nha36978@gmail.com"
     );
     cy.get('input[type="password"], input[name="password"]').type("wrongpassword");
     cy.get('button[type="submit"]').click();

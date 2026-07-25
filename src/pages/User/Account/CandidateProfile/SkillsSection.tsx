@@ -42,7 +42,7 @@ export function SkillsSection(props: SkillsSectionProps) {
     return (
       <div className="flex flex-col gap-6">
         {/* Skills Card */}
-        <div className="glass-card rounded-xl p-5">
+        <div id="skills" className="glass-card rounded-xl p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dae2fd] dark:bg-[#0058be]/30">
               <Code2 className="h-5 w-5 text-[#0058be] dark:text-[#66B2FF]" />
@@ -121,7 +121,7 @@ export function SkillsSection(props: SkillsSectionProps) {
             </h3>
           </div>
           <div className="space-y-4">
-            <div>
+            <div id="certifications">
               <p className="mb-2 text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
                 {t("common.certificate")}
               </p>
@@ -139,7 +139,7 @@ export function SkillsSection(props: SkillsSectionProps) {
                 )}
               </div>
             </div>
-            <div>
+            <div id="achievements">
               <p className="mb-2 text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
                 {t("common.achievements")}
               </p>

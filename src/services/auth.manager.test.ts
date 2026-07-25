@@ -166,7 +166,7 @@ describe("AuthManager", () => {
       });
 
       const result = await authManager.login({
-        email: "binhan@gmail.com",
+        email: "nha36978@gmail.com",
         password: "wrong123",
       });
 

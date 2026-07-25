@@ -1,3 +1,4 @@
+import icon2 from "@/assets/icon2.svg";
 import {
   DashboardSidebar,
   getInitialSidebarCollapsed,
@@ -219,25 +220,21 @@ export function AdminDashboardPage() {
 
   const ADMIN_SIDEBAR_LOGO = useMemo(
     () => (
-      <>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0047AB] shadow-sm">
-          <span className="text-base font-bold text-white">IB</span>
-        </div>
-        <div>
-          <h1 className="text-lg font-bold tracking-widest text-[#0047AB] dark:text-[#66B2FF]">
-            INBLUE
-          </h1>
-        </div>
-      </>
+      <a href="/" className="flex items-center gap-2.5">
+        <img src={icon2} alt="INBLUE AI" className="h-8 w-8 shrink-0 object-contain" />
+        <span className="text-lg font-bold tracking-wide text-[#002654] dark:text-white">
+          INBLUE AI
+        </span>
+      </a>
     ),
     []
   );
 
   const ADMIN_SIDEBAR_LOGO_COLLAPSED = useMemo(
     () => (
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0047AB] shadow-sm">
-        <span className="text-base font-bold text-white">IB</span>
-      </div>
+      <a href="/" className="flex items-center justify-center">
+        <img src={icon2} alt="INBLUE AI" className="h-8 w-8 shrink-0 object-contain" />
+      </a>
     ),
     []
   );

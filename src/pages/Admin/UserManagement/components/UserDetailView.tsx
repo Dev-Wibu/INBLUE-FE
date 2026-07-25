@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useMajorOptions } from "@/constants/majors";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
@@ -10,16 +10,15 @@ import { usersAdminManager } from "@/services/users-admin.manager";
 import {
   Award,
   Briefcase,
+  Calendar,
   ChevronDown,
   ChevronUp,
   Code,
-  Edit,
-  Edit3,
-  ExternalLink,
   FileText,
   FolderOpen,
   GraduationCap,
   Mail,
+  Pencil,
   Trophy,
   User as UserIcon,
 } from "lucide-react";
@@ -72,6 +71,19 @@ export function UserDetailView({
   onSubmit,
 }: UserDetailViewProps) {
   const { t } = useTranslation();
+  const majorOptions = useMajorOptions();
+  const getMajorLabel = (value: string): string => {
+    if (!value) return "";
+    const matched = majorOptions.find((option) => option.value === value);
+    return matched?.label || value;
+  };
+
+  const derivedSchool = (user as any).university || profile?.educations?.[0]?.school || "";
+  const derivedTargetRole = profile?.targetRole || "";
+  const derivedEduMajor = profile?.educations?.[0]?.major || "";
+  const rawMajor = derivedTargetRole || derivedEduMajor || (user as any).major || "";
+  const derivedMajor = getMajorLabel(rawMajor);
+
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isCvModalOpen, setIsCvModalOpen] = useState(false);
@@ -133,11 +145,20 @@ export function UserDetailView({
         ) : (
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
             {/* Left Column: Sticky Profile Card */}
-            <div className="lg:sticky lg:top-0 lg:col-span-3">
+            <div className="lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
               <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-                <div className="relative h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-blue-500/10 dark:to-purple-500/10" />
-                <div className="relative px-6 pb-6 text-center">
-                  <div className="-mt-12 mb-4 inline-flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
+                <div className="relative h-20 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsEditingUser(true)}
+                    className="absolute top-2.5 right-2.5 h-8 w-8 rounded-full bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                    title={t("general.edit")}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="relative px-5 pb-5 text-center">
+                  <div className="-mt-10 mb-3 inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
                     {user.avatarUrl ? (
                       <img
                         src={user.avatarUrl}
@@ -145,85 +166,66 @@ export function UserDetailView({
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <UserIcon className="h-10 w-10 text-slate-400" />
+                      <UserIcon className="h-9 w-9 text-slate-400" />
                     )}
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">{user.name}</h3>
-                  <div className="mt-1 flex items-center justify-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
-                    <Mail className="h-3.5 w-3.5" />
-                    <span>{user.email}</span>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {user.name}
+                  </h3>
+
+                  {/* Subtitle Line: University & Target Role Badge */}
+                  <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5 text-xs">
+                    {derivedSchool && (
+                      <span className="font-medium text-slate-600 dark:text-slate-300">
+                        {derivedSchool}
+                      </span>
+                    )}
+                    {derivedSchool && derivedMajor && (
+                      <span className="text-slate-300 dark:text-slate-600">•</span>
+                    )}
+                    {derivedMajor && (
+                      <span className="inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                        {derivedMajor}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {/* Flat Metadata List */}
+                  <div className="mt-4 space-y-2 border-t border-slate-100 pt-3.5 text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-300">
+                    <div className="flex items-center justify-center gap-2 px-1">
+                      <Mail className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                      <span className="truncate">{user.email}</span>
+                    </div>
+                    {profile?.createdAt && (
+                      <div className="flex items-center justify-center gap-2 px-1">
+                        <Calendar className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                        <span className="truncate">
+                          {t("userAccount.joinDate")} {formatDate(profile.createdAt)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-3.5 flex flex-wrap justify-center gap-1.5">
                     <Badge
                       variant="outline"
-                      className="px-3 py-1 text-xs font-medium tracking-wider uppercase">
+                      className="px-2.5 py-0.5 text-xs font-medium tracking-wider uppercase">
                       {user.role}
                     </Badge>
                     {profile?.targetLevel && (
-                      <Badge variant="secondary" className="px-3 py-1 text-xs font-medium">
+                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">
                         {profile.targetLevel}
                       </Badge>
                     )}
                   </div>
 
-                  {profile?.createdAt && (
-                    <div className="mt-4 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/50">
-                      <p className="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                        Join Date
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-700 dark:text-slate-200">
-                        {formatDate(profile.createdAt)}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="mt-6 flex flex-col gap-2">
-                    {user?.cvUrl && (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="secondary"
-                            className="w-full bg-blue-50 text-blue-700 shadow-sm hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
-                            <FileText className="mr-2 h-4 w-4" />
-                            Xem CV
-                            <ExternalLink className="ml-2 h-3 w-3 opacity-50" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-h-[90vh] w-[90vw] max-w-5xl overflow-hidden p-0">
-                          <div className="h-[85vh] w-full bg-slate-100 dark:bg-slate-900">
-                            <iframe
-                              src={`https://docs.google.com/viewer?url=${encodeURIComponent(user.cvUrl)}&embedded=true`}
-                              className="h-full w-full border-0"
-                              title="CV Viewer"
-                            />
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    )}
+                  <div className="mt-4">
                     <Button
                       variant="outline"
-                      className="w-full shadow-sm"
+                      className="w-full justify-center gap-2 rounded-xl text-xs font-medium shadow-sm"
                       onClick={() => setIsCvModalOpen(true)}>
-                      <FileText className="mr-2 h-4 w-4" />
+                      <FileText className="h-3.5 w-3.5 text-slate-500" />
                       {user?.cvUrl ? "Cập nhật CV" : "Tải lên CV"}
-                    </Button>
-                  </div>
-
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      className="flex-1 shadow-none"
-                      variant="default"
-                      onClick={() => setIsEditingUser(true)}>
-                      <Edit3 className="mr-2 h-4 w-4" />
-                      Tài khoản
-                    </Button>
-                    <Button
-                      className="flex-1 shadow-none"
-                      variant="outline"
-                      onClick={() => setIsEditingProfile(true)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Hồ sơ
                     </Button>
                   </div>
                 </div>
@@ -239,6 +241,21 @@ export function UserDetailView({
                 />
               ) : (
                 <div className="space-y-6">
+                  {/* Header Card — Identical to User AccountPage */}
+                  <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                          {t("common.candidateProfile")}
+                        </h2>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                          {t("userAccount.overviewOfYourApplicationProfile")}
+                        </p>
+                      </div>
+                      <Button onClick={() => setIsEditingProfile(true)}>{t("general.edit")}</Button>
+                    </div>
+                  </div>
+
                   {profile ? (
                     <>
                       {profile.introduction && (
@@ -504,7 +521,7 @@ export function UserDetailView({
 
             {/* Right Column: TOC Menu (Only visible when not editing profile) */}
             {!isEditingProfile && (
-              <div className="hidden lg:sticky lg:top-0 lg:col-span-2 lg:block">
+              <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:block lg:self-start">
                 <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
                   <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     Nội dung

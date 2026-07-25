@@ -49,7 +49,9 @@ export function BasicInfoSection(props: BasicInfoSectionProps) {
             </p>
           </div>
         </div>
-        <div className="mt-4 rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-4 dark:border-[rgba(255,255,255,0.08)] dark:bg-[#131b2e]">
+        <div
+          id="intro"
+          className="mt-4 rounded-xl border border-[rgba(15,23,42,0.08)] bg-white p-4 dark:border-[rgba(255,255,255,0.08)] dark:bg-[#131b2e]">
           <p className="mb-1 text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
             {t("common.introduce")}
           </p>

@@ -1,43 +1,36 @@
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
 import { SpinnerBlock } from "@/components/ui/spinner";
-import { normalizeMajor, useMajorOptions } from "@/constants/majors";
-import type { User as UserType } from "@/interfaces/schema.types";
+import { useMajorOptions } from "@/constants/majors";
+import type { CandidateProfile } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
-import { userManager, usersAdminManager } from "@/services";
+import { usersAdminManager } from "@/services";
+import { useCandidateProfile } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
-  BookOpen,
   Calendar,
   ChevronRight,
-  Edit,
   FileText,
-  GraduationCap,
   Lock,
   Mail,
   Receipt,
   Settings,
-  Share2,
   User,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { JdPurchaseHistoryTab, ProfileTab } from "./AccountTabs";
+import { JdPurchaseHistoryTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
-type AccountSubTab = "profile" | "candidateProfile" | "settings" | "jdPurchases";
+type AccountSubTab = "candidateProfile" | "settings" | "jdPurchases";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
-  if (
-    value === "profile" ||
-    value === "candidateProfile" ||
-    value === "settings" ||
-    value === "jdPurchases"
-  ) {
+  if (value === "candidateProfile" || value === "settings" || value === "jdPurchases") {
     return value as AccountSubTab;
   }
   return null;
@@ -46,20 +39,17 @@ const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
 export function AccountPage() {
   const { t } = useTranslation();
   const authUser = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
   const authUserId = authUser?.id;
+  const { data: candidateProfileData } = useCandidateProfile(authUserId || 0);
+  const candidateProfile = (candidateProfileData as unknown as CandidateProfile) ?? null;
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<AccountSubTab>(
-    parseAccountSubTab(searchParams.get("subtab")) || "profile"
+    parseAccountSubTab(searchParams.get("subtab")) || "candidateProfile"
   );
-  const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [formData, setFormData] = useState<Partial<UserProfileData>>({});
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarPreview] = useState<string | null>(null);
   const [isCvModalOpen, setIsCvModalOpen] = useState(false);
   const [isCvUploading, setIsCvUploading] = useState(false);
   const hasLoadedUserDataRef = useRef(false);
@@ -131,7 +121,7 @@ export function AccountPage() {
   }, [fetchUserData]);
 
   useEffect(() => {
-    const nextTab = parseAccountSubTab(searchParams.get("subtab")) || "profile";
+    const nextTab = parseAccountSubTab(searchParams.get("subtab")) || "candidateProfile";
     setActiveTab((prev) => (prev === nextTab ? prev : nextTab));
   }, [searchParams]);
 
@@ -139,7 +129,7 @@ export function AccountPage() {
     (nextTab: AccountSubTab) => {
       setActiveTab(nextTab);
       const nextParams = new URLSearchParams(searchParams);
-      if (nextTab === "profile") {
+      if (nextTab === "candidateProfile") {
         nextParams.delete("subtab");
       } else {
         nextParams.set("subtab", nextTab);
@@ -157,46 +147,12 @@ export function AccountPage() {
     };
   }, [avatarPreview]);
 
-  const handleRefreshData = async () => {
-    await fetchUserData();
-    toast.success(t("common.dataUpdated"));
-  };
-
-  const handleStartEdit = () => {
-    if (!userProfile) return;
-    setFormData({
-      name: userProfile.name,
-      university: userProfile.university,
-      major: userProfile.major,
-    });
-    setIsEditing(true);
-  };
-
-  const handleCancelEdit = () => {
-    setFormData({});
-    setAvatarFile(null);
-    setAvatarPreview(null);
-    setIsEditing(false);
-  };
-
-  const handleAvatarChange = (files: File[]) => {
-    const file = files[0];
-    if (file) {
-      if (avatarPreview?.startsWith("blob:")) {
-        URL.revokeObjectURL(avatarPreview);
-      }
-      const previewUrl = URL.createObjectURL(file);
-      setAvatarPreview(previewUrl);
-      setAvatarFile(file);
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  };
-
-  const handleClearAvatar = () => {
-    if (avatarPreview?.startsWith("blob:")) {
-      URL.revokeObjectURL(avatarPreview);
-    }
-    setAvatarFile(null);
-    setAvatarPreview(null);
   };
 
   const handleCvUpload = async (file: File) => {
@@ -221,77 +177,13 @@ export function AccountPage() {
     }
   };
 
-  const handleSaveProfile = async () => {
-    if (!userProfile?.id) {
-      toast.error(t("userAccount.userIdNotFound"));
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const response = await usersAdminManager.update(
-        userProfile.id,
-        {
-          name: formData.name,
-          // @ts-expect-error: Backend Swagger schema mismatch - university not in User type
-          university: formData.university,
-          major: normalizeMajor(formData.major),
-          ...(userProfile.public_id ? { public_id: userProfile.public_id } : {}),
-          ...(userProfile.cv_public_id ? { cv_public_id: userProfile.cv_public_id } : {}),
-        },
-        avatarFile || undefined,
-        undefined
-      );
-      if (response.success) {
-        // Fetch fresh user profile from /api/users/me to get updated avatar
-        const profileResponse = await userManager.getProfile();
-        if (profileResponse.success && profileResponse.data) {
-          setUser(profileResponse.data as UserType);
-        }
-        await fetchUserData();
-        toast.success(t("common.updatedInformationSuccessfully"));
-        setIsEditing(false);
-        setFormData({});
-        setAvatarFile(null);
-        setAvatarPreview(null);
-      } else {
-        toast.error(response.error || t("common.updateFailedPleaseTryAgain"));
-      }
-    } catch {
-      toast.error(t("common.updateFailedPleaseTryAgain"));
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleInputChange = (field: keyof UserProfileData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
   const renderTabContent = () => {
     switch (activeTab) {
-      case "profile":
-        return userProfile ? (
-          <ProfileTab
-            userProfile={userProfile}
-            isEditing={isEditing}
-            isSaving={isSaving}
-            formData={formData}
-            avatarPreview={avatarPreview}
-            onRefreshData={handleRefreshData}
-            onStartEdit={handleStartEdit}
-            onCancelEdit={handleCancelEdit}
-            onSaveProfile={handleSaveProfile}
-            onInputChange={handleInputChange}
-            onAvatarChange={handleAvatarChange}
-            onClearAvatar={handleClearAvatar}
-            onOpenCvModal={() => setIsCvModalOpen(true)}
-          />
-        ) : null;
       case "candidateProfile":
         return <CandidateProfileTab />;
       case "settings":
         return (
-          <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
+          <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               {t("userSettings.title")}
             </h2>
@@ -302,7 +194,7 @@ export function AccountPage() {
               <button
                 type="button"
                 onClick={() => navigate("/user/settings")}
-                className="flex w-full items-center justify-between rounded-lg border border-slate-200 p-3 text-left transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+                className="flex w-full items-center justify-between rounded-lg border border-slate-200/60 p-3 text-left transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800">
                 <div>
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
                     {t("userSettings.openSettings")}
@@ -318,28 +210,12 @@ export function AccountPage() {
         );
       case "jdPurchases":
         return (
-          <Card className="border-slate-200 bg-white/90 p-5 dark:border-slate-700/70 dark:bg-slate-900/60">
+          <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
             <JdPurchaseHistoryTab />
           </Card>
         );
       default:
-        return userProfile ? (
-          <ProfileTab
-            userProfile={userProfile}
-            isEditing={isEditing}
-            isSaving={isSaving}
-            formData={formData}
-            avatarPreview={avatarPreview}
-            onRefreshData={handleRefreshData}
-            onStartEdit={handleStartEdit}
-            onCancelEdit={handleCancelEdit}
-            onSaveProfile={handleSaveProfile}
-            onInputChange={handleInputChange}
-            onAvatarChange={handleAvatarChange}
-            onClearAvatar={handleClearAvatar}
-            onOpenCvModal={() => setIsCvModalOpen(true)}
-          />
-        ) : null;
+        return <CandidateProfileTab />;
     }
   };
 
@@ -347,14 +223,22 @@ export function AccountPage() {
   const summaryName = userProfile?.name || authUser?.name || t("common.account");
   const summaryEmail = userProfile?.email || authUser?.email || "—";
   const summaryJoinedAt = userProfile?.createdAt ? formatDate(userProfile.createdAt) : "—";
+
+  const candidateSchool = candidateProfile?.educations?.[0]?.school || "";
+  const candidateTargetRole = candidateProfile?.targetRole || "";
+  const candidateEducationMajor = candidateProfile?.educations?.[0]?.major || "";
+
   // @ts-expect-error: Backend Swagger schema mismatch - university/major not in User type
-  const summaryUniversity = userProfile?.university || authUser?.university || "";
-  const summaryMajor = userProfile?.major || authUser?.major || "";
+  const summaryUniversity =
+    userProfile?.university || authUser?.university || candidateSchool || "";
+  const summaryMajor =
+    candidateTargetRole || candidateEducationMajor || userProfile?.major || authUser?.major || "";
 
   const majorOptions = useMajorOptions();
   const getMajorLabel = (value: string): string => {
+    if (!value) return "";
     const major = majorOptions.find((option) => option.value === value);
-    return major?.label || "";
+    return major?.label || value;
   };
 
   const tabItems: Array<{
@@ -363,12 +247,6 @@ export function AccountPage() {
     description: string;
     icon: React.ElementType;
   }> = [
-    {
-      id: "profile",
-      label: t("common.personalInformation"),
-      description: t("userAccount.updateYourProfileEducationAnd"),
-      icon: User,
-    },
     {
       id: "candidateProfile",
       label: t("common.candidateProfile"),
@@ -390,156 +268,77 @@ export function AccountPage() {
   ];
 
   const summaryMajorLabel = getMajorLabel(summaryMajor);
-
   return (
-    <div className="min-h-screen bg-[#f8f9ff] dark:bg-[#0b1c30]">
-      <div className="mx-auto max-w-[1280px] px-4 pt-6 pb-12 lg:px-6">
-        {/* Hero Header - Glass Card */}
-        <div className="glass-card relative mb-6 overflow-hidden rounded-xl p-6">
-          {/* Decorative blur circle */}
-          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#0058be]/10 blur-3xl" />
-          <div className="relative z-10 flex flex-col items-center gap-6 md:flex-row md:items-start">
-            {/* Avatar */}
-            <div className="relative shrink-0">
-              <div className="h-32 w-32 overflow-hidden rounded-2xl border-4 border-white shadow-xl md:h-40 md:w-40">
-                {summaryAvatar ? (
-                  <img
-                    src={summaryAvatar}
-                    alt={summaryName}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[#e5eeff] dark:bg-[#1a2a3a]">
-                    <User className="h-12 w-12 text-[#0058be] dark:text-[#66B2FF]" />
-                  </div>
-                )}
-              </div>
-              {/* Online badge */}
-              <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-emerald-400 shadow-sm md:right-0 md:bottom-0 dark:border-[#1a2a3a]">
-                <div className="h-2 w-2 rounded-full bg-white" />
-              </div>
-            </div>
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950">
+      <div className="w-full px-4 pt-4 pb-8 md:px-6 lg:px-8">
+        {/* Main Grid: Left Column (Profile Card + Quick Settings) + Middle Content + Right TOC */}
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+          {/* Left Column — Sticky */}
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
+            {/* Profile Card — Impeccable Design */}
+            <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <div className="relative h-20 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10" />
+              <div className="relative px-5 pb-5 text-center">
+                <div className="-mt-10 mb-3 inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
+                  {summaryAvatar ? (
+                    <img
+                      src={summaryAvatar}
+                      alt={summaryName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-9 w-9 text-slate-400" />
+                  )}
+                </div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {summaryName}
+                </h3>
 
-            {/* Info */}
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-2xl font-bold text-[#0b1c30] md:text-3xl dark:text-white">
-                {summaryName}
-              </h1>
-              {summaryUniversity && (
-                <p className="mt-1 text-base font-medium text-[#0058be] dark:text-[#66B2FF]">
-                  {summaryUniversity}
-                  {summaryMajorLabel && ` • ${summaryMajorLabel}`}
-                </p>
-              )}
-              <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-sm text-[#45464d] md:justify-start dark:text-[#8f9099]">
-                {summaryEmail && (
-                  <span className="flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5" />
-                    {summaryEmail}
-                  </span>
-                )}
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {t("userAccount.joinDate")} {summaryJoinedAt}
-                </span>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex shrink-0 gap-3">
-              <button
-                onClick={handleStartEdit}
-                className="flex items-center gap-2 rounded-lg bg-[#0058be] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#0047a8]">
-                <Edit className="h-4 w-4" />
-                {t("general.edit")}
-              </button>
-              <button
-                onClick={() => navigate("/user/settings")}
-                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#c6c6cd] text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
-                <Settings className="h-4 w-4" />
-              </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#c6c6cd] text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
-                <Share2 className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Grid: Sidebar + Content */}
-        <div className="grid gap-6 lg:grid-cols-12">
-          {/* Sidebar */}
-          <aside className="flex flex-col gap-6 lg:col-span-4">
-            {/* Personal Info Card */}
-            <div className="glass-card rounded-xl p-5">
-              <h3 className="mb-4 text-base font-semibold text-[#0b1c30] dark:text-white">
-                {t("userAccount.personalInfo")}
-              </h3>
-              <div className="space-y-4">
-                {/* University */}
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#e5eeff] dark:bg-[#1a2a3a]">
-                    <GraduationCap className="h-4 w-4 text-[#0058be] dark:text-[#66B2FF]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      {t("common.university")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                      {summaryUniversity || t("common.notUpdatedYet")}
-                    </p>
-                  </div>
+                {/* Subtitle Line: University & Target Role Badge */}
+                <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5 text-xs">
+                  {summaryUniversity && (
+                    <span className="font-medium text-slate-600 dark:text-slate-300">
+                      {summaryUniversity}
+                    </span>
+                  )}
+                  {summaryUniversity && summaryMajorLabel && (
+                    <span className="text-slate-300 dark:text-slate-600">•</span>
+                  )}
+                  {summaryMajorLabel && (
+                    <span className="inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                      {summaryMajorLabel}
+                    </span>
+                  )}
                 </div>
 
-                {/* Major */}
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#e5eeff] dark:bg-[#1a2a3a]">
-                    <BookOpen className="h-4 w-4 text-[#0058be] dark:text-[#66B2FF]" />
+                {/* Flat Metadata List */}
+                <div className="mt-4 space-y-2 border-t border-slate-100 pt-3.5 text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-300">
+                  <div className="flex items-center justify-center gap-2 px-1">
+                    <Mail className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                    <span className="truncate">{summaryEmail}</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      {t("common.specialized")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                      {summaryMajorLabel || t("common.notUpdatedYet")}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#e5eeff] dark:bg-[#1a2a3a]">
-                    <Mail className="h-4 w-4 text-[#0058be] dark:text-[#66B2FF]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      {t("common.email")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                      {summaryEmail}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Joined */}
-                <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#e5eeff] dark:bg-[#1a2a3a]">
-                    <Calendar className="h-4 w-4 text-[#0058be] dark:text-[#66B2FF]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium tracking-wide text-[#45464d] uppercase dark:text-[#8f9099]">
-                      {t("userAccount.memberSince")}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-[#0b1c30] dark:text-white">
-                      {summaryJoinedAt}
-                    </p>
-                  </div>
+                  {summaryJoinedAt && (
+                    <div className="flex items-center justify-center gap-2 px-1">
+                      <Calendar className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                      <span className="truncate">
+                        {t("userAccount.joinDate")} {summaryJoinedAt}
+                      </span>
+                    </div>
+                  )}
+                  {candidateProfile?.targetLevel && (
+                    <div className="flex items-center justify-center gap-2 px-1 pt-1">
+                      <Badge variant="secondary" className="px-2 py-0.5 text-[11px] font-medium">
+                        {candidateProfile.targetLevel}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Settings Links Card */}
-            <div className="glass-card rounded-xl p-5">
-              <h3 className="mb-4 text-base font-semibold text-[#0b1c30] dark:text-white">
+            {/* Quick Settings Card — User Tab Navigation */}
+            <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-white">
                 {t("userAccount.quickSettings")}
               </h3>
               <ul className="space-y-1">
@@ -551,26 +350,24 @@ export function AccountPage() {
                       <button
                         onClick={() => handleSwitchTab(tab.id)}
                         className={cn(
-                          "flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors",
+                          "flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors",
                           isActive
-                            ? "bg-[#dae2fd] dark:bg-[#0058be]/30"
-                            : "hover:bg-[#eff4ff] dark:hover:bg-[#1a2a3a]"
+                            ? "bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
+                            : "text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
                         )}>
                         <div className="flex items-center gap-3">
                           <div
                             className={cn(
                               "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
                               isActive
-                                ? "bg-[#0058be] text-white"
-                                : "bg-[#e5eeff] text-[#0058be] dark:bg-[#1a2a3a] dark:text-[#66B2FF]"
+                                ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                             )}>
                             <TabIcon className="h-4 w-4" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-[#0b1c30] dark:text-white">
-                              {tab.label}
-                            </p>
-                            <p className="text-xs text-[#45464d] dark:text-[#8f9099]">
+                            <p className="text-sm font-medium">{tab.label}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {tab.description}
                             </p>
                           </div>
@@ -578,7 +375,7 @@ export function AccountPage() {
                         <ChevronRight
                           className={cn(
                             "h-4 w-4 shrink-0 transition-colors",
-                            isActive ? "text-[#0058be]" : "text-[#76777d]"
+                            isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"
                           )}
                         />
                       </button>
@@ -590,37 +387,102 @@ export function AccountPage() {
                 <li>
                   <button
                     onClick={() => navigate("/user/account/change-password")}
-                    className="flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors hover:bg-[#eff4ff] dark:hover:bg-[#1a2a3a]">
+                    className="flex w-full items-center justify-between rounded-xl p-3 text-left text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-500 dark:bg-amber-900/30 dark:text-amber-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
                         <Lock className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-[#0b1c30] dark:text-white">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">
                           {t("common.changePassword")}
                         </p>
-                        <p className="text-xs text-[#45464d] dark:text-[#8f9099]">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           {t("common.updateYourSecuritySettings")}
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-[#76777d]" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
                   </button>
                 </li>
               </ul>
             </div>
+
+            {/* Update CV Button — Positioned below Quick Settings */}
+            <button
+              onClick={() => setIsCvModalOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200/60 bg-white p-3.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-800/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-slate-800/60">
+              <FileText className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <span>{userProfile?.cvUrl ? t("common.updateCv") : t("common.uploadCv")}</span>
+            </button>
           </aside>
 
-          {/* Main Content */}
-          <div className="lg:col-span-8">
+          {/* Middle Column — Profile or Tab Content */}
+          <div className={cn(activeTab === "candidateProfile" ? "lg:col-span-7" : "lg:col-span-9")}>
             {isLoading ? (
-              <div className="glass-card flex items-center justify-center rounded-xl p-12">
+              <div className="flex items-center justify-center rounded-2xl border border-slate-200/60 bg-white p-12 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
                 <SpinnerBlock size="lg" />
               </div>
             ) : (
               renderTabContent()
             )}
           </div>
+
+          {/* Right Column: TOC Menu (Only visible on candidate profile tab) */}
+          {activeTab === "candidateProfile" && (
+            <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:block lg:self-start">
+              <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  Nội dung
+                </h4>
+                <nav className="space-y-1">
+                  {candidateProfile?.introduction && (
+                    <a
+                      href="#intro"
+                      onClick={(e) => scrollToSection(e, "intro")}
+                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                      {t("common.introduce")}
+                    </a>
+                  )}
+                  <a
+                    href="#skills"
+                    onClick={(e) => scrollToSection(e, "skills")}
+                    className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    {t("common.technicalSkills")}
+                  </a>
+                  <a
+                    href="#experience"
+                    onClick={(e) => scrollToSection(e, "experience")}
+                    className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    {t("common.workExperience")}
+                  </a>
+                  <a
+                    href="#projects"
+                    onClick={(e) => scrollToSection(e, "projects")}
+                    className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    {t("common.project")}
+                  </a>
+                  <a
+                    href="#education"
+                    onClick={(e) => scrollToSection(e, "education")}
+                    className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    {t("common.education")}
+                  </a>
+                  <a
+                    href="#certifications"
+                    onClick={(e) => scrollToSection(e, "certifications")}
+                    className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    Chứng chỉ
+                  </a>
+                  <a
+                    href="#achievements"
+                    onClick={(e) => scrollToSection(e, "achievements")}
+                    className="block rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    Thành tựu
+                  </a>
+                </nav>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

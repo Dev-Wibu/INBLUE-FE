@@ -43,7 +43,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
     return (
       <div className="flex flex-col gap-6">
         {/* Projects Card */}
-        <div className="glass-card rounded-xl p-5">
+        <div id="projects" className="glass-card rounded-xl p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dae2fd] dark:bg-[#0058be]/30">
               <Briefcase className="h-5 w-5 text-[#0058be] dark:text-[#66B2FF]" />
@@ -90,7 +90,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
         </div>
 
         {/* Work Experience Card */}
-        <div className="glass-card rounded-xl p-5">
+        <div id="experience" className="glass-card rounded-xl p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dae2fd] dark:bg-[#0058be]/30">
               <BookOpen className="h-5 w-5 text-[#0058be] dark:text-[#66B2FF]" />
@@ -122,7 +122,7 @@ export function ExperienceSection(props: ExperienceSectionProps) {
         </div>
 
         {/* Education Card */}
-        <div className="glass-card rounded-xl p-5">
+        <div id="education" className="glass-card rounded-xl p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dae2fd] dark:bg-[#0058be]/30">
               <GraduationCap className="h-5 w-5 text-[#0058be] dark:text-[#66B2FF]" />

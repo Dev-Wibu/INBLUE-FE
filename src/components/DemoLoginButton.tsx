@@ -39,7 +39,7 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
   const DEMO_ACCOUNTS: DemoAccount[] = [
     {
       role: "USER",
-      email: "binhan@gmail.com",
+      email: "nha36978@gmail.com",
       password: "123",
       description: t("compDemologinbutton.userAccountToExperienceStudent"),
     },

@@ -2,7 +2,6 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthLayout } from "@/components/layouts";
-import { UserAccountLayout } from "@/components/layouts/UserAccountLayout";
 import {
   ProtectedRoute,
   PublicOnlyRoute,
@@ -212,14 +211,9 @@ function App() {
                 <Route path="kiosk/join" element={<KioskJoinRoomPage />} />
                 <Route path="kiosk/entry" element={<KioskEntryPage />} />
                 <Route path="kiosk/bookings" element={<KioskBookingListPage />} />
-              </Route>
-            </Route>
-            {/* Standalone account page — full page, no sidebar */}
-            <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
-              <Route element={<UserAccountLayout />}>
-                <Route path="/user/account" element={<AccountPage />} />
-                <Route path="/user/account/change-password" element={<ChangePasswordPage />} />
-                <Route path="/user/settings" element={<SettingsPage />} />
+                <Route path="account" element={<AccountPage />} />
+                <Route path="account/change-password" element={<ChangePasswordPage />} />
+                <Route path="settings" element={<SettingsPage />} />
               </Route>
             </Route>
 

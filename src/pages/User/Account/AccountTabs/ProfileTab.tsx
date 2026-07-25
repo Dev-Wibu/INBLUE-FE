@@ -11,8 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMajorOptions } from "@/constants/majors";
+import type { CandidateProfile } from "@/interfaces/schema.types";
 import { inferFileKind, openUrlInNewTab } from "@/lib/media-file-utils";
-import { cn } from "@/lib/utils";
 import {
   BookOpen,
   ExternalLink,
@@ -31,6 +31,7 @@ import type { UserProfileData } from "./types";
 
 interface ProfileTabProps {
   userProfile: UserProfileData;
+  candidateProfile?: CandidateProfile | null;
   isEditing: boolean;
   isSaving: boolean;
   formData: Partial<UserProfileData>;
@@ -47,12 +48,12 @@ interface ProfileTabProps {
 
 export function ProfileTab({
   userProfile,
+  candidateProfile,
   isEditing,
   isSaving,
   formData,
   avatarPreview,
   onRefreshData,
-  onStartEdit,
   onCancelEdit,
   onSaveProfile,
   onInputChange,
@@ -63,8 +64,9 @@ export function ProfileTab({
   const { t } = useTranslation();
   const majorOptions = useMajorOptions();
   const getMajorLabel = (value: string): string => {
+    if (!value) return "";
     const major = majorOptions.find((option) => option.value === value);
-    return major?.label || "";
+    return major?.label || value;
   };
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
@@ -90,16 +92,23 @@ export function ProfileTab({
     ]);
     setViewerOpen(true);
   };
+  const candidateSchool = candidateProfile?.educations?.[0]?.school || "";
+  const candidateTargetRole = candidateProfile?.targetRole || "";
+  const candidateEducationMajor = candidateProfile?.educations?.[0]?.major || "";
+
+  const displayUniversity = userProfile.university || candidateSchool;
+  const displayMajor =
+    candidateTargetRole || getMajorLabel(userProfile.major || "") || candidateEducationMajor;
+
   return (
     <div className="flex flex-col gap-6">
-      {/* User Info Section */}
-      <div className="glass-card overflow-hidden rounded-xl">
-        {/* Header */}
-        <div className="flex flex-col gap-4 border-b border-[rgba(15,23,42,0.1)] bg-gradient-to-r from-[#dae2fd] via-white to-white p-6 dark:border-[rgba(255,255,255,0.1)] dark:from-[#1a2a3a] dark:via-[#131b2e] dark:to-[#131b2e]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      {/* Edit Form Section — only shown when isEditing is true */}
+      {isEditing && (
+        <div className="glass-card overflow-hidden rounded-xl border border-indigo-200/50 p-6 shadow-sm dark:border-indigo-900/30">
+          <div className="mb-5 flex flex-col gap-3 border-b border-slate-200/70 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-semibold text-[#0b1c30] dark:text-white">
+                <h3 className="text-lg font-semibold text-[#0b1c30] dark:text-white">
                   {t("common.personalInformation")}
                 </h3>
                 <Button
@@ -111,68 +120,36 @@ export function ProfileTab({
                   <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="mt-1 text-sm text-[#45464d] dark:text-[#8f9099]">
+              <p className="mt-0.5 text-xs text-[#45464d] dark:text-[#8f9099]">
                 {t("userAccount.updatedTheBasicProfileSo")}
               </p>
             </div>
-            {!isEditing ? (
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onStartEdit}
-                className="border-[#0058be] text-[#0058be] hover:bg-[#dae2fd] dark:border-[#66B2FF] dark:text-[#66B2FF] dark:hover:bg-[#0058be]/20">
-                {t("general.edit")}
+                onClick={onCancelEdit}
+                disabled={isSaving}
+                className="border-[#c6c6cd] text-[#45464d] hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
+                <X className="mr-1 h-4 w-4" />
+                {t("general.cancel")}
               </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onCancelEdit}
-                  disabled={isSaving}
-                  className="border-[#c6c6cd] text-[#45464d] hover:bg-[#eff4ff] dark:border-[#3a4558] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
-                  <X className="mr-1 h-4 w-4" />
-                  {t("general.cancel")}
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={onSaveProfile}
-                  disabled={isSaving}
-                  className="bg-[#0058be] text-white hover:bg-[#0047a8]">
-                  <Save className="mr-1 h-4 w-4" />
-                  {isSaving ? t("common.saving") : t("general.save")}
-                </Button>
-              </div>
-            )}
+              <Button
+                size="sm"
+                onClick={onSaveProfile}
+                disabled={isSaving}
+                className="bg-[#0058be] text-white hover:bg-[#0047a8]">
+                <Save className="mr-1 h-4 w-4" />
+                {isSaving ? t("common.saving") : t("general.save")}
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <div className="p-6">
-          <div className="grid gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="grid gap-5 lg:grid-cols-[200px_minmax(0,1fr)]">
             {/* Avatar Card */}
-            <div className="flex flex-col items-center rounded-xl border border-[rgba(15,23,42,0.1)] bg-[#f8f9ff] p-4 text-center dark:border-[rgba(255,255,255,0.1)] dark:bg-[#1a2a3a]">
+            <div className="flex flex-col items-center rounded-xl border border-slate-200/60 bg-[#f8f9ff] p-4 text-center dark:border-slate-800 dark:bg-[#1a2a3a]">
               <div className="relative">
-                <div
-                  className={cn(
-                    "flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white/70 dark:bg-[#131b2e] dark:ring-[#131b2e]/80",
-                    !isEditing && (avatarPreview || userProfile.avatar)
-                      ? "cursor-pointer transition-transform hover:scale-105"
-                      : ""
-                  )}
-                  onClick={() => {
-                    if (!isEditing && (avatarPreview || userProfile.avatar)) {
-                      setViewerItems([
-                        {
-                          id: "profile-avatar",
-                          name: t("common.avatar"),
-                          src: (avatarPreview || userProfile.avatar) as string,
-                          alt: userProfile.name,
-                          kind: "image",
-                        },
-                      ]);
-                      setViewerOpen(true);
-                    }
-                  }}>
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white/70 dark:bg-[#131b2e] dark:ring-[#131b2e]/80">
                   {avatarPreview || userProfile.avatar ? (
                     <img
                       src={avatarPreview || userProfile.avatar || ""}
@@ -180,73 +157,54 @@ export function ProfileTab({
                       className="h-full w-full rounded-full object-cover"
                     />
                   ) : (
-                    <User className="h-9 w-9 text-[#0058be] dark:text-[#66B2FF]" />
+                    <User className="h-8 w-8 text-[#0058be] dark:text-[#66B2FF]" />
                   )}
                 </div>
-                {/* Camera edit overlay when editing */}
-                {isEditing && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 opacity-0 transition-opacity hover:opacity-100">
-                    <span className="text-xs text-white">{t("userAccount.changePhoto")}</span>
-                  </div>
-                )}
               </div>
-              <p className="mt-4 text-sm font-semibold text-[#0b1c30] dark:text-white">
-                {t("common.avatar")}
-              </p>
-              <p className="text-xs text-[#45464d] dark:text-[#8f9099]">
+              <p className="mt-3 text-xs text-[#45464d] dark:text-[#8f9099]">
                 {t("userAccount.pngOrJpgMaximum5mb")}
               </p>
-              {isEditing && (
-                <>
-                  <UniversalMediaUploader
-                    preset="single-image"
-                    enableWebcam={true}
-                    onFilesChange={onAvatarChange}
-                    customTrigger={
-                      <div className="mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-[#c6c6cd] bg-white px-3 py-2 text-sm font-medium text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:bg-[#131b2e] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
-                        {t("userAccount.changePhoto")}
-                      </div>
-                    }
-                  />
-                  {avatarPreview && (
-                    <button
-                      type="button"
-                      onClick={onClearAvatar}
-                      className="mt-2 text-xs font-medium text-red-500 hover:text-red-600">
-                      {t("userAccount.removeSelectedPhoto")}
-                    </button>
-                  )}
-                </>
+              <UniversalMediaUploader
+                preset="single-image"
+                enableWebcam={true}
+                onFilesChange={onAvatarChange}
+                customTrigger={
+                  <div className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-[#c6c6cd] bg-white px-3 py-1.5 text-xs font-medium text-[#45464d] transition-colors hover:bg-[#eff4ff] dark:border-[#3a4558] dark:bg-[#131b2e] dark:text-[#8f9099] dark:hover:bg-[#1a2a3a]">
+                    {t("userAccount.changePhoto")}
+                  </div>
+                }
+              />
+              {avatarPreview && (
+                <button
+                  type="button"
+                  onClick={onClearAvatar}
+                  className="mt-2 text-xs font-medium text-red-500 hover:text-red-600">
+                  {t("userAccount.removeSelectedPhoto")}
+                </button>
               )}
             </div>
 
             {/* Form Fields */}
             <div className="grid gap-4 md:grid-cols-2">
               {/* Full Name */}
-              <div className="rounded-xl border border-[rgba(15,23,42,0.1)] bg-white p-4 dark:border-[rgba(255,255,255,0.1)] dark:bg-[#131b2e]">
+              <div className="rounded-xl border border-slate-200/60 bg-white p-4 dark:border-slate-800 dark:bg-[#131b2e]">
                 <div className="mb-2 flex items-center gap-2 text-[#45464d] dark:text-[#8f9099]">
                   <User className="h-4 w-4" />
                   <Label className="text-sm font-medium">{t("common.fullName")}</Label>
                 </div>
-                {isEditing ? (
-                  <Input
-                    value={formData.name || ""}
-                    onChange={(e) => onInputChange("name", e.target.value)}
-                    className="border-[#c6c6cd] bg-white dark:border-[#3a4558] dark:bg-[#1a2a3a] dark:text-white"
-                  />
-                ) : (
-                  <p className="text-base font-semibold text-[#0b1c30] dark:text-white">
-                    {userProfile.name}
-                  </p>
-                )}
+                <Input
+                  value={formData.name || ""}
+                  onChange={(e) => onInputChange("name", e.target.value)}
+                  className="border-[#c6c6cd] bg-white dark:border-[#3a4558] dark:bg-[#1a2a3a] dark:text-white"
+                />
               </div>
 
               {/* Email (read-only) */}
-              <div className="rounded-xl border border-[rgba(15,23,42,0.1)] bg-white p-4 dark:border-[rgba(255,255,255,0.1)] dark:bg-[#131b2e]">
+              <div className="rounded-xl border border-slate-200/60 bg-slate-50 p-4 dark:border-slate-800 dark:bg-[#131b2e]/50">
                 <div className="mb-2 flex items-center gap-2 text-[#45464d] dark:text-[#8f9099]">
                   <Mail className="h-4 w-4" />
                   <Label className="text-sm font-medium">{t("common.email")}</Label>
-                  <span className="rounded bg-[#eff4ff] px-1.5 py-0.5 text-xs text-[#45464d] dark:bg-[#1a2a3a] dark:text-[#8f9099]">
+                  <span className="rounded bg-slate-200/60 px-1.5 py-0.5 text-xs text-[#45464d] dark:bg-[#1a2a3a] dark:text-[#8f9099]">
                     {t("common.cannotBeChanged")}
                   </span>
                 </div>
@@ -257,7 +215,7 @@ export function ProfileTab({
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Education & Career Section */}
       <div className="glass-card rounded-xl p-6">
@@ -281,7 +239,7 @@ export function ProfileTab({
               />
             ) : (
               <p className="text-base font-semibold text-[#0b1c30] dark:text-white">
-                {userProfile.university || t("common.notUpdatedYet")}
+                {displayUniversity || t("common.notUpdatedYet")}
               </p>
             )}
           </div>
@@ -309,7 +267,7 @@ export function ProfileTab({
               </Select>
             ) : (
               <p className="text-base font-semibold text-[#0b1c30] dark:text-white">
-                {getMajorLabel(userProfile.major || "") || t("common.notUpdatedYet")}
+                {displayMajor || t("common.notUpdatedYet")}
               </p>
             )}
           </div>

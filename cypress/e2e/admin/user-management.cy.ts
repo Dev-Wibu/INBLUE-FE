@@ -11,7 +11,7 @@ describe("Admin Dashboard — User Management", () => {
       body: {
         traceId: "mock",
         data: [
-          { id: 1, email: "binhan@gmail.com", fullName: "Bình An", role: "USER" },
+          { id: 1, email: "nha36978@gmail.com", fullName: "Bình An", role: "USER" },
           { id: 2, email: "thuson@gmail.com", fullName: "Thùy Sơn", role: "ADMIN" },
           { id: 3, email: "b@fpt.com", fullName: "Mentor B", role: "MENTOR" },
         ],
@@ -26,6 +26,6 @@ describe("Admin Dashboard — User Management", () => {
   it("should display user table", () => {
     cy.visit("/admin?tab=users");
     cy.wait("@getUsers");
-    cy.contains(/Bình An|binhan@gmail.com|user/i).should("exist");
+    cy.contains(/Bình An|nha36978@gmail.com|user/i).should("exist");
   });
 });

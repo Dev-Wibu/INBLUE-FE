@@ -19,6 +19,6 @@ describe("User Dashboard — Account", () => {
 
   it("should display user info", () => {
     cy.visit("/user?tab=account");
-    cy.contains(/Bình An|binhan@gmail.com/i).should("exist");
+    cy.contains(/Bình An|nha36978@gmail.com/i).should("exist");
   });
 });
