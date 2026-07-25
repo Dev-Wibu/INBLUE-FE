@@ -127,7 +127,7 @@ export function UserDetailView({
   };
 
   return (
-    <div className="flex-1 overflow-auto p-4 md:p-6 lg:px-8 lg:pt-4 lg:pb-8">
+    <div className="w-full pt-4 pb-8">
       <div className="w-full">
         {isEditingUser ? (
           <div className="mx-auto max-w-4xl">
