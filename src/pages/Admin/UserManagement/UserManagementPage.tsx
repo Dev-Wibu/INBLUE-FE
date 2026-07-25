@@ -16,6 +16,7 @@ import { useSortable } from "@/hooks/useSortable";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { candidateProfileManager, usersAdminManager } from "@/services";
 import { ArrowLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -350,7 +351,7 @@ export function UserManagementPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div className={cn("flex flex-1 flex-col bg-slate-50 dark:bg-slate-950", viewMode === "list" && "overflow-hidden")}>
         {viewMode === "detail" && selectedUser ? (
           <UserDetailView
             user={selectedUser}
