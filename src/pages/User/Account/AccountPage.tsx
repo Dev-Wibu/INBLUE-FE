@@ -228,11 +228,17 @@ export function AccountPage() {
   const candidateTargetRole = candidateProfile?.targetRole || "";
   const candidateEducationMajor = candidateProfile?.educations?.[0]?.major || "";
 
-  // @ts-expect-error: Backend Swagger schema mismatch - university/major not in User type
   const summaryUniversity =
-    userProfile?.university || authUser?.university || candidateSchool || "";
+    userProfile?.university ||
+    ((authUser as Record<string, unknown>)?.university as string) ||
+    candidateSchool ||
+    "";
   const summaryMajor =
-    candidateTargetRole || candidateEducationMajor || userProfile?.major || authUser?.major || "";
+    candidateTargetRole ||
+    candidateEducationMajor ||
+    userProfile?.major ||
+    ((authUser as Record<string, unknown>)?.major as string) ||
+    "";
 
   const majorOptions = useMajorOptions();
   const getMajorLabel = (value: string): string => {
