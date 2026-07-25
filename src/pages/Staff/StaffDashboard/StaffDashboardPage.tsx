@@ -16,17 +16,7 @@ import {
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useTabsState, type Tab } from "@/hooks/useTabsState";
 import { useSettingsStore } from "@/stores/settingsStore";
-import {
-  ClipboardCheck,
-  FileText,
-  LayoutDashboard,
-  MessageSquare,
-  Newspaper,
-  Trash2,
-  User,
-  Users,
-  Video,
-} from "lucide-react";
+import { ClipboardCheck, FileText, LayoutDashboard, Trash2, User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -36,35 +26,11 @@ import {
   ApplicationGradingPage,
 } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
 import { StaffAccountPage } from "../Account/StaffAccountPage";
-import { FeedbackModerationPage } from "../FeedbackModeration/FeedbackModerationPage";
-import { MentorApplicationsPage } from "../MentorApplications/MentorApplicationsPage";
-import { PostModerationPage } from "../PostModeration/PostModerationPage";
-import { ReviewModerationPage } from "../ReviewModeration/ReviewModerationPage";
-import { SessionProcessingPage } from "../SessionProcessing/SessionProcessingPage";
 import { StaffOverviewPage } from "./StaffOverviewPage";
 
-type TabType =
-  | "dashboard"
-  | "applicationGrading"
-  | "grading-detail"
-  | "mentor-applications"
-  | "sessions"
-  | "reviews"
-  | "feedback"
-  | "posts"
-  | "account";
+type TabType = "dashboard" | "applicationGrading" | "grading-detail" | "account";
 
-const VALID_TAB_TYPES: TabType[] = [
-  "dashboard",
-  "applicationGrading",
-  "grading-detail",
-  "mentor-applications",
-  "sessions",
-  "reviews",
-  "feedback",
-  "posts",
-  "account",
-];
+const VALID_TAB_TYPES: TabType[] = ["dashboard", "applicationGrading", "grading-detail", "account"];
 
 const isValidTabType = (value: string): value is TabType => {
   return VALID_TAB_TYPES.includes(value as TabType);
@@ -80,26 +46,6 @@ const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; la
     label: t("adminApplicationGrading.applicationGrading"),
   },
   {
-    type: "mentor-applications",
-    label: t("staffStaffdashboard.coordinationPanel"),
-  },
-  {
-    type: "sessions",
-    label: t("common.interviewSession"),
-  },
-  {
-    type: "reviews",
-    label: t("staffStaffdashboard.mentorSReview"),
-  },
-  {
-    type: "feedback",
-    label: t("staffStaffdashboard.candidateResponses"),
-  },
-  {
-    type: "posts",
-    label: t("common.article"),
-  },
-  {
     type: "account",
     label: t("common.account"),
   },
@@ -109,11 +55,6 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   dashboard: LayoutDashboard,
   applicationGrading: ClipboardCheck,
   "grading-detail": FileText,
-  "mentor-applications": Users,
-  sessions: Video,
-  reviews: FileText,
-  feedback: MessageSquare,
-  posts: Newspaper,
   account: User,
 };
 
@@ -121,11 +62,6 @@ const TAB_COLORS: Record<TabType, string> = {
   dashboard: "text-[#0047AB]",
   applicationGrading: "text-orange-600",
   "grading-detail": "text-orange-600",
-  "mentor-applications": "text-emerald-600",
-  sessions: "text-rose-600",
-  reviews: "text-yellow-600",
-  feedback: "text-cyan-600",
-  posts: "text-purple-600",
   account: "text-gray-600",
 };
 
@@ -147,36 +83,6 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         label: t("adminApplicationGrading.applicationGrading"),
         icon: ClipboardCheck,
         iconColor: "text-orange-600",
-      },
-      {
-        type: "mentor-applications",
-        label: t("staffStaffdashboard.coordinationPanel"),
-        icon: Users,
-        iconColor: "text-emerald-600",
-      },
-      {
-        type: "sessions",
-        label: t("common.interviewSession"),
-        icon: Video,
-        iconColor: "text-rose-600",
-      },
-      {
-        type: "reviews",
-        label: t("staffStaffdashboard.mentorSReview"),
-        icon: FileText,
-        iconColor: "text-yellow-600",
-      },
-      {
-        type: "feedback",
-        label: t("staffStaffdashboard.candidateResponses"),
-        icon: MessageSquare,
-        iconColor: "text-cyan-600",
-      },
-      {
-        type: "posts",
-        label: t("common.article"),
-        icon: Newspaper,
-        iconColor: "text-purple-600",
       },
     ],
   },
@@ -203,41 +109,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         label: t("adminApplicationGrading.applicationGrading"),
         color: "text-orange-600 dark:text-orange-500",
         description: t("adminApplicationGrading.gradeApplications"),
-      },
-      {
-        type: "mentor-applications",
-        icon: Users,
-        label: t("staffStaffdashboard.coordinationPanel"),
-        color: "text-emerald-600 dark:text-emerald-500",
-        description: t("staffStaffdashboard.moderateTheMentorSAssessment"),
-      },
-      {
-        type: "sessions",
-        icon: Video,
-        label: t("common.interviewSession"),
-        color: "text-rose-600 dark:text-rose-500",
-        description: t("staffOverview.monitorInterviewSessions"),
-      },
-      {
-        type: "reviews",
-        icon: FileText,
-        label: t("staffStaffdashboard.mentorSReview"),
-        color: "text-yellow-600 dark:text-yellow-500",
-        description: t("staffOverview.moderateMentorReviews"),
-      },
-      {
-        type: "feedback",
-        icon: MessageSquare,
-        label: t("staffStaffdashboard.candidateResponses"),
-        color: "text-cyan-600 dark:text-cyan-500",
-        description: t("staffStaffdashboard.moderateCandidatesResponsesToMentors"),
-      },
-      {
-        type: "posts",
-        icon: Newspaper,
-        label: t("common.article"),
-        color: "text-purple-600 dark:text-purple-500",
-        description: t("staffOverview.manageCommunityPosts"),
       },
     ],
   },
@@ -473,16 +344,6 @@ export function StaffDashboardPage() {
           />
         );
       }
-      case "mentor-applications":
-        return <MentorApplicationsPage />;
-      case "sessions":
-        return <SessionProcessingPage />;
-      case "reviews":
-        return <ReviewModerationPage />;
-      case "feedback":
-        return <FeedbackModerationPage />;
-      case "posts":
-        return <PostModerationPage />;
       case "account":
         return <StaffAccountPage />;
       default:

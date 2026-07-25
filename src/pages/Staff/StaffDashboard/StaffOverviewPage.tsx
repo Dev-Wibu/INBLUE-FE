@@ -5,88 +5,12 @@ import { SpinnerBlock } from "@/components/ui/spinner";
 import { useAllPendingHRReviews } from "@/hooks/useApplicationDetails";
 import { fixUtf8Mojibake } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import {
-  ArrowRight,
-  ClipboardCheck,
-  Clock,
-  FileText,
-  MessageSquare,
-  Newspaper,
-  Sparkles,
-  TrendingUp,
-  UserCheck,
-  Users,
-  Video,
-} from "lucide-react";
+import { ArrowRight, ClipboardCheck, Clock, Sparkles, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-const TAB_LINKS: Record<string, string> = {
-  applicationGrading: "/staff?tab=applicationGrading",
-  "mentor-applications": "/staff?tab=mentor-applications",
-  sessions: "/staff?tab=sessions",
-  reviews: "/staff?tab=reviews",
-  feedback: "/staff?tab=feedback",
-  posts: "/staff?tab=posts",
-};
-
-const QUICK_ACTIONS = [
-  {
-    key: "applicationGrading",
-    titleKey: "adminApplicationGrading.applicationGrading",
-    descriptionKey: "adminApplicationGrading.gradeApplications",
-    icon: ClipboardCheck,
-    color: "text-orange-600 dark:text-orange-400",
-    bg: "bg-orange-50 dark:bg-orange-900/20",
-    border: "hover:border-orange-300 dark:hover:border-orange-700",
-  },
-  {
-    key: "mentor-applications",
-    titleKey: "staffStaffdashboard.coordinationPanel",
-    descriptionKey: "staffStaffdashboard.processMentorRegistration",
-    icon: UserCheck,
-    color: "text-emerald-600 dark:text-emerald-400",
-    bg: "bg-emerald-50 dark:bg-emerald-900/20",
-    border: "hover:border-emerald-300 dark:hover:border-emerald-700",
-  },
-  {
-    key: "sessions",
-    titleKey: "common.interviewSession",
-    descriptionKey: "staffOverview.monitorInterviewSessions",
-    icon: Video,
-    color: "text-rose-600 dark:text-rose-400",
-    bg: "bg-rose-50 dark:bg-rose-900/20",
-    border: "hover:border-rose-300 dark:hover:border-rose-700",
-  },
-  {
-    key: "reviews",
-    titleKey: "staffStaffdashboard.mentorSReview",
-    descriptionKey: "staffOverview.moderateMentorReviews",
-    icon: FileText,
-    color: "text-yellow-600 dark:text-yellow-400",
-    bg: "bg-yellow-50 dark:bg-yellow-900/20",
-    border: "hover:border-yellow-300 dark:hover:border-yellow-700",
-  },
-  {
-    key: "feedback",
-    titleKey: "staffStaffdashboard.candidateResponses",
-    descriptionKey: "staffStaffdashboard.moderateCandidatesResponsesToMentors",
-    icon: MessageSquare,
-    color: "text-cyan-600 dark:text-cyan-400",
-    bg: "bg-cyan-50 dark:bg-cyan-900/20",
-    border: "hover:border-cyan-300 dark:hover:border-cyan-700",
-  },
-  {
-    key: "posts",
-    titleKey: "common.article",
-    descriptionKey: "staffOverview.manageCommunityPosts",
-    icon: Newspaper,
-    color: "text-purple-600 dark:text-purple-400",
-    bg: "bg-purple-50 dark:bg-purple-900/20",
-    border: "hover:border-purple-300 dark:hover:border-purple-700",
-  },
-];
+const GRADING_PATH = "/staff?tab=applicationGrading";
 
 function formatTimeAgo(
   value: string | undefined,
@@ -133,10 +57,7 @@ export function StaffOverviewPage() {
 
   const recentPending = useMemo(() => pendingReviews.slice(0, 4), [pendingReviews]);
 
-  const handleQuickAction = (key: string) => {
-    const link = TAB_LINKS[key];
-    if (link) navigate(link);
-  };
+  const openGrading = () => navigate(GRADING_PATH);
 
   return (
     <div className="min-h-screen bg-[#f8f9ff] dark:bg-[#0b1c30]">
@@ -169,7 +90,7 @@ export function StaffOverviewPage() {
               </div>
             </div>
             <button
-              onClick={() => handleQuickAction("applicationGrading")}
+              onClick={openGrading}
               className="flex items-center gap-2 rounded-lg bg-[#0058be] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#0047a8]">
               <ClipboardCheck className="h-4 w-4" />
               {t("staffOverview.goToApplications")}
@@ -236,53 +157,6 @@ export function StaffOverviewPage() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <Card className="glass-card border-slate-200/60 p-6 dark:border-slate-800/60">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-[#0b1c30] dark:text-white">
-                {t("staffOverview.quickActions")}
-              </h2>
-              <p className="mt-1 text-sm text-[#45464d] dark:text-[#8f9099]">
-                {t("staffOverview.workSubtitle")}
-              </p>
-            </div>
-            <Badge
-              variant="outline"
-              className="border-[#0058be]/30 bg-[#0058be]/5 text-[#0058be] dark:border-[#66B2FF]/30 dark:bg-[#66B2FF]/10 dark:text-[#66B2FF]">
-              <Users className="mr-1 h-3 w-3" />
-              {t("common.staff")}
-            </Badge>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {QUICK_ACTIONS.map((action) => {
-              const Icon = action.icon;
-              return (
-                <button
-                  key={action.key}
-                  onClick={() => handleQuickAction(action.key)}
-                  className={`group flex items-center gap-4 rounded-xl border border-slate-200/60 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800/60 dark:bg-slate-900/50 ${action.border}`}>
-                  <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${action.bg}`}>
-                    <Icon className={`h-6 w-6 ${action.color}`} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#0b1c30] dark:text-white">
-                      {t(action.titleKey)}
-                    </p>
-                    <p className="mt-0.5 line-clamp-2 text-xs text-[#45464d] dark:text-[#8f9099]">
-                      {t(action.descriptionKey)}
-                    </p>
-                  </div>
-                  <ArrowRight
-                    className={`h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1 ${action.color}`}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </Card>
-
         {/* Recent Pending Reviews */}
         <Card className="glass-card border-slate-200/60 p-6 dark:border-slate-800/60">
           <div className="mb-4 flex items-center justify-between">
@@ -295,7 +169,7 @@ export function StaffOverviewPage() {
               </p>
             </div>
             <button
-              onClick={() => handleQuickAction("applicationGrading")}
+              onClick={openGrading}
               className="flex items-center gap-1 text-sm font-medium text-[#0058be] transition-colors hover:text-[#0047a8] dark:text-[#66B2FF] dark:hover:text-[#99ccff]">
               {t("common.seeAll")}
               <ArrowRight className="h-3.5 w-3.5" />
@@ -326,7 +200,7 @@ export function StaffOverviewPage() {
                 return (
                   <button
                     key={reviewId}
-                    onClick={() => handleQuickAction("applicationGrading")}
+                    onClick={openGrading}
                     className="flex w-full items-center gap-4 rounded-xl border border-slate-200/60 bg-white p-4 text-left transition-all hover:border-[#0058be]/40 hover:bg-[#eff4ff] dark:border-slate-800/60 dark:bg-slate-900/50 dark:hover:bg-[#0058be]/10">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
                       <ClipboardCheck className="h-5 w-5" />
