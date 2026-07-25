@@ -5,7 +5,7 @@ import checker from "vite-plugin-checker";
 import { defineConfig } from "vitest/config";
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss(), checker({ typescript: true })],
   resolve: {
     alias: {
@@ -14,6 +14,9 @@ export default defineConfig({
   },
   define: {
     global: "window",
+  },
+  esbuild: {
+    drop: mode === "production" ? ["console", "debugger"] : [],
   },
   // Vitest configuration
   test: {
@@ -28,4 +31,4 @@ export default defineConfig({
     },
     setupFiles: ["./src/test/setup.ts"],
   },
-});
+}));
