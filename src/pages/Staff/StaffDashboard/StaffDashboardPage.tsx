@@ -1,3 +1,4 @@
+import icon2 from "@/assets/icon2.svg";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import type {
   ChromeTabMenuAction,
@@ -15,7 +16,17 @@ import {
 import { ScrollToTopButton } from "@/components/shared/ScrollToTopButton";
 import { useTabsState, type Tab } from "@/hooks/useTabsState";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { ClipboardCheck, FileText, LayoutDashboard, Trash2, User } from "lucide-react";
+import {
+  ClipboardCheck,
+  FileText,
+  LayoutDashboard,
+  MessageSquare,
+  Newspaper,
+  Trash2,
+  User,
+  Users,
+  Video,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -25,11 +36,35 @@ import {
   ApplicationGradingPage,
 } from "../../Admin/ApplicationGrading/ApplicationGradingPage";
 import { StaffAccountPage } from "../Account/StaffAccountPage";
+import { FeedbackModerationPage } from "../FeedbackModeration/FeedbackModerationPage";
+import { MentorApplicationsPage } from "../MentorApplications/MentorApplicationsPage";
+import { PostModerationPage } from "../PostModeration/PostModerationPage";
+import { ReviewModerationPage } from "../ReviewModeration/ReviewModerationPage";
+import { SessionProcessingPage } from "../SessionProcessing/SessionProcessingPage";
 import { StaffOverviewPage } from "./StaffOverviewPage";
 
-type TabType = "dashboard" | "applicationGrading" | "grading-detail" | "account";
+type TabType =
+  | "dashboard"
+  | "applicationGrading"
+  | "grading-detail"
+  | "mentor-applications"
+  | "sessions"
+  | "reviews"
+  | "feedback"
+  | "posts"
+  | "account";
 
-const VALID_TAB_TYPES: TabType[] = ["dashboard", "applicationGrading", "grading-detail", "account"];
+const VALID_TAB_TYPES: TabType[] = [
+  "dashboard",
+  "applicationGrading",
+  "grading-detail",
+  "mentor-applications",
+  "sessions",
+  "reviews",
+  "feedback",
+  "posts",
+  "account",
+];
 
 const isValidTabType = (value: string): value is TabType => {
   return VALID_TAB_TYPES.includes(value as TabType);
@@ -45,6 +80,26 @@ const getAvailableTabs = (t: (key: string) => string): Array<{ type: TabType; la
     label: t("adminApplicationGrading.applicationGrading"),
   },
   {
+    type: "mentor-applications",
+    label: t("staffStaffdashboard.coordinationPanel"),
+  },
+  {
+    type: "sessions",
+    label: t("common.interviewSession"),
+  },
+  {
+    type: "reviews",
+    label: t("staffStaffdashboard.mentorSReview"),
+  },
+  {
+    type: "feedback",
+    label: t("staffStaffdashboard.candidateResponses"),
+  },
+  {
+    type: "posts",
+    label: t("common.article"),
+  },
+  {
     type: "account",
     label: t("common.account"),
   },
@@ -54,13 +109,23 @@ const TAB_ICONS: Record<TabType, React.ElementType> = {
   dashboard: LayoutDashboard,
   applicationGrading: ClipboardCheck,
   "grading-detail": FileText,
+  "mentor-applications": Users,
+  sessions: Video,
+  reviews: FileText,
+  feedback: MessageSquare,
+  posts: Newspaper,
   account: User,
 };
 
 const TAB_COLORS: Record<TabType, string> = {
-  dashboard: "text-green-600",
+  dashboard: "text-[#0047AB]",
   applicationGrading: "text-orange-600",
   "grading-detail": "text-orange-600",
+  "mentor-applications": "text-emerald-600",
+  sessions: "text-rose-600",
+  reviews: "text-yellow-600",
+  feedback: "text-cyan-600",
+  posts: "text-purple-600",
   account: "text-gray-600",
 };
 
@@ -71,7 +136,7 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         type: "dashboard",
         label: t("common.dashboard"),
         icon: LayoutDashboard,
-        iconColor: "text-green-600",
+        iconColor: "text-[#0047AB]",
       },
     ],
   },
@@ -83,29 +148,96 @@ const getChromeTabsMenuGroups = (t: (key: string) => string): ChromeTabMenuGroup
         icon: ClipboardCheck,
         iconColor: "text-orange-600",
       },
+      {
+        type: "mentor-applications",
+        label: t("staffStaffdashboard.coordinationPanel"),
+        icon: Users,
+        iconColor: "text-emerald-600",
+      },
+      {
+        type: "sessions",
+        label: t("common.interviewSession"),
+        icon: Video,
+        iconColor: "text-rose-600",
+      },
+      {
+        type: "reviews",
+        label: t("staffStaffdashboard.mentorSReview"),
+        icon: FileText,
+        iconColor: "text-yellow-600",
+      },
+      {
+        type: "feedback",
+        label: t("staffStaffdashboard.candidateResponses"),
+        icon: MessageSquare,
+        iconColor: "text-cyan-600",
+      },
+      {
+        type: "posts",
+        label: t("common.article"),
+        icon: Newspaper,
+        iconColor: "text-purple-600",
+      },
     ],
   },
 ];
 
 const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] => [
   {
+    label: t("common.home"),
     items: [
       {
         type: "dashboard",
         icon: LayoutDashboard,
         label: t("common.dashboard"),
-        color: "text-green-600",
+        color: "text-[#0047AB] dark:text-[#66B2FF]",
       },
     ],
   },
   {
+    label: t("common.work"),
     items: [
       {
         type: "applicationGrading",
         icon: ClipboardCheck,
         label: t("adminApplicationGrading.applicationGrading"),
-        color: "text-orange-600",
+        color: "text-orange-600 dark:text-orange-500",
         description: t("adminApplicationGrading.gradeApplications"),
+      },
+      {
+        type: "mentor-applications",
+        icon: Users,
+        label: t("staffStaffdashboard.coordinationPanel"),
+        color: "text-emerald-600 dark:text-emerald-500",
+        description: t("staffStaffdashboard.moderateTheMentorSAssessment"),
+      },
+      {
+        type: "sessions",
+        icon: Video,
+        label: t("common.interviewSession"),
+        color: "text-rose-600 dark:text-rose-500",
+        description: t("staffOverview.monitorInterviewSessions"),
+      },
+      {
+        type: "reviews",
+        icon: FileText,
+        label: t("staffStaffdashboard.mentorSReview"),
+        color: "text-yellow-600 dark:text-yellow-500",
+        description: t("staffOverview.moderateMentorReviews"),
+      },
+      {
+        type: "feedback",
+        icon: MessageSquare,
+        label: t("staffStaffdashboard.candidateResponses"),
+        color: "text-cyan-600 dark:text-cyan-500",
+        description: t("staffStaffdashboard.moderateCandidatesResponsesToMentors"),
+      },
+      {
+        type: "posts",
+        icon: Newspaper,
+        label: t("common.article"),
+        color: "text-purple-600 dark:text-purple-500",
+        description: t("staffOverview.manageCommunityPosts"),
       },
     ],
   },
@@ -116,7 +248,7 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
         type: "account",
         icon: User,
         label: t("common.account"),
-        color: "text-gray-600",
+        color: "text-slate-500 dark:text-slate-400",
         description: t("userAccount.updateYourProfileEducationAnd"),
       },
     ],
@@ -145,27 +277,18 @@ export function StaffDashboardPage() {
   const { t } = useTranslation();
   const STAFF_SIDEBAR_LOGO = useMemo(
     () => (
-      <>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-600">
-          <LayoutDashboard className="h-6 w-6 text-white" />
-        </div>
-        <div className="min-w-0 flex-shrink-0">
-          <h1 className="truncate font-semibold text-gray-900 dark:text-white">
-            {t("staffStaffdashboard.staffPanel")}
-          </h1>
-          <p className="truncate text-xs text-gray-500 dark:text-slate-400">
-            {t("staffStaffdashboard.staffAdministration")}
-          </p>
-        </div>
-      </>
+      <a href="/" className="flex items-center gap-2">
+        <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
+        <span className="text-lg font-bold text-[#002654] dark:text-white">INBLUE AI</span>
+      </a>
     ),
-    [t]
+    []
   );
   const STAFF_SIDEBAR_LOGO_COLLAPSED = useMemo(
     () => (
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-600">
-        <LayoutDashboard className="h-6 w-6 text-white" />
-      </div>
+      <a href="/" className="flex items-center justify-center">
+        <img src={icon2} alt="INBLUE AI" className="h-9 w-9 shrink-0" />
+      </a>
     ),
     []
   );
@@ -350,6 +473,16 @@ export function StaffDashboardPage() {
           />
         );
       }
+      case "mentor-applications":
+        return <MentorApplicationsPage />;
+      case "sessions":
+        return <SessionProcessingPage />;
+      case "reviews":
+        return <ReviewModerationPage />;
+      case "feedback":
+        return <FeedbackModerationPage />;
+      case "posts":
+        return <PostModerationPage />;
       case "account":
         return <StaffAccountPage />;
       default:
@@ -378,35 +511,36 @@ export function StaffDashboardPage() {
         onSettingsClick={() => setIsSettingsOpen(true)}
         theme={{
           wrapper:
-            "h-full border-r border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900",
+            "h-screen flex-shrink-0 border-r border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900",
           expandedWidth: "w-56",
           collapsedWidth: "w-16",
-          logoBorder: "border-b border-gray-200 dark:border-slate-800",
-          logoExpandedPadding: "h-14 gap-3 px-4",
+          logoBorder: "border-b border-slate-200 dark:border-slate-800",
+          logoExpandedPadding: "h-14 gap-2 px-4",
           logoCollapsedPadding: "h-14 justify-center px-2",
-          navWrapper: "flex-1 space-y-1 overflow-y-auto",
-          navExpandedPadding: "p-2 pt-4",
-          navCollapsedPadding: "p-2",
+          navWrapper: "flex flex-1 flex-col gap-1 py-4",
+          navExpandedPadding: "px-3",
+          navCollapsedPadding: "px-2",
           sectionLabel:
-            "text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-slate-400",
-          divider: "",
-          itemPy: "py-2",
-          activeItem: "bg-gray-100 text-gray-900 dark:bg-slate-800 dark:text-white",
+            "px-3 text-xs font-semibold tracking-wider text-slate-500/70 uppercase dark:text-slate-500",
+          divider: "border-slate-100 dark:border-slate-800",
+          itemPy: "py-2.5",
+          activeItem: "bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#0047AB]/20 dark:text-[#66B2FF]",
           inactiveItem:
-            "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
-          footerBorder: "border-t border-gray-200 dark:border-slate-800",
-          footerExpandedPadding: "p-4",
+            "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+          activeIconOverride: "text-[#0047AB] dark:text-[#66B2FF]",
+          footerBorder: "border-t border-slate-200/90 dark:border-slate-800/80",
+          footerExpandedPadding: "p-3",
           footerCollapsedPadding: "p-2",
           logoutExpandedBtn:
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20",
+            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
           logoutCollapsedBtn:
-            "flex items-center justify-center rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20",
-          logoutIcon: "",
+            "flex items-center justify-center rounded-lg p-2.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+          logoutIcon: "text-slate-500 dark:text-slate-400",
           logoutLabel: t("common.logout"),
         }}
       />
 
-      <div className="relative z-0 flex flex-1 flex-col overflow-x-hidden">
+      <div className="relative z-0 flex flex-1 flex-col overflow-hidden">
         <DashboardChromeTabs
           tabs={chromeTabsData}
           activeTabId={activeTabId}
