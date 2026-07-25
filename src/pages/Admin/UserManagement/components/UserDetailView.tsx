@@ -145,7 +145,7 @@ export function UserDetailView({
         ) : (
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
             {/* Left Column: Sticky Profile Card */}
-            <div className="lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
+            <div className="lg:sticky lg:top-[84px] lg:col-span-3 lg:self-start">
               <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
                 <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                   <Button
@@ -521,7 +521,7 @@ export function UserDetailView({
 
             {/* Right Column: TOC Menu (Only visible when not editing profile) */}
             {!isEditingProfile && (
-              <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:block lg:self-start">
+              <div className="hidden lg:sticky lg:top-[84px] lg:col-span-2 lg:block lg:self-start">
                 <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
                   <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                     Nội dung
