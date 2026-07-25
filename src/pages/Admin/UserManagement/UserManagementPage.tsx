@@ -211,7 +211,7 @@ export function UserManagementPage() {
   return (
     <div className="-m-4 flex h-[calc(100%+32px)] flex-col bg-slate-50 md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)] dark:bg-slate-950">
       {/* Unified Single Hierarchical Header (Fixed 68px height) */}
-      <div className="sticky top-0 z-10 flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
           {viewMode === "detail" && selectedUser ? (
             /* Mode 2: User Detail View (Sleek 1-line breadcrumb) */
