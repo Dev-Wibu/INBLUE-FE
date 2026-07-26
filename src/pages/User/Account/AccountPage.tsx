@@ -423,7 +423,7 @@ export function AccountPage() {
             </button>
           </aside>
 
-          <div className={cn("lg:col-span-6")}>
+          <div className={cn(activeTab === "editProfile" ? "lg:col-span-6" : "lg:col-span-9")}>
             {isLoading ? (
               <div className="flex items-center justify-center rounded-2xl border border-slate-200/60 bg-white p-12 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
                 <SpinnerBlock size="lg" />
@@ -433,7 +433,8 @@ export function AccountPage() {
             )}
           </div>
 
-          {renderRightWidget()}
+          {activeTab === "editProfile" && renderRightWidget()}
+
         </div>
       </div>
       <CVUploadModal
