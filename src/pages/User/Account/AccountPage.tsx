@@ -231,31 +231,50 @@ export function AccountPage() {
     }
   };
 
-  const renderRightWidget = () => (
-    <div className="hidden lg:block lg:sticky lg:top-4 lg:col-span-3 space-y-6">
-        <Card className="p-5 border-slate-200/60 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-            <h4 className="text-xs font-bold text-slate-500 tracking-wider uppercase mb-4">ĐỘ HOÀN THIỆN HỒ SƠ</h4>
-            <div className="flex items-center gap-3 mb-4">
-                <Progress value={70} className="h-2" />
-                <span className="text-sm font-bold text-indigo-600">70%</span>
-            </div>
-            <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Thông tin cơ bản</li>
-                <li className="flex items-center gap-2"><Circle className="h-4 w-4 text-slate-300" /> Số điện thoại & Địa chỉ</li>
-                <li className="flex items-center gap-2"><Circle className="h-4 w-4 text-slate-300" /> LinkedIn / GitHub</li>
-            </ul>
-        </Card>
+  const renderRightWidget = () => {
+    const fields = [
+        !!userProfile?.name && !!userProfile?.email,
+        !!userProfile?.phone && !!userProfile?.address,
+        !!userProfile?.linkedInUrl && !!userProfile?.githubUrl
+    ];
+    const completedCount = fields.filter(Boolean).length;
+    const percentage = Math.round((completedCount / fields.length) * 100);
 
-        <div className="p-5 rounded-xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/40">
-            <h4 className="text-sm font-semibold text-indigo-900 dark:text-indigo-300 flex items-center gap-2 mb-2">
-                <Lightbulb className="h-4 w-4 text-amber-500" /> Mẹo tối ưu từ AI
-            </h4>
-            <p className="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
-                Hồ sơ được cập nhật đầy đủ thông tin liên hệ và GitHub giúp hệ thống AI phân tích và đề xuất các câu hỏi phỏng vấn sát với thực tế công việc của bạn hơn 40%.
-            </p>
+    return (
+        <div className="hidden lg:block lg:sticky lg:top-4 lg:col-span-3 space-y-6">
+            <Card className="p-5 border-slate-200/60 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <h4 className="text-xs font-bold text-slate-500 tracking-wider uppercase mb-4">ĐỘ HOÀN THIỆN HỒ SƠ</h4>
+                <div className="flex items-center gap-3 mb-4">
+                    <Progress value={percentage} className="h-2" />
+                    <span className="text-sm font-bold text-indigo-600">{percentage}%</span>
+                </div>
+                <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                    <li className="flex items-center gap-2">
+                        {fields[0] ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Circle className="h-4 w-4 text-slate-300" />}
+                        Thông tin cơ bản
+                    </li>
+                    <li className="flex items-center gap-2">
+                        {fields[1] ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Circle className="h-4 w-4 text-slate-300" />}
+                        Số điện thoại & Địa chỉ
+                    </li>
+                    <li className="flex items-center gap-2">
+                        {fields[2] ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Circle className="h-4 w-4 text-slate-300" />}
+                        LinkedIn / GitHub
+                    </li>
+                </ul>
+            </Card>
+
+            <div className="p-5 rounded-xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/40">
+                <h4 className="text-sm font-semibold text-indigo-900 dark:text-indigo-300 flex items-center gap-2 mb-2">
+                    <Lightbulb className="h-4 w-4 text-amber-500" /> Mẹo tối ưu từ AI
+                </h4>
+                <p className="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
+                    Hồ sơ được cập nhật đầy đủ thông tin liên hệ và GitHub giúp hệ thống AI phân tích và đề xuất các câu hỏi phỏng vấn sát với thực tế công việc của bạn hơn 40%.
+                </p>
+            </div>
         </div>
-    </div>
-);
+    );
+  };
 
   const summaryAvatar = userProfile?.avatar || authUser?.avatarUrl || null;
   const summaryName = userProfile?.name || authUser?.name || t("common.account");
