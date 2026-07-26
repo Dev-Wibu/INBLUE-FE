@@ -1,3 +1,5 @@
+import { PaginationControl } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -6,19 +8,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { formatCurrency } from "@/lib/formatting";
-import { usePagination, useHybridPageSize } from "@/hooks/usePagination";
-import { PaginationControl } from "@/components/shared";
+import { cn } from "@/lib/utils";
 import type { JdPurchase } from "@/services/jd-purchase.manager";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import { paymentManager } from "@/services/payment.manager";
-import { Package, Receipt, ShoppingBag, ExternalLink } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { ExternalLink, Package, Receipt, ShoppingBag } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 function formatPurchaseDate(dateStr?: string | null): string {
   if (!dateStr) return "—";
@@ -47,9 +47,9 @@ export function JdPurchaseHistoryTab() {
   const { t } = useTranslation();
   const [purchases, setPurchases] = useState<EnrichedJdPurchase[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");
-  
+
   const [pageSize] = useHybridPageSize({ key: "jd-purchase-history" });
-  
+
   // Use 10 as fallback if pageSize is somehow undefined
   const effectivePageSize = pageSize || 10;
 
@@ -83,7 +83,7 @@ export function JdPurchaseHistoryTab() {
         const uniquePaymentIds = Array.from(
           new Set(rawPurchases.map((p) => p.paymentId).filter((id): id is number => Boolean(id)))
         );
-        
+
         const jdMap = new Map<number, { title?: string; price?: number }>();
         const paymentMap = new Map<number, number>();
 
@@ -101,7 +101,7 @@ export function JdPurchaseHistoryTab() {
             }
           }),
         ]);
-        
+
         if (cancelled) return;
 
         const enriched: EnrichedJdPurchase[] = rawPurchases.map((p) => {
@@ -113,7 +113,7 @@ export function JdPurchaseHistoryTab() {
             amount: payAmount ?? jdInfo?.price,
           };
         });
-        
+
         setPurchases(enriched);
         setLoadState("ready");
       } catch (error) {
@@ -168,69 +168,71 @@ export function JdPurchaseHistoryTab() {
       {/* Table Container chuẩn hệ thống */}
       {loadState === "ready" && purchases.length > 0 && (
         <>
-        <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                <TableHead className="w-[80px] pl-6 font-medium text-slate-500">STT</TableHead>
-                <TableHead className="font-medium text-slate-500">Thông tin JD</TableHead>
-                <TableHead className="font-medium text-slate-500">Mã giao dịch</TableHead>
-                <TableHead className="font-medium text-slate-500">Trạng thái</TableHead>
-                <TableHead className="font-medium text-slate-500">Ngày mua</TableHead>
-                <TableHead className="font-medium text-slate-500">Ngày sử dụng</TableHead>
-                <TableHead className="pr-6 text-right font-medium text-slate-500">Thành tiền</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedPurchases.map((purchase, idx) => (
-                <TableRow
-                  key={purchase.id}
-                  className="group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                  <TableCell className="pl-6 py-4 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                    #{pagination.startIndex + idx + 1}
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <Link
-                      to={`/enterprise/job/${purchase.jdId}`}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700 hover:text-indigo-800 dark:text-indigo-400 hover:underline">
-                      {purchase.jdTitle || "Untitled"}
-                      <ExternalLink className="h-3 w-3" />
-                    </Link>
-                  </TableCell>
-                  <TableCell className="py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                    #{purchase.paymentId}
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "font-medium",
-                        purchase.status === "PURCHASED"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-400"
-                          : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
-                      )}>
-                      {t(`payment.jdPurchaseStatus_${purchase.status}`)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-4 text-sm text-slate-600 dark:text-slate-300">
-                    {formatPurchaseDate(purchase.purchasedAt)}
-                  </TableCell>
-                  <TableCell className="py-4 text-sm text-slate-600 dark:text-slate-300">
-                    {purchase.status === "USED" ? formatPurchaseDate(purchase.usedAt) : "—"}
-                  </TableCell>
-                  <TableCell className="py-4 pr-6 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    {purchase.amount ? formatCurrency(purchase.amount) : "—"}
-                  </TableCell>
+          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                  <TableHead className="w-[80px] pl-6 font-medium text-slate-500">STT</TableHead>
+                  <TableHead className="font-medium text-slate-500">Thông tin JD</TableHead>
+                  <TableHead className="font-medium text-slate-500">Mã giao dịch</TableHead>
+                  <TableHead className="font-medium text-slate-500">Trạng thái</TableHead>
+                  <TableHead className="font-medium text-slate-500">Ngày mua</TableHead>
+                  <TableHead className="font-medium text-slate-500">Ngày sử dụng</TableHead>
+                  <TableHead className="pr-6 text-right font-medium text-slate-500">
+                    Thành tiền
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        
-        {/* Thanh phân trang ngay dưới bảng */}
-        <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+              </TableHeader>
+              <TableBody>
+                {paginatedPurchases.map((purchase, idx) => (
+                  <TableRow
+                    key={purchase.id}
+                    className="group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                    <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                      #{pagination.startIndex + idx + 1}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Link
+                        to={`/enterprise/job/${purchase.jdId}`}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
+                        {purchase.jdTitle || "Untitled"}
+                        <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </TableCell>
+                    <TableCell className="py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
+                      #{purchase.paymentId}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "font-medium",
+                          purchase.status === "PURCHASED"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-400"
+                            : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
+                        )}>
+                        {t(`payment.jdPurchaseStatus_${purchase.status}`)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4 text-sm text-slate-600 dark:text-slate-300">
+                      {formatPurchaseDate(purchase.purchasedAt)}
+                    </TableCell>
+                    <TableCell className="py-4 text-sm text-slate-600 dark:text-slate-300">
+                      {purchase.status === "USED" ? formatPurchaseDate(purchase.usedAt) : "—"}
+                    </TableCell>
+                    <TableCell className="py-4 pr-6 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      {purchase.amount ? formatCurrency(purchase.amount) : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Thanh phân trang ngay dưới bảng */}
+          <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
             <PaginationControl pagination={pagination} />
-        </div>
+          </div>
         </>
       )}
     </div>
