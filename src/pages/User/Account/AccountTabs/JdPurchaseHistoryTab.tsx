@@ -11,10 +11,12 @@ import type { JdPurchase } from "@/services/jd-purchase.manager";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import { paymentManager } from "@/services/payment.manager";
-import { Package, Receipt, ShoppingBag } from "lucide-react";
+import { Package, Receipt, ShoppingBag, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 function formatPurchaseDate(dateStr?: string | null): string {
   if (!dateStr) return "—";
@@ -110,7 +112,8 @@ export function JdPurchaseHistoryTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
+      {/* Container header nếu cần tiêu đề tab */}
+      <div className="flex items-center gap-2 px-1">
         <Receipt className="h-4 w-4 text-slate-500 dark:text-slate-400" />
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
           {t("payment.jdPurchaseHistory")}
@@ -143,30 +146,19 @@ export function JdPurchaseHistoryTab() {
         </div>
       )}
 
+      {/* Table Container chuẩn hệ thống */}
       {loadState === "ready" && purchases.length > 0 && (
         <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <Table>
-            <TableHeader className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-              <TableRow>
-                <TableHead className="pl-6 font-medium text-slate-500">#</TableHead>
-                <TableHead className="font-medium text-slate-500">
-                  {t("payment.jdPurchaseJdId")}
-                </TableHead>
-                <TableHead className="font-medium text-slate-500">
-                  {t("payment.jdPurchasePaymentId")}
-                </TableHead>
-                <TableHead className="font-medium text-slate-500">
-                  {t("common.status", "Trạng thái")}
-                </TableHead>
-                <TableHead className="font-medium text-slate-500">
-                  {t("payment.jdPurchaseDate")}
-                </TableHead>
-                <TableHead className="font-medium text-slate-500">
-                  {t("payment.jdPurchaseUsedDate")}
-                </TableHead>
-                <TableHead className="pr-6 font-medium text-slate-500">
-                  {t("payment.jdPurchaseAmount")}
-                </TableHead>
+            <TableHeader>
+              <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                <TableHead className="w-[80px] pl-6 font-medium text-slate-500">#</TableHead>
+                <TableHead className="font-medium text-slate-500">JD</TableHead>
+                <TableHead className="font-medium text-slate-500">Thanh toán ID</TableHead>
+                <TableHead className="font-medium text-slate-500">Trạng thái</TableHead>
+                <TableHead className="font-medium text-slate-500">Ngày mua</TableHead>
+                <TableHead className="font-medium text-slate-500">Ngày sử dụng</TableHead>
+                <TableHead className="pr-6 text-right font-medium text-slate-500">Số tiền</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -175,33 +167,31 @@ export function JdPurchaseHistoryTab() {
                   key={purchase.id}
                   className="group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
                   <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                    {idx + 1}
+                    #{idx + 1}
                   </TableCell>
                   <TableCell>
                     <Link
                       to={`/enterprise/job/${purchase.jdId}`}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-indigo-900/30">
-                      <span className="font-mono text-slate-500">#{purchase.jdId}</span>
-                      {purchase.jdTitle && (
-                        <span className="font-semibold">{purchase.jdTitle}</span>
-                      )}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-700 hover:text-indigo-800 dark:text-indigo-400 hover:underline">
+                      <span className="font-mono opacity-70">#{purchase.jdId}</span>
+                      {purchase.jdTitle || "Untitled"}
+                      <ExternalLink className="h-3 w-3" />
                     </Link>
                   </TableCell>
                   <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
                     #{purchase.paymentId}
                   </TableCell>
                   <TableCell>
-                    {purchase.status === "PURCHASED" ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-100/80 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        {t("payment.jdPurchaseStatus_PURCHASED")}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                        {t("payment.jdPurchaseStatus_USED")}
-                      </span>
-                    )}
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "font-normal",
+                        purchase.status === "PURCHASED"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-400"
+                          : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
+                      )}>
+                      {t(`payment.jdPurchaseStatus_${purchase.status}`)}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-xs text-slate-600 dark:text-slate-300">
                     {formatPurchaseDate(purchase.purchasedAt)}
@@ -209,7 +199,7 @@ export function JdPurchaseHistoryTab() {
                   <TableCell className="text-xs text-slate-600 dark:text-slate-300">
                     {purchase.status === "USED" ? formatPurchaseDate(purchase.usedAt) : "—"}
                   </TableCell>
-                  <TableCell className="pr-6 text-xs font-medium text-slate-900 dark:text-slate-100">
+                  <TableCell className="pr-6 text-right text-xs font-semibold text-slate-900 dark:text-slate-100">
                     {purchase.amount ? formatCurrency(purchase.amount) : "—"}
                   </TableCell>
                 </TableRow>
