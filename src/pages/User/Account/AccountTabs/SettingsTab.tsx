@@ -92,11 +92,14 @@ export function SettingsTab() {
                         </fieldset>
                         <fieldset className="space-y-2">
                             <Label className="text-xs font-medium text-slate-500 dark:text-slate-400">Ngôn ngữ</Label>
-                            <select value={language} onChange={(e) => handleLanguageChange(e.target.value as Language)} className="w-full border border-slate-200 dark:border-slate-700 p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-xs outline-none text-slate-700 dark:text-slate-300">
-                                <option value="vi">Tiếng Việt</option>
-                                <option value="en">English</option>
-                                <option value="ja">日本語</option>
-                            </select>
+                            <RadioGroup value={language} onValueChange={(v) => handleLanguageChange(v as Language)} className="grid grid-cols-3 gap-2">
+                                {[{v: "vi", l: "Tiếng Việt"}, {v: "en", l: "English"}, {v: "ja", l: "日本語"}].map(o => (
+                                    <Label key={o.v} htmlFor={`lang-${o.v}`} className={cn("flex items-center justify-center border p-2 rounded-lg cursor-pointer transition-all text-center", language === o.v ? "border-[#6366f1] bg-indigo-50 dark:bg-indigo-900/40" : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800")}>
+                                        <RadioGroupItem value={o.v} id={`lang-${o.v}`} className="sr-only"/>
+                                        <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300">{o.l}</span>
+                                    </Label>
+                                ))}
+                            </RadioGroup>
                         </fieldset>
                     </div>
                 </div>
