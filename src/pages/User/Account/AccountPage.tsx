@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import { Progress } from "@/components/ui/progress";
 import { useMajorOptions } from "@/constants/majors";
 import type { CandidateProfile } from "@/interfaces/schema.types";
 import { formatDate } from "@/lib/formatting";
@@ -20,6 +21,9 @@ import {
   Receipt,
   Settings,
   User,
+  CheckCircle2,
+  Circle,
+  Lightbulb,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -214,6 +218,32 @@ export function AccountPage() {
     }
   };
 
+  const renderRightWidget = () => (
+    <div className="hidden lg:block lg:sticky lg:top-4 lg:col-span-3 space-y-6">
+        <Card className="p-5 border-slate-200/60 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+            <h4 className="text-xs font-bold text-slate-500 tracking-wider uppercase mb-4">ĐỘ HOÀN THIỆN HỒ SƠ</h4>
+            <div className="flex items-center gap-3 mb-4">
+                <Progress value={70} className="h-2" />
+                <span className="text-sm font-bold text-indigo-600">70%</span>
+            </div>
+            <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Thông tin cơ bản</li>
+                <li className="flex items-center gap-2"><Circle className="h-4 w-4 text-slate-300" /> Số điện thoại & Địa chỉ</li>
+                <li className="flex items-center gap-2"><Circle className="h-4 w-4 text-slate-300" /> LinkedIn / GitHub</li>
+            </ul>
+        </Card>
+
+        <div className="p-5 rounded-xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/40">
+            <h4 className="text-sm font-semibold text-indigo-900 dark:text-indigo-300 flex items-center gap-2 mb-2">
+                <Lightbulb className="h-4 w-4 text-amber-500" /> Mẹo tối ưu từ AI
+            </h4>
+            <p className="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
+                Hồ sơ được cập nhật đầy đủ thông tin liên hệ và GitHub giúp hệ thống AI phân tích và đề xuất các câu hỏi phỏng vấn sát với thực tế công việc của bạn hơn 40%.
+            </p>
+        </div>
+    </div>
+);
+
   const summaryAvatar = userProfile?.avatar || authUser?.avatarUrl || null;
   const summaryName = userProfile?.name || authUser?.name || t("common.account");
   const summaryEmail = userProfile?.email || authUser?.email || "—";
@@ -392,7 +422,8 @@ export function AccountPage() {
               <span>{userProfile?.cvUrl ? t("common.updateCv") : t("common.uploadCv")}</span>
             </button>
           </aside>
-          <div className={cn(activeTab === "candidateProfile" ? "lg:col-span-7" : "lg:col-span-9")}>
+
+          <div className={cn("lg:col-span-6")}>
             {isLoading ? (
               <div className="flex items-center justify-center rounded-2xl border border-slate-200/60 bg-white p-12 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
                 <SpinnerBlock size="lg" />
@@ -401,61 +432,8 @@ export function AccountPage() {
               renderTabContent()
             )}
           </div>
-          {activeTab === "candidateProfile" && (
-            <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:block lg:self-start">
-              <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-                <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  Nội dung
-                </h4>
-                <nav className="space-y-1">
-                  {candidateProfile?.introduction && (
-                    <a
-                      href="#intro"
-                      onClick={(e) => scrollToSection(e, "intro")}
-                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                      {t("common.introduce")}
-                    </a>
-                  )}
-                  <a
-                    href="#skills"
-                    onClick={(e) => scrollToSection(e, "skills")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.technicalSkills")}
-                  </a>
-                  <a
-                    href="#experience"
-                    onClick={(e) => scrollToSection(e, "experience")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.workExperience")}
-                  </a>
-                  <a
-                    href="#projects"
-                    onClick={(e) => scrollToSection(e, "projects")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.project")}
-                  </a>
-                  <a
-                    href="#education"
-                    onClick={(e) => scrollToSection(e, "education")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    {t("common.education")}
-                  </a>
-                  <a
-                    href="#certifications"
-                    onClick={(e) => scrollToSection(e, "certifications")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    Chứng chỉ
-                  </a>
-                  <a
-                    href="#achievements"
-                    onClick={(e) => scrollToSection(e, "achievements")}
-                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    Thành tựu
-                  </a>
-                </nav>
-              </div>
-            </div>
-          )}
+
+          {renderRightWidget()}
         </div>
       </div>
       <CVUploadModal
