@@ -98,7 +98,7 @@ export function SettingsTab() {
                         <Label className="text-sm font-medium">Giao diện màu</Label>
                         <RadioGroup value={theme} onValueChange={(v) => { setTheme(v as Theme); applyTheme(v as Theme); }} className="grid grid-cols-3 gap-3">
                             {[{v: "light", l: "Sáng", i: Sun}, {v: "dark", l: "Tối", i: Moon}, {v: "system", l: "Hệ thống", i: Monitor}].map(o => (
-                                <Label key={o.v} htmlFor={o.v} className={cn("flex flex-col items-center gap-2 border p-3 rounded-lg cursor-pointer", theme === o.v && "border-[#6366f1] bg-indigo-50")}>
+                                <Label key={o.v} htmlFor={o.v} className={cn("flex flex-col items-center gap-2 border p-3 rounded-lg cursor-pointer transition-colors", theme === o.v ? "border-[#6366f1] bg-indigo-50 dark:bg-indigo-900/40" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800")}>
                                     <RadioGroupItem value={o.v} id={o.v} />
                                     <o.i className="h-5 w-5" />
                                     <span className="text-xs">{o.l}</span>
@@ -110,7 +110,7 @@ export function SettingsTab() {
                         <Label className="text-sm font-medium">Cỡ chữ</Label>
                         <RadioGroup value={fontSize} onValueChange={(v) => setFontSize(v as FontSize)} className="grid grid-cols-3 gap-3">
                             {[{v: "small", l: "Nhỏ"}, {v: "default", l: "Mặc định"}, {v: "large", l: "Lớn"}].map(o => (
-                                <Label key={o.v} htmlFor={o.v} className={cn("flex items-center justify-center border p-3 rounded-lg cursor-pointer", fontSize === o.v && "border-[#6366f1] bg-indigo-50")}>
+                                <Label key={o.v} htmlFor={o.v} className={cn("flex items-center justify-center border p-3 rounded-lg cursor-pointer transition-colors", fontSize === o.v ? "border-[#6366f1] bg-indigo-50 dark:bg-indigo-900/40" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800")}>
                                     <RadioGroupItem value={o.v} id={o.v} />
                                     <span className="text-xs">{o.l}</span>
                                 </Label>
