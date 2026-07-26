@@ -152,13 +152,13 @@ export function JdPurchaseHistoryTab() {
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                <TableHead className="w-[80px] pl-6 font-medium text-slate-500">#</TableHead>
-                <TableHead className="font-medium text-slate-500">JD</TableHead>
-                <TableHead className="font-medium text-slate-500">Thanh toán ID</TableHead>
+                <TableHead className="w-[80px] pl-6 font-medium text-slate-500">STT</TableHead>
+                <TableHead className="font-medium text-slate-500">Thông tin JD</TableHead>
+                <TableHead className="font-medium text-slate-500">Mã giao dịch</TableHead>
                 <TableHead className="font-medium text-slate-500">Trạng thái</TableHead>
                 <TableHead className="font-medium text-slate-500">Ngày mua</TableHead>
                 <TableHead className="font-medium text-slate-500">Ngày sử dụng</TableHead>
-                <TableHead className="pr-6 text-right font-medium text-slate-500">Số tiền</TableHead>
+                <TableHead className="pr-6 text-right font-medium text-slate-500">Thành tiền</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -166,26 +166,26 @@ export function JdPurchaseHistoryTab() {
                 <TableRow
                   key={purchase.id}
                   className="group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                  <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <TableCell className="pl-6 py-4 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
                     #{idx + 1}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <Link
                       to={`/enterprise/job/${purchase.jdId}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-700 hover:text-indigo-800 dark:text-indigo-400 hover:underline">
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700 hover:text-indigo-800 dark:text-indigo-400 hover:underline">
                       <span className="font-mono opacity-70">#{purchase.jdId}</span>
                       {purchase.jdTitle || "Untitled"}
                       <ExternalLink className="h-3 w-3" />
                     </Link>
                   </TableCell>
-                  <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                  <TableCell className="py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
                     #{purchase.paymentId}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <Badge
                       variant="outline"
                       className={cn(
-                        "font-normal",
+                        "font-medium",
                         purchase.status === "PURCHASED"
                           ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-400"
                           : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
@@ -193,13 +193,13 @@ export function JdPurchaseHistoryTab() {
                       {t(`payment.jdPurchaseStatus_${purchase.status}`)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs text-slate-600 dark:text-slate-300">
+                  <TableCell className="py-4 text-sm text-slate-600 dark:text-slate-300">
                     {formatPurchaseDate(purchase.purchasedAt)}
                   </TableCell>
-                  <TableCell className="text-xs text-slate-600 dark:text-slate-300">
+                  <TableCell className="py-4 text-sm text-slate-600 dark:text-slate-300">
                     {purchase.status === "USED" ? formatPurchaseDate(purchase.usedAt) : "—"}
                   </TableCell>
-                  <TableCell className="pr-6 text-right text-xs font-semibold text-slate-900 dark:text-slate-100">
+                  <TableCell className="py-4 pr-6 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {purchase.amount ? formatCurrency(purchase.amount) : "—"}
                   </TableCell>
                 </TableRow>
