@@ -1,18 +1,7 @@
-import { UniversalMediaUploader } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import CVUploadModal from "@/components/ui/cv-upload-modal";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { useMajorOptions } from "@/constants/majors";
 import type { CandidateProfile } from "@/interfaces/schema.types";
@@ -23,30 +12,27 @@ import { useCandidateProfile } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import {
   Calendar,
-  Camera,
   ChevronRight,
   FileText,
   Lock,
   Mail,
   Pencil,
   Receipt,
-  Save,
   Settings,
   User,
-  X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { JdPurchaseHistoryTab } from "./AccountTabs";
+import { JdPurchaseHistoryTab, ProfileEditTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
-type AccountSubTab = "candidateProfile" | "settings" | "jdPurchases";
+type AccountSubTab = "candidateProfile" | "settings" | "jdPurchases" | "editProfile";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
-  if (value === "candidateProfile" || value === "settings" || value === "jdPurchases") {
+  if (value === "candidateProfile" || value === "settings" || value === "jdPurchases" || value === "editProfile") {
     return value as AccountSubTab;
   }
   return null;
@@ -65,15 +51,8 @@ export function AccountPage() {
     parseAccountSubTab(searchParams.get("subtab")) || "candidateProfile"
   );
   const [isLoading, setIsLoading] = useState(true);
-  const [avatarPreview] = useState<string | null>(null);
   const [isCvModalOpen, setIsCvModalOpen] = useState(false);
   const [isCvUploading, setIsCvUploading] = useState(false);
-  // Edit profile dialog state
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
-  const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null);
-  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const hasLoadedUserDataRef = useRef(false);
 
   const fetchUserData = useCallback(async () => {
@@ -161,14 +140,6 @@ export function AccountPage() {
     [searchParams, setSearchParams]
   );
 
-  useEffect(() => {
-    return () => {
-      if (avatarPreview?.startsWith("blob:")) {
-        URL.revokeObjectURL(avatarPreview);
-      }
-    };
-  }, [avatarPreview]);
-
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     const element = document.getElementById(id);
@@ -199,48 +170,12 @@ export function AccountPage() {
     }
   };
 
-  const openEditDialog = () => {
-    setEditName(userProfile?.name || authUser?.name || "");
-    setEditAvatarFile(null);
-    setEditAvatarPreview(null);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleEditAvatarChange = (files: File[]) => {
-    const file = files[0];
-    if (!file) return;
-    if (editAvatarPreview?.startsWith("blob:")) URL.revokeObjectURL(editAvatarPreview);
-    setEditAvatarPreview(URL.createObjectURL(file));
-    setEditAvatarFile(file);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!userProfile?.id) return;
-    setIsSavingEdit(true);
-    try {
-      const response = await usersAdminManager.update(
-        userProfile.id,
-        { name: editName },
-        editAvatarFile ?? undefined
-      );
-      if (response.success) {
-        toast.success(t("adminUsermanagement.userUpdatedSuccessfully"));
-        await fetchUserData();
-        setIsEditDialogOpen(false);
-      } else {
-        toast.error(response.error || t("general.unableToUpdateProfile"));
-      }
-    } catch {
-      toast.error(t("general.unableToUpdateProfile"));
-    } finally {
-      setIsSavingEdit(false);
-    }
-  };
-
   const renderTabContent = () => {
     switch (activeTab) {
       case "candidateProfile":
         return <CandidateProfileTab />;
+      case "editProfile":
+        return <ProfileEditTab onBack={() => handleSwitchTab("candidateProfile")} onSuccess={() => {fetchUserData(); handleSwitchTab("candidateProfile");}} userProfile={userProfile} />;
       case "settings":
         return (
           <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
@@ -279,7 +214,7 @@ export function AccountPage() {
     }
   };
 
-  const summaryAvatar = avatarPreview || userProfile?.avatar || authUser?.avatarUrl || null;
+  const summaryAvatar = userProfile?.avatar || authUser?.avatarUrl || null;
   const summaryName = userProfile?.name || authUser?.name || t("common.account");
   const summaryEmail = userProfile?.email || authUser?.email || "—";
   const summaryJoinedAt = userProfile?.createdAt ? formatDate(userProfile.createdAt) : "—";
@@ -337,17 +272,14 @@ export function AccountPage() {
   return (
     <div className="min-h-full bg-slate-50 dark:bg-slate-950">
       <div className="w-full px-4 pt-4 pb-8 md:px-6 lg:px-8">
-        {/* Main Grid: Left Column (Profile Card + Quick Settings) + Middle Content + Right TOC */}
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-          {/* Left Column — Sticky */}
           <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
-            {/* Profile Card — Impeccable Design */}
             <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
               <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={openEditDialog}
+                  onClick={() => handleSwitchTab("editProfile")}
                   className="absolute top-2.5 right-2.5 h-8 w-8 rounded-full bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
                   title={t("general.edit") || "Chỉnh sửa"}>
                   <Pencil className="h-4 w-4" />
@@ -368,8 +300,6 @@ export function AccountPage() {
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   {summaryName}
                 </h3>
-
-                {/* Subtitle Line: University & Target Role Badge */}
                 <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5 text-xs">
                   {summaryUniversity && (
                     <span className="font-medium text-slate-600 dark:text-slate-300">
@@ -385,8 +315,6 @@ export function AccountPage() {
                     </span>
                   )}
                 </div>
-
-                {/* Flat Metadata List */}
                 <div className="mt-4 space-y-2 border-t border-slate-100 pt-3.5 text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-300">
                   <div className="flex items-center justify-center gap-2 px-1">
                     <Mail className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
@@ -410,8 +338,6 @@ export function AccountPage() {
                 </div>
               </div>
             </div>
-
-            {/* Quick Settings Card — User Tab Navigation */}
             <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
               <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-white">
                 {t("userAccount.quickSettings")}
@@ -457,8 +383,6 @@ export function AccountPage() {
                     </li>
                   );
                 })}
-
-                {/* Change Password */}
                 <li>
                   <button
                     onClick={() => navigate("/user/account/change-password")}
@@ -481,8 +405,6 @@ export function AccountPage() {
                 </li>
               </ul>
             </div>
-
-            {/* Update CV Button — Positioned below Quick Settings */}
             <button
               onClick={() => setIsCvModalOpen(true)}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200/60 bg-white p-3.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-800/60 dark:bg-slate-900/40 dark:text-slate-300 dark:hover:bg-slate-800/60">
@@ -490,8 +412,6 @@ export function AccountPage() {
               <span>{userProfile?.cvUrl ? t("common.updateCv") : t("common.uploadCv")}</span>
             </button>
           </aside>
-
-          {/* Middle Column — Profile or Tab Content */}
           <div className={cn(activeTab === "candidateProfile" ? "lg:col-span-7" : "lg:col-span-9")}>
             {isLoading ? (
               <div className="flex items-center justify-center rounded-2xl border border-slate-200/60 bg-white p-12 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
@@ -501,8 +421,6 @@ export function AccountPage() {
               renderTabContent()
             )}
           </div>
-
-          {/* Right Column: TOC Menu (Only visible on candidate profile tab) */}
           {activeTab === "candidateProfile" && (
             <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:block lg:self-start">
               <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
@@ -560,7 +478,6 @@ export function AccountPage() {
           )}
         </div>
       </div>
-
       <CVUploadModal
         isOpen={isCvModalOpen}
         onOpenChange={setIsCvModalOpen}
@@ -570,115 +487,6 @@ export function AccountPage() {
         title={t("common.uploadCv")}
         description={t("userAccount.uploadYourCvSoThe")}
       />
-
-      {/* Edit Profile Dialog */}
-      <Dialog
-        open={isEditDialogOpen}
-        onOpenChange={(open) => {
-          if (!open && editAvatarPreview?.startsWith("blob:"))
-            URL.revokeObjectURL(editAvatarPreview);
-          setIsEditDialogOpen(open);
-        }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t("adminUsermanagement.editUser") || "Chỉnh sửa thông tin"}</DialogTitle>
-            <DialogDescription>
-              {t("adminUsermanagement.updateUserInformation") ||
-                "Cập nhật tên và ảnh đại diện của bạn."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-5 py-2">
-            {/* Avatar upload */}
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative h-20 w-20">
-                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-slate-200 bg-slate-100 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                  {editAvatarPreview || userProfile?.avatar ? (
-                    <img
-                      src={editAvatarPreview || userProfile?.avatar || ""}
-                      alt="avatar"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-8 w-8 text-slate-400" />
-                  )}
-                </div>
-                {(editAvatarPreview || userProfile?.avatar) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (editAvatarPreview?.startsWith("blob:"))
-                        URL.revokeObjectURL(editAvatarPreview);
-                      setEditAvatarPreview(null);
-                      setEditAvatarFile(null);
-                    }}
-                    className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600">
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-              <UniversalMediaUploader
-                preset="single-image"
-                enableWebcam={true}
-                onFilesChange={handleEditAvatarChange}
-                customTrigger={
-                  <div className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
-                    <Camera className="h-3.5 w-3.5" />
-                    {t("userAccount.changePhoto") || "Đổi ảnh"}
-                  </div>
-                }
-              />
-            </div>
-
-            {/* Name input */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-profile-name" className="text-sm font-medium">
-                {t("common.fullName") || "Họ và tên"}
-              </Label>
-              <Input
-                id="edit-profile-name"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder={t("common.fullName") || "Nhập họ tên..."}
-                className="h-9"
-              />
-            </div>
-
-            {/* Email (read-only) */}
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">
-                {t("common.email") || "Email"}
-                <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                  {t("common.cannotBeChanged") || "Không thể thay đổi"}
-                </span>
-              </Label>
-              <div className="flex h-9 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-                <Mail className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{userProfile?.email || authUser?.email}</span>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditDialogOpen(false)}
-              disabled={isSavingEdit}>
-              <X className="mr-1.5 h-3.5 w-3.5" />
-              {t("general.cancel") || "Hủy"}
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleSaveEdit}
-              disabled={isSavingEdit || !editName.trim()}
-              className="bg-indigo-600 text-white hover:bg-indigo-700">
-              <Save className="mr-1.5 h-3.5 w-3.5" />
-              {isSavingEdit ? t("common.saving") || "Đang lưu..." : t("general.save") || "Lưu"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
