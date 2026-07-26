@@ -147,11 +147,7 @@ export function AccountPage() {
     (nextTab: AccountSubTab) => {
       setActiveTab(nextTab);
       const nextParams = new URLSearchParams(searchParams);
-      if (nextTab === "candidateProfile") {
-        nextParams.delete("subtab");
-      } else {
-        nextParams.set("subtab", nextTab);
-      }
+      nextParams.set("subtab", nextTab);
       setSearchParams(nextParams, { replace: true });
     },
     [searchParams, setSearchParams]
