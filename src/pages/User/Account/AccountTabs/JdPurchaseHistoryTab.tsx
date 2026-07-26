@@ -7,12 +7,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/formatting";
+import { usePagination, useHybridPageSize } from "@/hooks/usePagination";
+import { PaginationControl } from "@/components/shared";
 import type { JdPurchase } from "@/services/jd-purchase.manager";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import { paymentManager } from "@/services/payment.manager";
 import { Package, Receipt, ShoppingBag, ExternalLink } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +47,16 @@ export function JdPurchaseHistoryTab() {
   const { t } = useTranslation();
   const [purchases, setPurchases] = useState<EnrichedJdPurchase[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");
+  
+  const pageSize = useHybridPageSize();
+  const pagination = usePagination({
+    totalCount: purchases.length,
+    pageSize,
+  });
+
+  const paginatedPurchases = useMemo(() => {
+    return purchases.slice(pagination.startIndex, pagination.endIndex + 1);
+  }, [purchases, pagination.startIndex, pagination.endIndex]);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,6 +160,7 @@ export function JdPurchaseHistoryTab() {
 
       {/* Table Container chuẩn hệ thống */}
       {loadState === "ready" && purchases.length > 0 && (
+        <>
         <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <Table>
             <TableHeader>
@@ -162,12 +175,12 @@ export function JdPurchaseHistoryTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {purchases.map((purchase, idx) => (
+              {paginatedPurchases.map((purchase, idx) => (
                 <TableRow
                   key={purchase.id}
                   className="group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
                   <TableCell className="pl-6 py-4 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                    #{idx + 1}
+                    #{pagination.startIndex + idx + 1}
                   </TableCell>
                   <TableCell className="py-4">
                     <Link
@@ -206,6 +219,12 @@ export function JdPurchaseHistoryTab() {
             </TableBody>
           </Table>
         </div>
+        
+        {/* Thanh phân trang ngay dưới bảng */}
+        <div className="flex items-center justify-end border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-950">
+            <PaginationControl pagination={pagination} />
+        </div>
+        </>
       )}
     </div>
   );
