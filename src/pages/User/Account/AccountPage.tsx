@@ -194,32 +194,7 @@ export function AccountPage() {
       case "editProfile":
         return <ProfileEditTab onBack={() => handleSwitchTab("candidateProfile")} onSuccess={() => {fetchUserData(); handleSwitchTab("candidateProfile");}} userProfile={userProfile} />;
       case "settings":
-        return (
-          <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              {t("userSettings.title")}
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {t("userSettings.subtitle")}
-            </p>
-            <div className="mt-4 space-y-3">
-              <button
-                type="button"
-                onClick={() => navigate("/user/settings")}
-                className="flex w-full items-center justify-between rounded-lg border border-slate-200/60 p-3 text-left transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800">
-                <div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                    {t("userSettings.openSettings")}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {t("userSettings.openSettingsDescription")}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-slate-500" />
-              </button>
-            </div>
-          </Card>
-        );
+        return <SettingsTab />;
       case "jdPurchases":
         return (
           <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
