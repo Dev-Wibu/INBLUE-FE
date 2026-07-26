@@ -23,7 +23,7 @@ export function SettingsTab() {
   const language = useSettingsStore((state) => state.language);
   const setLanguage = useSettingsStore((state) => state.setLanguage);
   const sidebarBehavior = useSettingsStore((state) => state.sidebarBehavior);
-  const setSidebarBehavior = useSettingsStore((state) => setSidebarBehavior);
+  const setSidebarBehavior = useSettingsStore((state) => state.setSidebarBehavior);
   const muteSoundNotification = useSettingsStore((state) => state.muteSoundNotification);
   const setMuteSoundNotification = useSettingsStore((state) => state.setMuteSoundNotification);
   const muteToastNotification = useSettingsStore((state) => state.muteToastNotification);
