@@ -29,7 +29,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { JdPurchaseHistoryTab, ProfileEditTab } from "./AccountTabs";
+import { JdPurchaseHistoryTab, ProfileEditTab, SettingsTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
