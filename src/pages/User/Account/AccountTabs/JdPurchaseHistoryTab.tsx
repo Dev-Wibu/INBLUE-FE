@@ -58,27 +58,20 @@ export function JdPurchaseHistoryTab() {
     pageSize: effectivePageSize,
   });
 
-  console.log("Pagination state:", pagination);
-
   const paginatedPurchases = useMemo(() => {
     // Return all items if no pagination data is available yet
     if (purchases.length === 0) return [];
-    const result = purchases.slice(pagination.startIndex, pagination.endIndex + 1);
-    console.log("Paginated result:", result);
-    return result;
+    return purchases.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [purchases, pagination.startIndex, pagination.endIndex]);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
-        console.log("Fetching purchases...");
         const rawPurchases = await jdPurchaseManager.getMyPurchases();
-        console.log("Raw purchases:", rawPurchases);
         if (cancelled) return;
 
         if (!rawPurchases || rawPurchases.length === 0) {
-          console.log("No purchases found.");
           setPurchases([]);
           setLoadState("ready");
           return;
@@ -91,8 +84,6 @@ export function JdPurchaseHistoryTab() {
           new Set(rawPurchases.map((p) => p.paymentId).filter((id): id is number => Boolean(id)))
         );
         
-        console.log("Unique IDs:", { uniqueJdIds, uniquePaymentIds });
-
         const jdMap = new Map<number, { title?: string; price?: number }>();
         const paymentMap = new Map<number, number>();
 
@@ -111,8 +102,6 @@ export function JdPurchaseHistoryTab() {
           }),
         ]);
         
-        console.log("Maps:", { jdMap, paymentMap });
-
         if (cancelled) return;
 
         const enriched: EnrichedJdPurchase[] = rawPurchases.map((p) => {
@@ -125,8 +114,6 @@ export function JdPurchaseHistoryTab() {
           };
         });
         
-        console.log("Enriched purchases:", enriched);
-
         setPurchases(enriched);
         setLoadState("ready");
       } catch (error) {
