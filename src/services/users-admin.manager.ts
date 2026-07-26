@@ -302,6 +302,10 @@ export class UsersAdminManager implements BaseManager<User> {
             ),
         // Include role if provided - backend may accept this even though not in UserInfo schema
         role: _data.role || existingUser.role,
+        phone: _data.phone || (existingUser as any).phone,
+        address: _data.address || (existingUser as any).address,
+        linkedInUrl: _data.linkedInUrl || (existingUser as any).linkedInUrl,
+        githubUrl: _data.githubUrl || (existingUser as any).githubUrl,
         // Include Cloudinary public_id for avatar - required for update/delete operations
         // Use empty string "" as fallback when uploading new file but no existing public_id
         // Error "Missing required parameter - public_id" occurs when this field is missing
