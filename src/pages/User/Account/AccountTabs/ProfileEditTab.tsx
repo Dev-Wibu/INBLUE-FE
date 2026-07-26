@@ -3,11 +3,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UniversalMediaUploader } from "@/components/shared";
-import { Camera, Save, ArrowLeft, Mail } from "lucide-react";
+import { Camera, Save, ArrowLeft, Mail, Lock } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { usersAdminManager } from "@/services";
+import { usersAdminManager, userManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import { SpinnerBlock } from "@/components/ui/spinner";
 
@@ -21,10 +21,17 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
   const { t } = useTranslation();
   const authUser = useAuthStore((state) => state.user);
 
+  // Profile state
   const [editName, setEditName] = useState(userProfile?.name || authUser?.name || "");
   const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
   const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Password state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const handleEditAvatarChange = (files: File[]) => {
     const file = files[0];
@@ -34,7 +41,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
     setEditAvatarFile(file);
   };
 
-  const handleSave = async () => {
+  const handleSaveProfile = async () => {
     if (!userProfile?.id) return;
     setIsSaving(true);
     try {
@@ -56,20 +63,40 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
     }
   };
 
-  return (
-    <Card className="border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div className="mb-6 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full">
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-          {t("userSettings.editProfile")}
-        </h2>
-      </div>
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error(t("changePassword.confirmPasswordDoesNotMatch"));
+      return;
+    }
+    setIsChangingPassword(true);
+    try {
+      const result = await userManager.updatePassword(currentPassword, newPassword);
+      if (result.success) {
+        toast.success(t("changePassword.passwordUpdatedSuccessfully"));
+        setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+      } else {
+        toast.error(result.error || t("changePassword.unableToUpdatePassword"));
+      }
+    } catch {
+      toast.error(t("changePassword.unableToUpdatePassword"));
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
-      <div className="space-y-8">
-        {/* Avatar Section */}
-        <div className="flex flex-col items-center gap-4">
+  return (
+    <div className="space-y-6">
+      <Card className="border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <div className="mb-6 flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            {t("userSettings.editProfile")}
+          </h2>
+        </div>
+
+        <div className="flex flex-col items-center gap-4 mb-8">
           <div className="relative h-24 w-24">
             <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
               <img
@@ -92,16 +119,10 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
           />
         </div>
 
-        {/* Info Section */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="edit-name">{t("common.fullName")}</Label>
-            <Input
-              id="edit-name"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              className="h-10"
-            />
+            <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} className="h-10" />
           </div>
           <div className="space-y-2">
             <Label>{t("common.email")}</Label>
@@ -113,11 +134,27 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
         </div>
 
         <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} disabled={isSaving || !editName.trim()} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={handleSaveProfile} disabled={isSaving || !editName.trim()} className="bg-indigo-600 hover:bg-indigo-700">
             {isSaving ? <SpinnerBlock size="sm" /> : <><Save className="mr-2 h-4 w-4" /> {t("general.save")}</>}
           </Button>
         </div>
-      </div>
-    </Card>
+      </Card>
+
+      <Card className="border-slate-200/60 bg-white p-6 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <Lock className="h-5 w-5 text-amber-500" /> {t("common.changePassword")}
+        </h3>
+        <div className="space-y-4">
+            <Input type="password" placeholder={t("changePassword.currentPassword")} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+            <Input type="password" placeholder={t("changePassword.newPassword")} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            <Input type="password" placeholder={t("changePassword.confirmPassword")} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+
+            <Button onClick={handleChangePassword} disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword} className="bg-amber-600 hover:bg-amber-700">
+              {isChangingPassword ? <SpinnerBlock size="sm" /> : t("changePassword.saveChanges")}
+            </Button>
+        </div>
+      </Card>
+    </div>
   );
 }
+

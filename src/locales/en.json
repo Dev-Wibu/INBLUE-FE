@@ -4997,6 +4997,7 @@
     "joinSessionDescription": "You are about to join the session."
   },
   "userSettings": {
+    "editProfile": "Edit Profile",
     "title": "Settings",
     "subtitle": "Manage your preferences",
     "openSettings": "Open Settings",

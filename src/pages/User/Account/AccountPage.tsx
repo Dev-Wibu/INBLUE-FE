@@ -383,26 +383,6 @@ export function AccountPage() {
                     </li>
                   );
                 })}
-                <li>
-                  <button
-                    onClick={() => navigate("/user/account/change-password")}
-                    className="flex w-full items-center justify-between rounded-xl p-3 text-left text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-                        <Lock className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">
-                          {t("common.changePassword")}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {t("common.updateYourSecuritySettings")}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
-                  </button>
-                </li>
               </ul>
             </div>
             <button
