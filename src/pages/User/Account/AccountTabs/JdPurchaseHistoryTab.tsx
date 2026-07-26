@@ -48,7 +48,7 @@ export function JdPurchaseHistoryTab() {
   const [purchases, setPurchases] = useState<EnrichedJdPurchase[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   
-  const pageSize = useHybridPageSize();
+  const pageSize = useHybridPageSize({ key: "jd-purchase-history" });
   const pagination = usePagination({
     totalCount: purchases.length,
     pageSize,
