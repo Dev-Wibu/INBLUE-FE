@@ -83,10 +83,14 @@ export function AccountPage() {
           major: userData.major || "",
           cvUrl: userData.cvUrl || null,
           cv_public_id: userData.cv_public_id || null,
+          phone: userData.phone || "",
+          address: userData.address || "",
+          linkedInUrl: userData.linkedInUrl || "",
+          githubUrl: userData.githubUrl || "",
           createdAt: new Date().toISOString(),
-        });
-      } else {
-        setUserProfile({
+          });
+          } else {
+          setUserProfile({
           id: String(authUserId),
           name: currentAuthUser.name || "",
           email: currentAuthUser.email || "",
@@ -96,13 +100,17 @@ export function AccountPage() {
           major: "",
           cvUrl: null,
           cv_public_id: null,
+          phone: "",
+          address: "",
+          linkedInUrl: "",
+          githubUrl: "",
           createdAt: new Date().toISOString(),
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      if (currentAuthUser) {
-        setUserProfile({
+          });
+          }
+          } catch (error) {
+          console.error("Error fetching user data:", error);
+          if (currentAuthUser) {
+          setUserProfile({
           id: String(currentAuthUser.id),
           name: currentAuthUser.name || "",
           email: currentAuthUser.email || "",
@@ -112,10 +120,15 @@ export function AccountPage() {
           major: "",
           cvUrl: null,
           cv_public_id: null,
+          phone: "",
+          address: "",
+          linkedInUrl: "",
+          githubUrl: "",
           createdAt: new Date().toISOString(),
-        });
-      }
-    } finally {
+          });
+          }
+          }
+ finally {
       setIsLoading(false);
       hasLoadedUserDataRef.current = true;
     }
