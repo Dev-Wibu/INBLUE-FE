@@ -58,20 +58,27 @@ export function JdPurchaseHistoryTab() {
     pageSize: effectivePageSize,
   });
 
+  console.log("Pagination state:", pagination);
+
   const paginatedPurchases = useMemo(() => {
     // Return all items if no pagination data is available yet
     if (purchases.length === 0) return [];
-    return purchases.slice(pagination.startIndex, pagination.endIndex + 1);
+    const result = purchases.slice(pagination.startIndex, pagination.endIndex + 1);
+    console.log("Paginated result:", result);
+    return result;
   }, [purchases, pagination.startIndex, pagination.endIndex]);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
+        console.log("Fetching purchases...");
         const rawPurchases = await jdPurchaseManager.getMyPurchases();
+        console.log("Raw purchases:", rawPurchases);
         if (cancelled) return;
 
-        if (rawPurchases.length === 0) {
+        if (!rawPurchases || rawPurchases.length === 0) {
+          console.log("No purchases found.");
           setPurchases([]);
           setLoadState("ready");
           return;
@@ -83,6 +90,8 @@ export function JdPurchaseHistoryTab() {
         const uniquePaymentIds = Array.from(
           new Set(rawPurchases.map((p) => p.paymentId).filter((id): id is number => Boolean(id)))
         );
+        
+        console.log("Unique IDs:", { uniqueJdIds, uniquePaymentIds });
 
         const jdMap = new Map<number, { title?: string; price?: number }>();
         const paymentMap = new Map<number, number>();
@@ -101,6 +110,8 @@ export function JdPurchaseHistoryTab() {
             }
           }),
         ]);
+        
+        console.log("Maps:", { jdMap, paymentMap });
 
         if (cancelled) return;
 
@@ -113,10 +124,13 @@ export function JdPurchaseHistoryTab() {
             amount: payAmount ?? jdInfo?.price,
           };
         });
+        
+        console.log("Enriched purchases:", enriched);
 
         setPurchases(enriched);
         setLoadState("ready");
-      } catch {
+      } catch (error) {
+        console.error("Error fetching purchases:", error);
         if (!cancelled) {
           setLoadState("error");
         }
