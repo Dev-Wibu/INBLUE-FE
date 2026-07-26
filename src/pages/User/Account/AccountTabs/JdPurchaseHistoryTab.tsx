@@ -173,7 +173,6 @@ export function JdPurchaseHistoryTab() {
                     <Link
                       to={`/enterprise/job/${purchase.jdId}`}
                       className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700 hover:text-indigo-800 dark:text-indigo-400 hover:underline">
-                      <span className="font-mono opacity-70">#{purchase.jdId}</span>
                       {purchase.jdTitle || "Untitled"}
                       <ExternalLink className="h-3 w-3" />
                     </Link>
