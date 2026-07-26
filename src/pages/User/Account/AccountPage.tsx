@@ -423,7 +423,7 @@ export function AccountPage() {
             </button>
           </aside>
 
-          <div className={cn(activeTab === "editProfile" ? "lg:col-span-6" : "lg:col-span-9")}>
+          <div className={cn(activeTab === "candidateProfile" || activeTab === "editProfile" ? "lg:col-span-7" : "lg:col-span-9")}>
             {isLoading ? (
               <div className="flex items-center justify-center rounded-2xl border border-slate-200/60 bg-white p-12 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
                 <SpinnerBlock size="lg" />
@@ -432,6 +432,62 @@ export function AccountPage() {
               renderTabContent()
             )}
           </div>
+
+          {activeTab === "candidateProfile" && (
+            <div className="hidden lg:sticky lg:top-4 lg:col-span-2 lg:block lg:self-start">
+              <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                  Nội dung
+                </h4>
+                <nav className="space-y-1">
+                  {candidateProfile?.introduction && (
+                    <a
+                      href="#intro"
+                      onClick={(e) => scrollToSection(e, "intro")}
+                      className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                      {t("common.introduce")}
+                    </a>
+                  )}
+                  <a
+                    href="#skills"
+                    onClick={(e) => scrollToSection(e, "skills")}
+                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    {t("common.technicalSkills")}
+                  </a>
+                  <a
+                    href="#experience"
+                    onClick={(e) => scrollToSection(e, "experience")}
+                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    {t("common.workExperience")}
+                  </a>
+                  <a
+                    href="#projects"
+                    onClick={(e) => scrollToSection(e, "projects")}
+                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    {t("common.project")}
+                  </a>
+                  <a
+                    href="#education"
+                    onClick={(e) => scrollToSection(e, "education")}
+                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    {t("common.education")}
+                  </a>
+                  <a
+                    href="#certifications"
+                    onClick={(e) => scrollToSection(e, "certifications")}
+                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    Chứng chỉ
+                  </a>
+                  <a
+                    href="#achievements"
+                    onClick={(e) => scrollToSection(e, "achievements")}
+                    className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
+                    Thành tựu
+                  </a>
+                </nav>
+              </div>
+            </div>
+          )}
 
           {activeTab === "editProfile" && renderRightWidget()}
 
