@@ -21,12 +21,13 @@ interface ProfileEditTabProps {
 export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTabProps) {
   const { t } = useTranslation();
   const authUser = useAuthStore((state) => state.user);
+// Profile state
+const [editName, setEditName] = useState(userProfile?.name || authUser?.name || "");
+const [phone, setPhone] = useState(userProfile?.phone || "");
+const [address, setAddress] = useState(userProfile?.address || "");
+const [linkedInUrl, setLinkedInUrl] = useState(userProfile?.linkedInUrl || "");
+const [githubUrl, setGithubUrl] = useState(userProfile?.githubUrl || "");
 
-  const [editName, setEditName] = useState(userProfile?.name || authUser?.name || "");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [linkedInUrl, setLinkedInUrl] = useState("");
-  const [githubUrl, setGithubUrl] = useState("");
 
   const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
   const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null);
