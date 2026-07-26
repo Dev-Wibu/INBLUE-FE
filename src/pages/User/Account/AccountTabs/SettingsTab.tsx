@@ -98,11 +98,11 @@ export function SettingsTab() {
                         <Label className="text-sm font-medium">Giao diện màu</Label>
                         <RadioGroup value={theme} onValueChange={(v) => { setTheme(v as Theme); applyTheme(v as Theme); }} className="grid grid-cols-3 gap-3">
                             {[{v: "light", l: "Sáng", i: Sun}, {v: "dark", l: "Tối", i: Moon}, {v: "system", l: "Hệ thống", i: Monitor}].map(o => (
-                                <div key={o.v} className={cn("flex flex-col items-center gap-2 border p-3 rounded-lg cursor-pointer", theme === o.v && "border-[#6366f1] bg-indigo-50")}>
-                                    <RadioGroupItem value={o.v} id={o.v} className="sr-only" />
+                                <Label key={o.v} htmlFor={o.v} className={cn("flex flex-col items-center gap-2 border p-3 rounded-lg cursor-pointer", theme === o.v && "border-[#6366f1] bg-indigo-50")}>
+                                    <RadioGroupItem value={o.v} id={o.v} />
                                     <o.i className="h-5 w-5" />
-                                    <Label htmlFor={o.v} className="cursor-pointer text-xs">{o.l}</Label>
-                                </div>
+                                    <span className="text-xs">{o.l}</span>
+                                </Label>
                             ))}
                         </RadioGroup>
                     </fieldset>
@@ -110,10 +110,10 @@ export function SettingsTab() {
                         <Label className="text-sm font-medium">Cỡ chữ</Label>
                         <RadioGroup value={fontSize} onValueChange={(v) => setFontSize(v as FontSize)} className="grid grid-cols-3 gap-3">
                             {[{v: "small", l: "Nhỏ"}, {v: "default", l: "Mặc định"}, {v: "large", l: "Lớn"}].map(o => (
-                                <div key={o.v} className={cn("flex items-center justify-center border p-3 rounded-lg cursor-pointer", fontSize === o.v && "border-[#6366f1] bg-indigo-50")}>
-                                    <RadioGroupItem value={o.v} id={o.v} className="sr-only" />
-                                    <Label htmlFor={o.v} className="cursor-pointer text-xs">{o.l}</Label>
-                                </div>
+                                <Label key={o.v} htmlFor={o.v} className={cn("flex items-center justify-center border p-3 rounded-lg cursor-pointer", fontSize === o.v && "border-[#6366f1] bg-indigo-50")}>
+                                    <RadioGroupItem value={o.v} id={o.v} />
+                                    <span className="text-xs">{o.l}</span>
+                                </Label>
                             ))}
                         </RadioGroup>
                     </fieldset>
