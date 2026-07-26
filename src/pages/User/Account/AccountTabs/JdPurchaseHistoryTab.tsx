@@ -49,12 +49,18 @@ export function JdPurchaseHistoryTab() {
   const [loadState, setLoadState] = useState<LoadState>("loading");
   
   const pageSize = useHybridPageSize({ key: "jd-purchase-history" });
+  
+  // Use 10 as fallback if pageSize from hook is somehow undefined
+  const effectivePageSize = pageSize || 10;
+
   const pagination = usePagination({
     totalCount: purchases.length,
-    pageSize,
+    pageSize: effectivePageSize,
   });
 
   const paginatedPurchases = useMemo(() => {
+    // Return all items if no pagination data is available yet
+    if (purchases.length === 0) return [];
     return purchases.slice(pagination.startIndex, pagination.endIndex + 1);
   }, [purchases, pagination.startIndex, pagination.endIndex]);
 
