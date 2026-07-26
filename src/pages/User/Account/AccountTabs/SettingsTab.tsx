@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { type FontSize, type Language, type SidebarBehavior, useSettingsStore } from "@/stores/settingsStore";
 import { applyTheme, type Theme, useThemeStore } from "@/stores/themeStore";
 import { useTranslation } from "react-i18next";
-import { Monitor, Moon, Sun, Eye, Bell, Zap, RotateCcw, Shield, FileText, HelpCircle, ExternalLink } from "lucide-react";
+import { Monitor, Moon, Sun, Languages, Eye, Bell, Zap, RotateCcw, Shield, FileText, HelpCircle, ExternalLink } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export function SettingsTab() {
