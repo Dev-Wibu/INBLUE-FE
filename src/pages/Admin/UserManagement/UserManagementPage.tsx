@@ -14,9 +14,9 @@ import { SpinnerBlock } from "@/components/ui/spinner";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import type { CandidateProfile } from "@/interfaces/schema.types";
+import { cn } from "@/lib/utils";
 import { candidateProfileManager, usersAdminManager } from "@/services";
 import { ArrowLeft, ChevronRight, Plus, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -209,12 +209,13 @@ export function UserManagementPage() {
   };
 
   return (
-    <div className={cn(
-      "flex flex-col bg-slate-50 dark:bg-slate-950",
-      viewMode === "list" || viewMode === "create"
-        ? "-m-4 h-[calc(100%+32px)] md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
-        : "-mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-8 lg:-mt-8"
-    )}>
+    <div
+      className={cn(
+        "flex flex-col bg-slate-50 dark:bg-slate-950",
+        viewMode === "list" || viewMode === "create"
+          ? "-m-4 h-[calc(100%+32px)] md:-m-6 md:h-[calc(100%+48px)] lg:-m-8 lg:h-[calc(100%+64px)]"
+          : "-mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-8 lg:-mt-8"
+      )}>
       {/* Unified Single Hierarchical Header (Fixed 68px height) */}
       <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
@@ -356,7 +357,11 @@ export function UserManagementPage() {
         </div>
       </div>
 
-      <div className={cn("flex flex-col bg-slate-50 dark:bg-slate-950", (viewMode === "list" || viewMode === "create") && "flex-1 overflow-hidden")}>
+      <div
+        className={cn(
+          "flex flex-col bg-slate-50 dark:bg-slate-950",
+          (viewMode === "list" || viewMode === "create") && "flex-1 overflow-hidden"
+        )}>
         {viewMode === "detail" && selectedUser ? (
           <UserDetailView
             user={selectedUser}
