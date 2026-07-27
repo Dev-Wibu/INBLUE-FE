@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
+import { userManager } from "@/services/user.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import { Eye, EyeOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -39,21 +40,48 @@ export function LoginPage() {
   const [infoMessage, setInfoMessage] = useState(() => navigationState?.message || "");
   const [error, setError] = useState("");
   const applyAuthState = useCallback(
-    (payload: LoginAuthPayload) => {
+    async (payload: LoginAuthPayload) => {
       const parsedUserId = Number(payload.user.id);
       const userId = Number.isFinite(parsedUserId) ? parsedUserId : undefined;
-      setUser({
-        id: userId,
-        name: payload.user.fullName,
-        email: payload.user.email,
-        role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-        avatarUrl: payload.user.avatar || undefined,
-      });
       setToken(payload.token ?? null);
       setIsLoggedIn(true);
       if (userId && !isNaN(userId)) {
         localStorage.setItem("current-user-id", String(userId));
       }
+
+      // Fetch full profile to get actual name, avatar, etc.
+      try {
+        const profileResult = await userManager.getProfile();
+        if (profileResult.success && profileResult.data) {
+          const profile = profileResult.data as Record<string, unknown>;
+          setUser({
+            id: userId,
+            name: (profile.name as string) || payload.user.fullName,
+            email: (profile.email as string) || payload.user.email,
+            role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+            avatarUrl: (profile.avatarUrl as string) || payload.user.avatar || undefined,
+          });
+        } else {
+          // Fallback to payload data if profile fetch fails
+          setUser({
+            id: userId,
+            name: payload.user.fullName,
+            email: payload.user.email,
+            role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+            avatarUrl: payload.user.avatar || undefined,
+          });
+        }
+      } catch {
+        // Fallback to payload data on error
+        setUser({
+          id: userId,
+          name: payload.user.fullName,
+          email: payload.user.email,
+          role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+          avatarUrl: payload.user.avatar || undefined,
+        });
+      }
+
       // USER role goes to landing page, other roles go to their dashboard
       const redirectPath =
         payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);
