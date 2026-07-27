@@ -198,7 +198,7 @@ export function JobSearchTab() {
         </div>
         <div className="flex items-center gap-3">
           <ReloadButton 
-            isReloading={isReloading} 
+            isLoading={isReloading} 
             onReload={() => fetchJobs(true)} 
             className="h-10 w-10 shrink-0 rounded-xl"
           />

@@ -64,7 +64,7 @@ const getAvailableTabs = (
   },
   {
     type: "jobSearch",
-    label: t("enterpriseJobsearchpage.searchButton", "Tìm việc"),
+    label: t("enterpriseJobsearchpage.searchButton"),
   },
   {
     type: "overview",
@@ -105,7 +105,7 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
       {
         type: "jobSearch",
         icon: Search,
-        label: t("enterpriseJobsearchpage.searchButton", "Tìm việc"),
+        label: t("enterpriseJobsearchpage.searchButton"),
         color: "text-[#0047AB] dark:text-[#66B2FF]",
       },
     ],
