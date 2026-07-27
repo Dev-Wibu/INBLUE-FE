@@ -67,7 +67,7 @@ export function StaffAccountPage() {
     if (!authUser?.id) return;
     setIsLoading(true);
     try {
-      const response = await userManager.getProfile();
+      const response = await userManager.getProfile(authUser.id);
       if (response.success && response.data) {
         const data = response.data;
         setProfile({
@@ -138,7 +138,11 @@ export function StaffAccountPage() {
       if (response.success) {
         toast.success(t("common.updatedInformationSuccessfully"));
 
-        const profileResponse = await userManager.getProfile();
+        if (!authUser?.id) {
+          await fetchProfile();
+          return;
+        }
+        const profileResponse = await userManager.getProfile(authUser.id);
         if (profileResponse.success && profileResponse.data) {
           const profileData = profileResponse.data as Record<string, unknown>;
           // Map userId to id if needed (backend may return userId instead of id)

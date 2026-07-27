@@ -3,6 +3,14 @@ const t = i18n.t.bind(i18n);
 /**
  * User Manager
  * Handles user profile operations
+ *
+ * NOTE on the "me" endpoint:
+ * The current backend does NOT expose `/api/users/me`. The Spring controller
+ * only declares `GET /api/users/{id}` with `id: int`, so a literal "me"
+ * path-segment was being parsed into an Integer converter and threw a 500
+ * ("Failed to convert value of type 'java.lang.String' to required type
+ * 'int'"). Anywhere the FE needs the current user's record, we resolve the
+ * `userId` from the auth store and hit `/api/users/{userId}` instead.
  */
 
 import type { ApiResponse, User, UserSubscriptionResponse } from "@/interfaces";
@@ -15,18 +23,28 @@ type UserSettings = Record<string, unknown>;
 
 export class UserManager {
   /**
-   * Get user profile
+   * Get user profile by id.
+   *
+   * Pass the currently logged-in user's id (resolved from `useAuthStore`).
+   * Avoids the broken `/api/users/me` path that caused 500s.
    */
-  async getProfile(): Promise<ApiResponse<UserProfile>> {
+  async getProfile(userId: number | string): Promise<ApiResponse<UserProfile>> {
+    if (userId === undefined || userId === null || userId === "") {
+      return {
+        success: false,
+        error: t("general.unableToLoadProfile"),
+      };
+    }
     try {
-      const response = await fetchClient
-        // @ts-expect-error: Backend Swagger schema mismatch
-        .GET("/api/users/me", {})
-        .then((res) => ({
-          data: res.data,
-          status: res.response?.status,
-          headers: res.response?.headers,
-        }));
+      const endpoint = buildEndpoint(API_ENDPOINTS.USERS.DETAIL, {
+        id: Number(userId),
+      });
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient.GET(endpoint, {}).then((res) => ({
+        data: res.data,
+        status: res.response?.status,
+        headers: res.response?.headers,
+      }));
       return {
         success: true,
         data: response.data,
@@ -40,12 +58,28 @@ export class UserManager {
   }
 
   /**
-   * Update user profile
+   * Update user profile.
+   *
+   * Internally:
+   *   1. GET /api/users/{userId} — to read existing fields and preserve them
+   *      (e.g. omit unchanged email to avoid duplicate-email validation).
+   *   2. POST /api/users (multipart/form-data) — same update endpoint that
+   *      Admin Staff uses; never piggybacks the password field for a profile
+   *      change (see commit fixing the password wipe bug).
    */
-  async updateProfile(data: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> {
+  async updateProfile(
+    userId: number | string,
+    data: Partial<UserProfile>
+  ): Promise<ApiResponse<UserProfile>> {
+    if (userId === undefined || userId === null || userId === "") {
+      return {
+        success: false,
+        error: t("general.unableToUpdateProfile"),
+      };
+    }
     try {
-      const currentProfile = await this.getProfile();
-      const payload = { ...data };
+      const currentProfile = await this.getProfile(userId);
+      const payload: Record<string, unknown> = { id: Number(userId), ...data };
 
       if (currentProfile.success && currentProfile.data) {
         // Prevent "Email đã tồn tại" error by omitting email if it hasn't changed
@@ -53,15 +87,18 @@ export class UserManager {
           delete payload.email;
         }
 
-        // Re-inject password if it exists in the current profile to prevent backend from wiping it
-        if (!payload.password && currentProfile.data.password) {
-          payload.password = currentProfile.data.password;
+        // Preserve existing name so a partial update doesn't blank it out.
+        if (payload.name === undefined && currentProfile.data.name) {
+          payload.name = currentProfile.data.name;
         }
       }
+      // NEVER spread the existing password back into the update payload.
+      // Backend treats a null password as "wipe" and was silently locking
+      // out mentor/staff accounts (see fix commit).
 
       const response = await fetchClient
         // @ts-expect-error: Backend Swagger schema mismatch
-        .POST("/api/users/me", { body: payload })
+        .POST(API_ENDPOINTS.USERS.CREATE ?? "/api/users", { body: payload })
         .then((res) => ({
           data: res.data,
           status: res.response?.status,

@@ -49,7 +49,7 @@ export function AdminAccountPage() {
     if (!authUser?.id) return;
     setIsLoading(true);
     try {
-      const response = await userManager.getProfile();
+      const response = await userManager.getProfile(authUser.id);
       if (response.success && response.data) {
         const data = response.data;
         setProfile({
@@ -119,11 +119,13 @@ export function AdminAccountPage() {
       if (response.success) {
         toast.success(t("common.updatedInformationSuccessfully"));
 
-        // Refresh local auth state
-        const profileResponse = await userManager.getProfile();
-        if (profileResponse.success && profileResponse.data) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setUser(profileResponse.data as any);
+        if (authUser?.id) {
+          // Refresh local auth state
+          const profileResponse = await userManager.getProfile(authUser.id);
+          if (profileResponse.success && profileResponse.data) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setUser(profileResponse.data as any);
+          }
         }
 
         await fetchProfile();
