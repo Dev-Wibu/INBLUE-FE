@@ -870,10 +870,11 @@ export function ApplicationGradingPage({
   const isStaff = user?.role === "STAFF";
 
   // Staff & Admin: lấy tất cả applications
-  const { data: rawApps } = useApplications();
+  const { data: rawApps, refetch: refetchApps } = useApplications();
 
   // Staff: lấy tất cả application details đang chờ HR chấm (từ tất cả applications)
-  const { data: allPendingReviews = [] } = useAllPendingHRReviews(isStaff);
+  const { data: allPendingReviews = [], refetch: refetchPendingReviews } =
+    useAllPendingHRReviews(isStaff);
 
   const applications = useMemo(() => (Array.isArray(rawApps) ? rawApps : []), [rawApps]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1110,7 +1111,7 @@ export function ApplicationGradingPage({
 
           <ReloadButton
             onReload={async () => {
-              // Note: missing refetch function for rawApps, but button matches style
+              await Promise.all([refetchApps(), refetchPendingReviews()]);
             }}
             tooltip={t("common.reload")}
             className="h-8 w-8"
