@@ -93,8 +93,8 @@ export class UserManager {
           "/api/users/change-password",
           {
             body: {
-              currentPassword,
-              newPassword,
+              oldPass: currentPassword,
+              newPass: newPassword,
             },
           }
         )
