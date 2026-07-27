@@ -58,7 +58,9 @@ export function ForgotPasswordPage() {
       title={
         <>
           {t("authForgotpasswordpage.heroTitleLine1")}{" "}
-          <span className="text-[#0047AB] dark:text-[#66B2FF]">{t("authForgotpasswordpage.heroTitleLine2")}</span>
+          <span className="text-[#0047AB] dark:text-[#66B2FF]">
+            {t("authForgotpasswordpage.heroTitleLine2")}
+          </span>
         </>
       }
       description={t("authForgotpasswordpage.heroDescription")}

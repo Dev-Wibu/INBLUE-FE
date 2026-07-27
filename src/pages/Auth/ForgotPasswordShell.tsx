@@ -40,7 +40,7 @@ export function ForgotPasswordShell({
       <aside className="relative hidden flex-col justify-between gap-10 bg-white px-10 py-12 text-slate-900 md:flex dark:bg-gradient-to-br dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 dark:text-white">
         {/* Light mode decorative elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50/50 to-transparent dark:hidden" />
-        <div className="absolute bottom-0 right-0 size-64 rounded-full bg-blue-100/60 blur-3xl dark:hidden" />
+        <div className="absolute right-0 bottom-0 size-64 rounded-full bg-blue-100/60 blur-3xl dark:hidden" />
         <div className="absolute top-20 right-10 size-32 rounded-full bg-indigo-100/40 blur-2xl dark:hidden" />
 
         {/* Dark mode decorative elements */}
@@ -53,7 +53,9 @@ export function ForgotPasswordShell({
           </div>
           <div className="flex flex-col">
             <span className="text-base font-bold text-slate-900 dark:text-white">INBLUE</span>
-            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">AI Interview</span>
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              AI Interview
+            </span>
           </div>
         </div>
 
@@ -66,7 +68,7 @@ export function ForgotPasswordShell({
           </div>
 
           {/* Title */}
-          <h2 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 dark:text-white">
+          <h2 className="text-4xl leading-tight font-bold tracking-tight text-slate-900 dark:text-white">
             {title}
           </h2>
 
@@ -93,12 +95,21 @@ export function ForgotPasswordShell({
                 <div
                   className={cn(
                     "flex size-8 items-center justify-center rounded-full border-2 font-bold transition-all",
-                    isComplete && "border-emerald-500 bg-emerald-500 text-white dark:border-emerald-400 dark:bg-emerald-400 dark:text-slate-900",
-                    isCurrent && "border-[#0047AB] bg-[#0047AB] text-white dark:border-indigo-400 dark:bg-indigo-400 dark:text-slate-900",
-                    !isComplete && !isCurrent && "border-slate-200 bg-white text-slate-400 dark:border-white/20 dark:bg-white/5 dark:text-white/40"
+                    isComplete &&
+                      "border-emerald-500 bg-emerald-500 text-white dark:border-emerald-400 dark:bg-emerald-400 dark:text-slate-900",
+                    isCurrent &&
+                      "border-[#0047AB] bg-[#0047AB] text-white dark:border-indigo-400 dark:bg-indigo-400 dark:text-slate-900",
+                    !isComplete &&
+                      !isCurrent &&
+                      "border-slate-200 bg-white text-slate-400 dark:border-white/20 dark:bg-white/5 dark:text-white/40"
                   )}>
                   {isComplete ? (
-                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <svg
+                      className="size-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
@@ -109,7 +120,9 @@ export function ForgotPasswordShell({
                   <div
                     className={cn(
                       "h-0.5 w-10 rounded-full transition-all",
-                      idx < stepIndex ? "bg-emerald-500 dark:bg-emerald-400" : "bg-slate-200 dark:bg-white/20"
+                      idx < stepIndex
+                        ? "bg-emerald-500 dark:bg-emerald-400"
+                        : "bg-slate-200 dark:bg-white/20"
                     )}
                   />
                 )}
