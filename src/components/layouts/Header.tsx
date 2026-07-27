@@ -14,7 +14,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { fixUtf8Mojibake } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
-import { getDashboardPath, useAuthStore } from "@/stores/authStore";
+import { getAccountPath, getDashboardPath, useAuthStore } from "@/stores/authStore";
 import {
   Building2,
   HelpCircle,
@@ -68,6 +68,7 @@ export function Header() {
     navigate("/login");
   };
   const dashboardPath = getDashboardPath(user?.role);
+  const accountPath = getAccountPath(user?.role);
   const isHomepage = location.pathname === "/";
   const showScrolledStyle = isScrolled || !isHomepage;
 
@@ -190,7 +191,7 @@ export function Header() {
                   </DropdownMenuItem>
 
                   <DropdownMenuItem asChild>
-                    <Link to="/user/account" className="cursor-pointer gap-2">
+                    <Link to={accountPath} className="cursor-pointer gap-2">
                       <UserCircle className="h-4 w-4" />
                       {t("common.account")}
                     </Link>
@@ -320,7 +321,7 @@ export function Header() {
                             {t("common.dashboard")}
                           </Link>
                           <Link
-                            to="/user/account"
+                            to={accountPath}
                             className="flex items-center gap-3 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
                             <UserCircle className="h-3.5 w-3.5 text-slate-500" />
                             {t("common.account")}

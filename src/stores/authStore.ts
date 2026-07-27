@@ -182,3 +182,20 @@ export function getDashboardPath(role?: string): string {
       return "/user";
   }
 }
+
+/**
+ * Get the account/profile path for a given user role.
+ * Mentor doesn't have a dedicated /mentor/account route, so we fall back to /mentor.
+ */
+export function getAccountPath(role?: string): string {
+  switch (role?.toUpperCase()) {
+    case "ADMIN":
+      return "/admin/account";
+    case "STAFF":
+      return "/staff?tab=account";
+    case "MENTOR":
+      return "/mentor";
+    default:
+      return "/user/account";
+  }
+}
