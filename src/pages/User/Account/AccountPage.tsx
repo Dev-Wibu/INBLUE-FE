@@ -202,9 +202,9 @@ export function AccountPage() {
         );
       case "jdPurchases":
         return (
-          <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <JdPurchaseHistoryTab />
-          </Card>
+          </div>
         );
       case "settings":
         return (
@@ -325,8 +325,10 @@ export function AccountPage() {
     },
     {
       id: "settings",
-      label: t("userAccount.quickSettings") || "Cài đặt",
-      description: t("userAccount.quickSettingsDescription") || "Giao diện, thông báo",
+      label: t("userAccount.quickSettings", { defaultValue: "Cài đặt" }),
+      description: t("userAccount.quickSettingsDescription", {
+        defaultValue: "Giao diện, ngôn ngữ, thông báo",
+      }),
       icon: Settings,
     },
   ];
