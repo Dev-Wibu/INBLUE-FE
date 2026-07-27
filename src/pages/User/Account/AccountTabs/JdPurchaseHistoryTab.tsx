@@ -1,4 +1,5 @@
 import { PaginationControl } from "@/components/shared";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -122,13 +123,15 @@ export function JdPurchaseHistoryTab() {
               <TableHeader>
                 <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
                   <TableHead className="w-[100px] pl-6 font-medium text-slate-500">#ID</TableHead>
+                  <TableHead className="font-medium text-slate-500">Doanh nghiệp</TableHead>
                   <TableHead className="font-medium text-slate-500">Thông tin JD</TableHead>
                   <TableHead className="font-medium text-slate-500">Giao dịch</TableHead>
                   <TableHead className="font-medium text-slate-500">Trạng thái</TableHead>
-                  <TableHead className="font-medium text-slate-500">Thời gian</TableHead>
-                  <TableHead className="pr-6 text-right font-medium text-slate-500">
+                  <TableHead className="text-right font-medium text-slate-500">
                     Thành tiền
                   </TableHead>
+                  <TableHead className="font-medium text-slate-500 pl-4">Ngày mua</TableHead>
+                  <TableHead className="pr-6 font-medium text-slate-500">Hạn / SD</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -140,22 +143,40 @@ export function JdPurchaseHistoryTab() {
                       #{purchase.id}
                     </TableCell>
                     <TableCell className="py-4">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8 shrink-0 rounded-md border border-slate-200 dark:border-slate-800">
+                          <AvatarImage
+                            src={
+                              purchase.jobDescription?.companyLogoUrl ||
+                              purchase.jobDescription?.companyLogo ||
+                              ""
+                            }
+                            alt={purchase.jobDescription?.companyName || "Company"}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="rounded-md bg-slate-100 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                            {(purchase.jobDescription?.companyName || "C").charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {purchase.jobDescription?.companyName || t("common.unknown")}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
                       <div className="flex flex-col gap-1">
                         {purchase.jobDescription?.id ? (
                           <Link
                             to={`/enterprise/job/${purchase.jobDescription.id}`}
                             className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
-                            {purchase.jobDescription?.title || "Untitled"}
-                            <ExternalLink className="h-3 w-3" />
+                            <span className="line-clamp-2 max-w-[200px]">{purchase.jobDescription?.title || "Untitled"}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0" />
                           </Link>
                         ) : (
-                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 line-clamp-2 max-w-[200px]">
                             {purchase.jobDescription?.title || "Untitled"}
                           </span>
                         )}
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          {purchase.jobDescription?.companyName || t("common.unknown")}
-                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="py-4">
@@ -182,28 +203,30 @@ export function JdPurchaseHistoryTab() {
                         {t(`payment.jdPurchaseStatus_${purchase.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="py-4">
-                      <div className="flex flex-col gap-1 text-xs">
-                        <span className="text-slate-600 dark:text-slate-300">
-                          Mua: {formatPurchaseDate(purchase.purchasedAt)}
-                        </span>
-                        {purchase.status === "USED" ? (
-                          <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                            Dùng: {formatPurchaseDate(purchase.usedAt)}
-                          </span>
-                        ) : purchase.status === "EXPIRED" ? (
-                          <span className="font-medium text-rose-600 dark:text-rose-400">
-                            Hết hạn: {formatPurchaseDate(purchase.validUntil)}
-                          </span>
-                        ) : purchase.validUntil ? (
-                          <span className="text-slate-500 dark:text-slate-400">
-                            HSD: {formatPurchaseDate(purchase.validUntil)}
-                          </span>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-4 pr-6 text-right font-semibold text-slate-900 dark:text-slate-100">
+                    <TableCell className="py-4 text-right font-semibold text-slate-900 dark:text-slate-100">
                       {purchase.payment?.amount ? formatCurrency(purchase.payment.amount) : "—"}
+                    </TableCell>
+                    <TableCell className="py-4 pl-4">
+                      <span className="text-xs text-slate-600 dark:text-slate-300">
+                        {formatPurchaseDate(purchase.purchasedAt)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-4 pr-6">
+                      {purchase.status === "USED" ? (
+                        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          {formatPurchaseDate(purchase.usedAt)}
+                        </span>
+                      ) : purchase.status === "EXPIRED" ? (
+                        <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
+                          {formatPurchaseDate(purchase.validUntil)}
+                        </span>
+                      ) : purchase.validUntil ? (
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {formatPurchaseDate(purchase.validUntil)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
