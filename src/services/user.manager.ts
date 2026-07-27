@@ -92,9 +92,11 @@ export class UserManager {
           // @ts-expect-error: Backend Swagger schema mismatch
           "/api/users/change-password",
           {
-            body: {
-              oldPass: currentPassword,
-              newPass: newPassword,
+            params: {
+              query: {
+                oldPass: currentPassword,
+                newPass: newPassword,
+              },
             },
           }
         )
