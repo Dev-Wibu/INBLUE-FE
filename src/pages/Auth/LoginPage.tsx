@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
-import { userManager } from "@/services/user.manager";
+import { candidateProfileManager } from "@/services/candidate-profile.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import { Eye, EyeOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -49,20 +49,30 @@ export function LoginPage() {
         localStorage.setItem("current-user-id", String(userId));
       }
 
-      // Fetch full profile to get actual name, avatar, etc.
-      try {
-        const profileResult = await userManager.getProfile();
-        if (profileResult.success && profileResult.data) {
-          const profile = profileResult.data as Record<string, unknown>;
-          setUser({
-            id: userId,
-            name: (profile.name as string) || payload.user.fullName,
-            email: (profile.email as string) || payload.user.email,
-            role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-            avatarUrl: (profile.avatarUrl as string) || payload.user.avatar || undefined,
-          });
-        } else {
-          // Fallback to payload data if profile fetch fails
+      // Fetch candidate profile to get actual name, avatar, etc.
+      if (userId) {
+        try {
+          const profileResult = await candidateProfileManager.getByUserId(userId);
+          if (profileResult.success && profileResult.data) {
+            const profile = profileResult.data as Record<string, unknown>;
+            const userData = profile.user as Record<string, unknown> | undefined;
+            setUser({
+              id: userId,
+              name: (userData?.name as string) || payload.user.fullName,
+              email: (userData?.email as string) || payload.user.email,
+              role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+              avatarUrl: (userData?.avatarUrl as string) || payload.user.avatar || undefined,
+            });
+          } else {
+            setUser({
+              id: userId,
+              name: payload.user.fullName,
+              email: payload.user.email,
+              role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+              avatarUrl: payload.user.avatar || undefined,
+            });
+          }
+        } catch {
           setUser({
             id: userId,
             name: payload.user.fullName,
@@ -71,10 +81,9 @@ export function LoginPage() {
             avatarUrl: payload.user.avatar || undefined,
           });
         }
-      } catch {
-        // Fallback to payload data on error
+      } else {
         setUser({
-          id: userId,
+          id: undefined,
           name: payload.user.fullName,
           email: payload.user.email,
           role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
