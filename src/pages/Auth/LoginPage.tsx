@@ -32,7 +32,7 @@ export function LoginPage() {
   const location = useLocation();
   const navigationState = location.state as LoginNavigationState | null;
   const isDemoLoginEnabled = import.meta.env.DEV || import.meta.env.MODE === "staging";
-  const { setUser, setToken, setIsLoggedIn } = useAuthStore();
+  const { setAuthFromLogin } = useAuthStore();
   const [email, setEmail] = useState(() => navigationState?.prefillEmail || "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -46,8 +46,6 @@ export function LoginPage() {
     async (payload: LoginAuthPayload) => {
       const parsedUserId = Number(payload.user.id);
       const userId = Number.isFinite(parsedUserId) ? parsedUserId : undefined;
-      setToken(payload.token ?? null);
-      setIsLoggedIn(true);
       if (userId && !isNaN(userId)) {
         localStorage.setItem("current-user-id", String(userId));
       }
@@ -56,6 +54,17 @@ export function LoginPage() {
       const redirectPath =
         payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);
 
+      // Build the user object first, then atomically commit to the store so
+      // ProtectedRoute never sees isLoggedIn=true with user.role still null.
+      const baseUser = {
+        id: userId,
+        email: payload.user.email,
+        role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+        avatarUrl: payload.user.avatar || undefined,
+      };
+
+      let resolvedUser = { ...baseUser, name: payload.user.fullName };
+
       // Fetch candidate profile to get actual name, avatar, etc.
       if (userId) {
         try {
@@ -63,45 +72,28 @@ export function LoginPage() {
           if (profileResult.success && profileResult.data) {
             const profile = profileResult.data as Record<string, unknown>;
             const userData = profile.user as Record<string, unknown> | undefined;
-            setUser({
-              id: userId,
+            resolvedUser = {
+              ...baseUser,
               name: (userData?.name as string) || payload.user.fullName,
               email: (userData?.email as string) || payload.user.email,
-              role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
               avatarUrl: (userData?.avatarUrl as string) || payload.user.avatar || undefined,
-            });
-          } else {
-            setUser({
-              id: userId,
-              name: payload.user.fullName,
-              email: payload.user.email,
-              role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-              avatarUrl: payload.user.avatar || undefined,
-            });
+            };
           }
         } catch {
-          setUser({
-            id: userId,
-            name: payload.user.fullName,
-            email: payload.user.email,
-            role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-            avatarUrl: payload.user.avatar || undefined,
-          });
+          // Fall back to baseUser if profile fetch fails
         }
-      } else {
-        setUser({
-          id: undefined,
-          name: payload.user.fullName,
-          email: payload.user.email,
-          role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-          avatarUrl: payload.user.avatar || undefined,
-        });
       }
+
+      // Single atomic commit to the auth store
+      setAuthFromLogin({
+        user: resolvedUser,
+        token: payload.token ?? null,
+      });
 
       // Navigate AFTER user state is set to prevent race condition
       setRedirectTo(redirectPath);
     },
-    [setIsLoggedIn, setToken, setUser]
+    [setAuthFromLogin]
   );
 
   // Reset redirect ref when component unmounts (e.g., user navigates away)

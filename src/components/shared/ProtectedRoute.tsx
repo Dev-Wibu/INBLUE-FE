@@ -19,6 +19,14 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     return <Navigate to="/login" replace />;
   }
 
+  // Guard: if isLoggedIn is true but user is missing or has no role yet
+  // (e.g., rehydration in progress, or atomic update not yet flushed),
+  // wait one render rather than wrongly redirecting to /error/403.
+  // This prevents the role-mismatch flicker right after login.
+  if (allowedRoles && (!user || !user.role)) {
+    return null;
+  }
+
   // Check role authorization
   if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
     return <Navigate to="/error/403" replace />;
