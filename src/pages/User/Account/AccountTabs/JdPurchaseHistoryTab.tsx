@@ -48,7 +48,7 @@ export function JdPurchaseHistoryTab() {
   const [purchases, setPurchases] = useState<EnrichedJdPurchase[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");
 
-  const [pageSize] = useHybridPageSize({ key: "jd-purchase-history" });
+  const [pageSize] = useHybridPageSize({ key: "jd-purchase-history", defaultPageSize: 10 });
 
   // Use 10 as fallback if pageSize is somehow undefined
   const effectivePageSize = pageSize || 10;

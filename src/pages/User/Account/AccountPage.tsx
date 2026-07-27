@@ -80,9 +80,13 @@ export function AccountPage() {
           major: userData.major || "",
           cvUrl: userData.cvUrl || null,
           cv_public_id: userData.cv_public_id || null,
+          // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields
           phone: userData.phone || "",
+          // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields
           address: userData.address || "",
+          // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields
           linkedInUrl: userData.linkedInUrl || "",
+          // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields
           githubUrl: userData.githubUrl || "",
           createdAt: new Date().toISOString(),
         });
@@ -191,7 +195,7 @@ export function AccountPage() {
               fetchUserData();
               handleSwitchTab("candidateProfile");
             }}
-            userProfile={userProfile}
+            userProfile={userProfile!}
           />
         );
       case "jdPurchases":
