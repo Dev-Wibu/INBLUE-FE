@@ -54,7 +54,6 @@ interface JobCardProps {
 }
 
 function JobCard({ job, t }: JobCardProps) {
-  // @ts-expect-error: Backend schema mismatch
   const jobAny = job as any;
   const initials = getCompanyInitials(jobAny.companyName);
   const logoUrl = jobAny.thumbnailUrl || jobAny.companyLogoUrl || jobAny.companyLogo;
@@ -172,7 +171,6 @@ export function JobSearchPage() {
     if (query) {
       result = result.filter(
         (job) => {
-          // @ts-expect-error: Backend schema mismatch
           const jobAny = job as any;
           return job.title?.toLowerCase().includes(query) ||
             jobAny.companyName?.toLowerCase().includes(query)
