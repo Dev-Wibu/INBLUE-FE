@@ -8,7 +8,7 @@ import { authManager } from "@/services/auth.manager";
 import { candidateProfileManager } from "@/services/candidate-profile.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import { Eye, EyeOff } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -39,6 +39,9 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [infoMessage, setInfoMessage] = useState(() => navigationState?.message || "");
   const [error, setError] = useState("");
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
+  const redirectExecutedRef = useRef(false);
+
   const applyAuthState = useCallback(
     async (payload: LoginAuthPayload) => {
       const parsedUserId = Number(payload.user.id);
@@ -48,6 +51,10 @@ export function LoginPage() {
       if (userId && !isNaN(userId)) {
         localStorage.setItem("current-user-id", String(userId));
       }
+
+      // USER role goes to landing page, other roles go to their dashboard
+      const redirectPath =
+        payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);
 
       // Fetch candidate profile to get actual name, avatar, etc.
       if (userId) {
@@ -91,15 +98,26 @@ export function LoginPage() {
         });
       }
 
-      // USER role goes to landing page, other roles go to their dashboard
-      const redirectPath =
-        payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);
-      navigate(redirectPath, {
-        replace: true,
-      });
+      // Navigate AFTER user state is set to prevent race condition
+      setRedirectTo(redirectPath);
     },
-    [navigate, setIsLoggedIn, setToken, setUser]
+    [setIsLoggedIn, setToken, setUser]
   );
+
+  // Reset redirect ref when component unmounts (e.g., user navigates away)
+  useEffect(() => {
+    return () => {
+      redirectExecutedRef.current = false;
+    };
+  }, []);
+
+  // Handle redirect after state update
+  useEffect(() => {
+    if (redirectTo && !redirectExecutedRef.current) {
+      redirectExecutedRef.current = true;
+      navigate(redirectTo, { replace: true });
+    }
+  }, [redirectTo, navigate]);
   useEffect(() => {
     const callbackUrl = window.location.href;
     if (!authManager.hasGoogleCallbackPayload(callbackUrl)) {

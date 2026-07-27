@@ -1,5 +1,6 @@
 import { ReloadButton } from "@/components/shared";
 import { PaginationControl } from "@/components/shared/PaginationControl";
+import { SortButton } from "@/components/shared/SortButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,13 @@ import { CodingRoundGrader } from "@/components/ui/coding-round-grader";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -869,6 +877,15 @@ export function ApplicationGradingPage({
 
   const applications = useMemo(() => (Array.isArray(rawApps) ? rawApps : []), [rawApps]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "score-high" | "score-low">("newest");
+
+  // Sortable fields for the table
+  type SortableApplication = GradingListItem & {
+    idSortValue: number;
+    createdAtSortValue: number;
+    scoreSortValue: number;
+  };
 
   // Map of applicationId -> Application (to enrich staff items with userId/jdId)
   const applicationMap = useMemo(() => {
@@ -920,6 +937,7 @@ export function ApplicationGradingPage({
     if (isStaff) {
       return staffItems
         .filter((item) => {
+          // Search filter
           if (searchQuery) {
             const q = searchQuery.toLowerCase();
             const userName = userMap.get(item.userId!) ?? "";
@@ -929,6 +947,14 @@ export function ApplicationGradingPage({
               !userName.toLowerCase().includes(q)
             )
               return false;
+          }
+          // Status filter
+          if (
+            statusFilter !== "all" &&
+            item.detailStatus !== statusFilter &&
+            item.status !== statusFilter
+          ) {
+            return false;
           }
           return true;
         })
@@ -967,11 +993,22 @@ export function ApplicationGradingPage({
         userName: userMap.get(app.userId!) ?? `User #${app.userId}`,
         createdAt: app.createdAt,
       }));
-  }, [isStaff, staffItems, applications, searchQuery, userMap]);
+  }, [isStaff, staffItems, applications, searchQuery, statusFilter, userMap]);
 
-  const { sortedData } = useSortable(filteredApplications, {
-    // Staff items are pre-sorted by detailId (newest first), preserve that order
+  // Transform for sortable hook with sort metadata
+  const sortableApplications = useMemo((): SortableApplication[] => {
+    return filteredApplications.map((item) => ({
+      ...item,
+      idSortValue: item.detailId ?? item.id,
+      createdAtSortValue: item.createdAt ? new Date(item.createdAt).getTime() : 0,
+      scoreSortValue: item.overallScore ?? -1,
+    }));
+  }, [filteredApplications]);
+
+  const { sortedData, getSortProps } = useSortable(sortableApplications, {
+    defaultSort: { key: "idSortValue", direction: "desc" },
     noSortBehavior: "preserve",
+    tieBreaker: { key: "idSortValue", direction: "desc" },
   });
 
   const pagination = usePagination({
@@ -1037,6 +1074,38 @@ export function ApplicationGradingPage({
             />
           </div>
 
+          {/* Status Filter */}
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value);
+              pagination.setPage(1);
+            }}>
+            <SelectTrigger className="h-8 w-40 text-xs">
+              <SelectValue placeholder={t("common.filterByStatus")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+              <SelectItem value="PENDING">{t("status.pendingSubmit")}</SelectItem>
+              <SelectItem value="SUBMITTED">{t("adminQuizsetmanagement.submitted")}</SelectItem>
+              <SelectItem value="AI_EVALUATED">{t("status.aiGraded")}</SelectItem>
+              <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Sort Order */}
+          <Select value={sortBy} onValueChange={(value: typeof sortBy) => setSortBy(value)}>
+            <SelectTrigger className="h-8 w-36 text-xs">
+              <SelectValue placeholder={t("common.sortBy")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">{t("common.sortNewest")}</SelectItem>
+              <SelectItem value="oldest">{t("common.sortOldest")}</SelectItem>
+              <SelectItem value="score-high">{t("common.sortScoreHigh")}</SelectItem>
+              <SelectItem value="score-low">{t("common.sortScoreLow")}</SelectItem>
+            </SelectContent>
+          </Select>
+
           <div className="hidden h-4 w-px bg-slate-200 sm:block dark:bg-slate-700" />
 
           <ReloadButton
@@ -1066,7 +1135,9 @@ export function ApplicationGradingPage({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
+                    <TableHead className="w-16">
+                      <SortButton {...getSortProps("idSortValue")}>{t("common.id")}</SortButton>
+                    </TableHead>
                     <TableHead>{t("common.candidate")}</TableHead>
                     <TableHead className="hidden md:table-cell">ID JD</TableHead>
                     <TableHead>{t("common.status")}</TableHead>
@@ -1074,7 +1145,9 @@ export function ApplicationGradingPage({
                       {t("userApplicationhistory.round")}
                     </TableHead>
                     <TableHead className="hidden lg:table-cell">
-                      {t("userApplicationhistory.totalScore")}
+                      <SortButton {...getSortProps("scoreSortValue")}>
+                        {t("userApplicationhistory.totalScore")}
+                      </SortButton>
                     </TableHead>
                     <TableHead className="w-32 text-right">{t("common.operation")}</TableHead>
                   </TableRow>
@@ -1492,7 +1565,7 @@ export function ApplicationGradingDetailPage({
                   onViewEmailSubmission={handleViewEmailSubmission}
                   onHrScoreSuccess={() => {
                     setStartGradingRoundId(null);
-                    void refetch();
+                    // No need to call refetch() - queryClient.invalidateQueries already triggers refetch
                   }}
                 />
               ))}

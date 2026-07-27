@@ -140,8 +140,18 @@ export function StaffAccountPage() {
 
         const profileResponse = await userManager.getProfile();
         if (profileResponse.success && profileResponse.data) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setUser(profileResponse.data as any);
+          const profileData = profileResponse.data as Record<string, unknown>;
+          // Map userId to id if needed (backend may return userId instead of id)
+          const userId = (profileData.userId as number) ?? profileData.id;
+          if (userId) {
+            setUser({
+              id: userId as number,
+              name: (profileData.name as string) || authUser?.name,
+              email: (profileData.email as string) || authUser?.email,
+              role: authUser?.role,
+              avatarUrl: (profileData.avatarUrl as string) || authUser?.avatarUrl,
+            });
+          }
         }
 
         await fetchProfile();
