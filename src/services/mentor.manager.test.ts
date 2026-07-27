@@ -16,9 +16,16 @@ import { mentorManager } from "./mentor.manager";
 const mockGet = fetchClient.GET as ReturnType<typeof vi.fn>;
 const mockPost = fetchClient.POST as ReturnType<typeof vi.fn>;
 
+// Capture the JSON payload that the update implementation logs via
+// `console.log("Update mentor payload:", ...)` — used by the password-preservation
+// tests below since Node FormData doesn't expose the underlying Blob bytes
+// the way the browser does.
+const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
 describe("MentorManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    logSpy.mockClear();
   });
 
   describe("getAll", () => {
@@ -60,6 +67,50 @@ describe("MentorManager", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Not found");
+    });
+  });
+
+  describe("findByEmail", () => {
+    it("returns the mentor whose email matches (case-insensitive)", async () => {
+      const list = [
+        { id: 7, name: "A", email: "Other@Test.com" },
+        { id: 11, name: "B", email: "tuan94868@gmail.com" },
+      ];
+      mockGet.mockResolvedValueOnce({ data: list });
+
+      const mentor = await mentorManager.findByEmail("Tuan94868@GMAIL.com");
+
+      expect(mentor).toEqual({ id: 11, name: "B", email: "tuan94868@gmail.com" });
+    });
+
+    it("unwraps paginated responses (data.items)", async () => {
+      const list = { items: [{ id: 5, email: "x@y.com" }], total: 1 };
+      mockGet.mockResolvedValueOnce({ data: list });
+
+      const mentor = await mentorManager.findByEmail("x@y.com");
+
+      expect(mentor).toEqual({ id: 5, email: "x@y.com" });
+    });
+
+    it("returns null when no mentor matches the email", async () => {
+      mockGet.mockResolvedValueOnce({ data: [{ id: 1, email: "a@b.com" }] });
+
+      const mentor = await mentorManager.findByEmail("missing@example.com");
+
+      expect(mentor).toBeNull();
+    });
+
+    it("returns null when the underlying getAll fails", async () => {
+      mockGet.mockRejectedValueOnce(new Error("Network down"));
+
+      const mentor = await mentorManager.findByEmail("x@y.com");
+
+      expect(mentor).toBeNull();
+    });
+
+    it("returns null for empty input without calling the API", async () => {
+      expect(await mentorManager.findByEmail("")).toBeNull();
+      expect(mockGet).not.toHaveBeenCalled();
     });
   });
 
@@ -170,15 +221,40 @@ describe("MentorManager", () => {
       );
     });
 
-    it("falls back to existing password when not provided", async () => {
-      const existing = { id: 1, name: "M", email: "e@t.com", password: "old-pw" };
+    it("preserves the existing password hash when BE returns one", async () => {
+      // The BE wipes the mentor's password whenever `password` is missing
+      // from the update payload. To avoid that we re-send whatever the
+      // GET endpoint returned.
+      const existing = { id: 1, name: "M", email: "e@t.com", password: "$2a$10$hash" };
       mockGet.mockResolvedValueOnce({ data: existing });
       mockPost.mockResolvedValueOnce({ data: { id: 1 } });
 
       await mentorManager.update(1, { name: "Updated" });
 
-      // Verify POST was called (password fallback happens inside FormData blob)
       expect(mockPost).toHaveBeenCalledTimes(1);
+
+      // Read the JSON payload via the `console.log` spy in the implementation.
+      // (Node test env FormData stores Blob with toString -> "[object File]".)
+      const lastLogCall = logSpy.mock.calls.at(-1);
+      const lastPayloadArg = lastLogCall?.[1] as string | undefined;
+      const parsed = JSON.parse(lastPayloadArg ?? "{}");
+      expect(parsed.password).toBe("$2a$10$hash");
+      expect(parsed.name).toBe("Updated");
+    });
+
+    it("does NOT send password field when existing record has none", async () => {
+      // Some BE responses strip the password entirely. In that case the
+      // payload must not invent one — we have nothing safe to send.
+      const existing = { id: 1, name: "M", email: "e@t.com" };
+      mockGet.mockResolvedValueOnce({ data: existing });
+      mockPost.mockResolvedValueOnce({ data: { id: 1 } });
+
+      await mentorManager.update(1, { name: "Updated" });
+
+      const lastLogCall = logSpy.mock.calls.at(-1);
+      const lastPayloadArg = lastLogCall?.[1] as string | undefined;
+      const parsed = JSON.parse(lastPayloadArg ?? "{}");
+      expect(parsed).not.toHaveProperty("password");
     });
 
     it("preserves active field from _data when provided", async () => {

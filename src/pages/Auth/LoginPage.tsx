@@ -8,7 +8,7 @@ import { authManager } from "@/services/auth.manager";
 import { candidateProfileManager } from "@/services/candidate-profile.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import { Eye, EyeOff } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -32,22 +32,38 @@ export function LoginPage() {
   const location = useLocation();
   const navigationState = location.state as LoginNavigationState | null;
   const isDemoLoginEnabled = import.meta.env.DEV || import.meta.env.MODE === "staging";
-  const { setUser, setToken, setIsLoggedIn } = useAuthStore();
+  const { setAuthFromLogin } = useAuthStore();
   const [email, setEmail] = useState(() => navigationState?.prefillEmail || "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [infoMessage, setInfoMessage] = useState(() => navigationState?.message || "");
   const [error, setError] = useState("");
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
+  const redirectExecutedRef = useRef(false);
+
   const applyAuthState = useCallback(
     async (payload: LoginAuthPayload) => {
       const parsedUserId = Number(payload.user.id);
       const userId = Number.isFinite(parsedUserId) ? parsedUserId : undefined;
-      setToken(payload.token ?? null);
-      setIsLoggedIn(true);
       if (userId && !isNaN(userId)) {
         localStorage.setItem("current-user-id", String(userId));
       }
+
+      // USER role goes to landing page, other roles go to their dashboard
+      const redirectPath =
+        payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);
+
+      // Build the user object first, then atomically commit to the store so
+      // ProtectedRoute never sees isLoggedIn=true with user.role still null.
+      const baseUser = {
+        id: userId,
+        email: payload.user.email,
+        role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+        avatarUrl: payload.user.avatar || undefined,
+      };
+
+      let resolvedUser = { ...baseUser, name: payload.user.fullName };
 
       // Fetch candidate profile to get actual name, avatar, etc.
       if (userId) {
@@ -56,50 +72,44 @@ export function LoginPage() {
           if (profileResult.success && profileResult.data) {
             const profile = profileResult.data as Record<string, unknown>;
             const userData = profile.user as Record<string, unknown> | undefined;
-            setUser({
-              id: userId,
+            resolvedUser = {
+              ...baseUser,
               name: (userData?.name as string) || payload.user.fullName,
               email: (userData?.email as string) || payload.user.email,
-              role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
               avatarUrl: (userData?.avatarUrl as string) || payload.user.avatar || undefined,
-            });
-          } else {
-            setUser({
-              id: userId,
-              name: payload.user.fullName,
-              email: payload.user.email,
-              role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-              avatarUrl: payload.user.avatar || undefined,
-            });
+            };
           }
         } catch {
-          setUser({
-            id: userId,
-            name: payload.user.fullName,
-            email: payload.user.email,
-            role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-            avatarUrl: payload.user.avatar || undefined,
-          });
+          // Fall back to baseUser if profile fetch fails
         }
-      } else {
-        setUser({
-          id: undefined,
-          name: payload.user.fullName,
-          email: payload.user.email,
-          role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-          avatarUrl: payload.user.avatar || undefined,
-        });
       }
 
-      // USER role goes to landing page, other roles go to their dashboard
-      const redirectPath =
-        payload.user.role?.toUpperCase() === "USER" ? "/" : getDashboardPath(payload.user.role);
-      navigate(redirectPath, {
-        replace: true,
+      // Single atomic commit to the auth store
+      setAuthFromLogin({
+        user: resolvedUser,
+        token: payload.token ?? null,
       });
+
+      // Navigate AFTER user state is set to prevent race condition
+      setRedirectTo(redirectPath);
     },
-    [navigate, setIsLoggedIn, setToken, setUser]
+    [setAuthFromLogin]
   );
+
+  // Reset redirect ref when component unmounts (e.g., user navigates away)
+  useEffect(() => {
+    return () => {
+      redirectExecutedRef.current = false;
+    };
+  }, []);
+
+  // Handle redirect after state update
+  useEffect(() => {
+    if (redirectTo && !redirectExecutedRef.current) {
+      redirectExecutedRef.current = true;
+      navigate(redirectTo, { replace: true });
+    }
+  }, [redirectTo, navigate]);
   useEffect(() => {
     const callbackUrl = window.location.href;
     if (!authManager.hasGoogleCallbackPayload(callbackUrl)) {

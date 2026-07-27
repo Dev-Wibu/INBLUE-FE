@@ -98,6 +98,29 @@ export class MentorManager implements BaseManager<Mentor> {
   }
 
   /**
+   * Resolve a mentor record from the currently logged-in user's email.
+   *
+   * The User and Mentor tables have independent primary keys, so the JWT
+   * `sub` (= user id) does NOT match the mentor table id. There is no
+   * backend endpoint that takes a userId and returns the corresponding
+   * mentor record — only `GET /api/mentors/{mentorId}` and the full list.
+   * To bridge the gap, fetch the mentor list and pick the row whose email
+   * matches. Returns `null` if no mentor record exists for that email.
+   */
+  async findByEmail(email: string): Promise<Mentor | null> {
+    if (!email) return null;
+    const result = await this.getAll();
+    if (!result.success || !result.data) return null;
+
+    const list: Mentor[] = Array.isArray(result.data)
+      ? result.data
+      : ((result.data as { items?: Mentor[] }).items ?? []);
+
+    const target = email.trim().toLowerCase();
+    return list.find((m) => (m.email ?? "").trim().toLowerCase() === target) ?? null;
+  }
+
+  /**
    * Create new mentor
    * POST /api/mentors (multipart/form-data)
    * According to schema: { data: MentorInfo, avatar?: File }
@@ -221,7 +244,14 @@ export class MentorManager implements BaseManager<Mentor> {
         // Ignore
       }
 
-      // Build MentorInfo payload with id for update
+      // Build MentorInfo payload with id for update.
+      // SECURITY/PASSWORD-PRESERVATION NOTE:
+      // The backend controller wipes the mentor's password whenever the
+      // `password` field is missing from the request body OR arrives as
+      // explicit `null`. To keep the existing password we MUST re-send the
+      // hash that came back from GET /api/mentors/{id}. We only do that
+      // when the field is actually a truthy string — never emit null /
+      // undefined / empty.
       const mentorInfo: MentorInfo & {
         active?: boolean;
       } = {
@@ -236,10 +266,6 @@ export class MentorManager implements BaseManager<Mentor> {
         pricePerMinute: _data.pricePerMinute ?? existingMentor.pricePerMinute,
       };
 
-      // Backend ignores empty string password, but wipes if null/missing.
-      // If _data.password is undefined, fall back to existingMentor.password
-      mentorInfo.password = _data.password ?? existingMentor.password;
-
       // Add active field if provided
       // Note: 'active' is not in MentorInfo schema but BE curl example includes it
       // The BE accepts it for setting mentor active status during update
@@ -247,6 +273,14 @@ export class MentorManager implements BaseManager<Mentor> {
         mentorInfo.active = Boolean(_data.active);
       } else if (existingMentor.active !== undefined) {
         mentorInfo.active = existingMentor.active;
+      }
+
+      // Preserve the existing password. Only re-send if we actually have a
+      // truthy string (the BE strips a null/missing field and re-hashes
+      // anything we send, so we want to be sure).
+      const existingPassword = (existingMentor as { password?: unknown }).password;
+      if (typeof existingPassword === "string" && existingPassword.length > 0) {
+        mentorInfo.password = existingPassword;
       }
       console.log("Update mentor payload:", JSON.stringify(mentorInfo, null, 2));
 

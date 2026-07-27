@@ -282,15 +282,24 @@ export class UsersAdminManager implements BaseManager<User> {
       // Backend may accept these fields since they are part of the User schema
       // IMPORTANT: Include public_id and cv_public_id for Cloudinary file management
       // Updated: Removed bio, targetPosition, targetLevel per BE requirement (2026-01-20)
+      //
+      // SECURITY/PASSWORD-PRESERVATION NOTE:
+      // The backend controller wipes the user's password whenever the
+      // `password` field is missing from the request body OR arrives as
+      // explicit `null`. That means:
+      //   - profile-only updates must preserve the existing hashed password
+      //     by re-sending whatever the GET endpoint returned;
+      //   - we must NEVER emit `password: null` or `password: undefined`
+      //     (JSON.stringify drops undefined but keeps null).
+      // We only fall back to the existing hash when the caller didn't pass a
+      // brand-new password (caller paths that genuinely want to rotate the
+      // password go through the dedicated change-password endpoint).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const userInfo: UserInfo & Record<string, any> = {
         id: Number(_id),
         // Include id for update operation
         name: _data.name?.trim() || existingUser.name,
         email: _data.email?.trim() || existingUser.email,
-        // Backend ignores empty string password, but wipes if null/missing.
-        // If _data.password is undefined (e.g. from User Site), fall back to existingUser.password
-        password: _data.password ?? existingUser.password,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         university: (_data as any).university || (existingUser as any).university,
 
@@ -324,6 +333,19 @@ export class UsersAdminManager implements BaseManager<User> {
         cv_public_id:
           _data.cv_public_id ?? (cvFileToUpload ? "" : existingUser.cvUrl ? undefined : undefined),
       };
+
+      // Preserve the existing password when the caller didn't supply one.
+      // See the SECURITY/PASSWORD-PRESERVATION NOTE above for the full story.
+      // Only re-send the field if it actually has a truthy string value — that
+      // way we never emit `password: null` (BE wipe) and never drop the field
+      // entirely (BE wipe on missing). If we genuinely have nothing to put in
+      // here, omit it and pray the BE has been updated to keep the old hash.
+      if (userInfo.password === undefined) {
+        const existingPassword = (existingUser as { password?: unknown }).password;
+        if (typeof existingPassword === "string" && existingPassword.length > 0) {
+          userInfo.password = existingPassword;
+        }
+      }
 
       // Append the 'data' field as a JSON Blob (same format as create)
       formData.append(

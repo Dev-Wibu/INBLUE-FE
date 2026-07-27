@@ -48,6 +48,12 @@ export interface AuthState {
   setExpiresAt: (_expiresAt: number | null) => void;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   setIsLoading: (isLoading: boolean) => void;
+  /**
+   * Atomically set auth state from a login response in a single store update.
+   * This prevents ProtectedRoute from observing a state where isLoggedIn=true
+   * but user.role is still null (which causes redirect to /error/403).
+   */
+  setAuthFromLogin: (params: { user: User | null; token: string | null }) => void;
   clearAuth: () => void;
 }
 
@@ -68,6 +74,16 @@ export const useAuthStore = create<AuthState>()(
       setExpiresAt: (expiresAt) => set({ expiresAt }),
       setIsLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
       setIsLoading: (isLoading) => set({ isLoading }),
+      setAuthFromLogin: ({ user, token }) => {
+        // Single atomic store update so ProtectedRoute never sees
+        // isLoggedIn=true while user.role is still undefined.
+        set({
+          user,
+          token,
+          expiresAt: getTokenExpiresAt(token),
+          isLoggedIn: true,
+        });
+      },
       clearAuth: () => {
         // Remove current user ID from localStorage on logout
         localStorage.removeItem("current-user-id");
@@ -164,5 +180,22 @@ export function getDashboardPath(role?: string): string {
       return "/staff";
     default:
       return "/user";
+  }
+}
+
+/**
+ * Get the account/profile path for a given user role.
+ * Mentor doesn't have a dedicated /mentor/account route, so we fall back to /mentor.
+ */
+export function getAccountPath(role?: string): string {
+  switch (role?.toUpperCase()) {
+    case "ADMIN":
+      return "/admin/account";
+    case "STAFF":
+      return "/staff?tab=account";
+    case "MENTOR":
+      return "/mentor";
+    default:
+      return "/user/account";
   }
 }
