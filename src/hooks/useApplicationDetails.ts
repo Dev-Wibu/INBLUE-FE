@@ -97,6 +97,18 @@ export const useAllPendingHRReviews = (enabled = true) => {
 /**
  * HR/Admin scores a candidate's application round
  * PUT /api/application-details/hr-score
+ *
+ * Cache strategy on success:
+ *   1. Use `setQueryData` to merge the returned detail into the
+ *      `applicationDetails.byId` cache — instant local update, no refetch.
+ *   2. Also patch the `applicationDetails.byApplicationId` cached array so
+ *      list views reflect the new hrScore immediately.
+ *   3. Invalidate the listing-level queries (`forReviewer`, `allPendingHR`)
+ *      so the Staff grading table drops the just-scored row.
+ *   4. We deliberately do NOT call `invalidateQueries({ queryKey: ["applicationDetails"] })`
+ *      with a prefix — that would refetch every detail/application in cache
+ *      and drown the Network panel in identical GETs, making it impossible
+ *      to trace which call returned the freshly-graded detail.
  */
 export const useHrScore = (options?: {
   onSuccess?: () => void;
@@ -110,12 +122,59 @@ export const useHrScore = (options?: {
       if (!result.success) throw new Error(result.error);
       return result.data!;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       toast.success(t("grading.gradeSuccess"));
-      queryClient.invalidateQueries({ queryKey: ["applicationDetails"] });
+
+      const updatedDetail = data as unknown as ApplicationDetail | undefined;
+
+      // 1. Update the single-detail cache for instant UI update
+      if (updatedDetail?.id !== undefined) {
+        queryClient.setQueryData<ApplicationDetail>(
+          ["applicationDetails", "byId", variables.applicationDetailId],
+          updatedDetail
+        );
+
+        // 2. Patch the detail inside the per-application array cache so any
+        //    list view that already has the array re-renders without a refetch.
+        const appId = updatedDetail.applicationId;
+        if (appId !== undefined) {
+          queryClient.setQueryData<ApplicationDetail[]>(
+            ["applicationDetails", "byApplicationId", appId],
+            (prev) =>
+              prev?.map((d) => (d.id === updatedDetail.id ? { ...d, ...updatedDetail } : d)) ?? prev
+          );
+          // Also patch the application-level query for the score column
+          queryClient.setQueryData(["applications", "byId", appId], (prev: unknown) => {
+            if (!prev || typeof prev !== "object") return prev;
+            return {
+              ...(prev as Record<string, unknown>),
+              ...(updatedDetail as unknown as Record<string, unknown>),
+            };
+          });
+        }
+      }
+
+      // 3. Refetch ONLY the listing queries that need to reflect the change.
+      //    These are coarse-grained lists, not per-detail refetches.
       queryClient.invalidateQueries({
-        queryKey: ["applicationDetails", "byApplicationId", variables.applicationDetailId],
+        queryKey: ["applicationDetails", "forReviewer"],
+        refetchType: "none",
       });
+      queryClient.invalidateQueries({
+        queryKey: ["applicationDetails", "allPendingHR"],
+        refetchType: "none",
+      });
+      // 4. Refetch the applications list (used by the grading table)
+      queryClient.invalidateQueries({
+        queryKey: ["get", "/api/applications"],
+        refetchType: "none",
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["get", "/api/applications/{id}"],
+        refetchType: "none",
+        exact: false,
+      });
+
       options?.onSuccess?.();
     },
     onError: (error: Error) => {
@@ -129,6 +188,10 @@ export const useHrScore = (options?: {
 /**
  * Admin assigns a mentor to a candidate's Mentor Review round
  * PUT /api/application-details/{id}/assign-mentor?mentorId=
+ *
+ * Cache strategy mirrors `useHrScore`: setQueryData on the affected
+ * detail + listing invalidation, instead of a wholesale prefix invalidation
+ * that floods the Network panel with identical GETs.
  */
 export const useAssignMentor = (options?: {
   onSuccess?: () => void;
@@ -145,15 +208,35 @@ export const useAssignMentor = (options?: {
       if (!result.success) throw new Error(result.error);
       return result.data!;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       toast.success(t("grading.assignmentSuccess"));
-      queryClient.invalidateQueries({ queryKey: ["applicationDetails"] });
+
+      const updated = data as unknown as ApplicationDetail | undefined;
+
+      if (updated?.id !== undefined) {
+        queryClient.setQueryData<ApplicationDetail>(
+          ["applicationDetails", "byId", variables.applicationDetailId],
+          updated
+        );
+
+        const appId = updated.applicationId;
+        if (appId !== undefined) {
+          queryClient.setQueryData<ApplicationDetail[]>(
+            ["applicationDetails", "byApplicationId", appId],
+            (prev) => prev?.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)) ?? prev
+          );
+        }
+      }
+
       queryClient.invalidateQueries({
-        queryKey: ["applicationDetails", "byApplicationId", variables.applicationDetailId],
+        queryKey: ["applicationDetails", "forReviewer"],
+        refetchType: "none",
       });
       queryClient.invalidateQueries({
-        queryKey: ["applicationDetails", "byId", variables.applicationDetailId],
+        queryKey: ["applicationDetails", "allPendingHR"],
+        refetchType: "none",
       });
+
       options?.onSuccess?.();
     },
     onError: (error: Error) => {
