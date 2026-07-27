@@ -28,7 +28,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 export function SettingsTab() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);

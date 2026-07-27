@@ -56,8 +56,10 @@ export function ResetPasswordPage() {
   }, [clearCooldownTimer]);
 
   useEffect(() => {
+    startCooldown();
     return clearCooldownTimer;
-  }, [clearCooldownTimer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const passwordRule = useMemo(() => newPassword.length >= 6, [newPassword]);
   const passwordsMatch = useMemo(

@@ -33,7 +33,7 @@ export function ForgotPasswordShell({
         "grid w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-200/60 md:grid-cols-[1.05fr_1fr] dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/40",
         className
       )}>
-      <aside className="relative hidden flex-col justify-between gap-10 bg-slate-900 px-10 py-12 text-slate-100 md:flex">
+      <aside className="relative hidden flex-col justify-between gap-10 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 px-10 py-12 text-slate-100 md:flex dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 dark:text-slate-100">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(0,71,171,0.35),transparent_60%),radial-gradient(circle_at_85%_80%,rgba(0,123,255,0.25),transparent_55%)] dark:bg-[radial-gradient(circle_at_15%_20%,rgba(102,178,255,0.18),transparent_60%),radial-gradient(circle_at_85%_80%,rgba(165,200,242,0.15),transparent_55%)]" />
 
         <div className="relative flex items-center gap-3">

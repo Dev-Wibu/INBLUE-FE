@@ -12,10 +12,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import type { UserProfileData } from "./types";
+
 interface ProfileEditTabProps {
   onBack: () => void;
   onSuccess: () => void;
-  userProfile: any;
+  userProfile: UserProfileData;
 }
 
 export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTabProps) {
@@ -35,7 +37,6 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const handleEditAvatarChange = (files: File[]) => {
     const file = files[0];
@@ -76,7 +77,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
 
       toast.success(t("adminUsermanagement.userUpdatedSuccessfully"));
       onSuccess();
-    } catch (error) {
+    } catch {
       toast.error(t("general.unableToUpdateProfile"));
     } finally {
       setIsSaving(false);

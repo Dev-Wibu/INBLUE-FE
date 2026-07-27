@@ -21,6 +21,7 @@ import { useCurrentRound } from "@/hooks/useRound";
 import type { MentorReview } from "@/interfaces/schema.types";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
+import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { applicationService } from "@/services/application.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -1616,6 +1617,14 @@ export function ApplicationHistoryPage() {
       if (result.success) {
         setApps(result.data ?? []);
         setAppsError(false);
+        // Invalidate application details and current round queries to ensure fresh data
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["get", "/api/application-details"] }),
+          queryClient.invalidateQueries({ queryKey: ["get", "/api/rounds"] }),
+          queryClient.invalidateQueries({
+            queryKey: ["get", "/api/rounds/find-by-application-order"],
+          }),
+        ]);
       } else {
         setAppsError(true);
       }

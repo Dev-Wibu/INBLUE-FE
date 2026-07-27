@@ -21,26 +21,20 @@ import {
   Mail,
   Pencil,
   Receipt,
-  Settings,
   User,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { JdPurchaseHistoryTab, ProfileEditTab, SettingsTab } from "./AccountTabs";
+import { JdPurchaseHistoryTab, ProfileEditTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
-type AccountSubTab = "candidateProfile" | "settings" | "jdPurchases" | "editProfile";
+type AccountSubTab = "candidateProfile" | "jdPurchases" | "editProfile";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
-  if (
-    value === "candidateProfile" ||
-    value === "settings" ||
-    value === "jdPurchases" ||
-    value === "editProfile"
-  ) {
+  if (value === "candidateProfile" || value === "jdPurchases" || value === "editProfile") {
     return value as AccountSubTab;
   }
   return null;
@@ -52,7 +46,6 @@ export function AccountPage() {
   const authUserId = authUser?.id;
   const { data: candidateProfileData } = useCandidateProfile(authUserId || 0);
   const candidateProfile = (candidateProfileData as unknown as CandidateProfile) ?? null;
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [activeTab, setActiveTab] = useState<AccountSubTab>(
@@ -201,8 +194,6 @@ export function AccountPage() {
             userProfile={userProfile}
           />
         );
-      case "settings":
-        return <SettingsTab />;
       case "jdPurchases":
         return (
           <Card className="border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
@@ -319,12 +310,6 @@ export function AccountPage() {
       label: t("payment.jdPurchaseHistory"),
       description: t("payment.jdPurchaseNoPurchases"),
       icon: Receipt,
-    },
-    {
-      id: "settings",
-      label: t("common.settings"),
-      description: t("userAccount.managePreferencesAndSecurity"),
-      icon: Settings,
     },
   ];
 
@@ -473,7 +458,7 @@ export function AccountPage() {
             {activeTab === "candidateProfile" && (
               <div className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm lg:sticky lg:top-4 lg:self-start dark:border-slate-800/60 dark:bg-slate-900/40">
                 <h4 className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                  Nội dung
+                  {t("userAccount.contents")}
                 </h4>
                 <nav className="space-y-1">
                   {candidateProfile?.introduction && (
@@ -512,13 +497,13 @@ export function AccountPage() {
                     href="#certifications"
                     onClick={(e) => scrollToSection(e, "certifications")}
                     className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    Chứng chỉ
+                    {t("common.certifications")}
                   </a>
                   <a
                     href="#achievements"
                     onClick={(e) => scrollToSection(e, "achievements")}
                     className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400">
-                    Thành tựu
+                    {t("common.achievements")}
                   </a>
                 </nav>
               </div>
