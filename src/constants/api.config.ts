@@ -26,11 +26,14 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: "/api/auth/reset-password",
   },
 
-  // User endpoints (for current user)
+  // User endpoints (for current user).
+  // The backend does NOT expose `/api/users/me`. To read or update the
+  // currently logged-in user's record, resolve the id from `useAuthStore`
+  // and hit `USERS.DETAIL` (`/api/users/{id}`) or `USERS.UPDATE` (`/api/users`).
   USER: {
-    PROFILE: "/api/users/me",
-    UPDATE_PROFILE: "/api/users/me",
-    UPDATE_PASSWORD: "/api/users/password",
+    PROFILE: "/api/users/{id}",
+    UPDATE_PROFILE: "/api/users",
+    UPDATE_PASSWORD: "/api/users/change-password",
     SETTINGS: "/api/users/settings",
     SUBSCRIBE: "/api/users/subscribe",
     ACTIVE_SUBSCRIPTION: "/api/users/:userId/subscription",

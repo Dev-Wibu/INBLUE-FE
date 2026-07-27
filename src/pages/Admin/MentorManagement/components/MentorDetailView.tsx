@@ -80,11 +80,11 @@ export function MentorDetailView({
   };
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Left Sidebar - Sticky Profile Info */}
-        <div className="hidden w-80 flex-shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-slate-50/50 p-6 lg:flex dark:border-slate-800 dark:bg-slate-900/20">
+        <div className="hidden h-full w-80 flex-shrink-0 flex-col overflow-y-auto border-r border-slate-200 bg-slate-50/50 p-6 lg:flex dark:border-slate-800 dark:bg-slate-900/20">
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-md dark:border-slate-800">
               {mentor.avatarUrl ? (
@@ -126,7 +126,7 @@ export function MentorDetailView({
         </div>
 
         {/* Right Content Area */}
-        <div className="flex-1 overflow-y-auto bg-slate-50 p-6 lg:p-8 dark:bg-slate-950">
+        <div className="h-full min-h-0 flex-1 overflow-y-auto bg-slate-50 p-6 lg:p-8 dark:bg-slate-950">
           <div className="mx-auto max-w-4xl space-y-6">
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

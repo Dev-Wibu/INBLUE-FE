@@ -6,14 +6,17 @@ vi.mock("@/lib/api", () => ({
   fetchClient: {
     GET: vi.fn(),
     POST: vi.fn(),
+    PUT: vi.fn(),
   },
 }));
 
+import { API_ENDPOINTS, buildEndpoint } from "@/constants/api.config";
 import { fetchClient } from "@/lib/api";
 import { userManager } from "./user.manager";
 
 const mockGet = fetchClient.GET as ReturnType<typeof vi.fn>;
 const mockPost = fetchClient.POST as ReturnType<typeof vi.fn>;
+const mockPut = fetchClient.PUT as ReturnType<typeof vi.fn>;
 
 describe("UserManager", () => {
   beforeEach(() => {
@@ -25,17 +28,28 @@ describe("UserManager", () => {
       const profile = { id: 1, name: "Test User", email: "test@test.com" };
       mockGet.mockResolvedValueOnce({ data: profile, error: null });
 
-      const result = await userManager.getProfile();
+      const result = await userManager.getProfile(1);
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(profile);
-      expect(mockGet).toHaveBeenCalledWith("/api/users/me", expect.any(Object));
+      // Resolves against /api/users/{id} — the actual Spring route
+      // (no /api/users/me endpoint exists, see comment in user.manager.ts).
+      expect(mockGet).toHaveBeenCalledWith(
+        buildEndpoint(API_ENDPOINTS.USERS.DETAIL, { id: 1 }),
+        expect.any(Object)
+      );
+    });
+
+    it("returns error when userId is missing", async () => {
+      const result = await userManager.getProfile(undefined as unknown as number);
+      expect(result.success).toBe(false);
+      expect(mockGet).not.toHaveBeenCalled();
     });
 
     it("returns error on failure", async () => {
       mockGet.mockRejectedValueOnce(new Error("Unauthorized"));
 
-      const result = await userManager.getProfile();
+      const result = await userManager.getProfile(1);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Unauthorized");
@@ -44,55 +58,59 @@ describe("UserManager", () => {
 
   describe("updateProfile", () => {
     it("omits email when unchanged to prevent duplicate-email error", async () => {
-      const currentProfile = { id: 1, email: "same@test.com", name: "Old", password: "hashed" };
+      const currentProfile = { id: 1, email: "same@test.com", name: "Old" };
       mockGet.mockResolvedValueOnce({ data: currentProfile });
       mockPost.mockResolvedValueOnce({ data: { id: 1, name: "New" } });
 
-      await userManager.updateProfile({ email: "same@test.com", name: "New" });
+      await userManager.updateProfile(1, { email: "same@test.com", name: "New" });
 
       const sentBody = mockPost.mock.calls[0]?.[1] as { body: Record<string, unknown> };
       expect(sentBody.body).not.toHaveProperty("email");
       expect(sentBody.body.name).toBe("New");
+      expect(sentBody.body.id).toBe(1);
     });
 
     it("includes email when changed", async () => {
-      const currentProfile = { id: 1, email: "old@test.com", password: "hashed" };
+      const currentProfile = { id: 1, email: "old@test.com", name: "Old" };
       mockGet.mockResolvedValueOnce({ data: currentProfile });
       mockPost.mockResolvedValueOnce({ data: { id: 1 } });
 
-      await userManager.updateProfile({ email: "new@test.com" });
+      await userManager.updateProfile(1, { email: "new@test.com" });
 
       const sentBody = mockPost.mock.calls[0]?.[1] as { body: Record<string, unknown> };
       expect(sentBody.body.email).toBe("new@test.com");
     });
 
-    it("re-injects password from current profile when not provided", async () => {
+    it("never re-injects password (would wipe mentor/staff passwords)", async () => {
+      // Backend treats `password: null` as a wipe. Profile updates must NOT
+      // piggyback the password field.
       const currentProfile = { id: 1, email: "test@test.com", password: "hashed-pw" };
       mockGet.mockResolvedValueOnce({ data: currentProfile });
       mockPost.mockResolvedValueOnce({ data: { id: 1 } });
 
-      await userManager.updateProfile({ name: "Updated" });
+      await userManager.updateProfile(1, { name: "Updated" });
 
       const sentBody = mockPost.mock.calls[0]?.[1] as { body: Record<string, unknown> };
-      expect(sentBody.body.password).toBe("hashed-pw");
+      expect(sentBody.body).not.toHaveProperty("password");
     });
 
-    it("preserves provided password instead of re-injecting", async () => {
-      const currentProfile = { id: 1, email: "test@test.com", password: "old-hash" };
+    it("preserves existing name on partial update without re-injecting email", async () => {
+      const currentProfile = { id: 1, email: "test@test.com", name: "OriginalName" };
       mockGet.mockResolvedValueOnce({ data: currentProfile });
       mockPost.mockResolvedValueOnce({ data: { id: 1 } });
 
-      await userManager.updateProfile({ password: "new-pw" });
+      await userManager.updateProfile(1, { phone: "0901" });
 
       const sentBody = mockPost.mock.calls[0]?.[1] as { body: Record<string, unknown> };
-      expect(sentBody.body.password).toBe("new-pw");
+      expect(sentBody.body.name).toBe("OriginalName");
+      expect(sentBody.body.phone).toBe("0901");
     });
 
     it("proceeds normally when getProfile fails", async () => {
       mockGet.mockRejectedValueOnce(new Error("fail"));
       mockPost.mockResolvedValueOnce({ data: { id: 1 } });
 
-      const result = await userManager.updateProfile({ name: "Test" });
+      const result = await userManager.updateProfile(1, { name: "Test" });
 
       expect(result.success).toBe(true);
       expect(mockPost).toHaveBeenCalled();
@@ -102,30 +120,38 @@ describe("UserManager", () => {
       mockGet.mockResolvedValueOnce({ data: { id: 1, email: "t@t.com" } });
       mockPost.mockRejectedValueOnce(new Error("Update failed"));
 
-      const result = await userManager.updateProfile({ name: "X" });
+      const result = await userManager.updateProfile(1, { name: "X" });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Update failed");
+    });
+
+    it("returns error when userId is missing", async () => {
+      const result = await userManager.updateProfile(undefined as unknown as number, {
+        name: "X",
+      });
+      expect(result.success).toBe(false);
+      expect(mockPost).not.toHaveBeenCalled();
     });
   });
 
   describe("updatePassword", () => {
     it("updates password successfully", async () => {
-      mockPost.mockResolvedValueOnce({ data: { message: "OK" }, error: null });
+      mockPut.mockResolvedValueOnce({ data: { message: "OK" }, error: null });
 
       const result = await userManager.updatePassword("old123", "new456");
 
       expect(result.success).toBe(true);
-      expect(mockPost).toHaveBeenCalledWith(
-        "/api/users/password",
+      expect(mockPut).toHaveBeenCalledWith(
+        "/api/users/change-password",
         expect.objectContaining({
-          body: { currentPassword: "old123", newPassword: "new456" },
+          params: { query: { oldPass: "old123", newPass: "new456" } },
         })
       );
     });
 
     it("returns error on failure", async () => {
-      mockPost.mockRejectedValueOnce(new Error("Wrong password"));
+      mockPut.mockRejectedValueOnce(new Error("Wrong password"));
 
       const result = await userManager.updatePassword("old", "new");
 

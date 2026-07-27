@@ -11,4 +11,8 @@ export interface UserProfileData {
   cvUrl?: string | null;
   cv_public_id?: string | null;
   createdAt?: string;
+  phone?: string;
+  address?: string;
+  linkedInUrl?: string;
+  githubUrl?: string;
 }

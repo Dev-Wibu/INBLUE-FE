@@ -377,7 +377,7 @@ export function MentorManagementPage() {
             />
           </div>
         ) : viewMode === "create" ? (
-          <div className="animate-in fade-in slide-in-from-right-8 h-full bg-slate-50 p-6 duration-300 lg:p-8 dark:bg-slate-950">
+          <div className="animate-in fade-in slide-in-from-right-8 h-full overflow-y-auto bg-slate-50 p-6 duration-300 lg:p-8 dark:bg-slate-950">
             <div className="mx-auto max-w-3xl space-y-6">
               <div className="flex items-center gap-4">
                 <Button

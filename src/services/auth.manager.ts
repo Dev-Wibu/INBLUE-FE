@@ -581,13 +581,42 @@ export class AuthManager {
       };
       const userFromToken = this.buildUserFromToken(normalizedToken, emailFallback);
       const userFromParams = this.mapUserFromUnknown(userCandidate, emailFallback, "USER");
-      const user = userFromToken ||
-        userFromParams || {
-          id: emailFallback,
-          email: emailFallback,
-          fullName: getEmailPrefix(emailFallback),
-          role: "USER" as const,
-        };
+
+      // Helper to check if name is a generic placeholder
+      const isGenericName = (name?: string): boolean => {
+        if (!name) return true;
+        const lower = name.toLowerCase();
+        return (
+          lower === "google user" ||
+          lower === "google-user" ||
+          lower === "googletemp" ||
+          lower === "tempgoogle" ||
+          lower.startsWith("google-") ||
+          lower.startsWith("google_")
+        );
+      };
+
+      // Choose the best user object, prioritizing non-generic names
+      let user: AuthUser;
+      if (userFromToken && !isGenericName(userFromToken.fullName)) {
+        user = userFromToken;
+      } else if (userFromParams && !isGenericName(userFromParams.fullName)) {
+        user = userFromParams;
+      } else {
+        // Fallback: use email prefix as name if both are generic
+        user = userFromToken ||
+          userFromParams || {
+            id: emailFallback,
+            email: emailFallback,
+            fullName: getEmailPrefix(emailFallback),
+            role: "USER" as const,
+          };
+        // Override generic name with email prefix
+        if (isGenericName(user.fullName)) {
+          user.fullName = getEmailPrefix(emailFallback);
+        }
+      }
+
       return {
         success: true,
         data: {

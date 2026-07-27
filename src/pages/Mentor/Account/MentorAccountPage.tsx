@@ -17,30 +17,34 @@ export function MentorAccountPage() {
   const [formData, setFormData] = useState<Partial<MentorProfileData>>({});
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fetchMentorData = useCallback(async () => {
-    if (!authUser?.id) {
+    if (!authUser?.id || !authUser.email) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     try {
-      const response = await mentorManager.getById(authUser.id);
-      if (response.success && response.data) {
-        const mentorData = response.data;
+      // IMPORTANT: User.id (from JWT sub) is NOT the same as Mentor.id.
+      // The backend exposes GET /api/mentors/{id} keyed on the Mentor
+      // table's PK, so calling it with authUser.id returns 404 for any
+      // mentor whose User.id ≠ Mentor.id. Resolve the mentor record via
+      // email lookup (no backend endpoint takes userId → mentor).
+      const mentor = await mentorManager.findByEmail(authUser.email);
+      if (mentor) {
         setMentorProfile({
-          id: String(mentorData.id || authUser.id),
-          name: mentorData.name || authUser.name || "",
-          email: mentorData.email || authUser.email || "",
-          avatar: mentorData.avatarUrl || null,
-          public_id: mentorData.public_id || null,
-          bio: mentorData.bio || "",
-          expertise: mentorData.expertise || "",
-          yearsOfExperience: mentorData.yearsOfExperience || 0,
-          linkedInUrl: mentorData.linkedInUrl || "",
-          currentCompany: mentorData.currentCompany || "",
-          pricePerMinute: mentorData.pricePerMinute || 0,
-          averageRating: mentorData.averageRating ?? 0,
-          totalSession: mentorData.totalSession || 0,
-          active: mentorData.active !== false,
+          id: String(mentor.id || authUser.id),
+          name: mentor.name || authUser.name || "",
+          email: mentor.email || authUser.email || "",
+          avatar: mentor.avatarUrl || null,
+          public_id: mentor.public_id || null,
+          bio: mentor.bio || "",
+          expertise: mentor.expertise || "",
+          yearsOfExperience: mentor.yearsOfExperience || 0,
+          linkedInUrl: mentor.linkedInUrl || "",
+          currentCompany: mentor.currentCompany || "",
+          pricePerMinute: mentor.pricePerMinute || 0,
+          averageRating: mentor.averageRating ?? 0,
+          totalSession: mentor.totalSession || 0,
+          active: mentor.active !== false,
           createdAt: new Date().toISOString(),
         });
       } else {
@@ -61,7 +65,7 @@ export function MentorAccountPage() {
           active: true,
           createdAt: new Date().toISOString(),
         });
-        console.warn("Failed to fetch mentor data, using auth store data");
+        console.warn("No mentor record found for the logged-in user email");
       }
     } catch (error) {
       console.error("Error fetching mentor data:", error);

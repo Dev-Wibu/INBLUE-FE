@@ -48,15 +48,22 @@ export interface AuthState {
   setExpiresAt: (_expiresAt: number | null) => void;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   setIsLoading: (isLoading: boolean) => void;
+  /**
+   * Atomically set auth state from a login response in a single store update.
+   * This prevents ProtectedRoute from observing a state where isLoggedIn=true
+   * but user.role is still null (which causes redirect to /error/403).
+   */
+  setAuthFromLogin: (params: { user: User | null; token: string | null }) => void;
   clearAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      // Initial state
+      // Initial state - isLoading false to avoid blocking UI on first render
+      // Auth state is restored from persisted storage immediately
       isLoggedIn: false,
-      isLoading: true, // true until rehydration completes
+      isLoading: false, // Will be set to false immediately since we trust persisted state
       user: null,
       token: null,
       expiresAt: null,
@@ -67,6 +74,16 @@ export const useAuthStore = create<AuthState>()(
       setExpiresAt: (expiresAt) => set({ expiresAt }),
       setIsLoggedIn: (isLoggedIn) => set({ isLoggedIn }),
       setIsLoading: (isLoading) => set({ isLoading }),
+      setAuthFromLogin: ({ user, token }) => {
+        // Single atomic store update so ProtectedRoute never sees
+        // isLoggedIn=true while user.role is still undefined.
+        set({
+          user,
+          token,
+          expiresAt: getTokenExpiresAt(token),
+          isLoggedIn: true,
+        });
+      },
       clearAuth: () => {
         // Remove current user ID from localStorage on logout
         localStorage.removeItem("current-user-id");
@@ -97,6 +114,7 @@ export const useAuthStore = create<AuthState>()(
         expiresAt: state.expiresAt,
       }),
       // Set isLoading to false after rehydration completes
+      // Note: isLoading is already false on init, this is just for explicit state reset
       onRehydrateStorage: () => (state) => {
         if (state) {
           const restoredExpiresAt = state.expiresAt ?? getTokenExpiresAt(state.token);
@@ -105,6 +123,7 @@ export const useAuthStore = create<AuthState>()(
             state.setExpiresAt(restoredExpiresAt);
           }
 
+          // Only clear auth if session is expired
           if (state.isLoggedIn && isSessionExpired(restoredExpiresAt)) {
             state.clearAuth();
           } else if (state.isLoggedIn && state.user && state.token) {
@@ -141,8 +160,7 @@ export const useAuthStore = create<AuthState>()(
               }
             }
           }
-
-          state.setIsLoading(false);
+          // isLoading stays false - we don't block UI waiting for auth rehydration
         }
       },
     }
@@ -162,5 +180,22 @@ export function getDashboardPath(role?: string): string {
       return "/staff";
     default:
       return "/user";
+  }
+}
+
+/**
+ * Get the account/profile path for a given user role.
+ * Mentor doesn't have a dedicated /mentor/account route, so we fall back to /mentor.
+ */
+export function getAccountPath(role?: string): string {
+  switch (role?.toUpperCase()) {
+    case "ADMIN":
+      return "/admin/account";
+    case "STAFF":
+      return "/staff?tab=account";
+    case "MENTOR":
+      return "/mentor";
+    default:
+      return "/user/account";
   }
 }

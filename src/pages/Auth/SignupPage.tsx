@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
+import { candidateProfileManager } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { AlertCircle, Eye, EyeOff, UserRound } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -37,21 +38,57 @@ export function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const applyAuthState = useCallback(
-    (payload: SignupAuthPayload) => {
+    async (payload: SignupAuthPayload) => {
       const parsedUserId = Number(payload.user.id);
       const userId = Number.isFinite(parsedUserId) ? parsedUserId : undefined;
-      setUser({
-        id: userId,
-        name: payload.user.fullName,
-        email: payload.user.email,
-        role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
-        avatarUrl: payload.user.avatar || undefined,
-      });
       setToken(payload.token ?? null);
       setIsLoggedIn(true);
       if (userId && !isNaN(userId)) {
         localStorage.setItem("current-user-id", String(userId));
       }
+
+      // Fetch candidate profile to get actual name, avatar, etc.
+      if (userId) {
+        try {
+          const profileResult = await candidateProfileManager.getByUserId(userId);
+          if (profileResult.success && profileResult.data) {
+            const profile = profileResult.data as Record<string, unknown>;
+            const userData = profile.user as Record<string, unknown> | undefined;
+            setUser({
+              id: userId,
+              name: (userData?.name as string) || payload.user.fullName,
+              email: (userData?.email as string) || payload.user.email,
+              role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+              avatarUrl: (userData?.avatarUrl as string) || payload.user.avatar || undefined,
+            });
+          } else {
+            setUser({
+              id: userId,
+              name: payload.user.fullName,
+              email: payload.user.email,
+              role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+              avatarUrl: payload.user.avatar || undefined,
+            });
+          }
+        } catch {
+          setUser({
+            id: userId,
+            name: payload.user.fullName,
+            email: payload.user.email,
+            role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+            avatarUrl: payload.user.avatar || undefined,
+          });
+        }
+      } else {
+        setUser({
+          id: undefined,
+          name: payload.user.fullName,
+          email: payload.user.email,
+          role: payload.user.role?.toUpperCase() as "USER" | "ADMIN" | "MENTOR" | "STAFF",
+          avatarUrl: payload.user.avatar || undefined,
+        });
+      }
+
       navigate("/", {
         replace: true,
       });

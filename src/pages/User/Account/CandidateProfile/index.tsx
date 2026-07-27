@@ -375,7 +375,7 @@ export function CandidateProfileTab() {
       </CollapsibleCard>
 
       {/* Certifications */}
-      <CollapsibleCard id="certifications" title="Chứng chỉ (Certifications)" icon={Award}>
+      <CollapsibleCard id="certifications" title={t("common.certifications")} icon={Award}>
         {(profile.certifications ?? []).length > 0 ? (
           <ul className="space-y-3">
             {profile.certifications!.map((cert, i) => (
@@ -391,7 +391,7 @@ export function CandidateProfileTab() {
       </CollapsibleCard>
 
       {/* Achievements */}
-      <CollapsibleCard id="achievements" title="Thành tựu (Achievements)" icon={Trophy}>
+      <CollapsibleCard id="achievements" title={t("common.achievements")} icon={Trophy}>
         {(profile.achievements ?? []).length > 0 ? (
           <ul className="space-y-3">
             {profile.achievements!.map((ach, i) => (
