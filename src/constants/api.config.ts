@@ -443,7 +443,6 @@ const PUBLIC_AUTH_POST_ENDPOINTS = new Set<string>([
   API_ENDPOINTS.AUTH.LOGIN,
   API_ENDPOINTS.AUTH.LOGIN_WITH_GOOGLE,
   API_ENDPOINTS.AUTH.SIGNUP,
-  API_ENDPOINTS.AUTH.MENTOR_REGISTER,
   API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
   API_ENDPOINTS.AUTH.RESET_PASSWORD,
 ]);
@@ -480,7 +479,7 @@ const SILENT_401_ENDPOINT_PATTERNS: RegExp[] = [
   /^\/api\/posts\/[^/]+$/,
 ];
 
-const PUBLIC_AUTH_PAGE_PATHS = new Set<string>(["/signup", "/mentor-register", "/select-role"]);
+const PUBLIC_AUTH_PAGE_PATHS = new Set<string>(["/signup"]);
 
 const normalizeRequestPath = (url?: string): string => {
   if (!url) {

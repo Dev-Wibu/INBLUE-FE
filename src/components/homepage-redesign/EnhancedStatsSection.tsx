@@ -1,4 +1,4 @@
-import { BadgeCheck, Users, Zap } from "lucide-react";
+import { BadgeCheck, ShieldCheck, Users, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function EnhancedStatsSection() {
@@ -23,31 +23,36 @@ export function EnhancedStatsSection() {
   ];
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-20">
-      <div className="relative overflow-hidden rounded-2xl border border-[#0047AB]/12 bg-gradient-to-br from-white to-[#DCEEFF]/20 p-10 shadow-sm dark:border-[#66B2FF]/15 dark:from-[#0a1628] dark:to-[#0047AB]/10">
-        {/* Subtle background decoration */}
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-[#0047AB]/6 blur-3xl dark:bg-[#66B2FF]/8" />
-          <div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-[#007BFF]/6 blur-3xl dark:bg-[#007BFF]/8" />
-        </div>
-
-        <div className="flex flex-col items-center gap-10 md:flex-row md:items-stretch md:justify-around">
-          {statsData.map((stat, idx) => (
-            <div key={stat.label} className="group flex flex-1 flex-col items-center text-center">
-              {idx < statsData.length - 1 && (
-                <div className="mb-8 hidden h-px w-full bg-[#0047AB]/10 md:mt-6 md:mr-auto md:mb-0 md:ml-0 md:h-20 md:w-px md:self-auto" />
-              )}
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#0047AB]/10 transition-transform duration-300 group-hover:scale-110 dark:bg-[#0047AB]/20">
-                <stat.icon className="h-6 w-6 text-[#0047AB] dark:text-[#66B2FF]" />
-              </div>
-              <div className="mb-2 text-4xl font-bold tracking-tight text-[#0047AB] dark:text-[#66B2FF]">
-                {stat.value}
-              </div>
-              <div className="text-sm leading-relaxed font-medium text-slate-500 dark:text-slate-400">
-                {stat.label}
+    <section className="bg-white py-16 dark:bg-slate-950">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-white dark:bg-slate-900">
+          <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="p-8 sm:p-10">
+              <div>
+                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-[#101b2b] text-[#66B2FF]">
+                  <ShieldCheck className="h-6 w-6" />
+                </div>
+                <h2 className="max-w-lg text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+                  {t("landingRefactor.trustTitle")}
+                </h2>
+                <p className="mt-4 max-w-md text-sm leading-6 text-slate-300">
+                  {t("landingRefactor.trustDescription")}
+                </p>
               </div>
             </div>
-          ))}
+
+            <div className="grid border-t border-white/10 sm:grid-cols-3 lg:border-t-0 lg:border-l">
+              {statsData.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="border-b border-white/10 p-6 last:border-b-0 sm:border-r sm:border-b-0 sm:last:border-r-0">
+                  <stat.icon className="mb-5 h-5 w-5 text-[#66B2FF]" />
+                  <div className="text-3xl font-bold tracking-tight text-white">{stat.value}</div>
+                  <div className="mt-2 text-sm leading-6 text-slate-300">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -2073,38 +2073,83 @@
     "about": "About",
     "aboutTheCompany": "About the company",
     "clearPromotionPath": "Clear promotion path",
+    "companyOverview": "Company overview",
+    "companySize": "Company size",
+    "companySnapshot": "Company snapshot",
     "createAiInterviews": "Create AI interviews",
     "establish": "Establish",
     "flexibleWorkHybrid": "Flexible work (Hybrid)",
+    "foundedYear": "Founded year",
+    "fresher": "Fresher",
     "internInternship": "Intern/Internship",
     "invalidCompanyId": "Invalid company ID",
+    "junior": "Junior",
     "jobOpportunitiesAt": "Job opportunities at",
     "learnMoreAboutTheCompany": "Learn more about the company and work culture",
     "loadMoreLocations": "Load more locations",
     "modernWorkingEnvironment": "Modern working environment",
+    "middle": "Middle",
     "negotiate": "Negotiate",
+    "noBenefitsUpdated": "This company has not updated detailed benefits yet.",
+    "noCompanyDescription": "This company has not updated a detailed introduction yet.",
     "noCompanyFound": "No company found",
     "noSuitableLocationFound": "No suitable location found",
+    "notUpdated": "Not updated",
+    "location": "Location",
+    "openPositions": "Open positions",
+    "openRoles": "Open JDs",
     "positionIsRecruiting": "Position is recruiting",
     "premiumHealthInsurance": "Premium health insurance",
     "scale": "Scale:",
+    "searchOpenPositions": "Search by role title, description, or skill...",
     "searchLocation": "Search location...",
     "share": "Share",
+    "status": "Status",
     "teamBuildingQuarterly": "Team building quarterly",
     "theCompanyYouAreLooking": "The company you are looking for does not exist.",
     "trainingAndSkillsDevelopment": "Training and skills development",
     "trustedPartner": "Trusted partner",
-    "tryAdjustingYourSearchFilters": "Try adjusting your search filters or keywords"
+    "tryAdjustingYourSearchFilters": "Try adjusting your search filters or keywords",
+    "viewOpenPositions": "View open positions",
+    "workCulture": "Work culture"
   },
   "enterpriseCompanysearchpage": {
+    "activeCompanies": "Active companies",
+    "allIndustries": "All industries",
+    "allLocations": "All locations",
     "clearSearch": "Clear search",
+    "clearFilters": "Clear filters",
+    "companyFallback": "Company",
+    "companyProfileFallback": "This company profile is being updated so candidates can review more context before choosing a role.",
+    "companiesMatched": "{{count}} matched companies",
+    "currentlyRecruitingPartners": "Partners currently publishing hiring profiles",
+    "discoverTrustedCompanies": "Discover trusted companies before choosing a role.",
+    "emptyFilteredDescription": "There are no active companies matching the selected filters.",
+    "emptySearchDescription": "No results matched \"{{query}}\". Try another company name, industry, or location.",
+    "filteredByQuery": "Results for \"{{query}}\"",
+    "featuredDeskDescription": "A slice from the active partner directory.",
+    "featuredDeskEmpty": "No active companies are ready to display yet.",
+    "featuredDeskTitle": "Companies hiring now",
+    "hasJobDescriptions": "Has JDs",
+    "heroDescription": "Find active companies, review hiring context, and choose the right JD to practice with more intention.",
+    "loadingCompanies": "Searching companies...",
     "manyPeopleJoined": "Many people have joined",
+    "noCompanyLocation": "Location not updated",
     "noCompaniesFound": "No companies found",
+    "noMatchedCompanies": "No matching companies found",
+    "openPositions": "Open positions",
+    "openPositionsCount": "{{count}} open positions",
+    "trustedEnterprisePartners": "Verified enterprise partners",
+    "unableToLoadCompanies": "Unable to load companies",
+    "unableToLoadCompaniesDescription": "The system had trouble loading partner data. Please refresh or try again in a few minutes.",
     "searchByCompanyNameIndustry": "Search by company name, industry...",
+    "sinceFoundedYear": "Founded {{year}}",
     "technology": "Technology",
     "timKiemTheoTenCongTyNganhNghe": "Search by company name, industry",
     "trySearchingWithAnotherKeyword": "Try searching with another keyword or view all companies",
-    "viewAllCompanies": "View all companies"
+    "verified": "Verified",
+    "viewAllCompanies": "View all companies",
+    "website": "Website"
   },
   "enterpriseJobdescriptiondetailpage": {
     "alreadyApplied": "Already applied ✓",
@@ -3678,8 +3723,8 @@
     "searchPlaceholder": "Search by location, company...",
     "filterByStatus": "Filter by status",
     "allStatus": "All",
-    "feedbackPlaceholder": "Share your experience...",
-    "reviewReceived": "Received review",
+    "feedbackPlaceholder": "Share your experience with the mentor...",
+    "reviewReceived": "Review received from mentor",
     "pleaseRateMentor": "Please rate the mentor",
     "completed": "Completed",
     "statusInterviewing": "Interviewing",
@@ -3834,9 +3879,6 @@
     "feedbackUpdatedSuccessfully": "Feedback updated successfully!",
     "editYourFeedback": "Edit your feedback",
     "yourFeedback": "Your feedback",
-    "reviewReceived": "Review received from mentor",
-    "pleaseRateMentor": "Please rate the mentor",
-    "feedbackPlaceholder": "Share your experience with the mentor...",
     "aiInterviewRound": "AI Interview Round",
     "aiInterviewCompleted": "AI Interview Completed",
     "redirectingToInterview": "Redirecting to interview...",
@@ -5056,6 +5098,243 @@
     "hideConfirmPassword": "Hide password",
     "showConfirmPassword": "Show password",
     "saveChanges": "Save Changes"
+  },
+  "landingNew": {
+    "headerExplore": "Explore roles",
+    "headerHowItWorks": "How it works",
+    "headerCta": "Start practicing",
+    "headerNavLabel": "Primary navigation",
+    "headerMenuLabel": "Open menu",
+    "companyKicker": "Choose your practice context",
+    "companyTitle": "Find a job description to start your path.",
+    "companyDescription": "Explore roles and choose the interview context you want to prepare for.",
+    "companyFallbackMeta": "View roles and interview paths",
+    "companyPreviewKicker": "Practice environments",
+    "companyPreviewDescription": "Choose a work context to see a path that feels relevant to you.",
+    "companyPreviewLabel": "Sample job descriptions",
+    "companyPreviewNotice": "These are practice scenarios, not live job listings or company partnerships.",
+    "companyPreview": {
+      "product": {
+        "label": "Digital product",
+        "title": "Product team",
+        "role": "Frontend Developer Intern"
+      },
+      "data": {
+        "label": "Data platform",
+        "title": "Data team",
+        "role": "Data Analyst Intern"
+      },
+      "commerce": {
+        "label": "E-commerce",
+        "title": "Operations team",
+        "role": "Business Operations Intern"
+      }
+    },
+    "heroKicker": "Interview practice for the role you want",
+    "heroTitle": "Know what to prepare before the interview.",
+    "heroDescription": "Choose a job description, complete the relevant rounds, and get feedback that helps you fix the right gaps before the real interview.",
+    "heroPrimaryCta": "Start with a job description",
+    "heroSecondaryCta": "See the practice flow",
+    "heroCaption": "The AI Interview setup screen in INBLUE.",
+    "setupScreenshotAlt": "The INBLUE setup screen for an AI Interview session",
+    "reliefOne": "No need to guess what recruiters will ask.",
+    "reliefTwo": "See your gaps before the real interview happens.",
+    "reliefThree": "Practice in private before the pressure is real.",
+    "mapKicker": "Start with real context",
+    "mapTitle": "Every job description creates a different practice path.",
+    "mapDescription": "Not every role needs the same rounds. INBLUE opens the rounds your job description actually calls for.",
+    "mapSelectorLabel": "The job description you are preparing for",
+    "mapSampleJd": "Frontend Developer Intern",
+    "mapSelectorDescription": "Choose a role to see its active rounds and how you will be assessed.",
+    "mapSelectorCta": "Explore roles",
+    "mapFeedbackLabel": "What you receive",
+    "practiceTitle": "Practice before the pressure arrives.",
+    "practiceDescription": "You do not have to be perfect at the start. You need room to try, get feedback, and repeat with purpose.",
+    "scene": {
+      "ai": {
+        "title": "Practice with AI",
+        "description": "Answer, pause, and try a clearer version in a private space.",
+        "outcome": "Lower the pressure before speaking with a real person."
+      },
+      "jd": {
+        "title": "Practice from the job description",
+        "description": "Exercises and questions follow the role you are targeting.",
+        "outcome": "Spend time on what is truly relevant."
+      },
+      "mentor": {
+        "title": "Meet a mentor when it matters",
+        "description": "Get expert perspective for rounds that need deeper feedback.",
+        "outcome": "Know how to strengthen your answer."
+      }
+    },
+    "feedbackKicker": "Feedback you can act on",
+    "feedbackTitle": "Do not just get a score. Know what to do next.",
+    "feedbackDescription": "After each round, INBLUE turns results into small actions so you know what to keep, where to improve, and what to practice next.",
+    "feedbackScreenshotAlt": "The INBLUE AI Interview setup and summary screen",
+    "feedback": {
+      "keep": {
+        "title": "Keep",
+        "description": "The parts that were clear, focused, and credible."
+      },
+      "improve": {
+        "title": "Improve",
+        "description": "Specific issues that make your next answer stronger."
+      },
+      "next": {
+        "title": "Practice next",
+        "description": "A suggested round or skill for your next preparation step."
+      }
+    },
+    "startTitle": "Where would you like to start?",
+    "start": {
+      "first": {
+        "title": "Preparing for your first role",
+        "description": "Choose a job description and build a practice path around it."
+      },
+      "code": {
+        "title": "Practicing coding or code review",
+        "description": "Build algorithmic thinking and learn to find problems in code."
+      },
+      "communication": {
+        "title": "Want to answer with more confidence",
+        "description": "Practice your answers and delivery with AI Interview."
+      }
+    },
+    "testimonialsTitle": "What candidates notice after practicing.",
+    "testimonial": {
+      "ha": {
+        "quote": "I felt more confident with behavioral questions because I knew how to structure my answer.",
+        "name": "Nguyen Pham Thu Ha",
+        "role": "Software Engineer"
+      },
+      "duc": {
+        "quote": "The feedback showed me exactly what to fix instead of simply telling me to practice more.",
+        "name": "Tran Minh Duc",
+        "role": "Data Scientist"
+      },
+      "anh": {
+        "quote": "Questions in context helped me understand what the recruiter was looking for.",
+        "name": "Le Thi Mai Anh",
+        "role": "Product Manager"
+      }
+    },
+    "finalTitle": "Start with one job description. You do not need to know everything.",
+    "finalDescription": "What matters is knowing your next step.",
+    "finalCta": "Start practicing",
+    "round": {
+      "quiz": {
+        "label": "Foundation round",
+        "title": "Quiz",
+        "description": "Check the core knowledge required for the role.",
+        "feedback": "Topics to review before your next round."
+      },
+      "cv": {
+        "label": "AI analysis",
+        "title": "CV screening",
+        "description": "AI reads your CV with the job description to identify fit and gaps.",
+        "feedback": "Strengths to highlight and CV details to clarify."
+      },
+      "coding": {
+        "label": "Technical round",
+        "title": "Coding",
+        "description": "Solve a problem and explain how you think.",
+        "feedback": "Your approach, clarity, and areas to practice further."
+      },
+      "review": {
+        "label": "AI analysis",
+        "title": "Code review",
+        "description": "Read existing code, find issues, and suggest improvements.",
+        "feedback": "The issues you caught and areas to develop."
+      },
+      "email": {
+        "label": "AI analysis",
+        "title": "Email simulator",
+        "description": "Write an email for a realistic work situation.",
+        "feedback": "Clarity, structure, and tone to improve."
+      },
+      "mentor": {
+        "label": "Expert review",
+        "title": "Mentor interview",
+        "description": "Talk one-to-one with an experienced professional.",
+        "feedback": "Professional perspective to strengthen your answers."
+      },
+      "ai": {
+        "label": "Depends on the job description",
+        "title": "AI interview",
+        "description": "Practice by text or voice when this round is enabled for the role.",
+        "feedback": "Feedback on both answer content and delivery."
+      }
+    }
+  },
+  "landingRefactor": {
+    "heroBadge": "AI interview practice",
+    "heroValue": "Practice by real JD, get AI or mentor feedback, and walk into interviews ready.",
+    "artifactWorkspace": "INBLUE workspace",
+    "artifactTitle": "Frontend interview",
+    "artifactLive": "Live",
+    "artifactReactRound": "React",
+    "artifactSessionMeta": "45 min",
+    "artifactCv": "CV",
+    "artifactPrompt": "AI",
+    "artifactLiveResponse": "Answer",
+    "artifactMentor": "Review",
+    "alwaysOnPractice": "Anytime",
+    "jobEyebrow": "Career",
+    "companyEyebrow": "Companies",
+    "journeyEyebrow": "Workflow",
+    "journeyTitle": "Simulate the end-to-end interview process for each JD.",
+    "journeyDescription": "Candidates choose the JD they want to apply for, then move through the rounds configured for that role.",
+    "stepStudentTitle": "Pick JD",
+    "stepStudentDesc": "Company, role, skill.",
+    "stepAiTitle": "Practice",
+    "stepAiDesc": "Text, voice, video.",
+    "stepMentorTitle": "Feedback",
+    "stepMentorDesc": "Score and next step.",
+    "stepCompanyTitle": "Apply",
+    "stepCompanyDesc": "Ready with context.",
+    "modesPanelTitle": "Practice mode",
+    "modesPanelDescription": "Choose how you want to rehearse.",
+    "processSampleJd": "Simulated JD",
+    "processConfigured": "Rounds vary by JD config",
+    "processEnabledRounds": "Example: 6/7 rounds enabled",
+    "processAiScored": "AI scoring and analysis",
+    "processStudio": "Interview process studio",
+    "processRounds": "rounds on",
+    "analysisTitle": "Strengths, gaps, and improvement notes.",
+    "analysisDescription": "CV, email, code review, and AI interview rounds can be scored automatically with JD-aware analysis.",
+    "statusRequired": "Required",
+    "statusAiScored": "AI scored",
+    "statusSkipped": "Off",
+    "roundQuizTitle": "Quiz",
+    "roundQuizDesc": "Multiple-choice assessment.",
+    "roundCvTitle": "CV screening",
+    "roundCvDesc": "Scan CV and analyze JD.",
+    "roundCodingTitle": "Coding",
+    "roundCodingDesc": "Live code and algorithms.",
+    "roundCodeReviewTitle": "Code review",
+    "roundCodeReviewDesc": "Read code and find bugs.",
+    "roundEmailTitle": "Email simulator",
+    "roundEmailDesc": "Write email and get scored.",
+    "roundMentorTitle": "Mentor interview",
+    "roundMentorDesc": "1:1 interview with an expert.",
+    "roundAiTitle": "AI interview",
+    "roundAiDesc": "Text or voice mode.",
+    "rolesEyebrow": "Roles",
+    "rolesTitle": "Built for the whole interview loop.",
+    "rolesDescription": "Student practice, mentor review, company context, admin control.",
+    "studentRole": "Students",
+    "studentRoleDesc": "Practice by JD.",
+    "mentorRole": "Mentors",
+    "mentorRoleDesc": "Review and score.",
+    "companyRole": "Companies",
+    "companyRoleDesc": "Shape better candidates.",
+    "adminRole": "Admins",
+    "adminRoleDesc": "Operate the platform.",
+    "trustTitle": "Closer to the real interview.",
+    "trustDescription": "AI practice, JD context and mentor feedback in one loop.",
+    "testimonialsEyebrow": "Reviews",
+    "finalTitle": "Ready before the real interview.",
+    "finalDescription": ""
   },
   "hour": "Hour",
   "minute": "Minute",

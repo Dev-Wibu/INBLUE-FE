@@ -13,15 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AdminDashboardPage } from "@/pages/Admin";
 import { ApplicationGradingDetailPage } from "@/pages/Admin/ApplicationGrading";
-import {
-  ForgotPasswordPage,
-  LoginPage,
-  MentorRegisterPage,
-  ResetPasswordPage,
-  SelectRolePage,
-  SignupPage,
-  WaitingAcceptMentorPage,
-} from "@/pages/Auth";
+import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignupPage } from "@/pages/Auth";
 import { PlaygroundPage } from "@/pages/Dev/Playground/PlaygroundPage";
 import { CompanyDetailPage, CompanySearchPage, JobDescriptionDetailPage } from "@/pages/Enterprise";
 import {
@@ -169,9 +161,9 @@ function App() {
             </Route>
 
             {/* Auth routes without layout (full page) */}
-            <Route path="/select-role" element={<SelectRolePage />} />
-            <Route path="/mentor-register" element={<MentorRegisterPage />} />
-            <Route path="/waiting-accept" element={<WaitingAcceptMentorPage />} />
+            <Route path="/select-role" element={<Navigate to="/signup" replace />} />
+            <Route path="/mentor-register" element={<Navigate to="/signup" replace />} />
+            <Route path="/waiting-accept" element={<Navigate to="/signup" replace />} />
 
             {/* User Dashboard — ChromeTabs shell at /user, sub-pages nested inside */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>

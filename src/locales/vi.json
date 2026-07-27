@@ -2070,38 +2070,83 @@
     "about": "Giới thiệu về",
     "aboutTheCompany": "Về công ty",
     "clearPromotionPath": "Lộ trình thăng tiến rõ ràng",
+    "companyOverview": "Tổng quan công ty",
+    "companySize": "Quy mô",
+    "companySnapshot": "Thông tin nhanh",
     "createAiInterviews": "Tạo phỏng vấn AI",
     "establish": "Thành lập",
     "flexibleWorkHybrid": "Công việc linh hoạt (Hybrid)",
+    "foundedYear": "Năm thành lập",
+    "fresher": "Fresher",
     "internInternship": "Intern/Thực tập",
     "invalidCompanyId": "ID công ty không hợp lệ",
+    "junior": "Junior",
     "jobOpportunitiesAt": "Các cơ hội việc làm tại",
     "learnMoreAboutTheCompany": "Tìm hiểu thêm về công ty và văn hóa làm việc",
     "loadMoreLocations": "Tải thêm vị trí",
     "modernWorkingEnvironment": "Môi trường làm việc hiện đại",
+    "middle": "Middle",
     "negotiate": "Thương lượng",
+    "noBenefitsUpdated": "Công ty chưa cập nhật phúc lợi chi tiết.",
+    "noCompanyDescription": "Công ty chưa cập nhật phần giới thiệu chi tiết.",
     "noCompanyFound": "Không tìm thấy công ty",
     "noSuitableLocationFound": "Không tìm thấy vị trí phù hợp",
+    "notUpdated": "Chưa cập nhật",
+    "location": "Địa điểm",
+    "openPositions": "Vị trí đang tuyển",
+    "openRoles": "JD đang mở",
     "positionIsRecruiting": "Vị trí đang tuyển dụng",
     "premiumHealthInsurance": "Bảo hiểm sức khỏe cao cấp",
     "scale": "Quy mô:",
+    "searchOpenPositions": "Tìm theo tên vị trí, mô tả hoặc kỹ năng...",
     "searchLocation": "Tìm kiếm vị trí...",
     "share": "Chia sẻ",
+    "status": "Trạng thái",
     "teamBuildingQuarterly": "Team building hàng quý",
     "theCompanyYouAreLooking": "Công ty bạn đang tìm kiếm không tồn tại.",
     "trainingAndSkillsDevelopment": "Đào tạo và phát triển kỹ năng",
     "trustedPartner": "Đối tác tin cậy",
-    "tryAdjustingYourSearchFilters": "Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm"
+    "tryAdjustingYourSearchFilters": "Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm",
+    "viewOpenPositions": "Xem vị trí đang tuyển",
+    "workCulture": "Văn hóa làm việc"
   },
   "enterpriseCompanysearchpage": {
+    "activeCompanies": "Công ty đang hoạt động",
+    "allIndustries": "Tất cả ngành",
+    "allLocations": "Tất cả khu vực",
     "clearSearch": "Xóa tìm kiếm",
+    "clearFilters": "Xóa lọc",
+    "companyFallback": "Công ty",
+    "companyProfileFallback": "Hồ sơ công ty đang được cập nhật để ứng viên có thêm bối cảnh trước khi lựa chọn vị trí.",
+    "companiesMatched": "{{count}} công ty phù hợp",
+    "currentlyRecruitingPartners": "Danh sách đối tác đang mở hồ sơ tuyển dụng",
+    "discoverTrustedCompanies": "Khám phá công ty đáng tin cậy trước khi chọn vị trí.",
+    "emptyFilteredDescription": "Hiện chưa có công ty đang hoạt động phù hợp với bộ lọc đã chọn.",
+    "emptySearchDescription": "Không có kết quả khớp với \"{{query}}\". Hãy thử tên công ty, ngành nghề hoặc khu vực khác.",
+    "filteredByQuery": "Kết quả cho \"{{query}}\"",
+    "featuredDeskDescription": "Một lát cắt từ danh sách đối tác đang hoạt động.",
+    "featuredDeskEmpty": "Chưa có công ty đang hoạt động để hiển thị.",
+    "featuredDeskTitle": "Công ty đang tuyển",
+    "hasJobDescriptions": "Có JD",
+    "heroDescription": "Tìm doanh nghiệp đang hoạt động, xem bối cảnh tuyển dụng và chọn JD phù hợp để luyện phỏng vấn có mục tiêu hơn.",
+    "loadingCompanies": "Đang tìm kiếm công ty...",
     "manyPeopleJoined": "Nhiều người đã tham gia",
+    "noCompanyLocation": "Chưa cập nhật địa điểm",
     "noCompaniesFound": "Không tìm thấy công ty nào",
+    "noMatchedCompanies": "Chưa tìm thấy công ty phù hợp",
+    "openPositions": "Vị trí đang tuyển",
+    "openPositionsCount": "{{count}} vị trí đang tuyển",
+    "trustedEnterprisePartners": "Đối tác doanh nghiệp đã kiểm duyệt",
+    "unableToLoadCompanies": "Chưa thể tải danh sách công ty",
+    "unableToLoadCompaniesDescription": "Hệ thống gặp sự cố khi lấy dữ liệu đối tác. Bạn có thể thử làm mới hoặc quay lại sau ít phút.",
     "searchByCompanyNameIndustry": "Tìm kiếm theo tên công ty, ngành nghề...",
+    "sinceFoundedYear": "Thành lập {{year}}",
     "technology": "Công nghệ",
     "timKiemTheoTenCongTyNganhNghe": "Tìm kiếm theo tên công ty, ngành nghề",
     "trySearchingWithAnotherKeyword": "Thử tìm kiếm với từ khóa khác hoặc xem tất cả công ty",
-    "viewAllCompanies": "Xem tất cả công ty"
+    "verified": "Đã duyệt",
+    "viewAllCompanies": "Xem tất cả công ty",
+    "website": "Website"
   },
   "enterpriseJobdescriptiondetailpage": {
     "alreadyApplied": "Đã ứng tuyển ✓",
@@ -5054,6 +5099,243 @@
     "hideConfirmPassword": "Ẩn mật khẩu",
     "showConfirmPassword": "Hiện mật khẩu",
     "saveChanges": "Lưu thay đổi"
+  },
+  "landingNew": {
+    "headerExplore": "Khám phá vị trí",
+    "headerHowItWorks": "Cách hoạt động",
+    "headerCta": "Bắt đầu luyện",
+    "headerNavLabel": "Điều hướng chính",
+    "headerMenuLabel": "Mở menu",
+    "companyKicker": "Chọn bối cảnh để luyện",
+    "companyTitle": "Tìm JD để bắt đầu lộ trình của bạn.",
+    "companyDescription": "Khám phá các vị trí và chọn bối cảnh phỏng vấn mà bạn muốn chuẩn bị.",
+    "companyFallbackMeta": "Xem các vị trí và lộ trình phỏng vấn",
+    "companyPreviewKicker": "Bối cảnh luyện tập mẫu",
+    "companyPreviewDescription": "Chọn một môi trường công việc để hình dung lộ trình phù hợp với bạn.",
+    "companyPreviewLabel": "JD mô phỏng",
+    "companyPreviewNotice": "Các bối cảnh dưới đây dùng để luyện tập, không phải thông tin tuyển dụng trực tiếp.",
+    "companyPreview": {
+      "product": {
+        "label": "Sản phẩm số",
+        "title": "Đội ngũ sản phẩm",
+        "role": "Frontend Developer Intern"
+      },
+      "data": {
+        "label": "Nền tảng dữ liệu",
+        "title": "Đội ngũ dữ liệu",
+        "role": "Data Analyst Intern"
+      },
+      "commerce": {
+        "label": "Thương mại điện tử",
+        "title": "Đội ngũ vận hành",
+        "role": "Business Operations Intern"
+      }
+    },
+    "heroKicker": "Luyện phỏng vấn theo vị trí bạn muốn ứng tuyển",
+    "heroTitle": "Biết mình cần chuẩn bị gì trước buổi phỏng vấn.",
+    "heroDescription": "Chọn JD, đi qua những vòng phù hợp và nhận feedback để sửa đúng điểm yếu trước khi vào phòng phỏng vấn thật.",
+    "heroPrimaryCta": "Bắt đầu với JD",
+    "heroSecondaryCta": "Xem quy trình luyện",
+    "heroCaption": "Màn hình thiết lập AI Interview trong INBLUE.",
+    "setupScreenshotAlt": "Màn hình thiết lập một buổi AI Interview trong INBLUE",
+    "reliefOne": "Không cần đoán nhà tuyển dụng sẽ hỏi gì.",
+    "reliefTwo": "Biết điểm yếu trước khi buổi phỏng vấn thật diễn ra.",
+    "reliefThree": "Luyện riêng tư, rồi mới bước vào áp lực thật.",
+    "mapKicker": "Bắt đầu từ ngữ cảnh thật",
+    "mapTitle": "Mỗi JD là một lộ trình luyện khác nhau.",
+    "mapDescription": "Không phải vị trí nào cũng cần cùng một bộ vòng. INBLUE mở đúng các vòng mà JD đang yêu cầu.",
+    "mapSelectorLabel": "JD bạn đang chuẩn bị",
+    "mapSampleJd": "Frontend Developer Intern",
+    "mapSelectorDescription": "Chọn một vị trí để xem các vòng được bật và cách bạn sẽ được đánh giá.",
+    "mapSelectorCta": "Khám phá các vị trí",
+    "mapFeedbackLabel": "Bạn nhận được gì",
+    "practiceTitle": "Luyện trước khi áp lực xuất hiện.",
+    "practiceDescription": "Bạn không cần hoàn hảo ngay từ đầu. Bạn cần một nơi để thử, nhận phản hồi và làm lại có chủ đích.",
+    "scene": {
+      "ai": {
+        "title": "Tự luyện với AI",
+        "description": "Trả lời, dừng lại và thử cách diễn đạt tốt hơn trong không gian riêng tư.",
+        "outcome": "Giảm áp lực trước khi nói với người thật."
+      },
+      "jd": {
+        "title": "Luyện theo JD",
+        "description": "Bài tập và câu hỏi bám theo vị trí bạn đang nhắm tới.",
+        "outcome": "Dành thời gian cho điều thực sự liên quan."
+      },
+      "mentor": {
+        "title": "Gặp mentor khi cần",
+        "description": "Có thêm góc nhìn chuyên môn cho những vòng cần phản hồi sâu hơn.",
+        "outcome": "Biết cách nâng cấp câu trả lời của mình."
+      }
+    },
+    "feedbackKicker": "Feedback có thể hành động",
+    "feedbackTitle": "Đừng chỉ nhận điểm. Hãy biết điều gì cần làm tiếp.",
+    "feedbackDescription": "Sau mỗi vòng, INBLUE chuyển kết quả thành những hành động nhỏ để bạn biết nên giữ lại điều gì, sửa ở đâu và luyện tiếp như thế nào.",
+    "feedbackScreenshotAlt": "Màn hình thiết lập và tóm tắt AI Interview trong INBLUE",
+    "feedback": {
+      "keep": {
+        "title": "Giữ lại",
+        "description": "Những điểm bạn đã làm rõ, đúng trọng tâm và đáng tin."
+      },
+      "improve": {
+        "title": "Sửa",
+        "description": "Một vài vấn đề cụ thể để lần trả lời tiếp theo tốt hơn."
+      },
+      "next": {
+        "title": "Luyện tiếp",
+        "description": "Gợi ý vòng hoặc kỹ năng phù hợp cho bước chuẩn bị kế tiếp."
+      }
+    },
+    "startTitle": "Bạn muốn bắt đầu từ đâu?",
+    "start": {
+      "first": {
+        "title": "Sắp phỏng vấn vị trí đầu tiên",
+        "description": "Chọn JD và xây lộ trình luyện phù hợp với vai trò đó."
+      },
+      "code": {
+        "title": "Muốn luyện coding hoặc code review",
+        "description": "Ôn tư duy giải thuật và tập phát hiện vấn đề trong code."
+      },
+      "communication": {
+        "title": "Muốn trả lời tự tin hơn",
+        "description": "Luyện câu trả lời và cách truyền đạt cùng AI Interview."
+      }
+    },
+    "testimonialsTitle": "Những điều ứng viên ghi nhận sau khi luyện.",
+    "testimonial": {
+      "ha": {
+        "quote": "Tôi tự tin hơn khi trả lời các câu hỏi hành vi vì biết cách cấu trúc câu trả lời.",
+        "name": "Nguyễn Phạm Thu Hà",
+        "role": "Software Engineer"
+      },
+      "duc": {
+        "quote": "Feedback cho tôi biết chính xác phần nào cần sửa thay vì chỉ luyện nhiều hơn.",
+        "name": "Trần Minh Đức",
+        "role": "Data Scientist"
+      },
+      "anh": {
+        "quote": "Các câu hỏi theo ngữ cảnh giúp tôi hiểu điều nhà tuyển dụng đang tìm kiếm.",
+        "name": "Lê Thị Mai Anh",
+        "role": "Product Manager"
+      }
+    },
+    "finalTitle": "Bắt đầu từ một JD. Không cần biết hết mọi thứ.",
+    "finalDescription": "Điều quan trọng là biết bước tiếp theo của bạn là gì.",
+    "finalCta": "Bắt đầu luyện",
+    "round": {
+      "quiz": {
+        "label": "Vòng nền tảng",
+        "title": "Quiz",
+        "description": "Kiểm tra kiến thức nền theo yêu cầu vị trí.",
+        "feedback": "Những chủ đề cần ôn trước vòng tiếp theo."
+      },
+      "cv": {
+        "label": "AI phân tích",
+        "title": "CV screening",
+        "description": "AI đọc CV cùng JD để nhận diện điểm phù hợp và khoảng trống.",
+        "feedback": "Điểm mạnh nên nhấn và phần CV cần làm rõ."
+      },
+      "coding": {
+        "label": "Vòng kỹ thuật",
+        "title": "Coding",
+        "description": "Giải bài toán và giải thích cách bạn tư duy.",
+        "feedback": "Cách tiếp cận, độ rõ ràng và các điểm cần luyện thêm."
+      },
+      "review": {
+        "label": "AI phân tích",
+        "title": "Code review",
+        "description": "Đọc code có sẵn, tìm lỗi và đề xuất cải thiện.",
+        "feedback": "Những lỗi bạn đã phát hiện và vùng cần rèn thêm."
+      },
+      "email": {
+        "label": "AI phân tích",
+        "title": "Email simulator",
+        "description": "Viết email trong tình huống công việc thực tế.",
+        "feedback": "Độ rõ ràng, cấu trúc và giọng điệu cần điều chỉnh."
+      },
+      "mentor": {
+        "label": "Review chuyên môn",
+        "title": "Mentor interview",
+        "description": "Trao đổi 1:1 với người có kinh nghiệm trong lĩnh vực.",
+        "feedback": "Góc nhìn chuyên môn để nâng cấp câu trả lời."
+      },
+      "ai": {
+        "label": "Tùy JD",
+        "title": "AI interview",
+        "description": "Phỏng vấn bằng văn bản hoặc giọng nói khi JD có cấu hình vòng này.",
+        "feedback": "Phản hồi về nội dung và cách truyền đạt câu trả lời."
+      }
+    }
+  },
+  "landingRefactor": {
+    "heroBadge": "Luyện phỏng vấn AI",
+    "heroValue": "Luyện theo JD thật, nhận feedback AI hoặc mentor, rồi bước vào phỏng vấn tự tin hơn.",
+    "artifactWorkspace": "INBLUE workspace",
+    "artifactTitle": "Phỏng vấn Frontend",
+    "artifactLive": "Live",
+    "artifactReactRound": "React",
+    "artifactSessionMeta": "45 phút",
+    "artifactCv": "CV",
+    "artifactPrompt": "AI",
+    "artifactLiveResponse": "Trả lời",
+    "artifactMentor": "Review",
+    "alwaysOnPractice": "Mọi lúc",
+    "jobEyebrow": "Nghề nghiệp",
+    "companyEyebrow": "Công ty",
+    "journeyEyebrow": "Quy trình",
+    "journeyTitle": "Giả lập quy trình phỏng vấn end-to-end theo từng JD.",
+    "journeyDescription": "Ứng viên chọn JD muốn ứng tuyển, sau đó trải nghiệm các vòng được cấu hình riêng cho vị trí đó.",
+    "stepStudentTitle": "Chọn JD",
+    "stepStudentDesc": "Công ty, vị trí, kỹ năng.",
+    "stepAiTitle": "Luyện tập",
+    "stepAiDesc": "Text, voice, video.",
+    "stepMentorTitle": "Feedback",
+    "stepMentorDesc": "Điểm số và bước tiếp.",
+    "stepCompanyTitle": "Ứng tuyển",
+    "stepCompanyDesc": "Sẵn sàng có bối cảnh.",
+    "modesPanelTitle": "Chế độ luyện",
+    "modesPanelDescription": "Chọn cách bạn muốn diễn tập.",
+    "processSampleJd": "JD mô phỏng",
+    "processConfigured": "Số vòng thay đổi theo config JD",
+    "processEnabledRounds": "Ví dụ: 6/7 vòng đang bật",
+    "processAiScored": "AI chấm và phân tích",
+    "processStudio": "Interview process studio",
+    "processRounds": "vòng bật",
+    "analysisTitle": "Điểm mạnh, điểm yếu và gợi ý cải thiện.",
+    "analysisDescription": "Các vòng CV, email, code review và AI interview có thể được AI chấm tự động kèm phân tích theo bối cảnh JD.",
+    "statusRequired": "Bắt buộc",
+    "statusAiScored": "AI chấm",
+    "statusSkipped": "Tắt",
+    "roundQuizTitle": "Quiz",
+    "roundQuizDesc": "Assessment trắc nghiệm.",
+    "roundCvTitle": "CV screening",
+    "roundCvDesc": "Scan CV và phân tích JD.",
+    "roundCodingTitle": "Coding",
+    "roundCodingDesc": "Live code, giải thuật.",
+    "roundCodeReviewTitle": "Code review",
+    "roundCodeReviewDesc": "Đọc code và tìm bug.",
+    "roundEmailTitle": "Email simulator",
+    "roundEmailDesc": "Viết mail và nhận điểm.",
+    "roundMentorTitle": "Mentor interview",
+    "roundMentorDesc": "Phỏng vấn 1:1 với chuyên gia.",
+    "roundAiTitle": "AI interview",
+    "roundAiDesc": "Văn bản hoặc giọng nói.",
+    "rolesEyebrow": "Vai trò",
+    "rolesTitle": "Cho toàn bộ vòng phỏng vấn.",
+    "rolesDescription": "Sinh viên luyện, mentor review, công ty tạo bối cảnh, admin vận hành.",
+    "studentRole": "Sinh viên",
+    "studentRoleDesc": "Luyện theo JD.",
+    "mentorRole": "Mentor",
+    "mentorRoleDesc": "Review và chấm điểm.",
+    "companyRole": "Doanh nghiệp",
+    "companyRoleDesc": "Chuẩn bị ứng viên tốt hơn.",
+    "adminRole": "Admin",
+    "adminRoleDesc": "Vận hành nền tảng.",
+    "trustTitle": "Gần hơn với phỏng vấn thật.",
+    "trustDescription": "AI practice, bối cảnh JD và feedback mentor trong một vòng.",
+    "testimonialsEyebrow": "Đánh giá",
+    "finalTitle": "Sẵn sàng trước buổi phỏng vấn thật.",
+    "finalDescription": ""
   },
   "hour": "Giờ",
   "minute": "Phút",

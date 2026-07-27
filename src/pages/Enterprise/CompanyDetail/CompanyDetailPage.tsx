@@ -105,13 +105,10 @@ export function CompanyDetailPage() {
         transition={{
           duration: 0.3,
         }}>
-        {/* Hero Section - Banner + Company Info */}
         <CompanyHeroSection company={company} />
 
-        {/* Company Information - About, Culture, Benefits, Stats */}
         <CompanyInfoSection company={company} />
 
-        {/* Job Listings Section - Search, Filter, Job Cards */}
         <JobListingsSection jobs={jobs} companyName={company.name || t("common.company")} />
       </motion.main>
 

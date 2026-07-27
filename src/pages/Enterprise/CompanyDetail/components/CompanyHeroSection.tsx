@@ -1,19 +1,20 @@
-import { useTranslation } from "react-i18next";
-/**
- * Company Hero Section
- * Displays company banner, logo, name, and quick info
- */
-
-import type { Company } from "@/services/company.manager";
-import { motion } from "framer-motion";
-import { Building2, Globe, MapPin, Users } from "lucide-react";
-
 import { MediaLightboxDialog, type MediaViewerItem } from "@/components/shared";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { Company } from "@/services/company.manager";
+import {
+  BriefcaseBusiness,
+  Building2,
+  ExternalLink,
+  Globe,
+  MapPin,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface CompanyHeroSectionProps {
   company: Company;
@@ -23,191 +24,169 @@ export function CompanyHeroSection({ company }: CompanyHeroSectionProps) {
   const { t } = useTranslation();
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerItems, setViewerItems] = useState<MediaViewerItem[]>([]);
-  const bannerUrl =
-    company.bannerUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80";
 
+  const bannerUrl = company.bannerUrl;
   const logoUrl = company.logoUrl;
   const companyInitials =
     company.name
       ?.split(" ")
-      .map((w) => w[0])
+      .filter(Boolean)
+      .map((word) => word[0])
       .join("")
       .slice(0, 2)
       .toUpperCase() || "TN";
 
+  const openBannerViewer = () => {
+    if (!bannerUrl) return;
+    setViewerItems([
+      {
+        id: "company-banner",
+        name: t("common.coverPhoto") || "Cover Photo",
+        src: bannerUrl,
+        alt: `${company.name} banner`,
+        kind: "image",
+      },
+    ]);
+    setViewerOpen(true);
+  };
+
+  const openLogoViewer = () => {
+    if (!logoUrl) return;
+    setViewerItems([
+      {
+        id: "company-logo",
+        name: t("common.logo") || "Logo",
+        src: logoUrl,
+        alt: company.name,
+        kind: "image",
+      },
+    ]);
+    setViewerOpen(true);
+  };
+
   return (
-    <section className="relative w-full pt-16">
-      {/* Banner Image */}
-      <div
-        className={cn(
-          "group relative h-64 w-full overflow-hidden md:h-80",
-          bannerUrl ? "cursor-pointer" : ""
-        )}
-        onClick={() => {
-          if (bannerUrl) {
-            setViewerItems([
-              {
-                id: "company-banner",
-                name: t("common.coverPhoto") || "Cover Photo",
-                src: bannerUrl,
-                alt: `${company.name} banner`,
-                kind: "image",
-              },
-            ]);
-            setViewerOpen(true);
-          }
-        }}>
-        <motion.img
-          initial={{ scale: 1.05 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          src={bannerUrl}
-          alt={`${company.name} banner`}
-          className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
-      </div>
+    <section className="relative w-full border-b border-slate-200 bg-white pt-16 dark:border-slate-800 dark:bg-slate-950">
+      {bannerUrl ? (
+        <button
+          type="button"
+          className="group relative block h-56 w-full overflow-hidden bg-slate-100 text-left md:h-72 lg:h-80 dark:bg-slate-900"
+          onClick={openBannerViewer}>
+          <img
+            src={bannerUrl}
+            alt={`${company.name} banner`}
+            className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]"
+          />
+          <div className="absolute inset-0 bg-slate-950/[0.03]" />
+        </button>
+      ) : (
+        <div className="h-28 border-b border-slate-200 bg-slate-50 md:h-36 dark:border-slate-800 dark:bg-slate-900/40" />
+      )}
 
-      {/* Company Info Card */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="relative -mt-16 sm:-mt-20">
-          <div className="rounded-2xl border border-slate-200/50 bg-white/95 p-5 shadow-xl backdrop-blur-xl sm:p-6 dark:border-slate-700/50 dark:bg-slate-900/95">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-              {/* Left: Logo + Info */}
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-                {/* Logo */}
-                <div className="relative -mt-16 sm:-mt-12">
-                  <div
-                    className={cn(
-                      "flex h-28 w-28 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-[#0047AB] to-[#007BFF] shadow-lg sm:h-32 sm:w-32 dark:border-slate-800 dark:from-[#0047AB] dark:to-[#003366]",
-                      logoUrl ? "cursor-pointer transition-transform hover:scale-105" : ""
-                    )}
-                    onClick={() => {
-                      if (logoUrl) {
-                        setViewerItems([
-                          {
-                            id: "company-logo",
-                            name: t("common.logo") || "Logo",
-                            src: logoUrl,
-                            alt: company.name,
-                            kind: "image",
-                          },
-                        ]);
-                        setViewerOpen(true);
-                      }
-                    }}>
-                    {logoUrl ? (
-                      <Avatar className="h-full w-full rounded-xl">
-                        <AvatarImage src={logoUrl} alt={company.name} className="object-cover" />
-                        <AvatarFallback className="rounded-xl bg-transparent text-2xl font-bold text-white sm:text-3xl">
-                          {companyInitials}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <Building2 className="h-14 w-14 text-white/90 sm:h-16 sm:w-16" />
-                    )}
-                  </div>
-                  {/* Verified Badge */}
-                  {company.status === "ACTIVE" && (
-                    <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 shadow-md">
-                      <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="max-w-5xl">
+          <div className="min-w-0">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  className={cn(
+                    "flex h-24 w-24 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 shadow-sm sm:h-28 sm:w-28 dark:border-slate-800 dark:bg-slate-900",
+                    logoUrl
+                      ? "cursor-pointer transition-transform hover:scale-105"
+                      : "cursor-default"
                   )}
-                </div>
-
-                {/* Info */}
-                <div className="min-w-0 flex-1">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    {company.industry && (
-                      <Badge
-                        variant="secondary"
-                        className="bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                        {company.industry}
-                      </Badge>
-                    )}
-                    {company.status === "ACTIVE" && (
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                        {t("enterpriseCompanydetail.trustedPartner")}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
-                    {company.name}
-                  </h1>
-
-                  {company.description && (
-                    <p className="line-clamp-2 max-w-2xl text-sm leading-relaxed text-slate-600 sm:line-clamp-none dark:text-slate-400">
-                      {company.description}
-                    </p>
+                  onClick={openLogoViewer}>
+                  {logoUrl ? (
+                    <Avatar className="h-full w-full rounded-xl">
+                      <AvatarImage src={logoUrl} alt={company.name} className="object-cover" />
+                      <AvatarFallback className="rounded-xl bg-transparent text-2xl font-bold text-[#0047AB] sm:text-3xl dark:text-[#66B2FF]">
+                        {companyInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <Building2 className="h-11 w-11 text-[#0047AB] sm:h-12 sm:w-12 dark:text-[#66B2FF]" />
                   )}
+                </button>
 
-                  {/* Quick Meta */}
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-                    {company.location && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {company.location}
-                      </span>
-                    )}
-                    {company.size && (
-                      <span className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {t("enterpriseCompanydetail.scale")} {company.size}
-                      </span>
-                    )}
-                    {company.website && (
-                      <a
-                        href={company.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 hover:text-[#0047AB] dark:hover:text-[#66B2FF]"
-                        onClick={(e) => e.stopPropagation()}>
-                        <Globe className="h-4 w-4" />
-                        <span className="hidden sm:inline">{t("common.website")}</span>
-                      </a>
-                    )}
-                    {company.foundedYear && (
-                      <span className="hidden text-slate-400 sm:inline">
-                        {t("enterpriseCompanydetail.establish")} {company.foundedYear}
-                      </span>
-                    )}
+                {company.status === "ACTIVE" && (
+                  <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white shadow-sm dark:border-slate-950">
+                    <ShieldCheck className="h-4 w-4" />
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Right: Actions */}
-              <div className="flex gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  className="border-[#0047AB]/30 text-[#0047AB] hover:bg-[#0047AB]/10 sm:flex-none dark:border-[#66B2FF]/30 dark:text-[#66B2FF]"
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: company.name,
-                        text: company.description,
-                        url: window.location.href,
+              <div className="min-w-0 flex-1">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  {company.industry && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
+                      {company.industry}
+                    </Badge>
+                  )}
+                  {company.status === "ACTIVE" && (
+                    <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-300">
+                      {t("enterpriseCompanydetail.trustedPartner")}
+                    </Badge>
+                  )}
+                </div>
+
+                <h1 className="text-3xl leading-tight font-bold tracking-[-0.02em] text-slate-950 sm:text-4xl dark:text-white">
+                  {company.name}
+                </h1>
+
+                <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7 dark:text-slate-400">
+                  {company.description || t("enterpriseCompanydetail.noCompanyDescription")}
+                </p>
+
+                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+                  {company.location && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {company.location}
+                    </span>
+                  )}
+                  {company.size && (
+                    <span className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      {t("enterpriseCompanydetail.scale")} {company.size}
+                    </span>
+                  )}
+                  {company.website && (
+                    <a
+                      href={company.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 font-medium hover:text-[#0047AB] dark:hover:text-[#66B2FF]">
+                      <Globe className="h-4 w-4" />
+                      <span>{t("common.website")}</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                  {company.foundedYear && (
+                    <span className="hidden text-slate-400 sm:inline">
+                      {t("enterpriseCompanydetail.establish")} {company.foundedYear}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Button
+                    className="bg-[#0047AB] text-white hover:bg-[#003f98]"
+                    onClick={() => {
+                      document.getElementById("open-positions")?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
                       });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                    }
-                  }}>
-                  {t("enterpriseCompanydetail.share")}
-                </Button>
+                    }}>
+                    <BriefcaseBusiness className="mr-2 h-4 w-4" />
+                    {t("enterpriseCompanydetail.viewOpenPositions")}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       <MediaLightboxDialog open={viewerOpen} onOpenChange={setViewerOpen} items={viewerItems} />

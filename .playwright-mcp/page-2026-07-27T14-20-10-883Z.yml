@@ -1,0 +1,59 @@
+- generic [ref=e2]:
+    - region "Notifications alt+T"
+    - button "Scroll to the top of the page"
+    - generic [ref=e3]:
+        - banner [ref=e4]:
+            - generic [ref=e5]:
+                - link "INBLUE AI home" [ref=e6] [cursor=pointer]:
+                    - /url: /
+                    - generic [ref=e7]: INBLUE AI
+                - navigation "Primary navigation" [ref=e8]:
+                    - link "Explore roles" [ref=e9] [cursor=pointer]:
+                        - /url: /enterprise/companies
+                    - link "How it works" [ref=e10] [cursor=pointer]:
+                        - /url: /#interview-map
+                - generic [ref=e11]:
+                    - button "en Toggle language" [ref=e12]:
+                        - generic [ref=e13]: en
+                        - generic [ref=e14]: Toggle language
+                    - button "Switch interface" [ref=e15]
+                    - link "Log In" [ref=e17] [cursor=pointer]:
+                        - /url: /login
+                    - link "Register" [ref=e18] [cursor=pointer]:
+                        - /url: /signup
+        - main [ref=e19]:
+            - generic [ref=e22]:
+                - generic [ref=e23]:
+                    - generic [ref=e24]: Verified enterprise partners
+                    - heading "Discover trusted companies before choosing a role." [level=1] [ref=e28]
+                    - paragraph [ref=e29]: Find active companies, review hiring context, and choose the right JD to practice with more intention.
+                    - generic [ref=e31]:
+                        - textbox "Search by company name, industry" [ref=e36]
+                        - button "Search" [ref=e37]
+                    - generic [ref=e38]:
+                        - generic [ref=e39]: 0 Active companies
+                        - generic [ref=e41]: 0 Open positions
+                - generic [ref=e44]:
+                    - generic [ref=e45]:
+                        - generic [ref=e46]: Companies hiring now
+                        - generic [ref=e47]: A slice from the active partner directory.
+                    - generic [ref=e48]:
+                        - generic [ref=e49]: "0"
+                        - generic [ref=e50]: Open positions
+            - generic [ref=e72]:
+                - generic [ref=e73]:
+                    - paragraph [ref=e74]: Searching companies...
+                    - paragraph [ref=e75]: Partners currently publishing hiring profiles
+                - generic [ref=e76]:
+                    - button "All industries" [ref=e77]
+                    - button "Has JDs" [ref=e78]
+        - contentinfo [ref=e144]:
+            - generic [ref=e145]:
+                - generic [ref=e146]: Copyright © 2026 INBLUE AI
+                - generic [ref=e147]:
+                    - generic [ref=e148]: All Rights Reserved |
+                    - link "Terms and Conditions" [ref=e149] [cursor=pointer]:
+                        - /url: /enterprise/companies
+                    - generic [ref=e150]: "|"
+                    - link "Privacy Policy" [ref=e151] [cursor=pointer]:
+                        - /url: /enterprise/companies

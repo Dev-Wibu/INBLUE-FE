@@ -4,8 +4,14 @@ describe("Signup Page", () => {
   beforeEach(() => {
     cy.clearLocalStorage();
     cy.clearCookies();
-    cy.intercept("POST", "**/auth/signup", {
-      fixture: "api/login-success.json",
+    cy.intercept("POST", "**/api/users", {
+      statusCode: 201,
+      body: {
+        id: 1,
+        name: "Test User",
+        email: "newuser@example.com",
+        role: "USER",
+      },
     }).as("signupRequest");
     cy.interceptCommonAPIs();
   });
@@ -16,6 +22,17 @@ describe("Signup Page", () => {
     cy.get('input[type="email"], input[name="email"]').should("exist");
     cy.get('input[type="password"], input[name="password"]').should("exist");
     cy.get('button[type="submit"]').should("exist");
+    cy.contains(/mentor/i).should("not.exist");
+  });
+
+  it("should redirect legacy role selection to signup", () => {
+    cy.visit("/select-role");
+    cy.url().should("include", "/signup");
+  });
+
+  it("should redirect legacy mentor registration to signup", () => {
+    cy.visit("/mentor-register");
+    cy.url().should("include", "/signup");
   });
 
   it("should show validation for required fields", () => {

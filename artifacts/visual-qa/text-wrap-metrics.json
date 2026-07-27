@@ -1,0 +1,30 @@
+[
+  {
+    "name": "desktop",
+    "width": 1440,
+    "overflow": false,
+    "heroLines": 3,
+    "headingLines": [2, 1, 3, 1, 1, 2, 2]
+  },
+  {
+    "name": "laptop",
+    "width": 1024,
+    "overflow": false,
+    "heroLines": 4,
+    "headingLines": [2, 1, 4, 1, 1, 2, 2]
+  },
+  {
+    "name": "tablet",
+    "width": 834,
+    "overflow": false,
+    "heroLines": 3,
+    "headingLines": [2, 1, 2, 1, 1, 2, 2]
+  },
+  {
+    "name": "mobile",
+    "width": 390,
+    "overflow": false,
+    "heroLines": 3,
+    "headingLines": [2, 2, 3, 2, 2, 2, 3]
+  }
+]
