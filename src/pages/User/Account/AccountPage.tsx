@@ -21,20 +21,21 @@ import {
   Mail,
   Pencil,
   Receipt,
+  Settings,
   User,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { JdPurchaseHistoryTab, ProfileEditTab } from "./AccountTabs";
+import { JdPurchaseHistoryTab, ProfileEditTab, SettingsTab } from "./AccountTabs";
 import type { UserProfileData } from "./AccountTabs/types";
 import { CandidateProfileTab } from "./CandidateProfile";
 
-type AccountSubTab = "candidateProfile" | "jdPurchases" | "editProfile";
+type AccountSubTab = "candidateProfile" | "jdPurchases" | "editProfile" | "settings";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
-  if (value === "candidateProfile" || value === "jdPurchases" || value === "editProfile") {
+  if (value === "candidateProfile" || value === "jdPurchases" || value === "editProfile" || value === "settings") {
     return value as AccountSubTab;
   }
   return null;
@@ -200,6 +201,12 @@ export function AccountPage() {
             <JdPurchaseHistoryTab />
           </Card>
         );
+      case "settings":
+        return (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <SettingsTab />
+          </div>
+        );
       default:
         return <CandidateProfileTab />;
     }
@@ -310,6 +317,12 @@ export function AccountPage() {
       label: t("payment.jdPurchaseHistory"),
       description: t("payment.jdPurchaseNoPurchases"),
       icon: Receipt,
+    },
+    {
+      id: "settings",
+      label: t("userAccount.quickSettings") || "Cài đặt",
+      description: t("userAccount.quickSettingsDescription") || "Giao diện, thông báo",
+      icon: Settings,
     },
   ];
 
