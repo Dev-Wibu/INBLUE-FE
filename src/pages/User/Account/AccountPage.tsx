@@ -35,7 +35,12 @@ import { CandidateProfileTab } from "./CandidateProfile";
 type AccountSubTab = "candidateProfile" | "jdPurchases" | "editProfile" | "settings";
 
 const parseAccountSubTab = (value?: string | null): AccountSubTab | null => {
-  if (value === "candidateProfile" || value === "jdPurchases" || value === "editProfile" || value === "settings") {
+  if (
+    value === "candidateProfile" ||
+    value === "jdPurchases" ||
+    value === "editProfile" ||
+    value === "settings"
+  ) {
     return value as AccountSubTab;
   }
   return null;

@@ -17,7 +17,7 @@ if (fs.existsSync(envPath)) {
 
   const userMatch = envContent.match(/^SWAGGER_USERNAME=(.+)$/m);
   const passMatch = envContent.match(/^SWAGGER_PASSWORD=(.+)$/m);
-  
+
   if (userMatch && passMatch && userMatch[1] && passMatch[1]) {
     username = userMatch[1].replace(/['"]/g, "").trim();
     password = passMatch[1].replace(/['"]/g, "").trim();
@@ -36,7 +36,8 @@ async function fetchAndGenerate() {
   try {
     const headers = {};
     if (username && password) {
-      headers["Authorization"] = "Basic " + Buffer.from(`${username}:${password}`).toString("base64");
+      headers["Authorization"] =
+        "Basic " + Buffer.from(`${username}:${password}`).toString("base64");
     }
 
     const response = await fetch(`${apiBaseUrl}/v3/api-docs`, { headers });
@@ -44,18 +45,18 @@ async function fetchAndGenerate() {
       throw new Error(`Failed to fetch schema: ${response.status} ${response.statusText}`);
     }
     const data = await response.text();
-    
+
     // Save to temp file
     const tempFile = path.join(__dirname, "../temp-schema.json");
     fs.writeFileSync(tempFile, data);
-    
+
     // Run openapi-typescript on the local file
     const command = `pnpm exec openapi-typescript temp-schema.json -o ./schema-from-be.d.ts`;
     execSync(command, { stdio: "inherit" });
-    
+
     // Clean up temp file
     fs.unlinkSync(tempFile);
-    
+
     console.log("✅ Schema generated successfully!");
 
     // POST-PROCESS: Thêm các field cần thiết mà backend chưa có trong OpenAPI spec
