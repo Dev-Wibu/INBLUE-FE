@@ -121,41 +121,54 @@ export function JdPurchaseHistoryTab() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-                  <TableHead className="w-[80px] pl-6 font-medium text-slate-500">STT</TableHead>
+                  <TableHead className="w-[80px] pl-6 font-medium text-slate-500">#ID</TableHead>
                   <TableHead className="font-medium text-slate-500">Thông tin JD</TableHead>
-                  <TableHead className="font-medium text-slate-500">Mã giao dịch</TableHead>
+                  <TableHead className="font-medium text-slate-500">Giao dịch</TableHead>
                   <TableHead className="font-medium text-slate-500">Trạng thái</TableHead>
-                  <TableHead className="font-medium text-slate-500">Ngày mua</TableHead>
-                  <TableHead className="font-medium text-slate-500">Ngày sử dụng</TableHead>
+                  <TableHead className="font-medium text-slate-500">Thời gian</TableHead>
                   <TableHead className="pr-6 text-right font-medium text-slate-500">
                     Thành tiền
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedPurchases.map((purchase, idx) => (
+                {paginatedPurchases.map((purchase) => (
                   <TableRow
                     key={purchase.id}
                     className="group transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                    <TableCell className="py-4 pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                      #{pagination.startIndex + idx + 1}
+                    <TableCell className="py-4 pl-6">
+                      <span className="inline-flex items-center justify-center rounded-md bg-slate-100 px-2 py-1 font-mono text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        #{purchase.id}
+                      </span>
                     </TableCell>
                     <TableCell className="py-4">
-                      {purchase.jobDescription?.id ? (
-                        <Link
-                          to={`/enterprise/job/${purchase.jobDescription.id}`}
-                          className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
-                          {purchase.jobDescription?.title || "Untitled"}
-                          <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      ) : (
-                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                          {purchase.jobDescription?.title || "Untitled"}
+                      <div className="flex flex-col gap-1">
+                        {purchase.jobDescription?.id ? (
+                          <Link
+                            to={`/enterprise/job/${purchase.jobDescription.id}`}
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
+                            {purchase.jobDescription?.title || "Untitled"}
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        ) : (
+                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            {purchase.jobDescription?.title || "Untitled"}
+                          </span>
+                        )}
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {purchase.jobDescription?.companyName || t("common.unknown")}
                         </span>
-                      )}
+                      </div>
                     </TableCell>
-                    <TableCell className="py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                      #{purchase.payment?.id || "N/A"}
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Mã: #{purchase.payment?.id || "N/A"}
+                        </span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          PT: {purchase.payment?.method || "PayOS"}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="py-4">
                       <Badge
@@ -171,11 +184,25 @@ export function JdPurchaseHistoryTab() {
                         {t(`payment.jdPurchaseStatus_${purchase.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="py-4 text-sm text-slate-600 dark:text-slate-300">
-                      {formatPurchaseDate(purchase.purchasedAt)}
-                    </TableCell>
-                    <TableCell className="py-4 text-sm text-slate-600 dark:text-slate-300">
-                      {purchase.status === "USED" ? formatPurchaseDate(purchase.usedAt) : "—"}
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs text-slate-600 dark:text-slate-300">
+                          Mua: {formatPurchaseDate(purchase.purchasedAt)}
+                        </span>
+                        {purchase.status === "USED" ? (
+                          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                            Dùng: {formatPurchaseDate(purchase.usedAt)}
+                          </span>
+                        ) : purchase.status === "EXPIRED" ? (
+                          <span className="text-xs font-medium text-rose-600 dark:text-rose-400">
+                            Hết hạn: {formatPurchaseDate(purchase.validUntil)}
+                          </span>
+                        ) : purchase.validUntil ? (
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            HSD: {formatPurchaseDate(purchase.validUntil)}
+                          </span>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell className="py-4 pr-6 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {purchase.payment?.amount ? formatCurrency(purchase.payment.amount) : "—"}
