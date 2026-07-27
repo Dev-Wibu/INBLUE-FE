@@ -282,15 +282,25 @@ export class UsersAdminManager implements BaseManager<User> {
       // Backend may accept these fields since they are part of the User schema
       // IMPORTANT: Include public_id and cv_public_id for Cloudinary file management
       // Updated: Removed bio, targetPosition, targetLevel per BE requirement (2026-01-20)
+      //
+      // SECURITY: Never include the `password` field on a profile-only update.
+      // The previous implementation read `existingUser.password` (the BE returns
+      // null/undefined for that field for safety), then JSON-serialised it as
+      // `password: null` and posted it to /api/users. Two distinct bugs came out
+      // of that:
+      //   1) For STAFF/ADMIN, the BE rejected the request as a validation error,
+      //      so the new name never persisted and the UI kept showing the old name
+      //      until the user logged out and back in (which produced a fresh JWT).
+      //   2) For MENTOR, the BE silently wiped the password and the account
+      //      became unusable.
+      // Password changes must always go through the dedicated change-password
+      // endpoint, never piggybacked on profile updates.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const userInfo: UserInfo & Record<string, any> = {
         id: Number(_id),
         // Include id for update operation
         name: _data.name?.trim() || existingUser.name,
         email: _data.email?.trim() || existingUser.email,
-        // Backend ignores empty string password, but wipes if null/missing.
-        // If _data.password is undefined (e.g. from User Site), fall back to existingUser.password
-        password: _data.password ?? existingUser.password,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         university: (_data as any).university || (existingUser as any).university,
 

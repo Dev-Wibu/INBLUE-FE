@@ -221,7 +221,14 @@ export class MentorManager implements BaseManager<Mentor> {
         // Ignore
       }
 
-      // Build MentorInfo payload with id for update
+      // Build MentorInfo payload with id for update.
+      // IMPORTANT: never include the `password` field on a profile-only update.
+      // The previous implementation read `existingMentor.password` (which the BE
+      // returns as null/undefined for safety), then JSON-serialised it as
+      // `password: null` and posted it to /api/mentors — the BE treats a null
+      // password as a "wipe" and the mentor's account was silently reset to
+      // an unusable state. Password changes must go through the dedicated
+      // change-password endpoint, never piggybacked on profile updates.
       const mentorInfo: MentorInfo & {
         active?: boolean;
       } = {
@@ -235,10 +242,6 @@ export class MentorManager implements BaseManager<Mentor> {
         currentCompany: _data.currentCompany || existingMentor.currentCompany,
         pricePerMinute: _data.pricePerMinute ?? existingMentor.pricePerMinute,
       };
-
-      // Backend ignores empty string password, but wipes if null/missing.
-      // If _data.password is undefined, fall back to existingMentor.password
-      mentorInfo.password = _data.password ?? existingMentor.password;
 
       // Add active field if provided
       // Note: 'active' is not in MentorInfo schema but BE curl example includes it

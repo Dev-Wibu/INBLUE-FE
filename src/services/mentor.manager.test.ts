@@ -170,15 +170,28 @@ describe("MentorManager", () => {
       );
     });
 
-    it("falls back to existing password when not provided", async () => {
+    it("does NOT send password field on profile-only update (security)", async () => {
       const existing = { id: 1, name: "M", email: "e@t.com", password: "old-pw" };
       mockGet.mockResolvedValueOnce({ data: existing });
       mockPost.mockResolvedValueOnce({ data: { id: 1 } });
 
       await mentorManager.update(1, { name: "Updated" });
 
-      // Verify POST was called (password fallback happens inside FormData blob)
+      // Verify POST was called
       expect(mockPost).toHaveBeenCalledTimes(1);
+
+      // Inspect the FormData body to make sure password is NOT included.
+      // Sending `password: null` to /api/mentors used to silently wipe the
+      // mentor's password and lock the account.
+      const callArgs = mockPost.mock.calls[0]?.[1] as { body?: FormData } | undefined;
+      const formData = callArgs?.body;
+      expect(formData).toBeInstanceOf(FormData);
+      const dataEntry = formData?.get("data");
+      // In the browser FormData stores the Blob as-is; in Node test env the
+      // Blob serialisation goes through `.toString()`. Read whichever form
+      // we can and assert it does not contain a password field.
+      const raw = dataEntry instanceof Blob ? dataEntry.toString() : String(dataEntry);
+      expect(raw).not.toMatch(/"password"\s*:/);
     });
 
     it("preserves active field from _data when provided", async () => {
