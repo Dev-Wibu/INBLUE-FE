@@ -147,6 +147,7 @@ export function JdPurchaseHistoryTab() {
                         <Avatar className="h-8 w-8 shrink-0 rounded-md border border-slate-200 dark:border-slate-800">
                           <AvatarImage
                             src={
+                              purchase.jobDescription?.thumbnailUrl ||
                               purchase.jobDescription?.companyLogoUrl ||
                               purchase.jobDescription?.companyLogo ||
                               ""
