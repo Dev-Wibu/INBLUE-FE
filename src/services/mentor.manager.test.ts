@@ -16,9 +16,16 @@ import { mentorManager } from "./mentor.manager";
 const mockGet = fetchClient.GET as ReturnType<typeof vi.fn>;
 const mockPost = fetchClient.POST as ReturnType<typeof vi.fn>;
 
+// Capture the JSON payload that the update implementation logs via
+// `console.log("Update mentor payload:", ...)` — used by the password-preservation
+// tests below since Node FormData doesn't expose the underlying Blob bytes
+// the way the browser does.
+const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
 describe("MentorManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    logSpy.mockClear();
   });
 
   describe("getAll", () => {
@@ -170,28 +177,40 @@ describe("MentorManager", () => {
       );
     });
 
-    it("does NOT send password field on profile-only update (security)", async () => {
-      const existing = { id: 1, name: "M", email: "e@t.com", password: "old-pw" };
+    it("preserves the existing password hash when BE returns one", async () => {
+      // The BE wipes the mentor's password whenever `password` is missing
+      // from the update payload. To avoid that we re-send whatever the
+      // GET endpoint returned.
+      const existing = { id: 1, name: "M", email: "e@t.com", password: "$2a$10$hash" };
       mockGet.mockResolvedValueOnce({ data: existing });
       mockPost.mockResolvedValueOnce({ data: { id: 1 } });
 
       await mentorManager.update(1, { name: "Updated" });
 
-      // Verify POST was called
       expect(mockPost).toHaveBeenCalledTimes(1);
 
-      // Inspect the FormData body to make sure password is NOT included.
-      // Sending `password: null` to /api/mentors used to silently wipe the
-      // mentor's password and lock the account.
-      const callArgs = mockPost.mock.calls[0]?.[1] as { body?: FormData } | undefined;
-      const formData = callArgs?.body;
-      expect(formData).toBeInstanceOf(FormData);
-      const dataEntry = formData?.get("data");
-      // In the browser FormData stores the Blob as-is; in Node test env the
-      // Blob serialisation goes through `.toString()`. Read whichever form
-      // we can and assert it does not contain a password field.
-      const raw = dataEntry instanceof Blob ? dataEntry.toString() : String(dataEntry);
-      expect(raw).not.toMatch(/"password"\s*:/);
+      // Read the JSON payload via the `console.log` spy in the implementation.
+      // (Node test env FormData stores Blob with toString -> "[object File]".)
+      const lastLogCall = logSpy.mock.calls.at(-1);
+      const lastPayloadArg = lastLogCall?.[1] as string | undefined;
+      const parsed = JSON.parse(lastPayloadArg ?? "{}");
+      expect(parsed.password).toBe("$2a$10$hash");
+      expect(parsed.name).toBe("Updated");
+    });
+
+    it("does NOT send password field when existing record has none", async () => {
+      // Some BE responses strip the password entirely. In that case the
+      // payload must not invent one — we have nothing safe to send.
+      const existing = { id: 1, name: "M", email: "e@t.com" };
+      mockGet.mockResolvedValueOnce({ data: existing });
+      mockPost.mockResolvedValueOnce({ data: { id: 1 } });
+
+      await mentorManager.update(1, { name: "Updated" });
+
+      const lastLogCall = logSpy.mock.calls.at(-1);
+      const lastPayloadArg = lastLogCall?.[1] as string | undefined;
+      const parsed = JSON.parse(lastPayloadArg ?? "{}");
+      expect(parsed).not.toHaveProperty("password");
     });
 
     it("preserves active field from _data when provided", async () => {

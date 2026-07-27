@@ -222,13 +222,13 @@ export class MentorManager implements BaseManager<Mentor> {
       }
 
       // Build MentorInfo payload with id for update.
-      // IMPORTANT: never include the `password` field on a profile-only update.
-      // The previous implementation read `existingMentor.password` (which the BE
-      // returns as null/undefined for safety), then JSON-serialised it as
-      // `password: null` and posted it to /api/mentors — the BE treats a null
-      // password as a "wipe" and the mentor's account was silently reset to
-      // an unusable state. Password changes must go through the dedicated
-      // change-password endpoint, never piggybacked on profile updates.
+      // SECURITY/PASSWORD-PRESERVATION NOTE:
+      // The backend controller wipes the mentor's password whenever the
+      // `password` field is missing from the request body OR arrives as
+      // explicit `null`. To keep the existing password we MUST re-send the
+      // hash that came back from GET /api/mentors/{id}. We only do that
+      // when the field is actually a truthy string — never emit null /
+      // undefined / empty.
       const mentorInfo: MentorInfo & {
         active?: boolean;
       } = {
@@ -250,6 +250,14 @@ export class MentorManager implements BaseManager<Mentor> {
         mentorInfo.active = Boolean(_data.active);
       } else if (existingMentor.active !== undefined) {
         mentorInfo.active = existingMentor.active;
+      }
+
+      // Preserve the existing password. Only re-send if we actually have a
+      // truthy string (the BE strips a null/missing field and re-hashes
+      // anything we send, so we want to be sure).
+      const existingPassword = (existingMentor as { password?: unknown }).password;
+      if (typeof existingPassword === "string" && existingPassword.length > 0) {
+        mentorInfo.password = existingPassword;
       }
       console.log("Update mentor payload:", JSON.stringify(mentorInfo, null, 2));
 
