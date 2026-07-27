@@ -88,9 +88,9 @@ export class UserManager {
   ): Promise<ApiResponse<{ message: string }>> {
     try {
       const response = await fetchClient
-        .POST(
+        .PUT(
           // @ts-expect-error: Backend Swagger schema mismatch
-          "/api/users/password",
+          "/api/users/change-password",
           {
             body: {
               currentPassword,

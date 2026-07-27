@@ -456,7 +456,28 @@ export function DashboardSidebar({
                 {!isCollapsed && (
                   <div className="flex min-w-0 flex-col">
                     <span className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
-                      {user.name}
+                      {(() => {
+                        const name = user.name || "";
+                        const email = user.email || "";
+                        // Handle Google user format like "google-user" or "google_user"
+                        if (
+                          name.toLowerCase().startsWith("google-") ||
+                          name.toLowerCase().startsWith("google_") ||
+                          name.toLowerCase() === "google-user" ||
+                          name.toLowerCase() === "googletemp" ||
+                          name.toLowerCase() === "tempgoogle"
+                        ) {
+                          // Try to extract a readable name from email for Google users
+                          const emailPrefix = email.split("@")[0] || "";
+                          if (emailPrefix && !emailPrefix.toLowerCase().includes("example")) {
+                            return emailPrefix
+                              .replace(/[._-]/g, " ")
+                              .replace(/\b\w/g, (c) => c.toUpperCase());
+                          }
+                          return email.split("@")[0] || t("common.user");
+                        }
+                        return name || t("common.user");
+                      })()}
                     </span>
                     <span className="truncate text-xs text-slate-500 dark:text-slate-400">
                       {user.email}

@@ -18,7 +18,6 @@ import {
   LoginPage,
   MentorRegisterPage,
   ResetPasswordPage,
-  SelectRolePage,
   SignupPage,
   WaitingAcceptMentorPage,
 } from "@/pages/Auth";
@@ -168,8 +167,8 @@ function App() {
               </Route>
             </Route>
 
-            {/* Auth routes without layout (full page) */}
-            <Route path="/select-role" element={<SelectRolePage />} />
+            {/* Auth routes without layout (full page) — /select-role redirects to signup */}
+            <Route path="/select-role" element={<Navigate to="/signup?role=user" replace />} />
             <Route path="/mentor-register" element={<MentorRegisterPage />} />
             <Route path="/waiting-accept" element={<WaitingAcceptMentorPage />} />
 
