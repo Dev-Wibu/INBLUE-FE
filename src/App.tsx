@@ -139,7 +139,7 @@ function App() {
             <Route path="/questions/tips" element={<InterviewTipsPage />} />
 
             {/* Enterprise Simulation pages (public) */}
-            <Route path="/enterprise/jobs" element={<JobSearchPage />} />
+            <Route path="/enterprise/jobs" element={<Navigate to="/user?tab=jobSearch" replace />} />
             <Route path="/enterprise/companies" element={<CompanySearchPage />} />
             <Route path="/enterprise/company/:id" element={<CompanyDetailPage />} />
             <Route path="/enterprise/job/:id" element={<JobDescriptionDetailPage />} />
