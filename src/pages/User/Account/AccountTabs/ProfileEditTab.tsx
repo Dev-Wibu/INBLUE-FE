@@ -50,7 +50,6 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
     setIsSaving(true);
     try {
       if (userProfile?.id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await usersAdminManager.update(
           userProfile.id,
           {
@@ -59,6 +58,7 @@ export function ProfileEditTab({ onBack, onSuccess, userProfile }: ProfileEditTa
             address,
             linkedInUrl,
             githubUrl,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
           editAvatarFile ?? undefined
         );

@@ -302,12 +302,16 @@ export class UsersAdminManager implements BaseManager<User> {
             ),
         // Include role if provided - backend may accept this even though not in UserInfo schema
         role: _data.role || existingUser.role,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields not in frontend User type
         phone: _data.phone || (existingUser as any).phone,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields not in frontend User type
         address: _data.address || (existingUser as any).address,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields not in frontend User type
         linkedInUrl: _data.linkedInUrl || (existingUser as any).linkedInUrl,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // @ts-expect-error: Backend has phone, address, linkedInUrl, githubUrl fields not in frontend User type
         githubUrl: _data.githubUrl || (existingUser as any).githubUrl,
         // Include Cloudinary public_id for avatar - required for update/delete operations
