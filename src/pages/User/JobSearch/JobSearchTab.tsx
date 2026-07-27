@@ -1,5 +1,4 @@
 import { ReloadButton } from "@/components/shared";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,7 +13,7 @@ import type { JobDescription } from "@/interfaces";
 import { formatCurrency } from "@/lib/formatting";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import type { TFunction } from "i18next";
-import { Banknote, Search, X, Circle, Building2, Briefcase } from "lucide-react";
+import { Banknote, Search, X, Circle, Building2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
