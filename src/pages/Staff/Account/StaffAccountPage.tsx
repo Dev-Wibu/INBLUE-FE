@@ -554,4 +554,3 @@ export function StaffAccountPage() {
     </div>
   );
 }
-
