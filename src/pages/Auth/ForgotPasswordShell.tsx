@@ -77,7 +77,7 @@ export function ForgotPasswordShell({
 
           {/* Highlight */}
           {highlight ? (
-            <div className="rounded-xl border border-blue-100 bg-blue-50/80 px-5 py-4 text-sm text-slate-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-slate-200">
+            <div className="rounded-xl border border-blue-200 bg-blue-50/80 px-4 py-3 text-sm text-slate-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-slate-200">
               {highlight}
             </div>
           ) : null}

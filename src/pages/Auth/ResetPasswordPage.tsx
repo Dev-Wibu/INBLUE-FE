@@ -158,8 +158,8 @@ export function ResetPasswordPage() {
       description={t("authResetpasswordpage.heroDescription")}
       highlight={
         <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-300" />
-          <span className="leading-relaxed text-slate-200">
+          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-500 dark:text-emerald-400" />
+          <span className="leading-relaxed text-slate-600 dark:text-slate-200">
             {t("authResetpasswordpage.heroHighlight")}
           </span>
         </div>

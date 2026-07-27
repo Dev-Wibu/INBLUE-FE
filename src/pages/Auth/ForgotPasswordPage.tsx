@@ -58,14 +58,14 @@ export function ForgotPasswordPage() {
       title={
         <>
           {t("authForgotpasswordpage.heroTitleLine1")}{" "}
-          <span className="text-[#66B2FF]">{t("authForgotpasswordpage.heroTitleLine2")}</span>
+          <span className="text-[#0047AB] dark:text-[#66B2FF]">{t("authForgotpasswordpage.heroTitleLine2")}</span>
         </>
       }
       description={t("authForgotpasswordpage.heroDescription")}
       highlight={
         <div className="flex items-start gap-3">
-          <MailCheck className="mt-0.5 size-4 shrink-0 text-[#66B2FF]" />
-          <span className="leading-relaxed text-slate-200">
+          <MailCheck className="mt-0.5 size-4 shrink-0 text-[#0047AB] dark:text-[#66B2FF]" />
+          <span className="leading-relaxed text-slate-600 dark:text-slate-200">
             {t("authForgotpasswordpage.heroHighlight")}
           </span>
         </div>
