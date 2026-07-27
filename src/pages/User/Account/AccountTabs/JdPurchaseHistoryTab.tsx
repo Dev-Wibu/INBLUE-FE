@@ -130,7 +130,7 @@ export function JdPurchaseHistoryTab() {
                   <TableHead className="text-right font-medium text-slate-500">
                     Thành tiền
                   </TableHead>
-                  <TableHead className="font-medium text-slate-500 pl-4">Ngày mua</TableHead>
+                  <TableHead className="pl-4 font-medium text-slate-500">Ngày mua</TableHead>
                   <TableHead className="pr-6 font-medium text-slate-500">Hạn / SD</TableHead>
                 </TableRow>
               </TableHeader>
@@ -170,11 +170,13 @@ export function JdPurchaseHistoryTab() {
                           <Link
                             to={`/enterprise/job/${purchase.jobDescription.id}`}
                             className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
-                            <span className="line-clamp-2 max-w-[200px]">{purchase.jobDescription?.title || "Untitled"}</span>
+                            <span className="line-clamp-2 max-w-[200px]">
+                              {purchase.jobDescription?.title || "Untitled"}
+                            </span>
                             <ExternalLink className="h-3 w-3 shrink-0" />
                           </Link>
                         ) : (
-                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 line-clamp-2 max-w-[200px]">
+                          <span className="line-clamp-2 max-w-[200px] text-sm font-semibold text-slate-700 dark:text-slate-300">
                             {purchase.jobDescription?.title || "Untitled"}
                           </span>
                         )}
