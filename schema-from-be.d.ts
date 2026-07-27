@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/users/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["changePassword"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/templates/{id}": {
         parameters: {
             query?: never;
@@ -2269,6 +2285,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        UserResponse: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            email?: string;
+            /** @enum {string} */
+            role?: "MENTOR" | "ADMIN" | "STAFF" | "USER";
+            isActive?: boolean;
+            avatarUrl?: string;
+            public_id?: string;
+            cvUrl?: string;
+            cv_public_id?: string;
+        };
         CodeFile: {
             filename?: string;
             content?: string;
@@ -2511,6 +2540,10 @@ export interface components {
             public_id?: string;
             cvUrl?: string;
             cv_public_id?: string;
+            phone?: string;
+            address?: string;
+            linkedInUrl?: string;
+            githubUrl?: string;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
@@ -2869,6 +2902,10 @@ export interface components {
             password?: string;
             /** @enum {string} */
             role?: "MENTOR" | "ADMIN" | "STAFF" | "USER";
+            phone?: string;
+            address?: string;
+            linkedInUrl?: string;
+            githubUrl?: string;
         };
         CVParserResponse: {
             targetRole?: string;
@@ -3485,19 +3522,6 @@ export interface components {
             roundId?: number;
             submissions?: components["schemas"]["CodeReviewSubmission"][];
         };
-        UserResponse: {
-            /** Format: int32 */
-            id?: number;
-            name?: string;
-            email?: string;
-            /** @enum {string} */
-            role?: "MENTOR" | "ADMIN" | "STAFF" | "USER";
-            isActive?: boolean;
-            avatarUrl?: string;
-            public_id?: string;
-            cvUrl?: string;
-            cv_public_id?: string;
-        };
         SummaryResponse: {
             /** Format: int64 */
             id?: number;
@@ -3714,21 +3738,34 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
-        JdPurchase: {
+        EnrichedJobDescription: {
             /** Format: int64 */
             id?: number;
+            title?: string;
+            companyName?: string;
+            thumbnailUrl?: string;
+        };
+        EnrichedPayment: {
             /** Format: int32 */
-            userId?: number;
+            id?: number;
             /** Format: int64 */
-            jdId?: number;
-            /** Format: int32 */
-            paymentId?: number;
+            amount?: number;
+            currency?: string;
+            method?: string;
+        };
+        MyJdPurchaseResponseDto: {
+            /** Format: int64 */
+            id?: number;
             /** @enum {string} */
-            status?: "PURCHASED" | "USED";
+            status?: "PURCHASED" | "USED" | "EXPIRED";
             /** Format: date-time */
             purchasedAt?: string;
             /** Format: date-time */
             usedAt?: string;
+            /** Format: date-time */
+            validUntil?: string;
+            jobDescription?: components["schemas"]["EnrichedJobDescription"];
+            payment?: components["schemas"]["EnrichedPayment"];
         };
         InterviewBlueprintResponse: {
             strategy_analysis?: string;
@@ -3942,18 +3979,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            deferredSyntaxAllowedAsLiteral?: string;
             trimDirectiveWhitespaces?: string;
-            scriptingInvalid?: string;
             errorOnELNotFound?: string;
+            pageEncoding?: string;
+            scriptingInvalid?: string;
+            includePreludes?: string[];
             includeCodas?: string[];
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
             elIgnored?: string;
             isXml?: string;
-            urlPatterns?: string[];
-            pageEncoding?: string;
-            errorOnUndeclaredNamespace?: string;
             defaultContentType?: string;
-            includePreludes?: string[];
+            urlPatterns?: string[];
             buffer?: string;
         };
         RedirectView: {
@@ -3988,13 +4025,8 @@ export interface components {
             };
         };
         ServletContext: {
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
             /** Format: int32 */
             effectiveMajorVersion?: number;
             /** Format: int32 */
@@ -4006,12 +4038,17 @@ export interface components {
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
-            contextPath?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             initParameterNames?: unknown;
+            contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
                 name?: string;
@@ -4274,6 +4311,29 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    changePassword: {
+        parameters: {
+            query: {
+                oldPass: string;
+                newPass: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UserResponse"];
+                };
+            };
+        };
+    };
     getTemplateById: {
         parameters: {
             query?: never;
@@ -7235,7 +7295,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["JdPurchase"][];
+                    "*/*": components["schemas"]["MyJdPurchaseResponseDto"][];
                 };
             };
         };

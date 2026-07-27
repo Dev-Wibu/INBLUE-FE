@@ -4,14 +4,23 @@ const path = require("path");
 
 const envPath = path.join(__dirname, "../.env");
 let apiBaseUrl = ""; // 1. Xóa URL mặc định để bảo mật, không sợ lộ trong lịch sử Git
+let username = "";
+let password = "";
 
 // Đọc URL từ file .env nếu file này tồn tại
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, "utf8");
-  const match = envContent.match(/^VITE_API_BASE_URL=(.+)$/m);
-  if (match && match[1]) {
-    // Làm sạch dấu nháy đơn/kép nếu có trong file .env
-    apiBaseUrl = match[1].replace(/['"]/g, "").trim();
+  const urlMatch = envContent.match(/^VITE_API_BASE_URL=(.+)$/m);
+  if (urlMatch && urlMatch[1]) {
+    apiBaseUrl = urlMatch[1].replace(/['"]/g, "").trim();
+  }
+
+  const userMatch = envContent.match(/^SWAGGER_USERNAME=(.+)$/m);
+  const passMatch = envContent.match(/^SWAGGER_PASSWORD=(.+)$/m);
+  
+  if (userMatch && passMatch && userMatch[1] && passMatch[1]) {
+    username = userMatch[1].replace(/['"]/g, "").trim();
+    password = passMatch[1].replace(/['"]/g, "").trim();
   }
 }
 
@@ -21,21 +30,40 @@ if (!apiBaseUrl) {
   process.exit(0); // Trả về 0 để Husky hiểu là "Hợp lệ" và cho phép tiếp tục commit
 }
 
-const command = `pnpm exec openapi-typescript "${apiBaseUrl}/v3/api-docs" -o ./schema-from-be.d.ts`;
 console.log(`🚀 Đang tải schema từ Backend...`); // Ẩn bớt URL cụ thể khi log nếu muốn bảo mật tuyệt đối
 
-try {
-  execSync(command, { stdio: "inherit" });
-  console.log("✅ Schema generated successfully!");
+async function fetchAndGenerate() {
+  try {
+    const headers = {};
+    if (username && password) {
+      headers["Authorization"] = "Basic " + Buffer.from(`${username}:${password}`).toString("base64");
+    }
 
-  // POST-PROCESS: Thêm các field cần thiết mà backend chưa có trong OpenAPI spec
-  patchSchema();
-} catch (error) {
-  // 3. TÙY CHỌN: Nếu Backend sập hoặc mất mạng, bạn có muốn Husky chặn commit không?
-  // Nếu KHÔNG muốn chặn (cho commit tiếp): Đổi thành process.exit(0);
-  // Nếu MUỐN chặn (bắt buộc tải được mới cho commit): Giữ nguyên process.exit(1);
-  console.error("❌ Failed to generate schema:", error.message);
-  process.exit(0);
+    const response = await fetch(`${apiBaseUrl}/v3/api-docs`, { headers });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch schema: ${response.status} ${response.statusText}`);
+    }
+    const data = await response.text();
+    
+    // Save to temp file
+    const tempFile = path.join(__dirname, "../temp-schema.json");
+    fs.writeFileSync(tempFile, data);
+    
+    // Run openapi-typescript on the local file
+    const command = `pnpm exec openapi-typescript temp-schema.json -o ./schema-from-be.d.ts`;
+    execSync(command, { stdio: "inherit" });
+    
+    // Clean up temp file
+    fs.unlinkSync(tempFile);
+    
+    console.log("✅ Schema generated successfully!");
+
+    // POST-PROCESS: Thêm các field cần thiết mà backend chưa có trong OpenAPI spec
+    patchSchema();
+  } catch (error) {
+    console.error("❌ Failed to generate schema:", error.message);
+    process.exit(0);
+  }
 }
 
 // Hàm patch schema để thêm các field cần thiết cho FE
@@ -61,3 +89,5 @@ function patchSchema() {
   fs.writeFileSync(schemaPath, content);
   console.log("✅ Schema patched with FE-required fields!");
 }
+
+fetchAndGenerate();
