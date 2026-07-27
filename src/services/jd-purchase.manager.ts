@@ -2,12 +2,12 @@ import { fetchClient } from "@/lib/api";
 
 export interface JdPurchase {
   id: number;
-  userId: number;
-  jdId: number;
-  paymentId: number;
-  status: "PURCHASED" | "USED";
+  status: "PURCHASED" | "USED" | "EXPIRED";
   purchasedAt: string;
   usedAt: string | null;
+  validUntil: string | null;
+  jobDescription?: any;
+  payment?: any;
 }
 
 function extractCheckoutUrl(payload: unknown): string | undefined {

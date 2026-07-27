@@ -13,8 +13,6 @@ import { formatCurrency } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import type { JdPurchase } from "@/services/jd-purchase.manager";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
-import { jobDescriptionManager } from "@/services/job-description.manager";
-import { paymentManager } from "@/services/payment.manager";
 import { ExternalLink, Package, Receipt, ShoppingBag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,14 +36,9 @@ function formatPurchaseDate(dateStr?: string | null): string {
 
 type LoadState = "loading" | "ready" | "error";
 
-interface EnrichedJdPurchase extends JdPurchase {
-  jdTitle?: string;
-  amount?: number;
-}
-
 export function JdPurchaseHistoryTab() {
   const { t } = useTranslation();
-  const [purchases, setPurchases] = useState<EnrichedJdPurchase[]>([]);
+  const [purchases, setPurchases] = useState<JdPurchase[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");
 
   const [pageSize] = useHybridPageSize({ key: "jd-purchase-history", defaultPageSize: 10 });
@@ -70,51 +63,7 @@ export function JdPurchaseHistoryTab() {
       try {
         const rawPurchases = await jdPurchaseManager.getMyPurchases();
         if (cancelled) return;
-
-        if (!rawPurchases || rawPurchases.length === 0) {
-          setPurchases([]);
-          setLoadState("ready");
-          return;
-        }
-
-        const uniqueJdIds = Array.from(
-          new Set(rawPurchases.map((p) => p.jdId).filter((id): id is number => Boolean(id)))
-        );
-        const uniquePaymentIds = Array.from(
-          new Set(rawPurchases.map((p) => p.paymentId).filter((id): id is number => Boolean(id)))
-        );
-
-        const jdMap = new Map<number, { title?: string; price?: number }>();
-        const paymentMap = new Map<number, number>();
-
-        await Promise.allSettled([
-          ...uniqueJdIds.map(async (jdId) => {
-            const res = await jobDescriptionManager.getById(jdId);
-            if (res.success && res.data) {
-              jdMap.set(jdId, { title: res.data.title, price: res.data.price });
-            }
-          }),
-          ...uniquePaymentIds.map(async (payId) => {
-            const res = await paymentManager.getById(payId);
-            if (res.success && res.data && typeof res.data.amount === "number") {
-              paymentMap.set(payId, res.data.amount);
-            }
-          }),
-        ]);
-
-        if (cancelled) return;
-
-        const enriched: EnrichedJdPurchase[] = rawPurchases.map((p) => {
-          const jdInfo = jdMap.get(p.jdId);
-          const payAmount = paymentMap.get(p.paymentId);
-          return {
-            ...p,
-            jdTitle: jdInfo?.title,
-            amount: payAmount ?? jdInfo?.price,
-          };
-        });
-
-        setPurchases(enriched);
+        setPurchases(rawPurchases || []);
         setLoadState("ready");
       } catch (error) {
         console.error("Error fetching purchases:", error);
@@ -192,15 +141,21 @@ export function JdPurchaseHistoryTab() {
                       #{pagination.startIndex + idx + 1}
                     </TableCell>
                     <TableCell className="py-4">
-                      <Link
-                        to={`/enterprise/job/${purchase.jdId}`}
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
-                        {purchase.jdTitle || "Untitled"}
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
+                      {purchase.jobDescription?.id ? (
+                        <Link
+                          to={`/enterprise/job/${purchase.jobDescription.id}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700 hover:text-indigo-800 hover:underline dark:text-indigo-400">
+                          {purchase.jobDescription?.title || "Untitled"}
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      ) : (
+                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                          {purchase.jobDescription?.title || "Untitled"}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                      #{purchase.paymentId}
+                      #{purchase.payment?.id || "N/A"}
                     </TableCell>
                     <TableCell className="py-4">
                       <Badge
@@ -209,7 +164,9 @@ export function JdPurchaseHistoryTab() {
                           "font-medium",
                           purchase.status === "PURCHASED"
                             ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-400"
-                            : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
+                            : purchase.status === "EXPIRED"
+                              ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-900/20 dark:text-rose-400"
+                              : "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
                         )}>
                         {t(`payment.jdPurchaseStatus_${purchase.status}`)}
                       </Badge>
@@ -221,7 +178,7 @@ export function JdPurchaseHistoryTab() {
                       {purchase.status === "USED" ? formatPurchaseDate(purchase.usedAt) : "—"}
                     </TableCell>
                     <TableCell className="py-4 pr-6 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
-                      {purchase.amount ? formatCurrency(purchase.amount) : "—"}
+                      {purchase.payment?.amount ? formatCurrency(purchase.payment.amount) : "—"}
                     </TableCell>
                   </TableRow>
                 ))}
