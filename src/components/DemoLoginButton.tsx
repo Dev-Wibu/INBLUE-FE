@@ -51,13 +51,13 @@ export function DemoLoginButton({ onSelectAccount }: DemoLoginButtonProps) {
     },
     {
       role: "MENTOR",
-      email: "b@fpt.com",
+      email: "tuan94868@gmail.com",
       password: "12345",
       description: t("compDemologinbutton.mentorAccountToManageInterview"),
     },
     {
       role: "STAFF",
-      email: "nhanquan@gmail.com",
+      email: "nguyennew1999@gmail.com",
       password: "12345",
       description: t("compDemologinbutton.staffAccountToManageApplications"),
     },
