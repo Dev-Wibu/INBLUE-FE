@@ -18,7 +18,6 @@ import {
   LoginPage,
   MentorRegisterPage,
   ResetPasswordPage,
-  SelectRolePage,
   SignupPage,
   WaitingAcceptMentorPage,
 } from "@/pages/Auth";
