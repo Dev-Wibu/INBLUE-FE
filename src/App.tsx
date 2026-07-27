@@ -19,7 +19,6 @@ import {
   CompanyDetailPage,
   CompanySearchPage,
   JobDescriptionDetailPage,
-  JobSearchPage,
 } from "@/pages/Enterprise";
 import {
   ForbiddenPage,
