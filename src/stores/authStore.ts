@@ -54,9 +54,10 @@ export interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      // Initial state
+      // Initial state - isLoading false to avoid blocking UI on first render
+      // Auth state is restored from persisted storage immediately
       isLoggedIn: false,
-      isLoading: true, // true until rehydration completes
+      isLoading: false, // Will be set to false immediately since we trust persisted state
       user: null,
       token: null,
       expiresAt: null,
@@ -97,6 +98,7 @@ export const useAuthStore = create<AuthState>()(
         expiresAt: state.expiresAt,
       }),
       // Set isLoading to false after rehydration completes
+      // Note: isLoading is already false on init, this is just for explicit state reset
       onRehydrateStorage: () => (state) => {
         if (state) {
           const restoredExpiresAt = state.expiresAt ?? getTokenExpiresAt(state.token);
@@ -105,6 +107,7 @@ export const useAuthStore = create<AuthState>()(
             state.setExpiresAt(restoredExpiresAt);
           }
 
+          // Only clear auth if session is expired
           if (state.isLoggedIn && isSessionExpired(restoredExpiresAt)) {
             state.clearAuth();
           } else if (state.isLoggedIn && state.user && state.token) {
@@ -141,8 +144,7 @@ export const useAuthStore = create<AuthState>()(
               }
             }
           }
-
-          state.setIsLoading(false);
+          // isLoading stays false - we don't block UI waiting for auth rehydration
         }
       },
     }
