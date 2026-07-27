@@ -98,6 +98,29 @@ export class MentorManager implements BaseManager<Mentor> {
   }
 
   /**
+   * Resolve a mentor record from the currently logged-in user's email.
+   *
+   * The User and Mentor tables have independent primary keys, so the JWT
+   * `sub` (= user id) does NOT match the mentor table id. There is no
+   * backend endpoint that takes a userId and returns the corresponding
+   * mentor record — only `GET /api/mentors/{mentorId}` and the full list.
+   * To bridge the gap, fetch the mentor list and pick the row whose email
+   * matches. Returns `null` if no mentor record exists for that email.
+   */
+  async findByEmail(email: string): Promise<Mentor | null> {
+    if (!email) return null;
+    const result = await this.getAll();
+    if (!result.success || !result.data) return null;
+
+    const list: Mentor[] = Array.isArray(result.data)
+      ? result.data
+      : ((result.data as { items?: Mentor[] }).items ?? []);
+
+    const target = email.trim().toLowerCase();
+    return list.find((m) => (m.email ?? "").trim().toLowerCase() === target) ?? null;
+  }
+
+  /**
    * Create new mentor
    * POST /api/mentors (multipart/form-data)
    * According to schema: { data: MentorInfo, avatar?: File }

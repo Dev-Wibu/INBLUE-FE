@@ -70,6 +70,50 @@ describe("MentorManager", () => {
     });
   });
 
+  describe("findByEmail", () => {
+    it("returns the mentor whose email matches (case-insensitive)", async () => {
+      const list = [
+        { id: 7, name: "A", email: "Other@Test.com" },
+        { id: 11, name: "B", email: "tuan94868@gmail.com" },
+      ];
+      mockGet.mockResolvedValueOnce({ data: list });
+
+      const mentor = await mentorManager.findByEmail("Tuan94868@GMAIL.com");
+
+      expect(mentor).toEqual({ id: 11, name: "B", email: "tuan94868@gmail.com" });
+    });
+
+    it("unwraps paginated responses (data.items)", async () => {
+      const list = { items: [{ id: 5, email: "x@y.com" }], total: 1 };
+      mockGet.mockResolvedValueOnce({ data: list });
+
+      const mentor = await mentorManager.findByEmail("x@y.com");
+
+      expect(mentor).toEqual({ id: 5, email: "x@y.com" });
+    });
+
+    it("returns null when no mentor matches the email", async () => {
+      mockGet.mockResolvedValueOnce({ data: [{ id: 1, email: "a@b.com" }] });
+
+      const mentor = await mentorManager.findByEmail("missing@example.com");
+
+      expect(mentor).toBeNull();
+    });
+
+    it("returns null when the underlying getAll fails", async () => {
+      mockGet.mockRejectedValueOnce(new Error("Network down"));
+
+      const mentor = await mentorManager.findByEmail("x@y.com");
+
+      expect(mentor).toBeNull();
+    });
+
+    it("returns null for empty input without calling the API", async () => {
+      expect(await mentorManager.findByEmail("")).toBeNull();
+      expect(mockGet).not.toHaveBeenCalled();
+    });
+  });
+
   describe("toggleActive", () => {
     it("calls toggle endpoint and returns updated mentor", async () => {
       const mentor = { id: 1, active: false };
