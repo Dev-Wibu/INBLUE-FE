@@ -257,7 +257,7 @@ export function JobSearchTab() {
     <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
       {/* Top Action Bar (Hero Style) */}
       <div className="px-5 py-6 md:px-8 shrink-0">
-        <div className="mx-auto w-full max-w-4xl rounded-[20px] bg-white p-6 shadow-sm border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800/60">
+        <div className="w-full rounded-[20px] bg-white p-6 shadow-sm border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800/60">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
             {/* Title & Subtitle */}
             <div>
