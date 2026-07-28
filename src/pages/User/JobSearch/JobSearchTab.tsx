@@ -6,7 +6,7 @@ import type { JobDescription } from "@/interfaces";
 import { formatNumber } from "@/lib/formatting";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import type { TFunction } from "i18next";
-import { Coins, Search, X } from "lucide-react";
+import { Briefcase, Coins, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
@@ -26,27 +26,25 @@ function getCompanyInitials(name?: string) {
 
 function EmptyState({ query, onClear, t }: { query: string; onClear: () => void; t: TFunction }) {
   return (
-    <div className="mx-6 my-10 flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+    <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/40">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800">
         <Search className="h-6 w-6" />
       </div>
       <div className="text-center">
-        <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
           {t("enterpriseJobsearchpage.noJobsFound", "Không tìm thấy công việc phù hợp")}
         </h3>
-        <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1 max-w-xs text-xs text-slate-500 dark:text-slate-400">
           {query
             ? t("enterpriseJobsearchpage.emptySearchDescription", { query })
-            : t(
-                "enterpriseJobsearchpage.emptyDescription",
-                "Chưa có tin tuyển dụng nào phù hợp với bộ lọc hiện tại."
-              )}
+            : t("enterpriseJobsearchpage.emptyDescription", "Chưa có tin tuyển dụng nào phù hợp với bộ lọc hiện tại.")}
         </p>
       </div>
       <Button
         variant="outline"
+        size="sm"
         onClick={onClear}
-        className="mt-2 h-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10">
+        className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10">
         {t("enterpriseJobsearchpage.viewAllJobs", "Xem tất cả")}
       </Button>
     </div>
@@ -85,9 +83,7 @@ export function JobCard({
       onClick={onClick}
       className="group flex cursor-pointer flex-col rounded-xl border border-slate-200 bg-white transition-colors hover:border-indigo-300 dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-700/60">
 
-      {/* Card body */}
       <div className="flex gap-3 p-4">
-        {/* Logo */}
         <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-sm font-bold text-indigo-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-indigo-400">
           {logoUrl ? (
             <img src={logoUrl} alt={job.companyName || "Company"} className="h-full w-full object-cover" />
@@ -96,7 +92,6 @@ export function JobCard({
           )}
         </div>
 
-        {/* Info */}
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-[14px] font-semibold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
             {job.title || t("enterpriseJobsearchpage.untitledJob", "Chưa có tiêu đề")}
@@ -104,8 +99,6 @@ export function JobCard({
           <p className="mt-0.5 truncate text-[12.5px] text-slate-500 dark:text-slate-400">
             {job.companyName || t("common.unknownCompany", "Công ty ẩn danh")}
           </p>
-
-          {/* Chips */}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {job.level && (
               <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${LEVEL_CHIP[job.level] || "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"}`}>
@@ -124,7 +117,6 @@ export function JobCard({
         </div>
       </div>
 
-      {/* Card footer bar */}
       <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 dark:border-slate-800/50">
         <div className="flex items-center gap-3">
           <span className="text-[12.5px] font-semibold text-emerald-600 dark:text-emerald-400">
@@ -191,8 +183,7 @@ export function JobSearchTab() {
     try {
       const result = await jobDescriptionManager.getAll();
       if (result.success && result.data) {
-        const validJobs = result.data.filter((job) => !job.isDeleted);
-        setJobs(validJobs);
+        setJobs(result.data.filter((job) => !job.isDeleted));
       }
     } catch (error) {
       console.error("Failed to fetch jobs:", error);
@@ -201,9 +192,7 @@ export function JobSearchTab() {
     }
   };
 
-  useEffect(() => {
-    void fetchJobs();
-  }, []);
+  useEffect(() => { void fetchJobs(); }, []);
 
   const updateFilters = (q: string, level: string, price: number | null) => {
     const params: Record<string, string> = { tab: "jobSearch" };
@@ -214,19 +203,15 @@ export function JobSearchTab() {
   };
 
   const handleCloseDetail = () => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.delete("jobId");
-    setSearchParams(newParams);
-  };
-
-  const handleRefresh = () => {
-    void fetchJobs();
+    const p = new URLSearchParams(searchParams);
+    p.delete("jobId");
+    setSearchParams(p);
   };
 
   const handleJobClick = (id: number) => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set("jobId", id.toString());
-    setSearchParams(newParams);
+    const p = new URLSearchParams(searchParams);
+    p.set("jobId", id.toString());
+    setSearchParams(p);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -245,215 +230,229 @@ export function JobSearchTab() {
     let result = jobs;
     const query = searchParams.get("q")?.toLowerCase();
     const level = searchParams.get("level") || "ALL";
-
-    if (query) {
-      result = result.filter((job) => {
-        return (
-          job.title?.toLowerCase().includes(query) ||
-          job.companyName?.toLowerCase().includes(query)
-        );
-      });
-    }
-
-    if (level !== "ALL") {
-      result = result.filter((job) => job.level === level);
-    }
-
-    if (maxPrice !== null) {
-      result = result.filter((job) => (job.price || 0) <= maxPrice);
-    }
-
+    if (query) result = result.filter((j) => j.title?.toLowerCase().includes(query) || j.companyName?.toLowerCase().includes(query));
+    if (level !== "ALL") result = result.filter((j) => j.level === level);
+    if (maxPrice !== null) result = result.filter((j) => (j.price || 0) <= maxPrice);
     return result.sort((a, b) => (b.id || 0) - (a.id || 0));
   }, [jobs, searchParams]);
+
+  const hasActiveFilter = searchQuery || activeLevel !== "ALL" || maxPrice !== null;
 
   /* ─── Full-screen Detail View ─── */
   if (selectedJob) {
     return (
-      <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
+      <section className="flex h-full flex-col overflow-hidden">
         <JobDetailContainer
           job={selectedJob}
           onClose={handleCloseDetail}
-          onRefresh={handleRefresh}
+          onRefresh={() => void fetchJobs()}
         />
       </section>
     );
   }
 
-  /* ─── Job List View ─── */
+  /* ─── Job List View: sidebar + grid ─── */
   return (
-    <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
-      {/* Top Action Bar (Hero Style) */}
-      <div className="px-5 py-6 md:px-8 shrink-0">
-        <div className="w-full rounded-[20px] bg-white p-6 shadow-sm border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800/60">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-            {/* Title & Subtitle */}
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Tìm việc làm phù hợp</h2>
-              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                Khám phá quy trình tuyển dụng thực tế, luyện tập và ứng tuyển ngay
-              </p>
-            </div>
-
-            {/* Stats */}
-            <div className="flex items-center gap-6">
-              <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
-                  {jobs.filter((j) => j.status === "OPEN").length || jobs.length}
-                </span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">Vị trí mở</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
-                  {new Set(jobs.map((j) => j.companyName).filter(Boolean)).size}
-                </span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">Công ty</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">4</span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">Cấp bậc</span>
-              </div>
-            </div>
+    <div className="flex h-full overflow-hidden">
+      {/* ── Left Sidebar (filters) ── */}
+      <aside className="hidden w-64 shrink-0 flex-col gap-5 overflow-y-auto border-r border-slate-200 bg-white px-5 py-6 dark:border-slate-800/60 dark:bg-slate-900/40 lg:flex xl:w-72">
+        {/* Brand / title */}
+        <div>
+          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+            <Briefcase className="h-5 w-5" />
+            <span className="text-base font-bold text-slate-900 dark:text-white">Tìm việc làm</span>
           </div>
+          <p className="mt-1 text-[12.5px] text-slate-500 dark:text-slate-400">
+            Khám phá quy trình tuyển dụng thực tế
+          </p>
+        </div>
 
-          <form onSubmit={handleSearch} className="mt-6 flex flex-col sm:flex-row gap-3">
+        {/* Stats row */}
+        <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2.5 dark:border-slate-800/50 dark:bg-slate-800/30">
+          <div className="text-center">
+            <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+              {jobs.filter((j) => j.status === "OPEN").length || jobs.length}
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">Vị trí mở</div>
+          </div>
+          <div className="h-8 w-px bg-slate-200 dark:bg-slate-700" />
+          <div className="text-center">
+            <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+              {new Set(jobs.map((j) => j.companyName).filter(Boolean)).size}
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">Công ty</div>
+          </div>
+          <div className="h-8 w-px bg-slate-200 dark:bg-slate-700" />
+          <div className="text-center">
+            <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">4</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">Cấp bậc</div>
+          </div>
+        </div>
+
+        <div className="h-px bg-slate-100 dark:bg-slate-800/60" />
+
+        {/* Search */}
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            Tìm kiếm
+          </p>
+          <form onSubmit={handleSearch} className="flex gap-2">
             <div className="relative flex-1">
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm theo chức danh hoặc công ty..."
-                className="h-[46px] w-full rounded-[10px] border border-slate-200 bg-slate-50 px-4 text-[15px] text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-indigo-500/50 dark:border-slate-800/60 dark:bg-[#0B0F19] dark:text-white dark:placeholder:text-slate-500"
+                placeholder="Chức danh hoặc công ty..."
+                className="h-9 rounded-lg border-slate-200 bg-slate-50 pr-7 text-[13px] dark:border-slate-700 dark:bg-slate-800/60"
               />
               {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    updateFilters("", activeLevel, maxPrice);
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                  <X className="h-4 w-4" />
+                  onClick={() => { setSearchQuery(""); updateFilters("", activeLevel, maxPrice); }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
-            <Button
-              type="submit"
-              className="h-[46px] shrink-0 rounded-[10px] border border-slate-300 bg-transparent px-6 font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-              <Search className="mr-2 h-[18px] w-[18px]" />
-              Tìm việc
+            <Button type="submit" size="sm" className="h-9 w-9 shrink-0 rounded-lg bg-indigo-600 p-0 hover:bg-indigo-700">
+              <Search className="h-4 w-4" />
             </Button>
           </form>
+        </div>
 
-          {/* Filters */}
-          <div className="mt-4 flex flex-col gap-5 xl:flex-row xl:items-center">
-            {/* Level Filters */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-2 text-[13px] font-semibold text-slate-500">Cấp bậc:</span>
-              {FILTER_LEVELS.map((level) => {
-                const isActive = activeLevel === level;
-                const levelLabel =
-                  level === "ALL"
-                    ? "Tất cả"
-                    : level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
-                return (
-                  <button
-                    key={level}
-                    onClick={() => {
-                      setActiveLevel(level);
-                      updateFilters(searchQuery, level, maxPrice);
-                    }}
-                    className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors border ${
-                      isActive
-                        ? "bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-600 dark:border-indigo-600"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                    }`}>
-                    {levelLabel}
-                  </button>
-                );
-              })}
-            </div>
+        <div className="h-px bg-slate-100 dark:bg-slate-800/60" />
 
-            <div className="hidden xl:block h-5 w-px bg-slate-200 dark:bg-slate-700"></div>
-
-            {/* Price Slider */}
-            <div className="flex w-full max-w-[280px] flex-col gap-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-slate-500">Chi phí tối đa:</span>
-                <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-500">
-                  {maxPrice === null || maxPrice >= maxAvailablePrice
-                    ? "Mọi mức giá"
-                    : `${formatNumber(maxPrice)} VND`}
-                </span>
-              </div>
-              <Slider
-                value={[displayMaxPrice]}
-                min={0}
-                max={maxAvailablePrice}
-                step={maxAvailablePrice > 1000 ? 500 : maxAvailablePrice > 100 ? 50 : 10}
-                onValueChange={(val: number[]) => setMaxPrice(val[0])}
-                onValueCommit={(val: number[]) => updateFilters(searchQuery, activeLevel, val[0])}
-                className="[&_[data-slot=slider-range]]:bg-emerald-500 [&_[data-slot=slider-thumb]]:border-emerald-500 [&_[data-slot=slider-thumb]]:focus-visible:ring-emerald-500/20"
-              />
-            </div>
+        {/* Level filter */}
+        <div>
+          <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            Cấp bậc
+          </p>
+          <div className="flex flex-col gap-1">
+            {FILTER_LEVELS.map((level) => {
+              const isActive = activeLevel === level;
+              const label = level === "ALL" ? "Tất cả" : level.charAt(0) + level.slice(1).toLowerCase();
+              return (
+                <button
+                  key={level}
+                  onClick={() => { setActiveLevel(level); updateFilters(searchQuery, level, maxPrice); }}
+                  className={`flex items-center justify-between rounded-lg px-3 py-2 text-[13px] font-medium transition-colors text-left ${
+                    isActive
+                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
+                      : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+                  }`}>
+                  <span>{label}</span>
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />}
+                </button>
+              );
+            })}
           </div>
         </div>
-      </div>
 
-      {/* Job List */}
-      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50">
-        {(searchQuery || activeLevel !== "ALL") && (
-          <div className="mb-5">
-            <span className="text-xs text-slate-500 dark:text-[#888888]">
-              {t("common.showing", "Hiển thị")}{" "}
-              <strong className="text-slate-800 dark:text-slate-200">{filteredJobs.length}</strong>{" "}
-              {t("common.results", "kết quả")}
+        <div className="h-px bg-slate-100 dark:bg-slate-800/60" />
+
+        {/* Price slider */}
+        <div>
+          <div className="mb-2.5 flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+              Chi phí tối đa
+            </p>
+            <span className="text-[12px] font-bold text-emerald-600 dark:text-emerald-500">
+              {maxPrice === null || maxPrice >= maxAvailablePrice ? "Tất cả" : `${formatNumber(maxPrice)} VND`}
             </span>
           </div>
-        )}
+          <Slider
+            value={[displayMaxPrice]}
+            min={0}
+            max={maxAvailablePrice}
+            step={maxAvailablePrice > 1000 ? 500 : maxAvailablePrice > 100 ? 50 : 10}
+            onValueChange={(val: number[]) => setMaxPrice(val[0])}
+            onValueCommit={(val: number[]) => updateFilters(searchQuery, activeLevel, val[0])}
+            className="[&_[data-slot=slider-range]]:bg-emerald-500 [&_[data-slot=slider-thumb]]:border-emerald-500 [&_[data-slot=slider-thumb]]:focus-visible:ring-emerald-500/20"
+          />
+        </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-slate-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/40">
-                <div className="flex gap-3 p-4">
-                  <div className="h-11 w-11 shrink-0 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
-                  <div className="flex-1 space-y-2 pt-0.5">
-                    <div className="h-4 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                    <div className="mt-2 flex gap-1.5">
-                      <div className="h-5 w-14 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                      <div className="h-5 w-16 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+        {/* Clear filters */}
+        {hasActiveFilter && (
+          <button
+            onClick={clearSearch}
+            className="flex items-center gap-1.5 text-[12px] font-medium text-rose-500 transition-colors hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300">
+            <X className="h-3.5 w-3.5" />
+            Xóa bộ lọc
+          </button>
+        )}
+      </aside>
+
+      {/* ── Main content ── */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Mobile filter bar */}
+        <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800/60 dark:bg-slate-900/40 lg:hidden">
+          <form onSubmit={handleSearch} className="flex flex-1 items-center gap-2">
+            <div className="relative flex-1">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm việc làm..."
+                className="h-8 text-[13px]"
+              />
+            </div>
+            <Button type="submit" size="sm" className="h-8 bg-indigo-600 px-3 hover:bg-indigo-700">
+              <Search className="h-3.5 w-3.5" />
+            </Button>
+          </form>
+          <Button variant="outline" size="sm" className="h-8 px-2">
+            <SlidersHorizontal className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Result count + scrollable grid */}
+        <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-5 md:px-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50">
+          {hasActiveFilter && (
+            <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
+              Hiển thị{" "}
+              <strong className="text-slate-700 dark:text-slate-200">{filteredJobs.length}</strong>{" "}
+              kết quả
+            </p>
+          )}
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-slate-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/40">
+                  <div className="flex gap-3 p-4">
+                    <div className="h-11 w-11 shrink-0 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
+                    <div className="flex-1 space-y-2 pt-0.5">
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                      <div className="h-3 w-1/2 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                      <div className="mt-2 flex gap-1.5">
+                        <div className="h-5 w-14 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                        <div className="h-5 w-16 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 dark:border-slate-800/50">
+                    <div className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-7 w-20 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
+                  </div>
                 </div>
-                <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 dark:border-slate-800/50">
-                  <div className="h-4 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                  <div className="h-7 w-20 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filteredJobs.length === 0 ? (
-          <EmptyState query={searchParams.get("q") || ""} onClear={clearSearch} t={t} />
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredJobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                t={t}
-                onClick={() => handleJobClick(job.id!)}
-                onApply={(e) => {
-                  e.stopPropagation();
-                  handleJobClick(job.id!);
-                }}
-              />
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          ) : filteredJobs.length === 0 ? (
+            <EmptyState query={searchParams.get("q") || ""} onClear={clearSearch} t={t} />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {filteredJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  t={t}
+                  onClick={() => handleJobClick(job.id!)}
+                  onApply={(e) => { e.stopPropagation(); handleJobClick(job.id!); }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
