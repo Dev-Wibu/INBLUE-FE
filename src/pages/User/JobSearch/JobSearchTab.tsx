@@ -72,7 +72,8 @@ export function JobCard({
   onApply: (e: React.MouseEvent) => void;
   t: TFunction;
 }) {
-  const logoUrl = (job as any).companyLogoUrl || null;
+  // Fix logo mapping from user's custom API
+  const logoUrl = job.companyLogo || (job as any).thumbnailUrl || (job as any).companyLogoUrl || null;
   const initials = getCompanyInitials(job.companyName);
 
   const isNegotiable = !job.salaryMin && !job.salaryMax;
@@ -169,7 +170,7 @@ export function JobCard({
       <div className="mt-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-[14px] font-bold text-amber-600 dark:text-amber-500">
           <Coins className="h-[18px] w-[18px]" />
-          {job.price ? `${job.price} ĐKĐO` : "Miễn phí"}
+          {job.price ? formatNumber(job.price) : "Miễn phí"}
         </div>
         <Button
           onClick={(e) => {
@@ -381,7 +382,7 @@ export function JobSearchTab() {
                 <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-500">
                   {maxPrice === null || maxPrice >= maxAvailablePrice 
                     ? "Mọi mức giá" 
-                    : `${maxPrice} ĐKĐO`}
+                    : formatNumber(maxPrice)}
                 </span>
               </div>
               <Slider
