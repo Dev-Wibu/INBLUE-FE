@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeviceCheckDialog, VideoCallProvider, VideoCallRoom } from "@/components/video-call";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { SESSION_QUERY_KEYS, useJoinSession, useSessionById } from "@/hooks/useSession";
 import { formatDateTime, formatTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
@@ -45,6 +46,17 @@ export function MentorSessionRoomPage() {
     refetch: refetchSession,
   } = useSessionById(numericSessionId);
   const joinSessionMutation = useJoinSession();
+  // 2026-07-28: User.id (from JWT sub) is NOT the same as Mentor.id. BE
+  //   stores the Mentor.id on the Session row (in `mentorId` / `userId`)
+  //   and validates join-session against it, so we resolve the mentor
+  //   profile for the current auth user and send its id instead of user.id.
+  const { data: currentMentorProfile } = useCurrentMentorProfile();
+  const mentorProfileId =
+    currentMentorProfile?.id != null
+      ? typeof currentMentorProfile.id === "string"
+        ? parseInt(currentMentorProfile.id, 10)
+        : currentMentorProfile.id
+      : undefined;
 
   // Validate session and user.
   // For Mentor Interview (RoundType.MENTROR_REVIEW) the session is created
@@ -67,9 +79,15 @@ export function MentorSessionRoomPage() {
     // 2026-07-18: send both `mentor` AND `isMentor` (legacy alias) — see
     //   JoinSessionRequest comment in session.manager.ts. BE has historically
     //   needed both keys to disambiguate intent.
+    // 2026-07-28: prefer Mentor.id over User.id when the mentor profile is
+    //   available, because BE's join-session validator compares the payload
+    //   userId against `session.mentorId` (which BE stores as Mentor.id,
+    //   not User.id). Falls back to user.id if the profile hasn't loaded yet
+    //   so we don't deadlock on race conditions.
+    const joinUserId = mentorProfileId ?? user.id;
     await joinSessionMutation.mutateAsync({
       sessionName: session.roomName,
-      userId: user.id,
+      userId: joinUserId,
       participantId,
       mentor: true,
       isMentor: true,

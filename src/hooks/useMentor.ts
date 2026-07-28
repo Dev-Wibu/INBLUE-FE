@@ -7,12 +7,14 @@ const t = i18n.t.bind(i18n);
 
 import type { Mentor } from "@/interfaces";
 import { mentorManager } from "@/services/mentor.manager";
+import { useAuthStore } from "@/stores/authStore";
 import { useQuery } from "@tanstack/react-query";
 
 // Query Keys
 export const MENTOR_QUERY_KEYS = {
   all: ["mentors"] as const,
   byId: (id: number) => ["mentors", id] as const,
+  byEmail: (email: string) => ["mentors", "by-email", email] as const,
 };
 
 /**
@@ -50,5 +52,27 @@ export const useMentorById = (id: number) => {
       throw new Error(response.error || t("common.noMentorFound"));
     },
     enabled: !!id,
+  });
+};
+
+/**
+ * Resolve the mentor record for the currently logged-in user by email.
+ *
+ * The User and Mentor tables have independent primary keys — User.id (from
+ * JWT sub) is NOT the same as Mentor.id. Mentor sessions reference the
+ * Mentor table's PK in `mentorId` / `userId`, so a mentor logged in with
+ * User.id=53 will only see their assigned sessions once we map their email
+ * to Mentor.id and filter on that value too.
+ */
+export const useCurrentMentorProfile = () => {
+  const email = useAuthStore((state) => state.user?.email ?? "");
+  return useQuery({
+    queryKey: MENTOR_QUERY_KEYS.byEmail(email),
+    queryFn: async (): Promise<Mentor | null> => {
+      if (!email) return null;
+      return await mentorManager.findByEmail(email);
+    },
+    enabled: !!email,
+    staleTime: 5 * 60_000,
   });
 };
