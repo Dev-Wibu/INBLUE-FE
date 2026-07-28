@@ -24,16 +24,16 @@ export const REVIEW_QUERY_KEYS = {
   bySession: (sessionId: number) => ["mentor-reviews", "session", sessionId] as const,
 };
 const getReviewMentorId = (review: MentorReview): number | undefined => {
-  if (typeof review.mentor?.id === "number") {
-    return review.mentor.id;
+  if (review.mentor?.id != null) {
+    return typeof review.mentor.id === "string" ? parseInt(review.mentor.id, 10) : review.mentor.id;
   }
-  return review.session?.userId2;
+  return undefined;
 };
 const getReviewUserId = (review: MentorReview): number | undefined => {
-  if (typeof review.user?.id === "number") {
-    return review.user.id;
+  if (review.user?.id != null) {
+    return typeof review.user.id === "string" ? parseInt(review.user.id, 10) : review.user.id;
   }
-  return review.session?.userId;
+  return undefined;
 };
 
 /**
@@ -80,8 +80,9 @@ export const useMentorReviewById = (id: number) => {
  * Hook to fetch reviews by mentor ID
  */
 export const useMentorReviewsByMentor = (mentorId: number) => {
+  const numericMentorId = typeof mentorId === "string" ? parseInt(mentorId, 10) : mentorId;
   const { data: allReviews = [], ...rest } = useMentorReviews();
-  if (!mentorId) {
+  if (!numericMentorId) {
     return {
       data: [] as MentorReview[],
       ...rest,
@@ -90,7 +91,7 @@ export const useMentorReviewsByMentor = (mentorId: number) => {
 
   // Filter reviews by mentor ID
   const mentorReviews = allReviews.filter(
-    (review: MentorReview) => getReviewMentorId(review) === mentorId
+    (review: MentorReview) => getReviewMentorId(review) === numericMentorId
   );
   return {
     data: mentorReviews,
@@ -102,8 +103,9 @@ export const useMentorReviewsByMentor = (mentorId: number) => {
  * Hook to fetch reviews by user ID
  */
 export const useMentorReviewsByUser = (userId: number) => {
+  const numericUserId = typeof userId === "string" ? parseInt(userId, 10) : userId;
   const { data: allReviews = [], ...rest } = useMentorReviews();
-  if (!userId) {
+  if (!numericUserId) {
     return {
       data: [] as MentorReview[],
       ...rest,
@@ -112,7 +114,7 @@ export const useMentorReviewsByUser = (userId: number) => {
 
   // Filter reviews by user ID
   const userReviews = allReviews.filter(
-    (review: MentorReview) => getReviewUserId(review) === userId
+    (review: MentorReview) => getReviewUserId(review) === numericUserId
   );
   return {
     data: userReviews,

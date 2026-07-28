@@ -21,9 +21,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { useSessionsByUserId, useUpdateSessionStatus } from "@/hooks/useSession";
+import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import {
@@ -354,7 +355,9 @@ export function MentorSessionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const [activeTab, setActiveTab] = useState<SessionListTab>("draft");
+  // Default to "others" tab since the "Approval" (draft) tab is hidden per requirement.
+  // Draft logic is preserved in code for future use.
+  const [activeTab, setActiveTab] = useState<SessionListTab>("others");
   const [searchQuery, setSearchQuery] = useState("");
   const [draftTimeFilter, setDraftTimeFilter] = useState<DraftTimeFilter>("all");
   const [otherStatusFilter, setOtherStatusFilter] = useState<OtherStatusFilter>("all");
@@ -363,7 +366,7 @@ export function MentorSessionsPage() {
     isLoading: sessionsLoading,
     isRefetching: sessionsRefetching,
     refetch: refetchSessions,
-  } = useSessionsByUserId(user?.id ?? 0);
+  } = useSessions();
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
@@ -371,6 +374,11 @@ export function MentorSessionsPage() {
     refetch: refetchReviews,
   } = useMentorReviews();
   const updateStatusMutation = useUpdateSessionStatus();
+  // 2026-07-28: User.id (from JWT sub) is NOT the same as Mentor.id. The
+  //   admin assignment stores the Mentor.id in `session.mentorId` /
+  //   `session.userId`, so we resolve the mentor profile for the current
+  //   auth user and use BOTH ids when filtering.
+  const { data: currentMentorProfile } = useCurrentMentorProfile();
 
   // Current time state for joinTime-based blocking (updates every 5s).
   // 2026-07-17 mentor-interview: Mentor Interview sessions can be joined
@@ -384,41 +392,48 @@ export function MentorSessionsPage() {
   const isLoading = sessionsLoading || reviewsLoading;
 
   // Keep source data deterministic so default sort always yields newest-first consistently.
-  // BE sometimes returns the mentor id under `userId2` (DB column) and sometimes
-  // under `mentorId` (response DTO). Accept both so the list stays in sync with
-  // whatever the active BE controller is doing.
+  // 2026-07-28: Mentor sessions store the Mentor.id (NOT User.id) under
+  //   userId/userId2/mentorId. User.id != Mentor.id, so we resolve the
+  //   mentor profile for the current auth user and match against both ids.
   const mentorSessions = useMemo(() => {
-    const userIdStr = user?.id != null ? String(user.id) : "";
+    const userId = user?.id;
+    const mentorProfileId =
+      currentMentorProfile?.id != null
+        ? typeof currentMentorProfile.id === "string"
+          ? parseInt(currentMentorProfile.id, 10)
+          : currentMentorProfile.id
+        : undefined;
     const all = [...allSessions];
     if (typeof window !== "undefined") {
-      // Temporary debug aid — remove once mentor can see their session.
-      console.debug("[MentorSessions] filter debug", {
-        userId: user?.id,
-        userIdType: typeof user?.id,
+      // DEBUG: full data + per-record match flags so we can see WHY nothing matches.
+      console.debug("[MentorSessions] FULL DATA", {
+        userId,
+        mentorProfileId,
         userRole: user?.role,
         totalSessions: all.length,
-        sample: all.slice(0, 3).map((s) => ({
+        sample: all.slice(0, 5).map((s) => ({
           id: s.id,
           status: s.status,
           roomName: s.roomName,
           userId: s.userId,
           userId2: s.userId2,
           mentorId: s.mentorId,
-          userId2Match: s.userId2 === user?.id,
-          mentorIdMatch: s.mentorId === user?.id,
         })),
       });
     }
     return all
-      .filter(
-        (session: Session) =>
-          session.userId2 === user?.id ||
-          session.mentorId === user?.id ||
-          (userIdStr && String(session.userId2 ?? "") === userIdStr) ||
-          (userIdStr && String(session.mentorId ?? "") === userIdStr)
-      )
+      .filter((session: Session) => {
+        const candidates = [userId, mentorProfileId].filter(
+          (id): id is number => typeof id === "number" && Number.isFinite(id)
+        );
+        if (candidates.length === 0) return false;
+        const sessionIds = [session.userId, session.userId2, session.mentorId]
+          .filter((id): id is number => typeof id === "number")
+          .map((id) => String(id));
+        return candidates.some((id) => sessionIds.includes(String(id)));
+      })
       .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
-  }, [allSessions, user?.id, user?.role]);
+  }, [allSessions, user, currentMentorProfile]);
 
   // Get session IDs that already have mentor reviews
   const reviewBySessionId = useMemo(() => {
@@ -539,8 +554,6 @@ export function MentorSessionsPage() {
     }
   };
 
-  // Stats — DRAFT is counted separately, not in "Sắp diễn ra"
-  const draftCount = mentorSessions.filter((s: Session) => s.status === "DRAFT").length;
   const scheduledCount = mentorSessions.filter(
     (s: Session) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
   ).length;
@@ -566,21 +579,13 @@ export function MentorSessionsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardHeader className="pb-2">
             <CardDescription>{t("common.totalSession")}</CardDescription>
             <CardTitle className="text-2xl">{mentorSessions.length}</CardTitle>
           </CardHeader>
         </Card>
-        {draftCount > 0 && (
-          <Card className="border-amber-200 dark:border-amber-900">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.waitingForApproval")}</CardDescription>
-              <CardTitle className="text-2xl text-amber-600">{draftCount}</CardTitle>
-            </CardHeader>
-          </Card>
-        )}
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardHeader className="pb-2">
             <CardDescription>{t("common.comingSoon")}</CardDescription>
@@ -632,11 +637,7 @@ export function MentorSessionsPage() {
                   setActiveTab(tab as SessionListTab);
                   pagination.goToFirstPage();
                 }}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="draft">
-                    {t("mentorSessions.waitingForApproval")}
-                    {draftSessions.length})
-                  </TabsTrigger>
+                <TabsList className="grid w-full grid-cols-1">
                   <TabsTrigger value="others">
                     {t("mentorSessions.remainingSessions")}
                     {otherSessions.length})
@@ -644,7 +645,7 @@ export function MentorSessionsPage() {
                 </TabsList>
               </Tabs>
 
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-1">
                 <div className="relative">
                   <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                   <Input
@@ -657,49 +658,25 @@ export function MentorSessionsPage() {
                     className="pl-9"
                   />
                 </div>
-                {activeTab === "draft" ? (
-                  <Select
-                    value={draftTimeFilter}
-                    onValueChange={(value) => {
-                      setDraftTimeFilter(value as DraftTimeFilter);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("mentorSessions.filterByCalendarInformation")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">
-                        {t("mentorSessions.allSessionsPendingApproval")}
-                      </SelectItem>
-                      <SelectItem value="hasJoinTime">
-                        {t("mentorSessions.itSMeetingTime")}
-                      </SelectItem>
-                      <SelectItem value="noJoinTime">
-                        {t("mentorSessions.thereIsNoMeetingTime")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Select
-                    value={otherStatusFilter}
-                    onValueChange={(value) => {
-                      setOtherStatusFilter(value as OtherStatusFilter);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("common.filterByStatus")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-                      <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
-                      <SelectItem value="PAID">{t("common.paid")}</SelectItem>
-                      <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
-                      <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
-                      <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
-                      <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                <Select
+                  value={otherStatusFilter}
+                  onValueChange={(value) => {
+                    setOtherStatusFilter(value as OtherStatusFilter);
+                    pagination.goToFirstPage();
+                  }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("common.filterByStatus")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                    <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
+                    <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+                    <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+                    <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                    <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+                    <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex flex-wrap items-center gap-4">

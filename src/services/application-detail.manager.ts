@@ -342,6 +342,86 @@ export class ApplicationDetailManager {
       };
     }
   }
+
+  /**
+   * Admin assigns multiple mentors to a candidate's Mentor Review round (Option 2)
+   * PUT /api/application-details/{id}/assign-mentors
+   * Body: { mentorIds: [1, 2, 5] }
+   */
+  async assignMentors(
+    applicationDetailId: number,
+    mentorIds: number[]
+  ): Promise<ApiResponse<ApplicationDetail>> {
+    try {
+      const response = await fetchClient.PUT("/api/application-details/{id}/assign-mentors", {
+        params: {
+          path: { id: applicationDetailId },
+        },
+        body: { mentorIds },
+      });
+      return {
+        success: true,
+        data: response.data as ApplicationDetail,
+      };
+    } catch (error) {
+      console.error("[ApplicationDetailManager] assignMentors error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Get the list of assigned mentors for a candidate's Mentor Review round (Option 2)
+   * GET /api/application-details/{id}/assigned-mentors
+   * Returns: MentorResponse[]
+   */
+  async getAssignedMentors(applicationDetailId: number): Promise<ApiResponse<unknown[]>> {
+    try {
+      const response = await fetchClient.GET("/api/application-details/{id}/assigned-mentors", {
+        params: { path: { id: applicationDetailId } },
+      });
+      return {
+        success: true,
+        data: response.data as unknown[],
+      };
+    } catch (error) {
+      console.error("[ApplicationDetailManager] getAssignedMentors error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Candidate selects one mentor from the assigned mentors list (Option 2)
+   * PUT /api/application-details/{id}/select-mentor?mentorId=
+   */
+  async selectMentor(
+    applicationDetailId: number,
+    mentorId: number
+  ): Promise<ApiResponse<ApplicationDetail>> {
+    try {
+      const response = await fetchClient.PUT("/api/application-details/{id}/select-mentor", {
+        params: {
+          path: { id: applicationDetailId },
+          query: { mentorId },
+        },
+      });
+      return {
+        success: true,
+        data: response.data as ApplicationDetail,
+      };
+    } catch (error) {
+      console.error("[ApplicationDetailManager] selectMentor error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
 }
 
 /**

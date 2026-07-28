@@ -8,6 +8,13 @@ export interface UseDailyTrackingOptions {
   token: string | null | undefined;
   /** `false` for student, `true` for mentor. */
   isMentor?: boolean;
+  /**
+   * 2026-07-28: When the caller is a mentor, pass the resolved Mentor.id
+   * (NOT the User.id from the JWT) so BE's join-session validator matches
+   * the value it stored on `session.mentorId`. Falls back to `userId`
+   * when undefined.
+   */
+  mentorProfileId?: number | null | undefined;
   /** When true, the call is created but you must call `join()` yourself. */
   manualJoin?: boolean;
   enabled?: boolean;
@@ -39,6 +46,7 @@ export function useDailyTracking({
   userId,
   token,
   isMentor = false,
+  mentorProfileId,
   manualJoin = false,
   enabled = true,
 }: UseDailyTrackingOptions): UseDailyTrackingResult {
@@ -57,7 +65,12 @@ export function useDailyTracking({
 
   const callTrackApi = useCallback(
     async (participantId: string) => {
-      if (!roomName || !userId || !token) return;
+      if (!roomName || !token) return;
+      // 2026-07-28: Prefer Mentor.id over User.id for mentor participants
+      //   so BE's join-session validator (which compares against
+      //   session.mentorId stored as Mentor.id) accepts the call.
+      const joinUserId = isMentor && mentorProfileId != null ? mentorProfileId : userId;
+      if (!joinUserId) return;
       try {
         const res = await fetch(`${apiBase}/api/sessions/join-session`, {
           method: "POST",
@@ -67,7 +80,7 @@ export function useDailyTracking({
           },
           body: JSON.stringify({
             sessionName: roomName,
-            userId,
+            userId: joinUserId,
             participantId,
             mentor: isMentor,
           }),
@@ -92,7 +105,7 @@ export function useDailyTracking({
         setJoinError(msg);
       }
     },
-    [apiBase, isMentor, roomName, token, userId]
+    [apiBase, isMentor, mentorProfileId, roomName, token, userId]
   );
 
   useEffect(() => {

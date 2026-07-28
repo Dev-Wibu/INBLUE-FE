@@ -16,6 +16,7 @@ export function MentorAccountPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<Partial<MentorProfileData>>({});
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fetchMentorData = useCallback(async () => {
     if (!authUser?.id || !authUser.email) {
       setIsLoading(false);
@@ -133,6 +134,7 @@ export function MentorAccountPage() {
       }
       const previewUrl = URL.createObjectURL(file);
       setAvatarPreview(previewUrl);
+      setAvatarFile(file);
     }
   };
   const handleClearAvatar = () => {
@@ -140,6 +142,7 @@ export function MentorAccountPage() {
       URL.revokeObjectURL(avatarPreview);
     }
     setAvatarPreview(null);
+    setAvatarFile(null);
   };
   const handleSaveProfile = async () => {
     if (!mentorProfile?.id) {
@@ -161,6 +164,11 @@ export function MentorAccountPage() {
               public_id: mentorProfile.public_id,
             }
           : {}),
+        ...(avatarFile
+          ? {
+              avatar: avatarFile,
+            }
+          : {}),
       });
       if (response.success) {
         await fetchMentorData();
@@ -174,6 +182,7 @@ export function MentorAccountPage() {
         setIsEditing(false);
         setFormData({});
         setAvatarPreview(null);
+        setAvatarFile(null);
       } else {
         toast.error(response.error || t("common.updateFailedPleaseTryAgain"));
       }

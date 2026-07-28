@@ -4,9 +4,11 @@ import { applicationDetailManager } from "@/services/application-detail.manager"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { components } from "../../schema-from-be";
+
 const t = i18n.t.bind(i18n);
 
 export type ApplicationDetail = components["schemas"]["ApplicationDetail"];
+export type MentorResponse = components["schemas"]["MentorResponse"];
 
 export interface HrScoreParams {
   applicationDetailId: number;
@@ -235,6 +237,130 @@ export const useAssignMentor = (options?: {
       queryClient.invalidateQueries({
         queryKey: ["applicationDetails", "allPendingHR"],
         refetchType: "none",
+      });
+
+      options?.onSuccess?.();
+    },
+    onError: (error: Error) => {
+      const _message = getNormalizedErrorMessage(error);
+      toast.error(_message);
+      options?.onError?.(_message);
+    },
+  });
+};
+
+// ============================================================
+// Option 2: Multi-mentor assignment hooks
+// ============================================================
+
+/**
+ * Admin assigns multiple mentors to a candidate's Mentor Review round (Option 2)
+ * PUT /api/application-details/{id}/assign-mentors
+ */
+export const useAssignMentors = (options?: {
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { applicationDetailId: number; mentorIds: number[] }) => {
+      const result = await applicationDetailManager.assignMentors(
+        params.applicationDetailId,
+        params.mentorIds
+      );
+      if (!result.success) throw new Error(result.error);
+      return result.data!;
+    },
+    onSuccess: (data, variables) => {
+      toast.success(t("grading.assignmentSuccess"));
+
+      const updated = data as unknown as ApplicationDetail | undefined;
+
+      if (updated?.id !== undefined) {
+        queryClient.setQueryData<ApplicationDetail>(
+          ["applicationDetails", "byId", variables.applicationDetailId],
+          updated
+        );
+
+        const appId = updated.applicationId;
+        if (appId !== undefined) {
+          queryClient.setQueryData<ApplicationDetail[]>(
+            ["applicationDetails", "byApplicationId", appId],
+            (prev) => prev?.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)) ?? prev
+          );
+        }
+      }
+
+      options?.onSuccess?.();
+    },
+    onError: (error: Error) => {
+      const _message = getNormalizedErrorMessage(error);
+      toast.error(_message);
+      options?.onError?.(_message);
+    },
+  });
+};
+
+/**
+ * Get the list of assigned mentors for a candidate's Mentor Review round (Option 2)
+ * GET /api/application-details/{id}/assigned-mentors
+ */
+export const useAssignedMentors = (applicationDetailId: number, enabled = true) => {
+  return useQuery({
+    queryKey: ["assignedMentors", applicationDetailId],
+    queryFn: async () => {
+      const result = await applicationDetailManager.getAssignedMentors(applicationDetailId);
+      if (!result.success) throw new Error(result.error);
+      return (result.data ?? []) as MentorResponse[];
+    },
+    enabled: enabled && applicationDetailId > 0,
+    staleTime: 30_000,
+  });
+};
+
+/**
+ * Candidate selects one mentor from the assigned mentors list (Option 2)
+ * PUT /api/application-details/{id}/select-mentor?mentorId=
+ */
+export const useSelectMentor = (options?: {
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { applicationDetailId: number; mentorId: number }) => {
+      const result = await applicationDetailManager.selectMentor(
+        params.applicationDetailId,
+        params.mentorId
+      );
+      if (!result.success) throw new Error(result.error);
+      return result.data!;
+    },
+    onSuccess: (data, variables) => {
+      toast.success(t("userMentorReview.mentorSelectedSuccessfully"));
+
+      const updated = data as unknown as ApplicationDetail | undefined;
+
+      if (updated?.id !== undefined) {
+        queryClient.setQueryData<ApplicationDetail>(
+          ["applicationDetails", "byId", variables.applicationDetailId],
+          updated
+        );
+
+        const appId = updated.applicationId;
+        if (appId !== undefined) {
+          queryClient.setQueryData<ApplicationDetail[]>(
+            ["applicationDetails", "byApplicationId", appId],
+            (prev) => prev?.map((d) => (d.id === updated.id ? { ...d, ...updated } : d)) ?? prev
+          );
+        }
+      }
+
+      // Invalidate assigned mentors cache
+      queryClient.invalidateQueries({
+        queryKey: ["assignedMentors", variables.applicationDetailId],
       });
 
       options?.onSuccess?.();
