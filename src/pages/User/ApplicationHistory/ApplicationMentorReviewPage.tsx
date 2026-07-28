@@ -1,11 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { StarRating } from "@/components/ui/star-rating";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  useAssignedMentors,
+  useSelectMentor,
+  type MentorResponse,
+} from "@/hooks/useApplicationDetails";
 import { useCurrentRound } from "@/hooks/useRound";
 import { useCreateRoundSession } from "@/hooks/useSession";
 import { fetchClient } from "@/lib/api";
@@ -18,6 +30,8 @@ import {
   LogIn,
   MapPin,
   Send,
+  Star,
+  UserCheck,
   Video,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -44,7 +58,8 @@ type ApplicationDetailStatus =
   | "AI_EVALUATED"
   | "COMPLETED"
   | "ERROR"
-  | "AWAITING_MENTOR";
+  | "AWAITING_MENTOR"
+  | "AWAITING_CANDIDATE_SELECT_MENTOR";
 
 interface ApplicationDetail {
   id?: number;
@@ -92,6 +107,9 @@ interface MentorInterviewBooking {
   sessionKey?: string;
   notes?: string;
 }
+
+// Mentor profile for Option 2 (assigned mentors list)
+// Uses MentorResponse type from hooks/useApplicationDetails
 
 // ============================================================
 // Helpers
@@ -423,6 +441,256 @@ function AwaitingMentorAssignmentStep() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// ============================================================
+// Mentor Selection Step (Option 2) — candidate selects one mentor from the list
+// ============================================================
+
+function MentorSelectionStep({
+  applicationDetailId,
+  onSelectSuccess,
+}: {
+  applicationDetailId: number;
+  onSelectSuccess: () => void;
+}) {
+  const { t } = useTranslation();
+  const [selectedMentor, setSelectedMentor] = useState<MentorResponse | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  const { data: mentors = [], isLoading, error } = useAssignedMentors(applicationDetailId);
+
+  const selectMentorMutation = useSelectMentor({
+    onSuccess: () => {
+      toast.success(t("userMentorReview.mentorSelectedSuccessfully"));
+      setShowConfirmDialog(false);
+      setSelectedMentor(null);
+      onSelectSuccess();
+    },
+    onError: () => {
+      setShowConfirmDialog(false);
+    },
+  });
+
+  const handleSelectMentor = (mentor: MentorResponse) => {
+    setSelectedMentor(mentor);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSelect = () => {
+    if (selectedMentor?.id) {
+      selectMentorMutation.mutate({
+        applicationDetailId,
+        mentorId: selectedMentor.id,
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
+        <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+          <Spinner size="lg" tone="primary" />
+          <p className="text-purple-600 dark:text-purple-400">
+            {t("userMentorReview.loadingAssignedMentors")}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || mentors.length === 0) {
+    return (
+      <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
+        <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
+            <UserCheck className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-purple-700 dark:text-purple-300">
+              {t("userMentorReview.noMentorsAvailable")}
+            </p>
+            <p className="mt-1 text-sm text-purple-600 dark:text-purple-400">
+              {t("userMentorReview.noMentorsAvailableDesc")}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-5">
+        {/* Hero Banner */}
+        <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
+          <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900">
+              <UserCheck className="h-7 w-7 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-base font-semibold text-purple-700 dark:text-purple-300">
+                {t("userMentorReview.selectMentorTitle")}
+              </p>
+              <p className="mt-1 text-sm text-purple-600 dark:text-purple-400">
+                {t("userMentorReview.selectMentorDesc")}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Mentor Cards */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          {mentors.map((mentor) => (
+            <Card
+              key={mentor.id}
+              className="cursor-pointer transition-all hover:border-purple-400 hover:shadow-md"
+              onClick={() => handleSelectMentor(mentor)}>
+              <CardHeader className="pb-2">
+                <div className="flex items-start gap-3">
+                  {/* Avatar */}
+                  <div className="bg-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full">
+                    {mentor.avatarUrl ? (
+                      <img
+                        src={mentor.avatarUrl}
+                        alt={mentor.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-lg font-semibold">
+                        {mentor.name?.charAt(0)?.toUpperCase() ?? "?"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="truncate text-base">{mentor.name}</CardTitle>
+                    <p className="text-muted-foreground text-sm">
+                      {mentor.currentCompany && (
+                        <span className="truncate">{mentor.currentCompany}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {/* Rating & Experience */}
+                <div className="flex items-center gap-4 text-sm">
+                  {mentor.averageRating && mentor.averageRating > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">{mentor.averageRating.toFixed(1)}</span>
+                      {mentor.totalSession && (
+                        <span className="text-muted-foreground">
+                          ({mentor.totalSession} {t("userMentorReview.sessions")})
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {mentor.yearsOfExperience && mentor.yearsOfExperience > 0 && (
+                    <div className="text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>
+                        {mentor.yearsOfExperience}{" "}
+                        {mentor.yearsOfExperience === 1
+                          ? t("userMentorReview.year")
+                          : t("userMentorReview.years")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Skills */}
+                {mentor.expertise && (
+                  <div className="flex flex-wrap gap-1">
+                    {mentor.expertise
+                      .split(/[,;]/)
+                      .slice(0, 4)
+                      .map((skill, idx) => (
+                        <span
+                          key={idx}
+                          className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                          {skill.trim()}
+                        </span>
+                      ))}
+                  </div>
+                )}
+
+                {/* Bio */}
+                {mentor.bio && (
+                  <p className="text-muted-foreground line-clamp-2 text-xs">{mentor.bio}</p>
+                )}
+
+                {/* Select button */}
+                <Button
+                  size="sm"
+                  className="w-full gap-2 bg-purple-600 text-white hover:bg-purple-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectMentor(mentor);
+                  }}>
+                  <UserCheck className="h-4 w-4" />
+                  {t("userMentorReview.selectThisMentor")}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("userMentorReview.confirmSelectionTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("userMentorReview.confirmSelectionDesc", { mentorName: selectedMentor?.name })}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedMentor && (
+            <div className="flex items-center gap-3 rounded-lg border p-3">
+              <div className="bg-muted flex h-10 w-10 items-center justify-center overflow-hidden rounded-full">
+                {selectedMentor.avatarUrl ? (
+                  <img
+                    src={selectedMentor.avatarUrl}
+                    alt={selectedMentor.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="font-semibold">
+                    {selectedMentor.name?.charAt(0)?.toUpperCase() ?? "?"}
+                  </span>
+                )}
+              </div>
+              <div>
+                <p className="font-medium">{selectedMentor.name}</p>
+                {selectedMentor.currentCompany && (
+                  <p className="text-muted-foreground text-sm">{selectedMentor.currentCompany}</p>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={handleConfirmSelect}
+              disabled={selectMentorMutation.isPending}
+              className="bg-purple-600 text-white hover:bg-purple-700">
+              {selectMentorMutation.isPending ? (
+                <>
+                  <Spinner size="sm" tone="white" />
+                  {t("userMentorReview.selecting")}
+                </>
+              ) : (
+                t("userMentorReview.confirmSelection")
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -1656,6 +1924,19 @@ export function ApplicationMentorReviewPage() {
               }
               roomUrl={roomUrl}
               onJoinRoom={handleJoinRoom}
+            />
+          )}
+
+        {/* Mentor Selection Step (Option 2) — admin has assigned multiple mentors, candidate needs to select one */}
+        {applicationDetail?.status === "AWAITING_CANDIDATE_SELECT_MENTOR" &&
+          !isReviewed &&
+          applicationDetailId > 0 && (
+            <MentorSelectionStep
+              applicationDetailId={applicationDetailId}
+              onSelectSuccess={() => {
+                // The hook will update the cache, then this page will re-render
+                // with the new status (PENDING) and show SlotSelectionStep
+              }}
             />
           )}
 
