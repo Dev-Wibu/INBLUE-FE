@@ -10,7 +10,7 @@ export type SchemaUserResponse = components["schemas"]["UserResponse"];
 export type SchemaMentor = components["schemas"]["Mentor"];
 export type SchemaMentorResponse = components["schemas"]["MentorResponse"];
 export type SchemaUserInfo = components["schemas"]["UserInfo"];
-export type SchemaMentorInfo = components["schemas"]["MentorInfo"];
+export type SchemaCreateMentorRequest = components["schemas"]["CreateMentorRequest"];
 export type SchemaMentorInterviewDto = components["schemas"]["MentorInterviewDto"];
 /** MemberShipPlan is no longer in schema-from-be; defined locally to match expected BE shape */
 export type SchemaMembershipPlan = {
@@ -68,6 +68,7 @@ export type PaymentPurpose = "FULLY_PAID" | "MENTOR_INTERVIEW" | "JD_PURCHASE";
 export type PaymentEntity = components["schemas"]["Payment"] & {
   paymentPurpose?: PaymentPurpose | null;
 };
+export type CreateMentorRequest = SchemaCreateMentorRequest;
 export type JobDescription = SchemaJobDescription;
 export type JobDescriptionLevel = NonNullable<SchemaJobDescription["level"]>;
 export type JobDescriptionStatus = NonNullable<SchemaJobDescription["status"]>;
@@ -155,7 +156,7 @@ export interface UserFormData extends Omit<SchemaUserInfo, "id" | "name" | "emai
  * Mentor form data for create/update operations
  * Updated to match MentorInfo schema (doesn't include rate)
  */
-export interface MentorFormData extends Omit<SchemaMentorInfo, "id" | "name" | "email"> {
+export interface MentorFormData extends Omit<SchemaCreateMentorRequest, "name" | "email"> {
   name: string;
   email: string;
   active?: boolean;

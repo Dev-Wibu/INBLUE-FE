@@ -13,19 +13,19 @@ import type {
   Mentor,
   PaginatedResponse,
   PaginationParams,
-  SchemaMentorInfo,
+  SchemaCreateMentorRequest,
 } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
 
 // Re-export Mentor type for convenience
 export type { Mentor } from "@/interfaces";
-export type MentorInfo = SchemaMentorInfo;
+export type CreateMentorRequest = SchemaCreateMentorRequest;
 
 /**
  * Extended mentor data for creation with file uploads
  * Files: avatar
  */
-export interface CreateMentorData extends MentorInfo {
+export interface CreateMentorData extends CreateMentorRequest {
   avatar?: File;
   active?: boolean;
 }
@@ -144,15 +144,15 @@ export class MentorManager implements BaseManager<Mentor> {
       // According to schema, createMentor uses multipart/form-data
       const formData = new FormData();
 
-      // Prepare MentorInfo data (JSON object)
+      // Prepare CreateMentorRequest data (JSON object)
       // Note: Password should be handled securely by the backend (e.g., hashing)
       // The frontend sends the password in plain text over HTTPS
       // IMPORTANT: Backend comment says POST /api/mentors is shared for create & update
       // When creating, don't include id. When updating, include id.
       // Adding 'active: true' to ensure new mentors are active by default
-      const mentorInfo: MentorInfo = {
-        name: _data.name.trim(),
-        email: _data.email.trim(),
+      const mentorInfo: CreateMentorRequest = {
+        name: _data.name?.trim(),
+        email: _data.email?.trim(),
         password: _data.password,
         bio: _data.bio,
         expertise: _data.expertise,
@@ -163,7 +163,7 @@ export class MentorManager implements BaseManager<Mentor> {
       };
 
       // Add active field to the payload to ensure new mentors are active
-      // Note: This extends MentorInfo with the active field from Mentor schema
+      // Note: This extends CreateMentorRequest with the active field from Mentor schema
       const mentorPayload = {
         ...mentorInfo,
         active: (_data as Partial<Mentor>).active !== false, // Default true unless explicitly false
@@ -244,7 +244,7 @@ export class MentorManager implements BaseManager<Mentor> {
         // Ignore
       }
 
-      // Build MentorInfo payload with id for update.
+      // Build CreateMentorRequest payload with id for update.
       // SECURITY/PASSWORD-PRESERVATION NOTE:
       // The backend controller wipes the mentor's password whenever the
       // `password` field is missing from the request body OR arrives as
@@ -252,17 +252,18 @@ export class MentorManager implements BaseManager<Mentor> {
       // hash that came back from GET /api/mentors/{id}. We only do that
       // when the field is actually a truthy string — never emit null /
       // undefined / empty.
-      const mentorInfo: MentorInfo & {
+      const mentorInfo: CreateMentorRequest & {
+        id?: number;
         active?: boolean;
       } = {
         id: Number(_id),
-        name: _data.name?.trim() || existingMentor.name,
-        email: _data.email?.trim() || existingMentor.email,
-        bio: _data.bio || existingMentor.bio,
-        expertise: _data.expertise || existingMentor.expertise,
+        name: (_data.name ?? existingMentor.name)?.trim(),
+        email: (_data.email ?? existingMentor.email)?.trim(),
+        bio: _data.bio ?? existingMentor.bio,
+        expertise: _data.expertise ?? existingMentor.expertise,
         yearsOfExperience: _data.yearsOfExperience ?? existingMentor.yearsOfExperience,
-        linkedInUrl: _data.linkedInUrl || existingMentor.linkedInUrl,
-        currentCompany: _data.currentCompany || existingMentor.currentCompany,
+        linkedInUrl: _data.linkedInUrl ?? existingMentor.linkedInUrl,
+        currentCompany: _data.currentCompany ?? existingMentor.currentCompany,
         pricePerMinute: _data.pricePerMinute ?? existingMentor.pricePerMinute,
       };
 
