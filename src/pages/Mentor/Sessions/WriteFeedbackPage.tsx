@@ -15,7 +15,7 @@ import {
 } from "@/hooks/useMentorReview";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useSessionById } from "@/hooks/useSession";
-import { isSessionMentor, getSessionMentorId } from "@/lib/session-mentor";
+import { isSessionMentor } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowLeft, Star, User } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -36,8 +36,8 @@ export function WriteFeedbackPage() {
   // 2026-07-28: User.id (from JWT sub) is NOT the same as Mentor.id. BE stores
   //   the Mentor.id in `session.mentorId` and validates the create-review
   //   payload against it, so when submitting a mentor review we MUST send
-  //   Mentor.id, not User.id — otherwise BE responds with
-  //   "You are not the mentor for this interview session".
+  //   Mentor.id, not User.id — otherwise the access guard short-circuits to
+  //   "No access / You are not the mentor".
   //   Same fix as commit eb834e6 (join-session) applied to write-feedback.
   const { data: currentMentorProfile } = useCurrentMentorProfile();
   const mentorProfileId =
@@ -46,24 +46,10 @@ export function WriteFeedbackPage() {
         ? parseInt(currentMentorProfile.id, 10)
         : currentMentorProfile.id
       : null;
-  // Prefer Mentor.id; fall back to user.id if profile hasn't loaded so we
-  // don't deadlock on race conditions (BE will reject in that case anyway).
+  // Prefer Mentor.id; fall back to user.id if the profile hasn't loaded yet
+  //   so the access check still passes for accounts where User.id and
+  //   Mentor.id happen to coincide (legacy mentors, dev seed data, etc.).
   const submitterMentorId = mentorProfileId ?? (user?.id ?? null);
-
-  // DEBUG(remove after): surface every id involved so we can see exactly
-  //   why the create-review POST still fails with "You are not the mentor".
-  if (typeof window !== "undefined") {
-    console.debug("[WriteFeedbackPage] ID resolution", {
-      authUser: user ? { id: user.id, email: user.email, role: user.role } : null,
-      currentMentorProfile: currentMentorProfile
-        ? { id: currentMentorProfile.id, email: currentMentorProfile.email }
-        : null,
-      mentorProfileId,
-      submitterMentorId,
-      sessionMentorId: session ? getSessionMentorId(session) : null,
-      sessionUserId: session?.userId,
-    });
-  }
   const isLoading = sessionLoading || reviewLoading;
   const isSubmitting = isCreating || isUpdating;
   const isEdit = !!existingReview;
@@ -153,20 +139,9 @@ export function WriteFeedbackPage() {
         }
       );
     } else {
-      // DEBUG(remove after): surface the actual POST body and any error so we
-      //   can see what BE is rejecting (mentorId now resolves to 15 correctly
-      //   so the failure is something else).
-      console.debug("[WriteFeedbackPage] POST /api/mentor-reviews payload", payload);
       createReview(payload, {
         onSuccess: () => {
           navigate("/mentor?tab=sessions");
-        },
-        onError: (error: Error) => {
-          console.debug("[WriteFeedbackPage] POST /api/mentor-reviews FAILED", {
-            message: error?.message,
-            stack: error?.stack,
-            raw: error,
-          });
         },
       });
     }
@@ -216,8 +191,10 @@ export function WriteFeedbackPage() {
     );
   }
 
-  // Check if current user is the mentor for this session
-  if (!isSessionMentor(session, user?.id)) {
+  // Check if current user is the mentor for this session. Use
+  //   submitterMentorId (resolved via useCurrentMentorProfile) because
+  //   User.id (from JWT sub) is not the same as Mentor.id.
+  if (!isSessionMentor(session, submitterMentorId)) {
     return (
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => navigate(-1)}>
