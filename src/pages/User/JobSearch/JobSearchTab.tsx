@@ -1,4 +1,4 @@
-import { ReloadButton } from "@/components/shared";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -189,19 +189,14 @@ export function JobSearchTab() {
   const [activeLevel, setActiveLevel] = useState<string>(searchParams.get("level") || "ALL");
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isReloading, setIsReloading] = useState(false);
 
   useEffect(() => {
     setSearchQuery(searchParams.get("q") || "");
     setActiveLevel(searchParams.get("level") || "ALL");
   }, [searchParams]);
 
-  const fetchJobs = async (isReload = false) => {
-    if (!isReload) {
-      setIsLoading(true);
-    } else {
-      setIsReloading(true);
-    }
+  const fetchJobs = async () => {
+    setIsLoading(true);
     try {
       const result = await jobDescriptionManager.getAll();
       if (result.success && result.data) {
@@ -212,7 +207,6 @@ export function JobSearchTab() {
       console.error("Failed to fetch jobs:", error);
     } finally {
       setIsLoading(false);
-      setIsReloading(false);
     }
   };
 
