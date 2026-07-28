@@ -13,6 +13,7 @@ import {
   useMentorReviewBySession,
   useUpdateMentorReview,
 } from "@/hooks/useMentorReview";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useSessionById } from "@/hooks/useSession";
 import { isSessionMentor } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
@@ -32,6 +33,22 @@ export function WriteFeedbackPage() {
     useMentorReviewBySession(numericSessionId);
   const { mutate: createReview, isPending: isCreating } = useCreateMentorReview();
   const { mutate: updateReview, isPending: isUpdating } = useUpdateMentorReview();
+  // 2026-07-28: User.id (from JWT sub) is NOT the same as Mentor.id. BE stores
+  //   the Mentor.id in `session.mentorId` and validates the create-review
+  //   payload against it, so when submitting a mentor review we MUST send
+  //   Mentor.id, not User.id — otherwise BE responds with
+  //   "You are not the mentor for this interview session".
+  //   Same fix as commit eb834e6 (join-session) applied to write-feedback.
+  const { data: currentMentorProfile } = useCurrentMentorProfile();
+  const mentorProfileId =
+    currentMentorProfile?.id != null
+      ? typeof currentMentorProfile.id === "string"
+        ? parseInt(currentMentorProfile.id, 10)
+        : currentMentorProfile.id
+      : null;
+  // Prefer Mentor.id; fall back to user.id if profile hasn't loaded so we
+  // don't deadlock on race conditions (BE will reject in that case anyway).
+  const submitterMentorId = mentorProfileId ?? (user?.id ?? null);
   const isLoading = sessionLoading || reviewLoading;
   const isSubmitting = isCreating || isUpdating;
   const isEdit = !!existingReview;
@@ -48,7 +65,7 @@ export function WriteFeedbackPage() {
     mentorId: number;
     userId: number;
   }) => {
-    if (!session || !user?.id || !isSessionMentor(session, user.id)) {
+    if (!session || !submitterMentorId || !isSessionMentor(session, submitterMentorId)) {
       toast.error(t("mentorSessions.youDoNotHavePermission"));
       return;
     }
@@ -88,7 +105,7 @@ export function WriteFeedbackPage() {
     }
     const payload = {
       sessionId: session.id,
-      mentorId: user.id,
+      mentorId: submitterMentorId,
       userId: session.userId,
       rating: normalizedRating,
       situationNote: normalizedSituationNote,
@@ -240,7 +257,7 @@ export function WriteFeedbackPage() {
         <CardContent>
           <MentorReviewForm
             sessionId={numericSessionId}
-            mentorId={user?.id || 0}
+            mentorId={submitterMentorId ?? 0}
             userId={session.userId || 0}
             existingReview={existingReview}
             onSubmit={handleSubmit}
