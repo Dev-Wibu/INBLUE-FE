@@ -12,6 +12,7 @@ import { Banknote, Building2, CalendarDays, Coins, Search, Users, X } from "luci
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { JobDetailContainer } from "./JobDetailContainer";
 
 function getCompanyInitials(name?: string) {
   return (
@@ -199,6 +200,12 @@ export function JobSearchTab() {
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const selectedJobId = searchParams.get("jobId");
+  const selectedJob = useMemo(
+    () => jobs.find((j) => j.id.toString() === selectedJobId),
+    [jobs, selectedJobId]
+  );
+
   const maxAvailablePrice = useMemo(() => {
     const max = Math.max(0, ...jobs.map((j) => j.price || 0));
     return max > 0 ? max : 10000;
@@ -240,7 +247,24 @@ export function JobSearchTab() {
     if (q.trim()) params.q = q.trim();
     if (level !== "ALL") params.level = level;
     if (price !== null) params.maxPrice = price.toString();
+    if (selectedJobId) params.jobId = selectedJobId;
     setSearchParams(params);
+  };
+
+  const handleCloseDetail = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("jobId");
+    setSearchParams(newParams);
+  };
+
+  const handleRefresh = () => {
+    void fetchJobs();
+  };
+
+  const handleJobClick = (id: number) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("jobId", id.toString());
+    setSearchParams(newParams);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -399,62 +423,89 @@ export function JobSearchTab() {
         </div>
       </div>
 
-      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50">
-        {(searchQuery || activeLevel !== "ALL") && (
-          <div className="mb-5">
-            <span className="text-xs text-slate-500 dark:text-[#888888]">
-              {t("common.showing", "Hiển thị")}{" "}
-              <strong className="text-slate-800 dark:text-slate-200">{filteredJobs.length}</strong>{" "}
-              {t("common.results", "kết quả")}
-            </span>
-          </div>
-        )}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Master Pane (Job List) */}
+        <div
+          className={`custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 ${
+            selectedJob ? "hidden w-[35%] xl:w-[30%] lg:block lg:flex-none" : "block"
+          }`}>
+          {(searchQuery || activeLevel !== "ALL") && (
+            <div className="mb-5">
+              <span className="text-xs text-slate-500 dark:text-[#888888]">
+                {t("common.showing", "Hiển thị")}{" "}
+                <strong className="text-slate-800 dark:text-slate-200">{filteredJobs.length}</strong>{" "}
+                {t("common.results", "kết quả")}
+              </span>
+            </div>
+          )}
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 gap-5 lg:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex flex-col gap-4 rounded-[20px] border border-slate-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/40">
-                <div className="flex gap-4">
-                  <div className="h-16 w-16 shrink-0 animate-pulse rounded-[14px] bg-slate-200 dark:bg-slate-800" />
-                  <div className="flex-1 space-y-2 pt-1">
-                    <div className="h-5 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                    <div className="h-4 w-1/2 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                    <div className="h-4 w-1/4 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800 mt-2" />
+          {isLoading ? (
+            <div
+              className={`grid gap-5 lg:gap-6 ${
+                selectedJob
+                  ? "grid-cols-1"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              }`}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col gap-4 rounded-[20px] border border-slate-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/40">
+                  <div className="flex gap-4">
+                    <div className="h-16 w-16 shrink-0 animate-pulse rounded-[14px] bg-slate-200 dark:bg-slate-800" />
+                    <div className="flex-1 space-y-2 pt-1">
+                      <div className="h-5 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                      <div className="h-4 w-1/2 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                      <div className="mt-2 h-4 w-1/4 animate-pulse rounded-full bg-slate-200 dark:bg-slate-800" />
+                    </div>
+                  </div>
+                  <div className="my-1 h-px w-full bg-slate-100 dark:bg-slate-800/60" />
+                  <div className="space-y-3">
+                    <div className="h-5 w-2/3 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="flex justify-between">
+                      <div className="h-4 w-1/3 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                      <div className="h-4 w-1/3 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex gap-3">
+                    <div className="h-11 flex-1 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 flex-1 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
                   </div>
                 </div>
-                <div className="my-1 h-px w-full bg-slate-100 dark:bg-slate-800/60" />
-                <div className="space-y-3">
-                  <div className="h-5 w-2/3 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                  <div className="flex justify-between">
-                    <div className="h-4 w-1/3 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                    <div className="h-4 w-1/3 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                  </div>
-                </div>
-                <div className="mt-4 flex gap-3">
-                  <div className="h-11 flex-1 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
-                  <div className="h-11 flex-1 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filteredJobs.length === 0 ? (
-          <EmptyState query={searchParams.get("q") || ""} onClear={clearSearch} t={t} />
-        ) : (
-          <div className="grid grid-cols-1 gap-5 lg:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredJobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                t={t}
-                onClick={() => navigate(`/enterprise/job/${job.id}`)}
-                onApply={(e) => {
-                  e.stopPropagation();
-                  navigate(`/enterprise/job/${job.id}?action=apply`);
-                }}
-              />
-            ))}
+              ))}
+            </div>
+          ) : filteredJobs.length === 0 ? (
+            <EmptyState query={searchParams.get("q") || ""} onClear={clearSearch} t={t} />
+          ) : (
+            <div
+              className={`grid gap-5 lg:gap-6 ${
+                selectedJob
+                  ? "grid-cols-1"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              }`}>
+              {filteredJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  t={t}
+                  onClick={() => handleJobClick(job.id!)}
+                  onApply={(e) => {
+                    e.stopPropagation();
+                    handleJobClick(job.id!);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Detail Pane (Right Side) */}
+        {selectedJob && (
+          <div className="absolute inset-0 z-50 flex-1 lg:relative lg:z-auto">
+            <JobDetailContainer
+              job={selectedJob}
+              onClose={handleCloseDetail}
+              onRefresh={handleRefresh}
+            />
           </div>
         )}
       </div>
