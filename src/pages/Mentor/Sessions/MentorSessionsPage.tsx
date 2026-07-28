@@ -23,7 +23,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
-import { useSessionsByUserId, useUpdateSessionStatus } from "@/hooks/useSession";
+import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
 import { useSortable } from "@/hooks/useSortable";
 import type { Session } from "@/interfaces";
 import {
@@ -365,7 +365,7 @@ export function MentorSessionsPage() {
     isLoading: sessionsLoading,
     isRefetching: sessionsRefetching,
     refetch: refetchSessions,
-  } = useSessionsByUserId(user?.id ?? 0);
+  } = useSessions();
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
@@ -393,34 +393,53 @@ export function MentorSessionsPage() {
     const userIdStr = user?.id != null ? String(user.id) : "";
     const all = [...allSessions];
     if (typeof window !== "undefined") {
-      // Temporary debug aid — remove once mentor can see their session.
-      console.debug("[MentorSessions] filter debug", {
+      // DEBUG: full data + per-record match flags so we can see WHY nothing matches.
+      console.debug("[MentorSessions] FULL DATA", {
         userId: user?.id,
         userIdType: typeof user?.id,
         userRole: user?.role,
         totalSessions: all.length,
-        sample: all.slice(0, 3).map((s) => ({
+        allSessions: all.map((s) => ({
           id: s.id,
           status: s.status,
           roomName: s.roomName,
           userId: s.userId,
           userId2: s.userId2,
           mentorId: s.mentorId,
-          userId2Match: s.userId2 === user?.id,
-          mentorIdMatch: s.mentorId === user?.id,
+          hasRoomUrl: !!s.roomUrl,
+          joinTime: s.joinTime,
         })),
       });
+      const matches = all.filter((s) => {
+        if (user?.id == null) return false;
+        return s.userId === user.id || s.userId2 === user.id || s.mentorId === user.id;
+      });
+      console.debug(
+        "[MentorSessions] matches count",
+        matches.length,
+        "ids:",
+        matches.map((s) => s.id)
+      );
     }
+    const myId = user?.id;
     return all
-      .filter(
-        (session: Session) =>
-          session.userId2 === user?.id ||
-          session.mentorId === user?.id ||
-          (userIdStr && String(session.userId2 ?? "") === userIdStr) ||
-          (userIdStr && String(session.mentorId ?? "") === userIdStr)
-      )
+      .filter((session: Session) => {
+        // 2026-07-28: Some mentor-interview sessions store the mentor's id
+        //   in `userId` (legacy student column repurposed by BE) instead of
+        //   `userId2`/`mentorId`. Match against all three so the FE doesn't
+        //   miss sessions when admin assigns a mentor to a candidate.
+        if (myId == null) return false;
+        if (session.userId === myId) return true;
+        if (session.userId2 === myId) return true;
+        if (session.mentorId === myId) return true;
+        const myIdStr = String(myId);
+        if (userIdStr && String(session.userId ?? "") === myIdStr) return true;
+        if (userIdStr && String(session.userId2 ?? "") === myIdStr) return true;
+        if (userIdStr && String(session.mentorId ?? "") === myIdStr) return true;
+        return false;
+      })
       .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
-  }, [allSessions, user?.id, user?.role]);
+  }, [allSessions, user]);
 
   // Get session IDs that already have mentor reviews
   const reviewBySessionId = useMemo(() => {
