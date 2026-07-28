@@ -171,7 +171,7 @@ function JobCard({
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            onApply();
+            onApply(e);
           }}
           className="h-11 rounded-xl px-8 border border-transparent bg-indigo-600 text-[15px] font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-500">
           {t("enterpriseJobsearchpage.applyNow", "Ứng tuyển ngay")}
