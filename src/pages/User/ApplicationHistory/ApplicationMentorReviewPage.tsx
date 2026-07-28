@@ -1,12 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,10 +17,13 @@ import { useCreateRoundSession } from "@/hooks/useSession";
 import { fetchClient } from "@/lib/api";
 import {
   ArrowLeft,
+  Briefcase,
+  Building2,
   Calendar,
   CheckCircle2,
   Clock,
   Hourglass,
+  Linkedin,
   LogIn,
   MapPin,
   Send,
@@ -540,76 +537,93 @@ function MentorSelectionStep({
           </CardContent>
         </Card>
 
-        {/* Mentor Cards */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* Mentor Cards - Vertical Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {mentors.map((mentor) => (
             <Card
               key={mentor.id}
-              className="cursor-pointer transition-all hover:border-purple-400 hover:shadow-md"
-              onClick={() => handleSelectMentor(mentor)}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start gap-3">
-                  {/* Avatar */}
-                  <div className="bg-muted flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full">
-                    {mentor.avatarUrl ? (
-                      <img
-                        src={mentor.avatarUrl}
-                        alt={mentor.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-lg font-semibold">
-                        {mentor.name?.charAt(0)?.toUpperCase() ?? "?"}
-                      </span>
-                    )}
+              className="group cursor-pointer overflow-hidden border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
+              {/* Card Header - Gradient with Avatar */}
+              <div className="relative bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 px-4 pt-5 pb-10">
+                {/* Rating badge */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 backdrop-blur-sm">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-semibold text-white">
+                      {mentor.averageRating && mentor.averageRating > 0
+                        ? mentor.averageRating.toFixed(1)
+                        : "—"}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="truncate text-base">{mentor.name}</CardTitle>
-                    <p className="text-muted-foreground text-sm">
-                      {mentor.currentCompany && (
-                        <span className="truncate">{mentor.currentCompany}</span>
-                      )}
-                    </p>
-                  </div>
+                  <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white/90 backdrop-blur-sm">
+                    {mentor.totalSession || 0} buổi PV
+                  </span>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Rating & Experience */}
-                <div className="flex items-center gap-4 text-sm">
-                  {mentor.averageRating && mentor.averageRating > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{mentor.averageRating.toFixed(1)}</span>
-                      {mentor.totalSession && (
-                        <span className="text-muted-foreground">
-                          ({mentor.totalSession} {t("userMentorReview.sessions")})
+              </div>
+
+              {/* Avatar - overlapping the header */}
+              <div className="relative flex justify-center">
+                <div className="absolute -top-8">
+                  <div className="relative">
+                    <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-white shadow-lg dark:border-gray-800">
+                      {mentor.avatarUrl ? (
+                        <img
+                          src={mentor.avatarUrl}
+                          alt={mentor.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xl font-bold text-purple-600">
+                          {mentor.name?.charAt(0)?.toUpperCase() ?? "?"}
                         </span>
                       )}
                     </div>
-                  )}
-                  {mentor.yearsOfExperience && mentor.yearsOfExperience > 0 && (
-                    <div className="text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        {mentor.yearsOfExperience}{" "}
-                        {mentor.yearsOfExperience === 1
-                          ? t("userMentorReview.year")
-                          : t("userMentorReview.years")}
-                      </span>
+                    <div className="absolute -right-0.5 -bottom-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-500 shadow-sm">
+                      <CheckCircle2 className="h-3 w-3 text-white" />
                     </div>
-                  )}
+                  </div>
                 </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="flex flex-col px-4 pt-10 pb-4">
+                {/* Name & Company - centered */}
+                <div className="text-center">
+                  <h3 className="truncate text-sm font-bold text-gray-900 dark:text-gray-100">
+                    {mentor.name}
+                  </h3>
+                  <p className="mt-0.5 flex items-center justify-center gap-1 truncate text-xs text-gray-500 dark:text-gray-400">
+                    <Building2 className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{mentor.currentCompany || "Chưa cập nhật"}</span>
+                  </p>
+                </div>
+
+                {/* Price badge */}
+                {mentor.pricePerMinute && mentor.pricePerMinute > 0 && (
+                  <div className="mt-2 flex justify-center">
+                    <div className="rounded-full bg-emerald-50 px-2.5 py-0.5 dark:bg-emerald-900/20">
+                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        {new Intl.NumberFormat("vi-VN").format(mentor.pricePerMinute)}đ
+                      </span>
+                      <span className="text-[10px] text-emerald-500">/phút</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Divider */}
+                <div className="my-3 h-px bg-gray-100 dark:bg-gray-700" />
 
                 {/* Skills */}
                 {mentor.expertise && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap justify-center gap-1">
                     {mentor.expertise
                       .split(/[,;]/)
-                      .slice(0, 4)
+                      .filter((s) => s.trim())
+                      .slice(0, 3)
                       .map((skill, idx) => (
                         <span
                           key={idx}
-                          className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                          className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-medium text-purple-600 dark:bg-purple-900/30 dark:text-purple-300">
                           {skill.trim()}
                         </span>
                       ))}
@@ -618,21 +632,42 @@ function MentorSelectionStep({
 
                 {/* Bio */}
                 {mentor.bio && (
-                  <p className="text-muted-foreground line-clamp-2 text-xs">{mentor.bio}</p>
+                  <p className="mt-2 line-clamp-2 text-center text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                    {mentor.bio}
+                  </p>
                 )}
 
-                {/* Select button */}
+                {/* Meta info */}
+                <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <Briefcase className="h-3 w-3" />
+                    {mentor.yearsOfExperience || 0} năm KN
+                  </span>
+                  {mentor.linkedInUrl && (
+                    <a
+                      href={mentor.linkedInUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-blue-500 hover:text-blue-600 hover:underline"
+                      onClick={(e) => e.stopPropagation()}>
+                      <Linkedin className="h-3 w-3" />
+                      LinkedIn
+                    </a>
+                  )}
+                </div>
+
+                {/* Select Button */}
                 <Button
                   size="sm"
-                  className="w-full gap-2 bg-purple-600 text-white hover:bg-purple-700"
+                  className="mt-4 h-9 w-full gap-1.5 bg-purple-600 text-xs font-medium text-white shadow-sm transition-all hover:bg-purple-700 hover:shadow-md"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSelectMentor(mentor);
                   }}>
-                  <UserCheck className="h-4 w-4" />
-                  {t("userMentorReview.selectThisMentor")}
+                  <UserCheck className="h-3.5 w-3.5" />
+                  Chọn Mentor
                 </Button>
-              </CardContent>
+              </div>
             </Card>
           ))}
         </div>
@@ -640,53 +675,103 @@ function MentorSelectionStep({
 
       {/* Confirmation Dialog */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("userMentorReview.confirmSelectionTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("userMentorReview.confirmSelectionDesc", { mentorName: selectedMentor?.name })}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedMentor && (
-            <div className="flex items-center gap-3 rounded-lg border p-3">
-              <div className="bg-muted flex h-10 w-10 items-center justify-center overflow-hidden rounded-full">
-                {selectedMentor.avatarUrl ? (
+        <DialogContent className="overflow-hidden rounded-2xl border-0 p-0 shadow-2xl sm:max-w-sm">
+          {/* Header with centered avatar */}
+          <div className="relative bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 px-6 pt-6 pb-12 text-center text-white">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIxIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDUpIi8+PC9zdmc+')] opacity-50" />
+            <div className="relative">
+              <h2 className="text-base font-bold">Xác nhận lựa chọn</h2>
+              <p className="mt-0.5 text-xs text-white/70">Bạn sẽ chọn mentor này để phỏng vấn</p>
+            </div>
+          </div>
+
+          {/* Avatar overlapping */}
+          <div className="relative flex justify-center">
+            <div className="absolute -top-9">
+              <div className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white shadow-lg dark:border-gray-800">
+                {selectedMentor?.avatarUrl ? (
                   <img
                     src={selectedMentor.avatarUrl}
-                    alt={selectedMentor.name}
+                    alt={selectedMentor?.name}
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="font-semibold">
-                    {selectedMentor.name?.charAt(0)?.toUpperCase() ?? "?"}
+                  <span className="text-2xl font-bold text-purple-600">
+                    {selectedMentor?.name?.charAt(0)?.toUpperCase() ?? "?"}
                   </span>
                 )}
               </div>
-              <div>
-                <p className="font-medium">{selectedMentor.name}</p>
-                {selectedMentor.currentCompany && (
-                  <p className="text-muted-foreground text-sm">{selectedMentor.currentCompany}</p>
-                )}
-              </div>
             </div>
-          )}
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button
-              onClick={handleConfirmSelect}
-              disabled={selectMentorMutation.isPending}
-              className="bg-purple-600 text-white hover:bg-purple-700">
-              {selectMentorMutation.isPending ? (
-                <>
-                  <Spinner size="sm" tone="white" />
-                  {t("userMentorReview.selecting")}
-                </>
-              ) : (
-                t("userMentorReview.confirmSelection")
-              )}
-            </Button>
+          </div>
+
+          {/* Content */}
+          <div className="px-6 pt-11 pb-6">
+            {selectedMentor && (
+              <div className="text-center">
+                <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                  {selectedMentor.name}
+                </p>
+                <p className="mt-0.5 flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  <Building2 className="h-3 w-3" />
+                  {selectedMentor.currentCompany || "Chưa cập nhật"}
+                </p>
+                <div className="mt-2 flex items-center justify-center gap-3">
+                  <div className="flex items-center gap-1 rounded-full bg-purple-50 px-2.5 py-1 dark:bg-purple-900/30">
+                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
+                      {selectedMentor.averageRating?.toFixed(1) || "—"}
+                    </span>
+                  </div>
+                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-500 dark:bg-gray-700 dark:text-gray-300">
+                    {selectedMentor.yearsOfExperience || 0} năm KN
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Warning */}
+            <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-amber-50 p-3 dark:bg-amber-900/20">
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
+                <svg
+                  className="h-3 w-3 text-amber-600 dark:text-amber-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+                Sau khi xác nhận, bạn không thể thay đổi mentor khác trong lần này.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="mt-5 flex gap-2.5">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl"
+                onClick={() => setShowConfirmDialog(false)}>
+                Hủy bỏ
+              </Button>
+              <Button
+                onClick={handleConfirmSelect}
+                disabled={selectMentorMutation.isPending}
+                className="flex-1 rounded-xl bg-purple-600 text-white shadow-sm hover:bg-purple-700 hover:shadow-md">
+                {selectMentorMutation.isPending ? (
+                  <>
+                    <Spinner size="sm" tone="white" />
+                    <span>Đang xử lý...</span>
+                  </>
+                ) : (
+                  "Xác nhận"
+                )}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -1764,7 +1849,7 @@ export function ApplicationMentorReviewPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-6 sm:px-6 lg:px-8 dark:from-slate-900 dark:to-slate-800">
-      <div className="mx-auto max-w-2xl space-y-6">
+      <div className="mx-auto max-w-5xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">

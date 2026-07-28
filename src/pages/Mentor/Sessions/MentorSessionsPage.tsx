@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviews } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSessions, useUpdateSessionStatus } from "@/hooks/useSession";
@@ -373,6 +374,11 @@ export function MentorSessionsPage() {
     refetch: refetchReviews,
   } = useMentorReviews();
   const updateStatusMutation = useUpdateSessionStatus();
+  // 2026-07-28: User.id (from JWT sub) is NOT the same as Mentor.id. The
+  //   admin assignment stores the Mentor.id in `session.mentorId` /
+  //   `session.userId`, so we resolve the mentor profile for the current
+  //   auth user and use BOTH ids when filtering.
+  const { data: currentMentorProfile } = useCurrentMentorProfile();
 
   // Current time state for joinTime-based blocking (updates every 5s).
   // 2026-07-17 mentor-interview: Mentor Interview sessions can be joined
@@ -386,60 +392,48 @@ export function MentorSessionsPage() {
   const isLoading = sessionsLoading || reviewsLoading;
 
   // Keep source data deterministic so default sort always yields newest-first consistently.
-  // BE sometimes returns the mentor id under `userId2` (DB column) and sometimes
-  // under `mentorId` (response DTO). Accept both so the list stays in sync with
-  // whatever the active BE controller is doing.
+  // 2026-07-28: Mentor sessions store the Mentor.id (NOT User.id) under
+  //   userId/userId2/mentorId. User.id != Mentor.id, so we resolve the
+  //   mentor profile for the current auth user and match against both ids.
   const mentorSessions = useMemo(() => {
-    const userIdStr = user?.id != null ? String(user.id) : "";
+    const userId = user?.id;
+    const mentorProfileId =
+      currentMentorProfile?.id != null
+        ? typeof currentMentorProfile.id === "string"
+          ? parseInt(currentMentorProfile.id, 10)
+          : currentMentorProfile.id
+        : undefined;
     const all = [...allSessions];
     if (typeof window !== "undefined") {
       // DEBUG: full data + per-record match flags so we can see WHY nothing matches.
       console.debug("[MentorSessions] FULL DATA", {
-        userId: user?.id,
-        userIdType: typeof user?.id,
+        userId,
+        mentorProfileId,
         userRole: user?.role,
         totalSessions: all.length,
-        allSessions: all.map((s) => ({
+        sample: all.slice(0, 5).map((s) => ({
           id: s.id,
           status: s.status,
           roomName: s.roomName,
           userId: s.userId,
           userId2: s.userId2,
           mentorId: s.mentorId,
-          hasRoomUrl: !!s.roomUrl,
-          joinTime: s.joinTime,
         })),
       });
-      const matches = all.filter((s) => {
-        if (user?.id == null) return false;
-        return s.userId === user.id || s.userId2 === user.id || s.mentorId === user.id;
-      });
-      console.debug(
-        "[MentorSessions] matches count",
-        matches.length,
-        "ids:",
-        matches.map((s) => s.id)
-      );
     }
-    const myId = user?.id;
     return all
       .filter((session: Session) => {
-        // 2026-07-28: Some mentor-interview sessions store the mentor's id
-        //   in `userId` (legacy student column repurposed by BE) instead of
-        //   `userId2`/`mentorId`. Match against all three so the FE doesn't
-        //   miss sessions when admin assigns a mentor to a candidate.
-        if (myId == null) return false;
-        if (session.userId === myId) return true;
-        if (session.userId2 === myId) return true;
-        if (session.mentorId === myId) return true;
-        const myIdStr = String(myId);
-        if (userIdStr && String(session.userId ?? "") === myIdStr) return true;
-        if (userIdStr && String(session.userId2 ?? "") === myIdStr) return true;
-        if (userIdStr && String(session.mentorId ?? "") === myIdStr) return true;
-        return false;
+        const candidates = [userId, mentorProfileId].filter(
+          (id): id is number => typeof id === "number" && Number.isFinite(id)
+        );
+        if (candidates.length === 0) return false;
+        const sessionIds = [session.userId, session.userId2, session.mentorId]
+          .filter((id): id is number => typeof id === "number")
+          .map((id) => String(id));
+        return candidates.some((id) => sessionIds.includes(String(id)));
       })
       .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
-  }, [allSessions, user]);
+  }, [allSessions, user, currentMentorProfile]);
 
   // Get session IDs that already have mentor reviews
   const reviewBySessionId = useMemo(() => {

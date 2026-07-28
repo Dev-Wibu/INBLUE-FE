@@ -393,8 +393,8 @@ export class MentorManager implements BaseManager<Mentor> {
     newPassword: string
   ): Promise<ApiResponse<{ message: string }>> {
     try {
-      // @ts-expect-error: Backend Swagger schema mismatch
       const response = await fetchClient
+        // @ts-expect-error: Backend Swagger schema mismatch - /api/mentors/change-password not in schema
         .PUT("/api/mentors/change-password", {
           params: {
             query: {
