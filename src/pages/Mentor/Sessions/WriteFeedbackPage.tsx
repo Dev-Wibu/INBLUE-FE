@@ -15,7 +15,7 @@ import {
 } from "@/hooks/useMentorReview";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useSessionById } from "@/hooks/useSession";
-import { isSessionMentor } from "@/lib/session-mentor";
+import { isSessionMentor, getSessionMentorId } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowLeft, Star, User } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -49,6 +49,21 @@ export function WriteFeedbackPage() {
   // Prefer Mentor.id; fall back to user.id if profile hasn't loaded so we
   // don't deadlock on race conditions (BE will reject in that case anyway).
   const submitterMentorId = mentorProfileId ?? (user?.id ?? null);
+
+  // DEBUG(remove after): surface every id involved so we can see exactly
+  //   why the create-review POST still fails with "You are not the mentor".
+  if (typeof window !== "undefined") {
+    console.debug("[WriteFeedbackPage] ID resolution", {
+      authUser: user ? { id: user.id, email: user.email, role: user.role } : null,
+      currentMentorProfile: currentMentorProfile
+        ? { id: currentMentorProfile.id, email: currentMentorProfile.email }
+        : null,
+      mentorProfileId,
+      submitterMentorId,
+      sessionMentorId: session ? getSessionMentorId(session) : null,
+      sessionUserId: session?.userId,
+    });
+  }
   const isLoading = sessionLoading || reviewLoading;
   const isSubmitting = isCreating || isUpdating;
   const isEdit = !!existingReview;
