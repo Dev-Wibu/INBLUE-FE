@@ -54,13 +54,13 @@ function EmptyState({ query, onClear, t }: { query: string; onClear: () => void;
 }
 
 const LEVEL_COLORS: Record<string, string> = {
-  INTERN: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
-  FRESHER: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  JUNIOR: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
-  MIDDLE: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  INTERN: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300",
+  FRESHER: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
+  JUNIOR: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300",
+  MIDDLE: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300",
 };
 
-function JobCard({
+export function JobCard({
   job,
   onClick,
   onApply,
@@ -71,8 +71,8 @@ function JobCard({
   onApply: (e: React.MouseEvent) => void;
   t: TFunction;
 }) {
+  const logoUrl = (job as any).companyLogoUrl || null;
   const initials = getCompanyInitials(job.companyName);
-  const logoUrl = job.companyLogo || (job as any).thumbnailUrl || (job as any).companyLogoUrl;
 
   const isNegotiable = !job.salaryMin && !job.salaryMax;
   const salaryText = isNegotiable
@@ -111,12 +111,14 @@ function JobCard({
             </div>
           </div>
           
-          <div className="mt-1 flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400">
-            <Building2 className="h-4 w-4 opacity-70" />
-            <span className="truncate">{job.companyName || t("common.unknownCompany", "Công ty ẩn danh")}</span>
-          </div>
-          
-          <div className="mt-2.5">
+          <div className="mt-2 flex items-center gap-2">
+            <div className="flex items-center gap-1.5 text-[13.5px] text-slate-600 dark:text-slate-300">
+              <Building2 className="h-4 w-4" />
+              <span className="truncate max-w-[140px]">{job.companyName || t("common.unknownCompany", "Công ty ẩn danh")}</span>
+            </div>
+            
+            <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+            
             {job.level && (
               <Badge
                 variant="secondary"
@@ -166,7 +168,7 @@ function JobCard({
       <div className="mt-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-[14px] font-bold text-amber-600 dark:text-amber-500">
           <Coins className="h-[18px] w-[18px]" />
-          {job.price ? `${formatNumber(job.price)} ĐKĐO` : "Miễn phí"}
+          {job.price ? `${job.price} ĐKĐO` : "Miễn phí"}
         </div>
         <Button
           onClick={(e) => {
@@ -189,14 +191,25 @@ export function JobSearchTab() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [activeLevel, setActiveLevel] = useState<string>(searchParams.get("level") || "ALL");
-  const [activePriceType, setActivePriceType] = useState<string>(searchParams.get("price") || "ALL");
+  const [maxPrice, setMaxPrice] = useState<number | null>(
+    searchParams.has("maxPrice") ? Number(searchParams.get("maxPrice")) : null
+  );
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const maxAvailablePrice = useMemo(() => {
+    const max = Math.max(0, ...jobs.map((j) => j.price || 0));
+    return max > 0 ? max : 10000;
+  }, [jobs]);
 
   useEffect(() => {
     setSearchQuery(searchParams.get("q") || "");
     setActiveLevel(searchParams.get("level") || "ALL");
-    setActivePriceType(searchParams.get("price") || "ALL");
+    if (searchParams.has("maxPrice")) {
+      setMaxPrice(Number(searchParams.get("maxPrice")));
+    } else {
+      setMaxPrice(null);
+    }
   }, [searchParams]);
 
   const fetchJobs = async () => {
@@ -218,23 +231,23 @@ export function JobSearchTab() {
     void fetchJobs();
   }, []);
 
-  const updateFilters = (q: string, level: string, price: string) => {
+  const updateFilters = (q: string, level: string, price: number | null) => {
     const params: Record<string, string> = { tab: "jobSearch" };
     if (q.trim()) params.q = q.trim();
     if (level !== "ALL") params.level = level;
-    if (price !== "ALL") params.price = price;
+    if (price !== null) params.maxPrice = price.toString();
     setSearchParams(params);
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    updateFilters(searchQuery, activeLevel, activePriceType);
+    updateFilters(searchQuery, activeLevel, maxPrice);
   };
 
   const clearSearch = () => {
     setSearchQuery("");
     setActiveLevel("ALL");
-    setActivePriceType("ALL");
+    setMaxPrice(null);
     setSearchParams({ tab: "jobSearch" });
   };
 
@@ -242,7 +255,6 @@ export function JobSearchTab() {
     let result = jobs;
     const query = searchParams.get("q")?.toLowerCase();
     const level = searchParams.get("level") || "ALL";
-    const price = searchParams.get("price") || "ALL";
 
     if (query) {
       result = result.filter((job) => {
@@ -257,10 +269,8 @@ export function JobSearchTab() {
       result = result.filter((job) => job.level === level);
     }
 
-    if (price === "FREE") {
-      result = result.filter((job) => !job.price || job.price === 0);
-    } else if (price === "PAID") {
-      result = result.filter((job) => job.price && job.price > 0);
+    if (maxPrice !== null) {
+      result = result.filter((job) => (job.price || 0) <= maxPrice);
     }
 
     return result.sort((a, b) => (b.id || 0) - (a.id || 0));
@@ -331,7 +341,7 @@ export function JobSearchTab() {
           </form>
 
           {/* Filters */}
-          <div className="mt-4 flex flex-col gap-4 xl:flex-row xl:items-center">
+          <div className="mt-4 flex flex-col gap-5 xl:flex-row xl:items-center">
             {/* Level Filters */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="mr-2 text-[13px] font-semibold text-slate-500">Cấp bậc:</span>
@@ -346,7 +356,7 @@ export function JobSearchTab() {
                     key={level}
                     onClick={() => {
                       setActiveLevel(level);
-                      updateFilters(searchQuery, level, activePriceType);
+                      updateFilters(searchQuery, level, maxPrice);
                     }}
                     className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors border ${
                       isActive
@@ -361,31 +371,25 @@ export function JobSearchTab() {
 
             <div className="hidden xl:block h-5 w-px bg-slate-200 dark:bg-slate-700"></div>
 
-            {/* Price Filters */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-2 text-[13px] font-semibold text-slate-500">Chi phí:</span>
-              {[
-                { value: "ALL", label: "Tất cả" },
-                { value: "FREE", label: "Miễn phí" },
-                { value: "PAID", label: "Có phí" },
-              ].map((price) => {
-                const isActive = activePriceType === price.value;
-                return (
-                  <button
-                    key={price.value}
-                    onClick={() => {
-                      setActivePriceType(price.value);
-                      updateFilters(searchQuery, activeLevel, price.value);
-                    }}
-                    className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors border ${
-                      isActive
-                        ? "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-600 dark:border-emerald-600"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                    }`}>
-                    {price.label}
-                  </button>
-                );
-              })}
+            {/* Price Slider */}
+            <div className="flex w-full max-w-[280px] flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] font-semibold text-slate-500">Chi phí tối đa:</span>
+                <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-500">
+                  {maxPrice === null || maxPrice >= maxAvailablePrice 
+                    ? "Mọi mức giá" 
+                    : `${maxPrice} ĐKĐO`}
+                </span>
+              </div>
+              <Slider
+                value={[displayMaxPrice]}
+                min={0}
+                max={maxAvailablePrice}
+                step={maxAvailablePrice > 1000 ? 500 : maxAvailablePrice > 100 ? 50 : 10}
+                onValueChange={(val) => setMaxPrice(val[0])}
+                onValueCommit={(val) => updateFilters(searchQuery, activeLevel, val[0])}
+                className="[&_[data-slot=slider-range]]:bg-emerald-500 [&_[data-slot=slider-thumb]]:border-emerald-500 [&_[data-slot=slider-thumb]]:focus-visible:ring-emerald-500/20"
+              />
             </div>
           </div>
         </div>
