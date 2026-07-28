@@ -14,7 +14,15 @@ import { SESSION_QUERY_KEYS, useJoinSession, useSessionById } from "@/hooks/useS
 import { formatDateTime, formatTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, ArrowLeft, Calendar, Clock, Settings, User as UserIcon } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Calendar,
+  Clock,
+  MessageSquare,
+  Settings,
+  User as UserIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 export function MentorSessionRoomPage() {
@@ -272,7 +280,11 @@ export function MentorSessionRoomPage() {
                 {session.status === "CANCELED" && t("common.canceled")}
               </span>
               {session.status === "COMPLETED" && (
-                <Button size="sm" onClick={() => navigate(`/mentor/sessions/${sessionId}/review`)}>
+                <Button
+                  size="sm"
+                  onClick={() => navigate(`/mentor/sessions/${sessionId}/review`)}
+                  className="gap-2 bg-emerald-600 hover:bg-emerald-700">
+                  <MessageSquare className="h-4 w-4" />
                   {t("common.writeAReview")}
                 </Button>
               )}
