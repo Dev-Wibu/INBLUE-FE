@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
-import { formatCurrency } from "@/lib/formatting";
+import { formatNumber } from "@/lib/formatting";
 import i18n from "@/lib/i18n";
 import { applicationService } from "@/services/application.manager";
 import { companyManager, type JobDescription } from "@/services/company.manager";
@@ -14,12 +14,15 @@ import { useAuthStore } from "@/stores/authStore";
 import {
   AlertCircle,
   ArrowLeft,
+  Banknote,
   Bot,
   Briefcase,
-  Calendar,
+  Building2,
+  CalendarDays,
   CheckCircle2,
+  ChevronRight,
   Clock,
-  DollarSign,
+  Coins,
   MapPin,
   Users,
   Zap,
@@ -28,24 +31,20 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-function formatSalary(min?: number, max?: number, currency = "VND") {
-  const format = (num: number) => {
-    if (num >= 1000000) {
-      return `${(num / 1000000).toFixed(1)}M`;
-    }
-    return `${(num / 1000).toFixed(0)}K`;
-  };
+
+function formatSalaryRaw(min?: number, max?: number) {
   if (min && max) {
-    return `${format(min)} - ${format(max)} ${currency}`;
+    return `${formatNumber(min)} - ${formatNumber(max)}`;
   }
   if (min) {
-    return `${i18n.t("enterpriseJobdescriptiondetailpage.salaryFrom")} ${format(min)} ${currency}`;
+    return `${i18n.t("enterpriseJobdescriptiondetailpage.salaryFrom")} ${formatNumber(min)}`;
   }
   if (max) {
-    return `${i18n.t("enterpriseJobdescriptiondetailpage.salaryTo")} ${format(max)} ${currency}`;
+    return `${i18n.t("enterpriseJobdescriptiondetailpage.salaryTo")} ${formatNumber(max)}`;
   }
   return i18n.t("enterpriseJobdescriptiondetailpage.salaryAgreement");
 }
+
 function formatDate(dateStr?: string) {
   if (!dateStr) return i18n.t("enterpriseJobdescriptiondetailpage.unlimited");
   const locale = i18n.language === "en" ? "en-US" : "vi-VN";
@@ -56,48 +55,52 @@ function formatDate(dateStr?: string) {
     year: "numeric",
   });
 }
+
 function getLevelBadgeColor(level?: string) {
   switch (level?.toUpperCase()) {
     case "INTERN":
-      return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+      return "bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-900/30";
     case "FRESHER":
-      return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+      return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/30";
     case "JUNIOR":
-      return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
+      return "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900/30";
     case "MIDDLE":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+      return "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/30";
     default:
-      return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
+      return "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700";
   }
 }
+
 function getStatusBadgeColor(status?: string) {
   switch (status?.toUpperCase()) {
     case "OPEN":
-      return "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800";
+      return "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30";
     case "CLOSED":
-      return "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800";
+      return "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/30";
     case "DRAFT":
       return "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
     default:
       return "bg-slate-100 text-slate-700";
   }
 }
+
 function getRoundTypeIcon(type?: string) {
   switch (type?.toUpperCase()) {
     case "CV_SCREENING":
-      return <Users className="h-5 w-5" />;
+      return <Users className="h-4 w-4" />;
     case "EMAIL_SIMULATOR":
-      return <Briefcase className="h-5 w-5" />;
+      return <Briefcase className="h-4 w-4" />;
     case "QUIZ":
-      return <Zap className="h-5 w-5" />;
+      return <Zap className="h-4 w-4 text-amber-500" />;
     case "DB_DESIGN":
-      return <AlertCircle className="h-5 w-5" />;
+      return <AlertCircle className="h-4 w-4" />;
     case "AI_INTERVIEW":
-      return <Bot className="h-5 w-5" />;
+      return <Bot className="h-4 w-4" />;
     default:
-      return <CheckCircle2 className="h-5 w-5" />;
+      return <CheckCircle2 className="h-4 w-4" />;
   }
 }
+
 export function JobDescriptionDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{
@@ -222,7 +225,7 @@ export function JobDescriptionDetailPage() {
 
     if (job?.status !== "OPEN") {
       return (
-        <Button disabled className={`bg-slate-400 text-white ${widthClass}`} size="lg">
+        <Button disabled className={`rounded-xl bg-slate-400 text-white ${widthClass}`} size="lg">
           {t("enterpriseJobdescriptiondetailpage.recruitmentHasBeenClosed")}
         </Button>
       );
@@ -232,7 +235,7 @@ export function JobDescriptionDetailPage() {
       return (
         <Button
           onClick={() => navigate(`/login?redirect=/enterprise/job/${id}`)}
-          className={`bg-[#0047AB] text-white hover:bg-[#003d8f] ${widthClass}`}
+          className={`rounded-xl bg-indigo-600 font-semibold text-white shadow-sm transition-all duration-200 hover:scale-[1.01] hover:bg-indigo-700 ${widthClass}`}
           size="lg">
           {t("enterpriseJobdescriptiondetailpage.loginToApply")}
         </Button>
@@ -241,7 +244,7 @@ export function JobDescriptionDetailPage() {
 
     if (isLoadingStatus) {
       return (
-        <Button disabled className={`bg-slate-400 text-white ${widthClass}`} size="lg">
+        <Button disabled className={`rounded-xl bg-slate-400 text-white ${widthClass}`} size="lg">
           <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           {t("common.checking", "Đang kiểm tra...")}
         </Button>
@@ -250,16 +253,16 @@ export function JobDescriptionDetailPage() {
 
     const priceText =
       typeof job?.price === "number" && job.price > 0
-        ? formatCurrency(job.price)
+        ? `${formatNumber(job.price)} VND`
         : typeof job?.price === "number" && job.price === 0
           ? t("common.free", "Miễn phí")
-          : "99.000đ";
+          : "99.000 VND";
 
     const primaryAction = hasPurchased ? (
       <Button
         onClick={handleApply}
         disabled={isApplying}
-        className={`bg-[#0047AB] text-white hover:bg-[#003d8f] ${widthClass}`}
+        className={`rounded-xl bg-indigo-600 font-semibold text-white shadow-sm transition-all duration-200 hover:scale-[1.01] hover:bg-indigo-700 ${widthClass}`}
         size="lg">
         {isApplying ? (
           <>
@@ -276,7 +279,7 @@ export function JobDescriptionDetailPage() {
       <Button
         onClick={handleBuyPackage}
         disabled={isBuying}
-        className={`bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800 ${widthClass}`}
+        className={`rounded-xl bg-amber-600 font-semibold text-white shadow-sm transition-all duration-200 hover:scale-[1.01] hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800 ${widthClass}`}
         size="lg">
         {isBuying ? (
           <>
@@ -284,10 +287,13 @@ export function JobDescriptionDetailPage() {
             {t("common.processing")}
           </>
         ) : (
-          t("payment.buyPackageWithPrice", {
-            defaultValue: `Mua gói — ${priceText}`,
-            price: priceText,
-          })
+          <span className="flex items-center justify-center gap-2">
+            <Coins className="h-5 w-5 shrink-0 text-amber-100" />
+            {t("payment.buyPackageWithPrice", {
+              defaultValue: `Mua gói — ${priceText}`,
+              price: priceText,
+            })}
+          </span>
         )}
       </Button>
     );
@@ -297,7 +303,7 @@ export function JobDescriptionDetailPage() {
     }
 
     return (
-      <div className={`flex gap-2 ${fullWidth ? "w-full flex-col" : "flex-wrap"}`}>
+      <div className={`flex gap-3 ${fullWidth ? "w-full flex-col" : "flex-wrap"}`}>
         {primaryAction}
         <Button
           variant="outline"
@@ -308,47 +314,82 @@ export function JobDescriptionDetailPage() {
                 : "/user?tab=applicationHistory"
             )
           }
-          className={widthClass}
+          className={`rounded-xl border-slate-200 text-slate-700 dark:border-slate-800 dark:text-slate-300 ${widthClass}`}
           size="lg">
-          <CheckCircle2 className="mr-2 h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          <CheckCircle2 className="mr-2 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
           {t("enterpriseJobdescriptiondetailpage.alreadyAppliedView")}
         </Button>
       </div>
     );
   };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
         <HomepageHeader />
-        <div className="mx-auto max-w-7xl px-6 py-24">
-          <Skeleton className="mb-6 h-10 w-32" />
-          <Skeleton className="mb-8 h-48 w-full" />
-          <div className="space-y-6">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-48 w-full" />
+        {/* Skeleton Header */}
+        <div className="border-b border-slate-200 bg-white py-5 dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-48 bg-slate-200 dark:bg-slate-800" />
+              <Skeleton className="h-8 w-96 bg-slate-200 dark:bg-slate-800" />
+            </div>
+            <Skeleton className="hidden h-10 w-40 rounded-xl bg-slate-200 md:block dark:bg-slate-800" />
+          </div>
+        </div>
+
+        {/* Skeleton Body */}
+        <div className="mx-auto max-w-7xl px-6 py-10">
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <Skeleton className="h-64 w-full rounded-[20px] bg-slate-200 dark:bg-slate-800" />
+              <Skeleton className="h-64 w-full rounded-[20px] bg-slate-200 dark:bg-slate-800" />
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-48 w-full rounded-[20px] bg-slate-200 dark:bg-slate-800" />
+              <Skeleton className="h-32 w-full rounded-[20px] bg-slate-200 dark:bg-slate-800" />
+            </div>
           </div>
         </div>
         <Footer />
       </div>
     );
   }
+
   if (error || !job) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
         <HomepageHeader />
-        <div className="mx-auto max-w-7xl px-6 py-24">
-          <button
-            onClick={() => navigate(-1)}
-            className="mb-6 inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[#0047AB] dark:text-slate-400 dark:hover:text-[#66B2FF]">
-            <ArrowLeft className="h-4 w-4" />
-            {t("general.back")}
-          </button>
-          <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-            <CardContent className="flex items-center gap-3 p-6">
-              <AlertCircle className="h-6 w-6 text-red-500" />
-              <p className="text-red-700 dark:text-red-400">
-                {error || t("enterpriseJobdescriptiondetailpage.locationNotFound")}
+
+        {/* Sleek Breadcrumb Header even on error */}
+        <div className="border-b border-slate-200 bg-white py-4 dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="mx-auto max-w-7xl px-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-[#66B2FF]">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {t("general.back")}
+            </button>
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-3xl px-6 py-20 text-center">
+          <Card className="rounded-[20px] border-red-100 bg-red-50/50 p-8 shadow-sm dark:border-red-900/20 dark:bg-red-950/10">
+            <CardContent className="flex flex-col items-center justify-center gap-4 p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                {t("enterpriseJobdescriptiondetailpage.locationNotFound")}
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {error || t("enterpriseJobdescriptiondetailpage.errorLoadingInfo")}
               </p>
+              <Button
+                onClick={() => navigate(-1)}
+                className="mt-2 rounded-xl bg-indigo-600 hover:bg-indigo-700">
+                {t("general.back")}
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -356,102 +397,90 @@ export function JobDescriptionDetailPage() {
       </div>
     );
   }
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-slate-50 pt-[72px] pb-24 md:pb-0 dark:bg-slate-950">
       <HomepageHeader />
-      <div className="mx-auto max-w-7xl px-6 py-24">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-6 inline-flex items-center gap-1 text-sm text-slate-600 hover:text-[#0047AB] dark:text-slate-400 dark:hover:text-[#66B2FF]">
-          <ArrowLeft className="h-4 w-4" />
-          {t("general.back")}
-        </button>
 
-        {/* Header card */}
-        <Card className="mb-6 border-[#0047AB]/20 dark:border-[#66B2FF]/20">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div className="flex-1">
-                <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <Badge className={getLevelBadgeColor(job.level)}>
-                    {job.level || t("common.notDetermined")}
-                  </Badge>
-                  <Badge className={`border ${getStatusBadgeColor(job.status)}`}>
-                    {job.status === "OPEN"
-                      ? t("enterpriseJobdescriptiondetailpage.currentlyRecruiting")
-                      : job.status === "CLOSED"
-                        ? t("enterpriseJobdescriptiondetailpage.closed")
-                        : t("common.draft1")}
-                  </Badge>
-                </div>
-                <h1 className="mb-2 text-2xl font-bold text-slate-900 md:text-3xl dark:text-white">
-                  {job.title || t("enterpriseJobdescriptiondetailpage.recruitmentPosition")}
-                </h1>
-                <div className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-400">
-                  <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-4 w-4" />
-                    <span>{formatSalary(job.salaryMin, job.salaryMax, job.currency)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" />
-                    <span>{job.location || t("common.hoChiMinh")}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Users className="h-4 w-4" />
-                    <span>
-                      {job.appliedCount || 0} {t("common.candidate")}
-                    </span>
-                  </div>
-                </div>
+      {/* Unified Single Header Section */}
+      <div className="sticky top-0 z-40 border-b border-slate-200 bg-white py-5 dark:border-slate-800/60 dark:bg-slate-900/40">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            {/* Left side: Single-line Breadcrumb & Badges */}
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">
+              <Link
+                to="/user?tab=jobSearch"
+                className="shrink-0 text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-[#66B2FF]">
+                {t("enterpriseJobdescriptiondetailpage.findJobs", "Tìm việc làm")}
+              </Link>
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              {job.companyId ? (
+                <Link
+                  to={`/enterprise/company/${job.companyId}`}
+                  className="max-w-[150px] shrink-0 truncate text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 sm:max-w-[250px] dark:text-slate-400 dark:hover:text-[#66B2FF]">
+                  {job.companyName || t("enterpriseJobdescriptiondetailpage.recruitmentCompany")}
+                </Link>
+              ) : (
+                <span className="max-w-[150px] truncate text-xs font-medium text-slate-500 sm:max-w-[250px] dark:text-slate-400">
+                  {job.companyName || t("enterpriseJobdescriptiondetailpage.recruitmentCompany")}
+                </span>
+              )}
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <h1 className="max-w-[200px] truncate text-sm font-bold text-slate-900 sm:max-w-[350px] sm:text-base dark:text-white">
+                {job.title || t("enterpriseJobdescriptiondetailpage.recruitmentPosition")}
+              </h1>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <Badge className={getLevelBadgeColor(job.level)}>
+                  {job.level || t("common.notDetermined")}
+                </Badge>
+                <Badge className={`border ${getStatusBadgeColor(job.status)}`}>
+                  {job.status === "OPEN"
+                    ? t("enterpriseJobdescriptiondetailpage.currentlyRecruiting")
+                    : job.status === "CLOSED"
+                      ? t("enterpriseJobdescriptiondetailpage.closed")
+                      : t("common.draft1")}
+                </Badge>
               </div>
+            </div>
 
-              {/* Action Buttons - Apply or Buy Package */}
+            {/* Right side: Action button (Desktop) */}
+            <div className="hidden shrink-0 items-center gap-3 md:flex">
               {renderActionButton(false)}
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Deadline */}
-            <div className="mt-4 flex items-center gap-2 rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
-              <Calendar className="h-5 w-5 text-slate-500" />
-              <span className="text-sm text-slate-600 dark:text-slate-400">
-                {t("general.deadline")}{" "}
-                <span className="font-medium text-slate-900 dark:text-white">
-                  {formatDate(job.deadlineAt)}
-                </span>
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Main Content */}
+      {/* Main Content */}
+      <div className="mx-auto max-w-7xl px-6 py-10">
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Column - Main Content */}
           <div className="space-y-6 lg:col-span-2">
             {/* Description */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-[#0047AB]" />
+            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                  <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   {t("common.jobDescription")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap text-slate-600 dark:text-slate-400">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
                   {job.description || t("enterpriseJobdescriptiondetailpage.noJobDescriptionYet")}
                 </p>
               </CardContent>
             </Card>
 
             {/* Requirements */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-[#0047AB]" />
+            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                  <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   {t("common.candidateRequirements")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap text-slate-600 dark:text-slate-400">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
                   {job.requirements ||
                     t("enterpriseJobdescriptiondetailpage.thereAreNoSpecificRequirements")}
                 </p>
@@ -459,15 +488,15 @@ export function JobDescriptionDetailPage() {
             </Card>
 
             {/* Benefits */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                   <Zap className="h-5 w-5 text-amber-500" />
                   {t("common.welfare")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-wrap text-slate-600 dark:text-slate-400">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
                   {job.benefits ||
                     t("enterpriseJobdescriptiondetailpage.thereIsNoBenefitInformation")}
                 </p>
@@ -476,12 +505,14 @@ export function JobDescriptionDetailPage() {
 
             {/* Interview Rounds */}
             {job.rounds && job.rounds.length > 0 && (
-              <Card className="border-slate-200 dark:border-slate-700">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-[#0047AB]" />
+              <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                    <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                     {t("enterpriseJobdescriptiondetailpage.interviewProcess")}
-                    {job.rounds.length} {t("common.ring")}
+                    <span className="ml-1 inline-flex h-5 items-center justify-center rounded-full bg-indigo-50 px-2 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
+                      {job.rounds.length} {t("common.ring")}
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -489,45 +520,55 @@ export function JobDescriptionDetailPage() {
                     {job.rounds.map((round, index) => (
                       <div
                         key={round.id || index}
-                        className="flex gap-4 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0047AB]/10 text-[#0047AB]">
+                        className="flex gap-4 rounded-xl border border-slate-200/80 bg-slate-50/40 p-4 transition-all duration-200 hover:border-indigo-100 dark:border-slate-800/60 dark:bg-slate-900/20 dark:hover:border-indigo-950/40">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
                           {index + 1}
                         </div>
                         <div className="flex-1">
-                          <div className="mb-1 flex items-center gap-2">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
                             <span className="font-semibold text-slate-900 dark:text-white">
                               {round.name ||
                                 t("common.roundVar0", {
                                   var_0: index + 1,
                                 })}
                             </span>
-                            <Badge variant="outline" className="text-xs">
-                              {getRoundTypeIcon(round.roundType)}
-                              <span className="ml-1">
+                            <Badge
+                              variant="outline"
+                              className="flex items-center gap-1 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-900">
+                              <span className="shrink-0 text-indigo-600 dark:text-indigo-400">
+                                {getRoundTypeIcon(round.roundType)}
+                              </span>
+                              <span className="ml-1 text-slate-600 dark:text-slate-300">
                                 {round.roundType?.replace("_", " ") || t("common.notDetermined")}
                               </span>
                             </Badge>
                           </div>
-                          <div className="mb-2 flex flex-wrap gap-3 text-sm text-slate-600 dark:text-slate-400">
+                          <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                             <span>
                               {t("enterpriseJobdescriptiondetailpage.order")}{" "}
-                              {round.roundOrder || index + 1}
+                              <strong className="text-slate-700 dark:text-slate-300">
+                                {round.roundOrder || index + 1}
+                              </strong>
                             </span>
                             {round.passThreshold && (
                               <span>
                                 {t("enterpriseJobdescriptiondetailpage.passingScore")}{" "}
-                                {round.passThreshold}%
+                                <strong className="text-slate-700 dark:text-slate-300">
+                                  {round.passThreshold}%
+                                </strong>
                               </span>
                             )}
                             {round.configData?.timeLimitMinutes && (
                               <span>
                                 {t("enterpriseJobdescriptiondetailpage.time")}{" "}
-                                {round.configData.timeLimitMinutes} {t("common.minute")}
+                                <strong className="text-slate-700 dark:text-slate-300">
+                                  {round.configData.timeLimitMinutes} {t("common.minute")}
+                                </strong>
                               </span>
                             )}
                           </div>
                           {round.configData?.instruction && (
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="mt-2 border-t border-slate-100 pt-2 text-xs leading-relaxed text-slate-500 dark:border-slate-800/40 dark:text-slate-400">
                               {round.configData.instruction}
                             </p>
                           )}
@@ -542,54 +583,105 @@ export function JobDescriptionDetailPage() {
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
-            {/* Action Button - Apply or Buy Package */}
-            {renderActionButton(true)}
+            {/* Payment & CTA card */}
+            {job.status === "OPEN" ? (
+              <Card className="overflow-hidden rounded-[20px] border-amber-200 bg-amber-50/40 p-6 shadow-sm dark:border-amber-900/30 dark:bg-amber-950/10">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Coins className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+                    <span className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+                      {t("payment.applicationFee", "Lệ phí ứng tuyển")}
+                    </span>
+                  </div>
+                  {hasPurchased ? (
+                    <Badge className="border-emerald-500/20 bg-emerald-500/10 font-medium text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                      {t("payment.unlocked", "Đã mở khóa")}
+                    </Badge>
+                  ) : (
+                    <Badge className="border-amber-500/20 bg-amber-500/10 font-medium text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+                      {t("payment.required", "Cần mở khóa")}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="mb-4">
+                  <span className="text-3xl font-extrabold text-amber-600 dark:text-amber-500">
+                    {typeof job?.price === "number" && job.price > 0
+                      ? `${formatNumber(job.price)} VND`
+                      : typeof job?.price === "number" && job.price === 0
+                        ? t("common.free", "Miễn phí")
+                        : "99.000 VND"}
+                  </span>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                    {hasPurchased
+                      ? t(
+                          "payment.unlockedDesc",
+                          "Bạn đã hoàn tất thanh toán lệ phí. Vui lòng tiến hành ứng tuyển và thực hiện các thử thách tuyển dụng."
+                        )
+                      : t(
+                          "payment.lockedDesc",
+                          "Thanh toán một lần để mở khóa vĩnh viễn toàn bộ quy trình tuyển dụng tự động (bao gồm CV Screening, AI Interview, Quiz...)."
+                        )}
+                  </p>
+                </div>
+
+                {renderActionButton(true)}
+              </Card>
+            ) : (
+              <div>{renderActionButton(true)}</div>
+            )}
 
             {/* Job Overview */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-base">
+            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                  <Briefcase className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   {t("enterpriseJobdescriptiondetailpage.recruitmentInformation")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-between border-b border-slate-100 py-2.5 dark:border-slate-800/40">
+                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <Users className="h-4 w-4 text-slate-400" />
                     {t("common.rank")}
                   </span>
                   <Badge className={getLevelBadgeColor(job.level)}>
                     {job.level || t("common.notDetermined")}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-between border-b border-slate-100 py-2.5 dark:border-slate-800/40">
+                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <Banknote className="h-4 w-4 text-emerald-500" />
                     {t("common.salary")}
                   </span>
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">
-                    {formatSalary(job.salaryMin, job.salaryMax, job.currency)}
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {formatSalaryRaw(job.salaryMin, job.salaryMax)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-between border-b border-slate-100 py-2.5 dark:border-slate-800/40">
+                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <MapPin className="h-4 w-4 text-slate-400" />
                     {t("enterpriseJobdescriptiondetailpage.location")}
                   </span>
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
                     {job.location || t("common.hoChiMinh")}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-between border-b border-slate-100 py-2.5 dark:border-slate-800/40">
+                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <CalendarDays className="h-4 w-4 text-slate-400" />
                     {t("common.submissionDeadline")}
                   </span>
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
                     {formatDate(job.deadlineAt)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-between py-2.5 last:border-0">
+                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <Users className="h-4 w-4 text-slate-400" />
                     {t("enterpriseJobdescriptiondetailpage.numberOfApplicants")}
                   </span>
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
                     {job.appliedCount || 0}
                   </span>
                 </div>
@@ -598,16 +690,20 @@ export function JobDescriptionDetailPage() {
 
             {/* Skills */}
             {job.skills && job.skills.length > 0 && (
-              <Card className="border-slate-200 dark:border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-base">
+              <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                    <Zap className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                     {t("enterpriseJobdescriptiondetailpage.requiredSkills")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {job.skills.map((skill, index) => (
-                      <Badge key={index} variant="outline" className="dark:border-slate-600">
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="rounded-lg border-slate-200 bg-slate-50/50 font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
                         {skill}
                       </Badge>
                     ))}
@@ -617,27 +713,29 @@ export function JobDescriptionDetailPage() {
             )}
 
             {/* Company Info */}
-            <Card className="border-slate-200 dark:border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-base">
+            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
+                  <Building2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   {t("enterpriseJobdescriptiondetailpage.companyInformation")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0047AB]/10">
-                    <Briefcase className="h-6 w-6 text-[#0047AB]" />
+                <div className="flex items-center gap-4 p-1">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-indigo-600 dark:border-indigo-950/20 dark:bg-indigo-950/40 dark:text-indigo-400">
+                    <Building2 className="h-7 w-7" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-900 dark:text-white">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-slate-900 sm:text-base dark:text-white">
                       {job.companyName ||
                         t("enterpriseJobdescriptiondetailpage.recruitmentCompany")}
                     </p>
                     {job.companyId && (
                       <Link
                         to={`/enterprise/company/${job.companyId}`}
-                        className="text-xs text-[#0047AB] hover:underline dark:text-[#66B2FF]">
+                        className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
                         {t("enterpriseJobdescriptiondetailpage.viewCompany")}
+                        <ChevronRight className="h-3 w-3" />
                       </Link>
                     )}
                   </div>
@@ -647,6 +745,31 @@ export function JobDescriptionDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Floating Bottom Bar for Mobile */}
+      {job.status === "OPEN" && (
+        <div className="fixed right-0 bottom-0 left-0 z-50 block border-t border-slate-200 bg-white/90 p-4 shadow-lg backdrop-blur-md md:hidden dark:border-slate-800/60 dark:bg-slate-900/90">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {t("payment.applicationFee", "Lệ phí ứng tuyển")}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <Coins className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+                <span className="text-sm font-extrabold text-amber-600 dark:text-amber-500">
+                  {typeof job?.price === "number" && job.price > 0
+                    ? `${formatNumber(job.price)} VND`
+                    : typeof job?.price === "number" && job.price === 0
+                      ? t("common.free", "Miễn phí")
+                      : "99.000 VND"}
+                </span>
+              </div>
+            </div>
+            <div className="max-w-[200px] flex-1">{renderActionButton(true)}</div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
