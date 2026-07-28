@@ -153,9 +153,20 @@ export function WriteFeedbackPage() {
         }
       );
     } else {
+      // DEBUG(remove after): surface the actual POST body and any error so we
+      //   can see what BE is rejecting (mentorId now resolves to 15 correctly
+      //   so the failure is something else).
+      console.debug("[WriteFeedbackPage] POST /api/mentor-reviews payload", payload);
       createReview(payload, {
         onSuccess: () => {
           navigate("/mentor?tab=sessions");
+        },
+        onError: (error: Error) => {
+          console.debug("[WriteFeedbackPage] POST /api/mentor-reviews FAILED", {
+            message: error?.message,
+            stack: error?.stack,
+            raw: error,
+          });
         },
       });
     }
