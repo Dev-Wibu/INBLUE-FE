@@ -53,7 +53,7 @@ const isValidTabType = (value: string): value is TabType => {
 };
 
 const getAvailableTabs = (
-  t: (_key: string) => string
+  t: (_key: string, _defaultValue?: string) => string
 ): Array<{
   type: TabType;
   label: string;
@@ -64,7 +64,7 @@ const getAvailableTabs = (
   },
   {
     type: "jobSearch",
-    label: t("userDashboard.jobSearch"),
+    label: t("userDashboard.jobSearch", "Việc làm"),
   },
   {
     type: "overview",
@@ -92,7 +92,7 @@ const getAvailableTabs = (
   },
 ];
 
-const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] => [
+const getSidebarMenuGroups = (t: (_key: string, _defaultValue?: string) => string): SidebarMenuGroup[] => [
   {
     label: t("common.home"),
     items: [
@@ -105,7 +105,7 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
       {
         type: "jobSearch",
         icon: Search,
-        label: t("userDashboard.jobSearch"),
+        label: t("userDashboard.jobSearch", "Việc làm"),
         color: "text-[#0047AB] dark:text-[#66B2FF]",
       },
     ],
