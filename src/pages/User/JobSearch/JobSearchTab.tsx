@@ -256,71 +256,71 @@ export function JobSearchTab() {
   return (
     <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950/50">
       {/* Top Action Bar */}
-      <div className="flex flex-col gap-3 border-b border-slate-200/50 bg-white px-5 py-4 md:px-6 dark:border-slate-800/50 dark:bg-slate-900">
-        <div className="flex items-center justify-between gap-4">
-          <form onSubmit={handleSearch} className="flex max-w-md flex-1 items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t(
-                  "enterpriseJobsearchpage.searchPlaceholder",
-                  "Tìm kiếm theo chức danh hoặc công ty..."
-                )}
-                className="h-9 border-slate-200 bg-slate-50/50 pr-9 pl-9 text-sm focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/50"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    updateFilters("", activeLevel);
-                  }}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
-                  <X className="h-3 w-3" />
-                </button>
+      <div className="flex flex-col gap-4 border-b border-slate-200/50 bg-white px-5 py-5 dark:border-slate-800/50 dark:bg-slate-900 md:px-8">
+        <form onSubmit={handleSearch} className="flex w-full items-center gap-3 md:max-w-2xl">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t(
+                "enterpriseJobsearchpage.searchPlaceholder",
+                "Tìm kiếm theo chức danh hoặc công ty..."
               )}
-            </div>
-            <Button
-              type="submit"
-              className="h-9 shrink-0 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
-              {t("enterpriseJobsearchpage.searchButton", "Tìm việc")}
-            </Button>
-          </form>
+              className="h-10 border-slate-200 bg-slate-50/50 pl-10 pr-10 text-sm focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/50"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  updateFilters("", activeLevel);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 transition-colors">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <Button
+            type="submit"
+            className="h-10 shrink-0 bg-indigo-600 px-6 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+            {t("enterpriseJobsearchpage.searchButton", "Tìm việc")}
+          </Button>
+        </form>
+
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Level Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            {FILTER_LEVELS.map((level) => {
+              const isActive = activeLevel === level;
+              return (
+                <button
+                  key={level}
+                  onClick={() => {
+                    setActiveLevel(level);
+                    updateFilters(searchQuery, level);
+                  }}
+                  className={`rounded-full border px-4 py-1.5 text-xs font-bold tracking-wide transition-all ${
+                    isActive
+                      ? "border-indigo-600 bg-indigo-600 text-white shadow-sm dark:border-indigo-500 dark:bg-indigo-500"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-500/10"
+                  }`}>
+                  {level === "ALL" ? "TẤT CẢ" : level}
+                </button>
+              );
+            })}
+          </div>
 
           <ReloadButton
             isLoading={isReloading}
             onReload={() => fetchJobs(true)}
-            className="h-9 w-9 shrink-0 rounded-lg"
+            className="h-9 w-9 shrink-0 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
           />
-        </div>
-
-        {/* Level Filters */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          {FILTER_LEVELS.map((level) => {
-            const isActive = activeLevel === level;
-            return (
-              <button
-                key={level}
-                onClick={() => {
-                  setActiveLevel(level);
-                  updateFilters(searchQuery, level);
-                }}
-                className={`rounded-full border px-3 py-1 text-[11px] font-bold tracking-wide transition-colors ${
-                  isActive
-                    ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-500"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10"
-                }`}>
-                {level === "ALL" ? "TẤT CẢ" : level}
-              </button>
-            );
-          })}
         </div>
       </div>
 
-      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-5 md:px-6">
+      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8">
         {(searchQuery || activeLevel !== "ALL") && (
           <div className="mb-4">
             <span className="text-xs text-slate-500 dark:text-slate-400">

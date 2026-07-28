@@ -142,6 +142,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/mentors/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMentorById"];
+        /** Cập nhật Mentor (không có password trong request body và response) */
+        put: operations["updateMentor"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mentors/{id}/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Thay đổi mật khẩu cho Mentor */
+        put: operations["changePassword_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mentor-reviews": {
         parameters: {
             query?: never;
@@ -247,6 +281,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/job-descriptions/toggle/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["toggleActiveGet"];
+        /** Toggle trạng thái active (OPEN <-> CLOSED) của JobDescription */
+        put: operations["toggleActive"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/companies": {
         parameters: {
             query?: never;
@@ -257,6 +308,23 @@ export interface paths {
         get: operations["getAllCompanies"];
         put: operations["updateCompany"];
         post: operations["addCompany"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/companies/toggle/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["toggleActiveGet_1"];
+        /** Toggle trạng thái active (ACTIVE <-> INACTIVE) của Company */
+        put: operations["toggleActive_1"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -740,7 +808,7 @@ export interface paths {
         };
         get: operations["getAllMentors"];
         put?: never;
-        /** dùng chung cho create và update mentor, nếu create thì ko có id còn update thì có id gửi kèm trong json data á */
+        /** Tạo mới Mentor (có input password, trả về MentorResponse không có password) */
         post: operations["createMentor"];
         delete?: never;
         options?: never;
@@ -1577,22 +1645,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/mentors/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getMentorById"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/mentors/toggle/{id}": {
         parameters: {
             query?: never;
@@ -1600,7 +1652,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["toggleActive"];
+        get: operations["toggleActive_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2549,6 +2601,48 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        UpdateMentorRequest: {
+            name?: string;
+            email?: string;
+            bio?: string;
+            expertise?: string;
+            /** Format: int32 */
+            yearsOfExperience?: number;
+            linkedInUrl?: string;
+            currentCompany?: string;
+            /** Format: int32 */
+            pricePerMinute?: number;
+        };
+        MentorResponse: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            email?: string;
+            bio?: string;
+            avatarUrl?: string;
+            expertise?: string;
+            /** Format: int32 */
+            yearsOfExperience?: number;
+            linkedInUrl?: string;
+            currentCompany?: string;
+            /** Format: int32 */
+            rate?: number;
+            /** Format: int32 */
+            totalSession?: number;
+            /** Format: double */
+            averageRating?: number;
+            /** Format: int32 */
+            pricePerMinute?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            active?: boolean;
+        };
+        ChangeMentorPasswordRequest: {
+            oldPassword?: string;
+            newPassword?: string;
+        };
         UpdateMentorReviewRequest: {
             /** Format: int32 */
             id?: number;
@@ -2963,15 +3057,6 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        DailyWebHookPayload: {
-            payload?: components["schemas"]["PayloadData"];
-            type?: string;
-        };
-        PayloadData: {
-            recording_id?: string;
-            room?: string;
-            session_id?: string;
-        };
         JoinSessionDtoRequest: {
             sessionName?: string;
             /** Format: int32 */
@@ -3207,9 +3292,7 @@ export interface components {
             /** Format: date-time */
             createAt?: string;
         };
-        MentorInfo: {
-            /** Format: int32 */
-            id?: number;
+        CreateMentorRequest: {
             name?: string;
             email?: string;
             password?: string;
@@ -3598,10 +3681,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -3653,32 +3736,6 @@ export interface components {
             content?: string;
             /** Format: date-time */
             timestamp?: string;
-        };
-        MentorResponse: {
-            /** Format: int32 */
-            id?: number;
-            name?: string;
-            email?: string;
-            bio?: string;
-            avatarUrl?: string;
-            expertise?: string;
-            /** Format: int32 */
-            yearsOfExperience?: number;
-            linkedInUrl?: string;
-            currentCompany?: string;
-            /** Format: int32 */
-            rate?: number;
-            /** Format: int32 */
-            totalSession?: number;
-            /** Format: double */
-            averageRating?: number;
-            /** Format: int32 */
-            pricePerMinute?: number;
-            /** Format: date-time */
-            createdAt?: string;
-            /** Format: date-time */
-            updatedAt?: string;
-            active?: boolean;
         };
         SlotDto: {
             /** Format: date-time */
@@ -3979,19 +4036,19 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            trimDirectiveWhitespaces?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
-            includePreludes?: string[];
-            includeCodas?: string[];
             deferredSyntaxAllowedAsLiteral?: string;
             errorOnUndeclaredNamespace?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
+            trimDirectiveWhitespaces?: string;
+            urlPatterns?: string[];
+            defaultContentType?: string;
+            buffer?: string;
             elIgnored?: string;
             isXml?: string;
-            defaultContentType?: string;
-            urlPatterns?: string[];
-            buffer?: string;
         };
         RedirectView: {
             applicationContext?: components["schemas"]["ApplicationContext"];
@@ -4025,6 +4082,9 @@ export interface components {
             };
         };
         ServletContext: {
+            /** Format: int32 */
+            sessionTimeout?: number;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -4038,16 +4098,13 @@ export interface components {
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            initParameterNames?: unknown;
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
             classLoader?: {
@@ -4680,6 +4737,84 @@ export interface operations {
             };
         };
     };
+    getMentorById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MentorResponse"];
+                };
+            };
+        };
+    };
+    updateMentor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    data: components["schemas"]["UpdateMentorRequest"];
+                    /** Format: binary */
+                    avatar?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MentorResponse"];
+                };
+            };
+        };
+    };
+    changePassword_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeMentorPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MentorResponse"];
+                };
+            };
+        };
+    };
     getAllMentorReviews: {
         parameters: {
             query?: never;
@@ -4936,6 +5071,46 @@ export interface operations {
             };
         };
     };
+    toggleActiveGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    toggleActive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     getAllCompanies: {
         parameters: {
             query?: never;
@@ -5013,6 +5188,46 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["Company"];
                 };
+            };
+        };
+    };
+    toggleActiveGet_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    toggleActive_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -5415,9 +5630,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
-                "application/json": components["schemas"]["DailyWebHookPayload"];
+                "application/json": {
+                    [key: string]: unknown;
+                };
             };
         };
         responses: {
@@ -5782,7 +5999,7 @@ export interface operations {
         requestBody?: {
             content: {
                 "multipart/form-data": {
-                    data: components["schemas"]["MentorInfo"];
+                    data: components["schemas"]["CreateMentorRequest"];
                     /** Format: binary */
                     avatar?: string;
                 };
@@ -5795,7 +6012,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["Mentor"];
+                    "*/*": components["schemas"]["MentorResponse"];
                 };
             };
         };
@@ -7012,29 +7229,7 @@ export interface operations {
             };
         };
     };
-    getMentorById: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MentorResponse"];
-                };
-            };
-        };
-    };
-    toggleActive: {
+    toggleActive_2: {
         parameters: {
             query?: never;
             header?: never;
