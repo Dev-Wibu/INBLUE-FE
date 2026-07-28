@@ -354,7 +354,9 @@ export function MentorSessionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const [activeTab, setActiveTab] = useState<SessionListTab>("draft");
+  // Default to "others" tab since the "Approval" (draft) tab is hidden per requirement.
+  // Draft logic is preserved in code for future use.
+  const [activeTab, setActiveTab] = useState<SessionListTab>("others");
   const [searchQuery, setSearchQuery] = useState("");
   const [draftTimeFilter, setDraftTimeFilter] = useState<DraftTimeFilter>("all");
   const [otherStatusFilter, setOtherStatusFilter] = useState<OtherStatusFilter>("all");
@@ -539,8 +541,6 @@ export function MentorSessionsPage() {
     }
   };
 
-  // Stats — DRAFT is counted separately, not in "Sắp diễn ra"
-  const draftCount = mentorSessions.filter((s: Session) => s.status === "DRAFT").length;
   const scheduledCount = mentorSessions.filter(
     (s: Session) => s.status === "SCHEDULED" || s.status === "PAID" || s.status === "ONGOING"
   ).length;
@@ -566,21 +566,13 @@ export function MentorSessionsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardHeader className="pb-2">
             <CardDescription>{t("common.totalSession")}</CardDescription>
             <CardTitle className="text-2xl">{mentorSessions.length}</CardTitle>
           </CardHeader>
         </Card>
-        {draftCount > 0 && (
-          <Card className="border-amber-200 dark:border-amber-900">
-            <CardHeader className="pb-2">
-              <CardDescription>{t("common.waitingForApproval")}</CardDescription>
-              <CardTitle className="text-2xl text-amber-600">{draftCount}</CardTitle>
-            </CardHeader>
-          </Card>
-        )}
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardHeader className="pb-2">
             <CardDescription>{t("common.comingSoon")}</CardDescription>
@@ -632,11 +624,7 @@ export function MentorSessionsPage() {
                   setActiveTab(tab as SessionListTab);
                   pagination.goToFirstPage();
                 }}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="draft">
-                    {t("mentorSessions.waitingForApproval")}
-                    {draftSessions.length})
-                  </TabsTrigger>
+                <TabsList className="grid w-full grid-cols-1">
                   <TabsTrigger value="others">
                     {t("mentorSessions.remainingSessions")}
                     {otherSessions.length})
@@ -644,7 +632,7 @@ export function MentorSessionsPage() {
                 </TabsList>
               </Tabs>
 
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-1">
                 <div className="relative">
                   <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                   <Input
@@ -657,49 +645,25 @@ export function MentorSessionsPage() {
                     className="pl-9"
                   />
                 </div>
-                {activeTab === "draft" ? (
-                  <Select
-                    value={draftTimeFilter}
-                    onValueChange={(value) => {
-                      setDraftTimeFilter(value as DraftTimeFilter);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("mentorSessions.filterByCalendarInformation")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">
-                        {t("mentorSessions.allSessionsPendingApproval")}
-                      </SelectItem>
-                      <SelectItem value="hasJoinTime">
-                        {t("mentorSessions.itSMeetingTime")}
-                      </SelectItem>
-                      <SelectItem value="noJoinTime">
-                        {t("mentorSessions.thereIsNoMeetingTime")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Select
-                    value={otherStatusFilter}
-                    onValueChange={(value) => {
-                      setOtherStatusFilter(value as OtherStatusFilter);
-                      pagination.goToFirstPage();
-                    }}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("common.filterByStatus")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-                      <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
-                      <SelectItem value="PAID">{t("common.paid")}</SelectItem>
-                      <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
-                      <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
-                      <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
-                      <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                <Select
+                  value={otherStatusFilter}
+                  onValueChange={(value) => {
+                    setOtherStatusFilter(value as OtherStatusFilter);
+                    pagination.goToFirstPage();
+                  }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("common.filterByStatus")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                    <SelectItem value="SCHEDULED">{t("common.comingSoon")}</SelectItem>
+                    <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+                    <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+                    <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                    <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+                    <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex flex-wrap items-center gap-4">
