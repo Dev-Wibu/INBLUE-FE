@@ -1,14 +1,12 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import type { JobDescription } from "@/interfaces";
 import { formatNumber } from "@/lib/formatting";
 import { jobDescriptionManager } from "@/services/job-description.manager";
-import { format } from "date-fns";
 import type { TFunction } from "i18next";
-import { Banknote, Building2, CalendarDays, Coins, Search, Users, X } from "lucide-react";
+import { Coins, Search, Users, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
@@ -55,11 +53,11 @@ function EmptyState({ query, onClear, t }: { query: string; onClear: () => void;
   );
 }
 
-const LEVEL_COLORS: Record<string, string> = {
-  INTERN: "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300",
-  FRESHER: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
-  JUNIOR: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300",
-  MIDDLE: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300",
+const LEVEL_CHIP: Record<string, string> = {
+  INTERN: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/30 dark:text-teal-300 dark:border-teal-900/30",
+  FRESHER: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-900/30",
+  JUNIOR: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-900/30",
+  MIDDLE: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-900/30",
 };
 
 export function JobCard({
@@ -75,21 +73,22 @@ export function JobCard({
 }) {
   const logoUrl = job.companyLogo || (job as any).thumbnailUrl || (job as any).companyLogoUrl || null;
   const initials = getCompanyInitials(job.companyName);
+  const isOpen = job.status === "OPEN";
 
   const isNegotiable = !job.salaryMin && !job.salaryMax;
   const salaryText = isNegotiable
     ? t("enterpriseJobsearchpage.negotiable", "Thỏa thuận")
-    : `${formatNumber(job.salaryMin || 0)} - ${formatNumber(job.salaryMax || 0)}`.trim();
+    : `${formatNumber(job.salaryMin || 0)} – ${formatNumber(job.salaryMax || 0)}`;
 
   return (
     <div
       onClick={onClick}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 transition-all hover:border-indigo-400 hover:shadow-lg dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-500/50">
+      className="group flex cursor-pointer flex-col rounded-xl border border-slate-200 bg-white transition-colors hover:border-indigo-300 dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-700/60">
 
-      {/* Header section */}
-      <div className="flex items-start gap-4">
-        {/* Avatar */}
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-slate-100 bg-slate-50 text-xl font-bold text-indigo-600 dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400">
+      {/* Card body */}
+      <div className="flex gap-3 p-4">
+        {/* Logo */}
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-sm font-bold text-indigo-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-indigo-400">
           {logoUrl ? (
             <img src={logoUrl} alt={job.companyName || "Company"} className="h-full w-full object-cover" />
           ) : (
@@ -98,82 +97,52 @@ export function JobCard({
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
-            <h3 className="truncate text-[17px] font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-              {job.title || t("enterpriseJobsearchpage.untitledJob", "Chưa có tiêu đề")}
-            </h3>
-            <div className="ml-2 flex shrink-0 items-center gap-1.5 text-[13px] text-slate-500 dark:text-slate-400">
-              <Users className="h-4 w-4" />
-              {job.appliedCount || 0} {t("common.candidates", "ứng viên")}
-            </div>
-          </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-[14px] font-semibold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+            {job.title || t("enterpriseJobsearchpage.untitledJob", "Chưa có tiêu đề")}
+          </h3>
+          <p className="mt-0.5 truncate text-[12.5px] text-slate-500 dark:text-slate-400">
+            {job.companyName || t("common.unknownCompany", "Công ty ẩn danh")}
+          </p>
 
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-[13.5px] text-slate-600 dark:text-slate-300">
-              <Building2 className="h-4 w-4" />
-              <span className="truncate max-w-[140px]">{job.companyName || t("common.unknownCompany", "Công ty ẩn danh")}</span>
-            </div>
-
-            <div className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-
+          {/* Chips */}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {job.level && (
-              <Badge
-                variant="secondary"
-                className={`border-transparent px-3 py-0.5 text-xs font-semibold ${LEVEL_COLORS[job.level] || "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"}`}>
+              <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${LEVEL_CHIP[job.level] || "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"}`}>
                 {job.level}
-              </Badge>
+              </span>
             )}
+            <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] font-medium ${
+              isOpen
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/30 dark:bg-emerald-950/30 dark:text-emerald-400"
+                : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400"
+            }`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${isOpen ? "bg-emerald-500" : "bg-slate-400"}`} />
+              {isOpen ? t("enterpriseJobsearchpage.hiring", "Đang tuyển") : t("enterpriseJobsearchpage.closed", "Đóng")}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="my-5 h-px w-full bg-slate-100 dark:bg-slate-800/60" />
-
-      {/* Details (Salary + Status) */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2 text-[15px] font-bold text-emerald-600 dark:text-slate-200">
-          <Banknote className="h-5 w-5 text-emerald-500" />
-          {salaryText}
-        </div>
-        <div className="flex items-center justify-between mt-1">
-          <div className={`flex items-center gap-2 text-[15px] font-semibold ${
-            job.status === "OPEN" ? "text-emerald-600 dark:text-emerald-500" :
-            job.status === "CLOSED" ? "text-slate-600 dark:text-slate-400" :
-            "text-orange-600 dark:text-orange-500"
-          }`}>
-            <div className={`h-2 w-2 rounded-full ${
-              job.status === "OPEN" ? "bg-emerald-500 dark:bg-emerald-500" :
-              job.status === "CLOSED" ? "bg-slate-400 dark:bg-slate-500" :
-              "bg-orange-500 dark:bg-orange-500"
-            }`} />
-            {job.status === "OPEN"
-              ? t("enterpriseJobsearchpage.hiring", "Đang tuyển")
-              : job.status === "CLOSED"
-                ? t("enterpriseJobsearchpage.closed", "Đóng")
-                : job.status}
-          </div>
-          <div className="flex items-center gap-1.5 text-[14px] font-medium text-slate-500 dark:text-slate-400">
-            <CalendarDays className="h-4 w-4" />
-            HSD: {job.deadlineAt
-              ? format(new Date(job.deadlineAt), "dd/MM/yyyy")
-              : t("common.noDeadline", "Không có thời hạn")}
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-6 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 text-[14px] font-bold text-amber-600 dark:text-amber-500">
-          <Coins className="h-[18px] w-[18px]" />
-          {job.price ? `${formatNumber(job.price)} VND` : "Miễn phí"}
+      {/* Card footer bar */}
+      <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 dark:border-slate-800/50">
+        <div className="flex items-center gap-3">
+          <span className="text-[12.5px] font-semibold text-emerald-600 dark:text-emerald-400">
+            {salaryText}
+          </span>
+          <span className="h-3 w-px bg-slate-200 dark:bg-slate-700" />
+          <span className="flex items-center gap-1 text-[12px] font-medium text-amber-600 dark:text-amber-500">
+            <Coins className="h-3.5 w-3.5" />
+            {job.price ? `${formatNumber(job.price)} VND` : "Miễn phí"}
+          </span>
         </div>
         <Button
+          size="sm"
           onClick={(e) => {
             e.stopPropagation();
             onApply(e);
           }}
-          className="h-11 rounded-xl px-8 border border-transparent bg-indigo-600 text-[15px] font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-500">
+          className="h-7 rounded-md bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
           {t("enterpriseJobsearchpage.applyNow", "Ứng tuyển ngay")}
         </Button>
       </div>
