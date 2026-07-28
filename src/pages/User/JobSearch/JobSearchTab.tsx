@@ -6,7 +6,7 @@ import type { JobDescription } from "@/interfaces";
 import { formatNumber } from "@/lib/formatting";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import type { TFunction } from "i18next";
-import { Coins, Search, Users, X } from "lucide-react";
+import { Coins, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
