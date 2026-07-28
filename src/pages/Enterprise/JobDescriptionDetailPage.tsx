@@ -398,38 +398,44 @@ export function JobDescriptionDetailPage() {
     );
   }
 
+  const logoUrl = job.companyLogo || (job as any).thumbnailUrl || (job as any).companyLogoUrl || null;
+
   return (
     <div className="min-h-screen bg-slate-50 pt-[72px] pb-24 md:pb-0 dark:bg-slate-950">
       <HomepageHeader />
 
-      {/* Unified Single Header Section */}
-      <div className="sticky top-0 z-40 border-b border-slate-200 bg-white py-5 dark:border-slate-800/60 dark:bg-slate-900/40">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-            {/* Left side: Single-line Breadcrumb & Badges */}
-            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">
-              <Link
-                to="/user?tab=jobSearch"
-                className="shrink-0 text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-[#66B2FF]">
-                {t("enterpriseJobdescriptiondetailpage.findJobs", "Tìm việc làm")}
-              </Link>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              {job.companyId ? (
-                <Link
-                  to={`/enterprise/company/${job.companyId}`}
-                  className="max-w-[150px] shrink-0 truncate text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 sm:max-w-[250px] dark:text-slate-400 dark:hover:text-[#66B2FF]">
-                  {job.companyName || t("enterpriseJobdescriptiondetailpage.recruitmentCompany")}
-                </Link>
+      {/* Back button */}
+      <div className="mx-auto max-w-5xl px-6 pt-8 pb-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-[#66B2FF]">
+          <ArrowLeft className="h-4 w-4" />
+          {t("general.back")}
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div className="mx-auto max-w-5xl px-6 pb-20">
+        
+        {/* Hero Section */}
+        <div className="mb-10 flex flex-col gap-8 rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between md:p-8 dark:border-slate-800/60 dark:bg-slate-900/40">
+          
+          <div className="flex flex-1 flex-col items-start gap-5 sm:flex-row">
+            {/* Logo */}
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-indigo-100 bg-indigo-50 text-2xl font-bold text-indigo-600 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-indigo-400">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={job.companyName || "Company"}
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                <span className="max-w-[150px] truncate text-xs font-medium text-slate-500 sm:max-w-[250px] dark:text-slate-400">
-                  {job.companyName || t("enterpriseJobdescriptiondetailpage.recruitmentCompany")}
-                </span>
+                <Building2 className="h-10 w-10" />
               )}
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <h1 className="max-w-[200px] truncate text-sm font-bold text-slate-900 sm:max-w-[350px] sm:text-base dark:text-white">
-                {job.title || t("enterpriseJobdescriptiondetailpage.recruitmentPosition")}
-              </h1>
-              <div className="flex shrink-0 items-center gap-1.5">
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
                 <Badge className={getLevelBadgeColor(job.level)}>
                   {job.level || t("common.notDetermined")}
                 </Badge>
@@ -441,334 +447,195 @@ export function JobDescriptionDetailPage() {
                       : t("common.draft1")}
                 </Badge>
               </div>
-            </div>
-
-            {/* Right side: Action button (Desktop) */}
-            <div className="hidden shrink-0 items-center gap-3 md:flex">
-              {renderActionButton(false)}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Left Column - Main Content */}
-          <div className="space-y-6 lg:col-span-2">
-            {/* Description */}
-            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                  <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  {t("common.jobDescription")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
-                  {job.description || t("enterpriseJobdescriptiondetailpage.noJobDescriptionYet")}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Requirements */}
-            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                  <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  {t("common.candidateRequirements")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
-                  {job.requirements ||
-                    t("enterpriseJobdescriptiondetailpage.thereAreNoSpecificRequirements")}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Benefits */}
-            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                  <Zap className="h-5 w-5 text-amber-500" />
-                  {t("common.welfare")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-600 dark:text-slate-300">
-                  {job.benefits ||
-                    t("enterpriseJobdescriptiondetailpage.thereIsNoBenefitInformation")}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Interview Rounds */}
-            {job.rounds && job.rounds.length > 0 && (
-              <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                    <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                    {t("enterpriseJobdescriptiondetailpage.interviewProcess")}
-                    <span className="ml-1 inline-flex h-5 items-center justify-center rounded-full bg-indigo-50 px-2 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
-                      {job.rounds.length} {t("common.ring")}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {job.rounds.map((round, index) => (
-                      <div
-                        key={round.id || index}
-                        className="flex gap-4 rounded-xl border border-slate-200/80 bg-slate-50/40 p-4 transition-all duration-200 hover:border-indigo-100 dark:border-slate-800/60 dark:bg-slate-900/20 dark:hover:border-indigo-950/40">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-sm font-bold text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-                          {index + 1}
-                        </div>
-                        <div className="flex-1">
-                          <div className="mb-2 flex flex-wrap items-center gap-2">
-                            <span className="font-semibold text-slate-900 dark:text-white">
-                              {round.name ||
-                                t("common.roundVar0", {
-                                  var_0: index + 1,
-                                })}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className="flex items-center gap-1 border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-900">
-                              <span className="shrink-0 text-indigo-600 dark:text-indigo-400">
-                                {getRoundTypeIcon(round.roundType)}
-                              </span>
-                              <span className="ml-1 text-slate-600 dark:text-slate-300">
-                                {round.roundType?.replace("_", " ") || t("common.notDetermined")}
-                              </span>
-                            </Badge>
-                          </div>
-                          <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                            <span>
-                              {t("enterpriseJobdescriptiondetailpage.order")}{" "}
-                              <strong className="text-slate-700 dark:text-slate-300">
-                                {round.roundOrder || index + 1}
-                              </strong>
-                            </span>
-                            {round.passThreshold && (
-                              <span>
-                                {t("enterpriseJobdescriptiondetailpage.passingScore")}{" "}
-                                <strong className="text-slate-700 dark:text-slate-300">
-                                  {round.passThreshold}%
-                                </strong>
-                              </span>
-                            )}
-                            {round.configData?.timeLimitMinutes && (
-                              <span>
-                                {t("enterpriseJobdescriptiondetailpage.time")}{" "}
-                                <strong className="text-slate-700 dark:text-slate-300">
-                                  {round.configData.timeLimitMinutes} {t("common.minute")}
-                                </strong>
-                              </span>
-                            )}
-                          </div>
-                          {round.configData?.instruction && (
-                            <p className="mt-2 border-t border-slate-100 pt-2 text-xs leading-relaxed text-slate-500 dark:border-slate-800/40 dark:text-slate-400">
-                              {round.configData.instruction}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            {/* Payment & CTA card */}
-            {job.status === "OPEN" ? (
-              <Card className="overflow-hidden rounded-[20px] border-amber-200 bg-amber-50/40 p-6 shadow-sm dark:border-amber-900/30 dark:bg-amber-950/10">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Coins className="h-5 w-5 text-amber-600 dark:text-amber-500" />
-                    <span className="text-sm font-semibold text-amber-800 dark:text-amber-400">
-                      {t("payment.applicationFee", "Lệ phí ứng tuyển")}
-                    </span>
-                  </div>
-                  {hasPurchased ? (
-                    <Badge className="border-emerald-500/20 bg-emerald-500/10 font-medium text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                      {t("payment.unlocked", "Đã mở khóa")}
-                    </Badge>
-                  ) : (
-                    <Badge className="border-amber-500/20 bg-amber-500/10 font-medium text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-                      {t("payment.required", "Cần mở khóa")}
-                    </Badge>
-                  )}
+              <h1 className="mb-1 text-2xl font-extrabold leading-tight text-slate-900 md:text-3xl dark:text-white">
+                {job.title || t("enterpriseJobdescriptiondetailpage.recruitmentPosition")}
+              </h1>
+              <Link
+                to={job.companyId ? `/enterprise/company/${job.companyId}` : "#"}
+                className="inline-flex items-center text-base font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+                {job.companyName || t("enterpriseJobdescriptiondetailpage.recruitmentCompany")}
+              </Link>
+              
+              <div className="mt-5 flex flex-wrap items-center gap-y-3 gap-x-6 text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex items-center gap-2 font-semibold text-emerald-600 dark:text-emerald-400">
+                  <Banknote className="h-5 w-5" />
+                  {formatSalaryRaw(job.salaryMin, job.salaryMax)}
                 </div>
+                <div className="flex items-center gap-2 font-medium">
+                  <MapPin className="h-[18px] w-[18px] text-slate-400" />
+                  {job.location || t("common.hoChiMinh")}
+                </div>
+                <div className="flex items-center gap-2 font-medium">
+                  <CalendarDays className="h-[18px] w-[18px] text-slate-400" />
+                  HSD: {formatDate(job.deadlineAt)}
+                </div>
+              </div>
+            </div>
+          </div>
 
-                <div className="mb-4">
-                  <span className="text-3xl font-extrabold text-amber-600 dark:text-amber-500">
+          {/* Payment / Apply Card (Desktop Right) */}
+          <div className="flex shrink-0 flex-col rounded-2xl bg-slate-50/80 p-5 md:w-[280px] dark:bg-[#0B0F19]/50 border border-slate-100 dark:border-slate-800/40">
+            {job.status === "OPEN" ? (
+              <>
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                    {t("payment.applicationFee", "Phí ứng tuyển")}
+                  </span>
+                  {hasPurchased ? (
+                    <Badge className="border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                      Đã thanh toán
+                    </Badge>
+                  ) : null}
+                </div>
+                <div className="mb-5 flex items-center gap-2">
+                  <Coins className="h-6 w-6 text-amber-500" />
+                  <span className="text-2xl font-extrabold tracking-tight text-amber-600 dark:text-amber-500">
                     {typeof job?.price === "number" && job.price > 0
                       ? `${formatNumber(job.price)} VND`
                       : typeof job?.price === "number" && job.price === 0
                         ? t("common.free", "Miễn phí")
                         : "99.000 VND"}
                   </span>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                    {hasPurchased
-                      ? t(
-                          "payment.unlockedDesc",
-                          "Bạn đã hoàn tất thanh toán lệ phí. Vui lòng tiến hành ứng tuyển và thực hiện các thử thách tuyển dụng."
-                        )
-                      : t(
-                          "payment.lockedDesc",
-                          "Thanh toán một lần để mở khóa vĩnh viễn toàn bộ quy trình tuyển dụng tự động (bao gồm CV Screening, AI Interview, Quiz...)."
-                        )}
-                  </p>
                 </div>
-
                 {renderActionButton(true)}
-              </Card>
+              </>
             ) : (
               <div>{renderActionButton(true)}</div>
             )}
+          </div>
+        </div>
 
-            {/* Job Overview */}
-            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                  <Briefcase className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  {t("enterpriseJobdescriptiondetailpage.recruitmentInformation")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 py-2.5 dark:border-slate-800/40">
-                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <Users className="h-4 w-4 text-slate-400" />
-                    {t("common.rank")}
-                  </span>
-                  <Badge className={getLevelBadgeColor(job.level)}>
-                    {job.level || t("common.notDetermined")}
-                  </Badge>
+        {/* Content Body */}
+        <div className="grid gap-12 lg:grid-cols-3">
+          
+          <div className="space-y-12 lg:col-span-2">
+            {/* Description */}
+            <section>
+              <h2 className="mb-4 flex items-center gap-2.5 text-xl font-bold text-slate-900 dark:text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+                  <Briefcase className="h-4 w-4" />
                 </div>
-                <div className="flex items-center justify-between border-b border-slate-100 py-2.5 dark:border-slate-800/40">
-                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <Banknote className="h-4 w-4 text-emerald-500" />
-                    {t("common.salary")}
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {formatSalaryRaw(job.salaryMin, job.salaryMax)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between border-b border-slate-100 py-2.5 dark:border-slate-800/40">
-                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <MapPin className="h-4 w-4 text-slate-400" />
-                    {t("enterpriseJobdescriptiondetailpage.location")}
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {job.location || t("common.hoChiMinh")}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between border-b border-slate-100 py-2.5 dark:border-slate-800/40">
-                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <CalendarDays className="h-4 w-4 text-slate-400" />
-                    {t("common.submissionDeadline")}
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {formatDate(job.deadlineAt)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2.5 last:border-0">
-                  <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <Users className="h-4 w-4 text-slate-400" />
-                    {t("enterpriseJobdescriptiondetailpage.numberOfApplicants")}
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {job.appliedCount || 0}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+                {t("common.jobDescription")}
+              </h2>
+              <div className="prose prose-sm prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
+                <p className="whitespace-pre-wrap leading-relaxed text-[15px]">
+                  {job.description || t("enterpriseJobdescriptiondetailpage.noJobDescriptionYet")}
+                </p>
+              </div>
+            </section>
 
-            {/* Skills */}
-            {job.skills && job.skills.length > 0 && (
-              <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                    <Zap className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            {/* Requirements */}
+            <section>
+              <h2 className="mb-4 flex items-center gap-2.5 text-xl font-bold text-slate-900 dark:text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+                  <CheckCircle2 className="h-4 w-4" />
+                </div>
+                {t("common.candidateRequirements")}
+              </h2>
+              <div className="prose prose-sm prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
+                <p className="whitespace-pre-wrap leading-relaxed text-[15px]">
+                  {job.requirements || t("enterpriseJobdescriptiondetailpage.thereAreNoSpecificRequirements")}
+                </p>
+              </div>
+              
+              {/* Skills (merged into requirements) */}
+              {job.skills && job.skills.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">
                     {t("enterpriseJobdescriptiondetailpage.requiredSkills")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </h3>
                   <div className="flex flex-wrap gap-2">
                     {job.skills.map((skill, index) => (
                       <Badge
                         key={index}
                         variant="outline"
-                        className="rounded-lg border-slate-200 bg-slate-50/50 font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                        className="rounded-lg border-slate-200 bg-white px-3 py-1 font-medium text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
                         {skill}
                       </Badge>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Company Info */}
-            <Card className="overflow-hidden rounded-[20px] border-slate-200 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                  <Building2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  {t("enterpriseJobdescriptiondetailpage.companyInformation")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 p-1">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-indigo-600 dark:border-indigo-950/20 dark:bg-indigo-950/40 dark:text-indigo-400">
-                    <Building2 className="h-7 w-7" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-slate-900 sm:text-base dark:text-white">
-                      {job.companyName ||
-                        t("enterpriseJobdescriptiondetailpage.recruitmentCompany")}
-                    </p>
-                    {job.companyId && (
-                      <Link
-                        to={`/enterprise/company/${job.companyId}`}
-                        className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
-                        {t("enterpriseJobdescriptiondetailpage.viewCompany")}
-                        <ChevronRight className="h-3 w-3" />
-                      </Link>
-                    )}
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </section>
+
+            {/* Benefits */}
+            <section>
+              <h2 className="mb-4 flex items-center gap-2.5 text-xl font-bold text-slate-900 dark:text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+                  <Zap className="h-4 w-4" />
+                </div>
+                {t("common.welfare")}
+              </h2>
+              <div className="prose prose-sm prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
+                <p className="whitespace-pre-wrap leading-relaxed text-[15px]">
+                  {job.benefits || t("enterpriseJobdescriptiondetailpage.thereIsNoBenefitInformation")}
+                </p>
+              </div>
+            </section>
           </div>
+
+          {/* Sidebar Area (Rounds Pipeline) */}
+          <div className="lg:border-l lg:border-slate-200 lg:pl-10 dark:lg:border-slate-800/60">
+            <h2 className="mb-8 flex items-center gap-2.5 text-lg font-bold text-slate-900 dark:text-white">
+              <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              {t("enterpriseJobdescriptiondetailpage.interviewProcess")}
+              <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                {job.rounds?.length || 0}
+              </span>
+            </h2>
+
+            {job.rounds && job.rounds.length > 0 ? (
+              <div className="relative space-y-8">
+                {/* Vertical Line connecting nodes */}
+                <div className="absolute left-[19px] top-6 bottom-6 w-[2px] bg-indigo-100 dark:bg-indigo-950" />
+                
+                {job.rounds.map((round, index) => (
+                  <div key={round.id || index} className="relative z-10 flex gap-5">
+                    {/* Node */}
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-[3px] border-white bg-indigo-100 text-sm font-bold text-indigo-600 shadow-sm dark:border-[#0B0F19] dark:bg-indigo-900 dark:text-indigo-400">
+                      {index + 1}
+                    </div>
+                    
+                    {/* Info */}
+                    <div className="flex-1 pt-1.5 pb-2">
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        {round.name || t("common.roundVar0", { var_0: index + 1 })}
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className="border-slate-200 bg-white text-[11.5px] font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                          <span className="mr-1 text-indigo-600 dark:text-indigo-400">{getRoundTypeIcon(round.roundType)}</span>
+                          {round.roundType?.replace("_", " ") || t("common.notDetermined")}
+                        </Badge>
+                      </div>
+                      <div className="mt-3 space-y-1.5 text-[13px] text-slate-500 dark:text-slate-400">
+                        {round.passThreshold && (
+                          <div className="flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                            <span>Điểm chuẩn: <strong className="text-slate-700 dark:text-slate-300">{round.passThreshold}%</strong></span>
+                          </div>
+                        )}
+                        {round.configData?.timeLimitMinutes && (
+                          <div className="flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                            <span>Thời gian: <strong className="text-slate-700 dark:text-slate-300">{round.configData.timeLimitMinutes} {t("common.minute")}</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center dark:border-slate-800 dark:bg-slate-900/50">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Chưa cập nhật quy trình phỏng vấn.
+                </p>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
-
-      {/* Floating Bottom Bar for Mobile */}
-      {job.status === "OPEN" && (
-        <div className="fixed right-0 bottom-0 left-0 z-50 block border-t border-slate-200 bg-white/90 p-4 shadow-lg backdrop-blur-md md:hidden dark:border-slate-800/60 dark:bg-slate-900/90">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                {t("payment.applicationFee", "Lệ phí ứng tuyển")}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <Coins className="h-4 w-4 text-amber-600 dark:text-amber-500" />
-                <span className="text-sm font-extrabold text-amber-600 dark:text-amber-500">
-                  {typeof job?.price === "number" && job.price > 0
-                    ? `${formatNumber(job.price)} VND`
-                    : typeof job?.price === "number" && job.price === 0
-                      ? t("common.free", "Miễn phí")
-                      : "99.000 VND"}
-                </span>
-              </div>
-            </div>
-            <div className="max-w-[200px] flex-1">{renderActionButton(true)}</div>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </div>
