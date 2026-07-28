@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { JobDetailView } from "@/components/shared/JobDetailView";
 import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
 import { applicationService } from "@/services/application.manager";
@@ -61,7 +61,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
           result.error || t("enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain");
         toast.error(errorMsg, { duration: 5000 });
       }
-    } catch (err) {
+    } catch {
       toast.error("Có lỗi xảy ra, vui lòng thử lại.");
     } finally {
       setIsApplying(false);
@@ -69,18 +69,19 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   };
 
   return (
-    <div className="relative h-full w-full overflow-y-auto bg-white shadow-2xl dark:bg-slate-950 md:rounded-l-[24px] md:border-l md:border-y md:border-slate-200 dark:md:border-slate-800">
-      {/* Header Sticky Action */}
-      <div className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-900/80">
+    <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
+      {/* Back bar — minimal, just 1 line */}
+      <div className="shrink-0 border-b border-slate-200/70 bg-white/60 px-5 py-3 backdrop-blur-sm dark:border-slate-800/50 dark:bg-slate-900/60 md:px-8">
         <button
           onClick={onClose}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">
-          <X className="h-4 w-4" />
-          {t("general.close", "Đóng")}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
+          <ArrowLeft className="h-4 w-4" />
+          {t("general.back", "Quay lại danh sách")}
         </button>
       </div>
 
-      <div className="p-6">
+      {/* Scrollable content */}
+      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50">
         <JobDetailView
           job={job}
           hasPurchased={hasPurchased}
