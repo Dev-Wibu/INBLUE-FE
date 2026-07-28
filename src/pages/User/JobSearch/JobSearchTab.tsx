@@ -257,12 +257,12 @@ export function JobSearchTab() {
     <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
       {/* Top Action Bar (Hero Style) */}
       <div className="px-5 py-6 md:px-8 shrink-0">
-        <div className="mx-auto w-full max-w-4xl rounded-[20px] bg-[#161616] p-6 shadow-sm border border-white/5 dark:bg-[#161616] dark:border-white/5">
+        <div className="mx-auto w-full max-w-4xl rounded-[20px] bg-white p-6 shadow-sm border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800/60">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
             {/* Title & Subtitle */}
             <div>
-              <h2 className="text-2xl font-bold text-white">Tìm việc làm phù hợp</h2>
-              <p className="mt-1 text-[15px] text-[#A1A1AA]">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Tìm việc làm phù hợp</h2>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
                 Khám phá quy trình tuyển dụng thực tế, luyện tập và ứng tuyển ngay
               </p>
             </div>
@@ -270,20 +270,20 @@ export function JobSearchTab() {
             {/* Stats */}
             <div className="flex items-center gap-6">
               <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-[#66B2FF]">
+                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
                   {jobs.filter((j) => j.status === "OPEN").length || jobs.length}
                 </span>
-                <span className="text-[13px] text-[#A1A1AA]">Vị trí mở</span>
+                <span className="text-[13px] text-slate-500 dark:text-slate-400">Vị trí mở</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-[#66B2FF]">
+                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
                   {new Set(jobs.map((j) => j.companyName).filter(Boolean)).size}
                 </span>
-                <span className="text-[13px] text-[#A1A1AA]">Công ty</span>
+                <span className="text-[13px] text-slate-500 dark:text-slate-400">Công ty</span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-2xl font-semibold text-[#66B2FF]">4</span>
-                <span className="text-[13px] text-[#A1A1AA]">Cấp bậc</span>
+                <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">4</span>
+                <span className="text-[13px] text-slate-500 dark:text-slate-400">Cấp bậc</span>
               </div>
             </div>
           </div>
@@ -295,7 +295,7 @@ export function JobSearchTab() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm theo chức danh hoặc công ty..."
-                className="h-[46px] w-full rounded-[10px] border-none bg-[#2A2A2A] px-4 text-[15px] text-white placeholder:text-[#888888] focus-visible:ring-1 focus-visible:ring-indigo-500/50"
+                className="h-[46px] w-full rounded-[10px] border border-slate-200 bg-slate-50 px-4 text-[15px] text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-indigo-500/50 dark:border-slate-800/60 dark:bg-[#0B0F19] dark:text-white dark:placeholder:text-slate-500"
               />
               {searchQuery && (
                 <button
@@ -304,14 +304,14 @@ export function JobSearchTab() {
                     setSearchQuery("");
                     updateFilters("", activeLevel);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                   <X className="h-4 w-4" />
                 </button>
               )}
             </div>
             <Button
               type="submit"
-              className="h-[46px] shrink-0 rounded-[10px] border border-white/20 bg-transparent px-6 font-semibold text-white transition-colors hover:bg-white/10">
+              className="h-[46px] shrink-0 rounded-[10px] border border-slate-300 bg-transparent px-6 font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
               <Search className="mr-2 h-[18px] w-[18px]" />
               Tìm việc
             </Button>
@@ -332,10 +332,10 @@ export function JobSearchTab() {
                     setActiveLevel(level);
                     updateFilters(searchQuery, level);
                   }}
-                  className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
+                  className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors border ${
                     isActive
-                      ? "bg-[#3B82F6] text-white border border-[#3B82F6]"
-                      : "border border-white/20 bg-transparent text-[#A1A1AA] hover:bg-white/10 hover:text-white"
+                      ? "bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-600 dark:border-indigo-600"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                   }`}>
                   {levelLabel}
                 </button>
