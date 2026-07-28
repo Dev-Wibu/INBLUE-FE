@@ -402,6 +402,10 @@ export function formatTimeDayMonth(value: DateInput, fallback = EMPTY_PLACEHOLDE
   const dateStr = currentLocale() === "en-US" ? `${month}/${day}` : `${day}/${month}`;
   return `${hour}:${minute}, ${dateStr}`;
 }
+export function formatNumber(amount: number): string {
+  const locale = i18n.language === "en" ? "en-US" : "vi-VN";
+  return new Intl.NumberFormat(locale).format(amount);
+}
 export function formatCurrency(amount: number): string {
   const locale = i18n.language === "en" ? "en-US" : "vi-VN";
   return new Intl.NumberFormat(locale).format(amount) + t("common.vnd");

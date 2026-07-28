@@ -3,11 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { JobDescription } from "@/interfaces";
-import { formatCurrency } from "@/lib/formatting";
+import { formatNumber } from "@/lib/formatting";
 import { jobDescriptionManager } from "@/services/job-description.manager";
 import { format } from "date-fns";
 import type { TFunction } from "i18next";
-import { Banknote, Building2, CalendarDays, Search, Users, X } from "lucide-react";
+import { Banknote, Building2, CalendarDays, Coins, Search, Users, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -77,7 +77,7 @@ function JobCard({
   const isNegotiable = !job.salaryMin && !job.salaryMax;
   const salaryText = isNegotiable
     ? t("enterpriseJobsearchpage.negotiable", "Thỏa thuận")
-    : `${formatCurrency(job.salaryMin || 0)} - ${formatCurrency(job.salaryMax || 0)}`.trim();
+    : `${formatNumber(job.salaryMin || 0)} - ${formatNumber(job.salaryMax || 0)}`.trim();
 
   return (
     <div
@@ -163,15 +163,17 @@ function JobCard({
       </div>
 
       {/* Footer */}
-      <div className="mt-6 flex items-center gap-3">
+      <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 text-[14px] font-bold text-amber-600 dark:text-amber-500">
+          <Coins className="h-[18px] w-[18px]" />
+          {job.price ? `${formatNumber(job.price)} đkđo` : "Miễn phí"}
+        </div>
         <Button
-          variant="outline"
-          className="h-11 flex-1 rounded-xl border-slate-300 bg-transparent text-[15px] font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-          {t("enterpriseJobsearchpage.viewDetails", "Chi tiết")}
-        </Button>
-        <Button
-          onClick={onApply}
-          className="h-11 flex-1 rounded-xl border border-transparent bg-indigo-600 text-[15px] font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-500">
+          onClick={(e) => {
+            e.stopPropagation();
+            onApply();
+          }}
+          className="h-11 rounded-xl px-8 border border-transparent bg-indigo-600 text-[15px] font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:text-white dark:hover:bg-indigo-500">
           {t("enterpriseJobsearchpage.applyNow", "Ứng tuyển ngay")}
         </Button>
       </div>
