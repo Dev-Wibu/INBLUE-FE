@@ -24,16 +24,18 @@ export const FEEDBACK_QUERY_KEYS = {
   bySession: (sessionId: number) => ["mentor-feedbacks", "session", sessionId] as const,
 };
 const getFeedbackMentorId = (feedback: MentorFeedback): number | undefined => {
-  if (typeof feedback.mentor?.id === "number") {
-    return feedback.mentor.id;
+  if (feedback.mentor?.id != null) {
+    return typeof feedback.mentor.id === "string"
+      ? parseInt(feedback.mentor.id, 10)
+      : feedback.mentor.id;
   }
-  return feedback.session?.userId2;
+  return undefined;
 };
 const getFeedbackUserId = (feedback: MentorFeedback): number | undefined => {
-  if (typeof feedback.user?.id === "number") {
-    return feedback.user.id;
+  if (feedback.user?.id != null) {
+    return typeof feedback.user.id === "string" ? parseInt(feedback.user.id, 10) : feedback.user.id;
   }
-  return feedback.session?.userId;
+  return undefined;
 };
 
 /**
@@ -80,18 +82,19 @@ export const useMentorFeedbackById = (id: number) => {
  * Hook to fetch feedbacks by mentor ID
  */
 export const useMentorFeedbacksByMentor = (mentorId: number) => {
+  const numericMentorId = typeof mentorId === "string" ? parseInt(mentorId, 10) : mentorId;
   return useQuery({
-    queryKey: FEEDBACK_QUERY_KEYS.byMentor(mentorId),
+    queryKey: FEEDBACK_QUERY_KEYS.byMentor(numericMentorId),
     queryFn: async () => {
-      const response = await mentorFeedbackManager.getByMentorId(mentorId);
+      const response = await mentorFeedbackManager.getByMentorId(numericMentorId);
       if (response.success && response.data) {
         return response.data.filter(
-          (feedback: MentorFeedback) => getFeedbackMentorId(feedback) === mentorId
+          (feedback: MentorFeedback) => getFeedbackMentorId(feedback) === numericMentorId
         );
       }
       return [];
     },
-    enabled: !!mentorId,
+    enabled: !!numericMentorId,
   });
 };
 
@@ -99,8 +102,9 @@ export const useMentorFeedbacksByMentor = (mentorId: number) => {
  * Hook to fetch feedbacks by user ID
  */
 export const useMentorFeedbacksByUser = (userId: number) => {
+  const numericUserId = typeof userId === "string" ? parseInt(userId, 10) : userId;
   const { data: allFeedbacks = [], ...rest } = useMentorFeedbacks();
-  if (!userId) {
+  if (!numericUserId) {
     return {
       data: [] as MentorFeedback[],
       ...rest,
@@ -109,7 +113,7 @@ export const useMentorFeedbacksByUser = (userId: number) => {
 
   // Filter feedbacks by user ID
   const userFeedbacks = allFeedbacks.filter(
-    (feedback: MentorFeedback) => getFeedbackUserId(feedback) === userId
+    (feedback: MentorFeedback) => getFeedbackUserId(feedback) === numericUserId
   );
   return {
     data: userFeedbacks,
