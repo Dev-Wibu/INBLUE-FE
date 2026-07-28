@@ -382,6 +382,44 @@ export class MentorManager implements BaseManager<Mentor> {
       error: result.error,
     };
   }
+
+  /**
+   * Change mentor password
+   * PUT /api/mentors/change-password
+   * Uses query params: oldPass, newPass (similar to user change password)
+   */
+  async changePassword(
+    currentPassword: string,
+    newPassword: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    try {
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const response = await fetchClient
+        .PUT("/api/mentors/change-password", {
+          params: {
+            query: {
+              oldPass: currentPassword,
+              newPass: newPassword,
+            },
+          },
+        })
+        .then((res) => ({
+          data: res.data,
+          status: res.response?.status,
+          headers: res.response?.headers,
+        }));
+      return {
+        success: true,
+        // @ts-expect-error: Backend Swagger schema mismatch
+        data: response.data as { message: string },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : t("changePassword.unableToUpdatePassword"),
+      };
+    }
+  }
 }
 
 // Export singleton instance
