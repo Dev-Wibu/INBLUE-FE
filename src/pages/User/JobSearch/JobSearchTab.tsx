@@ -261,43 +261,76 @@ export function JobSearchTab() {
 
   return (
     <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
-      {/* Top Action Bar */}
-      <div className="flex flex-col items-center gap-6 border-b border-slate-200/50 bg-white px-5 py-8 dark:border-transparent dark:bg-transparent md:px-8">
-        <form onSubmit={handleSearch} className="relative flex w-full max-w-2xl items-center">
-          <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t(
-              "enterpriseJobsearchpage.searchPlaceholder",
-              "Tìm kiếm theo chức danh hoặc công ty..."
-            )}
-            className="h-14 w-full rounded-full border border-slate-200 bg-slate-50/50 pl-14 pr-36 text-base shadow-sm focus-visible:ring-indigo-500/30 dark:border-[#333333] dark:bg-[#1E1E1E] dark:placeholder:text-[#888888] dark:text-white dark:focus-visible:ring-indigo-500/50"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                updateFilters("", activeLevel);
-              }}
-              className="absolute right-32 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-slate-200 transition-colors">
-              <X className="h-4 w-4" />
-            </button>
-          )}
-          <Button
-            type="submit"
-            className="absolute right-1.5 top-1.5 h-11 rounded-full bg-indigo-600 px-6 text-sm font-semibold text-white shadow hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors">
-            {t("enterpriseJobsearchpage.searchButton", "Tìm việc")}
-          </Button>
-        </form>
+      {/* Top Action Bar (Hero Style) */}
+      <div className="px-5 py-6 md:px-8 shrink-0">
+        <div className="mx-auto w-full max-w-4xl rounded-[20px] bg-[#161616] p-6 shadow-sm border border-white/5 dark:bg-[#161616] dark:border-white/5">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+            {/* Title & Subtitle */}
+            <div>
+              <h2 className="text-2xl font-bold text-white">Tìm việc làm phù hợp</h2>
+              <p className="mt-1 text-[15px] text-[#A1A1AA]">
+                Khám phá quy trình tuyển dụng thực tế, luyện tập và ứng tuyển ngay
+              </p>
+            </div>
+            
+            {/* Stats */}
+            <div className="flex items-center gap-6">
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-semibold text-[#66B2FF]">
+                  {jobs.filter((j) => j.status === "OPEN").length || jobs.length}
+                </span>
+                <span className="text-[13px] text-[#A1A1AA]">Vị trí mở</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-semibold text-[#66B2FF]">
+                  {new Set(jobs.map((j) => j.companyName).filter(Boolean)).size}
+                </span>
+                <span className="text-[13px] text-[#A1A1AA]">Công ty</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-semibold text-[#66B2FF]">4</span>
+                <span className="text-[13px] text-[#A1A1AA]">Cấp bậc</span>
+              </div>
+            </div>
+          </div>
 
-        <div className="flex w-full max-w-4xl flex-wrap items-center justify-between gap-4">
+          <form onSubmit={handleSearch} className="mt-6 flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm theo chức danh hoặc công ty..."
+                className="h-[46px] w-full rounded-[10px] border-none bg-[#2A2A2A] px-4 text-[15px] text-white placeholder:text-[#888888] focus-visible:ring-1 focus-visible:ring-indigo-500/50"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    updateFilters("", activeLevel);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <Button
+              type="submit"
+              className="h-[46px] shrink-0 rounded-[10px] border border-white/20 bg-transparent px-6 font-semibold text-white transition-colors hover:bg-white/10">
+              <Search className="mr-2 h-[18px] w-[18px]" />
+              Tìm việc
+            </Button>
+          </form>
+
           {/* Level Filters */}
-          <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+          <div className="mt-4 flex flex-wrap gap-2">
             {FILTER_LEVELS.map((level) => {
               const isActive = activeLevel === level;
+              const levelLabel =
+                level === "ALL"
+                  ? "Tất cả"
+                  : level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
               return (
                 <button
                   key={level}
@@ -305,12 +338,12 @@ export function JobSearchTab() {
                     setActiveLevel(level);
                     updateFilters(searchQuery, level);
                   }}
-                  className={`rounded-full border px-4 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
+                  className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors ${
                     isActive
-                      ? "border-indigo-600 bg-indigo-600 text-white shadow-sm dark:border-indigo-500 dark:bg-indigo-500"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-800 dark:bg-[#131620] dark:text-slate-400 dark:hover:border-indigo-500/50 dark:hover:bg-slate-800"
+                      ? "bg-[#3B82F6] text-white border border-[#3B82F6]"
+                      : "border border-white/20 bg-transparent text-[#A1A1AA] hover:bg-white/10 hover:text-white"
                   }`}>
-                  {level === "ALL" ? "TẤT CẢ" : level}
+                  {levelLabel}
                 </button>
               );
             })}
