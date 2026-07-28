@@ -2,7 +2,6 @@ import { HomepageHeader } from "@/components/homepage-redesign";
 import { Footer } from "@/components/layouts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
 import { formatNumber } from "@/lib/formatting";
@@ -20,7 +19,6 @@ import {
   Building2,
   CalendarDays,
   CheckCircle2,
-  ChevronRight,
   Clock,
   Coins,
   MapPin,
@@ -398,7 +396,7 @@ export function JobDescriptionDetailPage() {
     );
   }
 
-  const logoUrl = job.companyLogo || (job as any).thumbnailUrl || (job as any).companyLogoUrl || null;
+  const logoUrl = (job as any).companyLogo || (job as any).thumbnailUrl || (job as any).companyLogoUrl || null;
 
   return (
     <div className="min-h-screen bg-slate-50 pt-[72px] pb-24 md:pb-0 dark:bg-slate-950">
