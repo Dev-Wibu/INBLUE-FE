@@ -21,12 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeviceCheckDialog, VideoCallProvider, VideoCallRoom } from "@/components/video-call";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
-import {
-  SESSION_QUERY_KEYS,
-  useJoinSession,
-  useLeaveSession,
-  useSessionById,
-} from "@/hooks/useSession";
+import { SESSION_QUERY_KEYS, useJoinSession, useSessionById } from "@/hooks/useSession";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { useAuthStore } from "@/stores/authStore";
 import { useQueryClient } from "@tanstack/react-query";
@@ -83,11 +78,17 @@ export function MentorSessionRoomPage() {
     refetch: refetchSession,
   } = useSessionById(numericSessionId);
   const joinSessionMutation = useJoinSession();
-  const leaveSessionMutation = useLeaveSession();
   // 2026-07-28: User.id (from JWT sub) is NOT the same as Mentor.id. BE
   //   stores the Mentor.id on the Session row (in `mentorId` / `userId`)
   //   and validates join-session against it, so we resolve the mentor
   //   profile for the current auth user and send its id instead of user.id.
+  // 2026-07-28: Per `frontend_tracking_session_time.md` § 2.1 and § 11,
+  //   leave-tracking is exclusively the responsibility of Daily.co's
+  //   webhook (`POST /api/sessions/webhooks/dailyco`). BE has no
+  //   `/leave-session` endpoint registered in its current swagger, so
+  //   FE deliberately does NOT POST any leave signal — attempting to do
+  //   so just produces 404 noise. EndTime* will arrive via the webhook
+  //   and become visible on the next 10s polling tick.
   const { data: currentMentorProfile } = useCurrentMentorProfile();
   const mentorProfileId =
     currentMentorProfile?.id != null
@@ -95,11 +96,6 @@ export function MentorSessionRoomPage() {
         ? parseInt(currentMentorProfile.id, 10)
         : currentMentorProfile.id
       : undefined;
-  // Cache the local Daily.co participantId so we can pass it to /leave-session
-  //   when the user exits (best-effort: BE primary signal is via the Daily.co
-  //   webhook, but this guarantees endTime* is written even when the user
-  //   closes the tab without a clean Daily.co leave event).
-  const [joinedParticipantId, setJoinedParticipantId] = useState<string | null>(null);
 
   // Validate session and user.
   // For Mentor Interview (RoundType.MENTROR_REVIEW) the session is created
@@ -139,48 +135,26 @@ export function MentorSessionRoomPage() {
       queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),
     });
     setHasJoinedTracking(true);
-    setJoinedParticipantId(participantId);
   };
 
   // Handle when mentor leaves the call
   // 2026-07-13 fix: invalidate queries so the list page picks up
   //   status changes (BE may flip ONGOING -> COMPLETED any time,
   //   including via Daily.co webhook from the peer leaving).
-  // 2026-07-28 fix: mirror StudentSessionRoomPage — fire-and-forget
-  //   POST /leave-session so endTime2 is written even if Daily.co's
-  //   webhook hasn't been delivered yet. Without this, endTime1/2 stays
-  //   null until the BE webhook eventually fires (which can be slow or
-  //   miss when the user closes the tab without a clean Daily.co leave).
-  //   Use setTimeout to defer the API call and navigation away from the
-  //   video room unmount, preventing the query invalidation cascade from
-  //   freezing the page when the user clicks Leave.
+  // 2026-07-28: leave-tracking is exclusively the Daily.co webhook's
+  //   responsibility (see frontend_tracking_session_time.md section 4 /
+  //   section 2.1). FE just polls to pick up the new
+  //   endTime*/durationSeconds*. We do NOT call POST /leave-session
+  //   because BE doesn't expose it and the tracking doc explicitly
+  //   tells FE not to.
   const handleLeave = () => {
-    setTimeout(() => {
-      if (
-        hasJoinedTracking &&
-        joinedParticipantId &&
-        session?.roomName &&
-        mentorProfileId != null
-      ) {
-        void leaveSessionMutation.mutate({
-          sessionName: session.roomName,
-          sessionId: numericSessionId,
-          userId: mentorProfileId,
-          participantId: joinedParticipantId,
-          mentor: true,
-          isMentor: true,
-        });
-      }
-      if (!Number.isNaN(numericSessionId)) {
-        queryClient.invalidateQueries({
-          queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),
-        });
-      }
-      queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
-    }, 0);
-    // Navigate immediately so the old room page unmounts before the
-    // query invalidation cascade causes heavy re-renders.
+    if (!Number.isNaN(numericSessionId)) {
+      queryClient.invalidateQueries({
+        queryKey: SESSION_QUERY_KEYS.byId(numericSessionId),
+      });
+    }
+    queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.all });
+    queryClient.invalidateQueries({ queryKey: ["sessions"] });
     navigate("/mentor?tab=sessions");
   };
 
