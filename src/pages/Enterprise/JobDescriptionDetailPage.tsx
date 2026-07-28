@@ -372,8 +372,8 @@ export function JobDescriptionDetailPage() {
         </div>
 
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-          <Card className="rounded-[20px] border-red-100 bg-red-50/50 p-8 shadow-sm dark:border-red-900/20 dark:bg-red-950/10">
-            <CardContent className="flex flex-col items-center justify-center gap-4 p-6">
+          <div className="rounded-[20px] border border-red-100 bg-red-50/50 p-8 shadow-sm dark:border-red-900/20 dark:bg-red-950/10">
+            <div className="flex flex-col items-center justify-center gap-4 p-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400">
                 <AlertCircle className="h-6 w-6" />
               </div>
@@ -388,8 +388,8 @@ export function JobDescriptionDetailPage() {
                 className="mt-2 rounded-xl bg-indigo-600 hover:bg-indigo-700">
                 {t("general.back")}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
         <Footer />
       </div>
