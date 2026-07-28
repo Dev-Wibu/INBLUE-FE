@@ -141,6 +141,16 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family:
+      Inter,
+      Manrope,
+      "Segoe UI",
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
     overflow-anchor: auto;
   }
 }

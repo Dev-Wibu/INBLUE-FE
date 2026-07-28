@@ -13,16 +13,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/contexts/QueryProvider";
 import { AdminDashboardPage } from "@/pages/Admin";
 import { ApplicationGradingDetailPage } from "@/pages/Admin/ApplicationGrading";
-import {
-  ForgotPasswordPage,
-  LoginPage,
-  MentorRegisterPage,
-  ResetPasswordPage,
-  SignupPage,
-  WaitingAcceptMentorPage,
-} from "@/pages/Auth";
+import { ForgotPasswordPage, LoginPage, ResetPasswordPage, SignupPage } from "@/pages/Auth";
 import { PlaygroundPage } from "@/pages/Dev/Playground/PlaygroundPage";
-import { CompanyDetailPage, CompanySearchPage, JobDescriptionDetailPage } from "@/pages/Enterprise";
+import {
+  CompanyDetailPage,
+  CompanySearchPage,
+  JobDescriptionDetailPage,
+} from "@/pages/Enterprise";
 import {
   ForbiddenPage,
   GatewayTimeoutPage,
@@ -141,6 +138,7 @@ function App() {
             <Route path="/questions/tips" element={<InterviewTipsPage />} />
 
             {/* Enterprise Simulation pages (public) */}
+            <Route path="/enterprise/jobs" element={<Navigate to="/user?tab=jobSearch" replace />} />
             <Route path="/enterprise/companies" element={<CompanySearchPage />} />
             <Route path="/enterprise/company/:id" element={<CompanyDetailPage />} />
             <Route path="/enterprise/job/:id" element={<JobDescriptionDetailPage />} />
@@ -167,10 +165,10 @@ function App() {
               </Route>
             </Route>
 
-            {/* Auth routes without layout (full page) — /select-role redirects to signup */}
-            <Route path="/select-role" element={<Navigate to="/signup?role=user" replace />} />
-            <Route path="/mentor-register" element={<MentorRegisterPage />} />
-            <Route path="/waiting-accept" element={<WaitingAcceptMentorPage />} />
+            {/* Auth routes without layout (full page) */}
+            <Route path="/select-role" element={<Navigate to="/signup" replace />} />
+            <Route path="/mentor-register" element={<Navigate to="/signup" replace />} />
+            <Route path="/waiting-accept" element={<Navigate to="/signup" replace />} />
 
             {/* User Dashboard — ChromeTabs shell at /user, sub-pages nested inside */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>

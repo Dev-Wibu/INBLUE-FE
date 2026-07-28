@@ -110,7 +110,7 @@ export function MentorInterviewFeaturePage() {
   const navigate = useNavigate();
   const { isLoggedIn, user } = useAuthStore();
   const dashboardPath = isLoggedIn ? getDashboardPath(user?.role) : "/login";
-  const ctaPath = isLoggedIn ? getDashboardPath(user?.role) : "/select-role";
+  const ctaPath = isLoggedIn ? getDashboardPath(user?.role) : "/signup";
   return (
     <div className="relative w-full overflow-hidden bg-white dark:bg-slate-950">
       <HomepageHeader />

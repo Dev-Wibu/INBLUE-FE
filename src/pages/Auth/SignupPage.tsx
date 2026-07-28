@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { candidateProfileManager } from "@/services/candidate-profile.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, UserRound } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -186,17 +186,24 @@ export function SignupPage() {
     window.location.assign(authManager.getGoogleLoginUrl());
   };
   const inputClassName =
-    "border-slate-200 bg-white/90 text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#0047AB]/25 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus-visible:ring-[#66B2FF]/35";
+    "h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-500 focus-visible:border-[#0047AB] focus-visible:ring-[#0047AB]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus-visible:border-[#66B2FF] dark:focus-visible:ring-[#66B2FF]/25";
   const passwordInputClassName = cn("pr-10", inputClassName);
   return (
-    <Card className="w-full max-w-md border-slate-200/80 bg-white/95 shadow-xl shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-black/40">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl text-[#0047AB] dark:text-[#66B2FF]">
-          {t("general.signUp")}
-        </CardTitle>
-        <CardDescription className="text-slate-600 dark:text-slate-300">
-          {t("authSignuppage.welcomeToInbluePleaseFillInfo")}
-        </CardDescription>
+    <Card className="w-full max-w-[460px] rounded-xl border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <CardHeader className="space-y-4 pb-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#0047AB]/10 text-[#0047AB] dark:bg-[#66B2FF]/15 dark:text-[#66B2FF]">
+            <UserRound className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 space-y-1">
+            <CardTitle className="text-2xl leading-tight text-slate-950 dark:text-white">
+              {t("authSignuppage.registerForAStudentAccount")}
+            </CardTitle>
+            <CardDescription className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+              {t("authSignuppage.welcomeToInbluePleaseFillInfo")}
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -204,7 +211,7 @@ export function SignupPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full gap-3 border-slate-300 bg-white/90 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="h-11 w-full gap-3 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           onClick={handleGoogleSignup}>
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
@@ -240,9 +247,9 @@ export function SignupPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="dark:text-slate-300">
+              <Label htmlFor="fullName" className="text-slate-700 dark:text-slate-200">
                 {t("common.fullName")}
               </Label>
               <Input
@@ -257,7 +264,7 @@ export function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="dark:text-slate-300">
+              <Label htmlFor="email" className="text-slate-700 dark:text-slate-200">
                 {t("common.email")}
               </Label>
               <Input
@@ -274,7 +281,7 @@ export function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="dark:text-slate-300">
+            <Label htmlFor="password" className="text-slate-700 dark:text-slate-200">
               {t("common.password")}
             </Label>
             <div className="relative">
@@ -291,14 +298,14 @@ export function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300">
+                className="absolute top-1/2 right-3 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-[#0047AB] focus-visible:outline-none dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 dark:focus-visible:ring-[#66B2FF]">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="dark:text-slate-300">
+            <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-200">
               {t("common.confirmPassword")}
             </Label>
             <div className="relative">
@@ -315,19 +322,22 @@ export function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-300">
+                className="absolute top-1/2 right-3 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-[#0047AB] focus-visible:outline-none dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 dark:focus-visible:ring-[#66B2FF]">
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-950/60">
             <Checkbox
               id="agreeTerms"
               checked={agreeTerms}
               onCheckedChange={(checked) => setAgreeTerms(checked === true)}
+              className="mt-0.5"
             />
-            <label htmlFor="agreeTerms" className="text-sm text-slate-600 dark:text-slate-400">
+            <label
+              htmlFor="agreeTerms"
+              className="text-sm leading-6 text-slate-600 dark:text-slate-300">
               {t("authSignuppage.iAgreeWithThese")}{" "}
               <Link to="#" className="text-[#0047AB] hover:underline dark:text-[#66B2FF]">
                 {t("authSignuppage.terms")}
@@ -337,12 +347,18 @@ export function SignupPage() {
           </div>
 
           {error && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-600 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-300">
-              {error}
-            </p>
+            <div
+              className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-300"
+              role="alert">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>{error}</p>
+            </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="h-11 w-full bg-[#0047AB] font-semibold text-white hover:bg-[#003A8C] active:scale-[0.99] dark:bg-[#66B2FF] dark:text-slate-950 dark:hover:bg-[#87c4ff]"
+            disabled={isLoading}>
             {isLoading ? t("authSignuppage.registering") : t("general.signUp")}
           </Button>
         </form>

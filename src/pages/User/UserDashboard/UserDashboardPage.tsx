@@ -14,6 +14,7 @@ import {
   MessageSquare,
   Newspaper,
   User as UserIcon,
+  Search,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +22,7 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import { AIInterviewListPage } from "../AIInterview";
 import { ApplicationHistoryPage } from "../ApplicationHistory";
 import { HomeFeedPage } from "../HomeFeed";
+import { JobSearchTab } from "../JobSearch";
 import { MentorListPage } from "../MentorList/MentorListPage";
 import { MessengerPage } from "../Messenger";
 import { UserNotificationsPage } from "../Notifications";
@@ -29,6 +31,7 @@ import { UserHeader } from "./components/UserHeader";
 
 type TabType =
   | "homeFeed"
+  | "jobSearch"
   | "overview"
   | "mentors"
   | "applicationHistory"
@@ -39,6 +42,7 @@ type TabType =
 const isValidTabType = (value: string): value is TabType => {
   return [
     "homeFeed",
+    "jobSearch",
     "overview",
     "mentors",
     "applicationHistory",
@@ -57,6 +61,10 @@ const getAvailableTabs = (
   {
     type: "homeFeed",
     label: t("common.home"),
+  },
+  {
+    type: "jobSearch",
+    label: t("enterpriseJobsearchpage.searchButton"),
   },
   {
     type: "overview",
@@ -93,6 +101,12 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
         icon: Newspaper,
         label: t("common.home"),
         color: "text-orange-600 dark:text-orange-500",
+      },
+      {
+        type: "jobSearch",
+        icon: Search,
+        label: t("enterpriseJobsearchpage.searchButton"),
+        color: "text-[#0047AB] dark:text-[#66B2FF]",
       },
     ],
   },
@@ -260,6 +274,8 @@ export function UserDashboardPage() {
     switch (typedActiveTab) {
       case "homeFeed":
         return <HomeFeedPage />;
+      case "jobSearch":
+        return <JobSearchTab />;
       case "overview":
         return <OverviewPage />;
       case "mentors":

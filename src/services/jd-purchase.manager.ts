@@ -2,12 +2,14 @@ import { fetchClient } from "@/lib/api";
 
 export interface JdPurchase {
   id: number;
-  userId: number;
-  jdId: number;
-  paymentId: number;
-  status: "PURCHASED" | "USED";
+  status: "PURCHASED" | "USED" | "EXPIRED";
   purchasedAt: string;
   usedAt: string | null;
+  validUntil: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  jobDescription?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payment?: any;
 }
 
 function extractCheckoutUrl(payload: unknown): string | undefined {

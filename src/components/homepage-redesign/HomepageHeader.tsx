@@ -7,57 +7,33 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { authManager } from "@/services/auth.manager";
-import { getAccountPath, getDashboardPath, useAuthStore } from "@/stores/authStore";
-import {
-  Bell,
-  Briefcase,
-  Building2,
-  HelpCircle,
-  LayoutDashboard,
-  LogIn,
-  LogOut,
-  Menu,
-  Newspaper,
-  Rocket,
-  UserCircle,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { getDashboardPath, useAuthStore } from "@/stores/authStore";
+import { ArrowRight, LayoutDashboard, LogIn, LogOut, Menu, UserCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 function getInitials(name?: string): string {
-  if (!name) return "U";
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  return (
+    name
+      ?.split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U"
+  );
 }
 
 export function HomepageHeader() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const user = useAuthStore((state) => state.user);
-  const clearAuth = useAuthStore((state) => state.clearAuth);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const { isLoggedIn, user, clearAuth } = useAuthStore();
+  const dashboardPath = getDashboardPath(user?.role);
 
   const handleLogout = async () => {
     await authManager.logout();
@@ -65,356 +41,143 @@ export function HomepageHeader() {
     toast.success(t("common.loggedOutSuccessfully"));
     navigate("/login");
   };
-  const dashboardPath = getDashboardPath(user?.role);
-  const accountPath = getAccountPath(user?.role);
-  const isHomepage = location.pathname === "/";
-  const showScrolledStyle = isScrolled || !isHomepage;
 
-  const headerBgClass = showScrolledStyle
-    ? "border-white/20 bg-white/80 shadow-sm backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/80"
-    : isHomepage
-      ? "border-transparent bg-transparent"
-      : "border-slate-200 bg-white/95 shadow-sm backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/95";
-
-  const linkColorClass = showScrolledStyle
-    ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
-    : isHomepage
-      ? "text-slate-200 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
-      : "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]";
-
-  const underlineColorClass = showScrolledStyle
-    ? "bg-[#0047AB] dark:bg-[#66B2FF]"
-    : isHomepage
-      ? "bg-white dark:bg-[#66B2FF]"
-      : "bg-[#0047AB] dark:bg-[#66B2FF]";
-
-  const toggleColorClass = showScrolledStyle
-    ? "text-slate-700 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
-    : isHomepage
-      ? "text-slate-200 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
-      : "text-slate-700 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]";
+  const navLinks = [
+    { label: t("landingNew.headerExplore"), href: "/enterprise/companies" },
+    { label: t("landingNew.headerHowItWorks"), href: "/#interview-map" },
+  ];
 
   return (
-    <header
-      className={`fixed top-0 right-0 left-0 isolate z-50 h-16 border-b transition-all duration-300 ${headerBgClass}`}>
-      <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
-        {/* Logo Section */}
-        <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-          <img src={icon2} alt="INBLUE AI" className="h-10 w-10" />
-          <span
-            className={`hidden text-lg font-bold transition-colors duration-300 min-[400px]:inline-block min-[400px]:text-xl ${
-              showScrolledStyle
-                ? "text-[#0047AB] dark:text-[#66B2FF]"
-                : isHomepage
-                  ? "text-white dark:text-[#66B2FF]"
-                  : "text-[#0047AB] dark:text-[#66B2FF]"
-            }`}>
+    <header className="fixed top-0 right-0 left-0 z-40 border-b border-slate-200/90 bg-white/95 dark:border-slate-800 dark:bg-slate-950/95">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-6">
+        <Link to="/" className="flex shrink-0 items-center gap-2.5" aria-label="INBLUE AI home">
+          <img src={icon2} alt="" className="h-9 w-9" />
+          <span className="text-lg font-bold tracking-tight text-slate-950 dark:text-white">
             INBLUE AI
           </span>
         </Link>
 
-        {/* Navigation - Desktop */}
-        <nav className="hidden items-center gap-1 lg:flex">
-          {/* Enterprise - Link to company search */}
-          <Button
-            variant="ghost"
-            asChild
-            className={`group/item relative text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
-            <Link to="/enterprise/companies">
-              <Building2 className="mr-2 h-4 w-4" />
-              {t("common.company")}
-              <span
-                className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
-              />
-            </Link>
-          </Button>
-
-          {/* Blog - Simple Link */}
-          <Button
-            variant="ghost"
-            asChild
-            className={`group/item relative text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
-            <Link to="/resources/blog">
-              <Newspaper className="mr-2 h-4 w-4" />
-              {t("common.article")}
-              <span
-                className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
-              />
-            </Link>
-          </Button>
-
-          {/* FAQ - Simple Link */}
-          <Button
-            variant="ghost"
-            asChild
-            className={`group/item relative text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
-            <Link to="/resources/faq">
-              <HelpCircle className="mr-2 h-4 w-4" />
-              FAQ
-              <span
-                className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
-              />
-            </Link>
-          </Button>
-
-          {/* Application History - only for logged-in users */}
-          {isLoggedIn && (
-            <Button
-              variant="ghost"
-              asChild
-              className={`group/item relative text-sm font-medium transition-colors duration-300 ${linkColorClass}`}>
-              <Link to="/user?tab=applicationHistory">
-                <Briefcase className="mr-2 h-4 w-4" />
-                {t("common.application")}
-                <span
-                  className={`absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 transition-all group-hover/item:w-1/2 ${underlineColorClass}`}
-                />
-              </Link>
-            </Button>
-          )}
+        <nav
+          className="hidden items-center gap-6 md:flex"
+          aria-label={t("landingNew.headerNavLabel")}>
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]">
+              {link.label}
+            </a>
+          ))}
         </nav>
 
-        {/* Right Side Actions */}
-        <div className="flex shrink-0 items-center gap-3">
-          {/* Theme & Language Toggles - always visible on header */}
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            <LanguageToggle className={toggleColorClass} />
-            <ThemeToggle
-              iconOnly
-              className={`shrink-0 transition-colors duration-300 ${toggleColorClass}`}
-            />
-          </div>
-
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <LanguageToggle className="text-slate-600 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]" />
+          <ThemeToggle
+            iconOnly
+            className="text-slate-600 hover:text-[#0047AB] dark:text-slate-300 dark:hover:text-[#66B2FF]"
+          />
           {isLoggedIn && user ? (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`flex h-9 w-12 shrink-0 items-center justify-center transition-colors duration-300 ${
-                  showScrolledStyle
-                    ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
-                    : isHomepage
-                      ? "text-slate-200 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
-                      : "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
-                }`}>
-                <Bell className="h-5 w-5" />
-              </Button>
-              <div className="w-10 shrink-0">
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex h-10 w-full items-center justify-center rounded-full border border-slate-200 bg-white transition-colors hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? "User"} />
-                        <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                          {getInitials(user.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col gap-1">
-                        <p className="text-sm font-medium">{user.name}</p>
-                        <p className="text-muted-foreground text-xs">{user.email}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-
-                    <DropdownMenuItem asChild>
-                      <Link to={dashboardPath} className="cursor-pointer gap-2">
-                        <LayoutDashboard className="h-4 w-4" />
-                        {t("common.dashboard")}
-                      </Link>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem asChild>
-                      <Link to={accountPath} className="cursor-pointer gap-2">
-                        <UserCircle className="h-4 w-4" />
-                        {t("common.account")}
-                      </Link>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="cursor-pointer gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                      onClick={handleLogout}>
-                      <LogOut className="h-4 w-4" />
-                      {t("common.logout")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 focus-visible:ring-2 focus-visible:ring-[#0047AB] focus-visible:outline-none dark:bg-slate-800 dark:focus-visible:ring-[#66B2FF]">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name ?? "User"} />
+                    <AvatarFallback className="bg-[#0047AB]/10 text-xs font-bold text-[#0047AB] dark:bg-[#66B2FF]/15 dark:text-[#66B2FF]">
+                      {getInitials(user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem asChild>
+                  <Link to={dashboardPath} className="cursor-pointer gap-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    {t("common.dashboard")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/user/account" className="cursor-pointer gap-2">
+                    <UserCircle className="h-4 w-4" />
+                    {t("common.account")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer gap-2 text-red-600"
+                  onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                  {t("common.logout")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <>
               <Button
                 variant="ghost"
-                className={`px-2 transition-colors duration-300 sm:px-4 ${
-                  showScrolledStyle
-                    ? "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
-                    : isHomepage
-                      ? "text-slate-200 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
-                      : "text-slate-800 hover:text-[#0047AB] dark:text-slate-200 dark:hover:text-[#66B2FF]"
-                }`}
+                className="hidden h-10 px-3 font-semibold text-slate-700 sm:inline-flex dark:text-slate-200"
                 asChild>
                 <Link to="/login">
-                  <LogIn className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">{t("common.logIn")}</span>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  {t("common.logIn")}
                 </Link>
               </Button>
               <Button
-                className="rounded-full border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] px-3 text-white shadow-sm hover:text-white hover:shadow-md sm:px-6"
+                className="group hidden h-10 rounded-full bg-[#0047AB] px-4 font-semibold whitespace-nowrap text-white hover:bg-[#003d8f] sm:inline-flex dark:bg-[#66B2FF] dark:text-slate-950 dark:hover:bg-[#87c4ff]"
                 asChild>
-                <Link to="/select-role">
-                  <Rocket className="h-4 w-4 text-white sm:mr-2" />
-                  <span className="hidden sm:inline">{t("common.register")}</span>
+                <Link to="/signup">
+                  {t("common.register")}
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </Button>
             </>
           )}
-
-          {/* Mobile Drawer */}
-          <div className="lg:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={`ml-1 transition-colors duration-300 ${
-                    showScrolledStyle
-                      ? "text-slate-800 dark:text-slate-200"
-                      : isHomepage
-                        ? "text-slate-200 hover:text-slate-800 dark:text-slate-200"
-                        : "text-slate-800 dark:text-slate-200"
-                  }`}>
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="w-[75vw] border-l border-slate-200 bg-white/95 backdrop-blur-xl sm:w-[300px] dark:border-slate-800 dark:bg-slate-950/95">
-                <SheetHeader className="mb-4 border-b border-slate-100 pb-4 text-left dark:border-slate-800">
-                  <SheetTitle className="flex items-center gap-2">
-                    <img src={icon2} alt="INBLUE AI" className="h-8 w-8" />
-                    <span className="font-bold text-[#0047AB] dark:text-[#66B2FF]">INBLUE AI</span>
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="flex h-[calc(100vh-7rem)] flex-col justify-between overflow-y-auto pb-4">
-                  <div className="space-y-4">
-                    {/* Navigation Links */}
-                    <nav className="flex flex-col gap-4">
-                      {/* Company */}
-                      <div className="space-y-1">
-                        <Link
-                          to="/enterprise/companies"
-                          className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-900/60 dark:hover:text-[#66B2FF]">
-                          <Building2 className="h-5 w-5 text-slate-500 transition-colors group-hover:text-[#0047AB] dark:text-slate-400 dark:group-hover:text-[#66B2FF]" />
-                          {t("common.company")}
-                        </Link>
-                      </div>
-
-                      {/* Resources Group */}
-                      <div className="space-y-1">
-                        <span className="px-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                          {t("common.resources")}
-                        </span>
-                        <div className="flex flex-col gap-0.5">
-                          <Link
-                            to="/resources/blog"
-                            className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-900/60 dark:hover:text-[#66B2FF]">
-                            <Newspaper className="h-5 w-5 text-slate-500 transition-colors group-hover:text-[#0047AB] dark:text-slate-400 dark:group-hover:text-[#66B2FF]" />
-                            {t("common.article")}
-                          </Link>
-                          <Link
-                            to="/resources/faq"
-                            className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-900/60 dark:hover:text-[#66B2FF]">
-                            <HelpCircle className="h-5 w-5 text-slate-500 transition-colors group-hover:text-[#0047AB] dark:text-slate-400 dark:group-hover:text-[#66B2FF]" />
-                            FAQ
-                          </Link>
-                          {isLoggedIn && (
-                            <Link
-                              to="/user?tab=applicationHistory"
-                              className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#0047AB] dark:text-slate-300 dark:hover:bg-slate-900/60 dark:hover:text-[#66B2FF]">
-                              <Briefcase className="h-5 w-5 text-slate-500 transition-colors group-hover:text-[#0047AB] dark:text-slate-400 dark:group-hover:text-[#66B2FF]" />
-                              {t("common.application")}
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    </nav>
-                  </div>
-
-                  {/* Bottom Auth Actions */}
-                  <div className="mt-4 border-t border-slate-100 pt-4 dark:border-slate-800/80">
-                    {isLoggedIn && user ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3 rounded-xl border border-slate-100/50 bg-slate-50/50 px-3 py-2 dark:border-slate-800/50 dark:bg-slate-900/40">
-                          <Avatar className="h-9 w-9 border border-slate-200 dark:border-slate-800">
-                            <AvatarImage
-                              src={user.avatarUrl ?? undefined}
-                              alt={user.name ?? "User"}
-                            />
-                            <AvatarFallback className="bg-[#DCEEFF] text-xs font-semibold text-[#0047AB] dark:bg-[#0047AB]/30 dark:text-[#66B2FF]">
-                              {getInitials(user.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                              {user.name}
-                            </p>
-                            <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">
-                              {user.email}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <Link
-                            to={dashboardPath}
-                            className="flex items-center gap-3 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                            <LayoutDashboard className="h-3.5 w-3.5 text-slate-500" />
-                            {t("common.dashboard")}
-                          </Link>
-                          <Link
-                            to={accountPath}
-                            className="flex items-center gap-3 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                            <UserCircle className="h-3.5 w-3.5 text-slate-500" />
-                            {t("common.account")}
-                          </Link>
-                          <button
-                            onClick={handleLogout}
-                            className="flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-left text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20">
-                            <LogOut className="h-3.5 w-3.5 text-red-500" />
-                            {t("common.logout")}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          variant="outline"
-                          className="h-9 w-full justify-center rounded-xl py-4 text-xs"
-                          asChild>
-                          <Link to="/login">
-                            <LogIn className="mr-1.5 h-3.5 w-3.5" />
-                            {t("common.logIn")}
-                          </Link>
-                        </Button>
-                        <Button
-                          className="h-9 w-full justify-center rounded-xl border-0 bg-gradient-to-r from-[#0047AB] to-[#007BFF] py-4 text-xs text-white shadow-sm hover:shadow-md"
-                          asChild>
-                          <Link to="/select-role">
-                            <Rocket className="mr-1.5 h-3.5 w-3.5" />
-                            {t("common.register")}
-                          </Link>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                aria-label={t("landingNew.headerMenuLabel")}>
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="w-[85vw] border-slate-200 bg-white p-6 sm:w-[340px] dark:border-slate-800 dark:bg-slate-950">
+              <SheetHeader className="text-left">
+                <SheetTitle className="flex items-center gap-2 text-slate-950 dark:text-white">
+                  <img src={icon2} alt="" className="h-8 w-8" />
+                  INBLUE AI
+                </SheetTitle>
+              </SheetHeader>
+              <nav
+                className="mt-10 flex flex-col gap-2"
+                aria-label={t("landingNew.headerNavLabel")}>
+                {navLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
+                    {link.label}
+                  </a>
+                ))}
+                {!isLoggedIn && (
+                  <>
+                    <Link
+                      to="/login"
+                      className="mt-4 rounded-lg px-3 py-3 font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
+                      {t("common.logIn")}
+                    </Link>
+                    <Button
+                      className="mt-2 h-11 rounded-full bg-[#0047AB] font-semibold text-white dark:bg-[#66B2FF] dark:text-slate-950"
+                      asChild>
+                      <Link to="/signup">{t("common.register")}</Link>
+                    </Button>
+                  </>
+                )}
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
