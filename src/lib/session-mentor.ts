@@ -34,14 +34,18 @@ export function getSessionMentorId(session: SessionLike | null | undefined): num
 /**
  * Returns `true` if the given user ID matches the mentor of the session.
  * Uses the same fallback as `getSessionMentorId`.
+ * Handles both string and number user IDs (JWT may return string).
  */
 export function isSessionMentor(
   session: SessionLike | null | undefined,
-  userId: number | null | undefined
+  userId: number | string | null | undefined
 ): boolean {
   if (userId == null) return false;
   const mentorId = getSessionMentorId(session);
-  return mentorId === userId;
+  if (mentorId == null) return false;
+  // Normalize both to number for comparison
+  const numericUserId = typeof userId === "string" ? parseInt(userId, 10) : userId;
+  return mentorId === numericUserId;
 }
 
 /**
