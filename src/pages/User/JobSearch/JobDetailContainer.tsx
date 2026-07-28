@@ -1,14 +1,14 @@
+import { JobDetailView } from "@/components/shared/JobDetailView";
+import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
+import { applicationService } from "@/services/application.manager";
+import type { JobDescription } from "@/services/company.manager";
+import { jdPurchaseManager } from "@/services/jd-purchase.manager";
+import { useAuthStore } from "@/stores/authStore";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
-import { JobDetailView } from "@/components/shared/JobDetailView";
-import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
-import { applicationService } from "@/services/application.manager";
-import { jdPurchaseManager } from "@/services/jd-purchase.manager";
-import { useAuthStore } from "@/stores/authStore";
-import type { JobDescription } from "@/services/company.manager";
 
 interface JobDetailContainerProps {
   job: JobDescription;
@@ -58,7 +58,8 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         }
       } else {
         const errorMsg =
-          result.error || t("enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain");
+          result.error ||
+          t("enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain");
         toast.error(errorMsg, { duration: 5000 });
       }
     } catch {
@@ -71,7 +72,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   return (
     <div className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-transparent">
       {/* Back bar — minimal, just 1 line */}
-      <div className="shrink-0 border-b border-slate-200/70 bg-white/60 px-5 py-3 backdrop-blur-sm dark:border-slate-800/50 dark:bg-slate-900/60 md:px-8">
+      <div className="shrink-0 border-b border-slate-200/70 bg-white/60 px-5 py-3 backdrop-blur-sm md:px-8 dark:border-slate-800/50 dark:bg-slate-900/60">
         <button
           onClick={onClose}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
@@ -81,7 +82,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       </div>
 
       {/* Scrollable content */}
-      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50">
+      <div className="custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent">
         <JobDetailView
           job={job}
           hasPurchased={hasPurchased}

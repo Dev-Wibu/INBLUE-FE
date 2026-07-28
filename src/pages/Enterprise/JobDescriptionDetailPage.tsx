@@ -88,7 +88,8 @@ export function JobDescriptionDetailPage() {
         }
       } else {
         const errorMsg =
-          result.error || t("enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain");
+          result.error ||
+          t("enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain");
         toast.error(errorMsg, { duration: 5000 });
       }
     } catch (err) {
@@ -172,7 +173,7 @@ export function JobDescriptionDetailPage() {
 
       {/* Main Content */}
       <div className="mx-auto max-w-5xl px-6">
-        <JobDetailView 
+        <JobDetailView
           job={job}
           hasPurchased={hasPurchased}
           onApplyAction={handleApply}

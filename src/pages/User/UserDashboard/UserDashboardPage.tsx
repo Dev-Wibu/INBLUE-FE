@@ -351,7 +351,9 @@ export function UserDashboardPage() {
           ref={handleContentRef}
           className={cn(
             "flex-1 overflow-hidden",
-            typedActiveTab === "messenger" || typedActiveTab === "mentors" || typedActiveTab === "jobSearch"
+            typedActiveTab === "messenger" ||
+              typedActiveTab === "mentors" ||
+              typedActiveTab === "jobSearch"
               ? "p-0"
               : location.pathname.startsWith("/user/account") ||
                   location.pathname.startsWith("/user/settings")

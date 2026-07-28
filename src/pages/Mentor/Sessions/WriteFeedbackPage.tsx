@@ -8,12 +8,12 @@ import { MentorReviewForm } from "@/components/review";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import {
   useCreateMentorReview,
   useMentorReviewBySession,
   useUpdateMentorReview,
 } from "@/hooks/useMentorReview";
-import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useSessionById } from "@/hooks/useSession";
 import { isSessionMentor } from "@/lib/session-mentor";
 import { useAuthStore } from "@/stores/authStore";
@@ -49,7 +49,7 @@ export function WriteFeedbackPage() {
   // Prefer Mentor.id; fall back to user.id if the profile hasn't loaded yet
   //   so the access check still passes for accounts where User.id and
   //   Mentor.id happen to coincide (legacy mentors, dev seed data, etc.).
-  const submitterMentorId = mentorProfileId ?? (user?.id ?? null);
+  const submitterMentorId = mentorProfileId ?? user?.id ?? null;
   const isLoading = sessionLoading || reviewLoading;
   const isSubmitting = isCreating || isUpdating;
   const isEdit = !!existingReview;
