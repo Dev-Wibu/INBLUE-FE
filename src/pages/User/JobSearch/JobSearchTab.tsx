@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import type { JobDescription } from "@/interfaces";
 import { formatNumber } from "@/lib/formatting";
 import { jobDescriptionManager } from "@/services/job-description.manager";
@@ -202,6 +203,8 @@ export function JobSearchTab() {
     return max > 0 ? max : 10000;
   }, [jobs]);
 
+  const displayMaxPrice = maxPrice !== null ? maxPrice : maxAvailablePrice;
+
   useEffect(() => {
     setSearchQuery(searchParams.get("q") || "");
     setActiveLevel(searchParams.get("level") || "ALL");
@@ -325,7 +328,7 @@ export function JobSearchTab() {
                   type="button"
                   onClick={() => {
                     setSearchQuery("");
-                    updateFilters("", activeLevel);
+                    updateFilters("", activeLevel, maxPrice);
                   }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                   <X className="h-4 w-4" />
@@ -386,8 +389,8 @@ export function JobSearchTab() {
                 min={0}
                 max={maxAvailablePrice}
                 step={maxAvailablePrice > 1000 ? 500 : maxAvailablePrice > 100 ? 50 : 10}
-                onValueChange={(val) => setMaxPrice(val[0])}
-                onValueCommit={(val) => updateFilters(searchQuery, activeLevel, val[0])}
+                onValueChange={(val: number[]) => setMaxPrice(val[0])}
+                onValueCommit={(val: number[]) => updateFilters(searchQuery, activeLevel, val[0])}
                 className="[&_[data-slot=slider-range]]:bg-emerald-500 [&_[data-slot=slider-thumb]]:border-emerald-500 [&_[data-slot=slider-thumb]]:focus-visible:ring-emerald-500/20"
               />
             </div>
