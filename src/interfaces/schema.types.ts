@@ -69,7 +69,10 @@ export type PaymentEntity = components["schemas"]["Payment"] & {
   paymentPurpose?: PaymentPurpose | null;
 };
 export type CreateMentorRequest = SchemaCreateMentorRequest;
-export type JobDescription = SchemaJobDescription;
+export type JobDescription = SchemaJobDescription & {
+  companyName?: string;
+  companyLogo?: string;
+};
 export type JobDescriptionLevel = NonNullable<SchemaJobDescription["level"]>;
 export type JobDescriptionStatus = NonNullable<SchemaJobDescription["status"]>;
 export type CreateJobDescriptionRequest = SchemaCreateJobDescriptionRequest;
