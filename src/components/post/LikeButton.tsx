@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 interface LikeButtonProps {
   postId: number;
-  userId: number;
+  userId: number | string;
   showLabel?: boolean;
   onLikeChange?: (_liked: boolean) => void;
   externalLikeCount?: number;
@@ -25,7 +25,8 @@ export function LikeButton({
   externalLikeCount,
 }: LikeButtonProps) {
   const { t } = useTranslation();
-  const { data: likedData } = useCheckLiked(postId, userId);
+  const numericUserId = typeof userId === "string" ? parseInt(userId, 10) : userId;
+  const { data: likedData } = useCheckLiked(postId, numericUserId, numericUserId > 0);
   const { data: countData } = usePostLikesCount(postId, externalLikeCount === undefined);
   const likeMutation = useLikePost();
   const unlikeMutation = useUnlikePost();
@@ -45,7 +46,7 @@ export function LikeButton({
           params: {
             path: {
               postId,
-              userId,
+              userId: numericUserId,
             },
           },
         },
@@ -74,7 +75,7 @@ export function LikeButton({
           params: {
             path: {
               postId,
-              userId,
+              userId: numericUserId,
             },
           },
         } as never,
@@ -99,7 +100,7 @@ export function LikeButton({
         {
           body: {
             postId,
-            userId,
+            userId: numericUserId,
           },
         } as never,
         {

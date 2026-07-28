@@ -337,12 +337,14 @@ export function CommentSection({
   };
   const handleCommentSubmit = () => {
     const content = newContent.trim();
-    if (!content || !currentUserId) return;
+    const numericUserId =
+      typeof currentUserId === "string" ? parseInt(currentUserId, 10) : currentUserId;
+    if (!content || !numericUserId) return;
     createComment.mutate(
       {
         body: {
           postId,
-          userId: currentUserId,
+          userId: numericUserId,
           content,
         },
       } as never,
@@ -361,14 +363,16 @@ export function CommentSection({
   };
   const handleReplySubmit = (parentCommentId: number) => {
     const content = replyContent.trim();
-    if (!content || !currentUserId) return;
+    const numericUserId =
+      typeof currentUserId === "string" ? parseInt(currentUserId, 10) : currentUserId;
+    if (!content || !numericUserId) return;
     const parentUser = commentById.get(parentCommentId)?.userName;
     const contentWithMention = parentUser ? `@${parentUser} ${content}` : content;
     createComment.mutate(
       {
         body: {
           postId,
-          userId: currentUserId,
+          userId: numericUserId,
           content: contentWithMention,
           parentCommentId,
         },
