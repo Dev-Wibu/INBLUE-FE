@@ -166,7 +166,7 @@ function JobCard({
       <div className="mt-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-[14px] font-bold text-amber-600 dark:text-amber-500">
           <Coins className="h-[18px] w-[18px]" />
-          {job.price ? `${formatNumber(job.price)} đkđo` : "Miễn phí"}
+          {job.price ? `${formatNumber(job.price)} ĐKĐO` : "Miễn phí"}
         </div>
         <Button
           onClick={(e) => {
@@ -189,12 +189,14 @@ export function JobSearchTab() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [activeLevel, setActiveLevel] = useState<string>(searchParams.get("level") || "ALL");
+  const [activePriceType, setActivePriceType] = useState<string>(searchParams.get("price") || "ALL");
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setSearchQuery(searchParams.get("q") || "");
     setActiveLevel(searchParams.get("level") || "ALL");
+    setActivePriceType(searchParams.get("price") || "ALL");
   }, [searchParams]);
 
   const fetchJobs = async () => {
@@ -216,21 +218,23 @@ export function JobSearchTab() {
     void fetchJobs();
   }, []);
 
-  const updateFilters = (q: string, level: string) => {
+  const updateFilters = (q: string, level: string, price: string) => {
     const params: Record<string, string> = { tab: "jobSearch" };
     if (q.trim()) params.q = q.trim();
     if (level !== "ALL") params.level = level;
+    if (price !== "ALL") params.price = price;
     setSearchParams(params);
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    updateFilters(searchQuery, activeLevel);
+    updateFilters(searchQuery, activeLevel, activePriceType);
   };
 
   const clearSearch = () => {
     setSearchQuery("");
     setActiveLevel("ALL");
+    setActivePriceType("ALL");
     setSearchParams({ tab: "jobSearch" });
   };
 
@@ -238,6 +242,7 @@ export function JobSearchTab() {
     let result = jobs;
     const query = searchParams.get("q")?.toLowerCase();
     const level = searchParams.get("level") || "ALL";
+    const price = searchParams.get("price") || "ALL";
 
     if (query) {
       result = result.filter((job) => {
@@ -250,6 +255,12 @@ export function JobSearchTab() {
 
     if (level !== "ALL") {
       result = result.filter((job) => job.level === level);
+    }
+
+    if (price === "FREE") {
+      result = result.filter((job) => !job.price || job.price === 0);
+    } else if (price === "PAID") {
+      result = result.filter((job) => job.price && job.price > 0);
     }
 
     return result.sort((a, b) => (b.id || 0) - (a.id || 0));
@@ -319,30 +330,63 @@ export function JobSearchTab() {
             </Button>
           </form>
 
-          {/* Level Filters */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {FILTER_LEVELS.map((level) => {
-              const isActive = activeLevel === level;
-              const levelLabel =
-                level === "ALL"
-                  ? "Tất cả"
-                  : level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
-              return (
-                <button
-                  key={level}
-                  onClick={() => {
-                    setActiveLevel(level);
-                    updateFilters(searchQuery, level);
-                  }}
-                  className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors border ${
-                    isActive
-                      ? "bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-600 dark:border-indigo-600"
-                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                  }`}>
-                  {levelLabel}
-                </button>
-              );
-            })}
+          {/* Filters */}
+          <div className="mt-4 flex flex-col gap-4 xl:flex-row xl:items-center">
+            {/* Level Filters */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-2 text-[13px] font-semibold text-slate-500">Cấp bậc:</span>
+              {FILTER_LEVELS.map((level) => {
+                const isActive = activeLevel === level;
+                const levelLabel =
+                  level === "ALL"
+                    ? "Tất cả"
+                    : level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+                return (
+                  <button
+                    key={level}
+                    onClick={() => {
+                      setActiveLevel(level);
+                      updateFilters(searchQuery, level, activePriceType);
+                    }}
+                    className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors border ${
+                      isActive
+                        ? "bg-indigo-600 text-white border-indigo-600 dark:bg-indigo-600 dark:border-indigo-600"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    }`}>
+                    {levelLabel}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="hidden xl:block h-5 w-px bg-slate-200 dark:bg-slate-700"></div>
+
+            {/* Price Filters */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-2 text-[13px] font-semibold text-slate-500">Chi phí:</span>
+              {[
+                { value: "ALL", label: "Tất cả" },
+                { value: "FREE", label: "Miễn phí" },
+                { value: "PAID", label: "Có phí" },
+              ].map((price) => {
+                const isActive = activePriceType === price.value;
+                return (
+                  <button
+                    key={price.value}
+                    onClick={() => {
+                      setActivePriceType(price.value);
+                      updateFilters(searchQuery, activeLevel, price.value);
+                    }}
+                    className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition-colors border ${
+                      isActive
+                        ? "bg-emerald-600 text-white border-emerald-600 dark:bg-emerald-600 dark:border-emerald-600"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    }`}>
+                    {price.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
