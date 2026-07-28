@@ -169,13 +169,13 @@ export function JobSearchPage() {
     const query = searchParams.get("q")?.toLowerCase();
 
     if (query) {
-      result = result.filter(
-        (job) => {
-          const jobAny = job as any;
-          return job.title?.toLowerCase().includes(query) ||
-            jobAny.companyName?.toLowerCase().includes(query)
-        }
-      );
+      result = result.filter((job) => {
+        const jobAny = job as any;
+        return (
+          job.title?.toLowerCase().includes(query) ||
+          jobAny.companyName?.toLowerCase().includes(query)
+        );
+      });
     }
 
     // Sort logic (can be expanded)

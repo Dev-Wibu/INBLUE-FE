@@ -13,8 +13,8 @@ import {
   LayoutDashboard,
   MessageSquare,
   Newspaper,
-  User as UserIcon,
   Search,
+  User as UserIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";

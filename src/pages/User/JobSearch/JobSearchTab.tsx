@@ -37,7 +37,10 @@ function EmptyState({ query, onClear, t }: { query: string; onClear: () => void;
         <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
           {query
             ? t("enterpriseJobsearchpage.emptySearchDescription", { query })
-            : t("enterpriseJobsearchpage.emptyDescription", "Chưa có tin tuyển dụng nào phù hợp với bộ lọc hiện tại.")}
+            : t(
+                "enterpriseJobsearchpage.emptyDescription",
+                "Chưa có tin tuyển dụng nào phù hợp với bộ lọc hiện tại."
+              )}
         </p>
       </div>
       <Button
@@ -63,7 +66,17 @@ const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
 };
 
-function JobCard({ job, onClick, onApply, t }: { job: JobDescription; onClick: () => void; onApply: (e: React.MouseEvent) => void; t: TFunction }) {
+function JobCard({
+  job,
+  onClick,
+  onApply,
+  t,
+}: {
+  job: JobDescription;
+  onClick: () => void;
+  onApply: (e: React.MouseEvent) => void;
+  t: TFunction;
+}) {
   const jobAny = job as any;
   const initials = getCompanyInitials(jobAny.companyName);
   const logoUrl = jobAny.thumbnailUrl || jobAny.companyLogoUrl || jobAny.companyLogo;
@@ -76,24 +89,29 @@ function JobCard({ job, onClick, onApply, t }: { job: JobDescription; onClick: (
   return (
     <div
       onClick={onClick}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-950 dark:hover:border-indigo-500/50"
-    >
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-950 dark:hover:border-indigo-500/50">
       {/* Header: Avatar + Title + Badges */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-slate-50 text-sm font-bold text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-indigo-400">
           {logoUrl ? (
-            <img src={logoUrl} alt={jobAny.companyName || "Company"} className="h-full w-full object-cover" />
+            <img
+              src={logoUrl}
+              alt={jobAny.companyName || "Company"}
+              className="h-full w-full object-cover"
+            />
           ) : (
             initials
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="truncate font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400 transition-colors">
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate font-semibold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
             {job.title || t("enterpriseJobsearchpage.untitledJob", "Chưa có tiêu đề")}
           </h3>
           <div className="mt-1 flex items-center gap-2">
             {job.level && (
-              <Badge variant="secondary" className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${LEVEL_COLORS[job.level] || "bg-slate-100 text-slate-700"}`}>
+              <Badge
+                variant="secondary"
+                className={`px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${LEVEL_COLORS[job.level] || "bg-slate-100 text-slate-700"}`}>
                 {job.level}
               </Badge>
             )}
@@ -119,22 +137,34 @@ function JobCard({ job, onClick, onApply, t }: { job: JobDescription; onClick: (
           {salaryText}
         </div>
         <div className="flex items-center justify-between">
-          <Badge variant="secondary" className={`border-transparent px-2 py-0.5 text-xs font-semibold ${STATUS_COLORS[job.status || "OPEN"] || STATUS_COLORS.OPEN}`}>
-            {job.status === "OPEN" ? t("enterpriseJobsearchpage.hiring", "Đang tuyển") : job.status === "CLOSED" ? t("enterpriseJobsearchpage.closed", "Đóng") : job.status}
+          <Badge
+            variant="secondary"
+            className={`border-transparent px-2 py-0.5 text-xs font-semibold ${STATUS_COLORS[job.status || "OPEN"] || STATUS_COLORS.OPEN}`}>
+            {job.status === "OPEN"
+              ? t("enterpriseJobsearchpage.hiring", "Đang tuyển")
+              : job.status === "CLOSED"
+                ? t("enterpriseJobsearchpage.closed", "Đóng")
+                : job.status}
           </Badge>
           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <CalendarDays className="h-3.5 w-3.5" />
-            {job.deadlineAt ? format(new Date(job.deadlineAt), "dd/MM/yyyy") : t("common.noDeadline", "Không có thời hạn")}
+            {job.deadlineAt
+              ? format(new Date(job.deadlineAt), "dd/MM/yyyy")
+              : t("common.noDeadline", "Không có thời hạn")}
           </div>
         </div>
       </div>
 
       {/* Footer */}
       <div className="mt-5 flex items-center gap-2 pt-2">
-        <Button variant="ghost" className="flex-1 h-9 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+        <Button
+          variant="ghost"
+          className="h-9 flex-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
           {t("enterpriseJobsearchpage.viewDetails", "Chi tiết")}
         </Button>
-        <Button onClick={onApply} className="flex-1 h-9 bg-indigo-600 text-xs font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
+        <Button
+          onClick={onApply}
+          className="h-9 flex-1 bg-indigo-600 text-xs font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
           {t("enterpriseJobsearchpage.applyNow", "Ứng tuyển ngay")}
         </Button>
       </div>
@@ -207,30 +237,30 @@ export function JobSearchTab() {
     const level = searchParams.get("level") || "ALL";
 
     if (query) {
-      result = result.filter(
-        (job) => {
-          const jobAny = job as any;
-          return job.title?.toLowerCase().includes(query) ||
-            jobAny.companyName?.toLowerCase().includes(query)
-        }
-      );
+      result = result.filter((job) => {
+        const jobAny = job as any;
+        return (
+          job.title?.toLowerCase().includes(query) ||
+          jobAny.companyName?.toLowerCase().includes(query)
+        );
+      });
     }
 
     if (level !== "ALL") {
       result = result.filter((job) => job.level === level);
     }
-    
+
     return result.sort((a, b) => (b.id || 0) - (a.id || 0));
   }, [jobs, searchParams]);
 
   return (
     <section className="flex h-full flex-col overflow-hidden bg-slate-50 dark:bg-slate-950/50">
       {/* Top Action Bar */}
-      <div className="flex flex-col gap-3 border-b border-slate-200/50 bg-white px-5 py-4 dark:border-slate-800/50 dark:bg-slate-900 md:px-6">
+      <div className="flex flex-col gap-3 border-b border-slate-200/50 bg-white px-5 py-4 md:px-6 dark:border-slate-800/50 dark:bg-slate-900">
         <div className="flex items-center justify-between gap-4">
-          <form onSubmit={handleSearch} className="flex flex-1 items-center max-w-md gap-2">
+          <form onSubmit={handleSearch} className="flex max-w-md flex-1 items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 type="text"
                 value={searchQuery}
@@ -239,7 +269,7 @@ export function JobSearchTab() {
                   "enterpriseJobsearchpage.searchPlaceholder",
                   "Tìm kiếm theo chức danh hoặc công ty..."
                 )}
-                className="h-9 border-slate-200 bg-slate-50/50 pl-9 pr-9 text-sm focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/50"
+                className="h-9 border-slate-200 bg-slate-50/50 pr-9 pl-9 text-sm focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/50"
               />
               {searchQuery && (
                 <button
@@ -248,7 +278,7 @@ export function JobSearchTab() {
                     setSearchQuery("");
                     updateFilters("", activeLevel);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+                  className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
                   <X className="h-3 w-3" />
                 </button>
               )}
@@ -260,9 +290,9 @@ export function JobSearchTab() {
             </Button>
           </form>
 
-          <ReloadButton 
-            isLoading={isReloading} 
-            onReload={() => fetchJobs(true)} 
+          <ReloadButton
+            isLoading={isReloading}
+            onReload={() => fetchJobs(true)}
             className="h-9 w-9 shrink-0 rounded-lg"
           />
         </div>
@@ -279,11 +309,10 @@ export function JobSearchTab() {
                   updateFilters(searchQuery, level);
                 }}
                 className={`rounded-full border px-3 py-1 text-[11px] font-bold tracking-wide transition-colors ${
-                  isActive 
-                    ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-500" 
+                  isActive
+                    ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-500"
                     : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10"
-                }`}
-              >
+                }`}>
                 {level === "ALL" ? "TẤT CẢ" : level}
               </button>
             );
@@ -295,7 +324,9 @@ export function JobSearchTab() {
         {(searchQuery || activeLevel !== "ALL") && (
           <div className="mb-4">
             <span className="text-xs text-slate-500 dark:text-slate-400">
-              {t("common.showing", "Hiển thị")} <strong className="text-slate-800 dark:text-slate-200">{filteredJobs.length}</strong> {t("common.results", "kết quả")}
+              {t("common.showing", "Hiển thị")}{" "}
+              <strong className="text-slate-800 dark:text-slate-200">{filteredJobs.length}</strong>{" "}
+              {t("common.results", "kết quả")}
             </span>
           </div>
         )}
@@ -303,18 +334,20 @@ export function JobSearchTab() {
         {isLoading ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+              <div
+                key={i}
+                className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
                 <div className="flex gap-3">
-                   <div className="h-12 w-12 shrink-0 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
-                   <div className="flex-1 space-y-2">
-                     <div className="h-4 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                     <div className="h-3 w-1/2 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                   </div>
+                  <div className="h-12 w-12 shrink-0 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                  </div>
                 </div>
                 <div className="h-px w-full bg-slate-100 dark:bg-slate-800" />
                 <div className="space-y-2">
-                   <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-                   <div className="h-4 w-full animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-4 w-full animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
                 </div>
                 <div className="mt-2 flex gap-2">
                   <div className="h-9 flex-1 animate-pulse rounded-md bg-slate-200 dark:bg-slate-800" />
@@ -328,10 +361,10 @@ export function JobSearchTab() {
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {filteredJobs.map((job) => (
-              <JobCard 
-                key={job.id} 
-                job={job} 
-                t={t} 
+              <JobCard
+                key={job.id}
+                job={job}
+                t={t}
                 onClick={() => navigate(`/enterprise/job/${job.id}`)}
                 onApply={(e) => {
                   e.stopPropagation();
