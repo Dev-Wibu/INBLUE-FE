@@ -102,17 +102,43 @@ function analyzeFile(filePath) {
     }
 
     // 3. Check generic string/template literals containing Vietnamese or Japanese
-    else if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-      const val = node.text.trim();
-      if (val) {
-        if (VIETNAMESE_REGEX.test(val)) {
-          text = val;
-          type = ts.isStringLiteral(node) ? "StringLiteral" : "TemplateLiteral";
-          category = "vietnamese";
-        } else if (JAPANESE_REGEX.test(val)) {
-          text = val;
-          type = ts.isStringLiteral(node) ? "StringLiteral" : "TemplateLiteral";
-          category = "japanese";
+    else if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isTemplateExpression(node)
+    ) {
+      // Check if this node is directly passed as an argument to a t() call
+      let isWrappedInT = false;
+      if (ts.isCallExpression(node.parent) && node.parent.arguments.includes(node)) {
+        const expr = node.parent.expression;
+        if (
+          (ts.isIdentifier(expr) && expr.text === "t") ||
+          (ts.isPropertyAccessExpression(expr) && expr.name.text === "t")
+        ) {
+          isWrappedInT = true;
+        }
+      }
+
+      if (!isWrappedInT) {
+        const val = node.getText(sourceFile).trim();
+        if (val) {
+          if (VIETNAMESE_REGEX.test(val)) {
+            text = val;
+            type = ts.isStringLiteral(node)
+              ? "StringLiteral"
+              : ts.isNoSubstitutionTemplateLiteral(node)
+                ? "TemplateLiteral"
+                : "TemplateExpression";
+            category = "vietnamese";
+          } else if (JAPANESE_REGEX.test(val)) {
+            text = val;
+            type = ts.isStringLiteral(node)
+              ? "StringLiteral"
+              : ts.isNoSubstitutionTemplateLiteral(node)
+                ? "TemplateLiteral"
+                : "TemplateExpression";
+            category = "japanese";
+          }
         }
       }
     }
