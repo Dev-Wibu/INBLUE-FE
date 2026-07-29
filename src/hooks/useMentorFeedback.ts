@@ -230,12 +230,17 @@ export const useDeleteMentorFeedback = () => {
 };
 
 /**
- * Calculate average rating from feedbacks
+ * Calculate average star rating from feedbacks (1-5 scale only)
  */
 export const calculateAverageFeedbackRating = (feedbacks: MentorFeedback[]): number => {
   if (!feedbacks.length) return 0;
-  const total = feedbacks.reduce((sum, feedback) => sum + (feedback.rating || 0), 0);
-  return total / feedbacks.length;
+  // Filter only valid star ratings (1-5)
+  const starFeedbacks = feedbacks.filter(
+    (f) => typeof f.rating === "number" && f.rating >= 1 && f.rating <= 5
+  );
+  if (!starFeedbacks.length) return 0;
+  const total = starFeedbacks.reduce((sum, feedback) => sum + (feedback.rating || 0), 0);
+  return total / starFeedbacks.length;
 };
 
 // Re-export types for convenience

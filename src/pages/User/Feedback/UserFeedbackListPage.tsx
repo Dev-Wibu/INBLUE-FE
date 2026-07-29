@@ -146,21 +146,22 @@ export function UserFeedbackListPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>{t("common.averageScore")}</CardDescription>
+            <CardDescription>{t("common.averageStarRating")}</CardDescription>
             <CardTitle className="text-2xl text-[#0047AB]">
-              {reviews.length > 0
-                ? (
-                    reviews.reduce(
-                      (
-                        sum: number,
-                        r: {
-                          rating?: number;
-                        }
-                      ) => sum + (r.rating || 0),
-                      0
-                    ) / reviews.length
-                  ).toFixed(1)
-                : "0.0"}
+              {(() => {
+                const starReviews = reviews.filter(
+                  (r: { rating?: number }) =>
+                    typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
+                );
+                return starReviews.length > 0
+                  ? (
+                      starReviews.reduce(
+                        (sum: number, r: { rating?: number }) => sum + (r.rating || 0),
+                        0
+                      ) / starReviews.length
+                    ).toFixed(1)
+                  : "N/A";
+              })()}
             </CardTitle>
           </CardHeader>
         </Card>
@@ -168,9 +169,15 @@ export function UserFeedbackListPage() {
           <CardHeader className="pb-2">
             <CardDescription>{t("userFeedback.highestRating")}</CardDescription>
             <CardTitle className="text-2xl text-green-600">
-              {reviews.length > 0
-                ? Math.max(...reviews.map((r: { rating?: number }) => r.rating || 0))
-                : 0}{" "}
+              {(() => {
+                const starReviews = reviews.filter(
+                  (r: { rating?: number }) =>
+                    typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
+                );
+                return starReviews.length > 0
+                  ? Math.max(...starReviews.map((r: { rating?: number }) => r.rating || 0))
+                  : 0;
+              })()}{" "}
               ★
             </CardTitle>
           </CardHeader>

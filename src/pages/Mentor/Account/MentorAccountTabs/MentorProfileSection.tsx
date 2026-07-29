@@ -114,8 +114,8 @@ export function MentorProfileSection({
             </>
           )}
         </div>
-        <div className="text-center">
-          <h2 className="font-['Inter'] text-2xl font-bold text-zinc-800 dark:text-white">
+        <div className="min-w-0 text-center">
+          <h2 className="truncate font-['Inter'] text-2xl font-bold text-zinc-800 dark:text-white">
             {mentorProfile.name}
           </h2>
           <p className="font-['Inter'] text-sm font-medium text-emerald-600 dark:text-emerald-400">
@@ -142,7 +142,7 @@ export function MentorProfileSection({
       {/* Mentor Info Section */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/50">
         <div className="flex flex-col gap-3 border-b border-slate-200 bg-linear-to-r from-emerald-50 via-white to-white p-5 dark:border-slate-800 dark:from-emerald-900/20 dark:via-slate-900 dark:to-slate-900">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <h3 className="font-['Inter'] text-xl font-semibold text-zinc-800 dark:text-white">
                 {t("common.personalInformation")}
@@ -181,7 +181,7 @@ export function MentorProfileSection({
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
                 <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <Label className="text-sm text-gray-500 dark:text-slate-400">
                   {t("common.fullName")}
                 </Label>
@@ -192,7 +192,7 @@ export function MentorProfileSection({
                     className="mt-1"
                   />
                 ) : (
-                  <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
+                  <p className="truncate font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
                     {mentorProfile.name}
                   </p>
                 )}
@@ -204,18 +204,18 @@ export function MentorProfileSection({
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
                 <Mail className="h-5 w-5 text-blue-500" />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <Label className="text-sm text-gray-500 dark:text-slate-400">
-                    {t("common.email")}
-                  </Label>
+              <div className="min-w-0 flex-1">
+                <Label className="text-sm text-gray-500 dark:text-slate-400">
+                  {t("common.email")}
+                </Label>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
                   <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-slate-400">
                     {t("common.cannotBeChanged")}
                   </span>
+                  <span className="truncate font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
+                    {mentorProfile.email}
+                  </span>
                 </div>
-                <p className="font-['Inter'] text-base font-medium text-zinc-800 dark:text-white">
-                  {mentorProfile.email}
-                </p>
               </div>
             </div>
 

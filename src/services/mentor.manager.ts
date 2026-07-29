@@ -302,24 +302,21 @@ export class MentorManager implements BaseManager<Mentor> {
         formData.append("avatar", createEmptyFilePlaceholder());
       }
 
-      // Use POST endpoint (API_ENDPOINTS.MENTOR.CREATE) for BOTH create and update operations
-      // Backend schema comment: "dùng chung cho create và update mentor"
-      // The difference: create has no id, update includes id in the JSON data
-      // Remove Content-Type to let axios set multipart boundary automatically
-      const response = await fetchClient
-        .POST("/api/mentors", {
-          ...{
-            headers: {
-              "Content-Type": undefined,
-            },
+      // Use PUT endpoint for update per MENTOR_AVATAR_UPDATE_GUIDE.md
+      // PUT /api/mentors/{id}
+      // Content-Type: multipart/form-data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await (fetchClient as any)
+        .PUT(`/api/mentors/${_id}`, {
+          headers: {
+            "Content-Type": undefined,
           },
-          // @ts-expect-error: Backend Swagger schema mismatch
           body: formData,
         })
-        .then((res) => ({
-          data: res.data,
-          status: res.response?.status,
-          headers: res.response?.headers,
+        .then((res: { data: Mentor }) => ({
+          data: res.data as Mentor,
+          status: res.data,
+          headers: undefined,
         }));
       return {
         success: true,
