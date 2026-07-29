@@ -276,8 +276,17 @@ export function QuestionBankEditor({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] w-full max-w-6xl flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 p-0 shadow-2xl dark:border-slate-800 [&>button]:hidden">
         <DialogHeader className="hidden">
-          <DialogTitle>{initialData?.id ? "Chi tiết câu hỏi" : "Tạo câu hỏi mới"}</DialogTitle>
-          <DialogDescription>Tạo hoặc chỉnh sửa câu hỏi trắc nghiệm</DialogDescription>
+          <DialogTitle>
+            {initialData?.id
+              ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
+              : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
+          </DialogTitle>
+          <DialogDescription>
+            {t(
+              "adminQuestionbankmanagement.createOrEditDesc",
+              "Tạo hoặc chỉnh sửa câu hỏi trắc nghiệm"
+            )}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex h-full flex-col overflow-hidden bg-slate-50/50 dark:bg-slate-950">
@@ -285,7 +294,9 @@ export function QuestionBankEditor({
           <div className="flex flex-none items-center justify-between border-b border-slate-200/80 bg-white px-6 py-3.5 dark:border-slate-800/80 dark:bg-slate-900">
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                {initialData?.id ? "Chi tiết câu hỏi" : "Tạo câu hỏi mới"}
+                {initialData?.id
+                  ? t("adminQuestionbankmanagement.questionDetails", "Chi tiết câu hỏi")
+                  : t("adminQuestionbankmanagement.createQuestion", "Tạo câu hỏi mới")}
               </h2>
             </div>
             <Button
@@ -308,7 +319,10 @@ export function QuestionBankEditor({
                       <FileText className="h-3.5 w-3.5" />
                     </div>
                     <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                      Nội dung câu hỏi (Live Document)
+                      {t(
+                        "adminQuestionbankmanagement.liveDocTitle",
+                        "Nội dung câu hỏi (Live Document)"
+                      )}
                     </span>
                   </div>
                   {!showAI && (
@@ -327,7 +341,8 @@ export function QuestionBankEditor({
                         });
                         patch({ questionText: serializeBlocks(blocks) });
                       }}>
-                      <Plus className="h-3.5 w-3.5" /> Chèn Code Block
+                      <Plus className="h-3.5 w-3.5" />{" "}
+                      {t("adminQuestionbankmanagement.insertCodeBlock", "Chèn Code Block")}
                     </Button>
                   )}
                 </div>
@@ -338,7 +353,10 @@ export function QuestionBankEditor({
                       <div className="flex items-center gap-2 border-b border-indigo-50 pb-3 dark:border-indigo-950">
                         <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         <h3 className="text-xs font-bold tracking-wider text-indigo-900 uppercase dark:text-indigo-200">
-                          Sinh câu hỏi thông minh bằng AI
+                          {t(
+                            "adminQuestionbankmanagement.aiGenTitle",
+                            "Sinh câu hỏi thông minh bằng AI"
+                          )}
                         </h3>
                       </div>
                       <div className="space-y-2">
@@ -422,7 +440,7 @@ export function QuestionBankEditor({
                                   patch({ questionText: serializeBlocks(nextBlocks) });
                                 }}
                                 className="text-xs text-slate-500 transition-colors hover:text-rose-400">
-                                Xóa Code Block
+                                {t("adminQuestionbankmanagement.deleteCodeBlock", "Xóa Code Block")}
                               </button>
                             </div>
                             <Textarea
@@ -433,7 +451,10 @@ export function QuestionBankEditor({
                                 patch({ questionText: serializeBlocks(nextBlocks) });
                               }}
                               rows={Math.max(4, block.content.split("\n").length)}
-                              placeholder="Nhập mã nguồn..."
+                              placeholder={t(
+                                "adminQuestionbankmanagement.enterSourceCode",
+                                "Nhập mã nguồn..."
+                              )}
                               className="w-full resize-y border-0 bg-transparent p-4 font-mono text-[13px] leading-relaxed text-emerald-400 focus:outline-none focus-visible:ring-0 dark:text-emerald-300"
                             />
                           </div>
@@ -450,7 +471,10 @@ export function QuestionBankEditor({
                             patch({ questionText: serializeBlocks(nextBlocks) });
                           }}
                           rows={Math.max(3, block.content.split("\n").length)}
-                          placeholder="Nhập nội dung văn bản câu hỏi..."
+                          placeholder={t(
+                            "adminQuestionbankmanagement.enterTextContent",
+                            "Nhập nội dung văn bản câu hỏi..."
+                          )}
                           className="w-full resize-y rounded-xl border-slate-200 bg-slate-50/50 p-3.5 text-[14px] leading-relaxed text-slate-800 focus-visible:ring-indigo-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                         />
                       );
@@ -471,7 +495,7 @@ export function QuestionBankEditor({
                         <FolderTree className="h-3.5 w-3.5" />
                       </div>
                       <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                        Cấu Hình Câu Hỏi
+                        {t("adminQuestionbankmanagement.questionConfig", "Cấu Hình Câu Hỏi")}
                       </span>
                     </div>
                     {initialData?.id && (
@@ -547,17 +571,17 @@ export function QuestionBankEditor({
                         <ToggleGroupItem
                           value="EASY"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-emerald-300 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:border-emerald-800/60 dark:data-[state=on]:bg-emerald-950/40 dark:data-[state=on]:text-emerald-400">
-                          Dễ
+                          {t("adminQuestionbankmanagement.easy", "Dễ")}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="MEDIUM"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-amber-300 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:border-amber-800/60 dark:data-[state=on]:bg-amber-950/40 dark:data-[state=on]:text-amber-400">
-                          TB
+                          {t("adminQuestionbankmanagement.medium", "TB")}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="HARD"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-rose-300 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:border-rose-800/60 dark:data-[state=on]:bg-rose-950/40 dark:data-[state=on]:text-rose-400">
-                          Khó
+                          {t("adminQuestionbankmanagement.hard", "Khó")}
                         </ToggleGroupItem>
                       </ToggleGroup>
                     </div>
@@ -607,7 +631,10 @@ export function QuestionBankEditor({
                           <Input
                             value={opt}
                             onChange={(e) => updateOption(idx, e.target.value)}
-                            placeholder={`Nhập đáp án...`}
+                            placeholder={t(
+                              "adminQuestionbankmanagement.enterAnswerPlaceholder",
+                              "Nhập đáp án..."
+                            )}
                             className={`h-10 pr-9 pl-10 text-[13px] shadow-none transition-colors focus-visible:ring-indigo-500 ${
                               isCorrect
                                 ? "border-emerald-500/80 bg-emerald-50/50 font-medium text-emerald-950 dark:border-emerald-500/50 dark:bg-emerald-950/20 dark:text-emerald-50"
@@ -641,7 +668,9 @@ export function QuestionBankEditor({
                       : "text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 dark:text-indigo-300"
                   }`}>
                   <Sparkles className="mr-1.5 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  {showAI ? "Ẩn Sinh AI" : "Tạo AI"}
+                  {showAI
+                    ? t("adminQuestionbankmanagement.hideAiGen", "Ẩn Sinh AI")
+                    : t("adminQuestionbankmanagement.createAi", "Tạo AI")}
                 </Button>
 
                 <Button

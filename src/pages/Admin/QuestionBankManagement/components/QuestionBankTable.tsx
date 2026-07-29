@@ -63,7 +63,7 @@ export function QuestionBankTable({
     if (anyQ.category?.categoryName) return anyQ.category.categoryName;
     const id = anyQ.questionCategoryId || q.questionCategory?.id || anyQ.category?.id;
     const found = categories.find((c) => c.id === id);
-    return found?.categoryName || "Chưa phân loại";
+    return found?.categoryName || t("adminQuestionbankmanagement.uncategorized", "Chưa phân loại");
   };
 
   if (questions.length === 0) {
@@ -77,7 +77,10 @@ export function QuestionBankTable({
             {t("common.noData", t("adminQuestionbankmanagement.noDataFound"))}
           </p>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Hãy bắt đầu bằng cách thêm một câu hỏi mới vào ngân hàng.
+            {t(
+              "adminQuestionbankmanagement.startAddQuestionHelp",
+              "Hãy bắt đầu bằng cách thêm một câu hỏi mới vào ngân hàng."
+            )}
           </p>
         </div>
       </div>
@@ -91,15 +94,23 @@ export function QuestionBankTable({
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
             <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
             <TableHead className="min-w-[400px] font-medium text-slate-500">
-              Nội dung câu hỏi
+              {t("adminQuestionbankmanagement.questionContent", "Nội dung câu hỏi")}
             </TableHead>
-            <TableHead className="w-[150px] font-medium text-slate-500">Danh mục</TableHead>
-            <TableHead className="w-[110px] font-medium text-slate-500">Độ khó</TableHead>
+            <TableHead className="w-[150px] font-medium text-slate-500">
+              {t("general.category", "Danh mục")}
+            </TableHead>
+            <TableHead className="w-[110px] font-medium text-slate-500">
+              {t("general.difficulty", "Độ khó")}
+            </TableHead>
             <TableHead className="w-[100px] text-center font-medium text-slate-500">
-              Bật/Tắt
+              {t("adminCodingProblem.columnToggle", "Bật/Tắt")}
             </TableHead>
-            <TableHead className="w-[130px] font-medium text-slate-500">Ngày tạo</TableHead>
-            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">Cập nhật</TableHead>
+            <TableHead className="w-[130px] font-medium text-slate-500">
+              {t("common.createdDate", "Ngày tạo")}
+            </TableHead>
+            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">
+              {t("common.updatedDate", "Cập nhật")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -123,7 +134,8 @@ export function QuestionBankTable({
                     <p
                       className="flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
                       title={q.questionText}>
-                      {q.questionText || "Chưa có nội dung"}
+                      {q.questionText ||
+                        t("adminQuestionbankmanagement.noContent", "Chưa có nội dung")}
                     </p>
                     {/* Dummy element to force exactly identical row height as Coding table */}
                     <div
@@ -131,11 +143,11 @@ export function QuestionBankTable({
                       aria-hidden="true">
                       <div className="flex items-center gap-1.5 text-[11px]">
                         <span className="h-3.5 w-3.5"></span>
-                        <span>ẩn</span>
+                        <span>{t("common.hidden", "ẩn")}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px]">
                         <span className="h-3.5 w-3.5"></span>
-                        <span>mẫu</span>
+                        <span>{t("common.sample", "mẫu")}</span>
                       </div>
                     </div>
                   </div>
@@ -161,7 +173,7 @@ export function QuestionBankTable({
                   ) : (
                     <span
                       className={`text-xs font-semibold ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
-                      {isActive ? "Bật" : "Tắt"}
+                      {isActive ? t("common.active", "Bật") : t("common.inactive", "Tắt")}
                     </span>
                   )}
                 </TableCell>

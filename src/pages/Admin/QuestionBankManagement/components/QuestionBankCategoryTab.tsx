@@ -240,7 +240,10 @@ export function QuestionBankCategoryTab({
             <div className="flex h-64 flex-col items-center justify-center">
               <Folder className="mb-3 h-10 w-10 text-slate-300" />
               <p className="text-sm font-medium text-slate-500">
-                Chưa có câu hỏi nào trong chuyên mục này.
+                {t(
+                  "adminQuestionbankmanagement.noQuestionsInCategory",
+                  "Chưa có câu hỏi nào trong chuyên mục này."
+                )}
               </p>
             </div>
           ) : (
