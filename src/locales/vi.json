@@ -1868,7 +1868,8 @@
     "noPositionYet": "Chưa có vị trí",
     "tableOfContents": "Nội dung",
     "onOff": "Bật/Tắt",
-    "yearCount": "năm"
+    "yearCount": "năm",
+    "anErrorOccurredPleaseTryAgain": "Có lỗi xảy ra, vui lòng thử lại."
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -4777,7 +4778,8 @@
     "noSourceCodeYet": "Chưa có mã nguồn để review.",
     "errorCount": "Lỗi",
     "unableToUpdateStatus": "Không thể cập nhật trạng thái",
-    "errorOccurred": "Đã xảy ra lỗi"
+    "errorOccurred": "Đã xảy ra lỗi",
+    "addedProblemsToRound": "Đã thêm {{count}} bài tập Code Review vào vòng thi"
   },
   "adminQuestionbankmanagement": {
     "addQuestion": "Thêm câu hỏi",
@@ -5715,6 +5717,7 @@
     "enterTopic": "Vui lòng nhập chủ đề bài tập",
     "autoGenerateSuccess": "Tạo tự động thành công!",
     "autoGenerateFailed": "Tạo thất bại",
-    "errorDuringGenerate": "Lỗi xảy ra trong quá trình tạo"
+    "errorDuringGenerate": "Lỗi xảy ra trong quá trình tạo",
+    "addedProblemsToRound": "Đã thêm {{count}} bài tập vào vòng thi"
   }
 }

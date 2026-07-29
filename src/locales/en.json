@@ -1871,7 +1871,8 @@
     "noPositionYet": "No position yet",
     "tableOfContents": "Table of Contents",
     "onOff": "On/Off",
-    "yearCount": "yrs"
+    "yearCount": "yrs",
+    "anErrorOccurredPleaseTryAgain": "An error occurred, please try again."
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -4780,7 +4781,8 @@
     "noSourceCodeYet": "No source code to review.",
     "errorCount": "Issues",
     "unableToUpdateStatus": "Unable to update status",
-    "errorOccurred": "An error occurred"
+    "errorOccurred": "An error occurred",
+    "addedProblemsToRound": "Added {{count}} Code Review problem(s) to interview round"
   },
   "adminQuestionbankmanagement": {
     "addQuestion": "Add question",
@@ -5714,6 +5716,7 @@
     "enterTopic": "Please enter problem topic",
     "autoGenerateSuccess": "Auto generation successful!",
     "autoGenerateFailed": "Generation failed",
-    "errorDuringGenerate": "Error occurred during generation"
+    "errorDuringGenerate": "Error occurred during generation",
+    "addedProblemsToRound": "Added {{count}} problem(s) to interview round"
   }
 }

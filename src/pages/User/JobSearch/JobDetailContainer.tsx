@@ -63,7 +63,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         toast.error(errorMsg, { duration: 5000 });
       }
     } catch {
-      toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+      toast.error(t("common.anErrorOccurredPleaseTryAgain", "Có lỗi xảy ra, vui lòng thử lại."));
     } finally {
       setIsApplying(false);
     }

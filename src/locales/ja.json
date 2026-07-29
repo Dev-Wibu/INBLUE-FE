@@ -1835,7 +1835,8 @@
     "noPositionYet": "職種未設定",
     "tableOfContents": "目次",
     "onOff": "オン/オフ",
-    "yearCount": "年"
+    "yearCount": "年",
+    "anErrorOccurredPleaseTryAgain": "エラーが発生しました。もう一度お試しください。"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -4750,7 +4751,8 @@
     "noSourceCodeYet": "レビューするソースコードがありません。",
     "errorCount": "エラー",
     "unableToUpdateStatus": "ステータスを更新できません",
-    "errorOccurred": "エラーが発生しました"
+    "errorOccurred": "エラーが発生しました",
+    "addedProblemsToRound": "{{count}}件のコードレビュー問題を面接ラウンドに追加しました"
   },
   "adminQuestionbankmanagement": {
     "addQuestion": "質問を追加",
@@ -5720,6 +5722,7 @@
     "enterTopic": "問題のトピックを入力してください",
     "autoGenerateSuccess": "自動生成が成功しました！",
     "autoGenerateFailed": "生成に失敗しました",
-    "errorDuringGenerate": "生成中にエラーが発生しました"
+    "errorDuringGenerate": "生成中にエラーが発生しました",
+    "addedProblemsToRound": "{{count}}件 meの?問題を面接ラウンドに追加しました"
   }
 }

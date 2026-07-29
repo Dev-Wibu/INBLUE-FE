@@ -441,7 +441,15 @@ export const CodeReviewEditor = React.forwardRef<
       onChange(newIds, newProblems);
       setRightView("idle");
       setSelectedBankIds([]);
-      toast.success(`Đã thêm ${selectedBankIds.length} bài tập Code Review vào vòng thi`);
+      toast.success(
+        t(
+          "adminCodeReviewProblem.addedProblemsToRound",
+          "Đã thêm {{count}} bài tập Code Review vào vòng thi",
+          {
+            count: selectedBankIds.length,
+          }
+        )
+      );
     };
 
     const toggleBankSelection = (id: number) => {
