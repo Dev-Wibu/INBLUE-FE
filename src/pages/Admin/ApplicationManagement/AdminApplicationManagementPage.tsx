@@ -229,12 +229,16 @@ export function AdminApplicationManagementPage() {
       case "ACCEPTED":
         return (
           <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-            ĐẠT
+            {t("adminApplicationManagement.statusPassed", "ĐẠT")}
           </Badge>
         );
       case "REJECTED":
       case "FAILED":
-        return <Badge variant="destructive">TỪ CHỐI</Badge>;
+        return (
+          <Badge variant="destructive">
+            {t("adminApplicationManagement.statusRejected", "TỪ CHỐI")}
+          </Badge>
+        );
       case "IN_PROGRESS":
       case "PENDING":
       default:
@@ -242,7 +246,7 @@ export function AdminApplicationManagementPage() {
           <Badge
             variant="secondary"
             className="border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-            ĐANG XỬ LÝ
+            {t("adminApplicationManagement.statusInProgress", "ĐANG XỬ LÝ")}
           </Badge>
         );
     }
@@ -258,10 +262,13 @@ export function AdminApplicationManagementPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Quản lý Đơn ứng tuyển
+              {t("adminApplicationManagement.title", "Quản lý Đơn ứng tuyển")}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Trung tâm quản lý toàn bộ lượt apply ứng viên trên tất cả công ty và vị trí tuyển dụng
+              {t(
+                "adminApplicationManagement.subtitle",
+                "Trung tâm quản lý toàn bộ lượt apply ứng viên trên tất cả công ty và vị trí tuyển dụng"
+              )}
             </p>
           </div>
         </div>
@@ -276,7 +283,7 @@ export function AdminApplicationManagementPage() {
           disabled={isLoading}
           className="h-8 gap-1.5 text-xs font-medium">
           <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
-          Làm mới
+          {t("common.refresh", "Làm mới")}
         </Button>
       </div>
 
@@ -286,7 +293,7 @@ export function AdminApplicationManagementPage() {
           <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
               <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                JD Đang mở
+                {t("adminApplicationManagement.openJds", "JD Đang mở")}
               </span>
               <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.openJdCount}
@@ -300,7 +307,7 @@ export function AdminApplicationManagementPage() {
           <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
               <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                Tổng đơn Apply
+                {t("adminApplicationManagement.totalApplications", "Tổng đơn Apply")}
               </span>
               <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                 {stats.totalApps}
@@ -314,7 +321,7 @@ export function AdminApplicationManagementPage() {
           <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
               <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                Đang phỏng vấn
+                {t("adminApplicationManagement.inProgress", "Đang phỏng vấn")}
               </span>
               <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
                 {stats.inProgressApps}
@@ -328,7 +335,7 @@ export function AdminApplicationManagementPage() {
           <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
               <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
-                Đã trúng tuyển
+                {t("adminApplicationManagement.passed", "Đã trúng tuyển")}
               </span>
               <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                 {stats.passedApps}
@@ -351,7 +358,10 @@ export function AdminApplicationManagementPage() {
                   setSearchQuery(e.target.value);
                   pagination.goToFirstPage();
                 }}
-                placeholder="Tìm tên, email ứng viên, công ty..."
+                placeholder={t(
+                  "adminApplicationManagement.searchPlaceholder",
+                  "Tìm tên, email ứng viên, công ty..."
+                )}
                 className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-indigo-500 dark:border-slate-700"
               />
             </div>
@@ -365,10 +375,14 @@ export function AdminApplicationManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="h-8 w-44 border-slate-200 text-xs dark:border-slate-700">
-                <SelectValue placeholder="Tất cả công ty" />
+                <SelectValue
+                  placeholder={t("adminApplicationManagement.allCompanies", "Tất cả công ty")}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Tất cả công ty</SelectItem>
+                <SelectItem value="ALL">
+                  {t("adminApplicationManagement.allCompanies", "Tất cả công ty")}
+                </SelectItem>
                 {companyOptions.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
@@ -385,13 +399,20 @@ export function AdminApplicationManagementPage() {
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="h-8 w-48 border-slate-200 text-xs dark:border-slate-700">
-                <SelectValue placeholder="Tất cả vị trí (JD)" />
+                <SelectValue
+                  placeholder={t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Tất cả vị trí (JD)</SelectItem>
+                <SelectItem value="ALL">
+                  {t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
+                </SelectItem>
                 {availableJds.map((j) => (
                   <SelectItem key={j.jdId} value={String(j.jdId)}>
-                    {j.title} ({j.company?.name || "Chưa rõ công ty"})
+                    {j.title} (
+                    {j.company?.name ||
+                      t("adminApplicationManagement.unknownCompany", "Chưa rõ công ty")}
+                    )
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -401,10 +422,13 @@ export function AdminApplicationManagementPage() {
           {/* Status Filter Pills */}
           <div className="flex items-center gap-1">
             {[
-              { id: "ALL", label: "Tất cả" },
-              { id: "IN_PROGRESS", label: "Đang xử lý" },
-              { id: "PASSED", label: "Đạt" },
-              { id: "REJECTED", label: "Từ chối" },
+              { id: "ALL", label: t("common.all", "Tất cả") },
+              {
+                id: "IN_PROGRESS",
+                label: t("adminApplicationManagement.statusInProgress", "Đang xử lý"),
+              },
+              { id: "PASSED", label: t("adminApplicationManagement.statusPassed", "Đạt") },
+              { id: "REJECTED", label: t("adminApplicationManagement.statusRejected", "Từ chối") },
             ].map((st) => (
               <button
                 key={st.id}
@@ -428,11 +452,11 @@ export function AdminApplicationManagementPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span>
-              Hiển thị{" "}
+              {t("common.showing", "Hiển thị")}{" "}
               <strong className="text-slate-800 dark:text-slate-200">
                 {filteredApplications.length}
               </strong>{" "}
-              đơn ứng tuyển
+              {t("adminApplicationManagement.applicationsUnit", "đơn ứng tuyển")}
             </span>
           </div>
 
@@ -441,13 +465,23 @@ export function AdminApplicationManagementPage() {
               <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
                 <TableRow>
                   <TableHead className="w-[80px] pl-6">#ID</TableHead>
-                  <TableHead className="min-w-[200px]">Ứng viên</TableHead>
-                  <TableHead className="min-w-[160px]">Công ty</TableHead>
-                  <TableHead className="min-w-[180px]">Vị trí tuyển dụng</TableHead>
-                  <TableHead className="w-[140px]">Vòng hiện tại</TableHead>
-                  <TableHead className="w-[100px] text-center">Điểm số</TableHead>
-                  <TableHead className="w-[130px]">Trạng thái</TableHead>
-                  <TableHead className="w-[100px] pr-6 text-right">Thao tác</TableHead>
+                  <TableHead className="min-w-[200px]">
+                    {t("adminApplicationManagement.candidate", "Ứng viên")}
+                  </TableHead>
+                  <TableHead className="min-w-[160px]">{t("common.company", "Công ty")}</TableHead>
+                  <TableHead className="min-w-[180px]">
+                    {t("adminApplicationManagement.jobPosition", "Vị trí tuyển dụng")}
+                  </TableHead>
+                  <TableHead className="w-[140px]">
+                    {t("adminApplicationManagement.currentRound", "Vòng hiện tại")}
+                  </TableHead>
+                  <TableHead className="w-[100px] text-center">
+                    {t("adminApplicationManagement.score", "Điểm số")}
+                  </TableHead>
+                  <TableHead className="w-[130px]">{t("common.status", "Trạng thái")}</TableHead>
+                  <TableHead className="w-[100px] pr-6 text-right">
+                    {t("common.actions", "Thao tác")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -456,37 +490,39 @@ export function AdminApplicationManagementPage() {
                     <TableCell colSpan={8} className="h-48 text-center text-slate-400">
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-                        <span>Đang tải dữ liệu...</span>
+                        <span>{t("common.loadingData", "Đang tải dữ liệu...")}</span>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : pageData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="h-48 text-center text-slate-400">
-                      Không tìm thấy đơn ứng tuyển nào.
+                      {t(
+                        "adminApplicationManagement.noApplicationsFound",
+                        "Không tìm thấy đơn ứng tuyển nào."
+                      )}
                     </TableCell>
                   </TableRow>
                 ) : (
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   pageData.map((app: any, idx: number) => {
                     const name =
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
+                      app.candidateName ||
+                      app.applicantName ||
+                      t("adminApplicationManagement.anonymousCandidate", "Ứng viên ẩn danh");
                     const email =
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      app.candidateEmail || (app as any).email || "Chưa có email";
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const avatarUrl = (app as any).avatarUrl || (app as any).applicantAvatar;
+                      app.candidateEmail ||
+                      app.email ||
+                      t("adminApplicationManagement.noEmail", "Chưa có email");
+                    const avatarUrl = app.avatarUrl || app.applicantAvatar;
 
                     return (
                       <TableRow
-                        key={app.applicationId || idx}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        onClick={() => handleViewDetail(app.applicationId || (app as any).id)}
+                        key={app.applicationId || app.id || idx}
+                        onClick={() => handleViewDetail(app.applicationId || app.id)}
                         className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
                         <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}#
-                          {app.applicationId || (app as any).id}
+                          #{app.applicationId || app.id}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -507,12 +543,12 @@ export function AdminApplicationManagementPage() {
                         <TableCell>
                           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                             <Folder className="h-3.5 w-3.5 text-slate-400" />
-                            {app.companyName || "Chưa xác định"}
+                            {app.companyName || t("common.unspecified", "Chưa xác định")}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                            {app.jobTitle || "Chưa xác định"}
+                            {app.jobTitle || t("common.unspecified", "Chưa xác định")}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -520,7 +556,9 @@ export function AdminApplicationManagementPage() {
                             <Layers className="h-3.5 w-3.5 text-indigo-500" />
                             <span>
                               {app.currentRoundName ||
-                                (app.currentRoundOrder ? `Vòng ${app.currentRoundOrder}` : "—")}
+                                (app.currentRoundOrder
+                                  ? `${t("adminApplicationManagement.roundPrefix", "Vòng ")}${app.currentRoundOrder}`
+                                  : "—")}
                             </span>
                           </div>
                         </TableCell>
@@ -532,8 +570,7 @@ export function AdminApplicationManagementPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            onClick={() => handleViewDetail(app.applicationId || (app as any).id)}
+                            onClick={() => handleViewDetail(app.applicationId || app.id)}
                             className="h-7 w-7 p-0 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">
                             <Eye className="h-4 w-4" />
                           </Button>
