@@ -8,10 +8,26 @@ const VIETNAMESE_REGEX =
 const JAPANESE_REGEX =
   /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF\u3400-\u4DBF]/;
 
-// A helper regex to check if a string contains English letters
 const ENGLISH_LETTERS = /[a-zA-Z]/;
 
 const results = [];
+
+function isInsideTCall(node) {
+  let curr = node;
+  while (curr && curr.kind !== ts.SyntaxKind.SourceFile) {
+    if (ts.isCallExpression(curr)) {
+      const expr = curr.expression;
+      if (
+        (ts.isIdentifier(expr) && expr.text === "t") ||
+        (ts.isPropertyAccessExpression(expr) && expr.name.text === "t")
+      ) {
+        return true;
+      }
+    }
+    curr = curr.parent;
+  }
+  return false;
+}
 
 function walk(dir) {
   const files = fs.readdirSync(dir);
@@ -30,7 +46,6 @@ function walk(dir) {
         walk(fullPath);
       }
     } else if (/\.(ts|tsx)$/.test(file)) {
-      // Skip test files
       if (!file.endsWith(".test.ts") && !file.endsWith(".test.tsx")) {
         analyzeFile(fullPath);
       }
@@ -51,7 +66,7 @@ function analyzeFile(filePath) {
   function visit(node) {
     let text = null;
     let type = null;
-    let category = null; // 'vietnamese' | 'japanese' | 'english'
+    let category = null;
 
     // 1. Check JSX attribute values (like placeholder="Search")
     if (ts.isJsxAttribute(node) && node.initializer && ts.isStringLiteral(node.initializer)) {
@@ -70,7 +85,7 @@ function analyzeFile(filePath) {
 
       if (userFacingAttributes.includes(attrName)) {
         const val = node.initializer.text.trim();
-        if (val && ENGLISH_LETTERS.test(val)) {
+        if (val && ENGLISH_LETTERS.test(val) && !isInsideTCall(node)) {
           text = val;
           type = `JsxAttribute[${attrName}]`;
           if (VIETNAMESE_REGEX.test(val)) {
@@ -84,11 +99,10 @@ function analyzeFile(filePath) {
       }
     }
 
-    // 2. Check JSX Text children (like <span>Cancel</span>)
+    // 2. Check JSX Text children
     else if (node.kind === ts.SyntaxKind.JsxText) {
       const val = node.text.trim();
-      // Only care if it contains letters (i.e. not just whitespace or symbols)
-      if (val && ENGLISH_LETTERS.test(val)) {
+      if (val && ENGLISH_LETTERS.test(val) && !isInsideTCall(node)) {
         text = val;
         type = "JsxText";
         if (VIETNAMESE_REGEX.test(val)) {
@@ -101,49 +115,25 @@ function analyzeFile(filePath) {
       }
     }
 
-    // 3. Check generic string/template literals containing Vietnamese or Japanese
-    else if (
-      ts.isStringLiteral(node) ||
-      ts.isNoSubstitutionTemplateLiteral(node) ||
-      ts.isTemplateExpression(node)
-    ) {
-      // Check if this node is directly passed as an argument to a t() call
-      let isWrappedInT = false;
-      if (ts.isCallExpression(node.parent) && node.parent.arguments.includes(node)) {
-        const expr = node.parent.expression;
-        if (
-          (ts.isIdentifier(expr) && expr.text === "t") ||
-          (ts.isPropertyAccessExpression(expr) && expr.name.text === "t")
-        ) {
-          isWrappedInT = true;
-        }
-      }
-
-      if (!isWrappedInT) {
-        const val = node.getText(sourceFile).trim();
+    // 3. Check StringLiterals / NoSubstitutionTemplateLiterals that are NOT inside t()
+    else if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+      if (!isInsideTCall(node)) {
+        const val = node.text.trim();
         if (val) {
           if (VIETNAMESE_REGEX.test(val)) {
             text = val;
-            type = ts.isStringLiteral(node)
-              ? "StringLiteral"
-              : ts.isNoSubstitutionTemplateLiteral(node)
-                ? "TemplateLiteral"
-                : "TemplateExpression";
+            type = ts.isStringLiteral(node) ? "StringLiteral" : "TemplateLiteral";
             category = "vietnamese";
           } else if (JAPANESE_REGEX.test(val)) {
             text = val;
-            type = ts.isStringLiteral(node)
-              ? "StringLiteral"
-              : ts.isNoSubstitutionTemplateLiteral(node)
-                ? "TemplateLiteral"
-                : "TemplateExpression";
+            type = ts.isStringLiteral(node) ? "StringLiteral" : "TemplateLiteral";
             category = "japanese";
           }
         }
       }
     }
 
-    if (text && category) {
+    if (category) {
       const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
       results.push({
         file: path.relative(path.join(__dirname, "../.."), filePath).replace(/\\/g, "/"),
@@ -165,12 +155,10 @@ const srcDir = path.join(__dirname, "../../src");
 console.log(`Starting i18n scan on: ${srcDir}\n`);
 walk(srcDir);
 
-// Split results by category
 const viResults = results.filter((r) => r.category === "vietnamese");
 const jaResults = results.filter((r) => r.category === "japanese");
 const enResults = results.filter((r) => r.category === "english");
 
-// Write JSON Reports
 fs.writeFileSync(
   path.join(__dirname, "vietnamese-report.json"),
   JSON.stringify(viResults, null, 2),
@@ -187,37 +175,17 @@ fs.writeFileSync(
   "utf8"
 );
 
-// Print Summary
 console.log("=== I18N AUDIT SUMMARY ===");
 console.log(`Total Issues Found: ${results.length}`);
 console.log(`  - Vietnamese (Hardcoded): ${viResults.length}`);
 console.log(`  - Japanese (Hardcoded):   ${jaResults.length}`);
 console.log(`  - English/JSX (Hardcoded): ${enResults.length}`);
-console.log("Reports saved to:");
-console.log("  - scripts/i18n-audit/vietnamese-report.json");
-console.log("  - scripts/i18n-audit/japanese-report.json");
-console.log("  - scripts/i18n-audit/english-report.json\n");
-
-if (results.length > 0) {
-  // Count by file
-  const fileCounts = {};
-  results.forEach((item) => {
-    fileCounts[item.file] = (fileCounts[item.file] || 0) + 1;
-  });
-
-  const sortedFiles = Object.entries(fileCounts).sort((a, b) => b[1] - a[1]);
-
-  console.log("Top files with the most hardcoded strings:");
-  sortedFiles.slice(0, 15).forEach(([file, count]) => {
-    console.log(`  - ${file}: ${count} issues`);
-  });
-} else {
-  console.log("🎉 Outstanding! No hardcoded user-facing strings found in the codebase!");
-}
 
 if (viResults.length > 0) {
   console.error(
     `\n❌ Error: Found ${viResults.length} hardcoded Vietnamese strings. Please use t() from react-i18next.`
   );
   process.exit(1);
+} else {
+  console.log("🎉 Outstanding! No hardcoded Vietnamese user-facing strings found in the codebase!");
 }

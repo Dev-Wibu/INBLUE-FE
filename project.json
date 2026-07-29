@@ -55,11 +55,18 @@
         "lint",
         "typecheck",
         "build",
+        "i18n:scan",
         "i18n:check-missing",
         "i18n:test"
       ],
       "options": {
         "command": "echo Validation complete"
+      }
+    },
+    "i18n:scan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/i18n-audit/scan-hardcoded.cjs"
       }
     },
     "i18n:check-missing": {

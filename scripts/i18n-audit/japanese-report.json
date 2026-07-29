@@ -1,18 +1,10 @@
 [
   {
-    "file": "src/components/shared/DateTimePicker.tsx",
-    "line": 962,
-    "character": 35,
-    "type": "TemplateExpression",
-    "category": "japanese",
-    "text": "`${idx + 1}月`"
-  },
-  {
     "file": "src/pages/User/Account/AccountTabs/SettingsTab.tsx",
     "line": 137,
     "character": 35,
     "type": "StringLiteral",
     "category": "japanese",
-    "text": "\"日本語\""
+    "text": "日本語"
   }
 ]

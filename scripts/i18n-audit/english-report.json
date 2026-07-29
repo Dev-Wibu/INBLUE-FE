@@ -225,7 +225,7 @@
   },
   {
     "file": "src/components/shared/JobDetailView.tsx",
-    "line": 190,
+    "line": 194,
     "character": 17,
     "type": "JsxText",
     "category": "english",
@@ -257,7 +257,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorDialog.tsx",
-    "line": 1185,
+    "line": 1199,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -265,7 +265,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 1187,
+    "line": 1201,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -273,7 +273,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 722,
+    "line": 730,
     "character": 50,
     "type": "JsxText",
     "category": "english",
@@ -281,7 +281,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 723,
+    "line": 731,
     "character": 56,
     "type": "JsxText",
     "category": "english",
@@ -289,7 +289,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 724,
+    "line": 732,
     "character": 56,
     "type": "JsxText",
     "category": "english",
@@ -297,7 +297,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 725,
+    "line": 733,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -305,7 +305,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 726,
+    "line": 734,
     "character": 48,
     "type": "JsxText",
     "category": "english",
@@ -313,7 +313,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 727,
+    "line": 735,
     "character": 49,
     "type": "JsxText",
     "category": "english",
@@ -321,7 +321,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 728,
+    "line": 736,
     "character": 48,
     "type": "JsxText",
     "category": "english",
@@ -329,7 +329,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1276,
+    "line": 1284,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -337,7 +337,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1277,
+    "line": 1285,
     "character": 58,
     "type": "JsxText",
     "category": "english",
@@ -345,7 +345,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1278,
+    "line": 1286,
     "character": 58,
     "type": "JsxText",
     "category": "english",
@@ -353,7 +353,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1279,
+    "line": 1287,
     "character": 54,
     "type": "JsxText",
     "category": "english",
@@ -361,7 +361,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1280,
+    "line": 1288,
     "character": 50,
     "type": "JsxText",
     "category": "english",
@@ -369,7 +369,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1281,
+    "line": 1289,
     "character": 51,
     "type": "JsxText",
     "category": "english",
@@ -377,7 +377,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1282,
+    "line": 1290,
     "character": 50,
     "type": "JsxText",
     "category": "english",
@@ -385,7 +385,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1293,
+    "line": 1301,
     "character": 54,
     "type": "JsxText",
     "category": "english",
@@ -393,7 +393,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1294,
+    "line": 1302,
     "character": 54,
     "type": "JsxText",
     "category": "english",
@@ -401,7 +401,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1295,
+    "line": 1303,
     "character": 54,
     "type": "JsxText",
     "category": "english",
@@ -409,7 +409,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1339,
+    "line": 1347,
     "character": 79,
     "type": "JsxText",
     "category": "english",
@@ -417,7 +417,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1468,
+    "line": 1476,
     "character": 39,
     "type": "JsxText",
     "category": "english",
@@ -425,7 +425,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1478,
+    "line": 1486,
     "character": 60,
     "type": "JsxText",
     "category": "english",
@@ -433,7 +433,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1479,
+    "line": 1487,
     "character": 66,
     "type": "JsxText",
     "category": "english",
@@ -441,7 +441,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1480,
+    "line": 1488,
     "character": 66,
     "type": "JsxText",
     "category": "english",
@@ -449,7 +449,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1481,
+    "line": 1489,
     "character": 62,
     "type": "JsxText",
     "category": "english",
@@ -457,7 +457,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1482,
+    "line": 1490,
     "character": 62,
     "type": "JsxText",
     "category": "english",
@@ -465,7 +465,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1483,
+    "line": 1491,
     "character": 59,
     "type": "JsxText",
     "category": "english",
@@ -473,7 +473,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1484,
+    "line": 1492,
     "character": 59,
     "type": "JsxText",
     "category": "english",
@@ -481,7 +481,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1485,
+    "line": 1493,
     "character": 58,
     "type": "JsxText",
     "category": "english",
@@ -489,7 +489,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1649,
+    "line": 1657,
     "character": 65,
     "type": "JsxText",
     "category": "english",
@@ -497,7 +497,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1652,
+    "line": 1660,
     "character": 65,
     "type": "JsxText",
     "category": "english",
@@ -505,7 +505,7 @@
   },
   {
     "file": "src/components/ui/code-review-editor.tsx",
-    "line": 1654,
+    "line": 1662,
     "character": 84,
     "type": "JsxText",
     "category": "english",
@@ -665,7 +665,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 889,
+    "line": 897,
     "character": 79,
     "type": "JsxText",
     "category": "english",
@@ -673,7 +673,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 893,
+    "line": 901,
     "character": 72,
     "type": "JsxText",
     "category": "english",
@@ -681,7 +681,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 911,
+    "line": 919,
     "character": 43,
     "type": "JsxText",
     "category": "english",
@@ -689,7 +689,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 911,
+    "line": 919,
     "character": 90,
     "type": "JsxText",
     "category": "english",
@@ -697,7 +697,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 1199,
+    "line": 1207,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -705,7 +705,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 1200,
+    "line": 1208,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -713,7 +713,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 1201,
+    "line": 1209,
     "character": 52,
     "type": "JsxText",
     "category": "english",
@@ -721,7 +721,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 1576,
+    "line": 1584,
     "character": 37,
     "type": "JsxText",
     "category": "english",
@@ -729,7 +729,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 1597,
+    "line": 1605,
     "character": 37,
     "type": "JsxText",
     "category": "english",
@@ -737,7 +737,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 1653,
+    "line": 1661,
     "character": 57,
     "type": "JsxText",
     "category": "english",
@@ -745,7 +745,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 1654,
+    "line": 1662,
     "character": 57,
     "type": "JsxText",
     "category": "english",
@@ -753,7 +753,7 @@
   },
   {
     "file": "src/components/ui/coding-editor.tsx",
-    "line": 1655,
+    "line": 1663,
     "character": 69,
     "type": "JsxText",
     "category": "english",
@@ -1016,22 +1016,6 @@
     "text": "Offline"
   },
   {
-    "file": "src/pages/Admin/Account/AdminAccountPage.tsx",
-    "line": 251,
-    "character": 51,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Staff Administrator"
-  },
-  {
-    "file": "src/pages/Admin/Account/AdminAccountPage.tsx",
-    "line": 261,
-    "character": 19,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Staff ID"
-  },
-  {
     "file": "src/pages/Admin/AdminDashboard/AdminDashboardPage.tsx",
     "line": 224,
     "character": 26,
@@ -1057,16 +1041,8 @@
   },
   {
     "file": "src/pages/Admin/AdminDashboard/components/AdminHeader.tsx",
-    "line": 62,
-    "character": 15,
-    "type": "JsxAttribute[placeholder]",
-    "category": "english",
-    "text": "Quick search..."
-  },
-  {
-    "file": "src/pages/Admin/AdminDashboard/components/AdminHeader.tsx",
-    "line": 67,
-    "character": 17,
+    "line": 226,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
     "text": "⌘K"
@@ -1145,8 +1121,8 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1143,
-    "character": 65,
+    "line": 1146,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "ID JD"
@@ -1154,7 +1130,7 @@
   {
     "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
     "line": 467,
-    "character": 56,
+    "character": 83,
     "type": "JsxText",
     "category": "english",
     "text": "#ID"
@@ -1409,7 +1385,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 401,
+    "line": 410,
     "character": 31,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1417,7 +1393,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 477,
+    "line": 486,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -1425,7 +1401,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 493,
+    "line": 502,
     "character": 25,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1433,7 +1409,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 519,
+    "line": 528,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1441,7 +1417,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 522,
+    "line": 531,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1449,7 +1425,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 525,
+    "line": 534,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1457,7 +1433,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 544,
+    "line": 553,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -1465,7 +1441,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 562,
+    "line": 571,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -1473,7 +1449,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 600,
+    "line": 609,
     "character": 31,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1481,7 +1457,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 666,
+    "line": 675,
     "character": 27,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1489,7 +1465,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 690,
+    "line": 699,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1497,7 +1473,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 819,
+    "line": 828,
     "character": 33,
     "type": "JsxText",
     "category": "english",
@@ -1505,7 +1481,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 948,
+    "line": 957,
     "character": 27,
     "type": "JsxText",
     "category": "english",
@@ -1513,19 +1489,11 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 1084,
+    "line": 1093,
     "character": 35,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
     "text": "Output..."
-  },
-  {
-    "file": "src/pages/Admin/CompanyManagement/components/CompanyTable.tsx",
-    "line": 122,
-    "character": 60,
-    "type": "JsxText",
-    "category": "english",
-    "text": "JD"
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
@@ -1577,16 +1545,16 @@
   },
   {
     "file": "src/pages/Admin/FeedbackManagement/FeedbackManagementPage.tsx",
-    "line": 197,
-    "character": 53,
+    "line": 198,
+    "character": 85,
     "type": "JsxText",
     "category": "english",
     "text": "ID"
   },
   {
     "file": "src/pages/Admin/FeedbackManagement/FeedbackManagementPage.tsx",
-    "line": 199,
-    "character": 36,
+    "line": 202,
+    "character": 75,
     "type": "JsxText",
     "category": "english",
     "text": "Mentor"
@@ -1625,7 +1593,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
-    "line": 291,
+    "line": 294,
     "character": 21,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1633,7 +1601,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
-    "line": 331,
+    "line": 334,
     "character": 21,
     "type": "JsxText",
     "category": "english",
@@ -1678,14 +1646,6 @@
     "type": "JsxAttribute[title]",
     "category": "english",
     "text": "YouTube video player"
-  },
-  {
-    "file": "src/pages/Admin/UserManagement/components/UserDetailView.tsx",
-    "line": 167,
-    "character": 25,
-    "type": "JsxAttribute[alt]",
-    "category": "english",
-    "text": "Avatar"
   },
   {
     "file": "src/pages/Admin/UserManagement/components/UserEditForm.tsx",
@@ -1952,14 +1912,6 @@
     "text": "Staff ID"
   },
   {
-    "file": "src/pages/Staff/FeedbackModeration/FeedbackModerationPage.tsx",
-    "line": 360,
-    "character": 15,
-    "type": "JsxText",
-    "category": "english",
-    "text": "mentor"
-  },
-  {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
     "line": 152,
     "character": 26,
@@ -2158,14 +2110,6 @@
     "type": "JsxText",
     "category": "english",
     "text": "(ID:"
-  },
-  {
-    "file": "src/pages/User/Practice/PracticeSetsPage.tsx",
-    "line": 428,
-    "character": 43,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Fresher"
   },
   {
     "file": "src/pages/User/Sessions/StudentSessionRoomPage.tsx",
