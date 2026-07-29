@@ -92,7 +92,7 @@ export function JobDescriptionDetailPage() {
           t("enterpriseJobdescriptiondetailpage.applicationUnsuccessfulPleaseTryAgain");
         toast.error(errorMsg, { duration: 5000 });
       }
-    } catch (err) {
+    } catch {
       toast.error("Có lỗi xảy ra, vui lòng thử lại.");
     } finally {
       setIsApplying(false);

@@ -7,6 +7,7 @@ import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/settingsStore";
+import type { TFunction } from "i18next";
 import {
   Bot,
   Briefcase,
@@ -53,7 +54,7 @@ const isValidTabType = (value: string): value is TabType => {
 };
 
 const getAvailableTabs = (
-  t: any
+  t: TFunction
 ): Array<{
   type: TabType;
   label: string;
@@ -92,7 +93,7 @@ const getAvailableTabs = (
   },
 ];
 
-const getSidebarMenuGroups = (t: any): SidebarMenuGroup[] => [
+const getSidebarMenuGroups = (t: TFunction): SidebarMenuGroup[] => [
   {
     label: t("common.home"),
     items: [

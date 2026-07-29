@@ -54,9 +54,9 @@ interface JobCardProps {
 }
 
 function JobCard({ job, t }: JobCardProps) {
-  const jobAny = job as any;
-  const initials = getCompanyInitials(jobAny.companyName);
-  const logoUrl = jobAny.thumbnailUrl || jobAny.companyLogoUrl || jobAny.companyLogo;
+  const jobExtra = job as JobDescription & { thumbnailUrl?: string; companyLogoUrl?: string };
+  const initials = getCompanyInitials(job.companyName);
+  const logoUrl = jobExtra.thumbnailUrl || jobExtra.companyLogoUrl || job.companyLogo;
 
   return (
     <Link
@@ -170,10 +170,8 @@ export function JobSearchPage() {
 
     if (query) {
       result = result.filter((job) => {
-        const jobAny = job as any;
         return (
-          job.title?.toLowerCase().includes(query) ||
-          jobAny.companyName?.toLowerCase().includes(query)
+          job.title?.toLowerCase().includes(query) || job.companyName?.toLowerCase().includes(query)
         );
       });
     }
