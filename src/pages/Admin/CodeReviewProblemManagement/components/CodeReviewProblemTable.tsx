@@ -10,6 +10,7 @@ import {
 import type { CodeReviewProblem } from "@/services/code-review-problem.manager";
 import { format } from "date-fns";
 import { BookOpen, Bug, Circle, FileCode2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CodeReviewProblemTableProps {
   problems: CodeReviewProblem[];
@@ -49,13 +50,17 @@ export function CodeReviewProblemTable({
   onViewDetail,
   onToggleStatus,
 }: CodeReviewProblemTableProps) {
+  const { t } = useTranslation();
+
   if (problems.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
           <BookOpen className="h-6 w-6 text-slate-400 dark:text-slate-500" />
         </div>
-        <p className="text-sm font-medium text-slate-500">Chưa có bài tập code review nào.</p>
+        <p className="text-sm font-medium text-slate-500">
+          {t("adminCodeReviewProblem.emptyList", "Chưa có bài tập code review nào.")}
+        </p>
       </div>
     );
   }
@@ -66,15 +71,27 @@ export function CodeReviewProblemTable({
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
             <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
-            <TableHead className="min-w-[200px] font-medium text-slate-500">Bài tập</TableHead>
-            <TableHead className="w-[120px] font-medium text-slate-500">Ngôn ngữ</TableHead>
-            <TableHead className="w-[110px] font-medium text-slate-500">Độ khó</TableHead>
-            <TableHead className="w-[180px] font-medium text-slate-500">Cấu hình</TableHead>
-            <TableHead className="w-[100px] text-center font-medium text-slate-500">
-              Bật/Tắt
+            <TableHead className="min-w-[200px] font-medium text-slate-500">
+              {t("adminCodingProblem.columnProblem", "Bài tập")}
             </TableHead>
-            <TableHead className="w-[130px] font-medium text-slate-500">Ngày tạo</TableHead>
-            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">Cập nhật</TableHead>
+            <TableHead className="w-[120px] font-medium text-slate-500">
+              {t("general.language", "Ngôn ngữ")}
+            </TableHead>
+            <TableHead className="w-[110px] font-medium text-slate-500">
+              {t("general.difficulty", "Độ khó")}
+            </TableHead>
+            <TableHead className="w-[180px] font-medium text-slate-500">
+              {t("common.configuration", "Cấu hình")}
+            </TableHead>
+            <TableHead className="w-[100px] text-center font-medium text-slate-500">
+              {t("adminCodingProblem.columnStatus", "Bật/Tắt")}
+            </TableHead>
+            <TableHead className="w-[130px] font-medium text-slate-500">
+              {t("adminCompanymanagement.createdDate", "Ngày tạo")}
+            </TableHead>
+            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">
+              {t("adminCompanymanagement.updatedDate", "Cập nhật")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -118,7 +135,10 @@ export function CodeReviewProblemTable({
                     </div>
                     <div className="flex items-center gap-1.5 text-[11px] font-medium text-rose-600 dark:text-rose-400">
                       <Bug className="h-3.5 w-3.5" />
-                      <span>{p.expectedIssues?.length ?? 0} lỗi</span>
+                      <span>
+                        {p.expectedIssues?.length ?? 0}{" "}
+                        {t("adminCodeReviewProblem.errorCount", "lỗi")}
+                      </span>
                     </div>
                   </div>
                 </TableCell>
@@ -132,7 +152,7 @@ export function CodeReviewProblemTable({
                   ) : (
                     <span
                       className={`text-xs font-semibold ${isActive ? "text-emerald-600" : "text-slate-500"}`}>
-                      {isActive ? "Bật" : "Tắt"}
+                      {isActive ? t("common.on", "Bật") : t("common.off", "Tắt")}
                     </span>
                   )}
                 </TableCell>

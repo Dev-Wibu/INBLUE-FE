@@ -213,11 +213,15 @@ export function CodeReviewProblemManagementPage() {
                 }
               }}
               className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-              Bài tập Code Review
+              {t("adminAdmindashboard.codeReviewProblems", "Bài tập Code Review")}
             </button>
             <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
-              {view.mode === "edit" ? `Chỉnh sửa: ${view.problem.title}` : "Tạo bài tập mới"}
+              {view.mode === "edit"
+                ? t("adminCodeReviewProblem.editTitle", "Chỉnh sửa: {{title}}", {
+                    title: view.problem.title,
+                  })
+                : t("adminCodeReviewProblem.createTitle", "Tạo bài tập mới")}
             </h1>
           </div>
 
@@ -233,7 +237,7 @@ export function CodeReviewProblemManagementPage() {
                 }
               }}
               className="h-8 text-xs">
-              Quay lại
+              {t("common.back", "Quay lại")}
             </Button>
           </div>
         </div>
@@ -279,7 +283,7 @@ export function CodeReviewProblemManagementPage() {
               type="button"
               onClick={handleBack}
               className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-              Bài tập Code Review
+              {t("adminAdmindashboard.codeReviewProblems", "Bài tập Code Review")}
             </button>
             <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
@@ -311,7 +315,7 @@ export function CodeReviewProblemManagementPage() {
               {t("general.edit", "Chỉnh sửa")}
             </Button>
             <Button variant="outline" size="sm" onClick={handleBack} className="h-8 text-xs">
-              Quay lại
+              {t("common.back", "Quay lại")}
             </Button>
           </div>
         </div>
@@ -346,7 +350,8 @@ export function CodeReviewProblemManagementPage() {
                     </span>
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                       <AlertTriangle className="h-3 w-3 text-slate-400" />
-                      {selectedProblem.expectedIssues?.length || 0} Lỗi
+                      {selectedProblem.expectedIssues?.length || 0}{" "}
+                      {t("adminCodeReviewProblem.errorCount", "Lỗi")}
                     </span>
                   </div>
                 </div>
@@ -355,7 +360,7 @@ export function CodeReviewProblemManagementPage() {
                   <div>
                     <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-slate-100">
                       <Lightbulb className="h-4 w-4 text-amber-500" />
-                      Yêu cầu Code Review
+                      {t("adminCodeReviewProblem.reviewRequirements", "Yêu cầu Code Review")}
                     </h3>
                     <div className="prose prose-sm dark:prose-invert max-w-none rounded-xl border border-slate-100 bg-slate-50/50 p-4 font-sans whitespace-pre-wrap text-slate-700 dark:border-slate-800/60 dark:bg-slate-900/30 dark:text-slate-300">
                       {selectedProblem.problemStatement}
@@ -425,7 +430,9 @@ export function CodeReviewProblemManagementPage() {
               </>
             ) : (
               <div className="flex flex-1 items-center justify-center p-8">
-                <p className="text-slate-500">Chưa có mã nguồn để review.</p>
+                <p className="text-slate-500">
+                  {t("adminCodeReviewProblem.noSourceCodeYet", "Chưa có mã nguồn để review.")}
+                </p>
               </div>
             )}
           </div>
@@ -441,10 +448,13 @@ export function CodeReviewProblemManagementPage() {
       <div className="flex flex-none flex-col justify-center gap-3 border-b border-slate-200 bg-white p-4 sm:h-[68px] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col justify-center">
           <h1 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
-            Bài tập Code Review
+            {t("adminAdmindashboard.codeReviewProblems", "Bài tập Code Review")}
           </h1>
           <p className="mt-0.5 text-xs leading-tight text-slate-500 dark:text-slate-400">
-            Quản lý danh sách bài tập thực hành Code Review
+            {t(
+              "adminCodeReviewProblem.subtitle",
+              "Quản lý danh sách bài tập thực hành Code Review"
+            )}
           </p>
         </div>
 
@@ -457,7 +467,7 @@ export function CodeReviewProblemManagementPage() {
                 setSearchQuery(e.target.value);
                 pagination.goToFirstPage();
               }}
-              placeholder="Tìm kiếm bài tập..."
+              placeholder={t("adminCodeReviewProblem.searchPlaceholder", "Tìm kiếm bài tập...")}
               className="h-8 border-slate-200 pl-9 text-xs focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700"
             />
           </div>
@@ -486,7 +496,7 @@ export function CodeReviewProblemManagementPage() {
                             : "bg-rose-600 text-white"
                       : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                   }`}>
-                  {d === "ALL" ? "Tất cả" : d}
+                  {d === "ALL" ? t("common.all", "Tất cả") : d}
                   <span
                     className={`rounded-full px-1.5 py-0.5 text-[9px] ${
                       isActive
@@ -512,16 +522,16 @@ export function CodeReviewProblemManagementPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="newest" className="text-xs">
-                Mới nhất trước
+                {t("adminCodingProblem.sortNewest", "Mới nhất trước")}
               </SelectItem>
               <SelectItem value="oldest" className="text-xs">
-                Cũ nhất trước
+                {t("adminCodingProblem.sortOldest", "Cũ nhất trước")}
               </SelectItem>
               <SelectItem value="title_asc" className="text-xs">
-                Tiêu đề A → Z
+                {t("adminCodingProblem.sortTitleAsc", "Tiêu đề A → Z")}
               </SelectItem>
               <SelectItem value="title_desc" className="text-xs">
-                Tiêu đề Z → A
+                {t("adminCodingProblem.sortTitleDesc", "Tiêu đề Z → A")}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -539,7 +549,7 @@ export function CodeReviewProblemManagementPage() {
               onClick={() => setView({ mode: "create" })}
               className="h-8 bg-indigo-600 px-4 text-xs font-semibold text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-700">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Thêm Bài Tập
+              {t("adminCodeReviewProblem.addProblem", "Thêm Bài Tập")}
             </Button>
           </div>
         </div>
@@ -555,7 +565,7 @@ export function CodeReviewProblemManagementPage() {
           <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50">
             <AlertTriangle className="h-8 w-8 text-slate-300 dark:text-slate-700" />
             <p className="text-sm font-medium text-slate-500">
-              Không tìm thấy bài tập code review nào.
+              {t("adminCodeReviewProblem.emptyList", "Không tìm thấy bài tập code review nào.")}
             </p>
           </div>
         ) : (
