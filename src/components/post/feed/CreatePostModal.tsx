@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { invalidatePostFeedQueries } from "@/lib/post-feed";
 import { postManager } from "@/services/post.manager";
 import { useAuthStore } from "@/stores/authStore";
@@ -22,6 +23,7 @@ interface CreatePostModalProps {
 export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostModalProps) {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const { data: currentMentorProfile } = useCurrentMentorProfile();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [summary, setSummary] = useState("");
@@ -66,14 +68,27 @@ export function CreatePostModal({ open, onOpenChange, onCreated }: CreatePostMod
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !content.trim() || !user?.id) return;
+    if (!title.trim() || !content.trim()) return;
+    // User.id from JWT (sub) is NOT the same as Mentor.id. For MENTOR role,
+    // BE stores posts against Mentor.id.
+    const authorId =
+      user?.role === "MENTOR" && currentMentorProfile?.id != null
+        ? typeof currentMentorProfile.id === "string"
+          ? parseInt(currentMentorProfile.id, 10)
+          : currentMentorProfile.id
+        : typeof user?.id === "number"
+          ? user.id
+          : user?.id != null
+            ? parseInt(String(user.id), 10)
+            : undefined;
+    if (!authorId) return;
     setSubmitting(true);
     try {
       const response = await postManager.createPost({
         title: title.trim(),
         content: content.trim(),
         summary: summary.trim() || undefined,
-        authorId: user.id as number,
+        authorId,
         tags: tags.length > 0 ? tags : undefined,
         coverImg: coverFile ?? undefined,
         status: "DRAFT",
