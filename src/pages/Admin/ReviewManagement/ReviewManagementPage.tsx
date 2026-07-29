@@ -234,11 +234,14 @@ export function ReviewManagementPage() {
             {hasActiveFilters && (
               <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
                 <span className="text-xs text-slate-500">
-                  Hiển thị{" "}
-                  <strong className="text-slate-800 dark:text-slate-200">
-                    {filteredReviews.length}
-                  </strong>{" "}
-                  / <strong>{reviews.length}</strong> kết quả
+                  {t(
+                    "adminReviewmanagement.showingFilteredResults",
+                    "Hiển thị {{filtered}} / {{total}} kết quả",
+                    {
+                      filtered: filteredReviews.length,
+                      total: reviews.length,
+                    }
+                  )}
                 </span>
               </div>
             )}

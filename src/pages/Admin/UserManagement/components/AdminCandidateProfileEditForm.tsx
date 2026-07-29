@@ -47,10 +47,15 @@ export function AdminCandidateProfileEditForm({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-              {form.hasProfile ? "Chỉnh sửa Hồ sơ Ứng viên" : "Tạo mới Hồ sơ Ứng viên"}
+              {form.hasProfile
+                ? t("adminUsermanagement.editCandidateProfile", "Chỉnh sửa Hồ sơ Ứng viên")
+                : t("adminUsermanagement.createCandidateProfile", "Tạo mới Hồ sơ Ứng viên")}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Cập nhật các thông tin chi tiết về kỹ năng, dự án, học vấn...
+              {t(
+                "adminUsermanagement.candidateProfileDescription",
+                "Cập nhật các thông tin chi tiết về kỹ năng, dự án, học vấn..."
+              )}
             </p>
           </div>
           <div className="flex gap-2">
