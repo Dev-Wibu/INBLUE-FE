@@ -215,9 +215,12 @@ export function useAIInterviewSetup() {
       : undefined;
     const resolvedId = fetchedId ?? uploadedProfileId ?? undefined;
     const isUpdate = resolvedId !== undefined;
-    const body = {
-      // PUT requires existing id; POST requires id: 0 (backend contract)
-      id: isUpdate ? resolvedId : 0,
+    // BE contract (confirmed by BE AI agent 2026-07-29):
+    //   PUT  -> body must include `id` (CandidateProfile id) and `user.id`
+    //   POST -> body must OMIT `id` entirely (Hibernate IDENTITY strategy self-generates it)
+    // Always send `user: { id }` only — never the full nested User object
+    // (avoids leaking password/avatarUrl over the wire).
+    const baseBody = {
       user: {
         id: userId,
       },
@@ -233,6 +236,7 @@ export function useAIInterviewSetup() {
       workExperiences: candidateForm.workExperiences,
       educations: candidateForm.educations,
     };
+    const body = isUpdate ? { id: resolvedId, ...baseBody } : baseBody;
     try {
       if (isUpdate) {
         await updateProfileMutation.mutateAsync({

@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Building2, Edit, Trash2 } from "lucide-react";
+import { Building2, Edit } from "lucide-react";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Company } from "../types";
@@ -17,7 +17,6 @@ interface CompanyTableProps {
   companies: Company[];
   onSelectCompany: (company: Company) => void;
   onEditCompany: (company: Company, e: React.MouseEvent) => void;
-  onDeleteCompany: (company: Company, e: React.MouseEvent) => void;
   onToggleStatus?: (company: Company, nextStatus: "ACTIVE" | "INACTIVE") => void;
 }
 
@@ -25,7 +24,6 @@ export function CompanyTable({
   companies,
   onSelectCompany,
   onEditCompany,
-  onDeleteCompany,
   onToggleStatus,
 }: CompanyTableProps) {
   const { t } = useTranslation();
@@ -119,7 +117,7 @@ export function CompanyTable({
                 </TableCell>
                 <TableCell className="text-center">
                   <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {company.jobDescriptions?.length || 0} JD
+                    {company.jobDescriptions?.length || 0} {t("adminCompanymanagement.jdShort")}
                   </span>
                 </TableCell>
                 <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
@@ -141,14 +139,6 @@ export function CompanyTable({
                       onClick={(e) => onEditCompany(company, e)}
                       title={t("common.edit", "Chỉnh sửa")}>
                       <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-400 hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-slate-800 dark:hover:text-rose-400"
-                      onClick={(e) => onDeleteCompany(company, e)}
-                      title={t("common.delete", "Xóa")}>
-                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </TableCell>

@@ -32,6 +32,11 @@
       "description": "Automated mock interview with AI Assistant."
     }
   },
+  "adminAccount": {
+    "accountRoleAdmin": "Platform Administrator",
+    "adminId": "Admin ID",
+    "avatarHint": "JPG, PNG or WebP. Max 5MB."
+  },
   "adminAdmindashboard": {
     "admindashboardpageThePlusTabMenu": "[AdminDashboardPage] The plus tab menu configuration is not synchronized",
     "administration": "Administration",
@@ -327,6 +332,7 @@
     "interviewRound": "Interview round (",
     "invalidCompanyIdPleaseSelect": "Invalid company ID. Please select again.",
     "jdActive": "JD Active",
+    "jdShort": "JD",
     "jdDetails": "JD details",
     "jdIsRecruiting": "JD is recruiting",
     "jdList": "JD List",
@@ -550,7 +556,13 @@
     "experience": "Experience",
     "rating": "Rating",
     "joinedDate": "Joined Date",
-    "lastUpdated": "Last Updated"
+    "lastUpdated": "Last Updated",
+    "confirmDisableTitle": "Disable mentor?",
+    "confirmActivateTitle": "Activate mentor?",
+    "confirmDisableDescription": "Are you sure you want to disable \"{{name}}\"? They will no longer be able to log in or accept interview requests.",
+    "confirmActivateDescription": "Are you sure you want to activate \"{{name}}\"? They will be able to log in and accept interview requests again.",
+    "confirmDisableAction": "Disable",
+    "confirmActivateAction": "Activate"
   },
   "adminNotificationmanagement": {
     "chooseFromTemplateOptional": "Choose from template (optional)",
@@ -625,6 +637,7 @@
     "trackEngagementAndModerateComments": "Track engagement and moderate comments in one place.",
     "unableToUpdatePostStatus": "Unable to update post status",
     "viewListOfLikes": "View list of likes",
+    "unableToDetermineAuthor": "Unable to determine the author of the current post.",
     "loadingArticleList": "Loading article list",
     "noArticlesFoundMatchingTheSelected": "No articles found matching",
     "showingResultsFor": "Showing results for"
@@ -1072,6 +1085,9 @@
     "createFailed": "Create failed",
     "actions": "Actions",
     "quickSearch": "Quick search",
+    "loading": "Loading...",
+    "noResults": "No results found.",
+    "pages": "Pages",
     "createdAt": "Created At",
     "free": "Free",
     "generalInformation": "General Information",

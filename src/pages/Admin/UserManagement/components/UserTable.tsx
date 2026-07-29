@@ -75,10 +75,10 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
               <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
               <TableHead className="w-24 font-medium text-slate-500">{t("common.role")}</TableHead>
               <TableHead className="w-32 font-medium text-slate-500">
-                {t("adminUsermanagement.joinedDate", "Ngày tham gia")}
+                {t("adminUsermanagement.joinedDate")}
               </TableHead>
               <TableHead className="w-32 font-medium text-slate-500">
-                {t("adminUsermanagement.lastUpdated", "Cập nhật lần cuối")}
+                {t("adminUsermanagement.lastUpdated")}
               </TableHead>
               <TableHead className="w-24 pr-6 font-medium text-slate-500">
                 {t("common.status")}

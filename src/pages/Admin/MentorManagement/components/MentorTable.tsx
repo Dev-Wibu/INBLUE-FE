@@ -62,16 +62,16 @@ export function MentorTable({
             <TableHead className="font-medium text-slate-500">{t("common.email")}</TableHead>
             <TableHead className="font-medium text-slate-500">{t("common.expertise")}</TableHead>
             <TableHead className="font-medium text-slate-500">
-              {t("adminMentormanagement.experience", "Kinh nghiệm")}
+              {t("adminMentormanagement.experience")}
             </TableHead>
             <TableHead className="w-24 font-medium text-slate-500">
-              {t("adminMentormanagement.rating", "Đánh giá")}
+              {t("adminMentormanagement.rating")}
             </TableHead>
             <TableHead className="w-32 font-medium text-slate-500">
-              {t("adminMentormanagement.joinedDate", "Ngày tham gia")}
+              {t("adminMentormanagement.joinedDate")}
             </TableHead>
             <TableHead className="w-32 font-medium text-slate-500">
-              {t("adminMentormanagement.lastUpdated", "Cập nhật lần cuối")}
+              {t("adminMentormanagement.lastUpdated")}
             </TableHead>
             <TableHead className="w-24 pr-6 font-medium text-slate-500">
               {t("common.status")}
@@ -115,7 +115,7 @@ export function MentorTable({
 
               <TableCell className="text-xs text-slate-600 dark:text-slate-300">
                 {mentor.yearsOfExperience
-                  ? `${mentor.yearsOfExperience} ${t("common.yearCount", "năm")}`
+                  ? `${mentor.yearsOfExperience} ${t("common.yearCount")}`
                   : "—"}
               </TableCell>
               <TableCell>

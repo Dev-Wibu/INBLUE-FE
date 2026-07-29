@@ -3,9 +3,21 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SpinnerBlock } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 import { userManager, usersAdminManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
-import { Camera, Eye, EyeOff, ShieldCheck, User } from "lucide-react";
+import {
+  Camera,
+  ChevronRight,
+  Edit,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Pencil,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -21,6 +33,8 @@ interface AdminProfileData {
   public_id: string | null;
 }
 
+type AccountSubTab = "profile" | "security";
+
 export function AdminAccountPage() {
   const { t } = useTranslation();
   const authUser = useAuthStore((state) => state.user);
@@ -29,11 +43,14 @@ export function AdminAccountPage() {
   const [profile, setProfile] = useState<AdminProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [activeTab, setActiveTab] = useState<AccountSubTab>("profile");
+
   // Profile Form State
   const [name, setName] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password Form State
@@ -120,7 +137,6 @@ export function AdminAccountPage() {
         toast.success(t("common.updatedInformationSuccessfully"));
 
         if (authUser?.id) {
-          // Refresh local auth state
           const profileResponse = await userManager.getProfile(authUser.id);
           if (profileResponse.success && profileResponse.data) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,6 +147,7 @@ export function AdminAccountPage() {
         await fetchProfile();
         setAvatarFile(null);
         setAvatarPreview(null);
+        setIsEditingProfile(false);
       } else {
         toast.error(response.error || t("common.updateFailedPleaseTryAgain"));
       }
@@ -141,11 +158,18 @@ export function AdminAccountPage() {
     }
   };
 
+  const handleCancelProfile = () => {
+    setName(profile?.name || "");
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setIsEditingProfile(false);
+  };
+
   const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newPassword) {
-      toast.error(t("changePassword.newPasswordMinLength"));
+      toast.error(t("changePassword.newPasswordIsRequired"));
       return;
     }
     if (newPassword.length < 8) {
@@ -200,195 +224,340 @@ export function AdminAccountPage() {
 
   const currentAvatar = avatarPreview || profile.avatar;
 
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Cover Profile Section */}
-      <Card className="glass-card mb-8 overflow-hidden border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/80">
-        {/* Cover Banner */}
-        <div className="h-20 bg-gradient-to-r from-blue-600 to-blue-800 sm:h-25 dark:from-slate-800 dark:to-slate-900"></div>
+  const tabItems = [
+    {
+      id: "profile" as const,
+      label: t("common.personalInformation"),
+      description: t("userAccount.updateYourProfileEducationAnd"),
+      icon: User,
+    },
+    {
+      id: "security" as const,
+      label: t("common.changePassword"),
+      description: t("common.updateYourSecuritySettings"),
+      icon: Lock,
+    },
+  ];
 
-        <div className="relative px-6 pb-4 sm:px-10">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            {/* Avatar & Basic Info */}
-            <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-end">
-              <div className="relative -mt-12 sm:-mt-16">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-md ring-4 ring-white sm:h-32 sm:w-32 dark:bg-slate-900 dark:ring-slate-900">
+  return (
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950">
+      <div className="w-full px-4 pt-4 pb-8 md:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+          {/* Left Sidebar: Profile Card + Tabs */}
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-4 lg:col-span-3 lg:self-start">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <div className="relative h-24 bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-blue-500/15 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-blue-500/10">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditingProfile(!isEditingProfile)}
+                  className="absolute top-2.5 right-2.5 h-8 w-8 rounded-full bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-slate-900 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                  title={isEditingProfile ? t("general.cancel") : t("general.edit")}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="relative px-5 pb-5 text-center">
+                <div className="-mt-12 mb-3 inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
                   {currentAvatar ? (
                     <img
                       src={currentAvatar}
                       alt={profile.name}
-                      className="h-full w-full rounded-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
-                    <User className="h-12 w-12 text-indigo-400 sm:h-16 sm:w-16 dark:text-slate-500" />
+                    <User className="h-9 w-9 text-slate-400" />
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute right-0 bottom-2 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-md transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                  aria-label="Change avatar">
-                  <Camera className="h-5 w-5" />
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleAvatarChange}
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                />
-              </div>
-
-              <div className="text-center sm:mb-2 sm:text-left">
-                <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl dark:text-white">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   {profile.name}
-                </h2>
-                <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row sm:items-center">
-                  <p className="text-slate-600 dark:text-slate-400">{profile.email}</p>
-                  <span className="hidden h-1.5 w-1.5 rounded-full bg-slate-300 sm:block dark:bg-slate-600"></span>
-                  <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span className="font-medium">Staff Administrator</span>
+                </h3>
+                <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5 text-xs">
+                  <span className="font-medium text-slate-600 dark:text-slate-300">
+                    {profile.email}
+                  </span>
+                </div>
+                <div className="mt-4 space-y-2 border-t border-slate-100 pt-3.5 text-xs text-slate-600 dark:border-slate-800/80 dark:text-slate-300">
+                  <div className="flex items-center justify-center gap-2 px-1">
+                    <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-indigo-500 dark:text-indigo-400" />
+                    <span className="truncate font-medium">
+                      {t("adminAccount.accountRoleAdmin", "Platform Administrator")}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Extra Info (ID) */}
-            <div className="flex items-center justify-center rounded-xl border border-slate-100 bg-slate-50/50 px-6 py-4 sm:mb-2 dark:border-slate-800/50 dark:bg-slate-900/20">
-              <div className="flex flex-col items-center sm:items-end">
-                <span className="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-500">
-                  Staff ID
-                </span>
-                <span className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-200">
-                  {profile.id}
-                </span>
-              </div>
+            <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <h3 className="mb-4 text-base font-semibold text-slate-900 dark:text-white">
+                {t("userAccount.quickSettings")}
+              </h3>
+              <ul className="space-y-1">
+                {tabItems.map((tab) => {
+                  const TabIcon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <li key={tab.id}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab(tab.id)}
+                        className={cn(
+                          "flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors",
+                          isActive
+                            ? "bg-indigo-50 font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
+                            : "text-slate-600 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                        )}>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={cn(
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                              isActive
+                                ? "bg-indigo-600 text-white dark:bg-indigo-500"
+                                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                            )}>
+                            <TabIcon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{tab.label}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {tab.description}
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight
+                          className={cn(
+                            "h-4 w-4 shrink-0 transition-colors",
+                            isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"
+                          )}
+                        />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
-          </div>
-        </div>
-      </Card>
+          </aside>
 
-      {/* Forms Section */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* Column 1: Personal Information Form */}
-        <section className="flex flex-col space-y-4">
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-            {t("common.personalInformation")}
-          </h3>
-          <Card className="flex flex-1 flex-col border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <form onSubmit={handleSaveProfile} className="flex flex-1 flex-col p-6 sm:p-8">
-              <div className="flex-1 space-y-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="name"
-                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {t("common.fullName")}
-                  </Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className={INPUT_CLASSES}
-                    placeholder={t("common.fullName")}
-                  />
+          {/* Right Content */}
+          <div className={cn("lg:col-span-9")}>
+            {activeTab === "profile" ? (
+              <Card className="border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="p-6 sm:p-8">
+                  <div className="mb-6 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+                        {t("common.personalInformation")}
+                      </h2>
+                      <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                        {t("userAccount.updateYourProfileEducationAnd")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSaveProfile} className="space-y-6">
+                    <div className="flex flex-col items-center gap-4 sm:flex-row">
+                      <div className="relative">
+                        <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-md dark:border-slate-900 dark:bg-slate-800">
+                          {currentAvatar ? (
+                            <img
+                              src={currentAvatar}
+                              alt={profile.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-10 w-10 text-slate-400" />
+                          )}
+                        </div>
+                        {isEditingProfile && (
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="absolute right-0 bottom-0 flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-md transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                            aria-label="Change avatar">
+                            <Camera className="h-4 w-4" />
+                          </button>
+                        )}
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleAvatarChange}
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                        />
+                      </div>
+                      <div className="flex-1 text-center sm:text-left">
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {profile.name}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          {profile.email}
+                        </p>
+                        {isEditingProfile && (
+                          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                            {t("adminAccount.avatarHint", "JPG, PNG or WebP. Max 5MB.")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="name"
+                          className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {t("common.fullName")}
+                        </Label>
+                        <Input
+                          id="name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          disabled={!isEditingProfile}
+                          className={INPUT_CLASSES}
+                          placeholder={t("common.fullName")}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="email"
+                          className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {t("common.email")}
+                        </Label>
+                        <Input
+                          id="email"
+                          value={profile.email}
+                          disabled
+                          className={INPUT_CLASSES}
+                        />
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {t("userAccount.emailCannotBeChanged")}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+                      {isEditingProfile && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCancelProfile}
+                          disabled={isSavingProfile}>
+                          {t("general.cancel")}
+                        </Button>
+                      )}
+                      <Button
+                        type="submit"
+                        disabled={isSavingProfile || !isEditingProfile || !name.trim()}
+                        className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
+                        {isSavingProfile ? (
+                          <SpinnerBlock size="sm" className="mr-2 text-white/70" />
+                        ) : (
+                          <Edit className="mr-2 h-4 w-4" />
+                        )}
+                        {t("general.save")}
+                      </Button>
+                    </div>
+                  </form>
                 </div>
+              </Card>
+            ) : (
+              <Card className="border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="p-6 sm:p-8">
+                  <div className="mb-6 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                      <Lock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+                        {t("common.changePassword")}
+                      </h2>
+                      <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                        {t("common.updateYourSecuritySettings")}
+                      </p>
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="email"
-                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {t("common.email")}
-                  </Label>
-                  <Input id="email" value={profile.email} disabled className={INPUT_CLASSES} />
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {t("userAccount.emailCannotBeChanged")}
+                  <form onSubmit={handleSavePassword} className="space-y-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor={`${passwordId}-new`}
+                          className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {t("changePassword.newPassword")}
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id={`${passwordId}-new`}
+                            type={showNewPassword ? "text" : "password"}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className={INPUT_CLASSES}
+                            placeholder={t("changePassword.newPasswordPlaceholder")}
+                          />
+                          {renderPasswordToggle(
+                            () => setShowNewPassword(!showNewPassword),
+                            showNewPassword
+                          )}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor={`${passwordId}-confirm`}
+                          className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {t("changePassword.confirmPassword")}
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id={`${passwordId}-confirm`}
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className={INPUT_CLASSES}
+                            placeholder={t("changePassword.confirmPasswordPlaceholder")}
+                          />
+                          {renderPasswordToggle(
+                            () => setShowConfirmPassword(!showConfirmPassword),
+                            showConfirmPassword
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
+                      <Button
+                        type="submit"
+                        disabled={isSavingPassword || !newPassword || !confirmPassword}
+                        className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
+                        {isSavingPassword ? (
+                          <SpinnerBlock size="sm" className="mr-2 text-white/70" />
+                        ) : null}
+                        {t("changePassword.saveChanges")}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </Card>
+            )}
+
+            {/* ID Card */}
+            <Card className="mt-6 border-slate-200/60 bg-white shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40">
+              <div className="flex items-center gap-4 p-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-500">
+                    {t("adminAccount.adminId", "Admin ID")}
+                  </p>
+                  <p className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-200">
+                    {profile.id}
                   </p>
                 </div>
               </div>
-
-              <div className="mt-8 flex justify-end">
-                <Button
-                  type="submit"
-                  disabled={isSavingProfile || !name.trim()}
-                  className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
-                  {isSavingProfile ? (
-                    <SpinnerBlock size="sm" className="mr-2 text-white/70" />
-                  ) : null}
-                  {t("general.save")}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </section>
-
-        {/* Column 2: Change Password Form */}
-        <section className="flex flex-col space-y-4">
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-            {t("common.changePassword")}
-          </h3>
-          <Card className="flex flex-1 flex-col border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <form onSubmit={handleSavePassword} className="flex flex-1 flex-col p-6 sm:p-8">
-              <div className="flex-1 space-y-6">
-                {" "}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={`${passwordId}-new`}
-                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {t("changePassword.newPassword")}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id={`${passwordId}-new`}
-                      type={showNewPassword ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className={INPUT_CLASSES}
-                      placeholder={t("changePassword.newPasswordPlaceholder")}
-                    />
-                    {renderPasswordToggle(
-                      () => setShowNewPassword(!showNewPassword),
-                      showNewPassword
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={`${passwordId}-confirm`}
-                    className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {t("changePassword.confirmPassword")}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id={`${passwordId}-confirm`}
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={INPUT_CLASSES}
-                      placeholder={t("changePassword.confirmPasswordPlaceholder")}
-                    />
-                    {renderPasswordToggle(
-                      () => setShowConfirmPassword(!showConfirmPassword),
-                      showConfirmPassword
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 flex justify-end">
-                <Button
-                  type="submit"
-                  disabled={isSavingPassword || !newPassword || !confirmPassword}
-                  className="bg-indigo-600 px-6 text-white transition-colors hover:bg-indigo-700 focus-visible:ring-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700">
-                  {isSavingPassword ? (
-                    <SpinnerBlock size="sm" className="mr-2 text-white/70" />
-                  ) : null}
-                  {t("changePassword.saveChanges")}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </section>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -156,7 +156,7 @@ export function UserEditForm({
               type="password"
               value={formData.password || ""}
               onChange={(e) => onFormChange({ ...formData, password: e.target.value })}
-              placeholder={t("common.leaveBlankToKeepCurrent", "Bỏ trống để giữ nguyên")}
+              placeholder={t("adminUsermanagement.passwordLeaveBlankIfNot")}
             />
           </div>
 

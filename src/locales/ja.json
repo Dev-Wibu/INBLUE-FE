@@ -1,4 +1,9 @@
 {
+  "adminAccount": {
+    "accountRoleAdmin": "プラットフォーム管理者",
+    "adminId": "管理者ID",
+    "avatarHint": "JPG、PNGまたはWebP。最大5MB。"
+  },
   "adminAdmindashboard": {
     "admindashboardpageThePlusTabMenu": "[AdminDashboardPage] プラスタブメニューの設定が同期されていません",
     "administration": "管理",
@@ -290,6 +295,7 @@
     "interviewRound": "面接ラウンド（",
     "invalidCompanyIdPleaseSelect": "無効な企業IDです。再度選択してください。",
     "jdActive": "JD有効",
+    "jdShort": "JD",
     "jdDetails": "JD詳細",
     "jdIsRecruiting": "JD募集中",
     "jdList": "JD一覧",
@@ -513,7 +519,13 @@
     "experience": "経験",
     "rating": "評価",
     "joinedDate": "参加日",
-    "lastUpdated": "最終更新"
+    "lastUpdated": "最終更新",
+    "confirmDisableTitle": "メンターを無効化しますか？",
+    "confirmActivateTitle": "メンターを有効化しますか？",
+    "confirmDisableDescription": "「{{name}}」を無効化してもよろしいですか？ログインや面接リクエストの受付ができなくなります。",
+    "confirmActivateDescription": "「{{name}}」を再度有効化してもよろしいですか？ログインや面接リクエストの受付が再び可能になります。",
+    "confirmDisableAction": "無効化",
+    "confirmActivateAction": "有効化"
   },
   "adminNotificationmanagement": {
     "chooseFromTemplateOptional": "テンプレートから選択（任意）",
@@ -588,6 +600,7 @@
     "trackEngagementAndModerateComments": "エンゲージメントの追跡とコメントのモデレーションを一元管理。",
     "unableToUpdatePostStatus": "記事ステータスを更新できません",
     "viewListOfLikes": "いいね一覧を表示",
+    "unableToDetermineAuthor": "現在の投稿の作成者を特定できません。",
     "loadingArticleList": "記事リストを読み込み中",
     "noArticlesFoundMatchingTheSelected": "一致する記事が見つかりません",
     "showingResultsFor": "の結果を表示"
@@ -1035,6 +1048,9 @@
     "createFailed": "作成に失敗しました",
     "actions": "操作",
     "quickSearch": "クイック検索",
+    "loading": "読み込み中...",
+    "noResults": "結果が見つかりません。",
+    "pages": "ページ",
     "createdAt": "作成日",
     "free": "無料",
     "details": "詳細",
