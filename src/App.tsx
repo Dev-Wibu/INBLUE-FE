@@ -42,14 +42,7 @@ import {
   WriteFeedbackPage,
 } from "@/pages/Mentor";
 import { PaymentCancelPage, PaymentSuccessPage } from "@/pages/Payment";
-import {
-  FeedbackModerationPage,
-  MentorApplicationsPage,
-  PostModerationPage,
-  ReviewModerationPage,
-  SessionProcessingPage,
-  StaffDashboardPage,
-} from "@/pages/Staff";
+import { StaffDashboardPage } from "@/pages/Staff";
 import {
   AccountPage,
   AIInterviewResultPage,
@@ -345,11 +338,6 @@ function App() {
             {/* Staff Dashboard routes */}
             <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
               <Route path="/staff" element={<StaffDashboardPage />} />
-              <Route path="/staff/reviews" element={<ReviewModerationPage />} />
-              <Route path="/staff/feedback" element={<FeedbackModerationPage />} />
-              <Route path="/staff/posts" element={<PostModerationPage />} />
-              <Route path="/staff/mentor-applications" element={<MentorApplicationsPage />} />
-              <Route path="/staff/sessions" element={<SessionProcessingPage />} />
             </Route>
 
             {/* Error pages */}
