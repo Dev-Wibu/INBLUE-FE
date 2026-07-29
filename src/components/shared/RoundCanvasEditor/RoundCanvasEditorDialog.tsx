@@ -31,7 +31,7 @@ import { toast } from "sonner";
 
 import { getAvailableRoundsTemplates } from "./constants";
 import type { RoundType, UIRound, UIRoundConfig } from "./types";
-import { getBestConnection, getDistanceToSegment } from "./utils";
+import { getBestConnection, getDistanceToSegment, getLocalizedRoundName } from "./utils";
 
 export interface RoundCanvasEditorDialogProps {
   isOpen: boolean;
@@ -573,8 +573,10 @@ export function RoundCanvasEditorDialog({
                       {t("template.emptyTemplate")}
                     </h4>
                     <p className="mt-1.5 max-w-[200px] text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-                      {/*Kéo các*/} {t("userApplicationhistory.rounds")} từ cột bên trái và thả vào
-                      đây để thiết lập
+                      {t(
+                        "adminInterviewTemplate.dragRoundsInstruction",
+                        "Kéo các vòng từ cột bên trái và thả vào đây để thiết lập"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -731,7 +733,7 @@ export function RoundCanvasEditorDialog({
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <h4 className="truncate text-sm font-bold text-slate-800 dark:text-slate-200">
-                                      {round.name}
+                                      {getLocalizedRoundName(round.name || "", round.roundType, t)}
                                     </h4>
                                     <p className="mt-0.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                                       {template?.title}
@@ -747,8 +749,8 @@ export function RoundCanvasEditorDialog({
                                       {round.configData?.timeLimitMinutes
                                         ? round.roundType === "MENTOR_REVIEW" ||
                                           round.roundType === "MENTROR_REVIEW"
-                                          ? `${round.configData.timeLimitMinutes / 1440} ngày`
-                                          : `${round.configData.timeLimitMinutes}p`
+                                          ? `${round.configData.timeLimitMinutes / 1440} ${t("common.days", "ngày")}`
+                                          : `${round.configData.timeLimitMinutes}${t("common.minutesShort", "p")}`
                                         : "∞"}
                                     </span>
                                   </div>
@@ -1021,7 +1023,7 @@ export function RoundCanvasEditorDialog({
                                   <span className="shrink-0 text-[9px] text-slate-400">
                                     {selectedRound.roundType === "MENTROR_REVIEW" ||
                                     selectedRound.roundType === "MENTOR_REVIEW"
-                                      ? "ngày"
+                                      ? t("common.days", "ngày")
                                       : t("common.minute")}
                                   </span>
                                 </div>
@@ -1034,8 +1036,8 @@ export function RoundCanvasEditorDialog({
                                   {(selectedRound.configData?.timeLimitMinutes ?? 0) > 0
                                     ? selectedRound.roundType === "MENTROR_REVIEW" ||
                                       selectedRound.roundType === "MENTOR_REVIEW"
-                                      ? `${(selectedRound.configData?.timeLimitMinutes ?? 0) / 1440} ngày`
-                                      : `${selectedRound.configData?.timeLimitMinutes} phút`
+                                      ? `${(selectedRound.configData?.timeLimitMinutes ?? 0) / 1440} ${t("common.days", "ngày")}`
+                                      : `${selectedRound.configData?.timeLimitMinutes} ${t("common.minutes", "phút")}`
                                     : t("adminCompanymanagement.noLimit")}
                                 </button>
                               )}

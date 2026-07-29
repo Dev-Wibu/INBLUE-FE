@@ -30,7 +30,9 @@
     "aiInterview": {
       "title": "Phỏng vấn AI",
       "description": "Phỏng vấn giả lập tự động với Trợ lý AI."
-    }
+    },
+    "dragRoundsInstruction": "Kéo các vòng từ cột bên trái và thả vào đây để thiết lập",
+    "editRecruitmentPipeline": "Chỉnh sửa quy trình vòng tuyển dụng"
   },
   "adminAccount": {
     "accountRoleAdmin": "Quản trị viên hệ thống",
@@ -1876,7 +1878,11 @@
     "onUpper": "BẬT",
     "offUpper": "TẮT",
     "valuePlaceholder": "Giá trị...",
-    "deleteConfirmWarning": "Hành động này không thể hoàn tác."
+    "deleteConfirmWarning": "Hành động này không thể hoàn tác.",
+    "pointsAbbr": "đ",
+    "minutesShort": "p",
+    "days": "ngày",
+    "problemNum": "Bài #{{num}}"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -4990,7 +4996,9 @@
     "saveQuestion": "Lưu câu hỏi",
     "searchQuestion": "Tìm kiếm câu hỏi...",
     "noMatchingQuestion": "Không tìm thấy câu hỏi phù hợp.",
-    "intoRound": "vào vòng thi"
+    "intoRound": "vào vòng thi",
+    "editQuestionNum": "Chỉnh sửa câu hỏi #{{num}}",
+    "optionLetterPlaceholder": "Phương án {{letter}}"
   },
   "compCodeReviewEditor": {
     "exampleApiTokenLeak": "Ví dụ: Rò rỉ API Token",

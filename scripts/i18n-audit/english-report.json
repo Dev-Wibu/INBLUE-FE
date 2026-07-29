@@ -257,7 +257,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorDialog.tsx",
-    "line": 1199,
+    "line": 1198,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -1393,7 +1393,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 486,
+    "line": 489,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -1401,7 +1401,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 502,
+    "line": 505,
     "character": 25,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1409,7 +1409,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 528,
+    "line": 531,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1417,7 +1417,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 531,
+    "line": 534,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1425,7 +1425,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 534,
+    "line": 537,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1433,7 +1433,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 553,
+    "line": 556,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -1441,7 +1441,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 571,
+    "line": 574,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -1449,7 +1449,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 609,
+    "line": 612,
     "character": 31,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1457,7 +1457,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 675,
+    "line": 678,
     "character": 27,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1465,7 +1465,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 699,
+    "line": 702,
     "character": 31,
     "type": "JsxText",
     "category": "english",
@@ -1473,7 +1473,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 828,
+    "line": 831,
     "character": 33,
     "type": "JsxText",
     "category": "english",
@@ -1481,7 +1481,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 957,
+    "line": 960,
     "character": 27,
     "type": "JsxText",
     "category": "english",
@@ -1489,7 +1489,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 1093,
+    "line": 1096,
     "character": 35,
     "type": "JsxAttribute[placeholder]",
     "category": "english",

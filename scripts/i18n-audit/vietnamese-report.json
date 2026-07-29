@@ -1,43 +1,283 @@
 [
   {
-    "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorDialog.tsx",
-    "line": 576,
-    "character": 74,
-    "type": "JsxText",
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 134,
+    "character": 36,
+    "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "từ cột bên trái và thả vào\r\n                      đây để thiết lập"
+    "text": "Lọc CV"
   },
   {
-    "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorDialog.tsx",
-    "line": 1024,
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 135,
+    "character": 38,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Lọc CV"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 139,
+    "character": 39,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Mô phỏng Email"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 140,
     "character": 41,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "ngày"
+    "text": "Mô phỏng Email"
   },
   {
-    "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 524,
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 144,
+    "character": 38,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Trắc nghiệm"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 145,
+    "character": 40,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Trắc nghiệm"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 149,
+    "character": 40,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Lập trình"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 150,
+    "character": 42,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Lập trình"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 154,
     "character": 44,
     "type": "StringLiteral",
     "category": "vietnamese",
-    "text": "Chỉnh sửa quy trình vòng tuyển dụng"
+    "text": "Đánh giá Code"
   },
   {
-    "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 604,
-    "character": 56,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "từ cột bên trái và thả vào đây để thiết lập"
-  },
-  {
-    "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 1026,
-    "character": 41,
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 155,
+    "character": 46,
     "type": "StringLiteral",
     "category": "vietnamese",
+    "text": "Đánh giá Code"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 161,
+    "character": 14,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Đánh giá Mentor"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 166,
+    "character": 42,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Đánh giá Mentor"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 170,
+    "character": 36,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Phỏng vấn AI"
+  },
+  {
+    "file": "src/components/shared/RoundCanvasEditor/utils.ts",
+    "line": 171,
+    "character": 38,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Phỏng vấn AI"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 437,
+    "character": 44,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Bài tập #"
+  },
+  {
+    "file": "src/components/ui/code-review-editor.tsx",
+    "line": 661,
+    "character": 45,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Bài tập #"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 504,
+    "character": 44,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Bài tập #"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 617,
+    "character": 66,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "phút"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 713,
+    "character": 45,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Bài tập #"
+  },
+  {
+    "file": "src/components/ui/coding-editor.tsx",
+    "line": 765,
+    "character": 27,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Bài tập #"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 367,
+    "character": 9,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Vui lòng nhập code cho tất cả bài. Còn"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 367,
+    "character": 71,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "bài chưa có nội dung."
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 449,
+    "character": 43,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "bài tập ·"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 606,
+    "character": 47,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Bài #"
+  },
+  {
+    "file": "src/components/ui/coding-submission-modal.tsx",
+    "line": 766,
+    "character": 21,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Đề bài #"
+  },
+  {
+    "file": "src/hooks/useMentorRoundButtonState.ts",
+    "line": 177,
+    "character": 19,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
     "text": "ngày"
+  },
+  {
+    "file": "src/hooks/useMentorRoundButtonState.ts",
+    "line": 177,
+    "character": 33,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "giờ"
+  },
+  {
+    "file": "src/hooks/useMentorRoundButtonState.ts",
+    "line": 180,
+    "character": 20,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "giờ"
+  },
+  {
+    "file": "src/hooks/useMentorRoundButtonState.ts",
+    "line": 180,
+    "character": 35,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "phút"
+  },
+  {
+    "file": "src/hooks/useMentorRoundButtonState.ts",
+    "line": 183,
+    "character": 22,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "phút"
+  },
+  {
+    "file": "src/hooks/useMentorRoundButtonState.ts",
+    "line": 183,
+    "character": 38,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "giây"
+  },
+  {
+    "file": "src/hooks/useMentorRoundButtonState.ts",
+    "line": 185,
+    "character": 20,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "giây"
+  },
+  {
+    "file": "src/hooks/useTabsState.ts",
+    "line": 172,
+    "character": 28,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Đơn #"
+  },
+  {
+    "file": "src/hooks/useTabsState.ts",
+    "line": 302,
+    "character": 17,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Đơn #"
+  },
+  {
+    "file": "src/hooks/useTabsState.ts",
+    "line": 303,
+    "character": 17,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Đơn #"
   },
   {
     "file": "src/lib/application-detail-utils.ts",
@@ -46,6 +286,14 @@
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Kính gửi"
+  },
+  {
+    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
+    "line": 822,
+    "character": 52,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Giá trị"
   },
   {
     "file": "src/pages/Mentor/MentorKioskEntryPage.tsx",
@@ -494,6 +742,30 @@
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Khôi phục mặc định"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 234,
+    "character": 32,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "đang chấm..."
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 336,
+    "character": 45,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "bài nộp code"
+  },
+  {
+    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
+    "line": 343,
+    "character": 22,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Bài"
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",

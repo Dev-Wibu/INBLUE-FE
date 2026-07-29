@@ -313,7 +313,9 @@ export function QuizEditor({
                     onClick={() => setEditingTime(true)}
                     className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400">
                     <Timer className="h-4 w-4 text-slate-400" />
-                    {timeLimitMinutes > 0 ? `${timeLimitMinutes} phút` : t("common.unlimited")}
+                    {timeLimitMinutes > 0
+                      ? `${timeLimitMinutes} ${t("common.minutes", "phút")}`
+                      : t("common.unlimited")}
                   </button>
                 )}
               </div>
@@ -352,7 +354,7 @@ export function QuizEditor({
                 {questions.length})
               </h4>
               <span className="text-[10px] font-medium text-slate-400">
-                {questions.reduce((s, q) => s + (q.points || 0), 0)} đ
+                {questions.reduce((s, q) => s + (q.points || 0), 0)} {t("common.pointsAbbr", "đ")}
               </span>
             </div>
 
@@ -553,7 +555,9 @@ export function QuizEditor({
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   {selectedIndex === -1
                     ? t("adminQuizProblem.addNewQuestion")
-                    : `Chỉnh sửa câu hỏi #${(selectedIndex || 0) + 1}`}
+                    : t("adminQuizProblem.editQuestionNum", "Chỉnh sửa câu hỏi #{{num}}", {
+                        num: (selectedIndex || 0) + 1,
+                      })}
                 </h3>
               </div>
 
@@ -587,7 +591,11 @@ export function QuizEditor({
                         newOpts[oIdx] = e.target.value;
                         setEditForm({ ...editForm, options: newOpts });
                       }}
-                      placeholder={`Phương án ${String.fromCharCode(65 + oIdx)}`}
+                      placeholder={t(
+                        "adminQuizProblem.optionLetterPlaceholder",
+                        "Phương án {{letter}}",
+                        { letter: String.fromCharCode(65 + oIdx) }
+                      )}
                       className="h-10 border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                     />
                   </div>

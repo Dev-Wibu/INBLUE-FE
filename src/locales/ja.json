@@ -1843,7 +1843,11 @@
     "onUpper": "ON",
     "offUpper": "OFF",
     "valuePlaceholder": "値...",
-    "deleteConfirmWarning": "この操作は取り消せません。"
+    "deleteConfirmWarning": "この操作は取り消せません。",
+    "pointsAbbr": "pt",
+    "minutesShort": "分",
+    "days": "日",
+    "problemNum": "問題 #{{num}}"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -4962,7 +4966,9 @@
     "saveQuestion": "Save question",
     "searchQuestion": "Search question...",
     "noMatchingQuestion": "No matching question found.",
-    "intoRound": "into round"
+    "intoRound": "into round",
+    "editQuestionNum": "質問 #{{num}} を編集",
+    "optionLetterPlaceholder": "選択肢 {{letter}}"
   },
   "adminInterviewTemplate": {
     "cvScreening": {
@@ -4995,7 +5001,9 @@
     },
     "name": "名前",
     "category": "カテゴリ",
-    "description": "説明"
+    "description": "説明",
+    "dragRoundsInstruction": "左側のパネルからラウンドをドラッグ＆ドロップして設定します",
+    "editRecruitmentPipeline": "選考プロセスの編集"
   },
   "compCodeReviewEditor": {
     "exampleApiTokenLeak": "Ví dụ: Rò rỉ API Token",

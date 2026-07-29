@@ -115,8 +115,14 @@ function analyzeFile(filePath) {
       }
     }
 
-    // 3. Check StringLiterals / NoSubstitutionTemplateLiterals that are NOT inside t()
-    else if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    // 3. Check StringLiterals / Template Literals that are NOT inside t()
+    else if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isTemplateHead(node) ||
+      ts.isTemplateMiddle(node) ||
+      ts.isTemplateTail(node)
+    ) {
       if (!isInsideTCall(node)) {
         const val = node.text.trim();
         if (val) {

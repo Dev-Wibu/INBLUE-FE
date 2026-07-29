@@ -30,7 +30,9 @@
     "aiInterview": {
       "title": "AI Interview",
       "description": "Automated mock interview with AI Assistant."
-    }
+    },
+    "dragRoundsInstruction": "Drag rounds from the left panel and drop here to configure",
+    "editRecruitmentPipeline": "Edit Recruitment Pipeline"
   },
   "adminAccount": {
     "accountRoleAdmin": "Platform Administrator",
@@ -1809,7 +1811,7 @@
     "orOpen": "or open",
     "score": "score",
     "editShort": "Edit",
-    "minutes": "minutes",
+    "minutes": "mins",
     "goBack": "Go back",
     "userDetail": "User Detail",
     "inactive": "Inactive",
@@ -1879,7 +1881,11 @@
     "onUpper": "ON",
     "offUpper": "OFF",
     "valuePlaceholder": "Value...",
-    "deleteConfirmWarning": "This action cannot be undone."
+    "deleteConfirmWarning": "This action cannot be undone.",
+    "pointsAbbr": "pts",
+    "minutesShort": "m",
+    "days": "days",
+    "problemNum": "Problem #{{num}}"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -4992,7 +4998,9 @@
     "saveQuestion": "Save question",
     "searchQuestion": "Search question...",
     "noMatchingQuestion": "No matching question found.",
-    "intoRound": "into round"
+    "intoRound": "into round",
+    "editQuestionNum": "Edit Question #{{num}}",
+    "optionLetterPlaceholder": "Option {{letter}}"
   },
   "compCodeReviewEditor": {
     "exampleApiTokenLeak": "e.g., API Token Leak",
