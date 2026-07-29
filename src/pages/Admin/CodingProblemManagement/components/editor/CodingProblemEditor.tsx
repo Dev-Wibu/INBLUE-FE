@@ -819,7 +819,11 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                         patch({ visibleExamples: l });
                                       }}
                                       className="h-8 flex-1 border-slate-200 bg-slate-50/50 font-mono text-xs shadow-none focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-900"
-                                      placeholder={`Giá trị ${pt}`}
+                                      placeholder={t(
+                                        "adminCodingproblemmanagement.valueTypePlaceholder",
+                                        "Giá trị {{type}}",
+                                        { type: pt }
+                                      )}
                                     />
                                   </div>
                                 ))
@@ -828,7 +832,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                             {/* Output */}
                             <div className="flex items-center gap-3 pt-2">
                               <span className="w-12 shrink-0 text-xs font-semibold text-slate-500">
-                                Output
+                                {t("common.output", "Đầu ra")}
                               </span>
                               {formData.returnType && <TypeTag value={formData.returnType} />}
                               <Input
@@ -965,8 +969,8 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                             {formData.hiddenTestCases?.reduce(
                               (s, tc) => s + (tc.weightPoints || 0),
                               0
-                            )}
-                            đ
+                            )}{" "}
+                            {t("common.pointsAbbr", "đ")}
                           </strong>
                         </span>
                         {paramCount > 0 && (

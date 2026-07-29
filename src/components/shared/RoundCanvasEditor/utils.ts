@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next";
+
 export const getDistanceToSegment = (
   px: number,
   py: number,
@@ -128,7 +130,7 @@ export const getBestConnection = (
 export function getLocalizedRoundName(
   name: string,
   roundType: string | undefined,
-  t: (key: string, ...args: unknown[]) => string
+  t: TFunction
 ): string {
   const cvTitle = t("adminInterviewTemplate.cvScreening.title", "Lọc CV");
   if (
