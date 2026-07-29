@@ -255,7 +255,11 @@ export function RoundCanvasEditorDialog({
       setRounds([newRound].map((r, idx) => ({ ...r, roundOrder: idx + 1 })));
       setPositions([{ x: 80, y: 80 }]);
       setActiveDragType(null);
-      toast.success(`Đã thêm vòng ${template.title}`);
+      toast.success(
+        t("enterpriseJobdetailpage.addedRound", "Đã thêm vòng {{roundTitle}}", {
+          roundTitle: template.title,
+        })
+      );
       return;
     }
     if (!canvasRef.current) return;
@@ -291,7 +295,11 @@ export function RoundCanvasEditorDialog({
     setRounds(updatedRounds.map((r, idx) => ({ ...r, roundOrder: idx + 1 })));
     setPositions(newPositions);
     setActiveDragType(null);
-    toast.success(`Đã thêm vòng ${template.title}`);
+    toast.success(
+      t("enterpriseJobdetailpage.addedRound", "Đã thêm vòng {{roundTitle}}", {
+        roundTitle: template.title,
+      })
+    );
   };
 
   const handleCardPointerDown = (e: React.PointerEvent<HTMLDivElement>, idx: number) => {
@@ -359,7 +367,13 @@ export function RoundCanvasEditorDialog({
           newPositions[overlapIdx] = tempPos;
           setRounds(newRounds.map((r, i) => ({ ...r, roundOrder: i + 1 })));
           setPositions(newPositions);
-          toast.success(`Đã đổi vị trí vòng ${idx + 1} và vòng ${overlapIdx + 1}`);
+          toast.success(
+            t(
+              "enterpriseJobdetailpage.swappedRounds",
+              "Đã đổi vị trí vòng {{from}} và vòng {{to}}",
+              { from: idx + 1, to: overlapIdx + 1 }
+            )
+          );
         }
       }
     }

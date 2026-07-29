@@ -118,7 +118,9 @@ export function JobDetailView({
           onClick={onApplyAction}
           disabled={isLoadingAction}
           className="w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">
-          {isLoadingAction ? t("common.processing", "Đang xử lý...") : "Vào làm bài ngay"}
+          {isLoadingAction
+            ? t("common.processing", "Đang xử lý...")
+            : t("enterpriseJobdetailpage.startTestNow", "Vào làm bài ngay")}
         </Button>
       );
     }
@@ -128,7 +130,9 @@ export function JobDetailView({
         onClick={onApplyAction}
         disabled={isLoadingAction}
         className="w-full rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
-        {isLoadingAction ? t("common.processing", "Đang xử lý...") : "Thanh toán & Ứng tuyển"}
+        {isLoadingAction
+          ? t("common.processing", "Đang xử lý...")
+          : t("enterpriseJobdetailpage.payAndApply", "Thanh toán & Ứng tuyển")}
       </Button>
     );
   };
@@ -203,7 +207,7 @@ export function JobDetailView({
                 </span>
                 {hasPurchased ? (
                   <Badge className="border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                    Đã thanh toán
+                    {t("enterpriseJobdetailpage.paid", "Đã thanh toán")}
                   </Badge>
                 ) : null}
               </div>
@@ -337,7 +341,7 @@ export function JobDetailView({
                         <div className="flex items-center gap-2">
                           <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
                           <span>
-                            Điểm chuẩn:{" "}
+                            {t("enterpriseJobdetailpage.passingScore", "Điểm chuẩn: ")}
                             <strong className="text-slate-700 dark:text-slate-300">
                               {round.passThreshold}%
                             </strong>
@@ -348,7 +352,7 @@ export function JobDetailView({
                         <div className="flex items-center gap-2">
                           <span className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
                           <span>
-                            Thời gian:{" "}
+                            {t("enterpriseJobdetailpage.duration", "Thời gian: ")}
                             <strong className="text-slate-700 dark:text-slate-300">
                               {round.configData?.timeLimitMinutes} {t("common.minute")}
                             </strong>
@@ -363,7 +367,10 @@ export function JobDetailView({
           ) : (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center dark:border-slate-800 dark:bg-slate-900/50">
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Chưa cập nhật quy trình phỏng vấn.
+                {t(
+                  "enterpriseJobdetailpage.noInterviewProcess",
+                  "Chưa cập nhật quy trình phỏng vấn."
+                )}
               </p>
             </div>
           )}
