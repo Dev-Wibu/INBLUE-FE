@@ -116,7 +116,6 @@ export function useCandidateProfileForm(overrideUserId?: number) {
       } else {
         await createMutation.mutateAsync({
           body: {
-            id: 0,
             user: {
               id: userId,
             },
