@@ -460,26 +460,30 @@ export function AdminApplicationManagementPage() {
             </span>
           </div>
 
-          <div className="overflow-hidden border-y border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-950">
+          <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
             <Table>
-              <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
-                <TableRow>
-                  <TableHead className="w-[80px] pl-6">#ID</TableHead>
-                  <TableHead className="min-w-[200px]">
+              <TableHeader>
+                <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                  <TableHead className="w-[80px] pl-6 font-medium text-slate-500">#ID</TableHead>
+                  <TableHead className="min-w-[200px] font-medium text-slate-500">
                     {t("adminApplicationManagement.candidate", "Ứng viên")}
                   </TableHead>
-                  <TableHead className="min-w-[160px]">{t("common.company", "Công ty")}</TableHead>
-                  <TableHead className="min-w-[180px]">
+                  <TableHead className="min-w-[160px] font-medium text-slate-500">
+                    {t("common.company", "Công ty")}
+                  </TableHead>
+                  <TableHead className="min-w-[180px] font-medium text-slate-500">
                     {t("adminApplicationManagement.jobPosition", "Vị trí tuyển dụng")}
                   </TableHead>
-                  <TableHead className="w-[140px]">
+                  <TableHead className="w-[140px] font-medium text-slate-500">
                     {t("adminApplicationManagement.currentRound", "Vòng hiện tại")}
                   </TableHead>
-                  <TableHead className="w-[100px] text-center">
+                  <TableHead className="w-[100px] text-center font-medium text-slate-500">
                     {t("adminApplicationManagement.score", "Điểm số")}
                   </TableHead>
-                  <TableHead className="w-[130px]">{t("common.status", "Trạng thái")}</TableHead>
-                  <TableHead className="w-[100px] pr-6 text-right">
+                  <TableHead className="w-[130px] font-medium text-slate-500">
+                    {t("common.status", "Trạng thái")}
+                  </TableHead>
+                  <TableHead className="w-[100px] pr-6 text-right font-medium text-slate-500">
                     {t("common.actions", "Thao tác")}
                   </TableHead>
                 </TableRow>

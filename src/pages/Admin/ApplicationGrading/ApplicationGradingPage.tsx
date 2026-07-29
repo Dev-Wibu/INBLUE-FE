@@ -1135,22 +1135,30 @@ export function ApplicationGradingPage({
             <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">
+                  <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                    <TableHead className="w-16 pl-6 font-medium text-slate-500">
                       <SortButton {...getSortProps("idSortValue")}>{t("common.id")}</SortButton>
                     </TableHead>
-                    <TableHead>{t("common.candidate")}</TableHead>
-                    <TableHead className="hidden md:table-cell">ID JD</TableHead>
-                    <TableHead>{t("common.status")}</TableHead>
-                    <TableHead className="hidden lg:table-cell">
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.candidate")}
+                    </TableHead>
+                    <TableHead className="hidden font-medium text-slate-500 md:table-cell">
+                      ID JD
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.status")}
+                    </TableHead>
+                    <TableHead className="hidden font-medium text-slate-500 lg:table-cell">
                       {t("userApplicationhistory.round")}
                     </TableHead>
-                    <TableHead className="hidden lg:table-cell">
+                    <TableHead className="hidden font-medium text-slate-500 lg:table-cell">
                       <SortButton {...getSortProps("scoreSortValue")}>
                         {t("userApplicationhistory.totalScore")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="w-32 text-right">{t("common.operation")}</TableHead>
+                    <TableHead className="w-32 pr-6 text-right font-medium text-slate-500">
+                      {t("common.operation")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1164,8 +1172,12 @@ export function ApplicationGradingPage({
                       item.userName ?? userMap.get(userId!) ?? (userId ? `User #${userId}` : "-");
 
                     return (
-                      <TableRow key={item.detailId ?? item.id}>
-                        <TableCell className="font-medium">#{item.id}</TableCell>
+                      <TableRow
+                        key={item.detailId ?? item.id}
+                        className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                        <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                          #{item.id}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Avatar className="h-7 w-7 shrink-0">
@@ -1196,7 +1208,7 @@ export function ApplicationGradingPage({
                             <span className="text-slate-400">-</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="pr-6 text-right">
                           <Button
                             variant="ghost"
                             size="sm"

@@ -37,7 +37,7 @@ export function BookingTable({
 
   if (isLoading) {
     return (
-      <div className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
+      <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <div className="flex h-64 items-center justify-center">
           <div className="border-primary/30 border-t-primary h-8 w-8 animate-spin rounded-full border-4" />
         </div>
@@ -47,9 +47,13 @@ export function BookingTable({
 
   if (bookings.length === 0) {
     return (
-      <div className="border-border bg-card flex h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed">
-        <div className="bg-muted text-muted-foreground flex h-12 w-12 items-center justify-center rounded-full">
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+          <svg
+            className="h-6 w-6 text-slate-400 dark:text-slate-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -58,7 +62,7 @@ export function BookingTable({
             />
           </svg>
         </div>
-        <p className="text-muted-foreground text-sm font-medium">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
           {t("adminKiosk.noBookingsFound")}
         </p>
       </div>
@@ -66,32 +70,20 @@ export function BookingTable({
   }
 
   return (
-    <div className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
+    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
-            <TableHead className="w-16 text-xs font-semibold tracking-wider uppercase">
-              {t("common.id")}
-            </TableHead>
-            <TableHead className="text-xs font-semibold tracking-wider uppercase">
-              {t("adminKiosk.user")}
-            </TableHead>
-            <TableHead className="text-xs font-semibold tracking-wider uppercase">
-              {t("adminKiosk.position")}
-            </TableHead>
-            <TableHead className="text-xs font-semibold tracking-wider uppercase">
-              {t("adminKiosk.company")}
-            </TableHead>
-            <TableHead className="text-xs font-semibold tracking-wider uppercase">
-              {t("adminKiosk.kiosk")}
-            </TableHead>
-            <TableHead className="text-xs font-semibold tracking-wider uppercase">
+            <TableHead className="w-16 pl-6 font-medium text-slate-500">{t("common.id")}</TableHead>
+            <TableHead className="font-medium text-slate-500">{t("adminKiosk.user")}</TableHead>
+            <TableHead className="font-medium text-slate-500">{t("adminKiosk.position")}</TableHead>
+            <TableHead className="font-medium text-slate-500">{t("adminKiosk.company")}</TableHead>
+            <TableHead className="font-medium text-slate-500">{t("adminKiosk.kiosk")}</TableHead>
+            <TableHead className="font-medium text-slate-500">
               {t("adminKiosk.scheduledTime")}
             </TableHead>
-            <TableHead className="w-40 text-xs font-semibold tracking-wider uppercase">
-              {t("common.status")}
-            </TableHead>
-            <TableHead className="w-20 text-right text-xs font-semibold tracking-wider uppercase">
+            <TableHead className="w-40 font-medium text-slate-500">{t("common.status")}</TableHead>
+            <TableHead className="w-20 pr-6 text-right font-medium text-slate-500">
               {t("common.operation")}
             </TableHead>
           </TableRow>
@@ -100,15 +92,18 @@ export function BookingTable({
           {bookings.map((booking) => (
             <TableRow
               key={booking.id}
-              className="hover:bg-muted/30 border-border/60 transition-colors">
-              <TableCell className="font-medium tabular-nums">{booking.id}</TableCell>
+              onClick={() => onViewDetails(booking)}
+              className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+              <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                #{booking.id}
+              </TableCell>
               <TableCell>
                 <div className="flex flex-col">
                   <span className="font-medium">
                     {booking.userName || `User #${booking.applicantUserId}`}
                   </span>
                   {booking.userEmail && (
-                    <span className="text-muted-foreground text-xs">{booking.userEmail}</span>
+                    <span className="text-xs text-slate-400">{booking.userEmail}</span>
                   )}
                 </div>
               </TableCell>
@@ -118,11 +113,11 @@ export function BookingTable({
                 <div className="flex flex-col">
                   <span className="font-medium">{booking.kioskName || `-`}</span>
                   {booking.kioskLocation && (
-                    <span className="text-muted-foreground text-xs">{booking.kioskLocation}</span>
+                    <span className="text-xs text-slate-400">{booking.kioskLocation}</span>
                   )}
                 </div>
               </TableCell>
-              <TableCell className="text-muted-foreground tabular-nums">
+              <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                 {booking.scheduledStart
                   ? formatDateTime(treatZuluAsVietnamLocal(booking.scheduledStart))
                   : "-"}
@@ -130,7 +125,7 @@ export function BookingTable({
               <TableCell>
                 <KioskStatusBadge status={booking.status} variant="admin" />
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
