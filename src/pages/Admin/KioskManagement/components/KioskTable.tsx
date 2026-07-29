@@ -95,16 +95,22 @@ export function KioskTable({
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
             <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
             <TableHead className="min-w-[240px] font-medium text-slate-500">
-              Tên trạm Kiosk
+              {t("adminKioskManagement.kioskName", "Tên trạm Kiosk")}
             </TableHead>
-            <TableHead className="min-w-[200px] font-medium text-slate-500">Vị trí trạm</TableHead>
-            <TableHead className="w-[140px] font-medium text-slate-500">Lịch hoạt động</TableHead>
+            <TableHead className="min-w-[200px] font-medium text-slate-500">
+              {t("adminKioskManagement.location", "Vị trí trạm")}
+            </TableHead>
+            <TableHead className="w-[140px] font-medium text-slate-500">
+              {t("adminKioskManagement.operatingSchedule", "Lịch hoạt động")}
+            </TableHead>
             <TableHead className="w-[100px] text-center font-medium text-slate-500">
-              Bật/Tắt
+              {t("common.onOff", "Bật/Tắt")}
             </TableHead>
-            <TableHead className="w-[130px] font-medium text-slate-500">Ngày tạo</TableHead>
+            <TableHead className="w-[130px] font-medium text-slate-500">
+              {t("common.createdDate", "Ngày tạo")}
+            </TableHead>
             <TableHead className="w-[80px] pr-6 text-right font-medium text-slate-500">
-              Thao tác
+              {t("common.actions", "Thao tác")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -134,7 +140,10 @@ export function KioskTable({
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {kiosk.name ?? `Trạm Kiosk #${kiosk.id}`}
+                        {kiosk.name ??
+                          t("adminKioskManagement.kioskStationWithId", `Trạm Kiosk #${kiosk.id}`, {
+                            id: kiosk.id,
+                          })}
                       </p>
                     </div>
                   </div>
@@ -144,7 +153,8 @@ export function KioskTable({
                 <TableCell>
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
                     <MapPin className="h-3.5 w-3.5 text-rose-500" />
-                    {kiosk.location || "Chưa cập nhật vị trí"}
+                    {kiosk.location ||
+                      t("adminKioskManagement.locationNotUpdated", "Chưa cập nhật vị trí")}
                   </span>
                 </TableCell>
 
@@ -152,7 +162,9 @@ export function KioskTable({
                 <TableCell>
                   <span className="inline-flex items-center gap-1 rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     <Clock4 className="h-3 w-3 text-indigo-500" />
-                    {kiosk.scheduleCount ?? 0} khung giờ
+                    {t("adminKioskManagement.timeSlotsCount", "{{count}} khung giờ", {
+                      count: kiosk.scheduleCount ?? 0,
+                    })}
                   </span>
                 </TableCell>
 
