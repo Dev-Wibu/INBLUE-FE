@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { PaginationControl, ReloadButton, SortButton } from "@/components/shared";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -193,17 +194,21 @@ export function FeedbackManagementPage() {
                 <div className="flex-1 overflow-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-16">ID</TableHead>
-                        <TableHead>{t("common.applicant")}</TableHead>
-                        <TableHead>Mentor</TableHead>
-                        <TableHead>{t("adminFeedback.session")}</TableHead>
-                        <TableHead>
+                      <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                        <TableHead className="w-16 pl-6 font-medium text-slate-500">ID</TableHead>
+                        <TableHead className="font-medium text-slate-500">
+                          {t("common.applicant")}
+                        </TableHead>
+                        <TableHead className="font-medium text-slate-500">Mentor</TableHead>
+                        <TableHead className="font-medium text-slate-500">
+                          {t("adminFeedback.session")}
+                        </TableHead>
+                        <TableHead className="font-medium text-slate-500">
                           <SortButton {...getSortProps("createdAt" as keyof MentorFeedback)}>
                             {t("adminFeedback.sentDate")}
                           </SortButton>
                         </TableHead>
-                        <TableHead>
+                        <TableHead className="pr-6 font-medium text-slate-500">
                           <SortButton {...getSortProps("rating" as keyof MentorFeedback)}>
                             {t("common.review")}
                           </SortButton>
@@ -218,20 +223,41 @@ export function FeedbackManagementPage() {
                             setSelectedFeedback(feedback);
                             setIsDetailOpen(true);
                           }}
-                          className="cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
-                          <TableCell className="font-medium text-slate-500">
-                            #{feedback.id}
+                          className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                          <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-2">
+                              <span>#{feedback.id}</span>
+                              {/* Dummy element to force row height alignment */}
+                              <div
+                                className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                                aria-hidden="true">
+                                <div className="h-3.5 w-3.5"></div>
+                                <div className="h-3.5 w-3.5"></div>
+                              </div>
+                            </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex flex-col">
-                              <span className="font-medium">
+                            <div className="flex items-center gap-2.5">
+                              <Avatar className="h-8 w-8 shrink-0">
+                                <AvatarImage src={feedback.user?.avatarUrl} />
+                                <AvatarFallback className="bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                                  {feedback.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium text-slate-900 dark:text-slate-100">
                                 {feedback.user?.name || t("common.noDataAvailable")}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex flex-col">
-                              <span className="font-medium">
+                            <div className="flex items-center gap-2.5">
+                              <Avatar className="h-8 w-8 shrink-0">
+                                <AvatarImage src={feedback.mentor?.avatarUrl} />
+                                <AvatarFallback className="bg-blue-100 text-xs font-semibold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                  {feedback.mentor?.name?.charAt(0)?.toUpperCase() || "M"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium text-slate-900 dark:text-slate-100">
                                 {feedback.mentor?.name || t("common.noDataAvailable")}
                               </span>
                             </div>
@@ -244,7 +270,7 @@ export function FeedbackManagementPage() {
                               ? formatDateTime(feedback.createdAt)
                               : t("common.noDataAvailable")}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="pr-6">
                             <StarRating value={feedback.rating || 0} readOnly size="sm" />
                           </TableCell>
                         </TableRow>

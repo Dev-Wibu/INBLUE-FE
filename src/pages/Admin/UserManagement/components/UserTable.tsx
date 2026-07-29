@@ -92,7 +92,16 @@ export function UserTable({ users, onDelete, onViewDetail, getSortProps }: UserT
                 onClick={() => onViewDetail(user)}
                 className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
                 <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                  #{user.id}
+                  <div className="flex items-center gap-2">
+                    <span>#{user.id}</span>
+                    {/* Dummy element to force row height alignment */}
+                    <div
+                      className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                      aria-hidden="true">
+                      <div className="h-3.5 w-3.5"></div>
+                      <div className="h-3.5 w-3.5"></div>
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">

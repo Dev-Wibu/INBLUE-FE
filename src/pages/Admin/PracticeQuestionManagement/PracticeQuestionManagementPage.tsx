@@ -338,20 +338,26 @@ export function PracticeQuestionManagementPage() {
               <>
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
+                    <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                      <TableHead className="w-16 pl-6 font-medium text-slate-500">
+                        {t("common.id", "ID")}
+                      </TableHead>
                       <TableHead
-                        className="cursor-pointer"
+                        className="cursor-pointer font-medium text-slate-500"
                         onClick={() => toggleSort("title" as keyof PracticeQuestion)}>
                         {t("common.title")}
                       </TableHead>
                       <TableHead
-                        className="cursor-pointer"
+                        className="cursor-pointer font-medium text-slate-500"
                         onClick={() => toggleSort("level" as keyof PracticeQuestion)}>
                         {t("common.level")}
                       </TableHead>
-                      <TableHead>{t("common.lesson")}</TableHead>
-                      <TableHead className="text-right">{t("common.act")}</TableHead>
+                      <TableHead className="font-medium text-slate-500">
+                        {t("common.lesson")}
+                      </TableHead>
+                      <TableHead className="pr-6 text-right font-medium text-slate-500">
+                        {t("common.act")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -365,8 +371,22 @@ export function PracticeQuestionManagementPage() {
                       </TableRow>
                     ) : (
                       pageData.map((question) => (
-                        <TableRow key={question.questionId}>
-                          <TableCell className="font-medium">#{question.questionId}</TableCell>
+                        <TableRow
+                          key={question.questionId}
+                          onClick={() => handleEdit(question)}
+                          className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                          <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-2">
+                              <span>#{question.questionId}</span>
+                              {/* Dummy element to force row height alignment */}
+                              <div
+                                className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                                aria-hidden="true">
+                                <div className="h-3.5 w-3.5"></div>
+                                <div className="h-3.5 w-3.5"></div>
+                              </div>
+                            </div>
+                          </TableCell>
                           <TableCell className="font-medium">{question.title}</TableCell>
                           <TableCell>
                             <Badge
@@ -377,7 +397,9 @@ export function PracticeQuestionManagementPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>{question.lesson?.lessonName || "—"}</TableCell>
-                          <TableCell className="text-right">
+                          <TableCell
+                            className="pr-6 text-right"
+                            onClick={(e) => e.stopPropagation()}>
                             <div className="flex justify-end gap-2">
                               <Button
                                 variant="outline"

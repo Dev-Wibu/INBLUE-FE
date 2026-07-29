@@ -475,28 +475,52 @@ export function NotificationManagementPage() {
             <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">{t("common.id")}</TableHead>
-                    <TableHead>{t("general.recipient")}</TableHead>
-                    <TableHead>{t("common.title")}</TableHead>
-                    <TableHead>{t("common.content")}</TableHead>
-                    <TableHead className="w-24">
+                  <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                    <TableHead className="w-16 pl-6 font-medium text-slate-500">
+                      {t("common.id")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("general.recipient")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.title")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.content")}
+                    </TableHead>
+                    <TableHead className="w-24 font-medium text-slate-500">
                       <SortButton {...getSortProps("isRead" as keyof Notification)}>
                         {t("common.status")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="w-40">
+                    <TableHead className="w-40 font-medium text-slate-500">
                       <SortButton {...getSortProps("createAt" as keyof Notification)}>
                         {t("common.time")}
                       </SortButton>
                     </TableHead>
-                    <TableHead className="w-24 text-right">{t("common.operation")}</TableHead>
+                    <TableHead className="w-24 pr-6 text-right font-medium text-slate-500">
+                      {t("common.operation")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pageData.map((notification: Notification) => (
-                    <TableRow key={notification.id}>
-                      <TableCell className="font-medium">#{notification.id}</TableCell>
+                    <TableRow
+                      key={notification.id}
+                      onClick={() => handleViewDetail(notification)}
+                      className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                      <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2">
+                          <span>#{notification.id}</span>
+                          {/* Dummy element to force row height alignment */}
+                          <div
+                            className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                            aria-hidden="true">
+                            <div className="h-3.5 w-3.5"></div>
+                            <div className="h-3.5 w-3.5"></div>
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
@@ -528,7 +552,7 @@ export function NotificationManagementPage() {
                           <span>—</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="sm"

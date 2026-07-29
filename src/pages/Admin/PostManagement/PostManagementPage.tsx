@@ -611,21 +611,57 @@ export function PostManagementPage() {
             <div className="flex-1 overflow-auto border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">{t("common.id", "ID")}</TableHead>
-                    <TableHead>{t("common.title")}</TableHead>
-                    <TableHead>{t("adminPostmanagement.author")}</TableHead>
-                    <TableHead>{t("common.status")}</TableHead>
-                    <TableHead>{t("common.creationDate")}</TableHead>
-                    <TableHead>{t("adminPostmanagement.likes")}</TableHead>
-                    <TableHead>{t("common.comment1")}</TableHead>
-                    <TableHead className="text-right">{t("common.operation")}</TableHead>
+                  <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+                    <TableHead className="w-16 pl-6 font-medium text-slate-500">
+                      {t("common.id", "ID")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.title")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("adminPostmanagement.author")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.status")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.creationDate")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("adminPostmanagement.likes")}
+                    </TableHead>
+                    <TableHead className="font-medium text-slate-500">
+                      {t("common.comment1")}
+                    </TableHead>
+                    <TableHead className="pr-6 text-right font-medium text-slate-500">
+                      {t("common.operation")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pageItems.map((post, index) => (
-                    <TableRow key={getPostKey(post, index)}>
-                      <TableCell className="font-medium">#{post.postId}</TableCell>
+                    <TableRow
+                      key={getPostKey(post, index)}
+                      onClick={() =>
+                        post.postId &&
+                        setView({
+                          mode: "detail",
+                          postId: post.postId,
+                        })
+                      }
+                      className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
+                      <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2">
+                          <span>#{post.postId}</span>
+                          {/* Dummy element to force row height alignment */}
+                          <div
+                            className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                            aria-hidden="true">
+                            <div className="h-3.5 w-3.5"></div>
+                            <div className="h-3.5 w-3.5"></div>
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell className="max-w-[260px]">
                         <p className="truncate font-medium">{post.title || "—"}</p>
                         <p className="text-muted-foreground truncate text-xs">
@@ -639,7 +675,7 @@ export function PostManagementPage() {
                       <TableCell>{formatDate(post.creationDate)}</TableCell>
                       <TableCell>{post.likeCount ?? 0}</TableCell>
                       <TableCell>{post.commentCount ?? 0}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
                           {post.postId && (
                             <Button
