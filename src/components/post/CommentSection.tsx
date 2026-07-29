@@ -462,7 +462,7 @@ export function CommentSection({
           <Button
             className="self-end"
             onClick={handleCommentSubmit}
-            disabled={!newContent.trim() || createComment.isPending}>
+            disabled={!newContent.trim() || createComment.isPending || !apiUserId}>
             <Send className="mr-1 h-4 w-4" />
             {t("compPost.send")}
           </Button>

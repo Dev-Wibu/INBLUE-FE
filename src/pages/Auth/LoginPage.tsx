@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { authManager } from "@/services/auth.manager";
 import { candidateProfileManager } from "@/services/candidate-profile.manager";
+import { mentorManager } from "@/services/mentor.manager";
 import { getDashboardPath, useAuthStore } from "@/stores/authStore";
 import { Eye, EyeOff } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -89,6 +91,18 @@ export function LoginPage() {
         user: resolvedUser,
         token: payload.token ?? null,
       });
+
+      // Prefetch mentor profile so useCurrentMentorProfile() is already
+      // populated when the user navigates to any mentor page or comment section.
+      // This prevents race condition where the user clicks "send" before the
+      // query has resolved, falling back to User.id instead of Mentor.id.
+      if (resolvedUser.role === "MENTOR" && resolvedUser.email) {
+        queryClient.prefetchQuery({
+          queryKey: ["mentors", "by-email", resolvedUser.email],
+          queryFn: () => mentorManager.findByEmail(resolvedUser.email!),
+          staleTime: 5 * 60_000,
+        });
+      }
 
       // Navigate AFTER user state is set to prevent race condition
       setRedirectTo(redirectPath);
