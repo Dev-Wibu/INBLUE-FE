@@ -699,7 +699,8 @@ export function JobDescriptionDetailView({
                   />
                 ) : currentJd.benefits &&
                   currentJd.benefits.trim() &&
-                  currentJd.benefits !== "Không lương" ? (
+                  currentJd.benefits !== t("adminCompanymanagement.unpaidText", "Không lương") &&
+                  currentJd.benefits !== "Unpaid" ? (
                   <FormattedTextList
                     text={currentJd.benefits}
                     icon={Gift}

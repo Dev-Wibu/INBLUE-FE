@@ -83,7 +83,7 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
               {t("common.duration")}
             </TableHead>
             <TableHead className="w-36 font-medium text-slate-500">
-              {t("adminSessionmanagement.totalPrice")} (VNĐ)
+              {t("adminSessionmanagement.totalPriceVnd", "Tổng giá (VNĐ)")}
             </TableHead>
             <TableHead className="w-28 pr-6 font-medium text-slate-500">
               {getSortProps ? (

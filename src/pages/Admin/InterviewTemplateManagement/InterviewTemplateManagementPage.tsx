@@ -241,11 +241,13 @@ export function InterviewTemplateManagementPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16">{t("common.stt") || "STT"}</TableHead>
-                  <TableHead>{t("adminInterviewTemplate.name") || "Tên mẫu"}</TableHead>
-                  <TableHead>{t("adminInterviewTemplate.category") || "Danh mục"}</TableHead>
-                  <TableHead>{t("adminInterviewTemplate.description") || "Mô tả"}</TableHead>
-                  <TableHead className="w-[100px] text-right">{t("common.action")}</TableHead>
+                  <TableHead className="w-16">{t("common.stt", "STT")}</TableHead>
+                  <TableHead>{t("adminInterviewTemplate.name", "Tên mẫu")}</TableHead>
+                  <TableHead>{t("adminInterviewTemplate.category", "Danh mục")}</TableHead>
+                  <TableHead>{t("adminInterviewTemplate.description", "Mô tả")}</TableHead>
+                  <TableHead className="w-[100px] text-right">
+                    {t("common.action", "Thao tác")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -294,7 +296,7 @@ export function InterviewTemplateManagementPage() {
                               variant="ghost"
                               className="h-8 w-8 p-0"
                               onClick={(e) => e.stopPropagation()}>
-                              <span className="sr-only">Mở menu</span>
+                              <span className="sr-only">{t("common.openMenu", "Mở menu")}</span>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -305,7 +307,7 @@ export function InterviewTemplateManagementPage() {
                                 navigate(`/admin/interviewTemplates/${tpl.id}`);
                               }}>
                               <Eye className="mr-2 h-4 w-4" />
-                              <span>{t("common.viewDetails") || "Xem chi tiết"}</span>
+                              <span>{t("common.viewDetails", "Xem chi tiết")}</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-red-600 focus:bg-red-50 focus:text-red-600 dark:focus:bg-red-950/50 dark:focus:text-red-400"

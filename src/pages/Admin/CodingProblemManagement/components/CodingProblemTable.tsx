@@ -175,7 +175,7 @@ export function CodingProblemTable({ problems, onEdit, onToggleStatus }: CodingP
                   ) : (
                     <span
                       className={`text-[11px] font-bold ${isActive ? "text-emerald-600" : "text-slate-400"}`}>
-                      {isActive ? "BẬT" : "TẮT"}
+                      {isActive ? t("common.onUpper", "BẬT") : t("common.offUpper", "TẮT")}
                     </span>
                   )}
                 </TableCell>

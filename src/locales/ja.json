@@ -806,7 +806,7 @@
     "sessionId": "セッションID",
     "startTime": "開始時間",
     "totalPrice": "合計金額",
-    "totalPriceVnd": "合計金額（VND）",
+    "totalPriceVnd": "合計金額 (VND)",
     "turnOffAudioWhenStarting": "開始時にオーディオをオフにする",
     "turnOffVideoWhenStarting": "開始時にビデオをオフにする",
     "unableToBrowseSession": "セッションを閲覧できません",
@@ -1838,7 +1838,12 @@
     "tableOfContents": "目次",
     "onOff": "オン/オフ",
     "yearCount": "年",
-    "anErrorOccurredPleaseTryAgain": "エラーが発生しました。もう一度お試しください。"
+    "anErrorOccurredPleaseTryAgain": "エラーが発生しました。もう一度お試しください。",
+    "showingFilteredResults": "{{filtered}} / {{total}} 件を表示中",
+    "onUpper": "ON",
+    "offUpper": "OFF",
+    "valuePlaceholder": "値...",
+    "deleteConfirmWarning": "この操作は取り消せません。"
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "システムを管理する管理者アカウント",
@@ -4798,7 +4803,8 @@
     "enterAnswerPlaceholder": "選択肢を入力...",
     "hideAiGen": "AI生成を隠す",
     "createAi": "AI生成",
-    "noQuestionsInCategory": "このカテゴリにはまだ質問がありません。"
+    "noQuestionsInCategory": "このカテゴリにはまだ質問がありません。",
+    "addCodeHereComment": "// ここにソースコードを追加"
   },
   "adminCodingProblem": {
     "updateSuccess": "Problem updated successfully!",
@@ -5725,6 +5731,7 @@
     "autoGenerateSuccess": "自動生成が成功しました！",
     "autoGenerateFailed": "生成に失敗しました",
     "errorDuringGenerate": "生成中にエラーが発生しました",
-    "addedProblemsToRound": "{{count}}件 meの?問題を面接ラウンドに追加しました"
+    "addedProblemsToRound": "{{count}}件 meの?問題を面接ラウンドに追加しました",
+    "skillRequirementsPlaceholder": "例：メモリ最適化、並行処理"
   }
 }

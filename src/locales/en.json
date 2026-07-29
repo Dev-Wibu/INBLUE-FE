@@ -1212,7 +1212,7 @@
     "chooseAnotherMembershipPackage": "Choose another membership package",
     "chooseLevel": "Choose level",
     "choosePaymentMethod": "Choose payment method",
-    "clearFilter": "Clear filter",
+    "clearFilter": "Clear filters",
     "closeAllTabs": "Close all tabs",
     "closeOtherTabs": "Close other tabs",
     "closeThisTab": "Close this tab",
@@ -1874,7 +1874,12 @@
     "tableOfContents": "Table of Contents",
     "onOff": "On/Off",
     "yearCount": "yrs",
-    "anErrorOccurredPleaseTryAgain": "An error occurred, please try again."
+    "anErrorOccurredPleaseTryAgain": "An error occurred, please try again.",
+    "showingFilteredResults": "Showing {{filtered}} / {{total}} results",
+    "onUpper": "ON",
+    "offUpper": "OFF",
+    "valuePlaceholder": "Value...",
+    "deleteConfirmWarning": "This action cannot be undone."
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Administrator account to manage the system",
@@ -4828,7 +4833,8 @@
     "enterAnswerPlaceholder": "Enter answer option...",
     "hideAiGen": "Hide AI Generator",
     "createAi": "Generate AI",
-    "noQuestionsInCategory": "No questions in this category yet."
+    "noQuestionsInCategory": "No questions in this category yet.",
+    "addCodeHereComment": "// Add source code here"
   },
   "adminCodingProblem": {
     "updateSuccess": "Problem updated successfully!",
@@ -5719,6 +5725,7 @@
     "autoGenerateSuccess": "Auto generation successful!",
     "autoGenerateFailed": "Generation failed",
     "errorDuringGenerate": "Error occurred during generation",
-    "addedProblemsToRound": "Added {{count}} problem(s) to interview round"
+    "addedProblemsToRound": "Added {{count}} problem(s) to interview round",
+    "skillRequirementsPlaceholder": "e.g. Memory optimization, Concurrency"
   }
 }

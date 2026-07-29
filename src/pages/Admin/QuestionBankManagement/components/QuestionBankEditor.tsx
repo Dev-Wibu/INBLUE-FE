@@ -337,7 +337,7 @@ export function QuestionBankEditor({
                           id: `b-${Date.now()}`,
                           type: "code",
                           lang: "javascript",
-                          content: "// Thêm mã nguồn tại đây\n",
+                          content: `${t("adminQuestionbankmanagement.addCodeHereComment", "// Thêm mã nguồn tại đây")}\n`,
                         });
                         patch({ questionText: serializeBlocks(blocks) });
                       }}>

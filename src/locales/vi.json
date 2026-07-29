@@ -840,7 +840,7 @@
     "sessionId": "ID Buổi học",
     "startTime": "Thời gian bắt đầu",
     "totalPrice": "Tổng giá",
-    "totalPriceVnd": "Tổng giá (VND)",
+    "totalPriceVnd": "Tổng giá (VNĐ)",
     "turnOffAudioWhenStarting": "Tắt audio khi bắt đầu",
     "turnOffVideoWhenStarting": "Tắt video khi bắt đầu",
     "unableToBrowseSession": "Không thể duyệt phiên",
@@ -1871,7 +1871,12 @@
     "tableOfContents": "Nội dung",
     "onOff": "Bật/Tắt",
     "yearCount": "năm",
-    "anErrorOccurredPleaseTryAgain": "Có lỗi xảy ra, vui lòng thử lại."
+    "anErrorOccurredPleaseTryAgain": "Có lỗi xảy ra, vui lòng thử lại.",
+    "showingFilteredResults": "Hiển thị {{filtered}} / {{total}} kết quả",
+    "onUpper": "BẬT",
+    "offUpper": "TẮT",
+    "valuePlaceholder": "Giá trị...",
+    "deleteConfirmWarning": "Hành động này không thể hoàn tác."
   },
   "compDemologinbutton": {
     "administratorAccountToManageThe": "Tài khoản quản trị viên để quản lý hệ thống",
@@ -4826,7 +4831,8 @@
     "enterAnswerPlaceholder": "Nhập đáp án...",
     "hideAiGen": "Ẩn Sinh AI",
     "createAi": "Tạo AI",
-    "noQuestionsInCategory": "Chưa có câu hỏi nào trong chuyên mục này."
+    "noQuestionsInCategory": "Chưa có câu hỏi nào trong chuyên mục này.",
+    "addCodeHereComment": "// Thêm mã nguồn tại đây"
   },
   "adminCodingProblem": {
     "updateSuccess": "Cập nhật bài tập thành công!",
@@ -5720,6 +5726,7 @@
     "autoGenerateSuccess": "Tạo tự động thành công!",
     "autoGenerateFailed": "Tạo thất bại",
     "errorDuringGenerate": "Lỗi xảy ra trong quá trình tạo",
-    "addedProblemsToRound": "Đã thêm {{count}} bài tập vào vòng thi"
+    "addedProblemsToRound": "Đã thêm {{count}} bài tập vào vòng thi",
+    "skillRequirementsPlaceholder": "VD: Tối ưu bộ nhớ, Concurrency"
   }
 }

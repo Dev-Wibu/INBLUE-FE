@@ -577,11 +577,10 @@ export function CodeReviewProblemManagementPage() {
             {(searchQuery || difficultyFilter !== "ALL") && (
               <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
                 <span className="text-xs text-slate-500">
-                  Hiển thị{" "}
-                  <strong className="text-slate-800 dark:text-slate-200">
-                    {processedData.length}
-                  </strong>{" "}
-                  / <strong>{problems.length}</strong> kết quả
+                  {t("common.showingFilteredResults", "Hiển thị {{filtered}} / {{total}} kết quả", {
+                    filtered: processedData.length,
+                    total: problems.length,
+                  })}
                 </span>
                 <button
                   onClick={() => {
@@ -589,7 +588,7 @@ export function CodeReviewProblemManagementPage() {
                     setDifficultyFilter("ALL");
                   }}
                   className="text-xs text-indigo-600 hover:underline dark:text-indigo-400">
-                  Xóa bộ lọc
+                  {t("common.clearFilter", "Xóa bộ lọc")}
                 </button>
               </div>
             )}

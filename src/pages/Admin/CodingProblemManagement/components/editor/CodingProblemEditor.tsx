@@ -418,7 +418,10 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                               {t("adminCodingProblem.skillRequirements", "Yêu cầu kỹ năng")}
                             </label>
                             <Input
-                              placeholder="VD: Tối ưu bộ nhớ, Concurrency"
+                              placeholder={t(
+                                "adminCodingproblemmanagement.skillRequirementsPlaceholder",
+                                "VD: Tối ưu bộ nhớ, Concurrency"
+                              )}
                               value={aiRequirement}
                               onChange={(e) => setAiRequirement(e.target.value)}
                               className="h-10 border-slate-200 bg-slate-50/50 focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
@@ -1076,7 +1079,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
                                         updateHiddenTc(idx, { inputs });
                                       }}
                                       className="h-10 min-h-[40px] resize-y border-slate-200 bg-white font-mono text-[13px] shadow-none focus-visible:ring-indigo-500 dark:border-slate-700 dark:bg-slate-950/50"
-                                      placeholder="Giá trị..."
+                                      placeholder={t("common.valuePlaceholder", "Giá trị...")}
                                     />
                                   </td>
                                 ))

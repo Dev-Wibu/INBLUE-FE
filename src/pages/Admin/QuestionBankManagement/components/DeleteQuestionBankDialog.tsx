@@ -32,8 +32,7 @@ export function DeleteQuestionBankDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>{t("common.delete", t("question.deleteQuestion"))}</AlertDialogTitle>
           <AlertDialogDescription>
-            {/*Bạn có chắc chắn muốn xóa câu hỏi này không?*/} {t("common.operation")} này không thể
-            hoàn tác.
+            {t("common.deleteConfirmWarning", "Hành động này không thể hoàn tác.")}
             <br />
             <br />
             <strong>{t("general.contentWithColon")}</strong>{" "}
