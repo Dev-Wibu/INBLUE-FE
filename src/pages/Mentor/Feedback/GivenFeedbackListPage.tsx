@@ -67,22 +67,18 @@ export function GivenFeedbackListPage() {
     refetch,
   } = useMentorFeedbacksByMentor(user?.id || 0);
 
-  // Calculate stats
+  // Calculate stats - only star ratings (1-5)
   const totalFeedbacks = feedbacks.length;
-  const avgRating =
-    totalFeedbacks > 0
+  const starFeedbacks = feedbacks.filter(
+    (f: { rating?: number }) => typeof f.rating === "number" && f.rating >= 1 && f.rating <= 5
+  );
+  const avgStarRating =
+    starFeedbacks.length > 0
       ? (
-          feedbacks.reduce(
-            (
-              sum: number,
-              f: {
-                rating?: number;
-              }
-            ) => sum + (f.rating || 0),
-            0
-          ) / totalFeedbacks
+          starFeedbacks.reduce((sum: number, f: { rating?: number }) => sum + (f.rating || 0), 0) /
+          starFeedbacks.length
         ).toFixed(1)
-      : "0.0";
+      : "N/A";
 
   // Get unique students
   const uniqueStudents = new Set(
@@ -188,9 +184,9 @@ export function GivenFeedbackListPage() {
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1">
               <TrendingUp className="h-4 w-4" />
-              {t("mentorFeedback.averageScoreForEvaluation")}
+              {t("common.averageStarRating")}
             </CardDescription>
-            <CardTitle className="text-2xl text-emerald-600">{avgRating}</CardTitle>
+            <CardTitle className="text-2xl text-emerald-600">{avgStarRating}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="border-emerald-100 dark:border-slate-800">

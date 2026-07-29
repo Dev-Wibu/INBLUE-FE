@@ -235,12 +235,17 @@ export const useDeleteMentorReview = () => {
 };
 
 /**
- * Calculate average rating from reviews
+ * Calculate average star rating from reviews (1-5 scale only)
  */
 export const calculateAverageRating = (reviews: MentorReview[]): number => {
   if (!reviews.length) return 0;
-  const total = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
-  return total / reviews.length;
+  // Filter only valid star ratings (1-5)
+  const starReviews = reviews.filter(
+    (r) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
+  );
+  if (!starReviews.length) return 0;
+  const total = starReviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+  return total / starReviews.length;
 };
 
 // Re-export types for convenience

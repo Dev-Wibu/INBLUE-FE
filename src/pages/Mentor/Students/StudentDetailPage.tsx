@@ -46,6 +46,15 @@ export function StudentDetailPage() {
   const { data: allReviews = [], isLoading: reviewsLoading } = useMentorReviews();
   const { data: candidateProfileData, isLoading: profileLoading } = useCandidateProfile(studentId);
   const candidateProfile = (candidateProfileData as unknown as CandidateProfile) ?? null;
+
+  // DEBUG: log candidate profile fetch
+  console.log("[StudentDetailPage] Candidate Profile DEBUG", {
+    studentId,
+    candidateProfileData,
+    candidateProfile,
+    hasId: !!candidateProfile?.id,
+  });
+
   const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading || profileLoading;
 
   // Filter sessions for this student with current mentor
@@ -65,16 +74,14 @@ export function StudentDetailPage() {
     }) => feedback.user?.id === studentId && feedback.mentor?.id === currentUser?.id
   );
 
-  // Filter reviews from this student for current mentor
+  // Filter reviews for this student
+  // API returns mentor=null, user=null, but session.userId = student ID
   const studentReviews = allReviews.filter(
     (review: {
-      user?: {
-        id?: number;
+      session?: {
+        userId?: number;
       };
-      mentor?: {
-        id?: number;
-      };
-    }) => review.user?.id === studentId && review.mentor?.id === currentUser?.id
+    }) => review.session?.userId === studentId
   );
 
   // Get student info from feedbacks or reviews
@@ -366,10 +373,7 @@ export function StudentDetailPage() {
         <TabsContent value="profile" className="mt-4">
           <Card className="border-emerald-100 dark:border-slate-800">
             <CardHeader>
-              <CardTitle>{t("mentorStudents.candidateProfile")}</CardTitle>
-              <CardDescription>
-                {t("mentorStudents.studentCandidateProfileInformation")}
-              </CardDescription>
+              <CardTitle className="text-2xl">{t("mentorStudents.candidateProfile")}</CardTitle>
             </CardHeader>
             <CardContent>
               {!candidateProfile?.id ? (
