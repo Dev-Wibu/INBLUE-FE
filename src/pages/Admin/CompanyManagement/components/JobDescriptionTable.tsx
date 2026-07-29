@@ -192,13 +192,13 @@ export function JobDescriptionTable({
                 )}
                 <TableCell>
                   <span className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {job.rounds?.length || 0} vòng
+                    {job.rounds?.length || 0} {t("adminCompanymanagement.roundsCount", "vòng")}
                   </span>
                 </TableCell>
                 <TableCell>
                   <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50/80 px-2.5 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400">
                     <Users className="h-3 w-3 text-indigo-500" />
-                    {appCount} lượt
+                    {appCount} {t("adminCompanymanagement.applicationsCount", "lượt")}
                   </span>
                 </TableCell>
                 <TableCell>

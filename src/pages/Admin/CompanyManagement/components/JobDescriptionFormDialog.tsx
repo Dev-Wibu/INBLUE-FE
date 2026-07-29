@@ -355,7 +355,7 @@ export function JobDescriptionFormDialog({
                         price: e.target.value === "" ? undefined : Number(e.target.value),
                       })
                     }
-                    placeholder="0 = Miễn phí"
+                    placeholder={t("adminCompanymanagement.zeroEqualsFree", "0 = Miễn phí")}
                     className="h-9 border-slate-200 pl-8 font-mono text-xs dark:border-slate-800 dark:bg-slate-900"
                   />
                 </div>

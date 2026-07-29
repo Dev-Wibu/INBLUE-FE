@@ -442,7 +442,7 @@
     "aiScoringDescription": "The system will use this score to automatically add/subtract points based on your criteria.",
     "templateNamePlaceholder": "Template name *",
     "searchTemplateAndCategory": "Search template, category...",
-    "roundsCount": "{{count}} rounds",
+    "roundsCount": "rounds",
     "roundIndex": "Round {{index}}",
     "nameAndCategoryRequired": "Name and category required",
     "companyManagement": "Company Management",
@@ -481,7 +481,9 @@
     "noApplicantsYet": "No applicants submitted yet.",
     "createdDate": "Created Date",
     "updatedDate": "Updated",
-    "selectCompanyForJd": "Please select a company for this job position"
+    "selectCompanyForJd": "Please select a company for this job position",
+    "zeroEqualsFree": "0 = Free",
+    "applicationsCount": "apps"
   },
   "adminDashboardoverview": {
     "companies": "Companies",

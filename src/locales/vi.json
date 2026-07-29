@@ -442,7 +442,7 @@
     "aiScoringDescription": "Hệ thống sẽ dựa vào số điểm này để AI tự động cộng/trừ điểm theo khẩu vị tuyển dụng của bạn.",
     "templateNamePlaceholder": "Tên mẫu quy trình *",
     "searchTemplateAndCategory": "Tìm kiếm mẫu, danh mục...",
-    "roundsCount": "{{count}} vòng",
+    "roundsCount": "vòng",
     "roundIndex": "Vòng {{index}}",
     "nameAndCategoryRequired": "Cần nhập tên và danh mục",
     "companyManagement": "Quản lý công ty",
@@ -481,7 +481,9 @@
     "noApplicantsYet": "Chưa có ứng viên nào nộp đơn.",
     "createdDate": "Ngày tạo",
     "updatedDate": "Cập nhật",
-    "selectCompanyForJd": "Vui lòng chọn công ty cho vị trí tuyển dụng này"
+    "selectCompanyForJd": "Vui lòng chọn công ty cho vị trí tuyển dụng này",
+    "zeroEqualsFree": "0 = Miễn phí",
+    "applicationsCount": "lượt"
   },
   "adminDashboardoverview": {
     "companies": "Doanh nghiệp",

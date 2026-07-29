@@ -405,7 +405,7 @@
     "aiScoringDescription": "システムはこのスコアを使用して、基準に基づいてAIが自動的にポイントを加算/減算します。",
     "templateNamePlaceholder": "テンプレート名 *",
     "searchTemplateAndCategory": "テンプレート、カテゴリを検索...",
-    "roundsCount": "{{count}} ラウンド",
+    "roundsCount": "ラウンド",
     "roundIndex": "ラウンド {{index}}",
     "nameAndCategoryRequired": "名前とカテゴリが必要です",
     "companyManagement": "会社管理",
@@ -444,7 +444,9 @@
     "noApplicantsYet": "応募者はまだいません。",
     "createdDate": "作成日",
     "updatedDate": "更新日",
-    "selectCompanyForJd": "この求人ポジションの会社を選択してください"
+    "selectCompanyForJd": "この求人ポジションの会社を選択してください",
+    "zeroEqualsFree": "0 = 無料",
+    "applicationsCount": "件"
   },
   "adminDashboardoverview": {
     "companies": "企業",
