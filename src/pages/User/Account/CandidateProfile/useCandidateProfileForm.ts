@@ -108,7 +108,7 @@ export function useCandidateProfileForm(overrideUserId?: number) {
         await updateMutation.mutateAsync({
           body: {
             id: profile.id,
-            user: profile.user,
+            user: { id: userId },
             ...payload,
           } as never,
         });
@@ -116,6 +116,7 @@ export function useCandidateProfileForm(overrideUserId?: number) {
       } else {
         await createMutation.mutateAsync({
           body: {
+            id: 0,
             user: {
               id: userId,
             },

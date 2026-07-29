@@ -230,7 +230,7 @@ export function UserManagementPage() {
                   setSelectedProfileData(null);
                 }}
                 className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-                {t("adminUsermanagement.userManagement", "Quản lý người dùng")}
+                {t("adminUsermanagement.userManagement")}
               </button>
               <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
               <h1 className="truncate text-base font-bold text-slate-900 dark:text-white">
@@ -255,24 +255,21 @@ export function UserManagementPage() {
                 type="button"
                 onClick={() => setViewMode("list")}
                 className="text-xs font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
-                {t("adminUsermanagement.userManagement", "Quản lý người dùng")}
+                {t("adminUsermanagement.userManagement")}
               </button>
               <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
               <h1 className="text-base font-bold text-slate-900 dark:text-white">
-                {t("adminUsermanagement.addNewUser", "Thêm người dùng mới")}
+                {t("adminUsermanagement.addNewUser")}
               </h1>
             </div>
           ) : (
             /* Mode 1: Root User Management List View */
             <div className="flex flex-col justify-center">
               <h1 className="text-lg leading-tight font-bold text-slate-900 dark:text-white">
-                {t("adminUsermanagement.userManagement", "Quản lý người dùng")}
+                {t("adminUsermanagement.userManagement")}
               </h1>
               <p className="mt-0.5 text-xs leading-tight text-slate-500 dark:text-slate-400">
-                {t(
-                  "adminUsermanagement.manageUserAccountsRolesAnd",
-                  "Quản lý tài khoản, vai trò và quyền hạn người dùng"
-                )}
+                {t("adminUsermanagement.manageUserAccountsRolesAnd")}
               </p>
             </div>
           )}
@@ -291,7 +288,7 @@ export function UserManagementPage() {
               }}
               className="h-8 gap-1.5 text-xs font-semibold">
               <ArrowLeft className="h-3.5 w-3.5" />
-              {t("common.back", "Quay lại")}
+              {t("common.back")}
             </Button>
           ) : (
             <>

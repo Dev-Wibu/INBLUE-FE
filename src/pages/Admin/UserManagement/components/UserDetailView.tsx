@@ -94,7 +94,7 @@ export function UserDetailView({
       setIsCvUploading(true);
       const response = await usersAdminManager.uploadCv(user.id!, file);
       if (response.data) {
-        toast.success(t("adminUsermanagement.uploadCvSuccess", "Tải lên CV thành công"));
+        toast.success(t("adminUsermanagement.uploadCvSuccess"));
         await queryClient.invalidateQueries({
           queryKey: ["get", "/api/candidate-profiles/{userId}"],
         });
@@ -103,13 +103,11 @@ export function UserDetailView({
         });
         setIsCvModalOpen(false);
       } else {
-        toast.error(
-          response.error || t("adminUsermanagement.uploadCvFailed", "Tải lên CV thất bại")
-        );
+        toast.error(response.error || t("adminUsermanagement.uploadCvFailed"));
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error(t("adminUsermanagement.uploadCvFailed", "Tải lên CV thất bại"));
+      toast.error(t("adminUsermanagement.uploadCvFailed"));
     } finally {
       setIsCvUploading(false);
     }
@@ -164,7 +162,7 @@ export function UserDetailView({
                     {user.avatarUrl ? (
                       <img
                         src={user.avatarUrl}
-                        alt="Avatar"
+                        alt={user.name || t("common.avatar", "Avatar")}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -229,7 +227,7 @@ export function UserDetailView({
                       <FileText className="h-3.5 w-3.5 text-slate-500" />
                       {user?.cvUrl
                         ? t("adminUsermanagement.updateCv", "Cập nhật CV")
-                        : t("adminUsermanagement.uploadCv", "Tải lên CV")}
+                        : t("adminUsermanagement.uploadCv")}
                     </Button>
                   </div>
                 </div>
@@ -473,7 +471,7 @@ export function UserDetailView({
                       {/* Certifications */}
                       <CollapsibleCard
                         id="certifications"
-                        title={t("common.certifications", "Chứng chỉ")}
+                        title={t("common.certifications")}
                         icon={Award}>
                         {(profile.certifications ?? []).length > 0 ? (
                           <ul className="space-y-3">
@@ -494,7 +492,7 @@ export function UserDetailView({
                       {/* Achievements */}
                       <CollapsibleCard
                         id="achievements"
-                        title={t("common.achievements", "Thành tựu")}
+                        title={t("common.achievements")}
                         icon={Trophy}>
                         {(profile.achievements ?? []).length > 0 ? (
                           <ul className="space-y-3">
@@ -567,13 +565,13 @@ export function UserDetailView({
                       href="#certifications"
                       onClick={(e) => scrollToSection(e, "certifications")}
                       className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
-                      {t("common.certifications", "Chứng chỉ")}
+                      {t("common.certifications")}
                     </a>
                     <a
                       href="#achievements"
                       onClick={(e) => scrollToSection(e, "achievements")}
                       className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
-                      {t("common.achievements", "Thành tựu")}
+                      {t("common.achievements")}
                     </a>
                   </nav>
                 </div>
@@ -589,11 +587,8 @@ export function UserDetailView({
         currentCvUrl={user?.cvUrl}
         onUpload={handleCvUpload}
         isUploading={isCvUploading}
-        title={t("adminUsermanagement.updateCv", "Cập nhật CV")}
-        description={t(
-          "adminUsermanagement.uploadCvDescription",
-          "Tải lên CV (định dạng PDF) cho ứng viên này."
-        )}
+        title={t("adminUsermanagement.updateCv")}
+        description={t("adminUsermanagement.uploadCvDescription")}
       />
     </div>
   );

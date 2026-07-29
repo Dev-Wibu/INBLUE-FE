@@ -32,6 +32,11 @@
       "description": "Phỏng vấn giả lập tự động với Trợ lý AI."
     }
   },
+  "adminAccount": {
+    "accountRoleAdmin": "Quản trị viên hệ thống",
+    "adminId": "Mã quản trị viên",
+    "avatarHint": "JPG, PNG hoặc WebP. Tối đa 5MB."
+  },
   "adminAdmindashboard": {
     "admindashboardpageThePlusTabMenu": "[AdminDashboardPage] Cấu hình menu tab dấu cộng chưa đồng bộ",
     "administration": "Quản trị",
@@ -327,6 +332,7 @@
     "interviewRound": "Vòng phỏng vấn (",
     "invalidCompanyIdPleaseSelect": "ID công ty không hợp lệ. Vui lòng chọn lại.",
     "jdActive": "JD Đang hoạt động",
+    "jdShort": "JD",
     "jdDetails": "Chi tiết JD",
     "jdIsRecruiting": "JD đang tuyển",
     "jdList": "Danh sách JD",
@@ -550,7 +556,13 @@
     "experience": "Kinh nghiệm",
     "rating": "Đánh giá",
     "joinedDate": "Ngày tham gia",
-    "lastUpdated": "Cập nhật lần cuối"
+    "lastUpdated": "Cập nhật lần cuối",
+    "confirmDisableTitle": "Vô hiệu hóa mentor?",
+    "confirmActivateTitle": "Kích hoạt mentor?",
+    "confirmDisableDescription": "Bạn có chắc muốn vô hiệu hóa mentor \"{{name}}\"? Họ sẽ không thể đăng nhập hay nhận yêu cầu phỏng vấn.",
+    "confirmActivateDescription": "Bạn có chắc muốn kích hoạt lại mentor \"{{name}}\"? Họ sẽ có thể đăng nhập và nhận yêu cầu phỏng vấn trở lại.",
+    "confirmDisableAction": "Vô hiệu hóa",
+    "confirmActivateAction": "Kích hoạt"
   },
   "adminNotificationmanagement": {
     "chooseFromTemplateOptional": "Chọn từ mẫu (tùy chọn)",
@@ -625,6 +637,7 @@
     "trackEngagementAndModerateComments": "Theo dõi tương tác và kiểm duyệt bình luận tại một nơi.",
     "unableToUpdatePostStatus": "Không thể cập nhật trạng thái bài viết",
     "viewListOfLikes": "Xem danh sách lượt thích",
+    "unableToDetermineAuthor": "Không thể xác định tác giả của bài viết hiện tại.",
     "loadingArticleList": "Đang tải danh sách bài viết",
     "noArticlesFoundMatchingTheSelected": "Không tìm thấy bài viết phù hợp",
     "showingResultsFor": "Hiển thị kết quả cho"
@@ -1069,6 +1082,9 @@
     "createFailed": "Tạo thất bại",
     "actions": "Thao tác",
     "quickSearch": "Tìm kiếm nhanh",
+    "loading": "Đang tải...",
+    "noResults": "Không tìm thấy kết quả.",
+    "pages": "Trang",
     "createdAt": "Ngày tạo",
     "free": "Miễn phí",
     "generalInformation": "Thông tin chung",
