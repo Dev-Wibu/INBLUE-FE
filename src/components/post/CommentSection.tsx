@@ -296,6 +296,15 @@ export function CommentSection({
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const { data: currentMentorProfile } = useCurrentMentorProfile();
+  // DEBUG: remove after testing
+  console.debug(
+    "[CommentSection] user.id:",
+    user?.id,
+    "role:",
+    user?.role,
+    "mentorProfile:",
+    currentMentorProfile
+  );
   // User.id from JWT (sub) is NOT the same as Mentor.id. For MENTOR role,
   // BE stores comments against Mentor.id, so use that for the API payload.
   // currentUserId is still used for UI (delete button visibility) — that

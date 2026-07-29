@@ -17,11 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMentorReviewsByMentor, type MentorReview } from "@/hooks/useMentorReview";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
+import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { toTimestamp } from "@/lib/formatting";
-import { useAuthStore } from "@/stores/authStore";
 import { Search, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -45,15 +45,38 @@ const getReviewNewestSortValue = (review: MentorReview) => {
 export function MentorReviewsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
+  const { data: mentorProfile } = useCurrentMentorProfile();
+  const mentorId =
+    typeof mentorProfile?.id === "string" ? parseInt(mentorProfile.id, 10) : mentorProfile?.id;
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<"all" | "high" | "medium" | "low">("all");
-  const {
-    data: reviews = [],
-    isLoading,
-    isRefetching,
-    refetch,
-  } = useMentorReviewsByMentor(user?.id || 0);
+
+  // Fetch ALL reviews and filter client-side
+  const { data: allReviews = [], isLoading, isRefetching, refetch } = useMentorReviews();
+
+  // Filter by mentor ID using session.userId2 (since API returns mentor=null)
+  // Based on API response pattern: session.userId2 = mentor's user ID
+  const reviews = useMemo(() => {
+    if (!mentorId) return [];
+    console.log("[MentorReviewsPage] Filtering reviews", {
+      mentorId,
+      totalReviews: allReviews.length,
+    });
+    return allReviews.filter((review) => {
+      // Match by session.userId2 (the mentor's user ID in session)
+      const sessionMentorId = review.session?.userId2;
+      const matches = sessionMentorId === mentorId;
+      if (!matches) {
+        console.log("[MentorReviewsPage] Review does not match", {
+          reviewId: review.id,
+          sessionId: review.session?.id,
+          sessionMentorId,
+          lookingFor: mentorId,
+        });
+      }
+      return matches;
+    });
+  }, [allReviews, mentorId]);
   const filteredReviews = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
     return reviews.filter((review) => {
@@ -146,21 +169,23 @@ export function MentorReviewsPage() {
         </Card>
         <Card className="border-emerald-100 dark:border-slate-800">
           <CardHeader className="pb-2">
-            <CardDescription>{t("common.averageScore")}</CardDescription>
+            <CardDescription>{t("common.averageStarRating")}</CardDescription>
             <CardTitle className="text-2xl text-emerald-600">
-              {reviews.length > 0
-                ? (
-                    reviews.reduce(
-                      (
-                        sum: number,
-                        r: {
-                          rating?: number;
-                        }
-                      ) => sum + (r.rating || 0),
-                      0
-                    ) / reviews.length
-                  ).toFixed(1)
-                : "0.0"}
+              {(() => {
+                // Only calculate from star ratings (1-5)
+                const starReviews = reviews.filter(
+                  (r: { rating?: number }) =>
+                    typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5
+                );
+                return starReviews.length > 0
+                  ? (
+                      starReviews.reduce(
+                        (sum: number, r: { rating?: number }) => sum + (r.rating || 0),
+                        0
+                      ) / starReviews.length
+                    ).toFixed(1)
+                  : "N/A";
+              })()}
             </CardTitle>
           </CardHeader>
         </Card>

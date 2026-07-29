@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { MentorProfileData } from "./MentorAccountTabs";
-import { MentorPasswordSection, MentorProfileSection } from "./MentorAccountTabs";
+import { MentorProfileSection } from "./MentorAccountTabs";
 export function MentorAccountPage() {
   const { t } = useTranslation();
   const { user: authUser, setUser } = useAuthStore();
@@ -17,6 +17,7 @@ export function MentorAccountPage() {
   const [formData, setFormData] = useState<Partial<MentorProfileData>>({});
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarRefreshKey, setAvatarRefreshKey] = useState(0);
   const fetchMentorData = useCallback(async () => {
     if (!authUser?.id || !authUser.email) {
       setIsLoading(false);
@@ -183,6 +184,8 @@ export function MentorAccountPage() {
         setFormData({});
         setAvatarPreview(null);
         setAvatarFile(null);
+        // Force refresh avatar to show new image
+        setAvatarRefreshKey((k) => k + 1);
       } else {
         toast.error(response.error || t("common.updateFailedPleaseTryAgain"));
       }
@@ -233,6 +236,7 @@ export function MentorAccountPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <MentorProfileSection
+          key={avatarRefreshKey}
           mentorProfile={mentorProfile}
           isEditing={isEditing}
           isSaving={isSaving}
@@ -248,7 +252,8 @@ export function MentorAccountPage() {
         />
 
         <div className="flex flex-col gap-6">
-          <MentorPasswordSection />
+          {/* Password section temporarily hidden - API not ready for mentor role */}
+          {/* <MentorPasswordSection /> */}
         </div>
       </div>
     </div>
