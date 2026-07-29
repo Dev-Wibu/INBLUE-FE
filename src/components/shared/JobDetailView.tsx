@@ -134,7 +134,7 @@ export function JobDetailView({
   };
 
   const jobExtra = job as JobDescription & { thumbnailUrl?: string; companyLogoUrl?: string };
-  const logoUrl = jobExtra.companyLogo || jobExtra.thumbnailUrl || jobExtra.companyLogoUrl || null;
+  const logoUrl = jobExtra.companyLogoUrl || jobExtra.thumbnailUrl || null;
 
   return (
     <div className="flex flex-col pb-20">

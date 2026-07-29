@@ -67,7 +67,7 @@ function JobCard({ job, t }: JobCardProps) {
           {logoUrl ? (
             <img
               src={logoUrl}
-              alt={jobAny.companyName || "Company"}
+              alt={job.companyName || "Company"}
               className="h-full w-full object-cover"
             />
           ) : (
@@ -92,7 +92,7 @@ function JobCard({ job, t }: JobCardProps) {
 
       <div className="mt-2 flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-400">
         <Building2 className="h-4 w-4 shrink-0" />
-        <span className="truncate">{jobAny.companyName || t("common.unknown")}</span>
+        <span className="truncate">{job.companyName || t("common.unknown")}</span>
       </div>
 
       <div className="mt-4 mb-4 flex flex-wrap gap-2">
