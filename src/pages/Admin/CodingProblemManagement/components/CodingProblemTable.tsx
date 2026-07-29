@@ -10,6 +10,7 @@ import {
 import type { CodingProblem } from "@/services/coding-problem.manager";
 import { format } from "date-fns";
 import { BookOpen, Circle, Clock, Cpu, Eye, FlaskConical } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CodingProblemTableProps {
   problems: CodingProblem[];
@@ -46,13 +47,17 @@ function formatDate(s?: string) {
 }
 
 export function CodingProblemTable({ problems, onEdit, onToggleStatus }: CodingProblemTableProps) {
+  const { t } = useTranslation();
+
   if (problems.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
           <BookOpen className="h-6 w-6 text-slate-400 dark:text-slate-500" />
         </div>
-        <p className="text-sm font-medium text-slate-500">Chưa có bài tập coding nào.</p>
+        <p className="text-sm font-medium text-slate-500">
+          {t("adminCodingProblem.emptyList", "Chưa có bài tập coding nào.")}
+        </p>
       </div>
     );
   }
@@ -63,17 +68,33 @@ export function CodingProblemTable({ problems, onEdit, onToggleStatus }: CodingP
         <TableHeader>
           <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
             <TableHead className="w-[80px] pl-6 font-medium text-slate-500">ID</TableHead>
-            <TableHead className="min-w-[400px] font-medium text-slate-500">Bài tập</TableHead>
-            <TableHead className="w-[110px] font-medium text-slate-500">Độ khó</TableHead>
-            <TableHead className="w-[120px] font-medium text-slate-500">Test cases</TableHead>
-            <TableHead className="w-[100px] font-medium text-slate-500">Thời gian</TableHead>
-            <TableHead className="w-[100px] font-medium text-slate-500">Bộ nhớ</TableHead>
-            <TableHead className="w-[90px] text-center font-medium text-slate-500">Điểm</TableHead>
-            <TableHead className="w-[90px] text-center font-medium text-slate-500">
-              Bật/Tắt
+            <TableHead className="min-w-[400px] font-medium text-slate-500">
+              {t("adminCodingProblem.columnProblem", "Bài tập")}
             </TableHead>
-            <TableHead className="w-[130px] font-medium text-slate-500">Ngày tạo</TableHead>
-            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">Cập nhật</TableHead>
+            <TableHead className="w-[110px] font-medium text-slate-500">
+              {t("general.difficulty", "Độ khó")}
+            </TableHead>
+            <TableHead className="w-[120px] font-medium text-slate-500">
+              {t("adminCodingProblem.columnTestCases", "Test cases")}
+            </TableHead>
+            <TableHead className="w-[100px] font-medium text-slate-500">
+              {t("adminCodingProblem.columnTime", "Thời gian")}
+            </TableHead>
+            <TableHead className="w-[100px] font-medium text-slate-500">
+              {t("adminCodingProblem.columnMemory", "Bộ nhớ")}
+            </TableHead>
+            <TableHead className="w-[90px] text-center font-medium text-slate-500">
+              {t("adminCodingProblem.columnScore", "Điểm")}
+            </TableHead>
+            <TableHead className="w-[90px] text-center font-medium text-slate-500">
+              {t("adminCodingProblem.columnStatus", "Bật/Tắt")}
+            </TableHead>
+            <TableHead className="w-[130px] font-medium text-slate-500">
+              {t("adminCompanymanagement.createdDate", "Ngày tạo")}
+            </TableHead>
+            <TableHead className="w-[130px] pr-6 font-medium text-slate-500">
+              {t("adminCompanymanagement.updatedDate", "Cập nhật")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -112,11 +133,16 @@ export function CodingProblemTable({ problems, onEdit, onToggleStatus }: CodingP
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 text-[11px] font-medium text-indigo-700 dark:text-indigo-400">
                       <FlaskConical className="h-3.5 w-3.5" />
-                      <span>{p.hiddenTestCases?.length ?? 0} ẩn</span>
+                      <span>
+                        {p.hiddenTestCases?.length ?? 0} {t("adminCodingProblem.hiddenCount", "ẩn")}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
                       <Eye className="h-3.5 w-3.5" />
-                      <span>{p.visibleExamples?.length ?? 0} mẫu</span>
+                      <span>
+                        {p.visibleExamples?.length ?? 0}{" "}
+                        {t("adminCodingProblem.sampleCount", "mẫu")}
+                      </span>
                     </div>
                   </div>
                 </TableCell>
