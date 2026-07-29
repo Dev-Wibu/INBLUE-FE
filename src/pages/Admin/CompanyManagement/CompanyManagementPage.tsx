@@ -508,16 +508,16 @@ export function CompanyManagementPage() {
               {jdSearchQuery && (
                 <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
                   <span className="text-xs text-slate-500">
-                    Hiển thị{" "}
+                    {t("common.showing", "Hiển thị")}{" "}
                     <strong className="text-slate-800 dark:text-slate-200">
                       {processedJds.length}
                     </strong>{" "}
-                    / <strong>{allJds.length}</strong> kết quả
+                    / <strong>{allJds.length}</strong> {t("common.resultsUnit", "kết quả")}
                   </span>
                   <button
                     onClick={() => setJdSearchQuery("")}
                     className="text-xs text-indigo-600 hover:underline dark:text-indigo-400">
-                    Xóa bộ lọc
+                    {t("common.clearFilter", "Xóa bộ lọc")}
                   </button>
                 </div>
               )}

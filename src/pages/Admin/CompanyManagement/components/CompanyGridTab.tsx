@@ -378,11 +378,11 @@ export function CompanyGridTab({
       {searchQuery && (
         <div className="mb-3 flex flex-none items-center gap-2 px-6 pt-4">
           <span className="text-xs text-slate-500">
-            Hiển thị{" "}
+            {t("common.showing", "Hiển thị")}{" "}
             <strong className="text-slate-800 dark:text-slate-200">
               {filteredCompanies.length}
             </strong>{" "}
-            / <strong>{companies.length}</strong> kết quả
+            / <strong>{companies.length}</strong> {t("common.resultsUnit", "kết quả")}
           </span>
         </div>
       )}

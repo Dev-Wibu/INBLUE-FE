@@ -133,7 +133,7 @@ function EditableTextList({
   onChange,
   icon: Icon = CheckCircle2,
   iconColor = "text-indigo-500",
-  placeholder = "Nhập nội dung...",
+  placeholder,
 }: {
   value?: string;
   onChange: (newValue: string) => void;
@@ -141,6 +141,8 @@ function EditableTextList({
   iconColor?: string;
   placeholder?: string;
 }) {
+  const { t } = useTranslation();
+  const defaultPlaceholder = placeholder || t("common.enterContent", "Nhập nội dung...");
   const lines = value ? value.split("\n") : [""];
 
   const handleLineChange = (index: number, newContent: string) => {
@@ -167,7 +169,7 @@ function EditableTextList({
           <Input
             value={line}
             onChange={(e) => handleLineChange(idx, e.target.value)}
-            placeholder={`${placeholder} (Dòng ${idx + 1})`}
+            placeholder={`${defaultPlaceholder} (${t("adminCompanymanagement.linePrefix", "Dòng")} ${idx + 1})`}
             className="h-8.5 flex-1 border-slate-200/80 bg-slate-100/60 text-sm font-medium text-slate-800 focus-visible:ring-1 focus-visible:ring-indigo-500 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-100"
           />
           {lines.length > 1 && (
@@ -190,7 +192,7 @@ function EditableTextList({
         onClick={handleAddLine}
         className="mt-1 h-7 gap-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60">
         <Plus className="h-3.5 w-3.5" />
-        <span>Thêm dòng mới</span>
+        <span>{t("adminCompanymanagement.addNewLine", "Thêm dòng mới")}</span>
       </Button>
     </div>
   );
@@ -333,7 +335,7 @@ export function JobDescriptionDetailView({
     setIsSaving(true);
     try {
       const payloadRounds = rounds.map((r, idx) => ({
-        name: r.name || `Vòng ${idx + 1}`,
+        name: r.name || `${t("adminApplicationManagement.roundPrefix", "Vòng ")}${idx + 1}`,
         roundOrder: idx + 1,
         roundType: r.roundType as any,
         passThreshold: Number(r.passThreshold ?? 0.8),
@@ -398,8 +400,9 @@ export function JobDescriptionDetailView({
     if (!min && !max) return t("enterpriseJobdescriptiondetailpage.salaryAgreement");
     const curr = currency || "USD";
     if (min && max) return `${min.toLocaleString()} - ${max.toLocaleString()} ${curr}`;
-    if (min) return `Từ ${min.toLocaleString()} ${curr}`;
-    return `Đến ${max?.toLocaleString()} ${curr}`;
+    if (min)
+      return `${t("adminCompanymanagement.fromSalary", "Từ")} ${min.toLocaleString()} ${curr}`;
+    return `${t("adminCompanymanagement.toSalary", "Đến")} ${max?.toLocaleString()} ${curr}`;
   };
 
   const formatDeadline = (dateStr?: string) => {
@@ -421,12 +424,16 @@ export function JobDescriptionDetailView({
       case "ACCEPTED":
         return (
           <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-            ĐẠT
+            {t("adminApplicationManagement.statusPassed", "ĐẠT")}
           </Badge>
         );
       case "REJECTED":
       case "FAILED":
-        return <Badge variant="destructive">TỪ CHỐI</Badge>;
+        return (
+          <Badge variant="destructive">
+            {t("adminApplicationManagement.statusRejected", "TỪ CHỐI")}
+          </Badge>
+        );
       case "IN_PROGRESS":
       case "PENDING":
       default:
@@ -434,7 +441,7 @@ export function JobDescriptionDetailView({
           <Badge
             variant="secondary"
             className="border-amber-500/30 bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-            ĐANG XỬ LÝ
+            {t("adminApplicationManagement.statusInProgress", "ĐANG XỬ LÝ")}
           </Badge>
         );
     }
@@ -448,7 +455,7 @@ export function JobDescriptionDetailView({
           onClose={() => setIsEditorOpen(false)}
           initialRounds={initialRounds}
           initialMetadata={{ name: currentJd.title || "", category: "", description: "" }}
-          title="Quy trình tuyển dụng JD"
+          title={t("adminCompanymanagement.recruitmentPipelineJd", "Quy trình tuyển dụng JD")}
           showMetadataInputs={false}
           isSaving={isSaving}
           onSave={handleSaveRounds}
@@ -467,13 +474,13 @@ export function JobDescriptionDetailView({
             <div className="mb-3.5 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                 <Sparkles className="h-4 w-4 text-indigo-500" />
-                Quy trình tuyển dụng
+                {t("adminCompanymanagement.recruitmentPipeline", "Quy trình tuyển dụng")}
               </h3>
               <Button
                 onClick={() => setIsEditorOpen(true)}
                 className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
                 <Sparkles className="h-3.5 w-3.5" />
-                Studio Workspace sơ đồ
+                {t("adminCompanymanagement.studioWorkspace", "Studio Workspace sơ đồ")}
               </Button>
             </div>
 
@@ -484,16 +491,22 @@ export function JobDescriptionDetailView({
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    Chưa cấu hình vòng phỏng vấn nào
+                    {t(
+                      "adminCompanymanagement.noRoundsConfigured",
+                      "Chưa cấu hình vòng phỏng vấn nào"
+                    )}
                   </p>
                   <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    Thiết lập các vòng phỏng vấn để hệ thống tự động chấm bài.
+                    {t(
+                      "adminCompanymanagement.setupRoundsDesc",
+                      "Thiết lập các vòng phỏng vấn để hệ thống tự động chấm bài."
+                    )}
                   </p>
                 </div>
                 <Button
                   onClick={() => setIsEditorOpen(true)}
                   className="h-7 bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
-                  + Cấu hình quy trình tuyển dụng
+                  + {t("adminCompanymanagement.setupPipeline", "Cấu hình quy trình tuyển dụng")}
                 </Button>
               </div>
             ) : (
@@ -512,7 +525,8 @@ export function JobDescriptionDetailView({
                           <Badge
                             variant="outline"
                             className={cn("gap-1 text-[11px] font-bold shadow-2xs", meta?.color)}>
-                            Vòng {index + 1}
+                            {t("adminApplicationManagement.roundPrefix", "Vòng ")}
+                            {index + 1}
                           </Badge>
                           {round.passThreshold !== undefined && (
                             <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
@@ -537,7 +551,7 @@ export function JobDescriptionDetailView({
             )}
           </section>
 
-          {/* SECTION 2: COMBINED SPECIFICATION TAB CARD (Mô tả / Yêu cầu / Phúc lợi in 1 card) */}
+          {/* SECTION 2: COMBINED SPECIFICATION TAB CARD */}
           <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             {/* Sub-Tab Navigation Header */}
             <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
@@ -552,7 +566,7 @@ export function JobDescriptionDetailView({
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <Briefcase className="h-3.5 w-3.5 text-indigo-500" />
-                  <span>Mô tả công việc</span>
+                  <span>{t("common.describe", "Mô tả công việc")}</span>
                 </button>
 
                 <button
@@ -565,7 +579,7 @@ export function JobDescriptionDetailView({
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <FileCheck className="h-3.5 w-3.5 text-emerald-500" />
-                  <span>Yêu cầu ứng viên</span>
+                  <span>{t("adminCompanymanagement.request", "Yêu cầu ứng viên")}</span>
                 </button>
 
                 <button
@@ -578,18 +592,18 @@ export function JobDescriptionDetailView({
                       : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                   )}>
                   <Gift className="h-3.5 w-3.5 text-purple-500" />
-                  <span>Phúc lợi & Đãi ngộ</span>
+                  <span>{t("common.welfare", "Phúc lợi & Đãi ngộ")}</span>
                 </button>
               </div>
 
               {isEditing && (
                 <Badge className="border-indigo-500/30 bg-indigo-500/15 text-[11px] font-bold text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400">
-                  Đang chỉnh sửa dòng
+                  {t("adminCompanymanagement.editingInline", "Đang chỉnh sửa dòng")}
                 </Badge>
               )}
             </div>
 
-            {/* Sub-Tab Content Body (Line-by-Line Editable) */}
+            {/* Sub-Tab Content Body */}
             {detailTab === "description" && (
               <div>
                 {isEditing ? (
@@ -600,7 +614,10 @@ export function JobDescriptionDetailView({
                     }
                     icon={Sparkles}
                     iconColor="text-indigo-500"
-                    placeholder="Mô tả nhiệm vụ công việc"
+                    placeholder={t(
+                      "adminCompanymanagement.jobDescriptionPlaceholder",
+                      "Mô tả nhiệm vụ công việc"
+                    )}
                   />
                 ) : currentJd.description ? (
                   <FormattedTextList
@@ -610,7 +627,7 @@ export function JobDescriptionDetailView({
                   />
                 ) : (
                   <p className="text-sm text-slate-400 italic dark:text-slate-500">
-                    Chưa cập nhật mô tả công việc.
+                    {t("adminCompanymanagement.noDescriptionYet", "Chưa cập nhật mô tả công việc.")}
                   </p>
                 )}
               </div>
@@ -626,14 +643,17 @@ export function JobDescriptionDetailView({
                     }
                     icon={CheckCircle2}
                     iconColor="text-emerald-500"
-                    placeholder="Yêu cầu kỹ năng / kinh nghiệm"
+                    placeholder={t(
+                      "adminCompanymanagement.requirementsPlaceholder",
+                      "Yêu cầu kỹ năng / kinh nghiệm"
+                    )}
                   />
                 ) : (
                   <>
                     {detectedTechStack.length > 0 && (
                       <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 p-2.5 dark:border-slate-800/60 dark:bg-slate-950/50">
                         <span className="mr-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                          Công nghệ & Kỹ năng:
+                          {t("adminCompanymanagement.techAndSkills", "Công nghệ & Kỹ năng:")}
                         </span>
                         {detectedTechStack.map((tech) => (
                           <Badge
@@ -653,7 +673,10 @@ export function JobDescriptionDetailView({
                       />
                     ) : (
                       <p className="text-sm text-slate-400 italic dark:text-slate-500">
-                        Chưa cập nhật yêu cầu ứng viên.
+                        {t(
+                          "adminCompanymanagement.noRequirementsYet",
+                          "Chưa cập nhật yêu cầu ứng viên."
+                        )}
                       </p>
                     )}
                   </>
@@ -669,7 +692,10 @@ export function JobDescriptionDetailView({
                     onChange={(newText) => setEditFormData({ ...editFormData, benefits: newText })}
                     icon={Gift}
                     iconColor="text-purple-500"
-                    placeholder="Quyền lợi & Phúc lợi"
+                    placeholder={t(
+                      "adminCompanymanagement.benefitsPlaceholder",
+                      "Quyền lợi & Phúc lợi"
+                    )}
                   />
                 ) : currentJd.benefits &&
                   currentJd.benefits.trim() &&
@@ -682,7 +708,13 @@ export function JobDescriptionDetailView({
                 ) : (
                   <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3 text-sm font-medium text-slate-600 dark:bg-slate-950/50 dark:text-slate-300">
                     <Gift className="h-4 w-4 shrink-0 text-purple-400" />
-                    <span>{currentJd.benefits || "Thỏa thuận theo chính sách công ty"}</span>
+                    <span>
+                      {currentJd.benefits ||
+                        t(
+                          "adminCompanymanagement.defaultBenefitsPolicy",
+                          "Thỏa thuận theo chính sách công ty"
+                        )}
+                    </span>
                   </div>
                 )}
               </div>
@@ -697,17 +729,17 @@ export function JobDescriptionDetailView({
             {/* Metadata Header with Pencil Button */}
             <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Thông số tuyển dụng
+                {t("adminCompanymanagement.jobMetadata", "Thông số tuyển dụng")}
               </h3>
               {!isEditing ? (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleStartEdit}
-                  title="Chỉnh sửa trực tiếp"
+                  title={t("common.editDirectly", "Chỉnh sửa trực tiếp")}
                   className="h-8 gap-1.5 rounded-lg px-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950">
                   <Pencil className="h-3.5 w-3.5" />
-                  <span>Sửa</span>
+                  <span>{t("common.edit", "Sửa")}</span>
                 </Button>
               ) : (
                 <div className="flex items-center gap-1.5">
@@ -718,7 +750,7 @@ export function JobDescriptionDetailView({
                     disabled={isSavingJd}
                     className="h-7 px-2 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
                     <X className="mr-1 h-3.5 w-3.5" />
-                    Hủy
+                    {t("general.cancel", "Hủy")}
                   </Button>
                   <Button
                     size="sm"
@@ -730,7 +762,7 @@ export function JobDescriptionDetailView({
                     ) : (
                       <>
                         <Check className="mr-1 h-3.5 w-3.5" />
-                        Lưu
+                        {t("general.save", "Lưu")}
                       </>
                     )}
                   </Button>
@@ -738,13 +770,13 @@ export function JobDescriptionDetailView({
               )}
             </div>
 
-            {/* Structured Rows (Seamless Inline Styling) */}
+            {/* Structured Rows */}
             <div className="space-y-3.5 text-sm">
               {/* Row 1: Title */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <FileText className="h-4 w-4 text-indigo-500" />
-                  Vị trí
+                  {t("adminCompanymanagement.position", "Vị trí")}
                 </span>
                 {!isEditing ? (
                   <span className="max-w-[180px] truncate font-bold text-slate-900 dark:text-white">
@@ -764,7 +796,7 @@ export function JobDescriptionDetailView({
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <DollarSign className="h-4 w-4 text-emerald-500" />
-                  Mức lương
+                  {t("adminCompanymanagement.salaryRate", "Mức lương")}
                 </span>
                 {!isEditing ? (
                   <span className="font-bold text-emerald-600 dark:text-emerald-400">
@@ -813,7 +845,7 @@ export function JobDescriptionDetailView({
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Briefcase className="h-4 w-4 text-indigo-500" />
-                  Cấp bậc
+                  {t("general.level", "Cấp bậc")}
                 </span>
                 {!isEditing ? (
                   <span className="font-bold text-slate-800 dark:text-slate-100">
@@ -826,7 +858,7 @@ export function JobDescriptionDetailView({
                       setEditFormData({ ...editFormData, level: val as JobDescriptionLevel })
                     }>
                     <SelectTrigger className="h-7.5 w-32 border-slate-200/80 bg-slate-100/60 text-xs font-bold text-slate-900 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white">
-                      <SelectValue placeholder="Cấp bậc" />
+                      <SelectValue placeholder={t("common.chooseLevel", "Cấp bậc")} />
                     </SelectTrigger>
                     <SelectContent>
                       {LEVEL_OPTIONS.map((lvl) => (
@@ -843,7 +875,7 @@ export function JobDescriptionDetailView({
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Calendar className="h-4 w-4 text-amber-500" />
-                  Hạn ứng tuyển
+                  {t("adminCompanymanagement.applicationDeadline", "Hạn ứng tuyển")}
                 </span>
                 {!isEditing ? (
                   <span className="font-semibold text-slate-800 dark:text-slate-200">
@@ -865,14 +897,15 @@ export function JobDescriptionDetailView({
                 )}
               </div>
 
-              {/* Row 5: Applications count (Read-only) */}
+              {/* Row 5: Applications count */}
               <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Users className="h-4 w-4 text-purple-500" />
-                  Tổng ứng tuyển
+                  {t("adminCompanymanagement.totalApplications", "Tổng ứng tuyển")}
                 </span>
                 <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                  {applications.length} ứng viên
+                  {applications.length}{" "}
+                  {t("adminApplicationManagement.applicationsUnit", "ứng viên")}
                 </span>
               </div>
 
@@ -880,7 +913,7 @@ export function JobDescriptionDetailView({
               <div className="flex items-center justify-between gap-2 pt-0.5">
                 <span className="flex shrink-0 items-center gap-2 font-medium text-slate-500 dark:text-slate-400">
                   <Clock className="h-4 w-4 text-slate-400" />
-                  Trạng thái
+                  {t("common.status", "Trạng thái")}
                 </span>
                 {!isEditing ? (
                   <Badge
@@ -898,7 +931,7 @@ export function JobDescriptionDetailView({
                       setEditFormData({ ...editFormData, status: val as JobDescriptionStatus })
                     }>
                     <SelectTrigger className="h-7.5 w-28 border-slate-200/80 bg-slate-100/60 text-xs font-semibold text-slate-900 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white">
-                      <SelectValue placeholder="Trạng thái" />
+                      <SelectValue placeholder={t("common.status", "Trạng thái")} />
                     </SelectTrigger>
                     <SelectContent>
                       {STATUS_OPTIONS.map((st) => (
@@ -913,30 +946,35 @@ export function JobDescriptionDetailView({
             </div>
           </div>
 
-          {/* Card 2: Applications List (In Sidebar) */}
+          {/* Card 2: Applications List */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
             <div className="mb-3.5 flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800/80">
               <h3 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                 <Users className="h-4 w-4 text-purple-500" />
-                Đơn ứng tuyển ({applications.length})
+                {t("adminApplicationManagement.title", "Đơn ứng tuyển")} ({applications.length})
               </h3>
             </div>
 
             {isLoadingApps ? (
               <div className="flex h-32 items-center justify-center gap-2 text-xs text-slate-400">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-                <span>Đang tải danh sách...</span>
+                <span>{t("common.loadingData", "Đang tải danh sách...")}</span>
               </div>
             ) : applications.length === 0 ? (
               <div className="flex h-28 items-center justify-center text-xs text-slate-400 dark:text-slate-500">
-                Chưa có ứng viên nào nộp đơn.
+                {t("adminCompanymanagement.noApplicantsYet", "Chưa có ứng viên nào nộp đơn.")}
               </div>
             ) : (
               <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
                 {applications.map((app, index) => {
                   const name =
-                    app.candidateName || (app as any).applicantName || "Ứng viên ẩn danh";
-                  const email = app.candidateEmail || (app as any).email || "Chưa có email";
+                    app.candidateName ||
+                    (app as any).applicantName ||
+                    t("adminApplicationManagement.anonymousCandidate", "Ứng viên ẩn danh");
+                  const email =
+                    app.candidateEmail ||
+                    (app as any).email ||
+                    t("adminApplicationManagement.noEmail", "Chưa có email");
                   const avatarUrl = (app as any).avatarUrl || (app as any).applicantAvatar;
 
                   return (

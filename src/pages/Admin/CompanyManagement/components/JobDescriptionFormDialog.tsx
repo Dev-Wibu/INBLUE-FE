@@ -167,7 +167,7 @@ export function JobDescriptionFormDialog({
           {/* Right Column: General Job Settings Fields (Col-span 2) */}
           <div className="space-y-4 rounded-xl border border-slate-100 bg-slate-50/50 p-4 lg:col-span-2 dark:border-slate-800/80 dark:bg-slate-950/40">
             <h4 className="text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-white">
-              Thông số thiết lập
+              {t("adminCompanymanagement.jobMetadata", "Thông số thiết lập")}
             </h4>
 
             {/* Title */}
