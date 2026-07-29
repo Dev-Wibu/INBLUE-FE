@@ -170,13 +170,16 @@ export function CodeReviewProblemManagementPage() {
         isDeleted: !isActive,
       });
       if (!res.success) {
-        toast.error(res.error || "Không thể cập nhật trạng thái");
+        toast.error(
+          res.error ||
+            t("adminCodeReviewProblem.unableToUpdateStatus", "Không thể cập nhật trạng thái")
+        );
         setProblems((prev) =>
           prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: isActive } : p))
         );
       }
     } catch {
-      toast.error("Đã xảy ra lỗi");
+      toast.error(t("adminCodeReviewProblem.errorOccurred", "Đã xảy ra lỗi"));
       setProblems((prev) =>
         prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: isActive } : p))
       );

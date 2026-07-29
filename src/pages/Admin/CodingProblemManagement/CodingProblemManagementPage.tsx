@@ -68,16 +68,25 @@ export function CodingProblemManagementPage() {
         isDeleted: !isActive,
       });
       if (!res.success) {
-        toast.error(res.error || "Không thể cập nhật trạng thái");
+        toast.error(
+          res.error ||
+            t("adminCodingproblemmanagement.unableToUpdateStatus", "Không thể cập nhật trạng thái")
+        );
         // Revert on failure
         setProblems((prev) =>
           prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: problem.isDeleted } : p))
         );
       } else {
-        toast.success(`Đã ${isActive ? "bật" : "tắt"} bài tập`);
+        toast.success(
+          isActive
+            ? t("adminCodingproblemmanagement.problemEnabled", "Đã bật bài tập")
+            : t("adminCodingproblemmanagement.problemDisabled", "Đã tắt bài tập")
+        );
       }
     } catch {
-      toast.error("Lỗi xảy ra khi cập nhật trạng thái");
+      toast.error(
+        t("adminCodingproblemmanagement.errorUpdatingStatus", "Lỗi xảy ra khi cập nhật trạng thái")
+      );
       setProblems((prev) =>
         prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: problem.isDeleted } : p))
       );

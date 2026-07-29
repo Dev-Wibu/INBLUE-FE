@@ -443,7 +443,8 @@
     "salaryRate": "給与",
     "noApplicantsYet": "応募者はまだいません。",
     "createdDate": "作成日",
-    "updatedDate": "更新日"
+    "updatedDate": "更新日",
+    "selectCompanyForJd": "この求人ポジションの会社を選択してください"
   },
   "adminDashboardoverview": {
     "companies": "企業",
@@ -1769,7 +1770,6 @@
     "goBack": "戻る",
     "userDetail": "ユーザー詳細",
     "inactive": "無効",
-    "loading": "読み込み中...",
     "invalidId": "無効なIDです。",
     "application": "応募",
     "search": "検索",
@@ -4748,7 +4748,9 @@
     "createTitle": "新しい問題を作成",
     "reviewRequirements": "コードレビュー要件",
     "noSourceCodeYet": "レビューするソースコードがありません。",
-    "errorCount": "エラー"
+    "errorCount": "エラー",
+    "unableToUpdateStatus": "ステータスを更新できません",
+    "errorOccurred": "エラーが発生しました"
   },
   "adminQuestionbankmanagement": {
     "addQuestion": "質問を追加",
@@ -5707,5 +5709,17 @@
     "passingScore": "合格ライン: ",
     "duration": "所要時間: ",
     "noInterviewProcess": "面接プロセスは未更新です。"
+  },
+  "adminCodingproblemmanagement": {
+    "unableToUpdateStatus": "ステータスを更新できません",
+    "problemEnabled": "問題が有効になりました",
+    "problemDisabled": "問題が無効になりました",
+    "errorUpdatingStatus": "ステータス更新中にエラーが発生しました",
+    "unableToLoadDetail": "詳細を読み込めません。",
+    "systemError": "システムエラー。",
+    "enterTopic": "問題のトピックを入力してください",
+    "autoGenerateSuccess": "自動生成が成功しました！",
+    "autoGenerateFailed": "生成に失敗しました",
+    "errorDuringGenerate": "生成中にエラーが発生しました"
   }
 }

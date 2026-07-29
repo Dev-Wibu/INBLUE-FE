@@ -119,11 +119,14 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
       const res = await codingProblemManager.getById(id);
       if (res.success && res.data) setFormData(res.data);
       else {
-        toast.error(res.error || "Không thể tải chi tiết.");
+        toast.error(
+          res.error ||
+            t("adminCodingproblemmanagement.unableToLoadDetail", "Không thể tải chi tiết.")
+        );
         onBack();
       }
     } catch {
-      toast.error("Lỗi hệ thống.");
+      toast.error(t("adminCodingproblemmanagement.systemError", "Lỗi hệ thống."));
       onBack();
     } finally {
       setIsLoadingData(false);
@@ -134,7 +137,7 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
 
   const handleGenerateAI = async () => {
     if (!aiTopic.trim()) {
-      toast.error("Vui lòng nhập chủ đề bài tập");
+      toast.error(t("adminCodingproblemmanagement.enterTopic", "Vui lòng nhập chủ đề bài tập"));
       return;
     }
     setAiLoading(true);
@@ -150,14 +153,20 @@ export function CodingProblemEditor({ initialData, onBack, onSaved }: CodingProb
         },
       });
       if (res.success && res.data) {
-        toast.success("Tạo tự động thành công!");
+        toast.success(
+          t("adminCodingproblemmanagement.autoGenerateSuccess", "Tạo tự động thành công!")
+        );
         patch(res.data);
         setIsAiMode(false);
       } else {
-        toast.error(res.error || "Tạo thất bại");
+        toast.error(
+          res.error || t("adminCodingproblemmanagement.autoGenerateFailed", "Tạo thất bại")
+        );
       }
     } catch {
-      toast.error("Lỗi xảy ra trong quá trình tạo");
+      toast.error(
+        t("adminCodingproblemmanagement.errorDuringGenerate", "Lỗi xảy ra trong quá trình tạo")
+      );
     } finally {
       setAiLoading(false);
     }

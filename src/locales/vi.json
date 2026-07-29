@@ -480,7 +480,8 @@
     "salaryRate": "Mức lương",
     "noApplicantsYet": "Chưa có ứng viên nào nộp đơn.",
     "createdDate": "Ngày tạo",
-    "updatedDate": "Cập nhật"
+    "updatedDate": "Cập nhật",
+    "selectCompanyForJd": "Vui lòng chọn công ty cho vị trí tuyển dụng này"
   },
   "adminDashboardoverview": {
     "companies": "Doanh nghiệp",
@@ -1807,7 +1808,6 @@
     "goBack": "Quay lại",
     "userDetail": "Chi tiết người dùng",
     "inactive": "Tắt",
-    "loading": "Đang tải...",
     "invalidId": "ID không hợp lệ.",
     "search": "Tìm kiếm",
     "featureUnderDevelopment": "Tính năng đang phát triển",
@@ -4775,7 +4775,9 @@
     "createTitle": "Tạo bài tập mới",
     "reviewRequirements": "Yêu cầu Code Review",
     "noSourceCodeYet": "Chưa có mã nguồn để review.",
-    "errorCount": "Lỗi"
+    "errorCount": "Lỗi",
+    "unableToUpdateStatus": "Không thể cập nhật trạng thái",
+    "errorOccurred": "Đã xảy ra lỗi"
   },
   "adminQuestionbankmanagement": {
     "addQuestion": "Thêm câu hỏi",
@@ -5702,5 +5704,17 @@
     "passingScore": "Điểm chuẩn: ",
     "duration": "Thời gian: ",
     "noInterviewProcess": "Chưa cập nhật quy trình phỏng vấn."
+  },
+  "adminCodingproblemmanagement": {
+    "unableToUpdateStatus": "Không thể cập nhật trạng thái",
+    "problemEnabled": "Đã bật bài tập",
+    "problemDisabled": "Đã tắt bài tập",
+    "errorUpdatingStatus": "Lỗi xảy ra khi cập nhật trạng thái",
+    "unableToLoadDetail": "Không thể tải chi tiết.",
+    "systemError": "Lỗi hệ thống.",
+    "enterTopic": "Vui lòng nhập chủ đề bài tập",
+    "autoGenerateSuccess": "Tạo tự động thành công!",
+    "autoGenerateFailed": "Tạo thất bại",
+    "errorDuringGenerate": "Lỗi xảy ra trong quá trình tạo"
   }
 }

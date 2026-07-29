@@ -273,7 +273,12 @@ export function CompanyManagementPage() {
 
       const targetCompanyId = selectedCompanyId || (jdFormData as any).companyId;
       if (!targetCompanyId) {
-        toast.error("Vui lòng chọn công ty cho vị trí tuyển dụng này");
+        toast.error(
+          t(
+            "adminCompanymanagement.selectCompanyForJd",
+            "Vui lòng chọn công ty cho vị trí tuyển dụng này"
+          )
+        );
         return;
       }
 
