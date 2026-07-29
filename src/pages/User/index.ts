@@ -40,13 +40,7 @@ export { UserNotificationsPage } from "./Notifications";
 export { UserDashboardPage } from "./UserDashboard";
 
 // Practice exports
-export {
-  PracticeQuestionsPage,
-  PracticeSetDetailPage,
-  PracticeSetsPage,
-  QuizPage,
-  QuizResultPage,
-} from "./Practice";
+export { PracticeSetDetailPage, QuizPage, QuizResultPage } from "./Practice";
 
 // Application Quiz exports
 export { ApplicationQuizPage } from "./ApplicationQuiz";
