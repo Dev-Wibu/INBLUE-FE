@@ -133,8 +133,8 @@ export function JobDetailView({
     );
   };
 
-  const logoUrl =
-    (job as any).companyLogo || (job as any).thumbnailUrl || (job as any).companyLogoUrl || null;
+  const jobExtra = job as JobDescription & { thumbnailUrl?: string; companyLogoUrl?: string };
+  const logoUrl = jobExtra.companyLogo || jobExtra.thumbnailUrl || jobExtra.companyLogoUrl || null;
 
   return (
     <div className="flex flex-col pb-20">
