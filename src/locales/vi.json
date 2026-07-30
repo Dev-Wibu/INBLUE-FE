@@ -279,6 +279,7 @@
     "selectJd": "Chọn vị trí (JD)",
     "failed": "Trượt",
     "statusFailed": "Trượt",
+    "statusSoftFailed": "Rớt vòng — vẫn làm tiếp",
     "noEmail": "Chưa có email",
     "roundPrefix": "Vòng ",
     "drawerTitle": "Chi tiết đơn ứng tuyển",

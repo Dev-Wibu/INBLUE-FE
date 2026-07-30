@@ -279,6 +279,7 @@
     "selectJd": "Select position (JD)",
     "failed": "Failed",
     "statusFailed": "Failed",
+    "statusSoftFailed": "Failed a round — still proceeding",
     "noEmail": "No email provided",
     "roundPrefix": "Round ",
     "drawerTitle": "Application Details",

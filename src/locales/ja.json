@@ -240,6 +240,7 @@
     "selectJd": "ポジション（JD）を選択",
     "failed": "不合格",
     "statusFailed": "不合格",
+    "statusSoftFailed": "ラウンド不合格 — 引き続き選考中",
     "noEmail": "メールアドレスなし",
     "roundPrefix": "ステップ ",
     "drawerTitle": "応募詳細",

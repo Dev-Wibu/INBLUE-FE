@@ -254,15 +254,38 @@ export function AdminApplicationManagementPage() {
         return false;
       }
 
-      // Status filter — per FE Guide: filter "Trượt" includes FAILED + SOFT_FAILED
+      // Status filter — per FE Guide:
+      //   • IN_PROGRESS: status = IN_PROGRESS | PENDING | SOFT_FAILED
+      //     (SOFT_FAILED = rớt 1 vòng nhưng vẫn được tiếp tục làm vòng sau
+      //      → vẫn là đang xử lý, không phải trượt hẳn)
+      //   • PASSED: PASSED | ACCEPTED | COMPLETED
+      //   • FAILED: REJECTED | FAILED (chỉ thật sự trượt hẳn)
+      //   • SOFT_FAILED: SOFT_FAILED riêng để user lọc xem nhanh các case này
       if (statusFilter !== "ALL") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const status = app.status as any;
-        if (statusFilter === "PASSED" && status !== "PASSED" && status !== "ACCEPTED") return false;
-        if (statusFilter === "FAILED" && status !== "FAILED" && status !== "SOFT_FAILED")
+        if (
+          statusFilter === "IN_PROGRESS" &&
+          status !== "IN_PROGRESS" &&
+          status !== "PENDING" &&
+          status !== "SOFT_FAILED"
+        ) {
           return false;
-        if (statusFilter === "IN_PROGRESS" && status !== "IN_PROGRESS" && status !== "PENDING")
+        }
+        if (
+          statusFilter === "PASSED" &&
+          status !== "PASSED" &&
+          status !== "ACCEPTED" &&
+          status !== "COMPLETED"
+        ) {
           return false;
+        }
+        if (statusFilter === "FAILED" && status !== "REJECTED" && status !== "FAILED") {
+          return false;
+        }
+        if (statusFilter === "SOFT_FAILED" && status !== "SOFT_FAILED") {
+          return false;
+        }
       }
 
       // Search query filter
@@ -566,6 +589,10 @@ export function AdminApplicationManagementPage() {
               {
                 id: "FAILED",
                 label: t("adminApplicationManagement.statusFailed", "Trượt"),
+              },
+              {
+                id: "SOFT_FAILED",
+                label: t("adminApplicationManagement.statusSoftFailed", "Rớt vòng — vẫn làm tiếp"),
               },
             ].map((st) => (
               <button

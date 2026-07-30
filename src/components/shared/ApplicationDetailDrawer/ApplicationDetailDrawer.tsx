@@ -188,8 +188,8 @@ export function ApplicationDetailDrawer({
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
           </div>
         ) : detail ? (
-          <ScrollArea className="flex-1 p-6">
-            <div className="space-y-6">
+          <ScrollArea className="min-h-0 flex-1 px-6 py-4">
+            <div className="space-y-6 pb-2">
               {/* 1. Thông tin cá nhân ứng viên */}
               <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <h4 className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-slate-400 uppercase">
