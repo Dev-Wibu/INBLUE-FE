@@ -37,9 +37,8 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 
 export function AdminApplicationManagementPage() {
   const { t } = useTranslation();
@@ -65,117 +64,66 @@ export function AdminApplicationManagementPage() {
 
   const openJds = openJdsData;
 
-  // Cache for application data per JD to avoid redundant calls
-  const applicationCacheRef = useRef<Map<number, ApplicationListItemDto[]>>(new Map());
-  const [applications, setApplications] = useState<ApplicationListItemDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingAll, setIsLoadingAll] = useState(false);
-
-  // 2. Fetch applications with improved caching
-  const loadApplications = useCallback(async () => {
-    if (selectedJdId === "ALL") {
-      setApplications([]);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const jdId = Number(selectedJdId);
-      const cached = applicationCacheRef.current.get(jdId);
-      if (cached) {
-        setApplications(cached);
-        setIsLoading(false);
-        return;
-      }
-      const res = await adminApplicationManager.getApplicationsByJdId(jdId);
-      if (res.success && res.data) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
-        applicationCacheRef.current.set(jdId, apps);
-        setApplications(apps);
-      } else {
-        setApplications([]);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(t("common.unableToLoadData", "Không thể tải danh sách đơn ứng tuyển"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedJdId, t]);
-
-  // Load all applications for all JDs (only when user explicitly clicks "Load All")
-  const loadAllApplications = useCallback(async () => {
-    if (openJds.length === 0) return;
-    setIsLoadingAll(true);
-    try {
-      const jdIds = openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined);
-      const uncachedJdIds = jdIds.filter((id) => !applicationCacheRef.current.has(id));
-
-      // Only fetch uncached JDs
-      if (uncachedJdIds.length > 0) {
-        const results = await Promise.all(
-          uncachedJdIds.map((id) => adminApplicationManager.getApplicationsByJdId(id))
-        );
-        results.forEach((r, idx) => {
-          if (r.success && r.data) {
-            const jdInfo = openJds.find((j) => j.jdId === uncachedJdIds[idx]);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const rawApps = (r.data.applications || (r.data as any)) as ApplicationListItemDto[];
-            type AppWithCompany = ApplicationListItemDto & {
-              companyName?: string;
-              jobTitle?: string;
-            };
-            const appsWithCompany = rawApps.map((app: AppWithCompany) => ({
-              ...app,
-              companyName: app.companyName || jdInfo?.company?.name,
-              jobTitle: app.jobTitle || jdInfo?.title,
-            }));
-            applicationCacheRef.current.set(
-              uncachedJdIds[idx],
-              appsWithCompany as ApplicationListItemDto[]
-            );
-          }
-        });
-      }
-
-      // Collect all cached applications
-      const allApps: ApplicationListItemDto[] = [];
-      jdIds.forEach((jdId) => {
-        const cached = applicationCacheRef.current.get(jdId);
-        if (cached) {
-          allApps.push(...cached);
-        }
-      });
-      setApplications(allApps);
-    } catch (err) {
-      console.error(err);
-      toast.error(t("common.unableToLoadData", "Không thể tải danh sách đơn ứng tuyển"));
-    } finally {
-      setIsLoadingAll(false);
-    }
-  }, [openJds, t]);
-
-  // Initial load when openJds is ready - select first JD by default
-  const hasInitialized = useRef(false);
-  useEffect(() => {
-    if (openJds.length > 0 && !hasInitialized.current) {
-      hasInitialized.current = true;
-      // Default to first JD if available
-      if (openJds[0]?.jdId) {
-        setSelectedJdId(String(openJds[0].jdId));
-      }
-    }
+  // Default JD: derived from openJds (first one). We initialise the
+  // selectedJdId state lazily inside a single effect-free render pass to
+  // avoid triggering the react-hooks/set-state-in-effect rule.
+  const firstJdIdString = useMemo(() => {
+    if (openJds.length === 0) return null;
+    const first = openJds[0]?.jdId;
+    return first !== undefined ? String(first) : null;
   }, [openJds]);
 
-  // Reload when JD selection changes
-  useEffect(() => {
-    if (selectedJdId === "ALL") {
-      void loadAllApplications();
-    } else {
-      void loadApplications();
+  const [selectedJdId, setSelectedJdId] = useState<string>("ALL");
+  const hasInitializedJdRef = useRef(false);
+  if (firstJdIdString && !hasInitializedJdRef.current) {
+    hasInitializedJdRef.current = true;
+    if (selectedJdId !== firstJdIdString) {
+      // setState during render is allowed in React when guarded by a ref —
+      // React will discard the in-progress render and reuse the new value.
+      setSelectedJdId(firstJdIdString);
     }
-  }, [selectedJdId, loadApplications, loadAllApplications]);
+  }
+
+  // 2. Fetch applications for the SELECTED JD only (1 request per JD selection).
+  //    Following the FE Guide: when "ALL" is selected we DO NOT fetch across JDs.
+  //    Instead we show a placeholder asking the user to pick a specific JD.
+  const numericSelectedJdId =
+    selectedJdId !== "ALL" && !Number.isNaN(Number(selectedJdId)) ? Number(selectedJdId) : null;
+
+  const {
+    data: applicationsData,
+    isLoading: isLoadingApplications,
+    refetch: refetchApplications,
+  } = useQuery({
+    queryKey: ["admin", "jd-applications", numericSelectedJdId],
+    queryFn: async () => {
+      if (!numericSelectedJdId) return null;
+      const res = await adminApplicationManager.getApplicationsByJdId(numericSelectedJdId);
+      if (!res.success || !res.data) {
+        return { applications: [] as ApplicationListItemDto[], jdInfo: null };
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
+      const jdInfo = openJds.find((j) => j.jdId === numericSelectedJdId);
+      type AppWithCompany = ApplicationListItemDto & { companyName?: string; jobTitle?: string };
+      const enrichedApps = apps.map((app: AppWithCompany) => ({
+        ...app,
+        companyName: app.companyName || jdInfo?.company?.name,
+        jobTitle: app.jobTitle || jdInfo?.title,
+      }));
+      return { applications: enrichedApps as ApplicationListItemDto[], jdInfo };
+    },
+    enabled: numericSelectedJdId !== null, // ⭐ Only fetch when a specific JD is selected
+    staleTime: 60 * 1000, // Cache 60s
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const applications = useMemo(
+    () => applicationsData?.applications ?? [],
+    [applicationsData?.applications]
+  );
+  const isLoading = isLoadingApplications;
 
   // Unique companies for filter dropdown
   const companyOptions = useMemo(() => {
@@ -335,15 +283,11 @@ export function AdminApplicationManagementPage() {
           variant="outline"
           size="sm"
           onClick={() => {
-            if (selectedJdId === "ALL") {
-              void loadAllApplications();
-            } else {
-              void loadApplications();
-            }
+            void refetchApplications();
           }}
-          disabled={isLoading || isLoadingAll}
+          disabled={isLoading || numericSelectedJdId === null}
           className="h-8 gap-1.5 text-xs font-medium">
-          <RefreshCw className={`h-3.5 w-3.5 ${isLoading || isLoadingAll ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           {t("common.refresh", "Làm mới")}
         </Button>
       </div>
@@ -550,7 +494,27 @@ export function AdminApplicationManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {numericSelectedJdId === null ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-48 text-center text-slate-400">
+                      <div className="flex flex-col items-center gap-1">
+                        <Briefcase className="h-6 w-6 text-slate-300" />
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                          {t(
+                            "adminApplicationManagement.selectJdToViewApplications",
+                            "Vui lòng chọn một vị trí (JD) để xem danh sách đơn ứng tuyển."
+                          )}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          {t(
+                            "adminApplicationManagement.allJdsHint",
+                            'Chọn "Tất cả vị trí" sẽ không tải dữ liệu để tránh gọi nhiều API.'
+                          )}
+                        </span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : isLoading ? (
                   <TableRow>
                     <TableCell colSpan={8} className="h-48 text-center text-slate-400">
                       <div className="flex items-center justify-center gap-2">
@@ -663,7 +627,7 @@ export function AdminApplicationManagementPage() {
           setSelectedAppId(null);
         }}
         onStatusChange={() => {
-          loadApplications();
+          void refetchApplications();
         }}
       />
     </div>

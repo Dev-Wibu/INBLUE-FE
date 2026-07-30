@@ -235,6 +235,8 @@
     "score": "スコア",
     "noApplicationsFound": "該当する応募が見つかりません。",
     "anonymousCandidate": "匿名応募者",
+    "selectJdToViewApplications": "応募リストを表示するには、求人（JD）を選択してください。",
+    "allJdsHint": "「すべてのポジション」を選択すると、多くのAPI呼び出しを避けるためデータは読み込まれません。",
     "noEmail": "メールアドレスなし",
     "roundPrefix": "ステップ ",
     "drawerTitle": "応募詳細",

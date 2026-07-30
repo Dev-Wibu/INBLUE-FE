@@ -274,6 +274,8 @@
     "score": "Điểm số",
     "noApplicationsFound": "Không tìm thấy đơn ứng tuyển nào.",
     "anonymousCandidate": "Ứng viên ẩn danh",
+    "selectJdToViewApplications": "Vui lòng chọn một vị trí (JD) để xem danh sách đơn ứng tuyển.",
+    "allJdsHint": "Chọn \"Tất cả vị trí\" sẽ không tải dữ liệu để tránh gọi nhiều API.",
     "noEmail": "Chưa có email",
     "roundPrefix": "Vòng ",
     "drawerTitle": "Chi tiết đơn ứng tuyển",
