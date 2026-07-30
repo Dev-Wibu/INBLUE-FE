@@ -163,6 +163,9 @@
     "editScheduleDescription": "Update the open/close time or slot duration.",
     "scheduleCreated": "Schedule created",
     "scheduleUpdated": "Schedule updated",
+    "scheduleDeleted": "Schedule deleted",
+    "confirmDeleteSchedule": "Confirm schedule deletion?",
+    "confirmDeleteScheduleMessage": "Are you sure you want to delete this schedule? This action cannot be undone.",
     "unableToCreateSchedule": "Unable to create schedule",
     "unableToUpdateSchedule": "Unable to update schedule",
     "unableToLoadSchedules": "Unable to load schedules",
@@ -201,6 +204,7 @@
     "noHistory": "No booking history yet",
     "minutes": "min",
     "addSchedule": "Add schedule",
+    "deleteSchedule": "Delete schedule",
     "daysWithSchedule": "days scheduled",
     "activeScheduleSummary": "active time slots",
     "scheduleGridTitle": "Weekly Operating Schedule",
@@ -485,7 +489,10 @@
     "updatedDate": "Updated",
     "selectCompanyForJd": "Please select a company for this job position",
     "zeroEqualsFree": "0 = Free",
-    "applicationsCount": "apps"
+    "applicationsCount": "apps",
+    "unpaidText": "Unpaid",
+    "selectCompany": "Select company",
+    "chooseCompany": "Choose company..."
   },
   "adminDashboardoverview": {
     "companies": "Companies",
@@ -4632,6 +4639,7 @@
   "errors": {
     "cannotSetUpInterviewRounds": "Cannot set up interview rounds",
     "cannotUpdateInterviewRounds": "Cannot update interview rounds",
+    "cannotToggleJobDescriptionStatus": "Cannot toggle job description status",
     "cannotLoadJobDescriptionList": "Cannot load job description list",
     "cannotLoadJobDescription": "Cannot load job description",
     "cannotSearchJobDescriptions": "Cannot search job descriptions",
@@ -5734,6 +5742,7 @@
     "autoGenerateFailed": "Generation failed",
     "errorDuringGenerate": "Error occurred during generation",
     "addedProblemsToRound": "Added {{count}} problem(s) to interview round",
-    "skillRequirementsPlaceholder": "e.g. Memory optimization, Concurrency"
+    "skillRequirementsPlaceholder": "e.g. Memory optimization, Concurrency",
+    "valueTypePlaceholder": "Select value type"
   }
 }

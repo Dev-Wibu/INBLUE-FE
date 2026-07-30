@@ -257,7 +257,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorDialog.tsx",
-    "line": 1198,
+    "line": 1201,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -265,7 +265,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 1201,
+    "line": 1208,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -785,7 +785,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 456,
+    "line": 457,
     "character": 30,
     "type": "JsxText",
     "category": "english",
@@ -793,7 +793,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 517,
+    "line": 518,
     "character": 28,
     "type": "JsxText",
     "category": "english",
@@ -801,7 +801,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 576,
+    "line": 577,
     "character": 38,
     "type": "JsxText",
     "category": "english",
@@ -809,7 +809,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 584,
+    "line": 585,
     "character": 15,
     "type": "JsxText",
     "category": "english",
@@ -817,7 +817,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 629,
+    "line": 630,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -825,7 +825,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 637,
+    "line": 638,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -833,7 +833,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 662,
+    "line": 663,
     "character": 13,
     "type": "JsxText",
     "category": "english",
@@ -841,7 +841,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 730,
+    "line": 731,
     "character": 40,
     "type": "JsxText",
     "category": "english",
@@ -849,7 +849,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 747,
+    "line": 748,
     "character": 27,
     "type": "JsxText",
     "category": "english",
@@ -857,7 +857,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 751,
+    "line": 752,
     "character": 42,
     "type": "JsxText",
     "category": "english",
@@ -865,7 +865,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 838,
+    "line": 839,
     "character": 79,
     "type": "JsxText",
     "category": "english",
@@ -873,7 +873,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 850,
+    "line": 851,
     "character": 74,
     "type": "JsxText",
     "category": "english",
@@ -881,7 +881,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 857,
+    "line": 858,
     "character": 72,
     "type": "JsxText",
     "category": "english",
@@ -889,7 +889,7 @@
   },
   {
     "file": "src/components/ui/coding-round-grader.tsx",
-    "line": 864,
+    "line": 865,
     "character": 74,
     "type": "JsxText",
     "category": "english",
@@ -1129,7 +1129,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
-    "line": 467,
+    "line": 528,
     "character": 83,
     "type": "JsxText",
     "category": "english",
@@ -1473,15 +1473,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 831,
-    "character": 33,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Output"
-  },
-  {
-    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 960,
+    "line": 964,
     "character": 27,
     "type": "JsxText",
     "category": "english",
@@ -1489,7 +1481,7 @@
   },
   {
     "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 1096,
+    "line": 1100,
     "character": 35,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1529,7 +1521,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionFormDialog.tsx",
-    "line": 334,
+    "line": 383,
     "character": 19,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1569,7 +1561,7 @@
   },
   {
     "file": "src/pages/Admin/KioskManagement/components/KioskTable.tsx",
-    "line": 96,
+    "line": 90,
     "character": 77,
     "type": "JsxText",
     "category": "english",

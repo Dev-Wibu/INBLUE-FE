@@ -163,6 +163,9 @@
     "editScheduleDescription": "Cập nhật giờ mở/đóng hoặc độ dài mỗi slot.",
     "scheduleCreated": "Đã tạo lịch mới",
     "scheduleUpdated": "Đã cập nhật lịch",
+    "scheduleDeleted": "Đã xóa lịch",
+    "confirmDeleteSchedule": "Xác nhận xóa lịch?",
+    "confirmDeleteScheduleMessage": "Bạn có chắc muốn xóa lịch này không? Hành động này không thể hoàn tác.",
     "unableToCreateSchedule": "Không thể tạo lịch",
     "unableToUpdateSchedule": "Không thể cập nhật lịch",
     "unableToLoadSchedules": "Không thể tải danh sách lịch",
@@ -201,6 +204,7 @@
     "noHistory": "Chưa có lịch sử đặt lịch nào",
     "minutes": "phút",
     "addSchedule": "Thêm lịch",
+    "deleteSchedule": "Xóa lịch",
     "daysWithSchedule": "ngày có lịch",
     "activeScheduleSummary": "khung giờ đang hoạt động",
     "scheduleGridTitle": "Lịch hoạt động theo tuần",
@@ -485,7 +489,10 @@
     "updatedDate": "Cập nhật",
     "selectCompanyForJd": "Vui lòng chọn công ty cho vị trí tuyển dụng này",
     "zeroEqualsFree": "0 = Miễn phí",
-    "applicationsCount": "lượt"
+    "applicationsCount": "lượt",
+    "unpaidText": "Chưa thanh toán",
+    "selectCompany": "Chọn công ty",
+    "chooseCompany": "Chọn công ty..."
   },
   "adminDashboardoverview": {
     "companies": "Doanh nghiệp",
@@ -4629,6 +4636,7 @@
   "errors": {
     "cannotSetUpInterviewRounds": "Không thể thiết lập vòng phỏng vấn",
     "cannotUpdateInterviewRounds": "Không thể cập nhật vòng phỏng vấn",
+    "cannotToggleJobDescriptionStatus": "Không thể thay đổi trạng thái mô tả công việc",
     "cannotLoadJobDescriptionList": "Không thể tải danh sách mô tả công việc",
     "cannotLoadJobDescription": "Không thể tải mô tả công việc",
     "cannotSearchJobDescriptions": "Không thể tìm kiếm mô tả công việc",
@@ -5735,6 +5743,7 @@
     "autoGenerateFailed": "Tạo thất bại",
     "errorDuringGenerate": "Lỗi xảy ra trong quá trình tạo",
     "addedProblemsToRound": "Đã thêm {{count}} bài tập vào vòng thi",
-    "skillRequirementsPlaceholder": "VD: Tối ưu bộ nhớ, Concurrency"
+    "skillRequirementsPlaceholder": "VD: Tối ưu bộ nhớ, Concurrency",
+    "valueTypePlaceholder": "Chọn kiểu giá trị"
   }
 }

@@ -128,6 +128,9 @@
     "editScheduleDescription": "開店・閉店時間またはスロット長を更新します。",
     "scheduleCreated": "スケジュールを作成しました",
     "scheduleUpdated": "スケジュールを更新しました",
+    "scheduleDeleted": "スケジュールを削除しました",
+    "confirmDeleteSchedule": "スケジュールの削除を確認しますか？",
+    "confirmDeleteScheduleMessage": "このスケジュールを削除してもよろしいですか？この操作は元に戻せません。",
     "unableToCreateSchedule": "スケジュールを作成できません",
     "unableToUpdateSchedule": "スケジュールを更新できません",
     "unableToLoadSchedules": "スケジュールを読み込めません",
@@ -136,6 +139,7 @@
     "noHistory": "履歴がありません",
     "minutes": "分",
     "addSchedule": "スケジュールを追加",
+    "deleteSchedule": "スケジュールを削除",
     "noLocation": "場所なし",
     "createdAt": "作成日時",
     "scheduleGridTitle": "スケジュールグリッド",
@@ -446,7 +450,10 @@
     "updatedDate": "更新日",
     "selectCompanyForJd": "この求人ポジションの会社を選択してください",
     "zeroEqualsFree": "0 = 無料",
-    "applicationsCount": "件"
+    "applicationsCount": "件",
+    "unpaidText": "未払い",
+    "selectCompany": "会社を選択",
+    "chooseCompany": "会社を選択してください..."
   },
   "adminDashboardoverview": {
     "companies": "企業",
@@ -2378,6 +2385,7 @@
   "errors": {
     "cannotSetUpInterviewRounds": "面接ラウンドを設定できません",
     "cannotUpdateInterviewRounds": "面接ラウンドを更新できません",
+    "cannotToggleJobDescriptionStatus": "求人情報のステータスを切り替えできません",
     "cannotLoadJobDescriptionList": "求人情報リストを読み込めません",
     "cannotLoadJobDescription": "求人情報を読み込めません",
     "cannotSearchJobDescriptions": "求人情報を検索できません",
@@ -5740,6 +5748,7 @@
     "autoGenerateFailed": "生成に失敗しました",
     "errorDuringGenerate": "生成中にエラーが発生しました",
     "addedProblemsToRound": "{{count}}件 meの?問題を面接ラウンドに追加しました",
-    "skillRequirementsPlaceholder": "例：メモリ最適化、並行処理"
+    "skillRequirementsPlaceholder": "例：メモリ最適化、並行処理",
+    "valueTypePlaceholder": "値型を選択"
   }
 }

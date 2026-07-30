@@ -1,15 +1,15 @@
 [
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 134,
-    "character": 36,
+    "line": 138,
+    "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Lọc CV"
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 135,
+    "line": 142,
     "character": 38,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -17,15 +17,15 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 139,
-    "character": 39,
+    "line": 147,
+    "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Mô phỏng Email"
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 140,
+    "line": 151,
     "character": 41,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -33,7 +33,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 144,
+    "line": 155,
     "character": 38,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -41,7 +41,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 145,
+    "line": 156,
     "character": 40,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -49,7 +49,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 149,
+    "line": 159,
     "character": 40,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -57,7 +57,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 150,
+    "line": 160,
     "character": 42,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -65,15 +65,15 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 154,
-    "character": 44,
+    "line": 165,
+    "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Đánh giá Code"
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 155,
+    "line": 169,
     "character": 46,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -81,7 +81,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 161,
+    "line": 175,
     "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -89,7 +89,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 166,
+    "line": 180,
     "character": 42,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -97,15 +97,15 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 170,
-    "character": 36,
+    "line": 186,
+    "character": 14,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Phỏng vấn AI"
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
-    "line": 171,
+    "line": 190,
     "character": 38,
     "type": "StringLiteral",
     "category": "vietnamese",
@@ -286,14 +286,6 @@
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Kính gửi"
-  },
-  {
-    "file": "src/pages/Admin/CodingProblemManagement/components/editor/CodingProblemEditor.tsx",
-    "line": 822,
-    "character": 52,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "Giá trị"
   },
   {
     "file": "src/pages/Mentor/MentorKioskEntryPage.tsx",
