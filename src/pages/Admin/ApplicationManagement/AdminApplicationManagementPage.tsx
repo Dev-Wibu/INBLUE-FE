@@ -170,8 +170,12 @@ export function AdminApplicationManagementPage() {
 
   // Reload when JD selection changes
   useEffect(() => {
-    void loadApplications();
-  }, [selectedJdId, loadApplications]);
+    if (selectedJdId === "ALL") {
+      void loadAllApplications();
+    } else {
+      void loadApplications();
+    }
+  }, [selectedJdId, loadApplications, loadAllApplications]);
 
   // Unique companies for filter dropdown
   const companyOptions = useMemo(() => {
