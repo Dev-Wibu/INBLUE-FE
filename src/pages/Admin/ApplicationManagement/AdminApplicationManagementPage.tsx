@@ -24,7 +24,7 @@ import {
   adminApplicationManager,
   type ApplicationListItemDto,
 } from "@/services/admin-application.manager";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase,
   Clock,
@@ -66,9 +66,7 @@ export function AdminApplicationManagementPage() {
   const openJds = openJdsData;
 
   // Selected JD: persisted to localStorage so F5 / navigation keeps the same
-  // selection. We do NOT auto-select the first JD anymore — that was the bug
-  // causing "3 vs 109" depending on the order openJds came back from the API.
-  // The user always sees a placeholder until they pick a JD explicitly.
+  // selection. Empty value = "ALL" — show applications from every JD.
   const LS_KEY = "adminAppMgmt.selectedJdId";
   const [manualSelectedJdId, setManualSelectedJdId] = useState<string>(() => {
     try {
@@ -80,13 +78,11 @@ export function AdminApplicationManagementPage() {
   });
 
   // If the persisted JD no longer exists in openJds, drop the selection.
-  const validPersistedJdId = useMemo(() => {
-    if (!manualSelectedJdId) return "";
+  const selectedJdId = useMemo(() => {
+    if (!manualSelectedJdId) return ""; // "" = ALL
     const exists = openJds.some((j) => String(j.jdId) === manualSelectedJdId);
     return exists ? manualSelectedJdId : "";
   }, [manualSelectedJdId, openJds]);
-
-  const selectedJdId = validPersistedJdId;
 
   const setSelectedJdId = (val: string) => {
     setManualSelectedJdId(val);
@@ -98,19 +94,20 @@ export function AdminApplicationManagementPage() {
     }
   };
 
-  // 2. Fetch applications for the SELECTED JD only (1 request per JD selection).
-  //    Per FE Guide: when no specific JD is selected we DO NOT fetch across JDs.
-  //    Instead we show a placeholder asking the user to pick a specific JD.
+  // 2. Fetch applications. Behaviour:
+  //    - When user picks a JD (selectedJdId is set) → fetch only that JD's
+  //      applications (1 request, cached 60s).
+  //    - When no JD is picked (default, selectedJdId = "") → fetch the list
+  //      of OPEN JDs from cache and fan-out one request per JD in parallel.
+  //      Each per-JD query is independent and cached by id, so subsequent
+  //      renders only refetch the ones that have actually gone stale.
   const numericSelectedJdId = useMemo(() => {
     if (!selectedJdId || Number.isNaN(Number(selectedJdId))) return null;
     return Number(selectedJdId);
   }, [selectedJdId]);
 
-  const {
-    data: applicationsData,
-    isLoading: isLoadingApplications,
-    refetch: refetchApplications,
-  } = useQuery({
+  // Single-JD query — used when user explicitly picks a JD.
+  const singleJdQuery = useQuery({
     queryKey: ["admin", "jd-applications", numericSelectedJdId],
     queryFn: async () => {
       if (!numericSelectedJdId) return null;
@@ -129,17 +126,80 @@ export function AdminApplicationManagementPage() {
       }));
       return { applications: enrichedApps as ApplicationListItemDto[], jdInfo };
     },
-    enabled: numericSelectedJdId !== null, // ⭐ Only fetch when a specific JD is selected
-    staleTime: 60 * 1000, // Cache 60s
+    enabled: numericSelectedJdId !== null,
+    staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
-  const applications = useMemo(
-    () => applicationsData?.applications ?? [],
-    [applicationsData?.applications]
+  // QueryClient handle for the per-JD fan-out queries.
+  const queryClient = useQueryClient();
+
+  // All-JDs query: fetch all OPEN JDs' applications in parallel using
+  // queryClient.fetchQuery for each. Each per-JD request is independently
+  // cached & deduplicated by React Query, so a second visit doesn't refetch.
+  const allJdIds = useMemo(
+    () => openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined),
+    [openJds]
   );
-  const isLoading = isLoadingApplications;
+
+  const allApplicationsQuery = useQuery({
+    queryKey: ["admin", "all-jd-applications", allJdIds],
+    enabled: numericSelectedJdId === null && openJds.length > 0,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      if (allJdIds.length === 0) return [] as ApplicationListItemDto[];
+
+      const results = await Promise.all(
+        allJdIds.map(async (jdId) => {
+          const jd = openJds.find((j) => j.jdId === jdId);
+          type AppWithCompany = ApplicationListItemDto & {
+            companyName?: string;
+            jobTitle?: string;
+          };
+          // Use fetchQuery so each per-JD result is cached under its own key
+          // and can be reused by the single-JD query or the application drawer.
+          const data = await queryClient.fetchQuery({
+            queryKey: ["admin", "jd-applications", jdId],
+            queryFn: async () => {
+              const res = await adminApplicationManager.getApplicationsByJdId(jdId);
+              if (!res.success || !res.data) {
+                return { applications: [] as ApplicationListItemDto[] };
+              }
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
+              return { applications: apps };
+            },
+            staleTime: 60 * 1000,
+            gcTime: 5 * 60 * 1000,
+          });
+
+          return data.applications.map((app: AppWithCompany) => ({
+            ...app,
+            companyName: app.companyName || jd?.company?.name,
+            jobTitle: app.jobTitle || jd?.title,
+          })) as ApplicationListItemDto[];
+        })
+      );
+
+      return results.flat();
+    },
+  });
+
+  const applications = useMemo<ApplicationListItemDto[]>(() => {
+    if (numericSelectedJdId !== null) {
+      return singleJdQuery.data?.applications ?? [];
+    }
+    return allApplicationsQuery.data ?? [];
+  }, [numericSelectedJdId, singleJdQuery.data, allApplicationsQuery.data]);
+
+  const isLoading =
+    numericSelectedJdId !== null ? singleJdQuery.isLoading : allApplicationsQuery.isLoading;
+
+  const refetchApplications =
+    numericSelectedJdId !== null ? singleJdQuery.refetch : allApplicationsQuery.refetch;
 
   // Unique companies for filter dropdown
   const companyOptions = useMemo(() => {
@@ -318,7 +378,7 @@ export function AdminApplicationManagementPage() {
           onClick={() => {
             void refetchApplications();
           }}
-          disabled={isLoading || numericSelectedJdId === null}
+          disabled={isLoading}
           className="h-8 gap-1.5 text-xs font-medium">
           <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           {t("common.refresh", "Làm mới")}
@@ -423,7 +483,7 @@ export function AdminApplicationManagementPage() {
               value={selectedCompanyId}
               onValueChange={(val) => {
                 setSelectedCompanyId(val);
-                // Reset JD selection — re-derive default JD via the openJds memo
+                // Reset JD selection to "ALL" when company changes
                 setSelectedJdId("");
                 pagination.goToFirstPage();
               }}>
@@ -446,21 +506,19 @@ export function AdminApplicationManagementPage() {
 
             {/* JD Filter */}
             <Select
-              value={selectedJdId || "NONE"}
+              value={selectedJdId || "ALL"}
               onValueChange={(val) => {
-                if (val !== "NONE") {
-                  setSelectedJdId(val);
-                  pagination.goToFirstPage();
-                }
+                setSelectedJdId(val === "ALL" ? "" : val);
+                pagination.goToFirstPage();
               }}>
               <SelectTrigger className="h-8 w-64 border-slate-200 text-xs dark:border-slate-700">
                 <SelectValue
-                  placeholder={t("adminApplicationManagement.selectJd", "Chọn vị trí (JD)")}
+                  placeholder={t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
                 />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="NONE" disabled>
-                  {t("adminApplicationManagement.selectJd", "Chọn vị trí (JD)")}
+                <SelectItem value="ALL">
+                  {t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
                 </SelectItem>
                 {availableJds.map((j) => (
                   <SelectItem key={j.jdId} value={String(j.jdId)}>
@@ -547,23 +605,12 @@ export function AdminApplicationManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {numericSelectedJdId === null ? (
+                {openJds.length === 0 && isLoading ? (
                   <TableRow>
                     <TableCell colSpan={8} className="h-48 text-center text-slate-400">
-                      <div className="flex flex-col items-center gap-1">
-                        <Briefcase className="h-6 w-6 text-slate-300" />
-                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                          {t(
-                            "adminApplicationManagement.selectJdToViewApplications",
-                            "Vui lòng chọn một vị trí (JD) để xem danh sách đơn ứng tuyển."
-                          )}
-                        </span>
-                        <span className="text-xs text-slate-400">
-                          {t(
-                            "adminApplicationManagement.allJdsHint",
-                            'Chọn "Tất cả vị trí" sẽ không tải dữ liệu để tránh gọi nhiều API.'
-                          )}
-                        </span>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+                        <span>{t("common.loadingData", "Đang tải dữ liệu...")}</span>
                       </div>
                     </TableCell>
                   </TableRow>
