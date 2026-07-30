@@ -16,17 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-  CalendarDays,
-  Clock4,
-  Hourglass,
-  Loader2,
-  Power,
-  Sparkles,
-  Sun,
-  Sunset,
-} from "lucide-react";
+import { CalendarDays, Clock4, Hourglass, Loader2, Sparkles, Sun, Sunset } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -240,27 +230,6 @@ export function ScheduleFormDialog({
             <p className="text-muted-foreground text-xs">
               {t("adminKioskManagement.slotDurationHint")}
             </p>
-          </div>
-
-          <div className="border-border bg-muted/30 flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-lg">
-                <Power className="h-4 w-4" />
-              </div>
-              <div>
-                <Label htmlFor="schedule-active" className="text-sm font-medium">
-                  {t("adminKioskManagement.scheduleActiveLabel")}
-                </Label>
-                <p className="text-muted-foreground text-xs">
-                  {t("adminKioskManagement.scheduleActiveDescription")}
-                </p>
-              </div>
-            </div>
-            <Switch
-              id="schedule-active"
-              checked={values.isActive}
-              onCheckedChange={(checked) => setValues((prev) => ({ ...prev, isActive: checked }))}
-            />
           </div>
 
           <DialogFooter className="gap-2">

@@ -149,7 +149,7 @@ export function AdminApplicationManagementPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [openJds, selectedJdId, t]);
+  }, [selectedJdId]); // Only depend on selectedJdId, openJds is accessed via ref
 
   const loadOpenJds = useCallback(() => {
     void refetchOpenJds();
@@ -157,9 +157,9 @@ export function AdminApplicationManagementPage() {
 
   useEffect(() => {
     if (openJds.length > 0) {
-      loadApplications();
+      void loadApplications();
     }
-  }, [openJds, loadApplications]);
+  }, [openJds.length, loadApplications]);
 
   useEffect(() => {
     loadApplications();
