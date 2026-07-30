@@ -27,29 +27,8 @@ interface NativePaymentInfo {
   quicklink?: string;
 }
 
-function buildDefaultNativeInfo(checkoutUrl: string, amount?: number): NativePaymentInfo {
-  const paymentId = checkoutUrl.split("/web/")[1]?.replace(/\//g, "").split("?")[0] || "";
-  const codeSuffix = paymentId.slice(0, 11).toUpperCase();
-  const addInfo = `${codeSuffix} PAYMENT`;
-  const amtStr = String(amount || 2000);
-
-  return {
-    bankName: "Ngân hàng TMCP Đầu tư và Phát triển Việt Nam",
-    bankShortName: "BIDV",
-    accountName: "NGUYEN PHAM THU HA",
-    accountNo: "V3CAS6721131488",
-    amount: amtStr,
-    addInfo: addInfo,
-    quicklink: `https://img.vietqr.io/image/970418-V3CAS6721131488-vietqr_pro.jpg?addInfo=${encodeURIComponent(
-      addInfo
-    )}&amount=${amtStr}`,
-  };
-}
-
-function extractNativeInfoFromRawData(rawData: unknown, checkoutUrl: string, amount?: number): NativePaymentInfo {
-  const defaultInfo = buildDefaultNativeInfo(checkoutUrl, amount);
-
-  if (!rawData) return defaultInfo;
+function extractNativeInfoFromRawData(rawData: unknown): NativePaymentInfo | null {
+  if (!rawData) return null;
 
   let record: Record<string, unknown> | null = null;
   if (typeof rawData === "string") {
@@ -75,27 +54,25 @@ function extractNativeInfoFromRawData(rawData: unknown, checkoutUrl: string, amo
     const bankShortName = (record.bankShortName || record.bankName || "BIDV") as string;
     const quicklink = (record.quicklink || record.qrCodeUrl) as string | undefined;
 
-    const amtStr = String(amt || defaultInfo.amount || 2000);
-
-    if (accountNo || quicklink) {
+    if (accountNo || quicklink || addInfo) {
       const generatedQuicklink =
         quicklink ||
-        `https://img.vietqr.io/image/${bin}-${accountNo || defaultInfo.accountNo}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
-          String(addInfo || defaultInfo.addInfo)
-        )}&amount=${amtStr}`;
+        `https://img.vietqr.io/image/${bin}-${accountNo || "V3CAS6721131488"}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
+          String(addInfo || "")
+        )}&amount=${amt || 2000}`;
 
       return {
-        accountNo: String(accountNo || defaultInfo.accountNo),
-        accountName: String(accountName || defaultInfo.accountName),
-        amount: String(amt || defaultInfo.amount),
-        addInfo: String(addInfo || defaultInfo.addInfo),
-        bankShortName: String(bankShortName || defaultInfo.bankShortName),
+        accountNo: String(accountNo || "V3CAS6721131488"),
+        accountName: String(accountName || "NGUYEN PHAM THU HA"),
+        amount: String(amt || "2000"),
+        addInfo: String(addInfo || ""),
+        bankShortName: String(bankShortName || "BIDV"),
         quicklink: generatedQuicklink,
       };
     }
   }
 
-  return defaultInfo;
+  return null;
 }
 
 export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContainerProps) {
@@ -145,16 +122,12 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     return url.includes("?") ? `${url}&embedded=true` : `${url}?embedded=true`;
   };
 
-  // Fetch & parse PayOS HTML for exact QR details if available
+  // Fetch & parse PayOS HTML for REAL addInfo & quicklink
   useEffect(() => {
     if (!checkoutUrl) {
       setNativeInfo(null);
       setShowEmbeddedFallback(false);
       return;
-    }
-
-    if (!nativeInfo) {
-      setNativeInfo(buildDefaultNativeInfo(checkoutUrl, job.price));
     }
 
     const tryFetchNativeInfo = async () => {
@@ -171,26 +144,47 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
           if (!res.ok) continue;
           const html = await res.text();
 
-          let info: NativePaymentInfo = {};
+          let extracted: NativePaymentInfo = {
+            bankShortName: "BIDV",
+            accountName: "NGUYEN PHAM THU HA",
+            accountNo: "V3CAS6721131488",
+            amount: String(job.price || 2000),
+          };
+
+          // Extract transactionInfo if embedded in Next.js script
           const matchInfo = html.match(/"transactionInfo":(\{.*?\})/);
           if (matchInfo && matchInfo[1]) {
             try {
-              info = JSON.parse(matchInfo[1]);
+              const parsed = JSON.parse(matchInfo[1]);
+              extracted = { ...extracted, ...parsed };
             } catch {
               // ignore
             }
           }
 
-          const matchQuicklink = html.match(/"quicklink":"(.*?)"/);
-          if (matchQuicklink && matchQuicklink[1]) {
-            info.quicklink = matchQuicklink[1].replace(/\\u0026/g, "&");
+          // Extract addInfo (Nội dung CK) accurately from PayOS HTML
+          const matchAddInfo =
+            html.match(/"addInfo"\s*:\s*"(.*?)"/) ||
+            html.match(/\|\s*([A-Z0-9]+\s+PAYMENT)\s*\|/i) ||
+            html.match(/nội dung\s*<b>(.*?)<\/b>/i);
+
+          if (matchAddInfo && matchAddInfo[1]) {
+            extracted.addInfo = matchAddInfo[1].replace(/<[^>]*>/g, "").trim();
           }
 
-          if (info.accountNo || info.quicklink) {
-            setNativeInfo((prev) => ({
-              ...prev,
-              ...info,
-            }));
+          // Extract official quicklink from PayOS HTML
+          const matchQuicklink = html.match(/"quicklink"\s*:\s*"(.*?)"/);
+          if (matchQuicklink && matchQuicklink[1]) {
+            extracted.quicklink = matchQuicklink[1].replace(/\\u0026/g, "&");
+          } else if (extracted.addInfo) {
+            extracted.quicklink = `https://img.vietqr.io/image/970418-${extracted.accountNo || "V3CAS6721131488"}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
+              extracted.addInfo
+            )}&amount=${extracted.amount || 2000}`;
+          }
+
+          if (extracted.addInfo || extracted.quicklink) {
+            setNativeInfo(extracted);
+            setShowEmbeddedFallback(false);
             return;
           }
         } catch {
@@ -200,7 +194,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     };
 
     tryFetchNativeInfo();
-  }, [checkoutUrl]);
+  }, [checkoutUrl, job.price]);
 
   // Auto-poll payment status every 3 seconds while payment modal is open
   useEffect(() => {
@@ -270,7 +264,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         localStorage.setItem("pending_jd_purchase_id", String(jdIdNum));
         const res = await jdPurchaseManager.createPayment(jdIdNum);
         if (res?.checkoutUrl) {
-          const extracted = extractNativeInfoFromRawData(res.rawData, res.checkoutUrl, job.price);
+          const extracted = extractNativeInfoFromRawData(res.rawData);
           setNativeInfo(extracted);
           setShowEmbeddedFallback(false);
           setCheckoutUrl(res.checkoutUrl);
@@ -324,98 +318,53 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
             {/* Modal Body: 100% Native Merged Single Screen */}
             <div className="relative flex-1 overflow-y-auto bg-slate-50 p-4.5 dark:bg-slate-950 custom-scrollbar">
-              {!showEmbeddedFallback && nativeInfo ? (
-                <div className="flex flex-col items-center gap-4">
-                  {/* Clean QR Image without gray border or subtext */}
-                  <div className="flex flex-col items-center">
-                    {nativeInfo.quicklink ? (
-                      <img
-                        src={nativeInfo.quicklink}
-                        alt="VietQR Code"
-                        className="h-[240px] w-[240px] rounded-xl border border-slate-100 object-contain shadow-xs bg-white dark:border-slate-800 dark:bg-white"
-                      />
-                    ) : (
-                      <div className="flex h-[240px] w-[240px] items-center justify-center text-xs text-slate-400">
-                        <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Single Unified Bank Info Box */}
-                  <div className="w-full space-y-2.5 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                    {/* Bank */}
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500 dark:text-slate-400">Ngân hàng:</span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">
-                        {nativeInfo.bankShortName || "BIDV"}
-                      </span>
+              {!showEmbeddedFallback ? (
+                nativeInfo?.addInfo ? (
+                  <div className="flex flex-col items-center gap-4">
+                    {/* Clean QR Image without gray border or subtext */}
+                    <div className="flex flex-col items-center">
+                      {nativeInfo.quicklink ? (
+                        <img
+                          src={nativeInfo.quicklink}
+                          alt="VietQR Code"
+                          className="h-[240px] w-[240px] rounded-xl border border-slate-100 object-contain shadow-xs bg-white dark:border-slate-800 dark:bg-white"
+                        />
+                      ) : (
+                        <div className="flex h-[240px] w-[240px] items-center justify-center text-xs text-slate-400">
+                          <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+                        </div>
+                      )}
                     </div>
 
-                    {/* Account Name */}
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500 dark:text-slate-400">Chủ tài khoản:</span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">
-                        {nativeInfo.accountName || "NGUYEN PHAM THU HA"}
-                      </span>
-                    </div>
-
-                    {/* Account No */}
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500 dark:text-slate-400">Số tài khoản:</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">
-                          {nativeInfo.accountNo || "V3CAS6721131488"}
-                        </span>
-                        <button
-                          onClick={() => handleCopy(nativeInfo.accountNo || "V3CAS6721131488", "Số tài khoản")}
-                          className="flex h-5.5 px-2 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
-                          {copiedField === "Số tài khoản" ? (
-                            <Check className="h-3 w-3 text-emerald-500" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                          Sao chép
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Amount */}
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-500 dark:text-slate-400">Số tiền:</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-amber-600 dark:text-amber-400">
-                          {formatNumber(Number(nativeInfo.amount || job.price || 0))} VND
-                        </span>
-                        <button
-                          onClick={() =>
-                            handleCopy(
-                              String(nativeInfo.amount || job.price || 0),
-                              "Số tiền"
-                            )
-                          }
-                          className="flex h-5.5 px-2 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
-                          {copiedField === "Số tiền" ? (
-                            <Check className="h-3 w-3 text-emerald-500" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                          Sao chép
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Add Info / Content */}
-                    {nativeInfo.addInfo && (
+                    {/* Single Unified Bank Info Box */}
+                    <div className="w-full space-y-2.5 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                      {/* Bank */}
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">Nội dung CK:</span>
+                        <span className="text-slate-500 dark:text-slate-400">Ngân hàng:</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {nativeInfo.bankShortName || "BIDV"}
+                        </span>
+                      </div>
+
+                      {/* Account Name */}
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Chủ tài khoản:</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {nativeInfo.accountName || "NGUYEN PHAM THU HA"}
+                        </span>
+                      </div>
+
+                      {/* Account No */}
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Số tài khoản:</span>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                            {nativeInfo.addInfo}
+                          <span className="font-mono font-bold text-slate-900 dark:text-white">
+                            {nativeInfo.accountNo || "V3CAS6721131488"}
                           </span>
                           <button
-                            onClick={() => handleCopy(nativeInfo.addInfo!, "Nội dung chuyển khoản")}
-                            className="flex h-5.5 px-2 items-center gap-1 rounded bg-indigo-50 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-400">
-                            {copiedField === "Nội dung chuyển khoản" ? (
+                            onClick={() => handleCopy(nativeInfo.accountNo || "V3CAS6721131488", "Số tài khoản")}
+                            className="flex h-5.5 px-2 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                            {copiedField === "Số tài khoản" ? (
                               <Check className="h-3 w-3 text-emerald-500" />
                             ) : (
                               <Copy className="h-3 w-3" />
@@ -424,17 +373,72 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                           </button>
                         </div>
                       </div>
-                    )}
-                  </div>
 
-                  {/* Warning Note */}
-                  <div className="flex items-start gap-2 rounded-lg border border-amber-200/70 bg-amber-50/80 p-2.5 text-[11px] text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
-                    <Info className="h-3.5 w-3.5 shrink-0 text-amber-600 mt-0.5" />
-                    <span>
-                      Vui lòng nhập chính xác <strong>Số tiền</strong> và <strong>Nội dung chuyển khoản</strong> để hệ thống tự động kích hoạt sau 3s.
-                    </span>
+                      {/* Amount */}
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Số tiền:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-extrabold text-amber-600 dark:text-amber-400">
+                            {formatNumber(Number(nativeInfo.amount || job.price || 0))} VND
+                          </span>
+                          <button
+                            onClick={() =>
+                              handleCopy(
+                                String(nativeInfo.amount || job.price || 0),
+                                "Số tiền"
+                              )
+                            }
+                            className="flex h-5.5 px-2 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                            {copiedField === "Số tiền" ? (
+                              <Check className="h-3 w-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                            Sao chép
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Add Info / Content */}
+                      {nativeInfo.addInfo && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-500 dark:text-slate-400">Nội dung CK:</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                              {nativeInfo.addInfo}
+                            </span>
+                            <button
+                              onClick={() => handleCopy(nativeInfo.addInfo!, "Nội dung chuyển khoản")}
+                              className="flex h-5.5 px-2 items-center gap-1 rounded bg-indigo-50 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-400">
+                              {copiedField === "Nội dung chuyển khoản" ? (
+                                <Check className="h-3 w-3 text-emerald-500" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                              Sao chép
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Warning Note */}
+                    <div className="flex items-start gap-2 rounded-lg border border-amber-200/70 bg-amber-50/80 p-2.5 text-[11px] text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
+                      <Info className="h-3.5 w-3.5 shrink-0 text-amber-600 mt-0.5" />
+                      <span>
+                        Vui lòng nhập chính xác <strong>Số tiền</strong> và <strong>Nội dung chuyển khoản</strong> để hệ thống tự động kích hoạt sau 3s.
+                      </span>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  /* Loading State while fetching real addInfo */
+                  <div className="flex h-[380px] flex-col items-center justify-center gap-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      Đang khởi tạo mã chuyển khoản VietQR...
+                    </p>
+                  </div>
+                )
               ) : (
                 /* Embedded Fallback View */
                 <div className="relative h-[460px] w-full overflow-hidden rounded-xl bg-white dark:bg-slate-900">
