@@ -219,9 +219,9 @@ export function JobDetailView({
               </div>
 
               {/* Payment / Apply — inline right */}
-              <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border-2 border-indigo-100 bg-indigo-50/60 p-4 sm:w-[200px] dark:border-indigo-900/40 dark:bg-indigo-950/20">
+              <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border border-indigo-200 bg-indigo-50 p-4 sm:w-[200px] dark:border-indigo-900/50 dark:bg-indigo-950/25">
                 {job.status === "OPEN" && (
-                  <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm ring-1 ring-indigo-100 dark:bg-slate-900/60 dark:ring-indigo-900/50">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <Coins className="h-4 w-4 text-amber-500" />
                       <span className="text-[15px] font-extrabold tracking-tight text-amber-600 dark:text-amber-400">
