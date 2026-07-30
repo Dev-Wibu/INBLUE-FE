@@ -79,14 +79,10 @@ export function KioskScheduleGrid({
                       className={cn(
                         "h-2.5 w-2.5 cursor-pointer rounded-full ring-offset-1 transition-all hover:ring-2",
                         isActive
-                          ? "bg-emerald-500 hover:ring-emerald-300 dark:ring-offset-slate-900"
+                          ? "bg-red-400 hover:ring-red-300 dark:bg-red-500 dark:ring-offset-slate-900"
                           : "bg-slate-400 hover:ring-slate-300 dark:bg-slate-500 dark:ring-offset-slate-900"
                       )}
-                      title={
-                        isActive
-                          ? t("adminKioskManagement.deactivate")
-                          : t("adminKioskManagement.activate")
-                      }
+                      title={t("adminKioskManagement.deleteSchedule", "Xóa lịch")}
                     />
                   </div>
 

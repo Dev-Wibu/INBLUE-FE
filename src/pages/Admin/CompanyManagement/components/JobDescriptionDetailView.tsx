@@ -923,7 +923,10 @@ export function JobDescriptionDetailView({
                         ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
                         : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                     }>
-                    {currentJd.status || "OPEN"}
+                    {t(
+                      `adminCompanymanagement.status_${currentJd.status}`,
+                      currentJd.status || "OPEN"
+                    )}
                   </Badge>
                 ) : (
                   <Select
@@ -937,7 +940,7 @@ export function JobDescriptionDetailView({
                     <SelectContent>
                       {STATUS_OPTIONS.map((st) => (
                         <SelectItem key={st} value={st} className="text-xs">
-                          {st}
+                          {t(`adminCompanymanagement.status_${st}`, st)}
                         </SelectItem>
                       ))}
                     </SelectContent>

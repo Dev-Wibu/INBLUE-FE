@@ -3683,10 +3683,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -4038,18 +4038,18 @@ export interface components {
             taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
+            isXml?: string;
+            elIgnored?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
             includePreludes?: string[];
             includeCodas?: string[];
-            trimDirectiveWhitespaces?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
-            elIgnored?: string;
-            isXml?: string;
-            defaultContentType?: string;
             urlPatterns?: string[];
-            errorOnUndeclaredNamespace?: string;
+            defaultContentType?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -4085,9 +4085,7 @@ export interface components {
         };
         ServletContext: {
             defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
-            /** Format: int32 */
-            sessionTimeout?: number;
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -4102,9 +4100,11 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
             initParameterNames?: unknown;
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
             virtualServerName?: string;
             contextPath?: string;
@@ -4184,21 +4184,21 @@ export interface components {
             className?: string;
         };
         SessionCookieConfig: {
-            httpOnly?: boolean;
             /** Format: int32 */
             maxAge?: number;
+            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
-            name?: string;
             path?: string;
+            name?: string;
             attributes?: {
                 [key: string]: string;
             };
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibLocation?: string;
             taglibURI?: string;
+            taglibLocation?: string;
         };
         AdminOpenJdResponseDto: {
             /** Format: int64 */

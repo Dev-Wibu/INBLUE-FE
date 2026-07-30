@@ -154,6 +154,23 @@ export class JobDescriptionManager {
       };
     }
   }
+
+  async toggleStatus(id: number | string): Promise<ApiResponse<void>> {
+    try {
+      const endpoint = `/api/job-descriptions/toggle/${id}`;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (fetchClient as any).PUT(endpoint, { params: { path: { id } } });
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : i18n.t("errors.cannotToggleJobDescriptionStatus"),
+      };
+    }
+  }
 }
 
 export const jobDescriptionManager = new JobDescriptionManager();

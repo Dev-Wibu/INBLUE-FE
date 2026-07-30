@@ -289,12 +289,9 @@ export function CompanyGridTab({
             <JobDescriptionTable
               jobDescriptions={enrichedCompanyJds}
               onView={(jd) => setSelectedJdId(jd.id!)}
-              onToggleStatus={async (job, nextStatus) => {
+              onToggleStatus={async (job) => {
                 try {
-                  const res = await jobDescriptionManager.update({
-                    id: job.id,
-                    status: nextStatus,
-                  });
+                  const res = await jobDescriptionManager.toggleStatus(job.id!);
                   if (res.success) {
                     toast.success(t("common.updateSuccess", "Cập nhật thành công"));
                     void refetchCompanyJds();
