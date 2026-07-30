@@ -16,7 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarDays, Clock4, Hourglass, Loader2, Sparkles, Sun, Sunset } from "lucide-react";
+import {
+  CalendarDays,
+  Clock4,
+  Hourglass,
+  Loader2,
+  Sparkles,
+  Sun,
+  Sunset,
+  Trash2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -33,6 +42,7 @@ interface ScheduleFormDialogProps {
   kioskId: number;
   initialSchedule?: KioskSchedule | null;
   onSubmit: (values: ScheduleFormValues) => Promise<void> | void;
+  onDelete?: (schedule: KioskSchedule) => Promise<void> | void;
   isSubmitting?: boolean;
 }
 
@@ -69,6 +79,7 @@ export function ScheduleFormDialog({
   kioskId,
   initialSchedule,
   onSubmit,
+  onDelete,
   isSubmitting,
 }: ScheduleFormDialogProps) {
   const { t } = useTranslation();
@@ -233,25 +244,41 @@ export function ScheduleFormDialog({
           </div>
 
           <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}>
-              {t("common.cancel")}
-            </Button>
-            <Button type="submit" disabled={isSubmitting || isInvalid} className="min-w-32 gap-2">
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("common.saving")}
-                </>
-              ) : isEdit ? (
-                t("adminKioskManagement.saveChanges")
-              ) : (
-                t("adminKioskManagement.createScheduleButton")
-              )}
-            </Button>
+            {isEdit && onDelete && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={async () => {
+                  if (!initialSchedule) return;
+                  await onDelete(initialSchedule);
+                }}
+                disabled={isSubmitting}
+                className="mr-auto gap-2">
+                <Trash2 className="h-4 w-4" />
+                {t("common.delete")}
+              </Button>
+            )}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={isSubmitting || isInvalid} className="min-w-32 gap-2">
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("common.saving")}
+                  </>
+                ) : isEdit ? (
+                  t("adminKioskManagement.saveChanges")
+                ) : (
+                  t("adminKioskManagement.createScheduleButton")
+                )}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

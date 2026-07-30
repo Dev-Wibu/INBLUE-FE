@@ -208,6 +208,26 @@ export class KioskManager {
     }
   }
 
+  async deleteSchedule(id: number): Promise<ApiResponse<void>> {
+    try {
+      const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/api/kiosks/schedule/${id}`;
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        return { success: false, error: this.extractErrorMessage(await response.text()) };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error("[KioskManager] deleteSchedule error:", error);
+      return {
+        success: false,
+        error: this.extractErrorMessage(error),
+      };
+    }
+  }
+
   async getAvailableSlots(kioskId: number, date: string): Promise<ApiResponse<SlotDto[]>> {
     try {
       const response = await fetchClient

@@ -53,7 +53,7 @@ export function AdminApplicationManagementPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // 1. Fetch Open JDs for dropdown filters with caching
-  const { data: openJdsData = [], refetch: refetchOpenJds } = useQuery({
+  const { data: openJdsData = [] } = useQuery({
     queryKey: ["admin", "open-jds-all"],
     queryFn: async () => {
       const res = await adminApplicationManager.getOpenJds();
@@ -151,10 +151,6 @@ export function AdminApplicationManagementPage() {
     }
   }, [selectedJdId]); // Only depend on selectedJdId, openJds is accessed via ref
 
-  const loadOpenJds = useCallback(() => {
-    void refetchOpenJds();
-  }, [refetchOpenJds]);
-
   useEffect(() => {
     if (openJds.length > 0) {
       void loadApplications();
@@ -162,8 +158,8 @@ export function AdminApplicationManagementPage() {
   }, [openJds.length, loadApplications]);
 
   useEffect(() => {
-    loadApplications();
-  }, [selectedJdId, loadApplications]);
+    void loadApplications();
+  }, [selectedJdId]);
 
   // Unique companies for filter dropdown
   const companyOptions = useMemo(() => {
@@ -323,8 +319,7 @@ export function AdminApplicationManagementPage() {
           variant="outline"
           size="sm"
           onClick={() => {
-            loadOpenJds();
-            loadApplications();
+            void loadApplications();
           }}
           disabled={isLoading}
           className="h-8 gap-1.5 text-xs font-medium">
