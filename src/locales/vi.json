@@ -165,6 +165,8 @@
     "scheduleCreated": "Đã tạo lịch mới",
     "scheduleUpdated": "Đã cập nhật lịch",
     "scheduleDeleted": "Đã xóa lịch",
+    "confirmDeleteSchedule": "Xác nhận xóa lịch?",
+    "confirmDeleteScheduleMessage": "Bạn có chắc muốn xóa lịch này không? Hành động này không thể hoàn tác.",
     "unableToCreateSchedule": "Không thể tạo lịch",
     "unableToUpdateSchedule": "Không thể cập nhật lịch",
     "unableToDeleteSchedule": "Không thể xóa lịch",

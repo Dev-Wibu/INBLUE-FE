@@ -132,6 +132,8 @@
     "scheduleCreated": "スケジュールを作成しました",
     "scheduleUpdated": "スケジュールを更新しました",
     "scheduleDeleted": "スケジュールを削除しました",
+    "confirmDeleteSchedule": "スケジュールの削除を確認しますか？",
+    "confirmDeleteScheduleMessage": "このスケジュールを削除してもよろしいですか？この操作は元に戻せません。",
     "unableToCreateSchedule": "スケジュールを作成できません",
     "unableToUpdateSchedule": "スケジュールを更新できません",
     "unableToDeleteSchedule": "スケジュールを削除できません",

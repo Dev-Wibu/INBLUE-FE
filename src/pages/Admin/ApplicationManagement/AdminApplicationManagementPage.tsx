@@ -69,79 +69,32 @@ export function AdminApplicationManagementPage() {
   const applicationCacheRef = useRef<Map<number, ApplicationListItemDto[]>>(new Map());
   const [applications, setApplications] = useState<ApplicationListItemDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAll, setIsLoadingAll] = useState(false);
 
   // 2. Fetch applications with improved caching
   const loadApplications = useCallback(async () => {
+    if (selectedJdId === "ALL") {
+      setApplications([]);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      if (selectedJdId !== "ALL") {
-        // Single JD selected - fetch directly
-        const jdId = Number(selectedJdId);
-        const cached = applicationCacheRef.current.get(jdId);
-        if (cached) {
-          setApplications(cached);
-          setIsLoading(false);
-          return;
-        }
-        const res = await adminApplicationManager.getApplicationsByJdId(jdId);
-        if (res.success && res.data) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
-          applicationCacheRef.current.set(jdId, apps);
-          setApplications(apps);
-        } else {
-          setApplications([]);
-        }
+      const jdId = Number(selectedJdId);
+      const cached = applicationCacheRef.current.get(jdId);
+      if (cached) {
+        setApplications(cached);
+        setIsLoading(false);
+        return;
+      }
+      const res = await adminApplicationManager.getApplicationsByJdId(jdId);
+      if (res.success && res.data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
+        applicationCacheRef.current.set(jdId, apps);
+        setApplications(apps);
       } else {
-        // All JDs - fetch applications only for JDs not yet cached
-        const jdIds = openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined);
-        const uncachedJdIds = jdIds.filter((id) => !applicationCacheRef.current.has(id));
-
-        // Use cached data for already-fetched JDs
-        const cachedApps: ApplicationListItemDto[] = [];
-        jdIds.forEach((jdId) => {
-          const cached = applicationCacheRef.current.get(jdId);
-          if (cached) {
-            cachedApps.push(...cached);
-          }
-        });
-
-        // Only fetch uncached JDs
-        if (uncachedJdIds.length > 0) {
-          const results = await Promise.all(
-            uncachedJdIds.map((id) => adminApplicationManager.getApplicationsByJdId(id))
-          );
-          results.forEach((r, idx) => {
-            if (r.success && r.data) {
-              const jdInfo = openJds.find((j) => j.jdId === uncachedJdIds[idx]);
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const rawApps = (r.data.applications || (r.data as any)) as ApplicationListItemDto[];
-              type AppWithCompany = ApplicationListItemDto & {
-                companyName?: string;
-                jobTitle?: string;
-              };
-              const appsWithCompany = rawApps.map((app: AppWithCompany) => ({
-                ...app,
-                companyName: app.companyName || jdInfo?.company?.name,
-                jobTitle: app.jobTitle || jdInfo?.title,
-              }));
-              applicationCacheRef.current.set(
-                uncachedJdIds[idx],
-                appsWithCompany as ApplicationListItemDto[]
-              );
-            }
-          });
-        }
-
-        // Collect all cached applications
-        const allApps: ApplicationListItemDto[] = [];
-        jdIds.forEach((jdId) => {
-          const cached = applicationCacheRef.current.get(jdId);
-          if (cached) {
-            allApps.push(...cached);
-          }
-        });
-        setApplications(allApps);
+        setApplications([]);
       }
     } catch (err) {
       console.error(err);
@@ -149,22 +102,75 @@ export function AdminApplicationManagementPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedJdId]); // Only depend on selectedJdId, openJds is accessed via ref
+  }, [selectedJdId, t]);
 
-  // Initial load when openJds is ready
-  const hasLoadedInitialData = useRef(false);
-  useEffect(() => {
-    if (openJds.length > 0 && !hasLoadedInitialData.current) {
-      hasLoadedInitialData.current = true;
-      void loadApplications();
+  // Load all applications for all JDs (only when user explicitly clicks "Load All")
+  const loadAllApplications = useCallback(async () => {
+    if (openJds.length === 0) return;
+    setIsLoadingAll(true);
+    try {
+      const jdIds = openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined);
+      const uncachedJdIds = jdIds.filter((id) => !applicationCacheRef.current.has(id));
+
+      // Only fetch uncached JDs
+      if (uncachedJdIds.length > 0) {
+        const results = await Promise.all(
+          uncachedJdIds.map((id) => adminApplicationManager.getApplicationsByJdId(id))
+        );
+        results.forEach((r, idx) => {
+          if (r.success && r.data) {
+            const jdInfo = openJds.find((j) => j.jdId === uncachedJdIds[idx]);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const rawApps = (r.data.applications || (r.data as any)) as ApplicationListItemDto[];
+            type AppWithCompany = ApplicationListItemDto & {
+              companyName?: string;
+              jobTitle?: string;
+            };
+            const appsWithCompany = rawApps.map((app: AppWithCompany) => ({
+              ...app,
+              companyName: app.companyName || jdInfo?.company?.name,
+              jobTitle: app.jobTitle || jdInfo?.title,
+            }));
+            applicationCacheRef.current.set(
+              uncachedJdIds[idx],
+              appsWithCompany as ApplicationListItemDto[]
+            );
+          }
+        });
+      }
+
+      // Collect all cached applications
+      const allApps: ApplicationListItemDto[] = [];
+      jdIds.forEach((jdId) => {
+        const cached = applicationCacheRef.current.get(jdId);
+        if (cached) {
+          allApps.push(...cached);
+        }
+      });
+      setApplications(allApps);
+    } catch (err) {
+      console.error(err);
+      toast.error(t("common.unableToLoadData", "Không thể tải danh sách đơn ứng tuyển"));
+    } finally {
+      setIsLoadingAll(false);
     }
-  }, [openJds.length, loadApplications]);
+  }, [openJds, t]);
+
+  // Initial load when openJds is ready - select first JD by default
+  const hasInitialized = useRef(false);
+  useEffect(() => {
+    if (openJds.length > 0 && !hasInitialized.current) {
+      hasInitialized.current = true;
+      // Default to first JD if available
+      if (openJds[0]?.jdId) {
+        setSelectedJdId(String(openJds[0].jdId));
+      }
+    }
+  }, [openJds]);
 
   // Reload when JD selection changes
   useEffect(() => {
-    if (hasLoadedInitialData.current) {
-      void loadApplications();
-    }
+    void loadApplications();
   }, [selectedJdId, loadApplications]);
 
   // Unique companies for filter dropdown
@@ -325,11 +331,15 @@ export function AdminApplicationManagementPage() {
           variant="outline"
           size="sm"
           onClick={() => {
-            void loadApplications();
+            if (selectedJdId === "ALL") {
+              void loadAllApplications();
+            } else {
+              void loadApplications();
+            }
           }}
-          disabled={isLoading}
+          disabled={isLoading || isLoadingAll}
           className="h-8 gap-1.5 text-xs font-medium">
-          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${isLoading || isLoadingAll ? "animate-spin" : ""}`} />
           {t("common.refresh", "Làm mới")}
         </Button>
       </div>

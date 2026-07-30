@@ -199,8 +199,8 @@ export function KioskDetailPage() {
     }
   };
 
-  const handleToggleScheduleStatus = async (schedule: KioskSchedule) => {
-    if (!schedule.id || kioskId === null) return;
+  const handleToggleScheduleStatus = async (schedule: KioskSchedule): Promise<boolean> => {
+    if (!schedule.id || kioskId === null) return false;
     try {
       const s = schedule as unknown as { isActive?: boolean; active?: boolean };
       const result = await kioskManager.updateSchedule(schedule.id, {
@@ -214,12 +214,15 @@ export function KioskDetailPage() {
       if (result.success) {
         toast.success(t("adminKioskManagement.scheduleUpdated"));
         await loadData(true);
+        return true;
       } else {
         toast.error(result.error || t("adminKioskManagement.unableToUpdateSchedule"));
+        return false;
       }
     } catch (error) {
       console.error("Error toggling schedule:", error);
       toast.error(t("common.unableToSave"));
+      return false;
     }
   };
 

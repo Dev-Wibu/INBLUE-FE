@@ -42,7 +42,7 @@ interface ScheduleFormDialogProps {
   kioskId: number;
   initialSchedule?: KioskSchedule | null;
   onSubmit: (values: ScheduleFormValues) => Promise<void> | void;
-  onToggleStatus: (schedule: KioskSchedule) => Promise<void> | void;
+  onToggleStatus: (schedule: KioskSchedule) => Promise<boolean> | void;
   isSubmitting?: boolean;
 }
 
@@ -84,6 +84,8 @@ export function ScheduleFormDialog({
 }: ScheduleFormDialogProps) {
   const { t } = useTranslation();
   const isEdit = !!initialSchedule?.id;
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const initialValues: ScheduleFormValues = initialSchedule
     ? valuesFromSchedule(initialSchedule)
@@ -248,10 +250,8 @@ export function ScheduleFormDialog({
               <Button
                 type="button"
                 variant="destructive"
-                onClick={async () => {
-                  await onToggleStatus(initialSchedule);
-                }}
-                disabled={isSubmitting}
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isSubmitting || isDeleting}
                 className="mr-auto gap-2">
                 <Trash2 className="h-4 w-4" />
                 {t("common.delete")}
@@ -279,6 +279,55 @@ export function ScheduleFormDialog({
               </Button>
             </div>
           </DialogFooter>
+
+          {/* Delete Confirmation Dialog */}
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div className="mx-4 w-full max-w-sm rounded-xl bg-white p-6 shadow-lg dark:bg-slate-900">
+                <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+                  {t("adminKioskManagement.confirmDeleteSchedule", "Xác nhận xóa lịch?")}
+                </h3>
+                <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+                  {t(
+                    "adminKioskManagement.confirmDeleteScheduleMessage",
+                    "Bạn có chắc muốn xóa lịch này không? Hành động này không thể hoàn tác."
+                  )}
+                </p>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}>
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={async () => {
+                      if (!initialSchedule) return;
+                      setIsDeleting(true);
+                      const success = await onToggleStatus(initialSchedule);
+                      setIsDeleting(false);
+                      if (success !== false) {
+                        onOpenChange(false);
+                      }
+                    }}
+                    disabled={isDeleting}
+                    className="gap-2">
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {t("common.deleting", "Đang xóa...")}
+                      </>
+                    ) : (
+                      t("common.delete")
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </form>
       </DialogContent>
     </Dialog>
