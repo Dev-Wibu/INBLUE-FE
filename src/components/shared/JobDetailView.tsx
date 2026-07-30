@@ -107,7 +107,7 @@ export function JobDetailView({
       return (
         <Button
           disabled
-          className="w-full rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          className="rounded-xl bg-slate-100 px-5 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
           {job.status === "CLOSED"
             ? t("enterpriseJobdescriptiondetailpage.jobClosed", "Đã đóng tuyển dụng")
             : t("enterpriseJobdescriptiondetailpage.draft1", "Bản nháp")}
@@ -120,7 +120,7 @@ export function JobDetailView({
         <Button
           onClick={onApplyAction}
           disabled={isLoadingAction}
-          className="w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">
+          className="rounded-xl bg-emerald-600 px-5 text-white hover:bg-emerald-700">
           {isLoadingAction
             ? t("common.processing", "Đang xử lý...")
             : t("enterpriseJobdetailpage.startTestNow", "Vào làm bài ngay")}
@@ -132,10 +132,10 @@ export function JobDetailView({
       <Button
         onClick={onApplyAction}
         disabled={isLoadingAction}
-        className="w-full rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+        className="rounded-xl bg-indigo-600 px-5 text-white hover:bg-indigo-700">
         {isLoadingAction
           ? t("common.processing", "Đang xử lý...")
-          : t("enterpriseJobdetailpage.payAndApply", "Thanh toán & Ứng tuyển")}
+          : t("enterpriseJobdetailpage.pay", "Thanh toán")}
       </Button>
     );
   };
@@ -218,29 +218,29 @@ export function JobDetailView({
                 </div>
               </div>
 
-              {/* Payment / Apply — inline right */}
-              <div className="flex shrink-0 flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-4 sm:w-[200px] dark:border-slate-800/40 dark:bg-[#0B0F19]/50">
+              {/* Payment / Apply — right side, separated by border */}
+              <div className="flex shrink-0 flex-col items-end justify-center gap-3 border-l border-slate-100 pl-5 dark:border-slate-800/60">
                 {job.status === "OPEN" && (
                   <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    <div className="flex flex-col items-end gap-0.5">
+                      <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
                         {t("payment.applicationFee", "Phí ứng tuyển")}
                       </span>
+                      <div className="flex items-center gap-1.5">
+                        <Coins className="h-4 w-4 text-amber-500" />
+                        <span className="text-[17px] font-extrabold tracking-tight text-amber-500 dark:text-amber-400">
+                          {typeof job?.price === "number" && job.price > 0
+                            ? `${formatNumber(job.price)} VND`
+                            : typeof job?.price === "number" && job.price === 0
+                              ? t("common.free", "Miễn phí")
+                              : "99.000 VND"}
+                        </span>
+                      </div>
                       {hasPurchased && (
-                        <Badge className="border-emerald-500/20 bg-emerald-500/10 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                          {t("enterpriseJobdetailpage.paid", "Đã thanh toán")}
-                        </Badge>
+                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+                          ✓ {t("enterpriseJobdetailpage.paid", "Đã thanh toán")}
+                        </span>
                       )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Coins className="h-5 w-5 text-amber-500" />
-                      <span className="text-lg font-extrabold tracking-tight text-amber-600 dark:text-amber-500">
-                        {typeof job?.price === "number" && job.price > 0
-                          ? `${formatNumber(job.price)} VND`
-                          : typeof job?.price === "number" && job.price === 0
-                            ? t("common.free", "Miễn phí")
-                            : "99.000 VND"}
-                      </span>
                     </div>
                   </>
                 )}
