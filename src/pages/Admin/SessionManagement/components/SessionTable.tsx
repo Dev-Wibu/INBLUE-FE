@@ -48,7 +48,7 @@ export function SessionTable({ sessions, onView, getSortProps }: SessionTablePro
           <Search className="h-6 w-6 text-slate-400 dark:text-slate-500" />
         </div>
         <p className="text-sm font-medium text-slate-500">
-          {t("adminSessionmanagement.noLessonsFound")}
+          {t("adminSessionmanagement.noSessionsFound")}
         </p>
       </div>
     );

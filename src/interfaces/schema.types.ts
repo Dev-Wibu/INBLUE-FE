@@ -204,6 +204,8 @@ export interface Session {
   duration?: number;
   totalPrice?: number;
   transactionCode?: string;
+  /** Kiosk ID where this offline session takes place (null for online) */
+  kioskId?: number;
   /** Mentor review of the student (set by mentor after session ends) */
   mentorReview?: MentorReview | null;
   /** Student feedback of the mentor (set by student after session ends) */

@@ -331,7 +331,11 @@ export function JobDescriptionDetailView({
     }));
   }, [currentJd.rounds]);
 
-  const handleSaveRounds = async (rounds: UIRound[]) => {
+  const handleSaveRounds = async (
+    rounds: UIRound[],
+    _metadata?: { name: string; category: string; description: string },
+    options?: { closeEditorAfter?: boolean }
+  ) => {
     setIsSaving(true);
     try {
       const payloadRounds = rounds.map((r, idx) => ({
@@ -370,6 +374,10 @@ export function JobDescriptionDetailView({
         setCurrentJd((prev) =>
           prev ? { ...prev, rounds: res.data as unknown as typeof prev.rounds } : prev
         );
+        // Only close the editor on a full save; per-round saves keep the user in the workspace.
+        if (options?.closeEditorAfter !== false) {
+          setIsEditorOpen(false);
+        }
       } else {
         toast.error(
           res.error ||
@@ -457,6 +465,7 @@ export function JobDescriptionDetailView({
           initialMetadata={{ name: currentJd.title || "", category: "", description: "" }}
           title={t("adminCompanymanagement.recruitmentPipelineJd", "Quy trình tuyển dụng JD")}
           showMetadataInputs={false}
+          mode="edit"
           isSaving={isSaving}
           onSave={handleSaveRounds}
         />

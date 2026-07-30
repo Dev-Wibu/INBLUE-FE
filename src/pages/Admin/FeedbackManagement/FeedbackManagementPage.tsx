@@ -268,7 +268,11 @@ export function FeedbackManagementPage() {
                           <TableCell className="text-sm text-slate-500">
                             {feedback.createdAt
                               ? formatDateTime(feedback.createdAt)
-                              : t("common.noDataAvailable")}
+                              : feedback.session?.joinTime
+                                ? formatDateTime(feedback.session.joinTime)
+                                : feedback.session?.startTime1
+                                  ? formatDateTime(feedback.session.startTime1)
+                                  : t("common.noDataAvailable")}
                           </TableCell>
                           <TableCell className="pr-6">
                             <StarRating value={feedback.rating || 0} readOnly size="sm" />

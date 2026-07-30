@@ -330,8 +330,11 @@ export function QuestionBankCategoryTab({
                       {cat.categoryName}
                     </h3>
                   )}
-                  <p className="mt-1 px-1 text-xs text-slate-500 dark:text-slate-400">
-                    ID: {cat.id}
+                  <p className="mt-1 flex items-center gap-2 px-1 text-xs text-slate-500 dark:text-slate-400">
+                    <span>
+                      {questions.filter((q) => q.questionCategory?.id === cat.id).length}{" "}
+                      {t("question.questions", "Câu hỏi")}
+                    </span>
                   </p>
                 </div>
               </div>

@@ -14,11 +14,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
-import type { User } from "@/interfaces";
+import type { Mentor, User } from "@/interfaces";
 import { formatCurrency, formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
 import { openUrlInNewTab } from "@/lib/media-file-utils";
 import { getSessionStatusBadge } from "@/lib/status-utils";
-import { sessionManager, usersAdminManager } from "@/services";
+import { mentorManager, sessionManager, usersAdminManager } from "@/services";
 import {
   ArrowLeft,
   CheckCircle,
@@ -125,7 +125,7 @@ export function SessionFormPage() {
   const [originalSession, setOriginalSession] = useState<Session | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [participant1Info, setParticipant1Info] = useState<User | null>(null);
-  const [participant2Info, setParticipant2Info] = useState<User | null>(null);
+  const [participant2Info, setParticipant2Info] = useState<Mentor | null>(null);
 
   const handleApprove = async () => {
     if (!id) return;
@@ -167,15 +167,15 @@ export function SessionFormPage() {
         status: "CANCELED",
       });
       if (response.success) {
-        toast.success(t("adminSessionmanagement.lessonCanceledSuccessfully"));
+        toast.success(t("adminSessionmanagement.sessionCanceledSuccessfully"));
         setIsCancelDialogOpen(false);
         window.location.reload();
       } else {
-        toast.error(response.error || t("adminSessionmanagement.lessonsCannotBeCanceled"));
+        toast.error(response.error || t("adminSessionmanagement.sessionsCannotBeCanceled"));
       }
     } catch (error) {
       console.error("Error canceling session:", error);
-      toast.error(t("adminSessionmanagement.lessonsCannotBeCanceled"));
+      toast.error(t("adminSessionmanagement.sessionsCannotBeCanceled"));
     }
   };
 
@@ -187,37 +187,48 @@ export function SessionFormPage() {
           if (response.success && response.data) {
             const session = Array.isArray(response.data) ? response.data[0] : response.data;
             if (!session) throw new Error("Session not found");
-            setOriginalSession(session as Session);
+            // BE GET returns `mentorId` (alias of userId2); normalize it so the
+            // form binds correctly and the PUT body contains a valid userId2.
+            const normalized: Session = {
+              ...session,
+              userId2: session.userId2 ?? session.mentorId,
+            };
+            setOriginalSession(normalized);
 
-            if (session.userId) {
-              usersAdminManager.getById(session.userId).then((res) => {
+            if (normalized.userId) {
+              usersAdminManager.getById(normalized.userId).then((res) => {
                 if (res.success && res.data) setParticipant1Info(res.data);
               });
             }
-            if (session.userId2) {
-              usersAdminManager.getById(session.userId2).then((res) => {
+            if (normalized.userId2) {
+              // `userId2` in the Session BE schema is the mentor's id from the
+              // Mentor table (admin types in the Mentor.id when creating a
+              // session). Look it up via mentorManager so the displayed name,
+              // email, and avatar match the actual mentor – not a coincidentally
+              // same-numbered user account.
+              mentorManager.getById(normalized.userId2).then((res) => {
                 if (res.success && res.data) setParticipant2Info(res.data);
               });
             }
 
             setFormData({
-              userId: session.userId,
-              userId2: session.userId2,
-              status: session.status,
-              joinTime: session.joinTime,
-              duration: session.duration,
-              totalPrice: session.totalPrice,
-              transactionCode: session.transactionCode,
+              userId: normalized.userId,
+              userId2: normalized.userId2,
+              status: normalized.status,
+              joinTime: normalized.joinTime,
+              duration: normalized.duration,
+              totalPrice: normalized.totalPrice,
+              transactionCode: normalized.transactionCode,
               start_video_off: true,
               start_audio_off: true,
             });
           } else {
-            toast.error(response.error || t("adminSessionmanagement.unableToLoadLessonList"));
+            toast.error(response.error || t("adminSessionmanagement.unableToLoadSessionList"));
             navigate("/admin/sessions");
           }
         } catch (error) {
           console.error("Error loading session:", error);
-          toast.error(t("adminSessionmanagement.unableToLoadLessonList"));
+          toast.error(t("adminSessionmanagement.unableToLoadSessionList"));
           navigate("/admin/sessions");
         } finally {
           setIsLoading(false);
@@ -230,6 +241,31 @@ export function SessionFormPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      if (!formData.userId) {
+        toast.error(t("adminSessionmanagement.enterUserId"));
+        setIsSubmitting(false);
+        return;
+      }
+      if (!formData.userId2) {
+        toast.error(t("adminSessionmanagement.enterMentorId"));
+        setIsSubmitting(false);
+        return;
+      }
+      if (
+        formData.totalPrice === undefined ||
+        formData.totalPrice === null ||
+        Number.isNaN(formData.totalPrice) ||
+        formData.totalPrice < 1
+      ) {
+        toast.error(t("adminSessionmanagement.totalPriceRequired"));
+        setIsSubmitting(false);
+        return;
+      }
+      if (!formData.joinTime) {
+        toast.error(t("adminSessionmanagement.meetingStartTime"));
+        setIsSubmitting(false);
+        return;
+      }
       if (isEditMode && id) {
         if (!originalSession) return;
         const mergedData: Partial<Session> = {
@@ -244,27 +280,27 @@ export function SessionFormPage() {
         };
         const response = await sessionManager.update(parseInt(id, 10), mergedData);
         if (response.success) {
-          toast.success(t("adminSessionmanagement.lessonUpdatedSuccessfully"));
+          toast.success(t("adminSessionmanagement.sessionUpdatedSuccessfully"));
           setIsEditing(false);
           window.location.reload();
         } else {
-          toast.error(response.error || t("adminSessionmanagement.unableToUpdateLesson"));
+          toast.error(response.error || t("adminSessionmanagement.unableToUpdateSession"));
         }
       } else {
         const response = await sessionManager.create(formData);
         if (response.success) {
-          toast.success(t("adminSessionmanagement.lessonCreatedSuccessfully"));
+          toast.success(t("adminSessionmanagement.sessionCreatedSuccessfully"));
           navigate("/admin/sessions");
         } else {
-          toast.error(response.error || t("adminSessionmanagement.unableToCreateLesson"));
+          toast.error(response.error || t("adminSessionmanagement.unableToCreateSession"));
         }
       }
     } catch (error) {
       console.error("Error submitting session:", error);
       toast.error(
         isEditMode
-          ? t("adminSessionmanagement.unableToUpdateLesson")
-          : t("adminSessionmanagement.unableToCreateLesson")
+          ? t("adminSessionmanagement.unableToUpdateSession")
+          : t("adminSessionmanagement.unableToCreateSession")
       );
     } finally {
       setIsSubmitting(false);
@@ -366,7 +402,7 @@ export function SessionFormPage() {
             <Input
               id="totalPrice"
               type="number"
-              min={0}
+              min={1}
               value={formData.totalPrice ?? ""}
               onChange={(e) =>
                 setFormData({
@@ -495,9 +531,7 @@ export function SessionFormPage() {
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />
-              {isEditMode
-                ? t("common.saveChanges")
-                : t("adminSessionmanagement.createAStudySession")}
+              {isEditMode ? t("common.saveChanges") : t("adminSessionmanagement.createASession")}
             </>
           )}
         </Button>
@@ -520,9 +554,9 @@ export function SessionFormPage() {
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
             {isEditMode && isEditing
-              ? t("adminSessionmanagement.editingLessons")
+              ? t("adminSessionmanagement.editingSession")
               : !isEditMode
-                ? t("adminSessionmanagement.createANewLesson")
+                ? t("adminSessionmanagement.createANewSession")
                 : t("adminSessionmanagement.sessionDetails", "Chi tiết phiên phỏng vấn")}
           </h2>
         </div>
@@ -885,10 +919,10 @@ export function SessionFormPage() {
                         </div>
                         <div>
                           <span className="mb-1 block text-xs font-medium tracking-wide text-slate-500 uppercase">
-                            {t("adminSessionmanagement.major", "Ngành học")}
+                            {t("adminSessionmanagement.expertise", "Chuyên môn")}
                           </span>
                           <span className="mt-2 block text-sm font-medium text-slate-900 dark:text-white">
-                            {participant2Info?.major || "-"}
+                            {participant2Info?.expertise || "-"}
                           </span>
                         </div>
                         <div>
