@@ -225,8 +225,8 @@
   },
   {
     "file": "src/components/shared/JobDetailView.tsx",
-    "line": 194,
-    "character": 17,
+    "line": 240,
+    "character": 23,
     "type": "JsxText",
     "category": "english",
     "text": "HSD:"
@@ -265,7 +265,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 1208,
+    "line": 1213,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -1129,7 +1129,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
-    "line": 528,
+    "line": 607,
     "character": 83,
     "type": "JsxText",
     "category": "english",
@@ -1489,7 +1489,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 790,
+    "line": 798,
     "character": 21,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1497,7 +1497,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 817,
+    "line": 825,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1505,7 +1505,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 830,
+    "line": 838,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1513,7 +1513,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 838,
+    "line": 846,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1594,7 +1594,7 @@
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
     "line": 334,
-    "character": 21,
+    "character": 49,
     "type": "JsxText",
     "category": "english",
     "text": "ID:"
@@ -1633,7 +1633,7 @@
   },
   {
     "file": "src/pages/Admin/SessionManagement/SessionFormPage.tsx",
-    "line": 690,
+    "line": 719,
     "character": 37,
     "type": "JsxAttribute[title]",
     "category": "english",
@@ -2078,6 +2078,30 @@
     "type": "JsxText",
     "category": "english",
     "text": "LinkedIn"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 333,
+    "character": 27,
+    "type": "JsxAttribute[alt]",
+    "category": "english",
+    "text": "VietQR Code"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 388,
+    "character": 89,
+    "type": "JsxText",
+    "category": "english",
+    "text": "VND"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 462,
+    "character": 21,
+    "type": "JsxAttribute[title]",
+    "category": "english",
+    "text": "PayOS Embedded Checkout"
   },
   {
     "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
