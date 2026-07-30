@@ -24,7 +24,7 @@ import {
   adminApplicationManager,
   type ApplicationListItemDto,
 } from "@/services/admin-application.manager";
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   Briefcase,
   Clock,
@@ -37,7 +37,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export function AdminApplicationManagementPage() {
@@ -136,42 +136,17 @@ export function AdminApplicationManagementPage() {
     refetchOnWindowFocus: false,
   });
 
-  // QueryClient handle for the per-JD fan-out queries.
-  const queryClient = useQueryClient();
-
   // All OPEN JDs in stable order. Filtering undefined keeps the type tight.
   const allJdIds = useMemo(
     () => openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined),
     [openJds]
   );
 
-  // Pre-fetch every JD's applications as soon as we know the JD list. Each
-  // per-JD request is cached independently so navigating between JDs or
-  // refreshing the page never re-fetches already-cached JDs.
-  useEffect(() => {
-    if (numericSelectedJdId !== null) return;
-    if (allJdIds.length === 0) return;
-    allJdIds.forEach((jdId) => {
-      void queryClient.fetchQuery({
-        queryKey: ["admin", "jd-applications", jdId],
-        queryFn: async () => {
-          const res = await adminApplicationManager.getApplicationsByJdId(jdId);
-          if (!res.success || !res.data) {
-            return { applications: [] as ApplicationListItemDto[] };
-          }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
-          return { applications: apps };
-        },
-        staleTime: 60 * 1000,
-        gcTime: 5 * 60 * 1000,
-      });
-    });
-  }, [allJdIds, numericSelectedJdId, queryClient]);
-
-  // Subscribed query for the "ALL JDs" mode. We just read the per-JD caches
-  // — every fetch is owned by the useEffect above. No fan-out queryFn here,
-  // no race conditions, stable 1-request-per-JD shape.
+  // Per-JD queries for "ALL JDs" mode. useQueries manages the cache itself,
+  // runs every queryFn exactly once per stale window, and gives each cached
+  // result the full enrichment (jobTitle + companyName from openJds). No
+  // separate pre-fetch pass — that would shadow the enriched data with raw
+  // responses and cause "Unspecified" to leak into the table.
   const allApplicationsQuery = useQueries({
     queries: allJdIds.map((jdId) => ({
       queryKey: ["admin", "jd-applications", jdId],
