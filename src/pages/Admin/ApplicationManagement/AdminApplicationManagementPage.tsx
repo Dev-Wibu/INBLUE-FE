@@ -24,7 +24,7 @@ import {
   adminApplicationManager,
   type ApplicationListItemDto,
 } from "@/services/admin-application.manager";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase,
   Clock,
@@ -37,7 +37,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export function AdminApplicationManagementPage() {
@@ -64,6 +64,10 @@ export function AdminApplicationManagementPage() {
   });
 
   const openJds = openJdsData;
+
+  // Stable empty array — single instance reused everywhere to avoid
+  // re-renders triggered by reference changes.
+  const EMPTY_APPLICATIONS: ApplicationListItemDto[] = [];
 
   // Selected JD: persisted to localStorage so F5 / navigation keeps the same
   // selection. Empty value = "ALL" — show applications from every JD.
@@ -135,71 +139,89 @@ export function AdminApplicationManagementPage() {
   // QueryClient handle for the per-JD fan-out queries.
   const queryClient = useQueryClient();
 
-  // All-JDs query: fetch all OPEN JDs' applications in parallel using
-  // queryClient.fetchQuery for each. Each per-JD request is independently
-  // cached & deduplicated by React Query, so a second visit doesn't refetch.
+  // All OPEN JDs in stable order. Filtering undefined keeps the type tight.
   const allJdIds = useMemo(
     () => openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined),
     [openJds]
   );
 
-  const allApplicationsQuery = useQuery({
-    queryKey: ["admin", "all-jd-applications", allJdIds],
-    enabled: numericSelectedJdId === null && openJds.length > 0,
-    staleTime: 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    queryFn: async () => {
-      if (allJdIds.length === 0) return [] as ApplicationListItemDto[];
+  // Pre-fetch every JD's applications as soon as we know the JD list. Each
+  // per-JD request is cached independently so navigating between JDs or
+  // refreshing the page never re-fetches already-cached JDs.
+  useEffect(() => {
+    if (numericSelectedJdId !== null) return;
+    if (allJdIds.length === 0) return;
+    allJdIds.forEach((jdId) => {
+      void queryClient.fetchQuery({
+        queryKey: ["admin", "jd-applications", jdId],
+        queryFn: async () => {
+          const res = await adminApplicationManager.getApplicationsByJdId(jdId);
+          if (!res.success || !res.data) {
+            return { applications: [] as ApplicationListItemDto[] };
+          }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
+          return { applications: apps };
+        },
+        staleTime: 60 * 1000,
+        gcTime: 5 * 60 * 1000,
+      });
+    });
+  }, [allJdIds, numericSelectedJdId, queryClient]);
 
-      const results = await Promise.all(
-        allJdIds.map(async (jdId) => {
-          const jd = openJds.find((j) => j.jdId === jdId);
-          type AppWithCompany = ApplicationListItemDto & {
-            companyName?: string;
-            jobTitle?: string;
-          };
-          // Use fetchQuery so each per-JD result is cached under its own key
-          // and can be reused by the single-JD query or the application drawer.
-          const data = await queryClient.fetchQuery({
-            queryKey: ["admin", "jd-applications", jdId],
-            queryFn: async () => {
-              const res = await adminApplicationManager.getApplicationsByJdId(jdId);
-              if (!res.success || !res.data) {
-                return { applications: [] as ApplicationListItemDto[] };
-              }
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
-              return { applications: apps };
-            },
-            staleTime: 60 * 1000,
-            gcTime: 5 * 60 * 1000,
-          });
-
-          return data.applications.map((app: AppWithCompany) => ({
-            ...app,
-            companyName: app.companyName || jd?.company?.name,
-            jobTitle: app.jobTitle || jd?.title,
-          })) as ApplicationListItemDto[];
-        })
-      );
-
-      return results.flat();
-    },
+  // Subscribed query for the "ALL JDs" mode. We just read the per-JD caches
+  // — every fetch is owned by the useEffect above. No fan-out queryFn here,
+  // no race conditions, stable 1-request-per-JD shape.
+  const allApplicationsQuery = useQueries({
+    queries: allJdIds.map((jdId) => ({
+      queryKey: ["admin", "jd-applications", jdId],
+      queryFn: async () => {
+        const res = await adminApplicationManager.getApplicationsByJdId(jdId);
+        if (!res.success || !res.data) {
+          return { applications: [] as ApplicationListItemDto[], jdInfo: undefined };
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
+        const jdInfo = openJds.find((j) => j.jdId === jdId);
+        type AppWithCompany = ApplicationListItemDto & {
+          companyName?: string;
+          jobTitle?: string;
+        };
+        const enriched = apps.map((app: AppWithCompany) => ({
+          ...app,
+          companyName: app.companyName || jdInfo?.company?.name,
+          jobTitle: app.jobTitle || jdInfo?.title,
+        }));
+        return { applications: enriched, jdInfo };
+      },
+      enabled: numericSelectedJdId === null,
+      staleTime: 60 * 1000,
+      gcTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    })),
   });
 
-  const applications = useMemo<ApplicationListItemDto[]>(() => {
-    if (numericSelectedJdId !== null) {
-      return singleJdQuery.data?.applications ?? [];
-    }
-    return allApplicationsQuery.data ?? [];
-  }, [numericSelectedJdId, singleJdQuery.data, allApplicationsQuery.data]);
+  const isAllFetching = allApplicationsQuery.some((q) => q.isFetching);
+
+  const applications: ApplicationListItemDto[] =
+    numericSelectedJdId !== null
+      ? (singleJdQuery.data?.applications ?? EMPTY_APPLICATIONS)
+      : allApplicationsQuery.flatMap((q) => q.data?.applications ?? EMPTY_APPLICATIONS);
 
   const isLoading =
-    numericSelectedJdId !== null ? singleJdQuery.isLoading : allApplicationsQuery.isLoading;
+    numericSelectedJdId !== null
+      ? singleJdQuery.isLoading
+      : isAllFetching && applications.length === 0;
 
-  const refetchApplications =
-    numericSelectedJdId !== null ? singleJdQuery.refetch : allApplicationsQuery.refetch;
+  const refetchApplications = () => {
+    if (numericSelectedJdId !== null) {
+      void singleJdQuery.refetch();
+    } else {
+      allApplicationsQuery.forEach((q) => {
+        void q.refetch();
+      });
+    }
+  };
 
   // Unique companies for filter dropdown
   const companyOptions = useMemo(() => {
