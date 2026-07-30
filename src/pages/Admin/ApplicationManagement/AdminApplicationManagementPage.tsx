@@ -24,7 +24,7 @@ import {
   adminApplicationManager,
   type ApplicationListItemDto,
 } from "@/services/admin-application.manager";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   Briefcase,
   Clock,
@@ -37,24 +37,24 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 
 export function AdminApplicationManagementPage() {
   const { t } = useTranslation();
 
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("ALL");
-  const [selectedJdId, setSelectedJdId] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // 1. Fetch Open JDs for dropdown filters with caching
+  // 1. Fetch Open JDs for dropdown filters with caching.
+  //    Use the same queryKey as CompanyManagementPage so both pages share
+  //    the same cache (no double fetch, no stale duplicates).
   const { data: openJdsData = [] } = useQuery({
-    queryKey: ["admin", "open-jds-all"],
+    queryKey: ["admin", "open-jds"],
     queryFn: async () => {
       const res = await adminApplicationManager.getOpenJds();
       return res.success && res.data ? res.data : [];
@@ -65,117 +65,138 @@ export function AdminApplicationManagementPage() {
 
   const openJds = openJdsData;
 
-  // Cache for application data per JD to avoid redundant calls
-  const applicationCacheRef = useRef<Map<number, ApplicationListItemDto[]>>(new Map());
-  const [applications, setApplications] = useState<ApplicationListItemDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingAll, setIsLoadingAll] = useState(false);
+  // Stable empty array — single instance reused everywhere to avoid
+  // re-renders triggered by reference changes.
+  const EMPTY_APPLICATIONS: ApplicationListItemDto[] = [];
 
-  // 2. Fetch applications with improved caching
-  const loadApplications = useCallback(async () => {
-    if (selectedJdId === "ALL") {
-      setApplications([]);
-      return;
-    }
-
-    setIsLoading(true);
+  // Selected JD: persisted to localStorage so F5 / navigation keeps the same
+  // selection. Empty value = "ALL" — show applications from every JD.
+  const LS_KEY = "adminAppMgmt.selectedJdId";
+  const [manualSelectedJdId, setManualSelectedJdId] = useState<string>(() => {
     try {
-      const jdId = Number(selectedJdId);
-      const cached = applicationCacheRef.current.get(jdId);
-      if (cached) {
-        setApplications(cached);
-        setIsLoading(false);
-        return;
+      const stored = window.localStorage.getItem(LS_KEY);
+      return stored ?? "";
+    } catch {
+      return "";
+    }
+  });
+
+  // If the persisted JD no longer exists in openJds, drop the selection.
+  const selectedJdId = useMemo(() => {
+    if (!manualSelectedJdId) return ""; // "" = ALL
+    const exists = openJds.some((j) => String(j.jdId) === manualSelectedJdId);
+    return exists ? manualSelectedJdId : "";
+  }, [manualSelectedJdId, openJds]);
+
+  const setSelectedJdId = (val: string) => {
+    setManualSelectedJdId(val);
+    try {
+      if (val) window.localStorage.setItem(LS_KEY, val);
+      else window.localStorage.removeItem(LS_KEY);
+    } catch {
+      /* ignore quota errors */
+    }
+  };
+
+  // 2. Fetch applications. Behaviour:
+  //    - When user picks a JD (selectedJdId is set) → fetch only that JD's
+  //      applications (1 request, cached 60s).
+  //    - When no JD is picked (default, selectedJdId = "") → fetch the list
+  //      of OPEN JDs from cache and fan-out one request per JD in parallel.
+  //      Each per-JD query is independent and cached by id, so subsequent
+  //      renders only refetch the ones that have actually gone stale.
+  const numericSelectedJdId = useMemo(() => {
+    if (!selectedJdId || Number.isNaN(Number(selectedJdId))) return null;
+    return Number(selectedJdId);
+  }, [selectedJdId]);
+
+  // Single-JD query — used when user explicitly picks a JD.
+  const singleJdQuery = useQuery({
+    queryKey: ["admin", "jd-applications", numericSelectedJdId],
+    queryFn: async () => {
+      if (!numericSelectedJdId) return null;
+      const res = await adminApplicationManager.getApplicationsByJdId(numericSelectedJdId);
+      if (!res.success || !res.data) {
+        return { applications: [] as ApplicationListItemDto[], jdInfo: null };
       }
-      const res = await adminApplicationManager.getApplicationsByJdId(jdId);
-      if (res.success && res.data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
+      const jdInfo = openJds.find((j) => j.jdId === numericSelectedJdId);
+      type AppWithCompany = ApplicationListItemDto & { companyName?: string; jobTitle?: string };
+      const enrichedApps = apps.map((app: AppWithCompany) => ({
+        ...app,
+        companyName: app.companyName || jdInfo?.company?.name,
+        jobTitle: app.jobTitle || jdInfo?.title,
+      }));
+      return { applications: enrichedApps as ApplicationListItemDto[], jdInfo };
+    },
+    enabled: numericSelectedJdId !== null,
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  // All OPEN JDs in stable order. Filtering undefined keeps the type tight.
+  const allJdIds = useMemo(
+    () => openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined),
+    [openJds]
+  );
+
+  // Per-JD queries for "ALL JDs" mode. useQueries manages the cache itself,
+  // runs every queryFn exactly once per stale window, and gives each cached
+  // result the full enrichment (jobTitle + companyName from openJds). No
+  // separate pre-fetch pass — that would shadow the enriched data with raw
+  // responses and cause "Unspecified" to leak into the table.
+  const allApplicationsQuery = useQueries({
+    queries: allJdIds.map((jdId) => ({
+      queryKey: ["admin", "jd-applications", jdId],
+      queryFn: async () => {
+        const res = await adminApplicationManager.getApplicationsByJdId(jdId);
+        if (!res.success || !res.data) {
+          return { applications: [] as ApplicationListItemDto[], jdInfo: undefined };
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
-        applicationCacheRef.current.set(jdId, apps);
-        setApplications(apps);
-      } else {
-        setApplications([]);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(t("common.unableToLoadData", "Không thể tải danh sách đơn ứng tuyển"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedJdId, t]);
+        const jdInfo = openJds.find((j) => j.jdId === jdId);
+        type AppWithCompany = ApplicationListItemDto & {
+          companyName?: string;
+          jobTitle?: string;
+        };
+        const enriched = apps.map((app: AppWithCompany) => ({
+          ...app,
+          companyName: app.companyName || jdInfo?.company?.name,
+          jobTitle: app.jobTitle || jdInfo?.title,
+        }));
+        return { applications: enriched, jdInfo };
+      },
+      enabled: numericSelectedJdId === null,
+      staleTime: 60 * 1000,
+      gcTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    })),
+  });
 
-  // Load all applications for all JDs (only when user explicitly clicks "Load All")
-  const loadAllApplications = useCallback(async () => {
-    if (openJds.length === 0) return;
-    setIsLoadingAll(true);
-    try {
-      const jdIds = openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined);
-      const uncachedJdIds = jdIds.filter((id) => !applicationCacheRef.current.has(id));
+  const isAllFetching = allApplicationsQuery.some((q) => q.isFetching);
 
-      // Only fetch uncached JDs
-      if (uncachedJdIds.length > 0) {
-        const results = await Promise.all(
-          uncachedJdIds.map((id) => adminApplicationManager.getApplicationsByJdId(id))
-        );
-        results.forEach((r, idx) => {
-          if (r.success && r.data) {
-            const jdInfo = openJds.find((j) => j.jdId === uncachedJdIds[idx]);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const rawApps = (r.data.applications || (r.data as any)) as ApplicationListItemDto[];
-            type AppWithCompany = ApplicationListItemDto & {
-              companyName?: string;
-              jobTitle?: string;
-            };
-            const appsWithCompany = rawApps.map((app: AppWithCompany) => ({
-              ...app,
-              companyName: app.companyName || jdInfo?.company?.name,
-              jobTitle: app.jobTitle || jdInfo?.title,
-            }));
-            applicationCacheRef.current.set(
-              uncachedJdIds[idx],
-              appsWithCompany as ApplicationListItemDto[]
-            );
-          }
-        });
-      }
+  const applications: ApplicationListItemDto[] =
+    numericSelectedJdId !== null
+      ? (singleJdQuery.data?.applications ?? EMPTY_APPLICATIONS)
+      : allApplicationsQuery.flatMap((q) => q.data?.applications ?? EMPTY_APPLICATIONS);
 
-      // Collect all cached applications
-      const allApps: ApplicationListItemDto[] = [];
-      jdIds.forEach((jdId) => {
-        const cached = applicationCacheRef.current.get(jdId);
-        if (cached) {
-          allApps.push(...cached);
-        }
-      });
-      setApplications(allApps);
-    } catch (err) {
-      console.error(err);
-      toast.error(t("common.unableToLoadData", "Không thể tải danh sách đơn ứng tuyển"));
-    } finally {
-      setIsLoadingAll(false);
-    }
-  }, [openJds, t]);
+  const isLoading =
+    numericSelectedJdId !== null
+      ? singleJdQuery.isLoading
+      : isAllFetching && applications.length === 0;
 
-  // Initial load when openJds is ready - select first JD by default
-  const hasInitialized = useRef(false);
-  useEffect(() => {
-    if (openJds.length > 0 && !hasInitialized.current) {
-      hasInitialized.current = true;
-      // Default to first JD if available
-      if (openJds[0]?.jdId) {
-        setSelectedJdId(String(openJds[0].jdId));
-      }
-    }
-  }, [openJds]);
-
-  // Reload when JD selection changes
-  useEffect(() => {
-    if (selectedJdId === "ALL") {
-      void loadAllApplications();
+  const refetchApplications = () => {
+    if (numericSelectedJdId !== null) {
+      void singleJdQuery.refetch();
     } else {
-      void loadApplications();
+      allApplicationsQuery.forEach((q) => {
+        void q.refetch();
+      });
     }
-  }, [selectedJdId, loadApplications, loadAllApplications]);
+  };
 
   // Unique companies for filter dropdown
   const companyOptions = useMemo(() => {
@@ -208,15 +229,38 @@ export function AdminApplicationManagementPage() {
         return false;
       }
 
-      // Status filter
+      // Status filter — per FE Guide:
+      //   • IN_PROGRESS: status = IN_PROGRESS | PENDING | SOFT_FAILED
+      //     (SOFT_FAILED = rớt 1 vòng nhưng vẫn được tiếp tục làm vòng sau
+      //      → vẫn là đang xử lý, không phải trượt hẳn)
+      //   • PASSED: PASSED | ACCEPTED | COMPLETED
+      //   • FAILED: REJECTED | FAILED (chỉ thật sự trượt hẳn)
+      //   • SOFT_FAILED: SOFT_FAILED riêng để user lọc xem nhanh các case này
       if (statusFilter !== "ALL") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const status = app.status as any;
-        if (statusFilter === "PASSED" && status !== "PASSED" && status !== "ACCEPTED") return false;
-        if (statusFilter === "REJECTED" && status !== "REJECTED" && status !== "FAILED")
+        if (
+          statusFilter === "IN_PROGRESS" &&
+          status !== "IN_PROGRESS" &&
+          status !== "PENDING" &&
+          status !== "SOFT_FAILED"
+        ) {
           return false;
-        if (statusFilter === "IN_PROGRESS" && status !== "IN_PROGRESS" && status !== "PENDING")
+        }
+        if (
+          statusFilter === "PASSED" &&
+          status !== "PASSED" &&
+          status !== "ACCEPTED" &&
+          status !== "COMPLETED"
+        ) {
           return false;
+        }
+        if (statusFilter === "FAILED" && status !== "REJECTED" && status !== "FAILED") {
+          return false;
+        }
+        if (statusFilter === "SOFT_FAILED" && status !== "SOFT_FAILED") {
+          return false;
+        }
       }
 
       // Search query filter
@@ -245,21 +289,38 @@ export function AdminApplicationManagementPage() {
     });
   }, [applications, selectedCompanyId, statusFilter, searchQuery]);
 
-  // Metrics
-  const stats = useMemo(() => {
-    const totalApps = applications.length;
-    const inProgressApps = applications.filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (a) => (a.status as any) === "IN_PROGRESS" || (a.status as any) === "PENDING"
-    ).length;
-    const passedApps = applications.filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (a) => (a.status as any) === "PASSED" || (a.status as any) === "ACCEPTED"
-    ).length;
-    const openJdCount = openJds.filter((j) => j.status === "OPEN").length;
+  // ⭐ 4 thẻ thống kê TỔNG = cộng dồn từ statistics của TẤT CẢ JD trong API #1.
+  // Per FE Guide: nguồn số liệu là /api/admin/open-jds, không cần gọi thêm API.
+  const aggregateStats = useMemo(() => {
+    interface JdWithStats {
+      statistics?: {
+        totalApplications?: number;
+        inProgressCount?: number;
+        passedCount?: number;
+        failedCount?: number;
+      };
+    }
+    return (openJds as JdWithStats[]).reduce(
+      (acc, jd) => {
+        const s = jd.statistics ?? {};
+        return {
+          totalApplications: acc.totalApplications + (s.totalApplications ?? 0),
+          inProgressCount: acc.inProgressCount + (s.inProgressCount ?? 0),
+          passedCount: acc.passedCount + (s.passedCount ?? 0),
+          failedCount: acc.failedCount + (s.failedCount ?? 0),
+        };
+      },
+      { totalApplications: 0, inProgressCount: 0, passedCount: 0, failedCount: 0 }
+    );
+  }, [openJds]);
 
-    return { totalApps, inProgressApps, passedApps, openJdCount };
-  }, [applications, openJds]);
+  const stats = {
+    openJdCount: openJds.filter((j) => j.status === "OPEN").length,
+    totalApplications: aggregateStats.totalApplications,
+    inProgressCount: aggregateStats.inProgressCount,
+    passedCount: aggregateStats.passedCount,
+    failedCount: aggregateStats.failedCount,
+  };
 
   // Pagination
   const [pageSize] = useHybridPageSize({
@@ -335,22 +396,18 @@ export function AdminApplicationManagementPage() {
           variant="outline"
           size="sm"
           onClick={() => {
-            if (selectedJdId === "ALL") {
-              void loadAllApplications();
-            } else {
-              void loadApplications();
-            }
+            void refetchApplications();
           }}
-          disabled={isLoading || isLoadingAll}
+          disabled={isLoading}
           className="h-8 gap-1.5 text-xs font-medium">
-          <RefreshCw className={`h-3.5 w-3.5 ${isLoading || isLoadingAll ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           {t("common.refresh", "Làm mới")}
         </Button>
       </div>
 
       <div className="flex-1 space-y-6 overflow-y-auto p-4 sm:p-6">
         {/* Metric Cards */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
               <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
@@ -371,7 +428,7 @@ export function AdminApplicationManagementPage() {
                 {t("adminApplicationManagement.totalApplications", "Tổng đơn Apply")}
               </span>
               <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                {stats.totalApps}
+                {stats.totalApplications}
               </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
@@ -385,7 +442,7 @@ export function AdminApplicationManagementPage() {
                 {t("adminApplicationManagement.inProgress", "Đang phỏng vấn")}
               </span>
               <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
-                {stats.inProgressApps}
+                {stats.inProgressCount}
               </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
@@ -399,10 +456,24 @@ export function AdminApplicationManagementPage() {
                 {t("adminApplicationManagement.passed", "Đã trúng tuyển")}
               </span>
               <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                {stats.passedApps}
+                {stats.passedCount}
               </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+              <UserCheck className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div>
+              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                {t("adminApplicationManagement.failed", "Trượt")}
+              </span>
+              <div className="mt-1 text-2xl font-bold text-rose-600 dark:text-rose-400">
+                {stats.failedCount}
+              </div>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
               <UserCheck className="h-5 w-5" />
             </div>
           </div>
@@ -432,7 +503,8 @@ export function AdminApplicationManagementPage() {
               value={selectedCompanyId}
               onValueChange={(val) => {
                 setSelectedCompanyId(val);
-                setSelectedJdId("ALL");
+                // Reset JD selection to "ALL" when company changes
+                setSelectedJdId("");
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="h-8 w-44 border-slate-200 text-xs dark:border-slate-700">
@@ -454,12 +526,12 @@ export function AdminApplicationManagementPage() {
 
             {/* JD Filter */}
             <Select
-              value={selectedJdId}
+              value={selectedJdId || "ALL"}
               onValueChange={(val) => {
-                setSelectedJdId(val);
+                setSelectedJdId(val === "ALL" ? "" : val);
                 pagination.goToFirstPage();
               }}>
-              <SelectTrigger className="h-8 w-48 border-slate-200 text-xs dark:border-slate-700">
+              <SelectTrigger className="h-8 w-64 border-slate-200 text-xs dark:border-slate-700">
                 <SelectValue
                   placeholder={t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
                 />
@@ -480,7 +552,7 @@ export function AdminApplicationManagementPage() {
             </Select>
           </div>
 
-          {/* Status Filter Pills */}
+          {/* Status Filter Pills — Per FE Guide: lọc client-side */}
           <div className="flex items-center gap-1">
             {[
               { id: "ALL", label: t("common.all", "Tất cả") },
@@ -489,7 +561,14 @@ export function AdminApplicationManagementPage() {
                 label: t("adminApplicationManagement.statusInProgress", "Đang xử lý"),
               },
               { id: "PASSED", label: t("adminApplicationManagement.statusPassed", "Đạt") },
-              { id: "REJECTED", label: t("adminApplicationManagement.statusRejected", "Từ chối") },
+              {
+                id: "FAILED",
+                label: t("adminApplicationManagement.statusFailed", "Trượt"),
+              },
+              {
+                id: "SOFT_FAILED",
+                label: t("adminApplicationManagement.statusSoftFailed", "Rớt vòng — vẫn làm tiếp"),
+              },
             ].map((st) => (
               <button
                 key={st.id}
@@ -550,7 +629,16 @@ export function AdminApplicationManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {openJds.length === 0 && isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-48 text-center text-slate-400">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+                        <span>{t("common.loadingData", "Đang tải dữ liệu...")}</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : isLoading ? (
                   <TableRow>
                     <TableCell colSpan={8} className="h-48 text-center text-slate-400">
                       <div className="flex items-center justify-center gap-2">
@@ -663,7 +751,7 @@ export function AdminApplicationManagementPage() {
           setSelectedAppId(null);
         }}
         onStatusChange={() => {
-          loadApplications();
+          void refetchApplications();
         }}
       />
     </div>
