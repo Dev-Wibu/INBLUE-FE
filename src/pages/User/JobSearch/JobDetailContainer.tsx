@@ -207,10 +207,11 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     if (!checkoutUrl || hasPurchased) return;
 
     const interval = setInterval(async () => {
-      const { data } = await refetchStatus();
-      if (data?.hasPurchased) {
+      const purchased = await jdPurchaseManager.checkPurchased(jdIdNum);
+      if (purchased) {
         toast.success(t("payment.paymentSuccess", "Thanh toán thành công!"));
         setCheckoutUrl(null);
+        await refetchStatus();
         handleApplyAfterPurchased();
       }
     }, 3000);

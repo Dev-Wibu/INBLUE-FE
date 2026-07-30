@@ -67,8 +67,10 @@ export function JobDescriptionDetailPage() {
     try {
       if (!hasPurchased && job.price && job.price > 0) {
         localStorage.setItem("pending_jd_purchase_id", String(jdIdNum));
-        const checkoutUrl = await jdPurchaseManager.createPayment(jdIdNum);
-        window.location.href = checkoutUrl;
+        const res = await jdPurchaseManager.createPayment(jdIdNum);
+        if (res?.checkoutUrl) {
+          window.location.href = res.checkoutUrl;
+        }
         return;
       }
 
