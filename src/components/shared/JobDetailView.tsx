@@ -10,7 +10,6 @@ import {
   Banknote,
   Bot,
   Briefcase,
-  Building2,
   CalendarDays,
   CheckCircle2,
   Clock,
@@ -85,6 +84,19 @@ function formatDate(dateStr?: string) {
   return format(new Date(dateStr), "dd/MM/yyyy");
 }
 
+function getCompanyInitials(name?: string) {
+  if (!name) return "IB";
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "IB"
+  );
+}
+
 interface JobDetailViewProps {
   job: JobDescription;
   hasPurchased: boolean;
@@ -133,15 +145,28 @@ export function JobDetailView({
         onClick={onApplyAction}
         disabled={isLoadingAction}
         className="w-full rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
-        {isLoadingAction
-          ? t("common.processing", "Đang xử lý...")
-          : "Thanh toán"}
+        {isLoadingAction ? t("common.processing", "Đang xử lý...") : "Thanh toán"}
       </Button>
     );
   };
 
-  const jobExtra = job as JobDescription & { thumbnailUrl?: string; companyLogoUrl?: string };
-  const logoUrl = jobExtra.companyLogoUrl || jobExtra.thumbnailUrl || null;
+  const jobExtra = job as JobDescription & {
+    thumbnailUrl?: string;
+    companyLogoUrl?: string;
+    companyLogo?: string;
+    logoUrl?: string;
+    company?: { logoUrl?: string; logo?: string; avatarUrl?: string };
+  };
+  const logoUrl =
+    jobExtra.companyLogo ||
+    jobExtra.companyLogoUrl ||
+    jobExtra.logoUrl ||
+    jobExtra.thumbnailUrl ||
+    jobExtra.company?.logoUrl ||
+    jobExtra.company?.logo ||
+    jobExtra.company?.avatarUrl ||
+    null;
+  const initials = getCompanyInitials(job.companyName);
 
   return (
     <div className="flex flex-col pb-20">
@@ -174,7 +199,7 @@ export function JobDetailView({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <Building2 className="h-8 w-8" />
+                    initials
                   )}
                 </div>
 
@@ -223,7 +248,7 @@ export function JobDetailView({
                 {job.status === "OPEN" && (
                   <div className="flex items-center gap-1.5">
                     <Coins className="h-4 w-4 text-amber-500" />
-                    <span className="whitespace-nowrap text-[15px] font-extrabold tracking-tight text-amber-600 dark:text-amber-400">
+                    <span className="text-[15px] font-extrabold tracking-tight whitespace-nowrap text-amber-600 dark:text-amber-400">
                       {typeof job?.price === "number" && job.price > 0
                         ? `${formatNumber(job.price)} VND`
                         : typeof job?.price === "number" && job.price === 0
@@ -320,7 +345,9 @@ export function JobDetailView({
                 <div className="absolute top-3.5 bottom-3.5 left-[13px] w-[1.5px] bg-gradient-to-b from-indigo-200 via-indigo-100 to-indigo-50 dark:from-indigo-800 dark:via-indigo-900 dark:to-indigo-950" />
 
                 {job.rounds.map((round, index) => (
-                  <div key={round.id || index} className="relative z-10 flex items-start gap-3 py-2">
+                  <div
+                    key={round.id || index}
+                    className="relative z-10 flex items-start gap-3 py-2">
                     {/* Node */}
                     <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-[11px] font-bold text-white shadow-sm dark:bg-indigo-600">
                       {index + 1}
@@ -329,26 +356,33 @@ export function JobDetailView({
                     {/* Content row */}
                     <div className="min-w-0 flex-1 pt-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-semibold leading-snug text-slate-900 dark:text-white">
+                        <span className="text-[13px] leading-snug font-semibold text-slate-900 dark:text-white">
                           {round.name || t("common.roundVar0", { var_0: index + 1 })}
                         </span>
                         <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10.5px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                          <span className="text-indigo-400">{getRoundTypeIcon(round.roundType)}</span>
+                          <span className="text-indigo-400">
+                            {getRoundTypeIcon(round.roundType)}
+                          </span>
                           {round.roundType?.replace(/_/g, " ") || t("common.notDetermined")}
                         </span>
                       </div>
-                      {(Boolean(round.passThreshold) || Boolean(round.configData?.timeLimitMinutes)) && (
+                      {(Boolean(round.passThreshold) ||
+                        Boolean(round.configData?.timeLimitMinutes)) && (
                         <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11.5px] text-slate-400 dark:text-slate-500">
                           {Boolean(round.passThreshold) && (
                             <span>
                               {t("enterpriseJobdetailpage.passingScore", "Điểm: ")}
-                              <strong className="text-slate-600 dark:text-slate-400">{round.passThreshold}%</strong>
+                              <strong className="text-slate-600 dark:text-slate-400">
+                                {round.passThreshold}%
+                              </strong>
                             </span>
                           )}
                           {Boolean(round.configData?.timeLimitMinutes) && (
                             <span>
                               {t("enterpriseJobdetailpage.duration", "TG: ")}
-                              <strong className="text-slate-600 dark:text-slate-400">{round.configData?.timeLimitMinutes} {t("common.minute")}</strong>
+                              <strong className="text-slate-600 dark:text-slate-400">
+                                {round.configData?.timeLimitMinutes} {t("common.minute")}
+                              </strong>
                             </span>
                           )}
                         </div>
