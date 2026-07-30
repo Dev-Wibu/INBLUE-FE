@@ -46,10 +46,14 @@ function extractNativeInfoFromRawData(rawData: unknown): NativePaymentInfo | nul
   }
 
   if (record) {
-    const accountNo = (record.accountNumber || record.accountNo || record.account_no) as string | undefined;
+    const accountNo = (record.accountNumber || record.accountNo || record.account_no) as
+      | string
+      | undefined;
     const accountName = (record.accountName || record.account_name) as string | undefined;
-    const amt = (record.amount) as string | number | undefined;
-    const addInfo = (record.description || record.addInfo || record.paymentPurpose) as string | undefined;
+    const amt = record.amount as string | number | undefined;
+    const addInfo = (record.description || record.addInfo || record.paymentPurpose) as
+      | string
+      | undefined;
     const bin = (record.bin || "970418") as string;
     const bankShortName = (record.bankShortName || record.bankName || "BIDV") as string;
     const quicklink = (record.quicklink || record.qrCodeUrl) as string | undefined;
@@ -85,7 +89,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   const [isApplying, setIsApplying] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
-  
+
   const [nativeInfo, setNativeInfo] = useState<NativePaymentInfo | null>(null);
   const [showEmbeddedFallback, setShowEmbeddedFallback] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -284,7 +288,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   };
 
   return (
-    <div className="relative custom-scrollbar flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent">
+    <div className="custom-scrollbar relative flex-1 overflow-y-auto px-5 py-6 md:px-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700/50 dark:hover:[&::-webkit-scrollbar-thumb]:bg-slate-600/50 [&::-webkit-scrollbar-track]:bg-transparent">
       <JobDetailView
         job={job}
         hasPurchased={hasPurchased}
@@ -295,15 +299,15 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
       {/* ── Native 1-Screen Merged Payment Modal ────────────────────────────── */}
       {checkoutUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative flex max-h-[92vh] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 backdrop-blur-sm duration-200 sm:p-4">
+          <div className="animate-in zoom-in-95 relative flex max-h-[92vh] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl duration-200 dark:border-slate-800 dark:bg-slate-900">
             {/* Modal Header — Clean & Simple */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-5 py-3.5 dark:border-slate-800 dark:bg-slate-900/90">
-              <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex min-w-0 items-center gap-2.5">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
                   <ShieldCheck className="h-4.5 w-4.5" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                <h3 className="truncate text-sm font-bold text-slate-900 dark:text-white">
                   {t("payment.checkoutTitle", "Thanh toán ứng tuyển")}
                 </h3>
               </div>
@@ -317,7 +321,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
             </div>
 
             {/* Modal Body: 100% Native Merged Single Screen */}
-            <div className="relative flex-1 overflow-y-auto bg-slate-50 p-4.5 dark:bg-slate-950 custom-scrollbar">
+            <div className="custom-scrollbar relative flex-1 overflow-y-auto bg-slate-50 p-4.5 dark:bg-slate-950">
               {!showEmbeddedFallback ? (
                 nativeInfo?.addInfo ? (
                   <div className="flex flex-col items-center gap-4">
@@ -327,7 +331,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                         <img
                           src={nativeInfo.quicklink}
                           alt="VietQR Code"
-                          className="h-[240px] w-[240px] rounded-xl border border-slate-100 object-contain shadow-xs bg-white dark:border-slate-800 dark:bg-white"
+                          className="h-[240px] w-[240px] rounded-xl border border-slate-100 bg-white object-contain shadow-xs dark:border-slate-800 dark:bg-white"
                         />
                       ) : (
                         <div className="flex h-[240px] w-[240px] items-center justify-center text-xs text-slate-400">
@@ -362,8 +366,10 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                             {nativeInfo.accountNo || "V3CAS6721131488"}
                           </span>
                           <button
-                            onClick={() => handleCopy(nativeInfo.accountNo || "V3CAS6721131488", "Số tài khoản")}
-                            className="flex h-5.5 px-2 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                            onClick={() =>
+                              handleCopy(nativeInfo.accountNo || "V3CAS6721131488", "Số tài khoản")
+                            }
+                            className="flex h-5.5 items-center gap-1 rounded bg-slate-100 px-2 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
                             {copiedField === "Số tài khoản" ? (
                               <Check className="h-3 w-3 text-emerald-500" />
                             ) : (
@@ -383,12 +389,9 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                           </span>
                           <button
                             onClick={() =>
-                              handleCopy(
-                                String(nativeInfo.amount || job.price || 0),
-                                "Số tiền"
-                              )
+                              handleCopy(String(nativeInfo.amount || job.price || 0), "Số tiền")
                             }
-                            className="flex h-5.5 px-2 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                            className="flex h-5.5 items-center gap-1 rounded bg-slate-100 px-2 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
                             {copiedField === "Số tiền" ? (
                               <Check className="h-3 w-3 text-emerald-500" />
                             ) : (
@@ -408,8 +411,10 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                               {nativeInfo.addInfo}
                             </span>
                             <button
-                              onClick={() => handleCopy(nativeInfo.addInfo!, "Nội dung chuyển khoản")}
-                              className="flex h-5.5 px-2 items-center gap-1 rounded bg-indigo-50 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-400">
+                              onClick={() =>
+                                handleCopy(nativeInfo.addInfo!, "Nội dung chuyển khoản")
+                              }
+                              className="flex h-5.5 items-center gap-1 rounded bg-indigo-50 px-2 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-400">
                               {copiedField === "Nội dung chuyển khoản" ? (
                                 <Check className="h-3 w-3 text-emerald-500" />
                               ) : (
@@ -424,9 +429,10 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
                     {/* Warning Note */}
                     <div className="flex items-start gap-2 rounded-lg border border-amber-200/70 bg-amber-50/80 p-2.5 text-[11px] text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
-                      <Info className="h-3.5 w-3.5 shrink-0 text-amber-600 mt-0.5" />
+                      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
                       <span>
-                        Vui lòng nhập chính xác <strong>Số tiền</strong> và <strong>Nội dung chuyển khoản</strong> để hệ thống tự động kích hoạt sau 3s.
+                        Vui lòng nhập chính xác <strong>Số tiền</strong> và{" "}
+                        <strong>Nội dung chuyển khoản</strong> để hệ thống tự động kích hoạt sau 3s.
                       </span>
                     </div>
                   </div>
@@ -464,7 +470,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
             {/* Modal Footer Controls — Streamlined with 15m Countdown */}
             <div className="flex shrink-0 items-center justify-between border-t border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                <Clock className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
+                <Clock className="h-3.5 w-3.5 animate-pulse text-amber-500" />
                 <span>Hết hạn sau:</span>
                 <span className="font-mono font-extrabold text-amber-600 dark:text-amber-400">
                   {formatTimeLeft(timeLeft)}
@@ -475,7 +481,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                 href={checkoutUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-[11.5px] font-medium text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 transition-colors">
+                className="inline-flex items-center gap-1 text-[11.5px] font-medium text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400">
                 <ExternalLink className="h-3 w-3" />
                 Mở trang PayOS gốc ↗
               </a>
