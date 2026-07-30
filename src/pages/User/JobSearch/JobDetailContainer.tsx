@@ -40,7 +40,7 @@ function buildDefaultNativeInfo(checkoutUrl: string, amount?: number): NativePay
     accountNo: "V3CAS6721131488",
     amount: amtStr,
     addInfo: addInfo,
-    quicklink: `https://img.vietqr.io/image/970418-V3CAS6721131488-compact2.jpg?addInfo=${encodeURIComponent(
+    quicklink: `https://img.vietqr.io/image/970418-V3CAS6721131488-vietqr_pro.jpg?addInfo=${encodeURIComponent(
       addInfo
     )}&amount=${amtStr}`,
   };
@@ -77,10 +77,10 @@ function extractNativeInfoFromRawData(rawData: unknown, checkoutUrl: string, amo
 
     if (accountNo || quicklink) {
       const generatedQuicklink =
-        quicklink?.replace("-payos.jpg", "-compact2.jpg") ||
-        `https://img.vietqr.io/image/${bin}-${accountNo || defaultInfo.accountNo}-compact2.jpg?addInfo=${encodeURIComponent(
+        quicklink ||
+        `https://img.vietqr.io/image/${bin}-${accountNo || defaultInfo.accountNo}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
           String(addInfo || defaultInfo.addInfo)
-        )}&amount=${amt || defaultInfo.amount}`;
+        )}&amount=${amtStr}`,
 
       return {
         accountNo: String(accountNo || defaultInfo.accountNo),
@@ -181,14 +181,13 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
           const matchQuicklink = html.match(/"quicklink":"(.*?)"/);
           if (matchQuicklink && matchQuicklink[1]) {
-            info.quicklink = matchQuicklink[1].replace(/\\u0026/g, "&").replace("-payos.jpg", "-compact2.jpg");
+            info.quicklink = matchQuicklink[1].replace(/\\u0026/g, "&");
           }
 
           if (info.accountNo || info.quicklink) {
             setNativeInfo((prev) => ({
               ...prev,
               ...info,
-              quicklink: info.quicklink || prev?.quicklink,
             }));
             return;
           }
@@ -300,7 +299,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       {/* ── Native 1-Screen Merged Payment Modal ────────────────────────────── */}
       {checkoutUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative flex max-h-[92vh] w-full max-w-[460px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
+          <div className="relative flex max-h-[92vh] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
             {/* Modal Header — Clean & Simple */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-5 py-3.5 dark:border-slate-800 dark:bg-slate-900/90">
               <div className="flex items-center gap-2.5 min-w-0">
@@ -324,16 +323,16 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
             <div className="relative flex-1 overflow-y-auto bg-slate-50 p-4.5 dark:bg-slate-950 custom-scrollbar">
               {!showEmbeddedFallback && nativeInfo ? (
                 <div className="flex flex-col items-center gap-4">
-                  {/* Large QR Code Matrix Filling Card */}
-                  <div className="flex flex-col items-center overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-white">
+                  {/* Clean QR Image without gray border or subtext */}
+                  <div className="flex flex-col items-center">
                     {nativeInfo.quicklink ? (
                       <img
-                        src={nativeInfo.quicklink.replace("-payos.jpg", "-compact2.jpg")}
+                        src={nativeInfo.quicklink}
                         alt="VietQR Code"
-                        className="h-[250px] w-[250px] rounded-xl object-contain"
+                        className="h-[240px] w-[240px] rounded-xl border border-slate-100 object-contain shadow-xs bg-white dark:border-slate-800 dark:bg-white"
                       />
                     ) : (
-                      <div className="flex h-[250px] w-[250px] items-center justify-center text-xs text-slate-400">
+                      <div className="flex h-[240px] w-[240px] items-center justify-center text-xs text-slate-400">
                         <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
                       </div>
                     )}
