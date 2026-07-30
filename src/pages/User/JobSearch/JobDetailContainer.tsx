@@ -1,5 +1,4 @@
 import { JobDetailView } from "@/components/shared/JobDetailView";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
 import { formatNumber } from "@/lib/formatting";
@@ -128,7 +127,6 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       return;
     }
 
-    // Always set default native info so 1-screen view works immediately
     if (!nativeInfo) {
       setNativeInfo(buildDefaultNativeInfo(checkoutUrl, job.price));
     }
@@ -293,25 +291,16 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       {/* ── Native 1-Screen Merged Payment Modal ────────────────────────────── */}
       {checkoutUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative flex max-h-[92vh] w-full max-w-[440px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
-            {/* Modal Header */}
-            <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
+          <div className="relative flex max-h-[92vh] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
+            {/* Modal Header — Clean & Simple */}
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-5 py-3.5 dark:border-slate-800 dark:bg-slate-900/90">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-                  <ShieldCheck className="h-4 w-4" />
+                  <ShieldCheck className="h-4.5 w-4.5" />
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                    {t("payment.checkoutTitle", "Thanh toán ứng tuyển")}
-                  </h3>
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-                    <span className="truncate max-w-[140px] font-medium">{job.title}</span>
-                    <span>•</span>
-                    <span className="font-extrabold text-amber-600 dark:text-amber-400">
-                      {formatNumber(job.price || 0)} VND
-                    </span>
-                  </div>
-                </div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                  {t("payment.checkoutTitle", "Thanh toán ứng tuyển")}
+                </h3>
               </div>
 
               {/* Close Button */}
@@ -323,30 +312,29 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
             </div>
 
             {/* Modal Body: 100% Native Merged Single Screen */}
-            <div className="relative flex-1 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-950 custom-scrollbar">
+            <div className="relative flex-1 overflow-y-auto bg-slate-50 p-4.5 dark:bg-slate-950 custom-scrollbar">
               {!showEmbeddedFallback && nativeInfo ? (
-                /* Merged 1-Screen Card (QR Code + Account Info Together) */
-                <div className="flex flex-col items-center gap-3.5">
+                <div className="flex flex-col items-center gap-4">
                   {/* QR Image */}
-                  <div className="flex flex-col items-center rounded-xl border border-slate-200 bg-white p-3 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex flex-col items-center rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                     {nativeInfo.quicklink ? (
                       <img
                         src={nativeInfo.quicklink}
                         alt="VietQR Code"
-                        className="h-[210px] w-[210px] rounded-lg object-contain"
+                        className="h-[230px] w-[230px] rounded-lg object-contain"
                       />
                     ) : (
-                      <div className="flex h-[210px] w-[210px] items-center justify-center text-xs text-slate-400">
+                      <div className="flex h-[230px] w-[230px] items-center justify-center text-xs text-slate-400">
                         <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
                       </div>
                     )}
-                    <p className="mt-1.5 text-center text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    <p className="mt-2 text-center text-[11.5px] font-medium text-slate-500 dark:text-slate-400">
                       Quét bằng app Ngân hàng / MoMo / ZaloPay
                     </p>
                   </div>
 
                   {/* Single Unified Bank Info Box */}
-                  <div className="w-full space-y-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                  <div className="w-full space-y-2.5 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                     {/* Bank */}
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-500 dark:text-slate-400">Ngân hàng:</span>
@@ -372,7 +360,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                         </span>
                         <button
                           onClick={() => handleCopy(nativeInfo.accountNo || "V3CAS6721131488", "Số tài khoản")}
-                          className="flex h-5.5 px-1.5 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                          className="flex h-5.5 px-2 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
                           {copiedField === "Số tài khoản" ? (
                             <Check className="h-3 w-3 text-emerald-500" />
                           ) : (
@@ -397,7 +385,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                               "Số tiền"
                             )
                           }
-                          className="flex h-5.5 px-1.5 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                          className="flex h-5.5 px-2 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
                           {copiedField === "Số tiền" ? (
                             <Check className="h-3 w-3 text-emerald-500" />
                           ) : (
@@ -418,7 +406,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                           </span>
                           <button
                             onClick={() => handleCopy(nativeInfo.addInfo!, "Nội dung chuyển khoản")}
-                            className="flex h-5.5 px-1.5 items-center gap-1 rounded bg-indigo-50 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-400">
+                            className="flex h-5.5 px-2 items-center gap-1 rounded bg-indigo-50 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-400">
                             {copiedField === "Nội dung chuyển khoản" ? (
                               <Check className="h-3 w-3 text-emerald-500" />
                             ) : (
@@ -435,7 +423,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                   <div className="flex items-start gap-2 rounded-lg border border-amber-200/70 bg-amber-50/80 p-2.5 text-[11px] text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
                     <Info className="h-3.5 w-3.5 shrink-0 text-amber-600 mt-0.5" />
                     <span>
-                      Nhập chính xác <strong>Số tiền</strong> và <strong>Nội dung chuyển khoản</strong> để hệ thống tự động kích hoạt sau 3s.
+                      Vui lòng nhập chính xác <strong>Số tiền</strong> và <strong>Nội dung chuyển khoản</strong> để hệ thống tự động kích hoạt sau 3s.
                     </span>
                   </div>
                 </div>
@@ -461,25 +449,23 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
               )}
             </div>
 
-            {/* Modal Footer Controls */}
-            <div className="flex shrink-0 items-center justify-between border-t border-slate-200/80 bg-slate-50/90 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-900/90">
+            {/* Modal Footer Controls — Sleek & Compact */}
+            <div className="flex shrink-0 flex-col items-center gap-2 border-t border-slate-200/80 bg-slate-50/90 p-3.5 dark:border-slate-800 dark:bg-slate-900/90">
               <Button
-                variant="outline"
-                size="sm"
                 onClick={handleManualCheckPayment}
                 disabled={isCheckingPayment}
-                className="h-8 gap-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                className="w-full h-9 gap-2 rounded-xl bg-indigo-600 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
                 <RefreshCw className={`h-3.5 w-3.5 ${isCheckingPayment ? "animate-spin" : ""}`} />
-                {t("payment.checkStatus", "Kiểm tra kết quả")}
+                {t("payment.checkStatus", "Tôi đã thanh toán (Kiểm tra kết quả)")}
               </Button>
 
               <a
                 href={checkoutUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-8 items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
-                <ExternalLink className="h-3.5 w-3.5" />
-                Mở tab mới ↗
+                className="inline-flex items-center gap-1 text-[11.5px] font-medium text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 transition-colors">
+                <ExternalLink className="h-3 w-3" />
+                Mở trang thanh toán PayOS gốc ↗
               </a>
             </div>
           </div>
