@@ -50,9 +50,11 @@ export function AdminApplicationManagementPage() {
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // 1. Fetch Open JDs for dropdown filters with caching
+  // 1. Fetch Open JDs for dropdown filters with caching.
+  //    Use the same queryKey as CompanyManagementPage so both pages share
+  //    the same cache (no double fetch, no stale duplicates).
   const { data: openJdsData = [] } = useQuery({
-    queryKey: ["admin", "open-jds-all"],
+    queryKey: ["admin", "open-jds"],
     queryFn: async () => {
       const res = await adminApplicationManager.getOpenJds();
       return res.success && res.data ? res.data : [];
@@ -63,21 +65,38 @@ export function AdminApplicationManagementPage() {
 
   const openJds = openJdsData;
 
-  // Default JD: reactively derived from openJds. We hold user-selected value
-  // in `manualSelectedJdId` and fall back to the first available JD when the
-  // user has not picked yet or has explicitly reset.
-  const [manualSelectedJdId, setManualSelectedJdId] = useState<string>("");
-
-  const selectedJdId = useMemo(() => {
-    // No explicit selection → fall back to first JD so the page is never empty.
-    if (manualSelectedJdId) return manualSelectedJdId;
-    if (openJds.length > 0 && openJds[0]?.jdId !== undefined) {
-      return String(openJds[0].jdId);
+  // Selected JD: persisted to localStorage so F5 / navigation keeps the same
+  // selection. We do NOT auto-select the first JD anymore — that was the bug
+  // causing "3 vs 109" depending on the order openJds came back from the API.
+  // The user always sees a placeholder until they pick a JD explicitly.
+  const LS_KEY = "adminAppMgmt.selectedJdId";
+  const [manualSelectedJdId, setManualSelectedJdId] = useState<string>(() => {
+    try {
+      const stored = window.localStorage.getItem(LS_KEY);
+      return stored ?? "";
+    } catch {
+      return "";
     }
-    return "";
+  });
+
+  // If the persisted JD no longer exists in openJds, drop the selection.
+  const validPersistedJdId = useMemo(() => {
+    if (!manualSelectedJdId) return "";
+    const exists = openJds.some((j) => String(j.jdId) === manualSelectedJdId);
+    return exists ? manualSelectedJdId : "";
   }, [manualSelectedJdId, openJds]);
 
-  const setSelectedJdId = (val: string) => setManualSelectedJdId(val);
+  const selectedJdId = validPersistedJdId;
+
+  const setSelectedJdId = (val: string) => {
+    setManualSelectedJdId(val);
+    try {
+      if (val) window.localStorage.setItem(LS_KEY, val);
+      else window.localStorage.removeItem(LS_KEY);
+    } catch {
+      /* ignore quota errors */
+    }
+  };
 
   // 2. Fetch applications for the SELECTED JD only (1 request per JD selection).
   //    Per FE Guide: when no specific JD is selected we DO NOT fetch across JDs.
