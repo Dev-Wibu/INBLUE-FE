@@ -221,7 +221,7 @@ export function JobDetailView({
               {/* Payment / Apply — inline right */}
               <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border border-indigo-200 bg-indigo-50 p-4 sm:w-[200px] dark:border-indigo-900/50 dark:bg-indigo-950/25">
                 {job.status === "OPEN" && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5">
                       <Coins className="h-4 w-4 text-amber-500" />
                       <span className="whitespace-nowrap text-[15px] font-extrabold tracking-tight text-amber-600 dark:text-amber-400">
@@ -233,8 +233,8 @@ export function JobDetailView({
                       </span>
                     </div>
                     {hasPurchased && (
-                      <Badge className="border-emerald-500/20 bg-emerald-500/10 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                        {t("enterpriseJobdetailpage.paid", "Đã TT")}
+                      <Badge className="w-fit border-emerald-500/20 bg-emerald-500/10 text-[10px] font-semibold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                        {t("enterpriseJobdetailpage.paid", "Đã thanh toán")}
                       </Badge>
                     )}
                   </div>
