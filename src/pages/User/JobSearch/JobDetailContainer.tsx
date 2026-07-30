@@ -7,7 +7,7 @@ import { applicationService } from "@/services/application.manager";
 import type { JobDescription } from "@/services/company.manager";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { ExternalLink, Loader2, RefreshCw, ShieldCheck, X } from "lucide-react";
+import { Copy, Check, ExternalLink, Loader2, QrCode, RefreshCw, ShieldCheck, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,16 @@ interface JobDetailContainerProps {
   job: JobDescription;
   onClose: () => void;
   onRefresh: () => void;
+}
+
+interface NativePaymentInfo {
+  bankName?: string;
+  accountNo?: string;
+  accountName?: string;
+  amount?: string;
+  addInfo?: string;
+  bankShortName?: string;
+  quicklink?: string;
 }
 
 export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContainerProps) {
@@ -30,8 +40,58 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  
+  const [nativeInfo, setNativeInfo] = useState<NativePaymentInfo | null>(null);
+  const [activeView, setActiveView] = useState<"embedded" | "native">("embedded");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  // Auto-poll payment status every 3 seconds while payment webview is open
+  // Parse embedded URL (adds ?embedded=true so PayOS hides navbar & fits small frame)
+  const getEmbeddedUrl = (url: string) => {
+    if (url.includes("embedded=true")) return url;
+    return url.includes("?") ? `${url}&embedded=true` : `${url}?embedded=true`;
+  };
+
+  // Attempt to fetch & parse PayOS HTML for native QR details if CORS permits
+  useEffect(() => {
+    if (!checkoutUrl) {
+      setNativeInfo(null);
+      return;
+    }
+
+    const tryFetchNativeInfo = async () => {
+      try {
+        const res = await fetch(checkoutUrl);
+        if (!res.ok) return;
+        const html = await res.text();
+
+        let info: NativePaymentInfo = {};
+        const matchInfo = html.match(/"transactionInfo":(\{.*?\})/);
+        if (matchInfo && matchInfo[1]) {
+          try {
+            info = JSON.parse(matchInfo[1]);
+          } catch {
+            // ignore JSON parse error
+          }
+        }
+
+        const matchQuicklink = html.match(/"quicklink":"(.*?)"/);
+        if (matchQuicklink && matchQuicklink[1]) {
+          info.quicklink = matchQuicklink[1].replace(/\\u0026/g, "&");
+        }
+
+        if (info.accountNo || info.quicklink) {
+          setNativeInfo(info);
+          setActiveView("native");
+        }
+      } catch {
+        // CORS or fetch blocked -> fallback to embedded iframe
+      }
+    };
+
+    tryFetchNativeInfo();
+  }, [checkoutUrl]);
+
+  // Auto-poll payment status every 3 seconds while payment modal is open
   useEffect(() => {
     if (!checkoutUrl || hasPurchased) return;
 
@@ -46,6 +106,13 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
     return () => clearInterval(interval);
   }, [checkoutUrl, hasPurchased]);
+
+  const handleCopy = (text: string, fieldName: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldName);
+    toast.success(`Đã sao chép ${fieldName}`);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   const handleApplyAfterPurchased = async () => {
     setIsApplying(true);
@@ -109,6 +176,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         if (url) {
           setCheckoutUrl(url);
           setIframeLoading(true);
+          setActiveView("embedded");
         } else {
           toast.error(t("payment.failedToCreatePayment", "Không thể tạo liên kết thanh toán."));
         }
@@ -133,78 +201,218 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         onBack={onClose}
       />
 
-      {/* ── Payment Webview Modal ────────────────────────────────────── */}
+      {/* ── Payment Responsive Webview Modal ────────────────────────────── */}
       {checkoutUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative flex h-[85vh] max-h-[780px] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
             {/* Modal Header */}
-            <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/80 px-5 py-3.5 dark:border-slate-800 dark:bg-slate-900/80">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-                  <ShieldCheck className="h-5 w-5" />
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+                  <ShieldCheck className="h-4 w-4" />
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                <div className="min-w-0">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white truncate">
                     {t("payment.checkoutTitle", "Thanh toán ứng tuyển")}
                   </h3>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="max-w-[200px] truncate font-medium text-slate-700 dark:text-slate-300">
-                      {job.title}
-                    </span>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="truncate max-w-[140px] font-medium">{job.title}</span>
                     <span>•</span>
-                    <Badge className="border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-400">
+                    <span className="font-extrabold text-amber-600 dark:text-amber-400">
                       {formatNumber(job.price || 0)} VND
-                    </Badge>
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Action items in header */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleManualCheckPayment}
-                  disabled={isCheckingPayment}
-                  className="h-8 gap-1.5 rounded-lg border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                  <RefreshCw className={`h-3.5 w-3.5 ${isCheckingPayment ? "animate-spin" : ""}`} />
-                  {t("payment.checkStatus", "Kiểm tra kết quả")}
-                </Button>
-
-                <a
-                  href={checkoutUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-indigo-600 shadow-xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-indigo-400 dark:hover:bg-slate-750">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  {t("payment.openInNewTab", "Mở tab mới")}
-                </a>
-
-                <button
-                  onClick={() => setCheckoutUrl(null)}
-                  className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+              {/* Close Button */}
+              <button
+                onClick={() => setCheckoutUrl(null)}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
-            {/* Modal Body / Webview */}
-            <div className="relative flex-1 bg-slate-100 dark:bg-slate-950">
-              {iframeLoading && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white/90 dark:bg-slate-900/90">
-                  <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    {t("payment.loadingGateway", "Đang tải trang thanh toán...")}
-                  </p>
+            {/* View Switcher Tabs (if native info extracted) */}
+            {nativeInfo && (
+              <div className="flex border-b border-slate-100 bg-white px-3 py-1.5 dark:border-slate-800 dark:bg-slate-900">
+                <button
+                  onClick={() => setActiveView("native")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${
+                    activeView === "native"
+                      ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                  }`}>
+                  <QrCode className="h-3.5 w-3.5" />
+                  Mã VietQR Chuẩn
+                </button>
+                <button
+                  onClick={() => setActiveView("embedded")}
+                  className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 ${
+                    activeView === "embedded"
+                      ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400"
+                  }`}>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Trang PayOS
+                </button>
+              </div>
+            )}
+
+            {/* Modal Body */}
+            <div className="relative flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 max-h-[580px]">
+              {/* Native View Card (Cleanest UX) */}
+              {activeView === "native" && nativeInfo ? (
+                <div className="flex flex-col items-center gap-4">
+                  {/* QR Image */}
+                  <div className="flex flex-col items-center rounded-xl border border-slate-200 bg-white p-3 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                    {nativeInfo.quicklink ? (
+                      <img
+                        src={nativeInfo.quicklink}
+                        alt="VietQR Code"
+                        className="h-[240px] w-[240px] rounded-lg object-contain"
+                      />
+                    ) : (
+                      <div className="flex h-[240px] w-[240px] items-center justify-center text-xs text-slate-400">
+                        Đang tạo mã VietQR...
+                      </div>
+                    )}
+                    <p className="mt-2 text-center text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                      Mở app Ngân hàng bất kỳ để quét mã VietQR
+                    </p>
+                  </div>
+
+                  {/* Account Details Box */}
+                  <div className="w-full space-y-2.5 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                    {/* Bank */}
+                    {nativeInfo.bankName && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Ngân hàng:</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {nativeInfo.bankShortName || nativeInfo.bankName}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Account Name */}
+                    {nativeInfo.accountName && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Chủ tài khoản:</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {nativeInfo.accountName}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Account No */}
+                    {nativeInfo.accountNo && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Số tài khoản:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-bold text-slate-900 dark:text-white">
+                            {nativeInfo.accountNo}
+                          </span>
+                          <button
+                            onClick={() => handleCopy(nativeInfo.accountNo!, "Số tài khoản")}
+                            className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                            {copiedField === "Số tài khoản" ? (
+                              <Check className="h-3 w-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Amount */}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 dark:text-slate-400">Số tiền:</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-extrabold text-amber-600 dark:text-amber-400">
+                          {formatNumber(Number(nativeInfo.amount || job.price || 0))} VND
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleCopy(
+                              String(nativeInfo.amount || job.price || 0),
+                              "Số tiền"
+                            )
+                          }
+                          className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                          {copiedField === "Số tiền" ? (
+                            <Check className="h-3 w-3 text-emerald-500" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Add Info / Content */}
+                    {nativeInfo.addInfo && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400">Nội dung CK:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                            {nativeInfo.addInfo}
+                          </span>
+                          <button
+                            onClick={() => handleCopy(nativeInfo.addInfo!, "Nội dung chuyển khoản")}
+                            className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                            {copiedField === "Nội dung chuyển khoản" ? (
+                              <Check className="h-3 w-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Embedded Iframe View (?embedded=true compact mode) */
+                <div className="relative h-[520px] w-full overflow-hidden rounded-xl bg-white dark:bg-slate-900">
+                  {iframeLoading && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white/90 dark:bg-slate-900/90">
+                      <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {t("payment.loadingGateway", "Đang tải trang thanh toán...")}
+                      </p>
+                    </div>
+                  )}
+
+                  <iframe
+                    src={getEmbeddedUrl(checkoutUrl)}
+                    title="PayOS Embedded Checkout"
+                    className="h-full w-full border-0"
+                    onLoad={() => setIframeLoading(false)}
+                  />
                 </div>
               )}
+            </div>
 
-              <iframe
-                src={checkoutUrl}
-                title="Payment Checkout"
-                className="h-full w-full border-0"
-                onLoad={() => setIframeLoading(false)}
-              />
+            {/* Modal Footer Controls */}
+            <div className="flex shrink-0 items-center justify-between border-t border-slate-200/80 bg-slate-50/90 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-900/90">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleManualCheckPayment}
+                disabled={isCheckingPayment}
+                className="h-8 gap-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <RefreshCw className={`h-3.5 w-3.5 ${isCheckingPayment ? "animate-spin" : ""}`} />
+                {t("payment.checkStatus", "Kiểm tra kết quả")}
+              </Button>
+
+              <a
+                href={checkoutUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-8 items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+                <ExternalLink className="h-3.5 w-3.5" />
+                Mở tab mới
+              </a>
             </div>
           </div>
         </div>
