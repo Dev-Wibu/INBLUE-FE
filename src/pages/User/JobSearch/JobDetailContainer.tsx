@@ -209,7 +209,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       {/* ── Merged Single-Card Payment Modal ────────────────────────────── */}
       {checkoutUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative flex max-h-[92vh] w-full max-w-[440px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
+          <div className="relative flex max-h-[92vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
             {/* Modal Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
               <div className="flex items-center gap-2.5 min-w-0">
@@ -363,7 +363,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                 </div>
               ) : (
                 /* Embedded Fallback View */
-                <div className="relative h-[560px] w-full overflow-hidden rounded-xl bg-white dark:bg-slate-900">
+                <div className="relative h-[460px] w-full overflow-hidden rounded-xl bg-white dark:bg-slate-900">
                   {iframeLoading && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white/90 dark:bg-slate-900/90">
                       <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
