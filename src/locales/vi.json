@@ -152,6 +152,7 @@
     "inactive": "Tạm dừng",
     "activate": "Kích hoạt",
     "deactivate": "Tạm dừng",
+    "deleteSchedule": "Xóa lịch",
     "manageSchedules": "Quản lý lịch",
     "saveChanges": "Lưu thay đổi",
     "createSchedule": "Tạo lịch mới",
@@ -480,7 +481,14 @@
     "salaryRate": "Mức lương",
     "noApplicantsYet": "Chưa có ứng viên nào nộp đơn.",
     "createdDate": "Ngày tạo",
-    "updatedDate": "Cập nhật"
+    "updatedDate": "Cập nhật",
+    "status_OPEN": "Mở",
+    "status_CLOSED": "Đã đóng",
+    "status_DRAFT": "Bản nháp",
+    "selectCompany": "Công ty",
+    "chooseCompany": "Chọn công ty",
+    "dragRoundsToSetup": "{{rounds}} từ cột bên trái và thả vào đây để thiết lập",
+    "editingRecruitmentProcess": "Chỉnh sửa quy trình tuyển dụng"
   },
   "adminDashboardoverview": {
     "companies": "Doanh nghiệp",
@@ -4631,7 +4639,8 @@
     "cannotAnalyzeFaceBehavior": "Không thể phân tích hành vi khuôn mặt",
     "cannotCreateCompany": "Không thể tạo công ty",
     "cannotUpdateCompany": "Không thể cập nhật công ty",
-    "cannotDeleteCompany": "Không thể xóa công ty"
+    "cannotDeleteCompany": "Không thể xóa công ty",
+    "cannotToggleJobDescriptionStatus": "Không thể thay đổi trạng thái JD"
   },
   "components": {
     "dateTimePicker": {

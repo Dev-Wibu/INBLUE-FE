@@ -20,9 +20,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, DollarSign, FileCheck, Gift, Sparkles, Tag } from "lucide-react";
+import { Briefcase, Building2, DollarSign, FileCheck, Gift, Sparkles, Tag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { JobDescriptionFormData, JobDescriptionLevel, JobDescriptionStatus } from "../types";
+
+interface CompanyOption {
+  id: number;
+  name: string;
+}
 
 interface JobDescriptionFormDialogProps {
   isOpen: boolean;
@@ -34,6 +39,8 @@ interface JobDescriptionFormDialogProps {
   description: string;
   submitLabel?: string;
   isSubmitting?: boolean;
+  companies?: CompanyOption[];
+  preselectedCompanyId?: number | null;
 }
 
 const LEVEL_OPTIONS: JobDescriptionLevel[] = ["INTERN", "FRESHER", "JUNIOR", "MIDDLE"];
@@ -49,9 +56,14 @@ export function JobDescriptionFormDialog({
   description,
   submitLabel,
   isSubmitting = false,
+  companies = [],
+  preselectedCompanyId = null,
 }: JobDescriptionFormDialogProps) {
   const { t } = useTranslation();
   const effectiveSubmitLabel = submitLabel || t("general.save", "Lưu thay đổi");
+
+  // Determine which company is selected: formData.companyId or preselectedCompanyId
+  const selectedCompanyId = formData.companyId ?? preselectedCompanyId ?? "";
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -169,6 +181,43 @@ export function JobDescriptionFormDialog({
             <h4 className="text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-white">
               {t("adminCompanymanagement.jobMetadata", "Thông số thiết lập")}
             </h4>
+
+            {/* Company Selector - Only show when there are multiple companies or no preselected company */}
+            {(!preselectedCompanyId || companies.length > 1) && (
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="jd-company"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <span className="flex items-center gap-1.5">
+                    <Building2 className="h-3.5 w-3.5 text-indigo-500" />
+                    {t("adminCompanymanagement.selectCompany", "Công ty")}
+                  </span>
+                </Label>
+                <Select
+                  value={selectedCompanyId ? String(selectedCompanyId) : ""}
+                  onValueChange={(value) =>
+                    onFormChange({
+                      ...formData,
+                      companyId: Number(value),
+                    })
+                  }>
+                  <SelectTrigger
+                    id="jd-company"
+                    className="h-9 border-slate-200 text-xs dark:border-slate-800 dark:bg-slate-900">
+                    <SelectValue
+                      placeholder={t("adminCompanymanagement.chooseCompany", "Chọn công ty")}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies.map((company) => (
+                      <SelectItem key={company.id} value={String(company.id)} className="text-xs">
+                        <span className="font-semibold">{company.name}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Title */}
             <div className="space-y-1.5">

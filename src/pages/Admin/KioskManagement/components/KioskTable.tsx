@@ -1,10 +1,4 @@
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -15,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { Building2, Clock4, MapPin, MoreHorizontal, Pencil, Plus } from "lucide-react";
+import { Building2, Clock4, MapPin, Pencil, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { Kiosk } from "../types";
@@ -188,24 +182,16 @@ export function KioskTable({
                   )}
                 </TableCell>
 
-                {/* Actions Dropdown */}
+                {/* Actions - Direct Edit Button */}
                 <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuItem onClick={() => onEdit(kiosk)} className="cursor-pointer">
-                        <Pencil className="mr-2 h-4 w-4 text-slate-500" />
-                        {t("common.edit")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(kiosk)}
+                    className="h-8 gap-1.5 px-2 text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>{t("common.edit")}</span>
+                  </Button>
                 </TableCell>
               </TableRow>
             );

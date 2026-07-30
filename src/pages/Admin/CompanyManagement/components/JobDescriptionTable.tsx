@@ -33,7 +33,7 @@ interface SortProps {
 
 interface JobDescriptionTableProps {
   jobDescriptions: JobDescription[];
-  onToggleStatus?: (job: JobDescription, nextStatus: "OPEN" | "CLOSED") => void;
+  onToggleStatus?: (job: JobDescription) => void;
   onView?: (job: JobDescription) => void;
   getSortProps?: (key: JobDescriptionSortKey) => SortProps;
   showCompany?: boolean;
@@ -216,9 +216,7 @@ export function JobDescriptionTable({
                 <TableCell className="pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <Switch
                     checked={job.status === "OPEN"}
-                    onCheckedChange={(checked) =>
-                      onToggleStatus?.(job, checked ? "OPEN" : "CLOSED")
-                    }
+                    onCheckedChange={() => onToggleStatus?.(job)}
                     className="shadow-sm data-[state=checked]:bg-emerald-500"
                     aria-label={`Toggle status for ${job.title || job.id}`}
                   />

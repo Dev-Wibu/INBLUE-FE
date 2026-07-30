@@ -22,9 +22,9 @@ import {
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import {
   adminApplicationManager,
-  type AdminOpenJdResponseDto,
   type ApplicationListItemDto,
 } from "@/services/admin-application.manager";
+import { useQuery } from "@tanstack/react-query";
 import {
   Briefcase,
   Clock,
@@ -37,71 +37,111 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export function AdminApplicationManagementPage() {
   const { t } = useTranslation();
 
-  const [openJds, setOpenJds] = useState<AdminOpenJdResponseDto[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("ALL");
   const [selectedJdId, setSelectedJdId] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
-  const [applications, setApplications] = useState<ApplicationListItemDto[]>([]);
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // 1. Fetch Open JDs for dropdown filters
-  const loadOpenJds = useCallback(async () => {
-    const res = await adminApplicationManager.getOpenJds();
-    if (res.success && res.data) {
-      setOpenJds(res.data);
-    }
-  }, []);
+  // 1. Fetch Open JDs for dropdown filters with caching
+  const { data: openJdsData = [], refetch: refetchOpenJds } = useQuery({
+    queryKey: ["admin", "open-jds-all"],
+    queryFn: async () => {
+      const res = await adminApplicationManager.getOpenJds();
+      return res.success && res.data ? res.data : [];
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+  });
 
-  // 2. Fetch applications
+  const openJds = openJdsData;
+
+  // Cache for application data per JD to avoid redundant calls
+  const applicationCacheRef = useRef<Map<number, ApplicationListItemDto[]>>(new Map());
+  const [applications, setApplications] = useState<ApplicationListItemDto[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 2. Fetch applications with improved caching
   const loadApplications = useCallback(async () => {
     setIsLoading(true);
     try {
       if (selectedJdId !== "ALL") {
-        const res = await adminApplicationManager.getApplicationsByJdId(Number(selectedJdId));
+        // Single JD selected - fetch directly
+        const jdId = Number(selectedJdId);
+        const cached = applicationCacheRef.current.get(jdId);
+        if (cached) {
+          setApplications(cached);
+          setIsLoading(false);
+          return;
+        }
+        const res = await adminApplicationManager.getApplicationsByJdId(jdId);
         if (res.success && res.data) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setApplications((res.data.applications || (res.data as any)) as ApplicationListItemDto[]);
+          const apps = (res.data.applications || (res.data as any)) as ApplicationListItemDto[];
+          applicationCacheRef.current.set(jdId, apps);
+          setApplications(apps);
         } else {
           setApplications([]);
         }
       } else {
-        // Fetch applications from all open JDs in parallel
+        // All JDs - fetch applications only for JDs not yet cached
         const jdIds = openJds.map((j) => j.jdId).filter((id): id is number => id !== undefined);
-        if (jdIds.length > 0) {
+        const uncachedJdIds = jdIds.filter((id) => !applicationCacheRef.current.has(id));
+
+        // Use cached data for already-fetched JDs
+        const cachedApps: ApplicationListItemDto[] = [];
+        jdIds.forEach((jdId) => {
+          const cached = applicationCacheRef.current.get(jdId);
+          if (cached) {
+            cachedApps.push(...cached);
+          }
+        });
+
+        // Only fetch uncached JDs
+        if (uncachedJdIds.length > 0) {
           const results = await Promise.all(
-            jdIds.map((id) => adminApplicationManager.getApplicationsByJdId(id))
+            uncachedJdIds.map((id) => adminApplicationManager.getApplicationsByJdId(id))
           );
-          const allApps: ApplicationListItemDto[] = [];
           results.forEach((r, idx) => {
             if (r.success && r.data) {
-              const jdInfo = openJds[idx];
+              const jdInfo = openJds.find((j) => j.jdId === uncachedJdIds[idx]);
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const rawApps = (r.data.applications || (r.data as any)) as ApplicationListItemDto[];
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              rawApps.forEach((app: any) => {
-                allApps.push({
-                  ...app,
-                  companyName: app.companyName || jdInfo.company?.name,
-                  jobTitle: app.jobTitle || jdInfo.title,
-                });
-              });
+              type AppWithCompany = ApplicationListItemDto & {
+                companyName?: string;
+                jobTitle?: string;
+              };
+              const appsWithCompany = rawApps.map((app: AppWithCompany) => ({
+                ...app,
+                companyName: app.companyName || jdInfo?.company?.name,
+                jobTitle: app.jobTitle || jdInfo?.title,
+              }));
+              applicationCacheRef.current.set(
+                uncachedJdIds[idx],
+                appsWithCompany as ApplicationListItemDto[]
+              );
             }
           });
-          setApplications(allApps);
-        } else {
-          setApplications([]);
         }
+
+        // Collect all cached applications
+        const allApps: ApplicationListItemDto[] = [];
+        jdIds.forEach((jdId) => {
+          const cached = applicationCacheRef.current.get(jdId);
+          if (cached) {
+            allApps.push(...cached);
+          }
+        });
+        setApplications(allApps);
       }
     } catch (err) {
       console.error(err);
@@ -111,13 +151,19 @@ export function AdminApplicationManagementPage() {
     }
   }, [openJds, selectedJdId, t]);
 
+  const loadOpenJds = useCallback(() => {
+    void refetchOpenJds();
+  }, [refetchOpenJds]);
+
   useEffect(() => {
-    loadOpenJds();
-  }, [loadOpenJds]);
+    if (openJds.length > 0) {
+      loadApplications();
+    }
+  }, [openJds, loadApplications]);
 
   useEffect(() => {
     loadApplications();
-  }, [loadApplications]);
+  }, [selectedJdId, loadApplications]);
 
   // Unique companies for filter dropdown
   const companyOptions = useMemo(() => {

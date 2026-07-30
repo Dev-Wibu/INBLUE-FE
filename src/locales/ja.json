@@ -119,6 +119,7 @@
     "inactive": "停止中",
     "activate": "有効化",
     "deactivate": "停止",
+    "deleteSchedule": "スケジュールを削除",
     "manageSchedules": "スケジュール管理",
     "saveChanges": "変更を保存",
     "createSchedule": "新しいスケジュールを作成",
@@ -443,7 +444,15 @@
     "salaryRate": "給与",
     "noApplicantsYet": "応募者はまだいません。",
     "createdDate": "作成日",
-    "updatedDate": "更新日"
+    "updatedDate": "更新日",
+    "status_OPEN": "公開中",
+    "status_CLOSED": "終了",
+    "status_DRAFT": "下書き",
+    "selectCompany": "会社",
+    "chooseCompany": "会社を選択",
+    "dragRoundsToSetup": "左側のパネルから{{rounds}}をドラッグ＆ドロップして設定",
+    "editingRecruitmentProcess": "採用プロセスの編集",
+    "deleteSchedule": "スケジュールを削除"
   },
   "adminDashboardoverview": {
     "companies": "企業",
@@ -2382,7 +2391,8 @@
     "cannotAnalyzeFaceBehavior": "顔の動作を分析できません",
     "cannotCreateCompany": "会社を作成できません",
     "cannotUpdateCompany": "会社を更新できません",
-    "cannotDeleteCompany": "会社を削除できません"
+    "cannotDeleteCompany": "会社を削除できません",
+    "cannotToggleJobDescriptionStatus": "JDのステータスを変更できません"
   },
   "general": {
     "pleaseFillAllRequiredFields": "すべての必須フィールドに入力してください",

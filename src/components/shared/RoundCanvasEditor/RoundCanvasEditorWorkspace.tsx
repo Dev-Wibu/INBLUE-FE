@@ -521,7 +521,11 @@ export function RoundCanvasEditorWorkspace({
                   {title || t("adminCompanymanagement.recruitmentRoundTemplate")}
                 </div>
                 <h1 className="truncate text-sm font-bold tracking-tight text-slate-900 dark:text-white">
-                  {initialMetadata.name || "Chỉnh sửa quy trình vòng tuyển dụng"}
+                  {initialMetadata.name ||
+                    t(
+                      "adminCompanymanagement.editingRecruitmentProcess",
+                      "Chỉnh sửa quy trình tuyển dụng"
+                    )}
                 </h1>
               </div>
             )}
@@ -601,7 +605,11 @@ export function RoundCanvasEditorWorkspace({
                   {t("template.emptyTemplate")}
                 </h4>
                 <p className="mt-1.5 max-w-[200px] text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-                  {t("userApplicationhistory.rounds")} từ cột bên trái và thả vào đây để thiết lập
+                  {t(
+                    "adminCompanymanagement.dragRoundsToSetup",
+                    "{{rounds}} from the left panel and drop here to configure",
+                    { rounds: t("userApplicationhistory.rounds") }
+                  )}
                 </p>
               </div>
             </div>

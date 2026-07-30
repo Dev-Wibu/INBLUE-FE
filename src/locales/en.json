@@ -152,6 +152,7 @@
     "inactive": "Inactive",
     "activate": "Activate",
     "deactivate": "Deactivate",
+    "deleteSchedule": "Delete schedule",
     "manageSchedules": "Manage schedules",
     "saveChanges": "Save changes",
     "createSchedule": "Create New Schedule",
@@ -480,7 +481,15 @@
     "salaryRate": "Salary Rate",
     "noApplicantsYet": "No applicants submitted yet.",
     "createdDate": "Created Date",
-    "updatedDate": "Updated"
+    "updatedDate": "Updated",
+    "status_OPEN": "Open",
+    "status_CLOSED": "Closed",
+    "status_DRAFT": "Draft",
+    "selectCompany": "Company",
+    "chooseCompany": "Select company",
+    "dragRoundsToSetup": "{{rounds}} from the left panel and drop here to configure",
+    "editingRecruitmentProcess": "Edit recruitment process",
+    "deleteSchedule": "Delete schedule"
   },
   "adminDashboardoverview": {
     "companies": "Companies",
@@ -4634,7 +4643,8 @@
     "cannotAnalyzeFaceBehavior": "Cannot analyze face behavior",
     "cannotCreateCompany": "Cannot create company",
     "cannotUpdateCompany": "Cannot update company",
-    "cannotDeleteCompany": "Cannot delete company"
+    "cannotDeleteCompany": "Cannot delete company",
+    "cannotToggleJobDescriptionStatus": "Cannot change JD status"
   },
   "components": {
     "dateTimePicker": {
