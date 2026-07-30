@@ -29,6 +29,52 @@ interface NativePaymentInfo {
   quicklink?: string;
 }
 
+function extractNativeInfoFromRawData(rawData: unknown): NativePaymentInfo | null {
+  if (!rawData) return null;
+
+  let record: Record<string, unknown> | null = null;
+  if (typeof rawData === "string") {
+    try {
+      record = JSON.parse(rawData);
+    } catch {
+      // ignore
+    }
+  } else if (typeof rawData === "object" && rawData !== null) {
+    record = rawData as Record<string, unknown>;
+  }
+
+  if (record && record.data && typeof record.data === "object") {
+    record = record.data as Record<string, unknown>;
+  }
+
+  if (record) {
+    const accountNo = (record.accountNumber || record.accountNo || record.account_no) as string | undefined;
+    const accountName = (record.accountName || record.account_name) as string | undefined;
+    const amount = (record.amount) as string | number | undefined;
+    const addInfo = (record.description || record.addInfo || record.paymentPurpose) as string | undefined;
+    const bin = (record.bin || "970418") as string;
+    const bankShortName = (record.bankShortName || record.bankName || "BIDV") as string;
+    const quicklink = (record.quicklink || record.qrCodeUrl) as string | undefined;
+
+    if (accountNo || quicklink) {
+      const generatedQuicklink =
+        quicklink ||
+        `https://img.vietqr.io/image/${bin}-${accountNo}-payos.jpg?addInfo=${encodeURIComponent(
+          String(addInfo || "")
+        )}&amount=${amount || ""}`;
+      return {
+        accountNo: String(accountNo || ""),
+        accountName: String(accountName || ""),
+        amount: String(amount || ""),
+        addInfo: String(addInfo || ""),
+        bankShortName: String(bankShortName),
+        quicklink: generatedQuicklink,
+      };
+    }
+  }
+  return null;
+}
+
 export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContainerProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -51,13 +97,15 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     return url.includes("?") ? `${url}&embedded=true` : `${url}?embedded=true`;
   };
 
-  // Fetch & parse PayOS HTML for native QR details
+  // Fetch & parse PayOS HTML for native QR details via local proxy or direct
   useEffect(() => {
     if (!checkoutUrl) {
       setNativeInfo(null);
       setShowEmbeddedFallback(false);
       return;
     }
+
+    if (nativeInfo) return; // Already extracted from rawData
 
     const tryFetchNativeInfo = async () => {
       try {
@@ -97,7 +145,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     };
 
     tryFetchNativeInfo();
-  }, [checkoutUrl]);
+  }, [checkoutUrl, nativeInfo]);
 
   // Auto-poll payment status every 3 seconds while payment modal is open
   useEffect(() => {
@@ -180,11 +228,17 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     try {
       if (!hasPurchased && job.price && job.price > 0) {
         localStorage.setItem("pending_jd_purchase_id", String(jdIdNum));
-        const url = await jdPurchaseManager.createPayment(jdIdNum);
-        if (url) {
-          setCheckoutUrl(url);
+        const res = await jdPurchaseManager.createPayment(jdIdNum);
+        if (res?.checkoutUrl) {
+          const extracted = extractNativeInfoFromRawData(res.rawData);
+          if (extracted) {
+            setNativeInfo(extracted);
+            setShowEmbeddedFallback(false);
+          } else {
+            setShowEmbeddedFallback(true);
+          }
+          setCheckoutUrl(res.checkoutUrl);
           setIframeLoading(true);
-          setShowEmbeddedFallback(false);
         } else {
           toast.error(t("payment.failedToCreatePayment", "Không thể tạo liên kết thanh toán."));
         }
@@ -212,7 +266,10 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       {/* ── Merged Single-Card Payment Modal ────────────────────────────── */}
       {checkoutUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className={`relative flex max-h-[92vh] w-full ${nativeInfo && !showEmbeddedFallback ? "max-w-[440px]" : "max-w-[680px]"} flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900`}>
+          <div
+            className={`relative flex max-h-[92vh] w-full ${
+              nativeInfo && !showEmbeddedFallback ? "max-w-[440px]" : "max-w-[680px]"
+            } flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900`}>
             {/* Modal Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
               <div className="flex items-center gap-2.5 min-w-0">

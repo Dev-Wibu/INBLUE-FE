@@ -84,34 +84,36 @@ export const jdPurchaseManager = {
    * Initialize PayOS payment for JD package
    * POST /api/payments/pay?jdId={jdId}
    */
-  async createPayment(jdId: number): Promise<string> {
+  async createPayment(jdId: number): Promise<{ checkoutUrl: string; rawData?: unknown }> {
     try {
       const response = await fetchClient.POST("/api/payments/pay", {
         params: {
           query: { jdId },
         },
-        parseAs: "text",
       });
 
-      const url = extractCheckoutUrl(response.data);
+      const rawData = response.data;
+      const url = extractCheckoutUrl(rawData);
       if (url) {
-        return url;
+        return { checkoutUrl: url, rawData };
       }
     } catch {
-      // Ignore text parse errors and attempt fallback
+      // Ignore errors and attempt fallback
     }
 
     const response = await fetchClient.POST("/api/payments/pay", {
       params: {
         query: { jdId },
       },
+      parseAs: "text",
     });
 
-    const url = extractCheckoutUrl(response.data);
+    const rawData = response.data;
+    const url = extractCheckoutUrl(rawData);
     if (!url) {
       throw new Error("No payment checkout URL received from PayOS");
     }
 
-    return url;
+    return { checkoutUrl: url, rawData };
   },
 };
