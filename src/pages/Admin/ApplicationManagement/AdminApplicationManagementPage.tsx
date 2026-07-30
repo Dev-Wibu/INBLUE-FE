@@ -151,15 +151,21 @@ export function AdminApplicationManagementPage() {
     }
   }, [selectedJdId]); // Only depend on selectedJdId, openJds is accessed via ref
 
+  // Initial load when openJds is ready
+  const hasLoadedInitialData = useRef(false);
   useEffect(() => {
-    if (openJds.length > 0) {
+    if (openJds.length > 0 && !hasLoadedInitialData.current) {
+      hasLoadedInitialData.current = true;
       void loadApplications();
     }
   }, [openJds.length, loadApplications]);
 
+  // Reload when JD selection changes
   useEffect(() => {
-    void loadApplications();
-  }, [selectedJdId]);
+    if (hasLoadedInitialData.current) {
+      void loadApplications();
+    }
+  }, [selectedJdId, loadApplications]);
 
   // Unique companies for filter dropdown
   const companyOptions = useMemo(() => {

@@ -223,23 +223,6 @@ export function KioskDetailPage() {
     }
   };
 
-  const handleDeleteSchedule = async (schedule: KioskSchedule) => {
-    if (!schedule.id) return;
-    try {
-      const result = await kioskManager.deleteSchedule(schedule.id);
-      if (result.success) {
-        toast.success(t("adminKioskManagement.scheduleDeleted"));
-        closeScheduleForm();
-        await loadData(true);
-      } else {
-        toast.error(result.error || t("adminKioskManagement.unableToDeleteSchedule"));
-      }
-    } catch (error) {
-      console.error("Error deleting schedule:", error);
-      toast.error(t("common.unableToDelete"));
-    }
-  };
-
   if (kioskId === null) return null;
 
   // Build initial schedule with preset day for the create form
@@ -383,7 +366,7 @@ export function KioskDetailPage() {
         kioskId={kioskId}
         initialSchedule={editingSchedule ?? presetSchedule}
         onSubmit={handleScheduleSubmit}
-        onDelete={editingSchedule ? handleDeleteSchedule : undefined}
+        onToggleStatus={handleToggleScheduleStatus}
         isSubmitting={scheduleSubmitting}
       />
     </div>

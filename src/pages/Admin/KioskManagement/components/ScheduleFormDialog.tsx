@@ -42,7 +42,7 @@ interface ScheduleFormDialogProps {
   kioskId: number;
   initialSchedule?: KioskSchedule | null;
   onSubmit: (values: ScheduleFormValues) => Promise<void> | void;
-  onDelete?: (schedule: KioskSchedule) => Promise<void> | void;
+  onToggleStatus: (schedule: KioskSchedule) => Promise<void> | void;
   isSubmitting?: boolean;
 }
 
@@ -79,7 +79,7 @@ export function ScheduleFormDialog({
   kioskId,
   initialSchedule,
   onSubmit,
-  onDelete,
+  onToggleStatus,
   isSubmitting,
 }: ScheduleFormDialogProps) {
   const { t } = useTranslation();
@@ -244,13 +244,12 @@ export function ScheduleFormDialog({
           </div>
 
           <DialogFooter className="gap-2">
-            {isEdit && onDelete && (
+            {isEdit && initialSchedule && (
               <Button
                 type="button"
                 variant="destructive"
                 onClick={async () => {
-                  if (!initialSchedule) return;
-                  await onDelete(initialSchedule);
+                  await onToggleStatus(initialSchedule);
                 }}
                 disabled={isSubmitting}
                 className="mr-auto gap-2">
