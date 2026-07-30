@@ -1,12 +1,11 @@
 import { JobDetailView } from "@/components/shared/JobDetailView";
-import { Button } from "@/components/ui/button";
 import { useJdPurchaseStatus } from "@/hooks/useJdPurchaseStatus";
 import { formatNumber } from "@/lib/formatting";
 import { applicationService } from "@/services/application.manager";
 import type { JobDescription } from "@/services/company.manager";
 import { jdPurchaseManager } from "@/services/jd-purchase.manager";
 import { useAuthStore } from "@/stores/authStore";
-import { Check, Copy, ExternalLink, Info, Loader2, RefreshCw, ShieldCheck, X } from "lucide-react";
+import { Check, Clock, Copy, ExternalLink, Info, Loader2, ShieldCheck, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -107,11 +106,36 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   const [isApplying, setIsApplying] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
-  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   
   const [nativeInfo, setNativeInfo] = useState<NativePaymentInfo | null>(null);
   const [showEmbeddedFallback, setShowEmbeddedFallback] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(900); // 15 minutes = 900s
+
+  // 15-minute Countdown Timer
+  useEffect(() => {
+    if (!checkoutUrl) return;
+    setTimeLeft(900);
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          toast.warning("Phiên thanh toán đã hết hạn.");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [checkoutUrl]);
+
+  const formatTimeLeft = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
   // Parse embedded URL
   const getEmbeddedUrl = (url: string) => {
@@ -226,22 +250,6 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     }
   };
 
-  const handleManualCheckPayment = async () => {
-    setIsCheckingPayment(true);
-    try {
-      const { data } = await refetchStatus();
-      if (data?.hasPurchased) {
-        toast.success(t("payment.paymentSuccess", "Thanh toán thành công!"));
-        setCheckoutUrl(null);
-        await handleApplyAfterPurchased();
-      } else {
-        toast.info(t("payment.waitingPayment", "Chưa ghi nhận thanh toán. Vui lòng thử lại sau vài giây."));
-      }
-    } finally {
-      setIsCheckingPayment(false);
-    }
-  };
-
   const handleApply = async () => {
     if (!isLoggedIn) {
       toast.error(t("enterpriseJobdescriptiondetailpage.pleaseLoginToApply"));
@@ -315,22 +323,19 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
             <div className="relative flex-1 overflow-y-auto bg-slate-50 p-4.5 dark:bg-slate-950 custom-scrollbar">
               {!showEmbeddedFallback && nativeInfo ? (
                 <div className="flex flex-col items-center gap-4">
-                  {/* QR Image */}
-                  <div className="flex flex-col items-center rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+                  {/* Clean QR Image without gray border or subtext */}
+                  <div className="flex flex-col items-center">
                     {nativeInfo.quicklink ? (
                       <img
                         src={nativeInfo.quicklink}
                         alt="VietQR Code"
-                        className="h-[230px] w-[230px] rounded-lg object-contain"
+                        className="h-[240px] w-[240px] rounded-xl border border-slate-100 object-contain shadow-xs bg-white dark:border-slate-800 dark:bg-white"
                       />
                     ) : (
-                      <div className="flex h-[230px] w-[230px] items-center justify-center text-xs text-slate-400">
+                      <div className="flex h-[240px] w-[240px] items-center justify-center text-xs text-slate-400">
                         <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
                       </div>
                     )}
-                    <p className="mt-2 text-center text-[11.5px] font-medium text-slate-500 dark:text-slate-400">
-                      Quét bằng app Ngân hàng / MoMo / ZaloPay
-                    </p>
                   </div>
 
                   {/* Single Unified Bank Info Box */}
@@ -449,15 +454,15 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
               )}
             </div>
 
-            {/* Modal Footer Controls — Sleek & Compact */}
-            <div className="flex shrink-0 flex-col items-center gap-2 border-t border-slate-200/80 bg-slate-50/90 p-3.5 dark:border-slate-800 dark:bg-slate-900/90">
-              <Button
-                onClick={handleManualCheckPayment}
-                disabled={isCheckingPayment}
-                className="w-full h-9 gap-2 rounded-xl bg-indigo-600 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
-                <RefreshCw className={`h-3.5 w-3.5 ${isCheckingPayment ? "animate-spin" : ""}`} />
-                {t("payment.checkStatus", "Tôi đã thanh toán (Kiểm tra kết quả)")}
-              </Button>
+            {/* Modal Footer Controls — Streamlined with 15m Countdown */}
+            <div className="flex shrink-0 items-center justify-between border-t border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <Clock className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
+                <span>Hết hạn sau:</span>
+                <span className="font-mono font-extrabold text-amber-600 dark:text-amber-400">
+                  {formatTimeLeft(timeLeft)}
+                </span>
+              </div>
 
               <a
                 href={checkoutUrl}
@@ -465,7 +470,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 text-[11.5px] font-medium text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 transition-colors">
                 <ExternalLink className="h-3 w-3" />
-                Mở trang thanh toán PayOS gốc ↗
+                Mở trang PayOS gốc ↗
               </a>
             </div>
           </div>
