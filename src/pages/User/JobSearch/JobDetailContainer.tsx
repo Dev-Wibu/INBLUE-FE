@@ -108,40 +108,45 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     if (nativeInfo) return; // Already extracted from rawData
 
     const tryFetchNativeInfo = async () => {
-      try {
-        const paymentId = checkoutUrl.split("/web/")[1]?.replace(/\//g, "").split("?")[0];
-        const fetchTarget = paymentId ? `/payos-proxy/web/${paymentId}` : checkoutUrl;
-        const res = await fetch(fetchTarget);
-        if (!res.ok) {
-          setShowEmbeddedFallback(true);
-          return;
-        }
-        const html = await res.text();
+      const paymentId = checkoutUrl.split("/web/")[1]?.replace(/\//g, "").split("?")[0];
+      const targets = [
+        paymentId ? `/payos-proxy/web/${paymentId}` : null,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(checkoutUrl)}`,
+        `https://corsproxy.io/?${encodeURIComponent(checkoutUrl)}`,
+      ].filter(Boolean) as string[];
 
-        let info: NativePaymentInfo = {};
-        const matchInfo = html.match(/"transactionInfo":(\{.*?\})/);
-        if (matchInfo && matchInfo[1]) {
-          try {
-            info = JSON.parse(matchInfo[1]);
-          } catch {
-            // ignore
+      for (const target of targets) {
+        try {
+          const res = await fetch(target);
+          if (!res.ok) continue;
+          const html = await res.text();
+
+          let info: NativePaymentInfo = {};
+          const matchInfo = html.match(/"transactionInfo":(\{.*?\})/);
+          if (matchInfo && matchInfo[1]) {
+            try {
+              info = JSON.parse(matchInfo[1]);
+            } catch {
+              // ignore
+            }
           }
-        }
 
-        const matchQuicklink = html.match(/"quicklink":"(.*?)"/);
-        if (matchQuicklink && matchQuicklink[1]) {
-          info.quicklink = matchQuicklink[1].replace(/\\u0026/g, "&");
-        }
+          const matchQuicklink = html.match(/"quicklink":"(.*?)"/);
+          if (matchQuicklink && matchQuicklink[1]) {
+            info.quicklink = matchQuicklink[1].replace(/\\u0026/g, "&");
+          }
 
-        if (info.accountNo || info.quicklink) {
-          setNativeInfo(info);
-          setShowEmbeddedFallback(false);
-        } else {
-          setShowEmbeddedFallback(true);
+          if (info.accountNo || info.quicklink) {
+            setNativeInfo(info);
+            setShowEmbeddedFallback(false);
+            return;
+          }
+        } catch {
+          // try next proxy target
         }
-      } catch {
-        setShowEmbeddedFallback(true);
       }
+
+      setShowEmbeddedFallback(true);
     };
 
     tryFetchNativeInfo();
