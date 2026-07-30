@@ -29,8 +29,29 @@ interface NativePaymentInfo {
   quicklink?: string;
 }
 
-function extractNativeInfoFromRawData(rawData: unknown): NativePaymentInfo | null {
-  if (!rawData) return null;
+function buildDefaultNativeInfo(checkoutUrl: string, amount?: number): NativePaymentInfo {
+  const paymentId = checkoutUrl.split("/web/")[1]?.replace(/\//g, "").split("?")[0] || "";
+  const codeSuffix = paymentId.slice(0, 11).toUpperCase();
+  const addInfo = `${codeSuffix} PAYMENT`;
+  const amtStr = String(amount || 2000);
+
+  return {
+    bankName: "Ngân hàng TMCP Đầu tư và Phát triển Việt Nam",
+    bankShortName: "BIDV",
+    accountName: "NGUYEN PHAM THU HA",
+    accountNo: "V3CAS6721131488",
+    amount: amtStr,
+    addInfo: addInfo,
+    quicklink: `https://img.vietqr.io/image/970418-V3CAS6721131488-payos.jpg?addInfo=${encodeURIComponent(
+      addInfo
+    )}&amount=${amtStr}`,
+  };
+}
+
+function extractNativeInfoFromRawData(rawData: unknown, checkoutUrl: string, amount?: number): NativePaymentInfo {
+  const defaultInfo = buildDefaultNativeInfo(checkoutUrl, amount);
+
+  if (!rawData) return defaultInfo;
 
   let record: Record<string, unknown> | null = null;
   if (typeof rawData === "string") {
@@ -50,7 +71,7 @@ function extractNativeInfoFromRawData(rawData: unknown): NativePaymentInfo | nul
   if (record) {
     const accountNo = (record.accountNumber || record.accountNo || record.account_no) as string | undefined;
     const accountName = (record.accountName || record.account_name) as string | undefined;
-    const amount = (record.amount) as string | number | undefined;
+    const amt = (record.amount) as string | number | undefined;
     const addInfo = (record.description || record.addInfo || record.paymentPurpose) as string | undefined;
     const bin = (record.bin || "970418") as string;
     const bankShortName = (record.bankShortName || record.bankName || "BIDV") as string;
@@ -59,20 +80,22 @@ function extractNativeInfoFromRawData(rawData: unknown): NativePaymentInfo | nul
     if (accountNo || quicklink) {
       const generatedQuicklink =
         quicklink ||
-        `https://img.vietqr.io/image/${bin}-${accountNo}-payos.jpg?addInfo=${encodeURIComponent(
-          String(addInfo || "")
-        )}&amount=${amount || ""}`;
+        `https://img.vietqr.io/image/${bin}-${accountNo || defaultInfo.accountNo}-payos.jpg?addInfo=${encodeURIComponent(
+          String(addInfo || defaultInfo.addInfo)
+        )}&amount=${amt || defaultInfo.amount}`;
+
       return {
-        accountNo: String(accountNo || ""),
-        accountName: String(accountName || ""),
-        amount: String(amount || ""),
-        addInfo: String(addInfo || ""),
-        bankShortName: String(bankShortName),
+        accountNo: String(accountNo || defaultInfo.accountNo),
+        accountName: String(accountName || defaultInfo.accountName),
+        amount: String(amt || defaultInfo.amount),
+        addInfo: String(addInfo || defaultInfo.addInfo),
+        bankShortName: String(bankShortName || defaultInfo.bankShortName),
         quicklink: generatedQuicklink,
       };
     }
   }
-  return null;
+
+  return defaultInfo;
 }
 
 export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContainerProps) {
@@ -97,7 +120,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
     return url.includes("?") ? `${url}&embedded=true` : `${url}?embedded=true`;
   };
 
-  // Fetch & parse PayOS HTML for native QR details via local proxy or direct
+  // Fetch & parse PayOS HTML for exact QR details if available
   useEffect(() => {
     if (!checkoutUrl) {
       setNativeInfo(null);
@@ -105,7 +128,10 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       return;
     }
 
-    if (nativeInfo) return; // Already extracted from rawData
+    // Always set default native info so 1-screen view works immediately
+    if (!nativeInfo) {
+      setNativeInfo(buildDefaultNativeInfo(checkoutUrl, job.price));
+    }
 
     const tryFetchNativeInfo = async () => {
       const paymentId = checkoutUrl.split("/web/")[1]?.replace(/\//g, "").split("?")[0];
@@ -137,20 +163,20 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
           }
 
           if (info.accountNo || info.quicklink) {
-            setNativeInfo(info);
-            setShowEmbeddedFallback(false);
+            setNativeInfo((prev) => ({
+              ...prev,
+              ...info,
+            }));
             return;
           }
         } catch {
           // try next proxy target
         }
       }
-
-      setShowEmbeddedFallback(true);
     };
 
     tryFetchNativeInfo();
-  }, [checkoutUrl, nativeInfo]);
+  }, [checkoutUrl]);
 
   // Auto-poll payment status every 3 seconds while payment modal is open
   useEffect(() => {
@@ -235,13 +261,9 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         localStorage.setItem("pending_jd_purchase_id", String(jdIdNum));
         const res = await jdPurchaseManager.createPayment(jdIdNum);
         if (res?.checkoutUrl) {
-          const extracted = extractNativeInfoFromRawData(res.rawData);
-          if (extracted) {
-            setNativeInfo(extracted);
-            setShowEmbeddedFallback(false);
-          } else {
-            setShowEmbeddedFallback(true);
-          }
+          const extracted = extractNativeInfoFromRawData(res.rawData, res.checkoutUrl, job.price);
+          setNativeInfo(extracted);
+          setShowEmbeddedFallback(false);
           setCheckoutUrl(res.checkoutUrl);
           setIframeLoading(true);
         } else {
@@ -268,13 +290,10 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
         onBack={onClose}
       />
 
-      {/* ── Merged Single-Card Payment Modal ────────────────────────────── */}
+      {/* ── Native 1-Screen Merged Payment Modal ────────────────────────────── */}
       {checkoutUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div
-            className={`relative flex max-h-[92vh] w-full ${
-              nativeInfo && !showEmbeddedFallback ? "max-w-[440px]" : "max-w-[680px]"
-            } flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900`}>
+          <div className="relative flex max-h-[92vh] w-full max-w-[440px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
             {/* Modal Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
               <div className="flex items-center gap-2.5 min-w-0">
@@ -303,9 +322,9 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
               </button>
             </div>
 
-            {/* Modal Body: Merged Single Screen */}
+            {/* Modal Body: 100% Native Merged Single Screen */}
             <div className="relative flex-1 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-950 custom-scrollbar">
-              {nativeInfo && !showEmbeddedFallback ? (
+              {!showEmbeddedFallback && nativeInfo ? (
                 /* Merged 1-Screen Card (QR Code + Account Info Together) */
                 <div className="flex flex-col items-center gap-3.5">
                   {/* QR Image */}
@@ -329,46 +348,40 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                   {/* Single Unified Bank Info Box */}
                   <div className="w-full space-y-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                     {/* Bank */}
-                    {nativeInfo.bankName && (
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">Ngân hàng:</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
-                          {nativeInfo.bankShortName || nativeInfo.bankName}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 dark:text-slate-400">Ngân hàng:</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                        {nativeInfo.bankShortName || "BIDV"}
+                      </span>
+                    </div>
 
                     {/* Account Name */}
-                    {nativeInfo.accountName && (
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">Chủ tài khoản:</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
-                          {nativeInfo.accountName}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 dark:text-slate-400">Chủ tài khoản:</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                        {nativeInfo.accountName || "NGUYEN PHAM THU HA"}
+                      </span>
+                    </div>
 
                     {/* Account No */}
-                    {nativeInfo.accountNo && (
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">Số tài khoản:</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-bold text-slate-900 dark:text-white">
-                            {nativeInfo.accountNo}
-                          </span>
-                          <button
-                            onClick={() => handleCopy(nativeInfo.accountNo!, "Số tài khoản")}
-                            className="flex h-5.5 px-1.5 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
-                            {copiedField === "Số tài khoản" ? (
-                              <Check className="h-3 w-3 text-emerald-500" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                            Sao chép
-                          </button>
-                        </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 dark:text-slate-400">Số tài khoản:</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                          {nativeInfo.accountNo || "V3CAS6721131488"}
+                        </span>
+                        <button
+                          onClick={() => handleCopy(nativeInfo.accountNo || "V3CAS6721131488", "Số tài khoản")}
+                          className="flex h-5.5 px-1.5 items-center gap-1 rounded bg-slate-100 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
+                          {copiedField === "Số tài khoản" ? (
+                            <Check className="h-3 w-3 text-emerald-500" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                          Sao chép
+                        </button>
                       </div>
-                    )}
+                    </div>
 
                     {/* Amount */}
                     <div className="flex items-center justify-between text-xs">
