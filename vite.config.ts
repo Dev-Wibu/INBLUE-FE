@@ -12,6 +12,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/payos-proxy": {
+        target: "https://pay.payos.vn",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/payos-proxy/, ""),
+      },
+    },
+  },
   define: {
     global: "window",
   },

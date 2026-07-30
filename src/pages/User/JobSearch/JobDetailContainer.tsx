@@ -61,7 +61,9 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
     const tryFetchNativeInfo = async () => {
       try {
-        const res = await fetch(checkoutUrl);
+        const paymentId = checkoutUrl.split("/web/")[1]?.replace(/\//g, "").split("?")[0];
+        const fetchTarget = paymentId ? `/payos-proxy/web/${paymentId}` : checkoutUrl;
+        const res = await fetch(fetchTarget);
         if (!res.ok) {
           setShowEmbeddedFallback(true);
           return;
@@ -85,6 +87,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
         if (info.accountNo || info.quicklink) {
           setNativeInfo(info);
+          setShowEmbeddedFallback(false);
         } else {
           setShowEmbeddedFallback(true);
         }
@@ -209,7 +212,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       {/* ── Merged Single-Card Payment Modal ────────────────────────────── */}
       {checkoutUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative flex max-h-[92vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900">
+          <div className={`relative flex max-h-[92vh] w-full ${nativeInfo && !showEmbeddedFallback ? "max-w-[440px]" : "max-w-[680px]"} flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-slate-800 dark:bg-slate-900`}>
             {/* Modal Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
               <div className="flex items-center gap-2.5 min-w-0">
