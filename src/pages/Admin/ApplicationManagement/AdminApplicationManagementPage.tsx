@@ -37,7 +37,7 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export function AdminApplicationManagementPage() {
@@ -63,31 +63,29 @@ export function AdminApplicationManagementPage() {
 
   const openJds = openJdsData;
 
-  // Default JD: derived from openJds (first one). We initialise the
-  // selectedJdId state lazily inside a single effect-free render pass to
-  // avoid triggering the react-hooks/set-state-in-effect rule.
-  const firstJdIdString = useMemo(() => {
-    if (openJds.length === 0) return null;
-    const first = openJds[0]?.jdId;
-    return first !== undefined ? String(first) : null;
-  }, [openJds]);
+  // Default JD: reactively derived from openJds. We hold user-selected value
+  // in `manualSelectedJdId` and fall back to the first available JD when the
+  // user has not picked yet or has explicitly reset.
+  const [manualSelectedJdId, setManualSelectedJdId] = useState<string>("");
 
-  const [selectedJdId, setSelectedJdId] = useState<string>("ALL");
-  const hasInitializedJdRef = useRef(false);
-  if (firstJdIdString && !hasInitializedJdRef.current) {
-    hasInitializedJdRef.current = true;
-    if (selectedJdId !== firstJdIdString) {
-      // setState during render is allowed in React when guarded by a ref —
-      // React will discard the in-progress render and reuse the new value.
-      setSelectedJdId(firstJdIdString);
+  const selectedJdId = useMemo(() => {
+    // No explicit selection → fall back to first JD so the page is never empty.
+    if (manualSelectedJdId) return manualSelectedJdId;
+    if (openJds.length > 0 && openJds[0]?.jdId !== undefined) {
+      return String(openJds[0].jdId);
     }
-  }
+    return "";
+  }, [manualSelectedJdId, openJds]);
+
+  const setSelectedJdId = (val: string) => setManualSelectedJdId(val);
 
   // 2. Fetch applications for the SELECTED JD only (1 request per JD selection).
-  //    Following the FE Guide: when "ALL" is selected we DO NOT fetch across JDs.
+  //    Per FE Guide: when no specific JD is selected we DO NOT fetch across JDs.
   //    Instead we show a placeholder asking the user to pick a specific JD.
-  const numericSelectedJdId =
-    selectedJdId !== "ALL" && !Number.isNaN(Number(selectedJdId)) ? Number(selectedJdId) : null;
+  const numericSelectedJdId = useMemo(() => {
+    if (!selectedJdId || Number.isNaN(Number(selectedJdId))) return null;
+    return Number(selectedJdId);
+  }, [selectedJdId]);
 
   const {
     data: applicationsData,
@@ -155,12 +153,12 @@ export function AdminApplicationManagementPage() {
         return false;
       }
 
-      // Status filter
+      // Status filter — per FE Guide: filter "Trượt" includes FAILED + SOFT_FAILED
       if (statusFilter !== "ALL") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const status = app.status as any;
         if (statusFilter === "PASSED" && status !== "PASSED" && status !== "ACCEPTED") return false;
-        if (statusFilter === "REJECTED" && status !== "REJECTED" && status !== "FAILED")
+        if (statusFilter === "FAILED" && status !== "FAILED" && status !== "SOFT_FAILED")
           return false;
         if (statusFilter === "IN_PROGRESS" && status !== "IN_PROGRESS" && status !== "PENDING")
           return false;
@@ -192,21 +190,38 @@ export function AdminApplicationManagementPage() {
     });
   }, [applications, selectedCompanyId, statusFilter, searchQuery]);
 
-  // Metrics
-  const stats = useMemo(() => {
-    const totalApps = applications.length;
-    const inProgressApps = applications.filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (a) => (a.status as any) === "IN_PROGRESS" || (a.status as any) === "PENDING"
-    ).length;
-    const passedApps = applications.filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (a) => (a.status as any) === "PASSED" || (a.status as any) === "ACCEPTED"
-    ).length;
-    const openJdCount = openJds.filter((j) => j.status === "OPEN").length;
+  // ⭐ 4 thẻ thống kê TỔNG = cộng dồn từ statistics của TẤT CẢ JD trong API #1.
+  // Per FE Guide: nguồn số liệu là /api/admin/open-jds, không cần gọi thêm API.
+  const aggregateStats = useMemo(() => {
+    interface JdWithStats {
+      statistics?: {
+        totalApplications?: number;
+        inProgressCount?: number;
+        passedCount?: number;
+        failedCount?: number;
+      };
+    }
+    return (openJds as JdWithStats[]).reduce(
+      (acc, jd) => {
+        const s = jd.statistics ?? {};
+        return {
+          totalApplications: acc.totalApplications + (s.totalApplications ?? 0),
+          inProgressCount: acc.inProgressCount + (s.inProgressCount ?? 0),
+          passedCount: acc.passedCount + (s.passedCount ?? 0),
+          failedCount: acc.failedCount + (s.failedCount ?? 0),
+        };
+      },
+      { totalApplications: 0, inProgressCount: 0, passedCount: 0, failedCount: 0 }
+    );
+  }, [openJds]);
 
-    return { totalApps, inProgressApps, passedApps, openJdCount };
-  }, [applications, openJds]);
+  const stats = {
+    openJdCount: openJds.filter((j) => j.status === "OPEN").length,
+    totalApplications: aggregateStats.totalApplications,
+    inProgressCount: aggregateStats.inProgressCount,
+    passedCount: aggregateStats.passedCount,
+    failedCount: aggregateStats.failedCount,
+  };
 
   // Pagination
   const [pageSize] = useHybridPageSize({
@@ -293,7 +308,7 @@ export function AdminApplicationManagementPage() {
 
       <div className="flex-1 space-y-6 overflow-y-auto p-4 sm:p-6">
         {/* Metric Cards */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
             <div>
               <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
@@ -314,7 +329,7 @@ export function AdminApplicationManagementPage() {
                 {t("adminApplicationManagement.totalApplications", "Tổng đơn Apply")}
               </span>
               <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                {stats.totalApps}
+                {stats.totalApplications}
               </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
@@ -328,7 +343,7 @@ export function AdminApplicationManagementPage() {
                 {t("adminApplicationManagement.inProgress", "Đang phỏng vấn")}
               </span>
               <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
-                {stats.inProgressApps}
+                {stats.inProgressCount}
               </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
@@ -342,10 +357,24 @@ export function AdminApplicationManagementPage() {
                 {t("adminApplicationManagement.passed", "Đã trúng tuyển")}
               </span>
               <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                {stats.passedApps}
+                {stats.passedCount}
               </div>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+              <UserCheck className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+            <div>
+              <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                {t("adminApplicationManagement.failed", "Trượt")}
+              </span>
+              <div className="mt-1 text-2xl font-bold text-rose-600 dark:text-rose-400">
+                {stats.failedCount}
+              </div>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
               <UserCheck className="h-5 w-5" />
             </div>
           </div>
@@ -375,7 +404,8 @@ export function AdminApplicationManagementPage() {
               value={selectedCompanyId}
               onValueChange={(val) => {
                 setSelectedCompanyId(val);
-                setSelectedJdId("ALL");
+                // Reset JD selection — re-derive default JD via the openJds memo
+                setSelectedJdId("");
                 pagination.goToFirstPage();
               }}>
               <SelectTrigger className="h-8 w-44 border-slate-200 text-xs dark:border-slate-700">
@@ -397,19 +427,21 @@ export function AdminApplicationManagementPage() {
 
             {/* JD Filter */}
             <Select
-              value={selectedJdId}
+              value={selectedJdId || "NONE"}
               onValueChange={(val) => {
-                setSelectedJdId(val);
-                pagination.goToFirstPage();
+                if (val !== "NONE") {
+                  setSelectedJdId(val);
+                  pagination.goToFirstPage();
+                }
               }}>
-              <SelectTrigger className="h-8 w-48 border-slate-200 text-xs dark:border-slate-700">
+              <SelectTrigger className="h-8 w-64 border-slate-200 text-xs dark:border-slate-700">
                 <SelectValue
-                  placeholder={t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
+                  placeholder={t("adminApplicationManagement.selectJd", "Chọn vị trí (JD)")}
                 />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">
-                  {t("adminApplicationManagement.allJds", "Tất cả vị trí (JD)")}
+                <SelectItem value="NONE" disabled>
+                  {t("adminApplicationManagement.selectJd", "Chọn vị trí (JD)")}
                 </SelectItem>
                 {availableJds.map((j) => (
                   <SelectItem key={j.jdId} value={String(j.jdId)}>
@@ -423,7 +455,7 @@ export function AdminApplicationManagementPage() {
             </Select>
           </div>
 
-          {/* Status Filter Pills */}
+          {/* Status Filter Pills — Per FE Guide: lọc client-side */}
           <div className="flex items-center gap-1">
             {[
               { id: "ALL", label: t("common.all", "Tất cả") },
@@ -432,7 +464,10 @@ export function AdminApplicationManagementPage() {
                 label: t("adminApplicationManagement.statusInProgress", "Đang xử lý"),
               },
               { id: "PASSED", label: t("adminApplicationManagement.statusPassed", "Đạt") },
-              { id: "REJECTED", label: t("adminApplicationManagement.statusRejected", "Từ chối") },
+              {
+                id: "FAILED",
+                label: t("adminApplicationManagement.statusFailed", "Trượt"),
+              },
             ].map((st) => (
               <button
                 key={st.id}
