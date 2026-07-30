@@ -148,6 +148,8 @@
     "locationRequired": "Vui lòng nhập vị trí kiosk",
     "statusLabel": "Kích hoạt kiosk",
     "statusDescription": "Khi bật, kiosk sẽ hiển thị cho ứng viên chọn và đặt lịch.",
+    "scheduleActiveLabel": "Kích hoạt lịch",
+    "scheduleActiveDescription": "Khi bật, lịch này sẽ hiển thị cho ứng viên đặt lịch phỏng vấn.",
     "active": "Đang hoạt động",
     "inactive": "Tạm dừng",
     "activate": "Kích hoạt",

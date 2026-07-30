@@ -115,6 +115,8 @@
     "locationRequired": "場所を入力してください",
     "statusLabel": "キオスクを有効化",
     "statusDescription": "有効にすると候補者が予約時にこのキオスクを選択できます。",
+    "scheduleActiveLabel": "スケジュールを有効化",
+    "scheduleActiveDescription": "有効にすると候補者がこのスケジュールで面接を予約できます。",
     "active": "稼働中",
     "inactive": "停止中",
     "activate": "有効化",

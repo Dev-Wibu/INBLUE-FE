@@ -148,6 +148,8 @@
     "locationRequired": "Please enter a location",
     "statusLabel": "Activate kiosk",
     "statusDescription": "When active, this kiosk will appear for candidates to pick a slot.",
+    "scheduleActiveLabel": "Activate schedule",
+    "scheduleActiveDescription": "When active, this schedule will be available for candidates to book interviews.",
     "active": "Active",
     "inactive": "Inactive",
     "activate": "Activate",

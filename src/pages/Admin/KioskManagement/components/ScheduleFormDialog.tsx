@@ -249,10 +249,10 @@ export function ScheduleFormDialog({
               </div>
               <div>
                 <Label htmlFor="schedule-active" className="text-sm font-medium">
-                  {t("adminKioskManagement.statusLabel")}
+                  {t("adminKioskManagement.scheduleActiveLabel")}
                 </Label>
                 <p className="text-muted-foreground text-xs">
-                  {t("adminKioskManagement.statusDescription")}
+                  {t("adminKioskManagement.scheduleActiveDescription")}
                 </p>
               </div>
             </div>
