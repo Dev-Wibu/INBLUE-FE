@@ -44,7 +44,6 @@ export function AdminApplicationManagementPage() {
   const { t } = useTranslation();
 
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("ALL");
-  const [selectedJdId, setSelectedJdId] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
