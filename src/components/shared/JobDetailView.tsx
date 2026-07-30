@@ -224,7 +224,7 @@ export function JobDetailView({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <Coins className="h-4 w-4 text-amber-500" />
-                      <span className="text-[15px] font-extrabold tracking-tight text-amber-600 dark:text-amber-400">
+                      <span className="whitespace-nowrap text-[15px] font-extrabold tracking-tight text-amber-600 dark:text-amber-400">
                         {typeof job?.price === "number" && job.price > 0
                           ? `${formatNumber(job.price)} VND`
                           : typeof job?.price === "number" && job.price === 0
