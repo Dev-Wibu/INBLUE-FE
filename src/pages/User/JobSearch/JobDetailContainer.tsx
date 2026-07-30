@@ -75,12 +75,14 @@ function extractNativeInfoFromRawData(rawData: unknown, checkoutUrl: string, amo
     const bankShortName = (record.bankShortName || record.bankName || "BIDV") as string;
     const quicklink = (record.quicklink || record.qrCodeUrl) as string | undefined;
 
+    const amtStr = String(amt || defaultInfo.amount || 2000);
+
     if (accountNo || quicklink) {
       const generatedQuicklink =
         quicklink ||
         `https://img.vietqr.io/image/${bin}-${accountNo || defaultInfo.accountNo}-vietqr_pro.jpg?addInfo=${encodeURIComponent(
           String(addInfo || defaultInfo.addInfo)
-        )}&amount=${amtStr}`,
+        )}&amount=${amtStr}`;
 
       return {
         accountNo: String(accountNo || defaultInfo.accountNo),
