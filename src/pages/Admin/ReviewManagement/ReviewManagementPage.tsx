@@ -298,7 +298,10 @@ export function ReviewManagementPage() {
                             </AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
-                            {review.mentor?.name || t("common.noDataAvailable")}
+                            {review.mentor?.name ||
+                              (review.mentor?.id
+                                ? `Mentor #${review.mentor.id}`
+                                : t("common.noDataAvailable"))}
                           </span>
                         </div>
                       </TableCell>
@@ -311,7 +314,10 @@ export function ReviewManagementPage() {
                             </AvatarFallback>
                           </Avatar>
                           <span className="font-medium">
-                            {review.user?.name || t("common.noDataAvailable")}
+                            {review.user?.name ||
+                              (review.user?.id
+                                ? `Candidate #${review.user.id}`
+                                : t("common.noDataAvailable"))}
                           </span>
                         </div>
                       </TableCell>

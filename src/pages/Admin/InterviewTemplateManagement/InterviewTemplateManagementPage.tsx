@@ -87,7 +87,8 @@ export function InterviewTemplateManagementPage() {
 
   const handleSaveTemplate = async (
     rounds: UIRound[],
-    metadata: { name: string; category: string; description: string }
+    metadata: { name: string; category: string; description: string },
+    options?: { closeEditorAfter?: boolean }
   ) => {
     if (rounds.length === 0) {
       toast.error(t("template.addAtLeastOneRound"));
@@ -162,7 +163,11 @@ export function InterviewTemplateManagementPage() {
       if (res.success) {
         toast.success(t("template.createSuccess"));
         loadTemplates();
-        setIsEditorOpen(false);
+        // Only close the editor on full-template saves; saving an individual
+        // round should leave the user inside the workspace.
+        if (options?.closeEditorAfter !== false) {
+          setIsEditorOpen(false);
+        }
       } else {
         toast.error(res.error || t("adminCompanymanagement.unableToSaveProcessTemplate"));
         throw new Error();
@@ -191,6 +196,7 @@ export function InterviewTemplateManagementPage() {
           initialRounds={editorRounds}
           initialMetadata={editorMetadata}
           showMetadataInputs={true}
+          mode="create"
           isSaving={isSaving}
           onSave={handleSaveTemplate}
         />

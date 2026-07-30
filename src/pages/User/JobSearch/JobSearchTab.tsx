@@ -196,6 +196,13 @@ export function JobCard({
 
 const FILTER_LEVELS = ["ALL", "INTERN", "FRESHER", "JUNIOR", "MIDDLE"] as const;
 
+const getLevelLabel = (level: (typeof FILTER_LEVELS)[number], t: TFunction): string => {
+  if (level === "ALL") {
+    return t("jobSearch.levelAll", "Tất cả");
+  }
+  return t(`jobSearch.level.${level.toLowerCase()}`, level);
+};
+
 export function JobSearchTab() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -332,10 +339,13 @@ export function JobSearchTab() {
             {/* Title & Subtitle */}
             <div>
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Tìm việc làm phù hợp
+                {t("jobSearch.heroTitle", "Tìm việc làm phù hợp")}
               </h2>
               <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
-                Khám phá quy trình tuyển dụng thực tế, luyện tập và ứng tuyển ngay
+                {t(
+                  "jobSearch.heroSubtitle",
+                  "Khám phá quy trình tuyển dụng thực tế, luyện tập và ứng tuyển ngay"
+                )}
               </p>
             </div>
 
@@ -345,19 +355,25 @@ export function JobSearchTab() {
                 <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
                   {jobs.filter((j) => j.status === "OPEN").length || jobs.length}
                 </span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">Vị trí mở</span>
+                <span className="text-[13px] text-slate-500 dark:text-slate-400">
+                  {t("jobSearch.openPositions", "Vị trí mở")}
+                </span>
               </div>
               <div className="flex flex-col items-center">
                 <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
                   {new Set(jobs.map((j) => j.companyName).filter(Boolean)).size}
                 </span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">Công ty</span>
+                <span className="text-[13px] text-slate-500 dark:text-slate-400">
+                  {t("jobSearch.companies", "Công ty")}
+                </span>
               </div>
               <div className="flex flex-col items-center">
                 <span className="text-2xl font-semibold text-indigo-600 dark:text-[#66B2FF]">
                   4
                 </span>
-                <span className="text-[13px] text-slate-500 dark:text-slate-400">Cấp bậc</span>
+                <span className="text-[13px] text-slate-500 dark:text-slate-400">
+                  {t("jobSearch.levels", "Cấp bậc")}
+                </span>
               </div>
             </div>
           </div>
@@ -368,7 +384,7 @@ export function JobSearchTab() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm theo chức danh hoặc công ty..."
+                placeholder={t("jobSearch.searchPlaceholder", "Tìm theo chức danh hoặc công ty...")}
                 className="h-[46px] w-full rounded-[10px] border border-slate-200 bg-slate-50 px-4 text-[15px] text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-indigo-500/50 dark:border-slate-800/60 dark:bg-[#0B0F19] dark:text-white dark:placeholder:text-slate-500"
               />
               {searchQuery && (
@@ -387,7 +403,7 @@ export function JobSearchTab() {
               type="submit"
               className="h-[46px] shrink-0 rounded-[10px] border border-slate-300 bg-transparent px-6 font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
               <Search className="mr-2 h-[18px] w-[18px]" />
-              Tìm việc
+              {t("jobSearch.searchButton", "Tìm việc")}
             </Button>
           </form>
 
@@ -395,13 +411,12 @@ export function JobSearchTab() {
           <div className="mt-4 flex flex-col gap-5 xl:flex-row xl:items-center">
             {/* Level Filters */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-2 text-[13px] font-semibold text-slate-500">Cấp bậc:</span>
+              <span className="mr-2 text-[13px] font-semibold text-slate-500">
+                {t("jobSearch.levelLabel", "Cấp bậc:")}
+              </span>
               {FILTER_LEVELS.map((level) => {
                 const isActive = activeLevel === level;
-                const levelLabel =
-                  level === "ALL"
-                    ? "Tất cả"
-                    : level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+                const levelLabel = getLevelLabel(level, t);
                 return (
                   <button
                     key={level}
@@ -425,10 +440,12 @@ export function JobSearchTab() {
             {/* Price Slider */}
             <div className="flex w-full max-w-[280px] flex-col gap-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-slate-500">Chi phí tối đa:</span>
+                <span className="text-[13px] font-semibold text-slate-500">
+                  {t("jobSearch.maxPrice", "Chi phí tối đa:")}
+                </span>
                 <span className="text-[13px] font-bold text-emerald-600 dark:text-emerald-500">
                   {maxPrice === null || maxPrice >= maxAvailablePrice
-                    ? "Mọi mức giá"
+                    ? t("jobSearch.anyPrice", "Mọi mức giá")
                     : `${formatNumber(maxPrice)} VND`}
                 </span>
               </div>

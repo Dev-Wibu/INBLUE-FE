@@ -1,5 +1,13 @@
 [
   {
+    "file": "src/components/shared/JobDetailView.tsx",
+    "line": 148,
+    "character": 70,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Thanh toán"
+  },
+  {
     "file": "src/components/shared/RoundCanvasEditor/utils.ts",
     "line": 138,
     "character": 14,
@@ -888,108 +896,204 @@
     "text": "giây"
   },
   {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 107,
+    "character": 25,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Phiên thanh toán đã hết hạn."
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 223,
+    "character": 19,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "Đã sao chép"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 347,
+    "character": 78,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Ngân hàng:"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 355,
+    "character": 78,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Chủ tài khoản:"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 363,
+    "character": 78,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Số tài khoản:"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 370,
+    "character": 85,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Số tài khoản"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 373,
+    "character": 46,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Số tài khoản"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 378,
+    "character": 29,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Sao chép"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 385,
+    "character": 78,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Số tiền:"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 392,
+    "character": 87,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Số tiền"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 395,
+    "character": 46,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Số tiền"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 400,
+    "character": 29,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Sao chép"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 408,
+    "character": 80,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Nội dung CK:"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 415,
+    "character": 65,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Nội dung chuyển khoản"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 418,
+    "character": 48,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Nội dung chuyển khoản"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 423,
+    "character": 31,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Sao chép"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 434,
+    "character": 25,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Vui lòng nhập chính xác"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 434,
+    "character": 57,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Số tiền"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 434,
+    "character": 74,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "và"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 435,
+    "character": 33,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Nội dung chuyển khoản"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 435,
+    "character": 64,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "để hệ thống tự động kích hoạt sau 3s."
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 444,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Đang khởi tạo mã chuyển khoản VietQR..."
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 474,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Hết hạn sau:"
+  },
+  {
+    "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
+    "line": 486,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Mở trang PayOS gốc ↗"
+  },
+  {
     "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
     "line": 182,
     "character": 59,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Miễn phí"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 335,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tìm việc làm phù hợp"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 338,
-    "character": 17,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Khám phá quy trình tuyển dụng thực tế, luyện tập và ứng tuyển ngay"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 348,
-    "character": 82,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Vị trí mở"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 354,
-    "character": 82,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Công ty"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 360,
-    "character": 82,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Cấp bậc"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 371,
-    "character": 17,
-    "type": "JsxAttribute[placeholder]",
-    "category": "vietnamese",
-    "text": "Tìm theo chức danh hoặc công ty..."
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 371,
-    "character": 29,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Tìm theo chức danh hoặc công ty..."
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 390,
-    "character": 15,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Tìm việc"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 398,
-    "character": 79,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Cấp bậc:"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 403,
-    "character": 23,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Tất cả"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 428,
-    "character": 76,
-    "type": "JsxText",
-    "category": "vietnamese",
-    "text": "Chi phí tối đa:"
-  },
-  {
-    "file": "src/pages/User/JobSearch/JobSearchTab.tsx",
-    "line": 431,
-    "character": 23,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Mọi mức giá"
   },
   {
     "file": "src/pages/User/Kiosk/KioskEntryPage.tsx",

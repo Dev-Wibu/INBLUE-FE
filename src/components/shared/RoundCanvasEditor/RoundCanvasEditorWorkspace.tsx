@@ -20,6 +20,7 @@ import {
   ArrowRight,
   ChevronLeft,
   Clock,
+  FileText,
   RotateCcw,
   Save,
   Sparkles,
@@ -41,12 +42,35 @@ export interface RoundCanvasEditorWorkspaceProps {
   initialRounds: UIRound[];
   onSave: (
     rounds: UIRound[],
-    metadata: { name: string; category: string; description: string }
+    metadata: { name: string; category: string; description: string },
+    options?: { closeEditorAfter?: boolean }
   ) => Promise<void>;
   isSaving?: boolean;
   showMetadataInputs?: boolean;
   initialMetadata?: { name: string; category: string; description: string };
   title?: string;
+  /**
+   * Whether this workspace is creating a brand new template (`"create"`) or
+   * editing an existing one (`"edit"`).
+   *
+   * The workspace exposes two save surfaces:
+   *   1. Per-round save inside the round config dialog (footer button)
+   *   2. Whole-template save on the top toolbar (rightmost button)
+   *
+   * In `"create"` mode, the template row doesn't exist on the server yet, so
+   * there is nothing to "save a single round against". The per-round button
+   * therefore only applies the changes to the local draft and closes the
+   * dialog — it does NOT call `onSave`. Only the toolbar's full-template
+   * save can persist (and will create exactly one template).
+   *
+   * In `"edit"` mode both buttons call `onSave`; per-round passes
+   * `closeEditorAfter: false` so the user stays in the workspace, full save
+   * passes `closeEditorAfter: true`.
+   *
+   * Defaults to `"edit"` for backwards compatibility with callers that don't
+   * care about the distinction.
+   */
+  mode?: "create" | "edit";
 }
 
 export function RoundCanvasEditorWorkspace({
@@ -58,6 +82,7 @@ export function RoundCanvasEditorWorkspace({
   showMetadataInputs = false,
   initialMetadata = { name: "", category: "", description: "" },
   title,
+  mode = "edit",
 }: RoundCanvasEditorWorkspaceProps) {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
@@ -423,11 +448,15 @@ export function RoundCanvasEditorWorkspace({
       return;
     }
     const savingRounds = customRounds || rounds;
-    await onSave(savingRounds, {
-      name: templateName,
-      category: templateCategory,
-      description: templateDescription,
-    });
+    await onSave(
+      savingRounds,
+      {
+        name: templateName,
+        category: templateCategory,
+        description: templateDescription,
+      },
+      { closeEditorAfter: forceCloseAfter }
+    );
     if (forceCloseAfter) {
       onClose();
     }
@@ -494,24 +523,18 @@ export function RoundCanvasEditorWorkspace({
             </Button>
 
             {showMetadataInputs ? (
-              <div className="flex max-w-2xl flex-1 items-center gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 <Input
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder={t("adminCompanymanagement.templateNamePlaceholder")}
-                  className="h-8 border-slate-200 bg-slate-50 text-xs font-bold dark:border-slate-800 dark:bg-slate-950"
+                  className="h-8 max-w-[280px] min-w-[180px] flex-1 border-slate-200 bg-slate-50 text-xs font-bold dark:border-slate-800 dark:bg-slate-950"
                 />
                 <Input
                   value={templateCategory}
                   onChange={(e) => setTemplateCategory(e.target.value)}
                   placeholder={t("template.categoryRequired")}
-                  className="h-8 w-36 border-slate-200 bg-slate-50 text-xs dark:border-slate-800 dark:bg-slate-950"
-                />
-                <Input
-                  value={templateDescription}
-                  onChange={(e) => setTemplateDescription(e.target.value)}
-                  placeholder={t("template.descriptionPlaceholder")}
-                  className="hidden h-8 flex-1 border-slate-200 bg-slate-50 text-xs md:block dark:border-slate-800 dark:bg-slate-950"
+                  className="h-8 w-44 border-slate-200 bg-slate-50 text-xs dark:border-slate-800 dark:bg-slate-950"
                 />
               </div>
             ) : (
@@ -579,6 +602,25 @@ export function RoundCanvasEditorWorkspace({
             </Button>
           </div>
         </div>
+
+        {showMetadataInputs && (
+          <div className="flex shrink-0 items-start gap-3 border-b border-slate-200 bg-slate-50/60 px-6 py-3 dark:border-slate-800 dark:bg-slate-900/30">
+            <div className="flex shrink-0 items-center gap-1.5 pt-1.5 text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+              <FileText className="h-3 w-3 text-indigo-500" />
+              {t("template.description", "Description")}
+            </div>
+            <Textarea
+              value={templateDescription}
+              onChange={(e) => setTemplateDescription(e.target.value)}
+              placeholder={t(
+                "template.descriptionPlaceholder",
+                "Mô tả ngắn gọn về mục đích, đối tượng và bối cảnh sử dụng của template…"
+              )}
+              rows={1}
+              className="min-h-[36px] flex-1 resize-y border-slate-200 bg-white text-xs leading-relaxed text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+            />
+          </div>
+        )}
 
         {/* Canvas viewport */}
         <div className="flex min-h-0 flex-1 overflow-hidden bg-slate-100 dark:bg-slate-950">
@@ -1292,9 +1334,20 @@ export function RoundCanvasEditorWorkspace({
                   }
                   setConfigModalOpen(false);
                   setSelectedRoundIndex(null);
+                  // In create mode the template row doesn't exist on the
+                  // server yet, so per-round "save" only commits the round's
+                  // config to the local draft and closes the dialog. Calling
+                  // onSave here would fire createTemplate() a second time and
+                  // produce duplicate rows when the user later presses the
+                  // toolbar's full-template save.
+                  if (mode === "create") {
+                    return;
+                  }
                   await handleSaveWrapper(false, finalRounds);
                 }}>
-                {t("template.saveTemplate")} {t("userApplicationhistory.rounds")}
+                {mode === "create"
+                  ? t("template.applyToDraft", "Apply to draft")
+                  : `${t("template.saveTemplate")} ${t("userApplicationhistory.rounds")}`}
               </Button>
             </div>
           </DialogContent>

@@ -72,6 +72,7 @@ export function QuestionBankEditor({
 
   const [formData, setFormData] = useState<Partial<QuestionBankFormData>>({
     options: ["", "", "", ""],
+    questionLevel: "EASY",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Category creation
@@ -99,7 +100,7 @@ export function QuestionBankEditor({
         correctAnswer: initialData.correctAnswer,
       });
     } else {
-      setFormData({ options: ["", "", "", ""] });
+      setFormData({ options: ["", "", "", ""], questionLevel: "EASY" });
     }
   }, [initialData]);
 
@@ -156,19 +157,41 @@ export function QuestionBankEditor({
     const oldValue = opts[index];
     opts[index] = value;
 
-    if (formData.correctAnswer && formData.correctAnswer === oldValue && oldValue !== "") {
-      patch({ options: opts, correctAnswer: value });
-    } else {
-      patch({ options: opts });
+    // If the edited option was the currently-selected correct answer, keep
+    // the selection pinned to this option by tracking its letter rather than
+    // the previous text. That way, if the user clears the text we don't lose
+    // the "this row is the answer" intent – we'll just fall back to the
+    // letter and re-attach to the new text as soon as it's typed.
+    if (formData.correctAnswer) {
+      const optLetter = String.fromCharCode(65 + index);
+      const wasSelectedAsText = formData.correctAnswer === oldValue && oldValue !== "";
+      const wasSelectedAsLetter = formData.correctAnswer === optLetter;
+
+      if (wasSelectedAsText || wasSelectedAsLetter) {
+        const next = value.trim() !== "" ? value : optLetter;
+        patch({ options: opts, correctAnswer: next });
+        return;
+      }
     }
+
+    patch({ options: opts });
   };
 
-  const toggleCorrectAnswer = (value: string) => {
-    if (!value.trim()) return;
-    if (formData.correctAnswer === value) {
+  const toggleCorrectAnswer = (index: number) => {
+    const optLetter = String.fromCharCode(65 + index);
+    const optText = (formData.options || [])[index] ?? "";
+
+    // The backend persists `correctAnswer` as a string that must match one
+    // of the `options` entries (or be a letter that resolves to one). Pick
+    // the most descriptive value available so the API never receives an
+    // empty string – which is what produced the
+    // "Correct answer is required" error.
+    const candidate = optText.trim() !== "" ? optText : optLetter;
+
+    if (formData.correctAnswer === candidate) {
       patch({ correctAnswer: "" });
     } else {
-      patch({ correctAnswer: value });
+      patch({ correctAnswer: candidate });
     }
   };
 
@@ -184,13 +207,50 @@ export function QuestionBankEditor({
       return;
     }
 
+    // Validate that the user has picked a correct answer. We also resolve
+    // the answer back to the matching option text if the user only set a
+    // letter (e.g. "A") while the option was still empty, so the backend
+    // always receives a fully-populated value that matches one of the
+    // `options` entries.
+    const rawAnswer = (formData.correctAnswer ?? "").trim();
+    if (!rawAnswer) {
+      toast.error(
+        t(
+          "question.pleaseSelectCorrectAnswer",
+          "Please select a correct answer (click the A/B/C/D badge next to one option)."
+        )
+      );
+      return;
+    }
+    const opts = formData.options || [];
+    const answerIndex = (() => {
+      if (rawAnswer.length === 1) {
+        const idx = rawAnswer.toUpperCase().charCodeAt(0) - 65;
+        if (idx >= 0 && idx < opts.length) return idx;
+      }
+      return opts.findIndex((o) => o === rawAnswer);
+    })();
+    if (answerIndex === -1 || !opts[answerIndex] || opts[answerIndex].trim() === "") {
+      toast.error(
+        t(
+          "question.pleaseSelectCorrectAnswer",
+          "Please select a correct answer (click the A/B/C/D badge next to one option)."
+        )
+      );
+      return;
+    }
+    const payload: QuestionBankFormData = {
+      ...(formData as QuestionBankFormData),
+      correctAnswer: opts[answerIndex],
+    };
+
     setIsSubmitting(true);
     try {
       let res;
       if (initialData?.id) {
-        res = await questionBankManager.update(initialData.id, formData as QuestionBankFormData);
+        res = await questionBankManager.update(initialData.id, payload);
       } else {
-        res = await questionBankManager.create(formData as QuestionBankFormData);
+        res = await questionBankManager.create(payload);
       }
 
       if (res.success) {
@@ -563,23 +623,26 @@ export function QuestionBankEditor({
                       </Label>
                       <ToggleGroup
                         type="single"
-                        value={formData.questionLevel || "EASY"}
+                        value={formData.questionLevel ?? "EASY"}
                         onValueChange={(val: "EASY" | "MEDIUM" | "HARD") => {
                           if (val) patch({ questionLevel: val });
                         }}
                         className="justify-start gap-2">
                         <ToggleGroupItem
                           value="EASY"
+                          aria-label="easy"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-emerald-300 data-[state=on]:bg-emerald-50 data-[state=on]:text-emerald-700 dark:data-[state=on]:border-emerald-800/60 dark:data-[state=on]:bg-emerald-950/40 dark:data-[state=on]:text-emerald-400">
                           {t("adminQuestionbankmanagement.easy", "Dễ")}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="MEDIUM"
+                          aria-label="medium"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-amber-300 data-[state=on]:bg-amber-50 data-[state=on]:text-amber-700 dark:data-[state=on]:border-amber-800/60 dark:data-[state=on]:bg-amber-950/40 dark:data-[state=on]:text-amber-400">
                           {t("adminQuestionbankmanagement.medium", "TB")}
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="HARD"
+                          aria-label="hard"
                           className="flex-1 rounded-lg border px-3 text-xs font-bold transition-all data-[state=on]:border-rose-300 data-[state=on]:bg-rose-50 data-[state=on]:text-rose-700 dark:data-[state=on]:border-rose-800/60 dark:data-[state=on]:bg-rose-950/40 dark:data-[state=on]:text-rose-400">
                           {t("adminQuestionbankmanagement.hard", "Khó")}
                         </ToggleGroupItem>
@@ -611,15 +674,22 @@ export function QuestionBankEditor({
                   <div className="space-y-3 p-5">
                     {(formData.options || []).map((opt, idx) => {
                       const optLetter = String.fromCharCode(65 + idx);
+                      // "Correct" means either the saved answer matches this
+                      // option's text, or it matches this option's letter
+                      // (used while the option is still empty so the user
+                      // can mark an answer before typing its text).
                       const isCorrect =
-                        (formData.correctAnswer === opt && opt.trim() !== "") ||
-                        formData.correctAnswer?.trim().toUpperCase() === optLetter;
+                        (formData.correctAnswer != null &&
+                          formData.correctAnswer !== "" &&
+                          (formData.correctAnswer === opt ||
+                            formData.correctAnswer.toUpperCase() === optLetter)) ||
+                        false;
 
                       return (
                         <div key={idx} className="group relative">
                           <button
                             type="button"
-                            onClick={() => toggleCorrectAnswer(opt)}
+                            onClick={() => toggleCorrectAnswer(idx)}
                             title={t("question.markAsCorrect")}
                             className={`absolute top-1/2 left-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[11px] font-bold transition-all ${
                               isCorrect
