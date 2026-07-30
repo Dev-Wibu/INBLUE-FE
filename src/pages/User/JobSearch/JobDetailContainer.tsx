@@ -260,7 +260,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
             )}
 
             {/* Modal Body */}
-            <div className="relative flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 max-h-[580px]">
+            <div className="relative flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 max-h-[640px]">
               {/* Native View Card (Cleanest UX) */}
               {activeView === "native" && nativeInfo ? (
                 <div className="flex flex-col items-center gap-4">
@@ -373,7 +373,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                 </div>
               ) : (
                 /* Embedded Iframe View (?embedded=true compact mode) */
-                <div className="relative h-[520px] w-full overflow-hidden rounded-xl bg-white dark:bg-slate-900">
+                <div className="relative h-[580px] w-full overflow-hidden rounded-xl bg-white dark:bg-slate-900">
                   {iframeLoading && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white/90 dark:bg-slate-900/90">
                       <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
