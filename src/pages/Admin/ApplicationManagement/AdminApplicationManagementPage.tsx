@@ -675,7 +675,22 @@ export function AdminApplicationManagementPage() {
                         onClick={() => handleViewDetail(app.applicationId || app.id)}
                         className="group cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/80">
                         <TableCell className="pl-6 font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                          #{app.applicationId || app.id}
+                          <div className="flex items-center gap-2">
+                            <span>#{app.applicationId || app.id}</span>
+                            {/* Dummy element to force row height alignment */}
+                            <div
+                              className="flex w-0 flex-col gap-1 overflow-hidden opacity-0"
+                              aria-hidden="true">
+                              <div className="flex items-center gap-1.5 text-[11px]">
+                                <span className="h-3.5 w-3.5"></span>
+                                <span>dummy</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[11px]">
+                                <span className="h-3.5 w-3.5"></span>
+                                <span>sample</span>
+                              </div>
+                            </div>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
