@@ -778,6 +778,7 @@
     "showingFilteredResults": "{{filtered}} / {{total}} 件を表示中"
   },
   "adminSessionmanagement": {
+    "expertise": "専門知識",
     "actionThisCannotBeUndone": "「？この操作は取り消せません。",
     "areYouSureYouWant": "セッションをキャンセルしてもよろしいですか？",
     "browseSessions": "セッションを閲覧",
@@ -1060,6 +1061,19 @@
     "yourApplicationHasBeenSubmitted": "申請が正常に送信されました"
   },
   "common": {
+    "roundType": {
+      "CV_SCREENING": "CVスクリーニング",
+      "EMAIL_SIMULATOR": "メールシミュレーター",
+      "QUIZ": "クイズ",
+      "CODING": "コーディング",
+      "CODE_REVIEW": "コードレビュー",
+      "MENTOR_REVIEW": "メンター面接",
+      "MENTROR_REVIEW": "メンター面接",
+      "AI_INTERVIEW": "AI面接"
+    },
+    "copiedParam": "{{param}}をコピーしました",
+    "copy": "コピー",
+    "and": "および",
     "createSuccess": "作成に成功しました",
     "createFailed": "作成に失敗しました",
     "actions": "操作",
@@ -5194,7 +5208,13 @@
     "needsGradingParen": "採点が必要 (",
     "detailedScoreByCriteria": "基準別の詳細スコア",
     "detailedAnalysisScore": "詳細な分析スコア",
-    "hrReview": "HRレビュー"
+    "hrReview": "HRレビュー",
+    "overallMatch": "総合マッチ度",
+    "skillsMatch": "スキルマッチ度",
+    "experience": "経歴マッチ度",
+    "education": "学歴マッチ度",
+    "readability": "読みやすさ",
+    "gradingInProgress": "採点中..."
   },
   "quiz": {
     "submitSuccess": "クイズの提出に成功しました！",
@@ -5708,6 +5728,21 @@
     "jdPurchaseStatus_USED": "使用済み",
     "jdPurchaseDate": "購入日",
     "jdPurchaseAmount": "金額",
+    "pay": "お支払い",
+    "sessionExpired": "決済セッションの有効期限が切れました。",
+    "bank": "銀行:",
+    "accountHolder": "口座名義:",
+    "accountNo": "口座番号:",
+    "accountNoLabel": "口座番号",
+    "amount": "金額:",
+    "amountLabel": "金額",
+    "content": "振込内容:",
+    "contentLabel": "振込内容",
+    "transferInstructionPre": "正確に",
+    "transferInstructionPost": "を入力してください。3秒後に自動的に有効化されます。",
+    "initializingVietQr": "VietQRコードを生成中...",
+    "expiresIn": "有効期限:",
+    "openOriginalPayOS": "元PayOSページを開く ↗",
     "jdPurchaseNoPurchases": "JDパッケージをまだ購入していません。",
     "jdPurchaseLoadError": "JD購入履歴の読み込みに失敗しました。",
     "jdPurchaseJdId": "JD #",
@@ -5785,5 +5820,33 @@
       "junior": "ジュニア",
       "middle": "ミドル"
     }
+  },
+  "template": {
+    "description": "テンプレートの説明",
+    "dragToCenter": "ラウンドを中央にドラッグ＆ドロップして追加",
+    "categoryRequired": "カテゴリを選択してください",
+    "descriptionPlaceholder": "面接テンプレートの説明を入力...",
+    "emptyTemplate": "空の面接テンプレート",
+    "saveTemplate": "面接テンプレートを保存",
+    "exampleCvUpload": "例: PDF形式の履歴書をアップロード",
+    "exampleCustomerService": "例: カスタマーサービスシナリオ対応",
+    "hrAddonCriteria": "HR追加評価基準",
+    "exampleHrCriteria": "例: 態度、コミュニケーション能力",
+    "addonCriteriaExplanation": "HR評価用の追加基準を入力",
+    "emailScenario": "模擬メールシナリオ",
+    "exampleEmailScenario": "例: 顧客からの苦情メールへの返信",
+    "exampleEmailCriteria": "例: 問題解決能力、文章スタイル",
+    "unsavedChangesWarning2": "保存されていない変更があります。本当に退出しますか？",
+    "applyToDraft": "下書きに適用",
+    "addAtLeastOneRound": "少なくとも1つの面接ラウンドを追加してください",
+    "quizRoundNotConfigured": "クイズラウンドの問題が設定されていません",
+    "createSuccess": "面接テンプレートを作成しました！",
+    "updateSuccess": "面接テンプレートを更新しました！",
+    "processContains": "プロセス内容",
+    "candidateInstructions": "応募者への指示",
+    "configured": "設定済み",
+    "failedToLoadDetails": "面接テンプレートの詳細を読み込めませんでした",
+    "selectFromList": "リストから面接テンプレートを選択してください",
+    "noTemplateFound": "面接テンプレートが見つかりません"
   }
 }

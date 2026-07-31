@@ -119,19 +119,65 @@ interface EnrichedApplication extends Application {
 // Round Type Display
 // ============================================================
 
+const STANDARD_ROUND_NAMES = [
+  "Lọc CV",
+  "CV Screening",
+  "CVスクリーニング",
+  "Mô phỏng Email",
+  "Email Simulator",
+  "メールシミュレーター",
+  "Trắc nghiệm",
+  "Quiz",
+  "クイズ",
+  "Lập trình",
+  "Coding",
+  "コーディング",
+  "Đánh giá Code",
+  "Code Review",
+  "コードレビュー",
+  "Đánh giá Mentor",
+  "Mentor Interview",
+  "Mentor Review",
+  "メンター面接",
+  "Phỏng vấn AI",
+  "AI Interview",
+  "AI面接",
+];
+
 const ROUND_TYPE_LABELS: Record<string, string> = {
-  CV_SCREENING: "CV Screening",
-  EMAIL_SIMULATOR: "Email Simulator",
-  QUIZ: "Quiz",
-  CODING: "Coding",
-  CODE_REVIEW: "Code Review",
-  MENTOR_REVIEW: "Mentor Interview",
-  AI_INTERVIEW: "AI Interview",
+  CV_SCREENING: "Lọc CV",
+  EMAIL_SIMULATOR: "Mô phỏng Email",
+  QUIZ: "Trắc nghiệm",
+  CODING: "Lập trình",
+  CODE_REVIEW: "Đánh giá Code",
+  MENTOR_REVIEW: "Đánh giá Mentor",
+  AI_INTERVIEW: "Phỏng vấn AI",
 };
 
-function getRoundTypeLabel(type?: string) {
-  if (!type) return "Round";
-  return ROUND_TYPE_LABELS[type] ?? type.replace(/_/g, " ");
+function getRoundTypeLabel(type?: string, t?: ReturnType<typeof useTranslation>["t"]) {
+  if (!type) return t ? t("userApplicationhistory.round", "Vòng") : "Round";
+  const normalized = type.replace("MENTROR", "MENTOR");
+  if (t) {
+    const translated = t(`common.roundType.${normalized}`);
+    if (translated && translated !== `common.roundType.${normalized}`) {
+      return translated;
+    }
+  }
+  return ROUND_TYPE_LABELS[normalized] ?? normalized.replace(/_/g, " ");
+}
+
+function getStandardRoundTitle(
+  name?: string,
+  type?: string,
+  t?: ReturnType<typeof useTranslation>["t"]
+) {
+  if (type) {
+    const typeLabel = getRoundTypeLabel(type, t);
+    if (!name || STANDARD_ROUND_NAMES.includes(name.trim())) {
+      return typeLabel;
+    }
+  }
+  return name || (t ? t("userApplicationhistory.round", "Vòng") : "Round");
 }
 
 // ============================================================
@@ -231,7 +277,9 @@ function AIEvaluatingBadge({ roundName }: { roundName: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500" />
-      {roundName ? `${roundName} đang chấm...` : t("userApplicationhistory.aiEvaluating")}
+      {roundName
+        ? `${roundName} ${t("grading.gradingInProgress", "đang chấm...")}`
+        : t("userApplicationhistory.aiEvaluating")}
     </span>
   );
 }
@@ -244,11 +292,11 @@ function SubmissionPreview({
   detail,
   onViewEmailSubmission,
 }: {
-  detail: ApplicationDetail;
+  detail?: ApplicationDetail;
   onViewEmailSubmission?: (_emailSubmissionId: number) => void;
 }) {
   const { t } = useTranslation();
-  const sd = detail.submissionData;
+  const sd = detail?.submissionData;
   if (!sd) return null;
 
   const emailSubmissionId = sd.emailSubmissionId;
@@ -284,7 +332,7 @@ function SubmissionPreview({
             {t("userApplicationhistory.quizAnswers")} ({sd.quizAnswers.length}{" "}
             {t("userApplicationhistory.questions")})
           </p>
-          {sd.quizAnswers.slice(0, 3).map((qa, i) => (
+          {sd.quizAnswers.slice(0, 3).map((qa: Record<string, unknown>, i: number) => (
             <div
               key={i}
               className={cn(
@@ -294,10 +342,12 @@ function SubmissionPreview({
                   : "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
               )}>
               <span className="font-mono text-slate-400">
-                Q{i + 1}: {qa.selectedAnswer}
+                Q{i + 1}: {String(qa.selectedAnswer ?? "")}
               </span>
-              {qa.questionText && (
-                <span className="line-clamp-1 flex-1 text-slate-500">{qa.questionText}</span>
+              {Boolean(qa.questionText) && (
+                <span className="line-clamp-1 flex-1 text-slate-500">
+                  {String(qa.questionText)}
+                </span>
               )}
               {qa.isCorrect ? (
                 <Check className="h-3.5 w-3.5 flex-shrink-0 text-green-500" />
@@ -336,7 +386,7 @@ function SubmissionPreview({
               ? `${sd.codeSubmissions.length} bài nộp code`
               : t("submission.codeSubmission")}
           </p>
-          {sd.codeSubmissions.map((submission, idx) => (
+          {sd.codeSubmissions.map((submission: Record<string, unknown>, idx: number) => (
             <CodeSubmissionViewer
               key={idx}
               codeSubmission={submission}
@@ -536,7 +586,9 @@ function AIFeedbackCard({
                     {overallMatch !== null && (
                       <div className="text-center">
                         <div className="text-lg font-bold text-[#0047AB]">{overallMatch}</div>
-                        <div className="text-[10px] text-slate-500">Overall Match</div>
+                        <div className="text-[10px] text-slate-500">
+                          {t("grading.overallMatch", "Độ phù hợp chung")}
+                        </div>
                       </div>
                     )}
                     {skillsMatch !== null && (
@@ -544,7 +596,9 @@ function AIFeedbackCard({
                         <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
                           {skillsMatch}
                         </div>
-                        <div className="text-[10px] text-slate-500">Skills Match</div>
+                        <div className="text-[10px] text-slate-500">
+                          {t("grading.skillsMatch", "Kỹ năng")}
+                        </div>
                       </div>
                     )}
                     {experienceMatch !== null && (
@@ -552,7 +606,9 @@ function AIFeedbackCard({
                         <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
                           {experienceMatch}
                         </div>
-                        <div className="text-[10px] text-slate-500">Experience</div>
+                        <div className="text-[10px] text-slate-500">
+                          {t("grading.experience", "Kinh nghiệm")}
+                        </div>
                       </div>
                     )}
                     {educationMatch !== null && (
@@ -560,7 +616,9 @@ function AIFeedbackCard({
                         <div className="text-lg font-bold text-green-600 dark:text-green-400">
                           {educationMatch}
                         </div>
-                        <div className="text-[10px] text-slate-500">Education</div>
+                        <div className="text-[10px] text-slate-500">
+                          {t("grading.education", "Học vấn")}
+                        </div>
                       </div>
                     )}
                     {cvReadability !== null && (
@@ -568,7 +626,9 @@ function AIFeedbackCard({
                         <div className="text-lg font-bold text-cyan-600 dark:text-cyan-400">
                           {cvReadability}
                         </div>
-                        <div className="text-[10px] text-slate-500">Readability</div>
+                        <div className="text-[10px] text-slate-500">
+                          {t("grading.readability", "Khả năng đọc")}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -683,7 +743,7 @@ function RoundTimelineItem({
 }) {
   const { t } = useTranslation();
   const status = detail?.status as RoundDetailStatus | undefined;
-  const roundName = round?.name ?? getRoundTypeLabel(round?.roundType);
+  const roundName = getStandardRoundTitle(round?.name, round?.roundType, t);
   const score = detail?.finalScore;
   const aiScore = detail?.aiScore;
   const aiFeedback = detail?.aiFeedback;
@@ -1502,7 +1562,7 @@ function ApplicationDetailPanel({
         }}
         applicationId={id ?? 0}
         roundId={submissionRound?.id}
-        roundName={submissionRound?.name ?? getRoundTypeLabel(submissionRound?.roundType)}
+        roundName={getStandardRoundTitle(submissionRound?.name, submissionRound?.roundType, t)}
         roundType={submissionRound?.roundType}
         instruction={submissionRound?.configData?.instruction}
         submissionFormat={getSubmissionFormat(submissionRound)}

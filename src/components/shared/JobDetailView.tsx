@@ -97,6 +97,57 @@ function getCompanyInitials(name?: string) {
   );
 }
 
+const STANDARD_ROUND_NAMES = [
+  "Lọc CV",
+  "CV Screening",
+  "CVスクリーニング",
+  "Mô phỏng Email",
+  "Email Simulator",
+  "メールシミュレーター",
+  "Trắc nghiệm",
+  "Quiz",
+  "クイズ",
+  "Lập trình",
+  "Coding",
+  "コーディング",
+  "Đánh giá Code",
+  "Code Review",
+  "コードレビュー",
+  "Đánh giá Mentor",
+  "Mentor Interview",
+  "Mentor Review",
+  "メンター面接",
+  "Phỏng vấn AI",
+  "AI Interview",
+  "AI面接",
+];
+
+function getRoundTypeLabel(type?: string, t?: ReturnType<typeof useTranslation>["t"]) {
+  if (!type) return t ? t("common.notDetermined", "Chưa xác định") : "Not Determined";
+  const normalized = type.replace("MENTROR", "MENTOR");
+  if (t) {
+    const translated = t(`common.roundType.${normalized}`);
+    if (translated && translated !== `common.roundType.${normalized}`) {
+      return translated;
+    }
+  }
+  return normalized.replace(/_/g, " ");
+}
+
+function getStandardRoundTitle(
+  name?: string,
+  type?: string,
+  t?: ReturnType<typeof useTranslation>["t"]
+) {
+  if (type) {
+    const typeLabel = getRoundTypeLabel(type, t);
+    if (!name || STANDARD_ROUND_NAMES.includes(name.trim())) {
+      return typeLabel;
+    }
+  }
+  return name || (t ? t("common.roundVar0", { var_0: 1 }) : "Round");
+}
+
 interface JobDetailViewProps {
   job: JobDescription;
   hasPurchased: boolean;
@@ -145,7 +196,7 @@ export function JobDetailView({
         onClick={onApplyAction}
         disabled={isLoadingAction}
         className="w-full rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
-        {isLoadingAction ? t("common.processing", "Đang xử lý...") : "Thanh toán"}
+        {isLoadingAction ? t("common.processing", "Đang xử lý...") : t("payment.pay", "Thanh toán")}
       </Button>
     );
   };
@@ -357,13 +408,13 @@ export function JobDetailView({
                     <div className="min-w-0 flex-1 pt-0.5">
                       <div className="flex items-center gap-2">
                         <span className="text-[13px] leading-snug font-semibold text-slate-900 dark:text-white">
-                          {round.name || t("common.roundVar0", { var_0: index + 1 })}
+                          {getStandardRoundTitle(round.name, round.roundType, t)}
                         </span>
                         <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10.5px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                           <span className="text-indigo-400">
                             {getRoundTypeIcon(round.roundType)}
                           </span>
-                          {round.roundType?.replace(/_/g, " ") || t("common.notDetermined")}
+                          {getRoundTypeLabel(round.roundType, t)}
                         </span>
                       </div>
                       {(Boolean(round.passThreshold) ||

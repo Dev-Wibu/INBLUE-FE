@@ -817,6 +817,7 @@
     "showingFilteredResults": "Showing {{filtered}} / {{total}} results"
   },
   "adminSessionmanagement": {
+    "expertise": "Expertise",
     "actionThisCannotBeUndone": "\"? Action This cannot be undone.",
     "areYouSureYouWant": "Are you sure you want to cancel the session?",
     "browseSessions": "Browse sessions",
@@ -1099,6 +1100,19 @@
     "yourApplicationHasBeenSubmitted": "Your application has been submitted successfully"
   },
   "common": {
+    "roundType": {
+      "CV_SCREENING": "CV Screening",
+      "EMAIL_SIMULATOR": "Email Simulator",
+      "QUIZ": "Quiz",
+      "CODING": "Coding",
+      "CODE_REVIEW": "Code Review",
+      "MENTOR_REVIEW": "Mentor Interview",
+      "MENTROR_REVIEW": "Mentor Interview",
+      "AI_INTERVIEW": "AI Interview"
+    },
+    "copiedParam": "Copied {{param}}",
+    "copy": "Copy",
+    "and": "and",
     "createSuccess": "Created successfully",
     "createFailed": "Create failed",
     "actions": "Actions",
@@ -5188,7 +5202,13 @@
     "needsGradingParen": "Needs Grading (",
     "detailedScoreByCriteria": "Detailed Score by Criteria",
     "detailedAnalysisScore": "Detailed Analysis Score",
-    "hrReview": "HR Review"
+    "hrReview": "HR Review",
+    "overallMatch": "Overall Match",
+    "skillsMatch": "Skills Match",
+    "experience": "Experience",
+    "education": "Education",
+    "readability": "Readability",
+    "gradingInProgress": "grading in progress..."
   },
   "quiz": {
     "submitSuccess": "Quiz submitted successfully!",
@@ -5702,6 +5722,21 @@
     "jdPurchaseStatus_USED": "Used",
     "jdPurchaseDate": "Purchase Date",
     "jdPurchaseAmount": "Amount",
+    "pay": "Pay",
+    "sessionExpired": "Payment session has expired.",
+    "bank": "Bank:",
+    "accountHolder": "Account Holder:",
+    "accountNo": "Account Number:",
+    "accountNoLabel": "Account Number",
+    "amount": "Amount:",
+    "amountLabel": "Amount",
+    "content": "Transfer Content:",
+    "contentLabel": "Transfer Content",
+    "transferInstructionPre": "Please enter the exact",
+    "transferInstructionPost": "so the system can automatically activate after 3 seconds.",
+    "initializingVietQr": "Initializing VietQR transfer code...",
+    "expiresIn": "Expires in:",
+    "openOriginalPayOS": "Open Original PayOS Page ↗",
     "jdPurchaseNoPurchases": "You have not purchased any JD package yet.",
     "jdPurchaseLoadError": "Failed to load JD purchase history.",
     "jdPurchaseJdId": "JD #",
@@ -5779,5 +5814,33 @@
       "junior": "Junior",
       "middle": "Middle"
     }
+  },
+  "template": {
+    "description": "Template Description",
+    "dragToCenter": "Drag and drop rounds to the center to add",
+    "categoryRequired": "Please select a category",
+    "descriptionPlaceholder": "Enter interview template description...",
+    "emptyTemplate": "Empty interview template",
+    "saveTemplate": "Save interview template",
+    "exampleCvUpload": "Example: Upload CV in PDF format",
+    "exampleCustomerService": "Example: Customer service scenario handling",
+    "hrAddonCriteria": "HR Additional Evaluation Criteria",
+    "exampleHrCriteria": "Example: Attitude, communication skills",
+    "addonCriteriaExplanation": "Enter additional criteria for HR evaluation",
+    "emailScenario": "Simulated email scenario",
+    "exampleEmailScenario": "Example: Reply to customer complaint email",
+    "exampleEmailCriteria": "Example: Problem-solving ability, tone",
+    "unsavedChangesWarning2": "You have unsaved changes. Are you sure you want to leave?",
+    "applyToDraft": "Apply to draft",
+    "addAtLeastOneRound": "Please add at least one interview round",
+    "quizRoundNotConfigured": "Quiz round is not configured with questions",
+    "createSuccess": "Interview template created successfully!",
+    "updateSuccess": "Interview template updated successfully!",
+    "processContains": "Process contains",
+    "candidateInstructions": "Candidate instructions",
+    "configured": "Configured",
+    "failedToLoadDetails": "Failed to load interview template details",
+    "selectFromList": "Please select an interview template from the list",
+    "noTemplateFound": "No interview template found"
   }
 }

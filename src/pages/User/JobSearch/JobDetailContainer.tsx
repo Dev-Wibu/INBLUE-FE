@@ -104,7 +104,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          toast.warning("Phiên thanh toán đã hết hạn.");
+          toast.warning(t("payment.sessionExpired", "Phiên thanh toán đã hết hạn."));
           return 0;
         }
         return prev - 1;
@@ -220,7 +220,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
   const handleCopy = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(fieldName);
-    toast.success(`Đã sao chép ${fieldName}`);
+    toast.success(t("common.copiedParam", `Đã sao chép ${fieldName}`, { param: fieldName }));
     setTimeout(() => setCopiedField(null), 2000);
   };
 
@@ -344,7 +344,9 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                     <div className="w-full space-y-2.5 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                       {/* Bank */}
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">Ngân hàng:</span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {t("payment.bank", "Ngân hàng:")}
+                        </span>
                         <span className="font-bold text-slate-800 dark:text-slate-200">
                           {nativeInfo.bankShortName || "BIDV"}
                         </span>
@@ -352,7 +354,9 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
                       {/* Account Name */}
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">Chủ tài khoản:</span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {t("payment.accountHolder", "Chủ tài khoản:")}
+                        </span>
                         <span className="font-bold text-slate-800 dark:text-slate-200">
                           {nativeInfo.accountName || "NGUYEN PHAM THU HA"}
                         </span>
@@ -360,44 +364,54 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
 
                       {/* Account No */}
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">Số tài khoản:</span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {t("payment.accountNo", "Số tài khoản:")}
+                        </span>
                         <div className="flex items-center gap-1.5">
                           <span className="font-mono font-bold text-slate-900 dark:text-white">
                             {nativeInfo.accountNo || "V3CAS6721131488"}
                           </span>
                           <button
                             onClick={() =>
-                              handleCopy(nativeInfo.accountNo || "V3CAS6721131488", "Số tài khoản")
+                              handleCopy(
+                                nativeInfo.accountNo || "V3CAS6721131488",
+                                t("payment.accountNoLabel", "Số tài khoản")
+                              )
                             }
                             className="flex h-5.5 items-center gap-1 rounded bg-slate-100 px-2 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
-                            {copiedField === "Số tài khoản" ? (
+                            {copiedField === t("payment.accountNoLabel", "Số tài khoản") ? (
                               <Check className="h-3 w-3 text-emerald-500" />
                             ) : (
                               <Copy className="h-3 w-3" />
                             )}
-                            Sao chép
+                            {t("common.copy", "Sao chép")}
                           </button>
                         </div>
                       </div>
 
                       {/* Amount */}
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">Số tiền:</span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {t("payment.amount", "Số tiền:")}
+                        </span>
                         <div className="flex items-center gap-1.5">
                           <span className="font-extrabold text-amber-600 dark:text-amber-400">
                             {formatNumber(Number(nativeInfo.amount || job.price || 0))} VND
                           </span>
                           <button
                             onClick={() =>
-                              handleCopy(String(nativeInfo.amount || job.price || 0), "Số tiền")
+                              handleCopy(
+                                String(nativeInfo.amount || job.price || 0),
+                                t("payment.amountLabel", "Số tiền")
+                              )
                             }
                             className="flex h-5.5 items-center gap-1 rounded bg-slate-100 px-2 text-[11px] font-medium hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-950">
-                            {copiedField === "Số tiền" ? (
+                            {copiedField === t("payment.amountLabel", "Số tiền") ? (
                               <Check className="h-3 w-3 text-emerald-500" />
                             ) : (
                               <Copy className="h-3 w-3" />
                             )}
-                            Sao chép
+                            {t("common.copy", "Sao chép")}
                           </button>
                         </div>
                       </div>
@@ -405,22 +419,28 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                       {/* Add Info / Content */}
                       {nativeInfo.addInfo && (
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-500 dark:text-slate-400">Nội dung CK:</span>
+                          <span className="text-slate-500 dark:text-slate-400">
+                            {t("payment.content", "Nội dung CK:")}
+                          </span>
                           <div className="flex items-center gap-1.5">
                             <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
                               {nativeInfo.addInfo}
                             </span>
                             <button
                               onClick={() =>
-                                handleCopy(nativeInfo.addInfo!, "Nội dung chuyển khoản")
+                                handleCopy(
+                                  nativeInfo.addInfo!,
+                                  t("payment.contentLabel", "Nội dung chuyển khoản")
+                                )
                               }
                               className="flex h-5.5 items-center gap-1 rounded bg-indigo-50 px-2 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-950/80 dark:text-indigo-400">
-                              {copiedField === "Nội dung chuyển khoản" ? (
+                              {copiedField ===
+                              t("payment.contentLabel", "Nội dung chuyển khoản") ? (
                                 <Check className="h-3 w-3 text-emerald-500" />
                               ) : (
                                 <Copy className="h-3 w-3" />
                               )}
-                              Sao chép
+                              {t("common.copy", "Sao chép")}
                             </button>
                           </div>
                         </div>
@@ -431,8 +451,14 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                     <div className="flex items-start gap-2 rounded-lg border border-amber-200/70 bg-amber-50/80 p-2.5 text-[11px] text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
                       <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
                       <span>
-                        Vui lòng nhập chính xác <strong>Số tiền</strong> và{" "}
-                        <strong>Nội dung chuyển khoản</strong> để hệ thống tự động kích hoạt sau 3s.
+                        {t("payment.transferInstructionPre", "Vui lòng nhập chính xác")}{" "}
+                        <strong>{t("payment.amountLabel", "Số tiền")}</strong>{" "}
+                        {t("common.and", "và")}{" "}
+                        <strong>{t("payment.contentLabel", "Nội dung chuyển khoản")}</strong>{" "}
+                        {t(
+                          "payment.transferInstructionPost",
+                          "để hệ thống tự động kích hoạt sau 3s."
+                        )}
                       </span>
                     </div>
                   </div>
@@ -441,7 +467,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                   <div className="flex h-[380px] flex-col items-center justify-center gap-3">
                     <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
                     <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      Đang khởi tạo mã chuyển khoản VietQR...
+                      {t("payment.initializingVietQr", "Đang khởi tạo mã chuyển khoản VietQR...")}
                     </p>
                   </div>
                 )
@@ -471,7 +497,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
             <div className="flex shrink-0 items-center justify-between border-t border-slate-200/80 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/90">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
                 <Clock className="h-3.5 w-3.5 animate-pulse text-amber-500" />
-                <span>Hết hạn sau:</span>
+                <span>{t("payment.expiresIn", "Hết hạn sau:")}</span>
                 <span className="font-mono font-extrabold text-amber-600 dark:text-amber-400">
                   {formatTimeLeft(timeLeft)}
                 </span>
@@ -483,7 +509,7 @@ export function JobDetailContainer({ job, onClose, onRefresh }: JobDetailContain
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 text-[11.5px] font-medium text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400">
                 <ExternalLink className="h-3 w-3" />
-                Mở trang PayOS gốc ↗
+                {t("payment.openOriginalPayOS", "Mở trang PayOS gốc ↗")}
               </a>
             </div>
           </div>

@@ -179,7 +179,7 @@ export function JobCard({
       <div className="mt-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-[14px] font-bold text-amber-600 dark:text-amber-500">
           <Coins className="h-[18px] w-[18px]" />
-          {job.price ? `${formatNumber(job.price)} VND` : "Miễn phí"}
+          {job.price ? `${formatNumber(job.price)} VND` : t("common.free", "Miễn phí")}
         </div>
         <Button
           onClick={(e) => {
