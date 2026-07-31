@@ -225,7 +225,7 @@
   },
   {
     "file": "src/components/shared/JobDetailView.tsx",
-    "line": 240,
+    "line": 291,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -265,7 +265,7 @@
   },
   {
     "file": "src/components/shared/RoundCanvasEditor/RoundCanvasEditorWorkspace.tsx",
-    "line": 1213,
+    "line": 1250,
     "character": 29,
     "type": "JsxText",
     "category": "english",
@@ -1136,6 +1136,22 @@
     "text": "#ID"
   },
   {
+    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
+    "line": 686,
+    "character": 39,
+    "type": "JsxText",
+    "category": "english",
+    "text": "dummy"
+  },
+  {
+    "file": "src/pages/Admin/ApplicationManagement/AdminApplicationManagementPage.tsx",
+    "line": 690,
+    "character": 39,
+    "type": "JsxText",
+    "category": "english",
+    "text": "sample"
+  },
+  {
     "file": "src/pages/Admin/CodeReviewProblemManagement/components/CodeReviewProblemBuilder.tsx",
     "line": 579,
     "character": 42,
@@ -1488,8 +1504,24 @@
     "text": "Output..."
   },
   {
+    "file": "src/pages/Admin/CompanyManagement/components/CompanyTable.tsx",
+    "line": 96,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "dummy"
+  },
+  {
+    "file": "src/pages/Admin/CompanyManagement/components/CompanyTable.tsx",
+    "line": 100,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "sample"
+  },
+  {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 798,
+    "line": 799,
     "character": 21,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1497,7 +1529,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 825,
+    "line": 826,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1505,7 +1537,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 838,
+    "line": 839,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1513,7 +1545,7 @@
   },
   {
     "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionDetailView.tsx",
-    "line": 846,
+    "line": 847,
     "character": 23,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1526,6 +1558,22 @@
     "type": "JsxAttribute[placeholder]",
     "category": "english",
     "text": "USD"
+  },
+  {
+    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionTable.tsx",
+    "line": 168,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "dummy"
+  },
+  {
+    "file": "src/pages/Admin/CompanyManagement/components/JobDescriptionTable.tsx",
+    "line": 172,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "sample"
   },
   {
     "file": "src/pages/Admin/DashboardOverview/DashboardOverviewPage.tsx",
@@ -1552,6 +1600,22 @@
     "text": "Mentor"
   },
   {
+    "file": "src/pages/Admin/KioskBookingManagement/components/BookingTable.tsx",
+    "line": 106,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "dummy"
+  },
+  {
+    "file": "src/pages/Admin/KioskBookingManagement/components/BookingTable.tsx",
+    "line": 110,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "sample"
+  },
+  {
     "file": "src/pages/Admin/KioskManagement/components/KioskHistoryTab.tsx",
     "line": 249,
     "character": 19,
@@ -1566,6 +1630,38 @@
     "type": "JsxText",
     "category": "english",
     "text": "ID"
+  },
+  {
+    "file": "src/pages/Admin/KioskManagement/components/KioskTable.tsx",
+    "line": 134,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "dummy"
+  },
+  {
+    "file": "src/pages/Admin/KioskManagement/components/KioskTable.tsx",
+    "line": 138,
+    "character": 31,
+    "type": "JsxText",
+    "category": "english",
+    "text": "sample"
+  },
+  {
+    "file": "src/pages/Admin/MentorManagement/components/MentorTable.tsx",
+    "line": 96,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "dummy"
+  },
+  {
+    "file": "src/pages/Admin/MentorManagement/components/MentorTable.tsx",
+    "line": 100,
+    "character": 29,
+    "type": "JsxText",
+    "category": "english",
+    "text": "sample"
   },
   {
     "file": "src/pages/Admin/PracticeSetManagement/components/PracticeSetFormDialog.tsx",
@@ -1592,16 +1688,8 @@
     "text": "Enter name..."
   },
   {
-    "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankCategoryTab.tsx",
-    "line": 334,
-    "character": 49,
-    "type": "JsxText",
-    "category": "english",
-    "text": "ID:"
-  },
-  {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankEditor.tsx",
-    "line": 367,
+    "line": 427,
     "character": 27,
     "type": "JsxAttribute[placeholder]",
     "category": "english",
@@ -1609,7 +1697,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankEditor.tsx",
-    "line": 433,
+    "line": 493,
     "character": 35,
     "type": "JsxText",
     "category": "english",
@@ -1617,7 +1705,7 @@
   },
   {
     "file": "src/pages/Admin/QuestionBankManagement/components/QuestionBankEditor.tsx",
-    "line": 503,
+    "line": 563,
     "character": 25,
     "type": "JsxText",
     "category": "english",
@@ -1633,7 +1721,7 @@
   },
   {
     "file": "src/pages/Admin/SessionManagement/SessionFormPage.tsx",
-    "line": 719,
+    "line": 724,
     "character": 37,
     "type": "JsxAttribute[title]",
     "category": "english",
@@ -2025,51 +2113,11 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 297,
+    "line": 345,
     "character": 17,
     "type": "JsxText",
     "category": "english",
     "text": "Q"
-  },
-  {
-    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 539,
-    "character": 69,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Overall Match"
-  },
-  {
-    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 547,
-    "character": 69,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Skills Match"
-  },
-  {
-    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 555,
-    "character": 69,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Experience"
-  },
-  {
-    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 563,
-    "character": 69,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Education"
-  },
-  {
-    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 571,
-    "character": 69,
-    "type": "JsxText",
-    "category": "english",
-    "text": "Readability"
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",
@@ -2089,7 +2137,7 @@
   },
   {
     "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
-    "line": 388,
+    "line": 399,
     "character": 89,
     "type": "JsxText",
     "category": "english",
@@ -2097,7 +2145,7 @@
   },
   {
     "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",
-    "line": 462,
+    "line": 488,
     "character": 21,
     "type": "JsxAttribute[title]",
     "category": "english",

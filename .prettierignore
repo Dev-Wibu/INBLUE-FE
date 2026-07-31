@@ -8,3 +8,4 @@
 .next
 .husky
 *.d.ts
+scripts/i18n-audit/*.json
