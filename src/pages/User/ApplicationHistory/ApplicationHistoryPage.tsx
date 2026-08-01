@@ -658,16 +658,6 @@ export function ApplicationHistoryPage() {
 
   return (
     <div className="w-full space-y-8 px-5 py-6 pb-16 md:px-8">
-      {/* Top Header Title */}
-      <div className="border-b border-slate-200/80 pb-4 dark:border-slate-800">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          {t("userApplicationhistory.pageTitle", "Lịch sử ứng tuyển")}
-        </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Theo dõi danh sách các đơn phỏng vấn đang thực hiện và kết quả đã đạt được.
-        </p>
-      </div>
-
       {/* SECTION 1: Active Applications (Đơn ứng tuyển đang thực hiện) */}
       {activeApplications.length > 0 && (
         <div className="space-y-4">
