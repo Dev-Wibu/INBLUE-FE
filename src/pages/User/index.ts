@@ -52,9 +52,10 @@ export { MentorDetailPage } from "./MentorDetail";
 // startTime1/2 + durationSeconds1/2).
 export { StudentSessionRoomPage } from "./Sessions";
 
-// Application History exports
+// Application History & Workspace exports
 export {
   ApplicationAIInterviewPage,
   ApplicationHistoryPage,
   ApplicationMentorReviewPage,
 } from "./ApplicationHistory";
+export { ApplicationWorkspacePage } from "./Applications";

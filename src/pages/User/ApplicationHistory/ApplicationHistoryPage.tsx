@@ -1,13 +1,9 @@
-import { MentorRoundActionButton } from "@/components/feedback";
 import { ReloadButton } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CodeSubmissionViewer } from "@/components/ui/code-submission-viewer";
-import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { LoadingCardList } from "@/components/ui/loading-card";
-import { RoundSubmissionDialog } from "@/components/ui/round-submission-dialog";
 import {
   Select,
   SelectContent,
@@ -15,33 +11,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { MentorInterviewHub } from "@/components/user/MentorInterviewHub";
-import { useCurrentRound } from "@/hooks/useRound";
-import type { MentorReview } from "@/interfaces/schema.types";
 import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import { applicationService } from "@/services/application.manager";
-import { useAuthStore } from "@/stores/authStore";
 import {
-  AlertCircle,
+  ArrowRight,
   Briefcase,
-  Check,
+  CheckCircle2,
   ChevronRight,
-  FileText,
-  Lock,
-  Mail,
+  Clock,
+  Search,
+  Sparkles,
   Star,
-  TrendingUp,
-  Upload,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import type { components } from "../../../../schema-from-be";
 
 // ============================================================
@@ -49,8 +37,6 @@ import type { components } from "../../../../schema-from-be";
 // ============================================================
 
 type Application = components["schemas"]["Application"];
-type ApplicationDetail = components["schemas"]["ApplicationDetail"];
-type AiFeedback = components["schemas"]["AiFeedback"];
 type JobDescription = components["schemas"]["JobDescription"];
 type RoundType =
   | "CV_SCREENING"
@@ -62,14 +48,6 @@ type RoundType =
   | "AI_INTERVIEW";
 
 type ApplicationStatus = "IN_PROGRESS" | "PASSED" | "FAILED" | "SOFT_FAILED";
-type RoundDetailStatus =
-  | "PENDING"
-  | "SLOT_PICKED"
-  | "IN_PROGRESS"
-  | "SUBMITTED"
-  | "AI_EVALUATED"
-  | "COMPLETED"
-  | "ERROR";
 
 interface JdRound {
   id?: number;
@@ -77,107 +55,12 @@ interface JdRound {
   roundOrder?: number;
   roundType?: RoundType | string;
   passThreshold?: number;
-  configData?: {
-    instruction?: string;
-    timeLimitMinutes?: number;
-    submissionFormat?: string;
-    codingProblemsId?: number[];
-    codingProblems?: components["schemas"]["CodingProblemSnapshot"][];
-    quizQuestions?: components["schemas"]["QuizQuestion"][];
-    codeReviewProblemsId?: number[];
-    codeReviewProblems?: components["schemas"]["CodeReviewProblemSnapshot"][];
-    mentorInterview?: components["schemas"]["MentorInterviewDto"];
-  };
-}
-
-// Map roundType -> submissionFormat (if not set in configData)
-const ROUND_TYPE_FORMAT_MAP: Record<string, "file" | "text"> = {
-  CV_SCREENING: "file",
-  EMAIL_SIMULATOR: "text",
-  QUIZ: "text",
-  CODING: "text",
-  CODE_REVIEW: "text",
-  MENTOR_REVIEW: "text",
-  AI_INTERVIEW: "text",
-};
-
-function getSubmissionFormat(round?: JdRound): "file" | "text" | "any" {
-  if (!round) return "any";
-  const configFormat = round.configData?.submissionFormat;
-  if (configFormat === "FILE" || configFormat === "file") return "file";
-  if (configFormat === "TEXT" || configFormat === "text" || configFormat === "CODE") return "text";
-  return ROUND_TYPE_FORMAT_MAP[round.roundType ?? ""] ?? "any";
 }
 
 interface EnrichedApplication extends Application {
   jobTitle?: string;
   companyName?: string;
   rounds?: JdRound[];
-}
-
-// ============================================================
-// Round Type Display
-// ============================================================
-
-const STANDARD_ROUND_NAMES = [
-  "Lọc CV",
-  "CV Screening",
-  "CVスクリーニング",
-  "Mô phỏng Email",
-  "Email Simulator",
-  "メールシミュレーター",
-  "Trắc nghiệm",
-  "Quiz",
-  "クイズ",
-  "Lập trình",
-  "Coding",
-  "コーディング",
-  "Đánh giá Code",
-  "Code Review",
-  "コードレビュー",
-  "Đánh giá Mentor",
-  "Mentor Interview",
-  "Mentor Review",
-  "メンター面接",
-  "Phỏng vấn AI",
-  "AI Interview",
-  "AI面接",
-];
-
-const ROUND_TYPE_LABELS: Record<string, string> = {
-  CV_SCREENING: "Lọc CV",
-  EMAIL_SIMULATOR: "Mô phỏng Email",
-  QUIZ: "Trắc nghiệm",
-  CODING: "Lập trình",
-  CODE_REVIEW: "Đánh giá Code",
-  MENTOR_REVIEW: "Đánh giá Mentor",
-  AI_INTERVIEW: "Phỏng vấn AI",
-};
-
-function getRoundTypeLabel(type?: string, t?: ReturnType<typeof useTranslation>["t"]) {
-  if (!type) return t ? t("userApplicationhistory.round", "Vòng") : "Round";
-  const normalized = type.replace("MENTROR", "MENTOR");
-  if (t) {
-    const translated = t(`common.roundType.${normalized}`);
-    if (translated && translated !== `common.roundType.${normalized}`) {
-      return translated;
-    }
-  }
-  return ROUND_TYPE_LABELS[normalized] ?? normalized.replace(/_/g, " ");
-}
-
-function getStandardRoundTitle(
-  name?: string,
-  type?: string,
-  t?: ReturnType<typeof useTranslation>["t"]
-) {
-  if (type) {
-    const typeLabel = getRoundTypeLabel(type, t);
-    if (!name || STANDARD_ROUND_NAMES.includes(name.trim())) {
-      return typeLabel;
-    }
-  }
-  return name || (t ? t("userApplicationhistory.round", "Vòng") : "Round");
 }
 
 // ============================================================
@@ -194,27 +77,31 @@ function ApplicationStatusBadge({
   const { t } = useTranslation();
   const config: Record<ApplicationStatus, { label: string; className: string }> = {
     IN_PROGRESS: {
-      label: t("userApplicationhistory.statusInterviewing"),
-      className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+      label: t("userApplicationhistory.statusInterviewing", "Đang ứng tuyển"),
+      className:
+        "bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/80",
     },
     PASSED: {
-      label: t("userApplicationhistory.statusCompleted"),
-      className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+      label: t("userApplicationhistory.statusCompleted", "Trúng tuyển"),
+      className:
+        "bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/80",
     },
     FAILED: {
-      label: t("userApplicationhistory.statusRejected"),
-      className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+      label: t("userApplicationhistory.statusRejected", "Chưa đạt"),
+      className:
+        "bg-slate-100 text-slate-700 border border-slate-200/80 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700/80",
     },
     SOFT_FAILED: {
-      label: t("userApplicationhistory.needsImprovement"),
-      className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+      label: t("userApplicationhistory.needsImprovement", "Cần cải thiện"),
+      className:
+        "bg-amber-50 text-amber-700 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/80",
     },
   };
   const { label, className } = config[status] ?? { label: status, className: "" };
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap shadow-2xs",
         className,
         extraClassName
       )}>
@@ -223,1447 +110,169 @@ function ApplicationStatusBadge({
   );
 }
 
-// ============================================================
-// Round Detail Status Badge
-// ============================================================
-
-function RoundStatusBadge({ status }: { status: RoundDetailStatus }) {
-  const { t } = useTranslation();
-  const config: Record<RoundDetailStatus, { label: string; className: string }> = {
-    IN_PROGRESS: {
-      label: t("userApplicationhistory.roundInProgress"),
-      className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-    },
-    PENDING: {
-      label: t("userApplicationhistory.roundPending"),
-      className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-    },
-    SLOT_PICKED: {
-      label: t("userApplicationhistory.roundSlotPicked"),
-      className: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
-    },
-    SUBMITTED: {
-      label: t("userApplicationhistory.roundSubmitting"),
-      className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-    },
-    AI_EVALUATED: {
-      label: t("userApplicationhistory.roundAiEvaluated"),
-      className: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-    },
-    COMPLETED: {
-      label: t("userApplicationhistory.roundCompleted"),
-      className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-    },
-    ERROR: {
-      label: t("userApplicationhistory.roundError"),
-      className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-    },
-  };
-  const { label, className } = config[status] ?? { label: status, className: "" };
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-        className
-      )}>
-      {label}
-    </span>
-  );
-}
-
-// Badge for rounds being evaluated by AI (after submission, before result)
-function AIEvaluatingBadge({ roundName }: { roundName: string }) {
-  const { t } = useTranslation();
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500" />
-      {roundName
-        ? `${roundName} ${t("grading.gradingInProgress", "đang chấm...")}`
-        : t("userApplicationhistory.aiEvaluating")}
-    </span>
-  );
+// Helper: Extract Initials from Company Name
+function getCompanyInitials(name?: string): string {
+  if (!name) return "CO";
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
 // ============================================================
-// Submission Preview
+// Application Card Component (Hub View)
 // ============================================================
 
-function SubmissionPreview({
-  detail,
-  onViewEmailSubmission,
-}: {
-  detail?: ApplicationDetail;
-  onViewEmailSubmission?: (_emailSubmissionId: number) => void;
-}) {
-  const { t } = useTranslation();
-  const sd = detail?.submissionData;
-  if (!sd) return null;
-
-  const emailSubmissionId = sd.emailSubmissionId;
-
-  return (
-    <div className="mt-3 space-y-2">
-      {sd.textContent && (
-        <div className="rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-            <FileText className="h-3.5 w-3.5" />
-            {t("userApplicationhistory.submittedContent")}
-          </p>
-          <p className="line-clamp-3 text-xs whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-            {sd.textContent}
-          </p>
-        </div>
-      )}
-      {sd.fileUrl && (
-        <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-          <Upload className="h-4 w-4 flex-shrink-0 text-slate-400" />
-          <a
-            href={sd.fileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-[#0047AB] underline hover:text-[#003d91] dark:text-[#66B2FF]">
-            {t("userApplicationhistory.viewUploadedFile")}
-          </a>
-        </div>
-      )}
-      {sd.quizAnswers && sd.quizAnswers.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            {t("userApplicationhistory.quizAnswers")} ({sd.quizAnswers.length}{" "}
-            {t("userApplicationhistory.questions")})
-          </p>
-          {sd.quizAnswers.slice(0, 3).map((qa: Record<string, unknown>, i: number) => (
-            <div
-              key={i}
-              className={cn(
-                "flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs",
-                qa.isCorrect
-                  ? "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-300"
-                  : "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
-              )}>
-              <span className="font-mono text-slate-400">
-                Q{i + 1}: {String(qa.selectedAnswer ?? "")}
-              </span>
-              {Boolean(qa.questionText) && (
-                <span className="line-clamp-1 flex-1 text-slate-500">
-                  {String(qa.questionText)}
-                </span>
-              )}
-              {qa.isCorrect ? (
-                <Check className="h-3.5 w-3.5 flex-shrink-0 text-green-500" />
-              ) : (
-                <XCircle className="h-3.5 w-3.5 flex-shrink-0 text-red-500" />
-              )}
-            </div>
-          ))}
-          {sd.quizAnswers.length > 3 && (
-            <p className="text-xs text-slate-400">
-              +{sd.quizAnswers.length - 3} {t("userApplicationhistory.moreAnswers")}
-            </p>
-          )}
-        </div>
-      )}
-      {emailSubmissionId && emailSubmissionId > 0 && (
-        <button
-          type="button"
-          onClick={() => onViewEmailSubmission?.(emailSubmissionId)}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5",
-            "text-xs font-medium text-blue-700",
-            "hover:border-blue-300 hover:bg-blue-100",
-            "dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300",
-            "dark:hover:border-blue-700 dark:hover:bg-blue-900/30",
-            "transition-colors"
-          )}>
-          <Mail className="h-3.5 w-3.5" />
-          {t("emailPreview.viewSubmittedEmail")}
-        </button>
-      )}
-      {sd.codeSubmissions && sd.codeSubmissions.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            {sd.codeSubmissions.length > 1
-              ? `${sd.codeSubmissions.length} bài nộp code`
-              : t("submission.codeSubmission")}
-          </p>
-          {sd.codeSubmissions.map((submission: Record<string, unknown>, idx: number) => (
-            <CodeSubmissionViewer
-              key={idx}
-              codeSubmission={submission}
-              title={`Bài ${idx + 1}`}
-              defaultExpanded={sd.codeSubmissions!.length === 1}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
-
-function AIFeedbackCard({
-  feedback,
-  score,
-  finalResult,
-  roundType,
-  hrScore,
-  hrNote,
-}: {
-  feedback?: AiFeedback;
-  score?: number;
-  finalResult?: string;
-  roundType?: string;
-  hrScore?: number;
-  hrNote?: string;
-}) {
-  const { t } = useTranslation();
-  const showAIFeedback = feedback || score !== undefined;
-  const hasHRFeedback = hrScore !== undefined || hrNote;
-  if (!showAIFeedback && !hasHRFeedback) return null;
-
-  // Detect feedback type from extraMetrics shape
-  const em = feedback?.extraMetrics as Record<string, unknown> | undefined;
-  const hasNestedMetrics = em
-    ? Object.values(em).some((v) => v !== null && typeof v === "object" && "score" in (v as object))
-    : false;
-  const isEmailFeedback = roundType === "EMAIL_SIMULATOR" || hasNestedMetrics;
-
-  return (
-    <div className="mt-3 space-y-2">
-      {score !== undefined && score !== null && (
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-            <span className="text-sm font-bold text-[#0047AB]">{score}</span>
-            <span className="text-xs text-slate-400">/100</span>
-          </div>
-          {finalResult && (
-            <span
-              className={cn(
-                "rounded px-1.5 py-0.5 text-xs font-medium",
-                finalResult === "PASSED"
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-              )}>
-              {finalResult === "PASSED"
-                ? t("userApplicationhistory.passed")
-                : t("userApplicationhistory.failed")}
-            </span>
-          )}
-        </div>
-      )}
-      {feedback?.generalComment && (
-        <p className="text-xs text-slate-600 italic dark:text-slate-400">
-          {feedback.generalComment}
-        </p>
-      )}
-      {feedback?.strengths && feedback.strengths.length > 0 && (
-        <div className="space-y-0.5">
-          {feedback.strengths.slice(0, 2).map((s, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-xs">
-              <Check className="mt-0.5 h-3 w-3 flex-shrink-0 text-green-500" />
-              <span className="text-green-700 dark:text-green-400">{s}</span>
-            </div>
-          ))}
-        </div>
-      )}
-      {feedback?.weaknesses && feedback.weaknesses.length > 0 && (
-        <div className="space-y-0.5">
-          {feedback.weaknesses.slice(0, 2).map((w, i) => (
-            <div key={i} className="flex items-start gap-1.5 text-xs">
-              <XCircle className="mt-0.5 h-3 w-3 flex-shrink-0 text-red-400" />
-              <span className="text-red-600 dark:text-red-400">{w}</span>
-            </div>
-          ))}
-        </div>
-      )}
-      {/* extraMetrics - auto-detect format */}
-      {em && Object.keys(em).length > 0 && isEmailFeedback && hasNestedMetrics
-        ? (() => {
-            const criteria = Object.entries(em)
-              .filter(([, v]) => v !== null && typeof v === "object" && "score" in (v as object))
-              .map(([key, val]) => {
-                const obj = val as { score: number; maxScore: number; comment?: string };
-                return {
-                  name: key,
-                  score: obj.score,
-                  maxScore: obj.maxScore,
-                  comment: obj.comment,
-                };
-              })
-              .sort((a, b) => b.score / b.maxScore - a.score / a.maxScore);
-
-            return criteria.length > 0 ? (
-              <div className="mt-2 space-y-1.5">
-                <div className="mb-1 flex items-center gap-1.5">
-                  <TrendingUp className="h-3.5 w-3.5 text-[#0047AB]" />
-                  <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">
-                    {t("grading.detailedScoreByCriteria")}
-                  </span>
-                </div>
-                {criteria.map((c) => {
-                  const pct = c.maxScore > 0 ? (c.score / c.maxScore) * 100 : 0;
-                  const isGood = pct >= 80;
-                  const isMedium = pct >= 50 && pct < 80;
-                  return (
-                    <div key={c.name} className="group relative">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-slate-600 dark:text-slate-400">
-                          {c.name}
-                        </span>
-                        <span
-                          className={cn(
-                            "text-[10px] font-bold",
-                            isGood
-                              ? "text-green-600 dark:text-green-400"
-                              : isMedium
-                                ? "text-amber-600 dark:text-amber-400"
-                                : "text-red-500 dark:text-red-400"
-                          )}>
-                          {c.score}/{c.maxScore}
-                        </span>
-                      </div>
-                      <div className="mt-0.5 h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                        <div
-                          className={cn(
-                            "h-full rounded-full transition-all",
-                            isGood ? "bg-green-500" : isMedium ? "bg-amber-400" : "bg-red-400"
-                          )}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      {c.comment && (
-                        <p className="mt-0.5 hidden text-[9px] text-slate-500 italic group-hover:block">
-                          {c.comment}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null;
-          })()
-        : em && Object.keys(em).length > 0
-          ? (() => {
-              const overallMatch =
-                typeof em["Overall CV Match"] === "number"
-                  ? (em["Overall CV Match"] as number)
-                  : null;
-              const skillsMatch =
-                typeof em["Skills Match Score"] === "number"
-                  ? (em["Skills Match Score"] as number)
-                  : null;
-              const educationMatch =
-                typeof em["Education Match Score"] === "number"
-                  ? (em["Education Match Score"] as number)
-                  : null;
-              const keywordDensity =
-                em["Keyword Density"] && typeof em["Keyword Density"] === "object"
-                  ? (em["Keyword Density"] as Record<string, number>)
-                  : null;
-              const redFlags = Array.isArray(em["Potential Red Flags"])
-                ? (em["Potential Red Flags"] as string[])
-                : null;
-              const experienceMatch =
-                typeof em["Experience Match Score"] === "number"
-                  ? (em["Experience Match Score"] as number)
-                  : null;
-              const cvReadability =
-                typeof em["CV Readability Score"] === "number"
-                  ? (em["CV Readability Score"] as number)
-                  : null;
-              return (
-                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-                  <div className="mb-2 flex items-center gap-1.5">
-                    <TrendingUp className="h-3.5 w-3.5 text-[#0047AB]" />
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      {t("grading.detailedAnalysisScore")}
-                    </span>
-                  </div>
-                  {/* Match scores */}
-                  <div className="mb-2 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
-                    {overallMatch !== null && (
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-[#0047AB]">{overallMatch}</div>
-                        <div className="text-[10px] text-slate-500">
-                          {t("grading.overallMatch", "Độ phù hợp chung")}
-                        </div>
-                      </div>
-                    )}
-                    {skillsMatch !== null && (
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                          {skillsMatch}
-                        </div>
-                        <div className="text-[10px] text-slate-500">
-                          {t("grading.skillsMatch", "Kỹ năng")}
-                        </div>
-                      </div>
-                    )}
-                    {experienceMatch !== null && (
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                          {experienceMatch}
-                        </div>
-                        <div className="text-[10px] text-slate-500">
-                          {t("grading.experience", "Kinh nghiệm")}
-                        </div>
-                      </div>
-                    )}
-                    {educationMatch !== null && (
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                          {educationMatch}
-                        </div>
-                        <div className="text-[10px] text-slate-500">
-                          {t("grading.education", "Học vấn")}
-                        </div>
-                      </div>
-                    )}
-                    {cvReadability !== null && (
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-cyan-600 dark:text-cyan-400">
-                          {cvReadability}
-                        </div>
-                        <div className="text-[10px] text-slate-500">
-                          {t("grading.readability", "Khả năng đọc")}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {/* Keyword density for CV screening */}
-                  {keywordDensity && (
-                    <div className="mb-2">
-                      <div className="mb-1 text-[10px] font-medium text-slate-500">
-                        {t("cv.keywords")}
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {Object.entries(keywordDensity)
-                          .filter(([, count]) => count > 0)
-                          .sort((a, b) => b[1] - a[1])
-                          .slice(0, 6)
-                          .map(([keyword, count]) => (
-                            <span
-                              key={keyword}
-                              className="inline-flex items-center rounded-full bg-[#0047AB]/10 px-2 py-0.5 text-[10px] font-medium text-[#0047AB] dark:bg-[#0047AB]/20">
-                              {keyword}: {count}
-                            </span>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                  {/* Potential red flags */}
-                  {redFlags && redFlags.length > 0 && (
-                    <div>
-                      <div className="mb-1 text-[10px] font-medium text-red-500">
-                        {t("general.warning")}
-                      </div>
-                      <ul className="space-y-0.5">
-                        {redFlags.slice(0, 2).map((flag, i) => (
-                          <li
-                            key={i}
-                            className="flex items-start gap-1 text-[10px] text-red-600 dark:text-red-400">
-                            <span className="mt-0.5 text-red-500">⚠</span>
-                            <span>{flag}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              );
-            })()
-          : null}
-      {/* HR Feedback */}
-      {hasHRFeedback && (
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
-              {t("grading.hrReview")}
-            </span>
-          </div>
-          {hrScore !== undefined && hrScore !== null && (
-            <div className="flex items-center gap-1.5">
-              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span className="text-sm font-bold text-[#0047AB]">{hrScore}</span>
-              <span className="text-xs text-slate-400">/100</span>
-            </div>
-          )}
-          {hrNote && <p className="text-xs text-slate-600 italic dark:text-slate-400">{hrNote}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
-// Timeline Item (Round)
-// ============================================================
-
-function RoundTimelineItem({
-  detail,
-  round,
-  index,
-  totalRounds,
-  isCompleted,
-  isCurrent,
-  isLocked,
-  applicationId,
-  onEnterRoom,
-  onViewEmailSubmission,
-  isPolling,
-  optimistic,
-  currentUserId,
-  sessionEnded,
-  sessionStatus,
-  mentorSessionReview,
-  mentorSessionFeedback,
-  onMentorFeedbackSubmitted,
-}: {
-  detail?: ApplicationDetail;
-  round?: JdRound;
-  index: number;
-  totalRounds: number;
-  isCompleted: boolean;
-  isCurrent: boolean;
-  isLocked: boolean;
-  /** Application id forwarded to MentorRoundActionButton for the "Pick schedule" deep link. */
-  applicationId?: number;
-  onEnterRoom?: () => void;
-  onViewEmailSubmission?: (_emailSubmissionId: number) => void;
-  isPolling?: boolean;
-  optimistic?: { isOptimistic: true; roundId: number; status: "SUBMITTED"; submittedAt: string };
-  currentUserId?: number;
-  sessionEnded?: boolean;
-  sessionStatus?: string;
-  mentorSessionReview?: MentorReview;
-  mentorSessionFeedback?: { id?: number; rating?: number; comment?: string };
-  onMentorFeedbackSubmitted?: () => void;
-}) {
-  const { t } = useTranslation();
-  const status = detail?.status as RoundDetailStatus | undefined;
-  const roundName = getStandardRoundTitle(round?.name, round?.roundType, t);
-  const score = detail?.finalScore;
-  const aiScore = detail?.aiScore;
-  const aiFeedback = detail?.aiFeedback;
-  const submissionData = detail?.submissionData;
-
-  if (isLocked) {
-    return (
-      <div className="flex gap-4">
-        <div className="flex flex-col items-center">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-slate-300 bg-white dark:bg-slate-800">
-            <Lock className="h-3.5 w-3.5 text-slate-400" />
-          </div>
-          {index < totalRounds - 1 && (
-            <div className="mt-2 w-0.5 flex-1 bg-slate-200 dark:bg-slate-700" />
-          )}
-        </div>
-        <div className="flex-1 pb-8">
-          <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-            <h4 className="text-sm font-medium text-slate-400">
-              {t("userApplicationhistory.nextRound")}
-            </h4>
-            <p className="mt-1 text-xs text-slate-300 dark:text-slate-600">
-              {t("userApplicationhistory.roundInfoLocked")}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Status: use real detail status, or optimistic "SUBMITTED"
-  const effectiveStatus: RoundDetailStatus | "SUBMITTED" | undefined =
-    status ?? (optimistic ? "SUBMITTED" : undefined);
-
-  const displayScore = detail?.hrScore ?? score ?? aiScore;
-
-  // Rounds that are submitted but AI hasn't finished evaluating yet
-  const isPendingAI = effectiveStatus === "SUBMITTED" || effectiveStatus === "PENDING";
-  const isEvaluating = isPendingAI && isPolling;
-
-  return (
-    <div className="flex gap-4">
-      {/* Connector */}
-      <div className="flex flex-col items-center">
-        {isCompleted ? (
-          <>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0047AB] ring-4 ring-[#0047AB]/20">
-              <Check className="h-4 w-4 text-white" />
-            </div>
-            {index < totalRounds - 1 && (
-              <div className="mt-2 w-0.5 flex-1 bg-[#0047AB]/30 dark:bg-[#0047AB]/40" />
-            )}
-          </>
-        ) : isEvaluating ? (
-          <>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-purple-400 bg-white shadow-sm dark:bg-slate-800">
-              <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-purple-500" />
-            </div>
-            {index < totalRounds - 1 && (
-              <div className="mt-2 w-0.5 flex-1 bg-slate-200 dark:bg-slate-700" />
-            )}
-          </>
-        ) : isCurrent ? (
-          <>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-[#0047AB] bg-white shadow-sm dark:bg-slate-800">
-              <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#0047AB]" />
-            </div>
-            {index < totalRounds - 1 && (
-              <div className="mt-2 w-0.5 flex-1 bg-slate-200 dark:bg-slate-700" />
-            )}
-          </>
-        ) : (
-          <>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-slate-200 bg-white text-xs font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800">
-              {index + 1}
-            </div>
-            {index < totalRounds - 1 && (
-              <div className="mt-2 w-0.5 flex-1 bg-slate-100 dark:bg-slate-800" />
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Content Card */}
-      <div className="flex-1 pb-8">
-        <div
-          className={cn(
-            "rounded-lg border p-4 transition-all",
-            isCompleted &&
-              "border-[#0047AB]/20 bg-[#0047AB]/5 dark:border-[#0047AB]/40 dark:bg-[#0047AB]/10",
-            isEvaluating &&
-              "border-purple-300 bg-purple-50/50 dark:border-purple-700/40 dark:bg-purple-900/10",
-            isCurrent &&
-              "border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800",
-            !isCompleted &&
-              !isCurrent &&
-              !isEvaluating &&
-              "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
-          )}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            {/* Left */}
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  {roundName}
-                </h4>
-                {isEvaluating ? (
-                  <AIEvaluatingBadge roundName="" />
-                ) : effectiveStatus ? (
-                  <RoundStatusBadge status={effectiveStatus} />
-                ) : null}
-                {isCurrent && !isEvaluating && (
-                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                    {t("userApplicationhistory.current")}
-                  </span>
-                )}
-              </div>
-
-              {isEvaluating && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-400">
-                  <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-purple-400" />
-                  {t("userApplicationhistory.aiEvaluatingDetail")}
-                </p>
-              )}
-
-              {round?.roundType !== "MENTOR_REVIEW" &&
-                round?.roundType !== "MENTROR_REVIEW" &&
-                submissionData && (
-                  <SubmissionPreview
-                    detail={detail!}
-                    onViewEmailSubmission={onViewEmailSubmission}
-                  />
-                )}
-
-              {/* Mentor Interview Hub - Full interactive mentor interview experience */}
-              {(round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW") &&
-                detail && (
-                  <MentorInterviewHub
-                    key={`mentor-hub-${detail.id}-${sessionStatus ?? "loading"}-${mentorSessionFeedback?.id ?? "none"}`}
-                    applicationId={applicationId ?? 0}
-                    detailId={detail.id}
-                    mentorId={detail.mentorId}
-                    sessionId={detail.sessionId ?? detail.sessionInfo?.sessionId ?? undefined}
-                    sessionInfo={detail.sessionInfo ?? null}
-                    mentorReview={detail.mentorReview ?? mentorSessionReview ?? undefined}
-                    mentorFeedback={mentorSessionFeedback ?? undefined}
-                    status={effectiveStatus}
-                    sessionEnded={sessionEnded}
-                    sessionStatus={sessionStatus}
-                    currentUserId={currentUserId}
-                    onFeedbackSubmitted={onMentorFeedbackSubmitted}
-                  />
-                )}
-
-              {(aiScore !== undefined ||
-                aiFeedback ||
-                detail?.hrScore !== undefined ||
-                detail?.hrNote) && (
-                <AIFeedbackCard
-                  feedback={aiFeedback}
-                  score={aiScore}
-                  finalResult={detail?.finalResult}
-                  roundType={round?.roundType}
-                  hrScore={detail?.hrScore}
-                  hrNote={detail?.hrNote}
-                />
-              )}
-            </div>
-
-            {/* Right */}
-            <div className="flex shrink-0 items-center gap-3">
-              {displayScore !== undefined && displayScore !== null && (
-                <div className="text-right">
-                  <p className="text-xs font-medium tracking-wide text-slate-400 uppercase">
-                    {t("userApplicationhistory.result")}
-                  </p>
-                  <p className="mt-0.5 text-xl font-bold text-[#0047AB]">
-                    {displayScore}
-                    <span className="text-sm font-normal text-slate-400">/100</span>
-                  </p>
-                </div>
-              )}
-              {/* Mentor Review rounds: always show the toggle button, even after completion.
-                  `applicationId` is forwarded so the button can offer a "Chọn lịch"
-                  entry point when the student hasn't created a session yet
-                  (mentor assigned → user picks dateTime + ONLINE/OFFLINE). */}
-              {round?.roundType === "MENTOR_REVIEW" || round?.roundType === "MENTROR_REVIEW" ? (
-                <MentorRoundActionButton
-                  sessionId={detail?.sessionInfo?.sessionId ?? undefined}
-                  mentorId={detail?.mentorId ?? null}
-                  applicationId={applicationId}
-                  compact
-                />
-              ) : isCurrent && !isEvaluating ? (
-                <Button
-                  onClick={onEnterRoom}
-                  size="sm"
-                  className="shrink-0 bg-[#0047AB] text-white hover:bg-[#003d91]">
-                  {t("userApplicationhistory.enterRoom")}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================
-// Application Detail Panel
-// ============================================================
-
-function ApplicationDetailPanel({
-  application,
-  onSubmissionSuccess,
-}: {
-  application: EnrichedApplication;
-  onSubmissionSuccess?: () => void;
-}) {
+function ApplicationHubCard({ application }: { application: EnrichedApplication }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { id, status } = application;
-  const currentUserId = useAuthStore((s) => s.user?.id);
-  // 2026-07-18: Track whether the BE /api/application-details/application/{id}
-  // call failed so the UI can surface a banner instead of silently falling
-  // back to JD-only rounds. BE returned 500 with "Could not deserialize
-  // string to java type:
-  // class fpt.org.inblue.model.ApplicationDetail$RoundSessionInfo" after a
-  // coding submission corrupted the persisted RoundSessionInfo blob.
-  // Without this guard the page silently displayed jd.rounds, which masked
-  // the BE bug and made every application of that JD look "wrong" (e.g.
-  // CODE_REVIEW shown as CODING).
-  const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
-  const [detailsLoading, setDetailsLoading] = useState(false);
-  const [detailsError, setDetailsError] = useState<boolean>(false);
 
-  // 2026-07-18: When the BE /api/application-details endpoint returns 5xx
-  // (e.g. "Could not deserialize ... RoundSessionInfo"), we cannot safely
-  // use jd.rounds as a fallback because every application sharing the same
-  // JD would visually misrepresent its first round (CODE_REVIEW rendered as
-  // CODING). Force an empty timeline + show the error banner so the user
-  // sees the real failure instead of stale/cross-application data.
-  const rounds = useMemo(
-    () => (detailsError ? [] : (application.rounds ?? [])),
-    [application.rounds, detailsError]
-  );
-  const totalRounds = rounds.length;
+  const totalRounds = application.rounds?.length ?? 0;
+  const currentRoundOrder = application.currentRoundOrder ?? 1;
+  const isCompleted =
+    application.status === "PASSED" ||
+    application.status === "FAILED" ||
+    application.status === "SOFT_FAILED";
 
-  // Fetch current round from API as source of truth
-  const { data: apiCurrentRound, refetch: refetchCurrentRound } = useCurrentRound(id ?? 0, !!id);
-  const apiCurrentRoundOrder = apiCurrentRound?.roundOrder ?? -1;
+  // Calculate progress percent
+  const progressPercent = useMemo(() => {
+    if (isCompleted) return 100;
+    if (totalRounds <= 0) return 0;
+    return Math.min(Math.round(((currentRoundOrder - 1) / totalRounds) * 100), 100);
+  }, [isCompleted, totalRounds, currentRoundOrder]);
 
-  // DEBUG: Log current round changes
-  console.log(
-    "[DEBUG][ApplicationDetailPanel] applicationId:",
-    id,
-    "apiCurrentRound:",
-    apiCurrentRound,
-    "apiCurrentRoundOrder:",
-    apiCurrentRoundOrder
-  );
+  const initials = getCompanyInitials(application.companyName);
 
-  // DEBUG: Log rounds and details after state init
-  console.log(
-    "[DEBUG][ApplicationDetailPanel] JD rounds:",
-    JSON.stringify(rounds),
-    "detailsData:",
-    JSON.stringify(detailsData)
-  );
+  // Validate Score (Hide if negative like -1 or invalid)
+  const isValidScore =
+    typeof application.overallScore === "number" &&
+    application.overallScore >= 0 &&
+    application.overallScore <= 100;
 
-  // Submission dialog state
-  const [submissionOpen, setSubmissionOpen] = useState(false);
-  const [submissionRound, setSubmissionRound] = useState<JdRound | undefined>();
-  const [submissionDetail, setSubmissionDetail] = useState<ApplicationDetail | undefined>();
-
-  // Email preview dialog state
-  const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
-  const [emailPreviewId, setEmailPreviewId] = useState<number>(0);
-
-  // Optimistic placeholder for rounds submitted but AI not yet evaluated.
-  // Used when BE hasn't created the ApplicationDetail record yet (PENDING state).
-  interface OptimisticDetail {
-    isOptimistic: true;
-    roundId: number;
-    status: "SUBMITTED";
-    submittedAt: string;
-  }
-  const [optimisticDetails, setOptimisticDetails] = useState<OptimisticDetail[]>([]);
-
-  // Polling state for AI evaluation results
-  const [isPolling, setIsPolling] = useState(false);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Track session end time for MENTOR_REVIEW rounds to determine if interview has ended
-  const [mentorSessionEnded, setMentorSessionEnded] = useState(false);
-  const [mentorSessionStatus, setMentorSessionStatus] = useState<string | null>(null);
-  const [mentorSessionReview, setMentorSessionReview] = useState<MentorReview | undefined>(
-    undefined
-  );
-  const [mentorSessionFeedback, setMentorSessionFeedback] = useState<
-    | {
-        id?: number;
-        rating?: number;
-        comment?: string;
-      }
-    | undefined
-  >(undefined);
-
-  // Fetch session details to check if interview has ended (for MENTOR_REVIEW rounds)
-  useEffect(() => {
-    if (!id) return;
-    console.log("[DEBUG][MentorSession] === START ===");
-    console.log(
-      "[DEBUG][MentorSession] rounds:",
-      rounds.map((r) => ({ id: r.id, name: r.name, roundType: r.roundType }))
-    );
-    console.log(
-      "[DEBUG][MentorSession] detailsData:",
-      detailsData.map((d) => ({
-        roundId: d.roundId,
-        sessionId: d.sessionId,
-        sessionInfo: d.sessionInfo,
-      }))
-    );
-
-    // roundType is on the round object (from JD), not on detail
-    // Find mentor round from rounds array first
-    const mentorRound = rounds.find(
-      (r) => r.roundType === "MENTOR_REVIEW" || r.roundType === "MENTROR_REVIEW"
-    );
-    console.log("[DEBUG][MentorSession] mentorRound:", mentorRound);
-    if (!mentorRound) {
-      console.log("[DEBUG][MentorSession] No mentor round found in rounds");
-      setMentorSessionEnded(false);
-      setMentorSessionStatus(null);
-      return;
-    }
-    // Then find the detail for that round
-    const mentorDetail = detailsData.find((d) => d.roundId === mentorRound.id);
-    console.log("[DEBUG][MentorSession] mentorDetail:", mentorDetail);
-    if (!mentorDetail) {
-      console.log("[DEBUG][MentorSession] No detail found for mentor round");
-      setMentorSessionEnded(false);
-      setMentorSessionStatus(null);
-      return;
-    }
-    const sessionIdToFetch = mentorDetail.sessionId ?? mentorDetail.sessionInfo?.sessionId ?? null;
-    console.log("[DEBUG][MentorSession] sessionIdToFetch:", sessionIdToFetch);
-    if (!sessionIdToFetch) {
-      console.log("[DEBUG][MentorSession] No sessionId found");
-      setMentorSessionEnded(false);
-      setMentorSessionStatus(null);
-      return;
-    }
-    console.log("[DEBUG][MentorSession] Fetching session...");
-    fetchClient
-      .GET("/api/sessions/{id}", { params: { path: { id: sessionIdToFetch } } })
-      .then((res) => {
-        console.log("[DEBUG][MentorSession] Session response:", res.data);
-        if (res.response?.ok) {
-          const session = res.data as {
-            endTime1?: string | null;
-            status?: string;
-            mentorReview?: MentorReview;
-            mentorFeedback?: { id?: number; rating?: number; comment?: string };
-          };
-          console.log(
-            "[DEBUG][MentorSession] Session endTime1:",
-            session?.endTime1,
-            "status:",
-            session?.status,
-            "mentorReview:",
-            session?.mentorReview,
-            "mentorFeedback:",
-            session?.mentorFeedback
-          );
-          setMentorSessionEnded(!!session?.endTime1);
-          setMentorSessionStatus(session?.status ?? null);
-          setMentorSessionReview(session?.mentorReview ?? undefined);
-          setMentorSessionFeedback(session?.mentorFeedback ?? undefined);
-          console.log(
-            "[DEBUG][MentorSession] Set state: ended=",
-            !!session?.endTime1,
-            "status=",
-            session?.status
-          );
-        }
-      })
-      .catch((err) => {
-        console.log("[DEBUG][MentorSession] Session fetch error:", err);
-      });
-  }, [id, detailsData, rounds]);
-
-  // Refetch the mentor session and return the updated feedback (used after the
-  // user submits/edits a feedback so the parent state stays in sync with the
-  // newly created server-side record).
-  const refetchMentorSession = async () => {
-    if (!id) return undefined;
-    const mentorRound = rounds.find(
-      (r: JdRound) => r.roundType === "MENTOR_REVIEW" || r.roundType === "MENTROR_REVIEW"
-    );
-    if (!mentorRound) return undefined;
-    const mentorDetail = detailsData.find((d) => d.roundId === mentorRound.id);
-    if (!mentorDetail) return undefined;
-    const sessionIdToFetch = mentorDetail.sessionId ?? mentorDetail.sessionInfo?.sessionId ?? null;
-    if (!sessionIdToFetch) return undefined;
-    try {
-      const res = await fetchClient.GET("/api/sessions/{id}", {
-        params: { path: { id: sessionIdToFetch } },
-      });
-      if (res.response?.ok) {
-        const session = res.data as {
-          endTime1?: string | null;
-          status?: string;
-          mentorReview?: MentorReview;
-          mentorFeedback?: { id?: number; rating?: number; comment?: string };
-        };
-        setMentorSessionEnded(!!session?.endTime1);
-        setMentorSessionStatus(session?.status ?? null);
-        setMentorSessionReview(session?.mentorReview ?? undefined);
-        setMentorSessionFeedback(session?.mentorFeedback ?? undefined);
-        return session?.mentorFeedback ?? undefined;
-      }
-    } catch (err) {
-      console.log("[DEBUG][MentorSession] Refetch error:", err);
-    }
-    return undefined;
+  const handleOpenWorkspace = () => {
+    navigate(`/user/application/${application.id}`);
   };
-
-  const fetchDetails = async (silent = false) => {
-    console.log("[DEBUG][fetchDetails] called for applicationId:", id, "silent:", silent);
-    if (!id) return;
-    if (!silent) setDetailsLoading(true);
-    try {
-      const result = await fetchClient.GET("/api/application-details/application/{applicationId}", {
-        params: { path: { applicationId: id } },
-      });
-      console.log(
-        "[DEBUG][fetchDetails] response:",
-        result.response?.ok,
-        "data count:",
-        Array.isArray(result.data) ? result.data.length : "n/a"
-      );
-      if (result.response?.ok) {
-        const data = result.data;
-        setDetailsData(Array.isArray(data) ? (data as ApplicationDetail[]) : []);
-        setDetailsError(false);
-        return Array.isArray(data) ? data : [];
-      }
-      // Non-OK response (4xx/5xx). Capture status so banner can hint at cause.
-      console.warn(
-        "[fetchDetails] non-OK response for applicationId:",
-        id,
-        "status:",
-        result.response?.status
-      );
-      setDetailsError(true);
-    } catch (err) {
-      console.log("[DEBUG][fetchDetails] error:", err);
-      setDetailsError(true);
-    } finally {
-      if (!silent) setDetailsLoading(false);
-    }
-    return [];
-  };
-
-  // Auto-poll for AI evaluation results after submission
-  const startPolling = () => {
-    if (pollingRef.current) return; // already polling
-    setIsPolling(true);
-    let elapsed = 0;
-    const maxPollingMs = 120_000; // 2 minutes max
-
-    pollingRef.current = setInterval(async () => {
-      elapsed += 5_000;
-      const details = await fetchDetails(true);
-      if (!Array.isArray(details)) {
-        clearInterval(pollingRef.current!);
-        pollingRef.current = null;
-        setIsPolling(false);
-        return;
-      }
-
-      // Check if any pending detail has been evaluated (has aiScore or finalScore)
-      const hasPendingDetails = details.some(
-        (d: ApplicationDetail) => d.status === "SUBMITTED" || d.status === "PENDING"
-      );
-      // Backend enum may evolve (e.g. "ERROR"). Use a string narrowing to stay
-      // forward-compatible with future statuses returned by the OpenAPI schema.
-      const hasResults = details.some((d: ApplicationDetail) => {
-        const status = d.status as string | undefined;
-        return status === "AI_EVALUATED" || status === "COMPLETED" || status === "ERROR";
-      });
-
-      if (hasResults || !hasPendingDetails) {
-        // AI done or no pending rounds → stop polling
-        clearInterval(pollingRef.current!);
-        pollingRef.current = null;
-        setIsPolling(false);
-        if (hasResults) {
-          toast.success(t("userApplicationhistory.aiEvaluationComplete"));
-          // Refetch current round to get updated currentRoundOrder from API
-          refetchCurrentRound();
-        }
-        return;
-      }
-
-      if (elapsed >= maxPollingMs) {
-        // Timeout
-        clearInterval(pollingRef.current!);
-        pollingRef.current = null;
-        setIsPolling(false);
-        toast.warning(t("userApplicationhistory.aiEvaluationTimeout"));
-      }
-    }, 5_000);
-  };
-
-  const stopPolling = () => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-    setIsPolling(false);
-  };
-
-  // Stop polling when application changes
-  useEffect(() => {
-    stopPolling();
-    // Reset error state when switching applications so a previous BE failure
-    // does not leak into the new view.
-    setDetailsError(false);
-    setDetailsData([]);
-    fetchDetails();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => stopPolling();
-  }, []);
-
-  // Build timeline: use JD rounds as source of truth, enriched with detailsData + optimistic details
-  // IMPORTANT: Only BE's currentRoundOrder controls which round is "current" / unlocked.
-  // AI evaluation status (AI_EVALUATED) does NOT advance the user to the next round.
-  // HR must manually advance currentRoundOrder after reviewing AI results.
-  const timelineRounds = useMemo(() => {
-    if (rounds.length === 0) return [];
-    const sortedRounds = [...rounds].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
-    const currentRoundIds = new Set(rounds.map((r) => r.id));
-    const orphanedDetails = detailsData.filter((d) => !currentRoundIds.has(d.roundId));
-    let orphanIdx = 0;
-
-    return sortedRounds.map((round) => {
-      let detail = detailsData.find((d) => d.roundId === round.id);
-      const optimistic = optimisticDetails.find((o) => o.roundId === round.id);
-
-      if (!detail && orphanIdx < orphanedDetails.length) {
-        detail = orphanedDetails[orphanIdx++];
-      }
-      // For MENTOR_REVIEW rounds, a detail with status=PENDING and no sessionInfo.sessionId
-      // means the user has not yet picked a kiosk slot — NOT a submission. Only
-      // consider it "submitted" once a sessionInfo.sessionId (or non-PENDING status) exists,
-      // otherwise the Enter Room button is hidden even though the user hasn't
-      // completed the round.
-      const isMentorRound =
-        round.roundType === "MENTOR_REVIEW" || round.roundType === "MENTROR_REVIEW";
-      const hasMentorSession = isMentorRound && !!detail?.sessionInfo?.sessionId;
-      const hasSubmission = isMentorRound
-        ? !!optimistic || hasMentorSession
-        : !!detail || !!optimistic;
-
-      // This round is completed if:
-      // 1. Overall application is PASSED/FAILED/SOFT_FAILED, OR
-      // 2. BE says this round is before current round (roundOrder < currentRoundOrder)
-      // 3. MENTOR_REVIEW round: detail.status === "COMPLETED" OR user has rated the mentor
-      //    (mentorFeedback != null) — even if the application hasn't been advanced to
-      //    PASSED yet, the student is done with this round once both sides have given
-      //    feedback, so the card should be visually marked as completed.
-      // Note: AI_EVALUATED status alone does NOT mark a round as completed for user-facing UI
-      // because HR review may still be pending. A round only "completes" when:
-      //   - Application is overall PASSED, OR
-      //   - Application is overall FAILED/SOFT_FAILED, OR
-      //   - This round's roundOrder is strictly before currentRoundOrder (BE has officially advanced)
-      // MENTOR_REVIEW rounds: BE sets detail.status = "COMPLETED" once the round
-      // is fully done (meeting ended + mentor reviewed + student rated the mentor).
-      // We treat that as "round completed" even when the application is still
-      // IN_PROGRESS, so the card visually matches the other completed rounds.
-      const isMentorRoundFullyDone =
-        isMentorRound && (detail?.status as string | undefined) === "COMPLETED";
-      const isCompleted =
-        status === "PASSED" || status === "FAILED" || status === "SOFT_FAILED"
-          ? true
-          : isMentorRoundFullyDone || (round.roundOrder ?? 0) < apiCurrentRoundOrder;
-
-      // This round is current if:
-      // 1. No submission yet for this round
-      // 2. BE says this is the current round (roundOrder === currentRoundOrder)
-      // Note: We use currentRoundOrder as the source of truth for which round is active,
-      // regardless of application status. BE may advance currentRoundOrder to next round
-      // while keeping status=IN_PROGRESS, OR status may be PASSED/FAILED/SOFT_FAILED
-      // while user still hasn't submitted all rounds. In both cases we show Enter Room.
-      const isCurrent = !hasSubmission && round.roundOrder === apiCurrentRoundOrder;
-
-      // This round is locked if:
-      // 1. No submission yet
-      // 2. BE says this round is after the current round (roundOrder > currentRoundOrder)
-      const isLocked = !hasSubmission && (round.roundOrder ?? 0) > apiCurrentRoundOrder;
-
-      return { round, detail, optimistic, isCompleted, isCurrent, isLocked };
-    });
-  }, [rounds, detailsData, optimisticDetails, apiCurrentRoundOrder, status]);
-
-  const handleEnterRoom = (round: JdRound, detail?: ApplicationDetail) => {
-    // If this is a QUIZ round, navigate to the quiz page
-    if (round.roundType === "QUIZ") {
-      // Get JD ID from the application (passed via context)
-      const jdId = (application as unknown as { jdId?: number }).jdId ?? 0;
-      navigate(`/user/quiz/${application.id}/round/${round.id}?jdId=${jdId}`);
-      return;
-    }
-
-    // If this is a MENTOR_REVIEW round, navigate to mentor review page
-    if (round.roundType === "MENTOR_REVIEW" || round.roundType === "MENTROR_REVIEW") {
-      navigate(`/user/application/${application.id}/mentor-review`);
-      return;
-    }
-
-    // If this is an AI_INTERVIEW round, navigate to AI interview page
-    if (round.roundType === "AI_INTERVIEW") {
-      navigate(`/user/application/${application.id}/ai-interview?roundId=${round.id}`);
-      return;
-    }
-
-    setSubmissionRound(round);
-    setSubmissionDetail(detail);
-    setSubmissionOpen(true);
-  };
-
-  const handleViewEmailSubmission = (emailSubmissionId: number) => {
-    setEmailPreviewId(emailSubmissionId);
-    setEmailPreviewOpen(true);
-  };
-
-  const handleSubmissionSuccess = (result?: {
-    status?: string;
-    message?: string;
-    detail?: ApplicationDetail;
-  }) => {
-    setSubmissionOpen(false);
-    // Always show the BE message (e.g. "Bài đang được chấm, vui lòng chờ")
-    if (result?.message) {
-      toast.success(result.message);
-    } else {
-      toast.success(t("common.applicationSubmittedSuccessfully"));
-    }
-
-    // If BE returned a real detail immediately (e.g. QUIZ sync), use it
-    if (result?.detail) {
-      setDetailsData((prev) => {
-        const exists = prev.find((d) => d.id === result.detail!.id);
-        if (exists) {
-          return prev.map((d) => (d.id === result.detail!.id ? result.detail! : d));
-        }
-        return [...prev, result.detail!];
-      });
-      // Remove any optimistic entry for this round
-      setOptimisticDetails((prev) => prev.filter((o) => o.roundId !== result.detail!.roundId));
-    } else {
-      // BE returned PENDING — create optimistic placeholder for the submitted round
-      const submittedRoundId = submissionRound?.id;
-      if (submittedRoundId) {
-        setOptimisticDetails((prev) => {
-          // Replace if exists (user re-submitted same round), else add
-          const filtered = prev.filter((o) => o.roundId !== submittedRoundId);
-          return [
-            ...filtered,
-            {
-              isOptimistic: true as const,
-              roundId: submittedRoundId,
-              status: "SUBMITTED" as const,
-              submittedAt: new Date().toISOString(),
-            },
-          ];
-        });
-      }
-    }
-
-    // Start polling to detect when AI finishes evaluation
-    startPolling();
-    // Also refetch current round in case BE updated it immediately (e.g. sync rounds)
-    refetchCurrentRound();
-    onSubmissionSuccess?.();
-  };
-
-  if (detailsLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-32 w-full rounded-xl" />
-        <Skeleton className="h-48 w-full rounded-xl" />
-      </div>
-    );
-  }
 
   return (
-    <>
-      {/* Header Card */}
-      <Card className="mb-4 overflow-hidden border-0 bg-gradient-to-r from-[#0047AB] via-[#005B9A] to-[#007BFF] py-0">
-        <CardContent className="flex items-center justify-between gap-4 p-6">
-          <div className="flex min-w-0 items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white shadow-md ring-1 ring-slate-200">
-              <Briefcase className="h-7 w-7 text-[#0047AB]" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="truncate text-lg font-bold text-white">
-                {application.jobTitle ?? t("userApplicationhistory.noTitle")}
-              </h2>
-              <p className="mt-0.5 text-sm font-medium text-white/80">
-                {application.companyName ?? t("userApplicationhistory.company")}
-              </p>
-            </div>
-          </div>
-          {totalRounds > 0 && (
-            <div className="hidden text-right text-white sm:block">
-              <p className="text-xs font-medium tracking-wide text-white/70 uppercase">
-                {t("userApplicationhistory.overallProgress")}
-              </p>
-              <div className="mt-1 flex items-center justify-end gap-2">
-                <div className="h-2 w-24 rounded-full bg-white/30">
-                  <div
-                    className="h-full rounded-full bg-white transition-all"
-                    style={{
-                      width: `${
-                        totalRounds > 0
-                          ? (Math.min(apiCurrentRoundOrder, totalRounds) / totalRounds) * 100
-                          : 0
-                      }%`,
-                    }}
-                  />
-                </div>
-                <span className="text-sm font-bold">
-                  {apiCurrentRoundOrder}/{totalRounds}
-                </span>
+    <Card className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xs transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-500/40 hover:shadow-md dark:border-slate-800/90 dark:bg-slate-900 dark:hover:border-indigo-500/40 dark:hover:shadow-indigo-950/20">
+      <div>
+        {/* Card Top Header */}
+        <CardHeader className="p-5 pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3.5">
+              {/* Company Logo Badge */}
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-[#0047AB] to-blue-700 text-sm font-bold text-white shadow-xs ring-1 ring-black/5 dark:ring-white/10">
+                {initials}
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Timeline Card */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">
-            {t("userApplicationhistory.interviewPipeline")}
-          </CardTitle>
-          <CardDescription>{t("userApplicationhistory.pageDescription")}</CardDescription>
-          {detailsError && (
-            <div
-              role="alert"
-              className="mt-3 flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <div>
-                <p className="font-medium">{t("userApplicationhistory.detailsLoadErrorTitle")}</p>
-                <p className="mt-0.5 text-xs text-red-600/90 dark:text-red-300/80">
-                  {t("userApplicationhistory.detailsLoadErrorHint")}
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-base font-bold tracking-tight text-slate-900 transition-colors group-hover:text-[#0047AB] dark:text-slate-100 dark:group-hover:text-blue-400">
+                  {application.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
+                </h3>
+                <p className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {application.companyName ?? t("userApplicationhistory.company", "Công ty")}
                 </p>
               </div>
             </div>
-          )}
+
+            <ApplicationStatusBadge
+              status={application.status as ApplicationStatus}
+              className="shrink-0"
+            />
+          </div>
         </CardHeader>
-        <CardContent>
-          {totalRounds === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                <Briefcase className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {t("userApplicationhistory.noRoundsAvailable")}
-              </p>
+
+        {/* Card Content & Progress */}
+        <CardContent className="space-y-3.5 px-5 py-3">
+          {/* Round Progress Bar */}
+          <div className="space-y-1.5 rounded-xl border border-slate-100 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-800/60">
+            <div className="flex items-center justify-between text-xs">
+              <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300">
+                <Clock className="h-3.5 w-3.5 text-slate-400" />
+                {isCompleted
+                  ? t("userApplicationhistory.completedRounds", "Đã hoàn tất tất cả vòng")
+                  : totalRounds > 0
+                    ? `Vòng ${currentRoundOrder} / ${totalRounds}`
+                    : t("userApplicationhistory.round", "Vòng thi")}
+              </span>
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {progressPercent}%
+              </span>
             </div>
-          ) : (
-            timelineRounds.map((item, idx) => (
-              <RoundTimelineItem
-                key={item.round?.id ?? idx}
-                detail={item.detail}
-                round={item.round}
-                index={idx}
-                totalRounds={totalRounds}
-                isCompleted={item.isCompleted}
-                isCurrent={item.isCurrent}
-                isLocked={item.isLocked}
-                applicationId={application?.id}
-                isPolling={isPolling}
-                optimistic={item.optimistic}
-                onEnterRoom={
-                  item.isCurrent ? () => handleEnterRoom(item.round, item.detail) : undefined
-                }
-                onViewEmailSubmission={handleViewEmailSubmission}
-                currentUserId={currentUserId}
-                sessionEnded={mentorSessionEnded}
-                sessionStatus={mentorSessionStatus ?? undefined}
-                mentorSessionReview={mentorSessionReview ?? undefined}
-                mentorSessionFeedback={mentorSessionFeedback}
-                onMentorFeedbackSubmitted={refetchMentorSession}
+
+            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-700/80">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-500",
+                  application.status === "PASSED"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                    : application.status === "FAILED"
+                      ? "bg-gradient-to-r from-slate-400 to-slate-500"
+                      : application.status === "SOFT_FAILED"
+                        ? "bg-gradient-to-r from-amber-500 to-orange-400"
+                        : "bg-gradient-to-r from-[#0047AB] to-blue-500"
+                )}
+                style={{ width: `${progressPercent}%` }}
               />
-            ))
-          )}
+            </div>
+          </div>
+
+          {/* Sub Metadata Row */}
+          <div className="flex items-center justify-between pt-1 text-xs text-slate-500 dark:text-slate-400">
+            <span className="font-mono text-[11px]">
+              {application.createdAt ? formatDateTime(application.createdAt) : ""}
+            </span>
+
+            {isValidScore && (
+              <div className="flex items-center gap-1 font-bold text-indigo-700 dark:text-indigo-400">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                <span>{application.overallScore}</span>
+                <span className="text-[10px] font-normal text-slate-400">/100</span>
+              </div>
+            )}
+          </div>
         </CardContent>
-      </Card>
+      </div>
 
-      {/* Submission Dialog */}
-      <RoundSubmissionDialog
-        open={submissionOpen}
-        onOpenChange={(open) => {
-          if (!open) setSubmissionOpen(false);
-        }}
-        applicationId={id ?? 0}
-        roundId={submissionRound?.id}
-        roundName={getStandardRoundTitle(submissionRound?.name, submissionRound?.roundType, t)}
-        roundType={submissionRound?.roundType}
-        instruction={submissionRound?.configData?.instruction}
-        submissionFormat={getSubmissionFormat(submissionRound)}
-        currentFileUrl={submissionDetail?.submissionData?.fileUrl}
-        currentTextContent={submissionDetail?.submissionData?.textContent}
-        emailSubmissionId={submissionDetail?.submissionData?.emailSubmissionId}
-        codingProblems={submissionRound?.configData?.codingProblems}
-        codingProblemsId={submissionRound?.configData?.codingProblemsId}
-        codeReviewProblems={submissionRound?.configData?.codeReviewProblems}
-        timeLimitMinutes={submissionRound?.configData?.timeLimitMinutes}
-        onSuccess={handleSubmissionSuccess}
-      />
-
-      {/* Email Preview Dialog */}
-      <EmailPreviewDialog
-        open={emailPreviewOpen}
-        onOpenChange={(open) => {
-          if (!open) setEmailPreviewOpen(false);
-        }}
-        emailSubmissionId={emailPreviewId}
-      />
-    </>
-  );
-}
-
-// ============================================================
-// Application Card
-// ============================================================
-
-function ApplicationCard({
-  application,
-  isSelected,
-  onClick,
-}: {
-  application: EnrichedApplication;
-  isSelected: boolean;
-  onClick: () => void;
-}) {
-  const { t } = useTranslation();
-
-  return (
-    <Card
-      onClick={onClick}
-      className={cn(
-        "cursor-pointer overflow-hidden transition-all hover:shadow-md",
-        isSelected && "border-[#0047AB] bg-[#0047AB]/5 ring-2 ring-[#0047AB]/20"
-      )}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-3 overflow-hidden">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-            <Briefcase className="h-5 w-5 text-[#0047AB]" />
-          </div>
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <CardTitle className="truncate text-sm">
-              {application.jobTitle ?? t("userApplicationhistory.noTitle")}
-            </CardTitle>
-            <CardDescription className="truncate">
-              {application.companyName ?? t("userApplicationhistory.company")}
-            </CardDescription>
-          </div>
-          <ApplicationStatusBadge
-            status={application.status as ApplicationStatus}
-            className="shrink-0"
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-slate-500">
-            {application.createdAt ? formatDateTime(application.createdAt) : ""}
-          </span>
-          <ChevronRight className="h-4 w-4 text-slate-400" />
-        </div>
-      </CardContent>
+      {/* Card Action Footer */}
+      <div className="border-t border-slate-100 bg-slate-50/60 p-4 dark:border-slate-800/80 dark:bg-slate-900/60">
+        <Button
+          onClick={handleOpenWorkspace}
+          variant={application.status === "IN_PROGRESS" ? "default" : "outline"}
+          className={cn(
+            "h-9.5 w-full justify-center gap-2 rounded-lg text-xs font-semibold shadow-2xs transition-all",
+            application.status === "IN_PROGRESS"
+              ? "bg-[#0047AB] text-white hover:bg-[#003d91]"
+              : "border-slate-200/90 bg-white hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-200 dark:hover:bg-slate-800"
+          )}>
+          {application.status === "IN_PROGRESS" ? (
+            <>
+              <span>{t("userApplicationhistory.enterWorkspace", "Vào Workspace ứng tuyển")}</span>
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </>
+          ) : (
+            <>
+              <span>{t("userApplicationhistory.viewResultDetail", "Xem kết quả & Chi tiết")}</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </>
+          )}
+        </Button>
+      </div>
     </Card>
   );
 }
 
 // ============================================================
-// Main Page
+// Main Applications Hub Page Component
 // ============================================================
 
 export function ApplicationHistoryPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const urlAppId = Number(searchParams.get("appId") || searchParams.get("id"));
 
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAppId, setSelectedAppId] = useState<number | null>(
-    urlAppId && !isNaN(urlAppId) ? urlAppId : null
-  );
 
-  useEffect(() => {
-    if (urlAppId && !isNaN(urlAppId)) {
-      setSelectedAppId(urlAppId);
-    }
-  }, [urlAppId]);
-
-  // Fetch applications
+  // Fetch applications state
   const [apps, setApps] = useState<Application[]>([]);
   const [appsLoading, setAppsLoading] = useState(false);
   const [appsError, setAppsError] = useState(false);
@@ -1677,7 +286,6 @@ export function ApplicationHistoryPage() {
       if (result.success) {
         setApps(result.data ?? []);
         setAppsError(false);
-        // Invalidate application details and current round queries to ensure fresh data
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ["get", "/api/application-details"] }),
           queryClient.invalidateQueries({ queryKey: ["get", "/api/rounds"] }),
@@ -1700,7 +308,7 @@ export function ApplicationHistoryPage() {
     loadApplications();
   }, []);
 
-  // Batch fetch JD data for all applications
+  // Batch fetch JD data
   const [jdMap, setJdMap] = useState<
     Map<number, { title?: string; companyName?: string; rounds?: JdRound[]; companyId?: number }>
   >(new Map());
@@ -1717,7 +325,6 @@ export function ApplicationHistoryPage() {
           });
           if (!result.response?.ok) return null;
           const jd = result.data as JobDescription;
-          // Backend may return extra fields like companyName not in schema
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const extra = result.data as any;
           return {
@@ -1748,9 +355,7 @@ export function ApplicationHistoryPage() {
     fetchJDs();
   }, [apps]);
 
-  // Enrich applications with JD data, then surface newest applications first.
-  // BE may not guarantee insertion order, so we sort defensively by
-  // `createdAt` (descending) and fall back to id when timestamp is missing.
+  // Enrich applications
   const enrichedApplications = useMemo<EnrichedApplication[]>(() => {
     const enriched = apps.map((app) => {
       const jd = jdMap.get(app.jdId ?? 0);
@@ -1770,7 +375,22 @@ export function ApplicationHistoryPage() {
     });
   }, [apps, jdMap]);
 
-  // Filter
+  // Statistics (Filtered out invalid/negative scores like -1 or >100)
+  const stats = useMemo(() => {
+    const total = enrichedApplications.length;
+    const inProgress = enrichedApplications.filter((a) => a.status === "IN_PROGRESS").length;
+    const passed = enrichedApplications.filter((a) => a.status === "PASSED").length;
+    const validScores = enrichedApplications
+      .map((a) => a.overallScore)
+      .filter((s): s is number => typeof s === "number" && s >= 0 && s <= 100);
+    const avgScore =
+      validScores.length > 0
+        ? (validScores.reduce((a, b) => a + b, 0) / validScores.length).toFixed(1)
+        : null;
+    return { total, inProgress, passed, avgScore };
+  }, [enrichedApplications]);
+
+  // Filtered applications
   const filteredApplications = useMemo(() => {
     let items = enrichedApplications;
     if (statusFilter !== "all") {
@@ -1786,205 +406,204 @@ export function ApplicationHistoryPage() {
     return items;
   }, [enrichedApplications, statusFilter, searchQuery]);
 
-  // Auto-select first
-  const selectedApplication = useMemo(() => {
-    if (selectedAppId) {
-      return (
-        filteredApplications.find((app) => app.id === selectedAppId) ??
-        filteredApplications[0] ??
-        null
-      );
-    }
-    return filteredApplications[0] ?? null;
-  }, [filteredApplications, selectedAppId]);
-
-  // Pagination
-  const [pageSize] = useState(10);
-  const [page, setPage] = useState(1);
-  const pageData = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredApplications.slice(start, start + pageSize);
-  }, [filteredApplications, page, pageSize]);
-  const totalPages = Math.ceil(filteredApplications.length / pageSize);
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="w-full space-y-6 px-4 py-4 pb-12 sm:px-6 lg:px-8">
+      {/* Header Bar */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {t("userApplicationhistory.pageTitle")}
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {t("userApplicationhistory.pageTitle", "Lịch sử ứng tuyển")}
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {t("userApplicationhistory.pageDescription")}
+            {t(
+              "userApplicationhistory.pageDescriptionHub",
+              "Quản lý toàn bộ tiến độ phỏng vấn và truy cập Workspace ứng tuyển của bạn."
+            )}
           </p>
         </div>
         <ReloadButton
           onReload={() => loadApplications(true)}
           isLoading={refetching}
-          tooltip={t("userApplicationhistory.reload")}
+          tooltip={t("userApplicationhistory.reload", "Tải lại dữ liệu")}
         />
       </div>
 
-      {/* Controls Card */}
-      <Card className="space-y-4 p-4">
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_auto]">
-          <div className="relative">
-            <div className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
+      {/* Stats Summary Cards Row */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {/* Total Apps */}
+        <Card className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0047AB] dark:bg-blue-950/60 dark:text-blue-400">
+              <Briefcase className="h-5 w-5" />
             </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("userApplicationhistory.totalApplications", "Tổng số đơn")}
+              </p>
+              <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                {stats.total}
+              </h3>
+            </div>
+          </div>
+        </Card>
+
+        {/* In Progress */}
+        <Card className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("userApplicationhistory.inProgressCount", "Đang ứng tuyển")}
+              </p>
+              <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                {stats.inProgress}
+              </h3>
+            </div>
+          </div>
+        </Card>
+
+        {/* Passed */}
+        <Card className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("userApplicationhistory.passedCount", "Trúng tuyển")}
+              </p>
+              <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                {stats.passed}
+              </h3>
+            </div>
+          </div>
+        </Card>
+
+        {/* Average Score */}
+        <Card className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {t("userApplicationhistory.avgScore", "Điểm trung bình")}
+              </p>
+              <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                {stats.avgScore ? `${stats.avgScore}/100` : "--"}
+              </h3>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Filter & Search Bar */}
+      <Card className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              placeholder={t("userApplicationhistory.searchPlaceholder")}
+              className="pl-9 text-xs"
+              placeholder={t(
+                "userApplicationhistory.searchPlaceholder",
+                "Tìm theo vị trí tuyển dụng, công ty..."
+              )}
             />
           </div>
 
           <Select
             value={statusFilter}
-            onValueChange={(value) => {
-              setStatusFilter(value as ApplicationStatus | "all");
-              setPage(1);
-            }}>
-            <SelectTrigger className="w-full min-w-[200px]">
-              <SelectValue placeholder={t("userApplicationhistory.filterByStatus")} />
+            onValueChange={(value) => setStatusFilter(value as ApplicationStatus | "all")}>
+            <SelectTrigger className="w-full text-xs sm:w-[220px]">
+              <SelectValue
+                placeholder={t("userApplicationhistory.filterByStatus", "Lọc theo trạng thái")}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("userApplicationhistory.allStatus")}</SelectItem>
-              <SelectItem value="IN_PROGRESS">
-                {t("userApplicationhistory.statusInterviewing")}
+              <SelectItem value="all">
+                {t("userApplicationhistory.allStatus", "Tất cả trạng thái")}
               </SelectItem>
-              <SelectItem value="PASSED">{t("userApplicationhistory.statusCompleted")}</SelectItem>
-              <SelectItem value="FAILED">{t("userApplicationhistory.statusRejected")}</SelectItem>
+              <SelectItem value="IN_PROGRESS">
+                {t("userApplicationhistory.statusInterviewing", "Đang ứng tuyển")}
+              </SelectItem>
+              <SelectItem value="PASSED">
+                {t("userApplicationhistory.statusCompleted", "Trúng tuyển")}
+              </SelectItem>
+              <SelectItem value="FAILED">
+                {t("userApplicationhistory.statusRejected", "Chưa đạt")}
+              </SelectItem>
               <SelectItem value="SOFT_FAILED">
-                {t("userApplicationhistory.needsImprovement")}
+                {t("userApplicationhistory.needsImprovement", "Cần cải thiện")}
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
+
+        {(searchQuery || statusFilter !== "all") && (
+          <div className="mt-3 text-xs text-slate-500">
+            {t("userApplicationhistory.searchResults", "Hiển thị")}{" "}
+            <strong className="text-slate-800 dark:text-slate-200">
+              {filteredApplications.length}
+            </strong>{" "}
+            / {enrichedApplications.length}{" "}
+            {t("userApplicationhistory.applications", "đơn ứng tuyển")}
+          </div>
+        )}
       </Card>
 
       {/* Main Content Grid */}
-      <div className="grid gap-4 lg:grid-cols-12">
-        {/* Left: Application List */}
-        <div className="relative flex max-h-[calc(100vh-14rem)] min-w-0 flex-col overflow-hidden lg:col-span-4">
-          <span className="mb-2 shrink-0 text-sm font-medium text-slate-700 dark:text-slate-300">
-            {t("userApplicationhistory.applications")} ({filteredApplications.length})
-          </span>
-
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-            {appsLoading ? (
-              <LoadingCardList count={4} />
-            ) : appsError ? (
-              <Card className="flex h-48 flex-col items-center justify-center gap-4 p-6">
-                <XCircle className="h-8 w-8 text-red-500" />
-                <p className="text-center text-sm font-medium text-red-600 dark:text-red-400">
-                  {t("userApplicationhistory.unableToDownload")}
-                </p>
-                <Button variant="outline" size="sm" onClick={() => loadApplications()}>
-                  {t("userApplicationhistory.retry")}
-                </Button>
-              </Card>
-            ) : pageData.length === 0 ? (
-              <EmptyState
-                icon={Briefcase}
-                title={t("userApplicationhistory.noApplicationsYet")}
-                description={t("userApplicationhistory.findJobsDescription")}
-                action={
-                  <Button
-                    onClick={() => navigate("/enterprise/companies")}
-                    className="gap-2 bg-[#0047AB] hover:bg-[#003d91]">
-                    <Briefcase className="h-4 w-4" />
-                    {t("userApplicationhistory.findAJobNow")}
-                  </Button>
-                }
-              />
-            ) : (
-              <div className="grid gap-3">
-                {pageData.map((app) => (
-                  <ApplicationCard
-                    key={`app-${app.id}`}
-                    application={app}
-                    isSelected={selectedApplication?.id === app.id}
-                    onClick={() => setSelectedAppId(app.id ?? null)}
-                  />
-                ))}
-              </div>
-            )}
+      {appsLoading ? (
+        <LoadingCardList count={6} />
+      ) : appsError ? (
+        <Card className="flex h-56 flex-col items-center justify-center gap-4 rounded-xl border-dashed p-6 text-center">
+          <XCircle className="h-10 w-10 text-red-500" />
+          <div>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              {t(
+                "userApplicationhistory.unableToDownload",
+                "Không thể tải danh sách đơn ứng tuyển"
+              )}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Vui lòng kiểm tra kết nối mạng hoặc thử lại.
+            </p>
           </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500">{t("userApplicationhistory.page")}</span>
-                <Select value={String(page)} onValueChange={(v) => setPage(Number(v))}>
-                  <SelectTrigger className="h-8 w-16">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <SelectItem key={i + 1} value={String(i + 1)}>
-                        {i + 1}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <span className="text-xs text-slate-500">/ {totalPages}</span>
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}>
-                  ←
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}>
-                  →
-                </Button>
-              </div>
-            </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => loadApplications()}
+            className="text-xs">
+            {t("userApplicationhistory.retry", "Thử lại")}
+          </Button>
+        </Card>
+      ) : filteredApplications.length === 0 ? (
+        <EmptyState
+          icon={Briefcase}
+          title={t("userApplicationhistory.noApplicationsYet", "Chưa có đơn ứng tuyển nào")}
+          description={t(
+            "userApplicationhistory.findJobsDescription",
+            "Khám phá các cơ hội nghề nghiệp mới và bắt đầu ứng tuyển ngay hôm nay."
           )}
+          action={
+            <Button
+              onClick={() => navigate("/enterprise/companies")}
+              className="gap-2 bg-[#0047AB] text-white hover:bg-[#003d91]">
+              <Briefcase className="h-4 w-4" />
+              {t("userApplicationhistory.findAJobNow", "Tìm việc ngay")}
+            </Button>
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {filteredApplications.map((app) => (
+            <ApplicationHubCard key={`hub-app-${app.id}`} application={app} />
+          ))}
         </div>
-
-        {/* Right: Detail Panel */}
-        <div className="min-w-0 overflow-hidden lg:col-span-8">
-          {selectedApplication ? (
-            <ApplicationDetailPanel
-              application={selectedApplication}
-              onSubmissionSuccess={() => loadApplications(true)}
-            />
-          ) : (
-            <Card className="flex h-96 items-center justify-center">
-              <div className="text-center">
-                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <Briefcase className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-                </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {t("userApplicationhistory.selectApplication")}
-                </p>
-              </div>
-            </Card>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

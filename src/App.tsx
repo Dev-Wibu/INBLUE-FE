@@ -52,6 +52,7 @@ import {
   ApplicationHistoryPage,
   ApplicationMentorReviewPage,
   ApplicationQuizPage,
+  ApplicationWorkspacePage,
   BookingSuccessPage,
   ChangePasswordPage,
   FeedbackDetailPage,
@@ -221,6 +222,13 @@ function App() {
                 to joined-meeting and POST /api/sessions/join-session. */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
               <Route path="/user/sessions/room/:sessionId" element={<StudentSessionRoomPage />} />
+            </Route>
+            {/* Application Workspace — full page, no sidebar */}
+            <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route
+                path="/user/application/:applicationId"
+                element={<ApplicationWorkspacePage />}
+              />
             </Route>
             {/* AI Interview for Application — full page, no sidebar */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
