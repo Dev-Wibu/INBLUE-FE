@@ -25,11 +25,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StarRating } from "@/components/ui/star-rating";
-import { useMentorFeedbacksByMentor, type MentorFeedback } from "@/hooks/useMentorFeedback";
+import { useMentorFeedbacksForCurrentUser, type MentorFeedback } from "@/hooks/useMentorFeedback";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
 import { useSortable } from "@/hooks/useSortable";
 import { toTimestamp } from "@/lib/formatting";
-import { useAuthStore } from "@/stores/authStore";
 import { MessageSquare, TrendingUp, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 const toSessionTimestamp = (value?: string) => {
@@ -55,17 +54,20 @@ type SortableFeedback = MentorFeedback & {
 };
 export function GivenFeedbackListPage() {
   const { t } = useTranslation();
-  const user = useAuthStore((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState<FeedbackRatingFilter>("all");
   const [selectedFeedback, setSelectedFeedback] = useState<MentorFeedback | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  // 2026-08-02: use the Mentor-aware hook because BE's
+  //   `/api/mentor-feedbacks/mentor/{id}` filters by Mentor.id (bảng mentor
+  //   PK), NOT User.id. Passing `user.id` (= JWT sub) silently returns `[]`
+  //   when Mentor.id != User.id. Resolves via `useCurrentMentorProfile`.
   const {
     data: feedbacks = [],
     isLoading,
     isRefetching,
     refetch,
-  } = useMentorFeedbacksByMentor(user?.id || 0);
+  } = useMentorFeedbacksForCurrentUser();
 
   // Calculate stats - only star ratings (1-5)
   const totalFeedbacks = feedbacks.length;
