@@ -365,7 +365,10 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
               #ID
             </TableHead>
             <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              Công ty & Vị trí ứng tuyển
+              Vị trí ứng tuyển
+            </TableHead>
+            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+              Công ty
             </TableHead>
             <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Cấp bậc
@@ -402,22 +405,24 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                   #{app.id}
                 </TableCell>
 
-                {/* Company & Job Title */}
+                {/* Job Title */}
+                <TableCell className="max-w-[220px] py-3">
+                  <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
+                    {app.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
+                  </h4>
+                </TableCell>
+
+                {/* Company Name & Logo */}
                 <TableCell className="py-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <CompanyAvatar
                       logoUrl={app.logoUrl}
                       companyName={app.companyName}
-                      className="h-9 w-9 rounded-lg"
+                      className="h-8 w-8 rounded-lg"
                     />
-                    <div className="min-w-0">
-                      <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
-                        {app.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
-                      </h4>
-                      <p className="truncate text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                        {app.companyName ?? t("userApplicationhistory.company", "Công ty")}
-                      </p>
-                    </div>
+                    <span className="truncate text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {app.companyName ?? t("userApplicationhistory.company", "Công ty")}
+                    </span>
                   </div>
                 </TableCell>
 
