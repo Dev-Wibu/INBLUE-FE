@@ -297,19 +297,19 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
                   fill="transparent"
                 />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-[9px] font-medium tracking-wider text-slate-400 uppercase dark:text-slate-400">
-                  VÒNG
-                </span>
-                <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+              <div className="absolute inset-0 flex items-center justify-center text-center">
+                <span className="text-base font-extrabold text-slate-900 dark:text-white">
                   {currentRoundOrder}/{totalRounds > 0 ? totalRounds : 1}
                 </span>
               </div>
             </div>
 
             {/* Stage Info */}
-            <div className="min-w-0 flex-1">
-              <h4 className="line-clamp-2 text-xs font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase dark:text-slate-400">
+                Vòng hiện tại
+              </p>
+              <h4 className="line-clamp-2 text-xs font-extrabold text-slate-900 dark:text-slate-100">
                 {stepName}
               </h4>
             </div>
