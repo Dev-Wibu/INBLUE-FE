@@ -17,7 +17,7 @@ interface CompanyTableProps {
   companies: Company[];
   onSelectCompany: (company: Company) => void;
   onEditCompany: (company: Company, e: React.MouseEvent) => void;
-  onToggleStatus?: (company: Company, nextStatus: "ACTIVE" | "INACTIVE") => void;
+  onToggleStatus?: (company: Company) => void;
 }
 
 export function CompanyTable({
@@ -48,10 +48,10 @@ export function CompanyTable({
   }
 
   return (
-    <div className="border-y border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="border-y border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-950">
       <Table>
-        <TableHeader>
-          <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+        <TableHeader className="bg-slate-50/50 hover:bg-slate-50/50 dark:bg-slate-900/50 dark:hover:bg-slate-900/50">
+          <TableRow>
             <TableHead className="w-20 pl-6 font-medium text-slate-500">
               {t("common.id", "ID")}
             </TableHead>
@@ -138,9 +138,7 @@ export function CompanyTable({
                 <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                   <Switch
                     checked={company.status === "ACTIVE"}
-                    onCheckedChange={(checked) =>
-                      onToggleStatus?.(company, checked ? "ACTIVE" : "INACTIVE")
-                    }
+                    onCheckedChange={() => onToggleStatus?.(company)}
                     className="shadow-sm data-[state=checked]:bg-emerald-500"
                     aria-label={`Toggle status for ${company.name}`}
                   />

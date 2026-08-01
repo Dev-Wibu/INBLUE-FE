@@ -158,15 +158,10 @@ export function CompanyGridTab({
     setIsFormOpen(true);
   };
 
-  const handleToggleCompanyStatus = async (company: Company, nextStatus: "ACTIVE" | "INACTIVE") => {
+  const handleToggleCompanyStatus = async (company: Company) => {
     if (!company.id) return;
     try {
-      const res = await companyManager.update({
-        data: {
-          id: company.id,
-          status: nextStatus,
-        },
-      });
+      const res = await companyManager.toggleStatus(company.id);
       if (res.success) {
         toast.success(t("common.updateSuccess", "Cập nhật thành công"));
         onCompanyUpdate?.();
