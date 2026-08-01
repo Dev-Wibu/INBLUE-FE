@@ -314,7 +314,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
   return (
     <div className="group relative flex w-[275px] shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-blue-500/80 dark:hover:shadow-blue-950/30">
       <div className="space-y-3">
-        {/* Top Header: Logo + Status Badge */}
+        {/* Top Header: Logo + Job Level Badge */}
         <div className="flex items-center justify-between">
           <CompanyAvatar
             logoUrl={application.logoUrl}
@@ -322,7 +322,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
             className="h-10 w-10 rounded-xl"
           />
 
-          <ApplicationStatusBadge status={application.status as ApplicationStatus} />
+          <JobLevelBadge level={application.level} />
         </div>
 
         {/* Title & Company Info */}
@@ -334,15 +334,12 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
             {application.companyName ?? t("userApplicationhistory.company", "Công ty")}
           </p>
 
-          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-            <JobLevelBadge level={application.level} />
-            {displayDate && (
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3 text-slate-400" />
-                {displayDate}
-              </span>
-            )}
-          </div>
+          {displayDate && (
+            <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-slate-400">
+              <Clock className="h-3 w-3 shrink-0 text-slate-400" />
+              <span className="truncate">Hạn: {displayDate}</span>
+            </div>
+          )}
         </div>
 
         {/* Circular Progress Gauge */}
