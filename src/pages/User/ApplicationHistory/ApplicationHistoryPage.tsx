@@ -365,10 +365,10 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
               #ID
             </TableHead>
             <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              Vị trí ứng tuyển
+              Công ty
             </TableHead>
             <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              Công ty
+              Vị trí ứng tuyển
             </TableHead>
             <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Cấp bậc
@@ -405,13 +405,6 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                   #{app.id}
                 </TableCell>
 
-                {/* Job Title */}
-                <TableCell className="max-w-[220px] py-3">
-                  <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
-                    {app.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
-                  </h4>
-                </TableCell>
-
                 {/* Company Name & Logo */}
                 <TableCell className="py-3">
                   <div className="flex items-center gap-2.5">
@@ -424,6 +417,13 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                       {app.companyName ?? t("userApplicationhistory.company", "Công ty")}
                     </span>
                   </div>
+                </TableCell>
+
+                {/* Job Title */}
+                <TableCell className="max-w-[220px] py-3">
+                  <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
+                    {app.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
+                  </h4>
                 </TableCell>
 
                 {/* Level */}
