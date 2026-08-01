@@ -15,16 +15,10 @@ import { useDashboardScrollRestoration } from "@/hooks/useDashboardScrollRestora
 import { useTabsState } from "@/hooks/useTabsState";
 import { getDashboardTabFromPath } from "@/lib/dashboard-breadcrumb";
 import { cn } from "@/lib/utils";
+import { mentorManager } from "@/services/mentor.manager";
+import { useAuthStore } from "@/stores/authStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import {
-  Calendar,
-  LayoutDashboard,
-  MessageSquare,
-  Newspaper,
-  Star,
-  User,
-  Users,
-} from "lucide-react";
+import { Calendar, LayoutDashboard, MessageSquare, Newspaper, Star, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
@@ -169,12 +163,6 @@ const getSidebarMenuGroups = (t: (_key: string) => string): SidebarMenuGroup[] =
         label: t("common.messages"),
         color: "text-emerald-500",
       },
-      {
-        type: "account",
-        icon: User,
-        label: t("common.account"),
-        color: "text-gray-600",
-      },
     ],
   },
 ];
@@ -248,6 +236,32 @@ export function MentorDashboardPage() {
   useDashboardScrollRestoration(contentRef, {
     enabled: typedActiveTab !== "messenger",
   });
+  const authUser = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+
+  // Sync authStore user state with actual mentor profile
+  useEffect(() => {
+    if (!authUser?.id || authUser.role !== "MENTOR") return;
+    mentorManager.getById(authUser.id).then((res) => {
+      if (res.success && res.data) {
+        const m = res.data;
+        if (
+          m.name &&
+          (m.name !== authUser.name ||
+            (m.email && m.email !== authUser.email) ||
+            m.avatarUrl !== authUser.avatarUrl)
+        ) {
+          setUser({
+            ...authUser,
+            name: m.name,
+            email: m.email || authUser.email,
+            avatarUrl: m.avatarUrl || authUser.avatarUrl,
+          });
+        }
+      }
+    });
+  }, [authUser?.id, authUser?.role, authUser?.name, authUser?.email, authUser?.avatarUrl, setUser]);
+
   useEffect(() => {
     setIsSidebarCollapsed(sidebarBehavior === "auto-collapse");
   }, [sidebarBehavior]);
@@ -295,6 +309,7 @@ export function MentorDashboardPage() {
         menuGroups={sidebarMenuGroups}
         activeTab={typedActiveTab}
         onNavigate={handleNavigate}
+        onProfileClick={() => handleNavigate("account")}
         storageKey="mentor_dashboard_sidebar_collapsed"
         collapsed={isSidebarCollapsed}
         onCollapsedChange={setIsSidebarCollapsed}

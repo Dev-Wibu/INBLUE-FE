@@ -383,33 +383,27 @@ export class MentorManager implements BaseManager<Mentor> {
 
   /**
    * Change mentor password
-   * PUT /api/mentors/change-password
-   * Uses query params: oldPass, newPass (similar to user change password)
+   * PUT /api/mentors/{id}/change-password
    */
   async changePassword(
-    currentPassword: string,
+    id: string | number,
+    oldPassword: string,
     newPassword: string
-  ): Promise<ApiResponse<{ message: string }>> {
+  ): Promise<ApiResponse<Mentor>> {
     try {
-      const response = await fetchClient
-        // @ts-expect-error: Backend Swagger schema mismatch - /api/mentors/change-password not in schema
-        .PUT("/api/mentors/change-password", {
-          params: {
-            query: {
-              oldPass: currentPassword,
-              newPass: newPassword,
-            },
-          },
-        })
-        .then((res) => ({
-          data: res.data,
-          status: res.response?.status,
-          headers: res.response?.headers,
-        }));
+      const response = await fetchClient.PUT("/api/mentors/{id}/change-password", {
+        params: {
+          path: { id: Number(id) },
+        },
+        body: {
+          oldPassword,
+          newPassword,
+        },
+      });
+
       return {
         success: true,
-        // @ts-expect-error: Backend Swagger schema mismatch
-        data: response.data as { message: string },
+        data: response.data as Mentor,
       };
     } catch (error) {
       return {

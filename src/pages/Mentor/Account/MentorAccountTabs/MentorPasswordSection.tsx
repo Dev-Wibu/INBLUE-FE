@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { mentorManager } from "@/services";
+import { useAuthStore } from "@/stores/authStore";
 import { ChevronRight, Lock } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,6 +33,7 @@ export function MentorPasswordSection() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const authUser = useAuthStore((state) => state.user);
   const errorId = useId();
 
   const handleClose = () => {
@@ -47,6 +49,7 @@ export function MentorPasswordSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError("");
     const trimmedCurrent = currentPassword.trim();
     const trimmedNew = newPassword.trim();
     const trimmedConfirm = confirmPassword.trim();
@@ -63,7 +66,7 @@ export function MentorPasswordSection() {
       setServerError(t("changePassword.newPasswordMinLength"));
       return;
     }
-    if (trimmedNew === currentPassword) {
+    if (trimmedCurrent === trimmedNew) {
       setServerError(t("changePassword.newPasswordMustBeDifferent"));
       return;
     }
@@ -71,10 +74,14 @@ export function MentorPasswordSection() {
       setServerError(t("changePassword.confirmPasswordDoesNotMatch"));
       return;
     }
+    if (!authUser?.id) {
+      setServerError("User ID not found");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      const result = await mentorManager.changePassword(trimmedCurrent, trimmedNew);
+      const result = await mentorManager.changePassword(authUser.id, trimmedCurrent, trimmedNew);
       if (result.success) {
         toast.success(t("changePassword.passwordUpdatedSuccessfully"));
         handleClose();
