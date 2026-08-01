@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Check, Lock } from "lucide-react";
+import { AlertTriangle, Check, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { components } from "../../../../../schema-from-be";
 
@@ -15,6 +15,8 @@ export interface JdRound {
     instruction?: string;
     timeLimitMinutes?: number;
     submissionFormat?: string;
+    evaluationCriteria?: string;
+    maxScore?: number;
   };
 }
 
@@ -45,19 +47,28 @@ export function HorizontalPipeline({
           const roundOrder = round.roundOrder ?? idx + 1;
           const detail = details.find((d) => d.roundId === round.id);
 
-          const isAppCompleted =
+          // For SOFT_FAILED the candidate is allowed to continue the next round
+          // ("needs improvement" — re-do). So a round is only "completed" when:
+          //   • App fully ended (PASSED or hard FAILED), OR
+          //   • This round's detail is finalised (COMPLETED / AI_EVALUATED), OR
+          //   • The round is strictly before the current round order.
+          // SOFT_FAILED alone does NOT mark all rounds completed — otherwise
+          // the candidate could not re-take the failed round.
+          const isCompleted =
             overallStatus === "PASSED" ||
             overallStatus === "FAILED" ||
-            overallStatus === "SOFT_FAILED";
-
-          const isCompleted =
-            isAppCompleted ||
             (detail?.status as string) === "COMPLETED" ||
+            (detail?.status as string) === "AI_EVALUATED" ||
             roundOrder < currentRoundOrder;
 
           const isCurrent = !isCompleted && roundOrder === currentRoundOrder;
           const isLocked = !isCompleted && roundOrder > currentRoundOrder;
           const isSelected = selectedRoundOrder === roundOrder;
+
+          // Surface a per-round badge label. SOFT_FAILED turns the FAILED round
+          // into a "Needs improvement" call-to-action instead of "Completed".
+          const isFailedNeedsImprove =
+            overallStatus === "SOFT_FAILED" && detail?.finalResult === "FAILED";
 
           const roundTypeNormalized = round.roundType?.replace("MENTROR", "MENTOR") ?? "";
           const roundName = roundTypeNormalized
@@ -90,7 +101,10 @@ export function HorizontalPipeline({
                 disabled={isLocked}
                 className={cn(
                   "group relative flex items-center gap-2.5 rounded-2xl border px-4 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-hidden",
-                  isCompleted &&
+                  isFailedNeedsImprove &&
+                    "border-amber-300 bg-amber-50/70 text-amber-900 shadow-2xs hover:bg-amber-100/80 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300",
+                  !isFailedNeedsImprove &&
+                    isCompleted &&
                     "border-emerald-200 bg-emerald-50/70 text-emerald-900 shadow-2xs hover:bg-emerald-100/80 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300",
                   isCurrent &&
                     "border-indigo-500 bg-indigo-50/90 text-indigo-700 shadow-xs ring-2 ring-indigo-500/20 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300",
@@ -102,11 +116,16 @@ export function HorizontalPipeline({
                 <div
                   className={cn(
                     "flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-xl font-mono text-[11px] font-extrabold transition-colors",
-                    isCompleted && "bg-emerald-600 text-white dark:bg-emerald-500",
+                    isFailedNeedsImprove && "bg-amber-500 text-white dark:bg-amber-500",
+                    !isFailedNeedsImprove &&
+                      isCompleted &&
+                      "bg-emerald-600 text-white dark:bg-emerald-500",
                     isCurrent && "animate-pulse bg-indigo-600 text-white dark:bg-indigo-500",
                     isLocked && "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
                   )}>
-                  {isCompleted ? (
+                  {isFailedNeedsImprove ? (
+                    <AlertTriangle className="h-3.5 w-3.5 stroke-[3]" />
+                  ) : isCompleted ? (
                     <Check className="h-3.5 w-3.5 stroke-[3]" />
                   ) : isLocked ? (
                     <Lock className="h-3 w-3" />
@@ -119,16 +138,18 @@ export function HorizontalPipeline({
                 <div className="flex flex-col text-left">
                   <span className="font-bold whitespace-nowrap">{roundName}</span>
                   <span className="text-[10px] whitespace-nowrap opacity-80">
-                    {isCompleted
-                      ? score !== undefined && score !== null
-                        ? t("userApplicationhistory.scoreShort", {
-                            score,
-                            defaultValue: `Điểm: ${score}/100`,
-                          })
-                        : t("userApplicationhistory.completedBadge", "Hoàn thành")
-                      : isCurrent
-                        ? t("userApplicationhistory.roundOpened", "Đang mở")
-                        : t("userApplicationhistory.roundUnopened", "Chưa mở")}
+                    {isFailedNeedsImprove
+                      ? t("userApplicationhistory.needsImprove", "Cần cải thiện")
+                      : isCompleted
+                        ? score !== undefined && score !== null
+                          ? t("userApplicationhistory.scoreShort", {
+                              score,
+                              defaultValue: `Điểm: ${score}/100`,
+                            })
+                          : t("userApplicationhistory.completedBadge", "Hoàn thành")
+                        : isCurrent
+                          ? t("userApplicationhistory.roundOpened", "Đang mở")
+                          : t("userApplicationhistory.roundUnopened", "Chưa mở")}
                   </span>
                 </div>
               </button>

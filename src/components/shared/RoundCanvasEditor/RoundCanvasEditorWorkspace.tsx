@@ -25,6 +25,7 @@ import {
   Save,
   Sparkles,
   Trash2,
+  Users,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -35,6 +36,16 @@ import { toast } from "sonner";
 import { getAvailableRoundsTemplates } from "./constants";
 import type { RoundType, UIRound, UIRoundConfig } from "./types";
 import { getBestConnection, getDistanceToSegment, getLocalizedRoundName } from "./utils";
+
+/** Minimal staff user shape needed by the reviewer dropdown. */
+export interface StaffUserOption {
+  id: number;
+  name?: string;
+  email?: string;
+  avatarUrl?: string | null;
+  role?: string;
+  isActive?: boolean | null;
+}
 
 export interface RoundCanvasEditorWorkspaceProps {
   isOpen?: boolean;
@@ -71,6 +82,12 @@ export interface RoundCanvasEditorWorkspaceProps {
    * care about the distinction.
    */
   mode?: "create" | "edit";
+  /**
+   * Optional list of STAFF users (already filtered by `role === "STAFF"`) to
+   * populate the per-round "Reviewer (Staff)" dropdown. If omitted the
+   * dropdown is hidden and rounds save with `reviewerId = null`.
+   */
+  staffUsers?: StaffUserOption[];
 }
 
 export function RoundCanvasEditorWorkspace({
@@ -83,6 +100,7 @@ export function RoundCanvasEditorWorkspace({
   initialMetadata = { name: "", category: "", description: "" },
   title,
   mode = "edit",
+  staffUsers,
 }: RoundCanvasEditorWorkspaceProps) {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
@@ -829,6 +847,27 @@ export function RoundCanvasEditorWorkspace({
                                 {Math.round((round.passThreshold ?? 0.8) * 100)}%
                               </span>
                             </div>
+                            {staffUsers && round.reviewerId != null && (
+                              <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                <Users className="h-3 w-3" />
+                                <span className="truncate">
+                                  {t("adminCompanymanagement.reviewerLabel", "Reviewer")}:{" "}
+                                  {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
+                                    `#${round.reviewerId}`}
+                                </span>
+                              </div>
+                            )}
+                            {staffUsers && round.reviewerId == null && (
+                              <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                                <AlertTriangle className="h-3 w-3" />
+                                <span className="truncate">
+                                  {t(
+                                    "adminCompanymanagement.reviewerStaffCardWarning",
+                                    "Chưa gán người chấm"
+                                  )}
+                                </span>
+                              </div>
+                            )}
 
                             {round.roundType === "QUIZ" &&
                               (!round.configData?.quizQuestions ||
@@ -1010,6 +1049,59 @@ export function RoundCanvasEditorWorkspace({
                       </h4>
                     </div>
                     <div className="space-y-3">
+                      {/* Reviewer (STAFF) — required for non-auto rounds so the
+                          application detail lands in some staff's grading queue. */}
+                      {staffUsers && staffUsers.length > 0 && (
+                        <div className="space-y-1.5">
+                          <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                            {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                          </Label>
+                          <Select
+                            value={
+                              selectedRound.reviewerId != null
+                                ? String(selectedRound.reviewerId)
+                                : "__none__"
+                            }
+                            onValueChange={(val) =>
+                              updateRoundField(
+                                selectedRoundIndex,
+                                "reviewerId",
+                                val === "__none__" ? null : Number(val)
+                              )
+                            }>
+                            <SelectTrigger className="h-9 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                              <SelectValue
+                                placeholder={t(
+                                  "adminCompanymanagement.reviewerStaffPlaceholder",
+                                  "— Chưa gán người chấm —"
+                                )}
+                              />
+                            </SelectTrigger>
+                            <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                              <SelectItem value="__none__">
+                                {t(
+                                  "adminCompanymanagement.reviewerStaffUnassigned",
+                                  "Chưa gán người chấm"
+                                )}
+                              </SelectItem>
+                              {staffUsers.map((s) => (
+                                <SelectItem key={s.id} value={String(s.id)}>
+                                  {s.name ?? `User #${s.id}`}
+                                  {s.email ? ` (${s.email})` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {selectedRound.reviewerId == null && (
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                              {t(
+                                "adminCompanymanagement.reviewerStaffWarning",
+                                "Cảnh báo: bài sẽ không xuất hiện trong queue chấm của Staff nào."
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-start gap-4">
                         <div
                           className={cn(

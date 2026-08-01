@@ -1,12 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, CheckCircle2, Clock, HelpCircle, Layers } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, HelpCircle, Layers, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { components } from "../../../../../../schema-from-be";
 import type { JdRound } from "../HorizontalPipeline";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
+
+interface QuizAnswer {
+  questionText?: string;
+  selectedAnswer?: string;
+  isCorrect?: boolean;
+}
 
 interface QuizModuleProps {
   round: JdRound;
@@ -30,6 +36,12 @@ export function QuizModule({
 
   const timeLimit = round.configData?.timeLimitMinutes ?? 20;
   const score = detail?.finalScore ?? detail?.aiScore;
+  const quizAnswers =
+    (detail as { submissionData?: { quizAnswers?: QuizAnswer[] | null } | null })?.submissionData
+      ?.quizAnswers ?? null;
+  const finalResult = (detail as { finalResult?: string | null })?.finalResult ?? null;
+  const correctCount = quizAnswers?.filter((q) => q.isCorrect).length ?? 0;
+  const totalAnswered = quizAnswers?.length ?? 0;
 
   const handleStartQuiz = () => {
     navigate(`/user/quiz/${applicationId}/round/${round.id}?jdId=${jdId ?? 0}`);
@@ -109,7 +121,7 @@ export function QuizModule({
               <Button
                 onClick={handleStartQuiz}
                 className="h-11 gap-2 bg-indigo-600 px-8 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700">
-                <span>Vào phòng thi Quiz ngay</span>
+                <span>{t("userApplicationhistory.quizEnterExam")}</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             )
@@ -120,7 +132,7 @@ export function QuizModule({
           <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-4 w-4" />
-              <span>Bạn đã hoàn thành phần thi Trắc nghiệm này.</span>
+              <span>{t("userApplicationhistory.quizCompletedNotice")}</span>
             </div>
             <Button
               variant="outline"
@@ -131,6 +143,64 @@ export function QuizModule({
           </div>
         )}
       </Card>
+
+      {/* Quiz Result Breakdown — show after submission. */}
+      {quizAnswers && quizAnswers.length > 0 && (
+        <Card className="space-y-4 border border-indigo-200/70 bg-gradient-to-br from-indigo-50/40 via-white to-sky-50/40 p-6 shadow-xs dark:border-indigo-900/40 dark:from-indigo-950/20 dark:via-slate-900/40 dark:to-sky-950/20">
+          <div className="flex items-center justify-between">
+            <h3 className="flex items-center gap-2 text-sm font-extrabold text-slate-900 dark:text-white">
+              <HelpCircle className="h-4 w-4 text-indigo-500" />
+              {t("userApplicationhistory.quizAnswerBreakdownTitle", "Chi tiết câu trả lời")}
+            </h3>
+            <div className="flex items-center gap-3 text-[11px]">
+              <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                ✓ {correctCount}/{totalAnswered}
+              </span>
+              {finalResult && (
+                <span
+                  className={`rounded-full px-2.5 py-0.5 font-extrabold tracking-wider uppercase ${
+                    finalResult === "PASSED"
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                      : "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
+                  }`}>
+                  {finalResult}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <ul className="space-y-2">
+            {quizAnswers.map((q, i) => (
+              <li
+                key={i}
+                className={`flex items-start gap-3 rounded-xl border p-3 ${
+                  q.isCorrect
+                    ? "border-emerald-200 bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-emerald-950/20"
+                    : "border-rose-200 bg-rose-50/40 dark:border-rose-900/40 dark:bg-rose-950/20"
+                }`}>
+                <span className="mt-0.5">
+                  {q.isCorrect ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-rose-500" />
+                  )}
+                </span>
+                <div className="flex-1 space-y-1">
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                    Câu {i + 1}: {q.questionText ?? "—"}
+                  </div>
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                    Đáp án đã chọn:{" "}
+                    <span className="font-extrabold tracking-wider uppercase">
+                      {q.selectedAnswer ?? "—"}
+                    </span>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
     </div>
   );
 }

@@ -1121,7 +1121,7 @@
   },
   {
     "file": "src/pages/Admin/ApplicationGrading/ApplicationGradingPage.tsx",
-    "line": 1146,
+    "line": 1136,
     "character": 23,
     "type": "JsxText",
     "category": "english",
@@ -1896,6 +1896,30 @@
     "text": "50K+"
   },
   {
+    "file": "src/pages/Mentor/Account/MentorAccountPage.tsx",
+    "line": 327,
+    "character": 51,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Mentor"
+  },
+  {
+    "file": "src/pages/Mentor/Account/MentorAccountPage.tsx",
+    "line": 375,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Mentor"
+  },
+  {
+    "file": "src/pages/Mentor/Account/MentorAccountPage.tsx",
+    "line": 400,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Mentor ID"
+  },
+  {
     "file": "src/pages/Mentor/Account/MentorAccountTabs/MentorProfileSection.tsx",
     "line": 122,
     "character": 13,
@@ -1905,7 +1929,7 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 182,
+    "line": 170,
     "character": 20,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -1913,7 +1937,7 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 190,
+    "line": 178,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -1921,7 +1945,7 @@
   },
   {
     "file": "src/pages/Mentor/MentorDashboard/MentorDashboardPage.tsx",
-    "line": 192,
+    "line": 180,
     "character": 80,
     "type": "JsxText",
     "category": "english",
@@ -1993,7 +2017,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 152,
+    "line": 140,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -2001,7 +2025,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 153,
+    "line": 141,
     "character": 76,
     "type": "JsxText",
     "category": "english",
@@ -2009,7 +2033,7 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffDashboardPage.tsx",
-    "line": 161,
+    "line": 149,
     "character": 26,
     "type": "JsxAttribute[alt]",
     "category": "english",
@@ -2017,8 +2041,8 @@
   },
   {
     "file": "src/pages/Staff/StaffDashboard/StaffOverviewPage.tsx",
-    "line": 218,
-    "character": 66,
+    "line": 223,
+    "character": 63,
     "type": "JsxText",
     "category": "english",
     "text": "• Round"
@@ -2118,6 +2142,190 @@
     "type": "JsxText",
     "category": "english",
     "text": "LinkedIn"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 581,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "ReactJS / TypeScript"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 584,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Java Spring Boot"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 587,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "PostgreSQL / Redis"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 590,
+    "character": 21,
+    "type": "JsxText",
+    "category": "english",
+    "text": "RESTful API Architecture"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
+    "line": 65,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Interviewer Voice Console"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
+    "line": 69,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Realtime Audio Evaluation"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 93,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Target Code Snippet (Contains 3 BUGS)"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 110,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "IDE Coding Playground"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 120,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TypeScript"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 121,
+    "character": 48,
+    "type": "JsxText",
+    "category": "english",
+    "text": "JavaScript"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 122,
+    "character": 42,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Java 17"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 123,
+    "character": 44,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Python 3.10"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 151,
+    "character": 43,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Execution Console"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 154,
+    "character": 23,
+    "type": "JsxText",
+    "category": "english",
+    "text": "AI Fit Score"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 185,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "TypeScript / ReactJS"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 189,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "REST API & OpenAPI"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 193,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Git & CI/CD Basics"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 104,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "✉️ Inblue Corporate Mail Client Simulator"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 121,
+    "character": 15,
+    "type": "JsxText",
+    "category": "english",
+    "text": "hiring-manager@enterprise-domain.com"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 62,
+    "character": 19,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Senior Technical Lead Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 83,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "JavaScript / TypeScript Core"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 86,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "Database & Query Optimization"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 89,
+    "character": 17,
+    "type": "JsxText",
+    "category": "english",
+    "text": "System Design Basics"
   },
   {
     "file": "src/pages/User/JobSearch/JobDetailContainer.tsx",

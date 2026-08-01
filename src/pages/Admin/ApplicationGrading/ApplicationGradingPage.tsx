@@ -29,9 +29,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useApplication, useApplications, useUsers } from "@/hooks/useApplication";
 import {
-  useAllPendingHRReviews,
   useApplicationDetail,
   useApplicationDetails,
+  useApplicationDetailsForReviewer,
   useHrScore,
 } from "@/hooks/useApplicationDetails";
 import { useEmailSubmission } from "@/hooks/useEmailSubmission";
@@ -869,12 +869,13 @@ export function ApplicationGradingPage({
   const { user } = useAuthStore();
   const isStaff = user?.role === "STAFF";
 
-  // Staff & Admin: lấy tất cả applications
+  // Staff & Admin: lấy tất cả applications (chỉ dùng cho Admin để hiển thị danh sách)
   const { data: rawApps, refetch: refetchApps } = useApplications();
 
-  // Staff: lấy tất cả application details đang chờ HR chấm (từ tất cả applications)
-  const { data: allPendingReviews = [], refetch: refetchPendingReviews } =
-    useAllPendingHRReviews(isStaff);
+  // Staff: lấy các application-detail được gán cho STAFF hiện tại
+  // (đúng API: GET /api/application-details/reviewer — không phải workaround quét tất cả applications)
+  const { data: reviewerDetails = [], refetch: refetchReviewer } =
+    useApplicationDetailsForReviewer(isStaff);
 
   const applications = useMemo(() => (Array.isArray(rawApps) ? rawApps : []), [rawApps]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -887,38 +888,6 @@ export function ApplicationGradingPage({
     createdAtSortValue: number;
     scoreSortValue: number;
   };
-
-  // Map of applicationId -> Application (to enrich staff items with userId/jdId)
-  const applicationMap = useMemo(() => {
-    const map = new Map<number, { userId?: number; jdId?: number }>();
-    applications.forEach((app) => {
-      if (app.id != null) {
-        map.set(app.id, { userId: app.userId, jdId: app.jdId });
-      }
-    });
-    return map;
-  }, [applications]);
-
-  // Staff: transform ALL pending reviews từ tất cả applications
-  // Admin: use filtered Applications
-  const staffItems = useMemo((): GradingListItem[] => {
-    if (!isStaff) return [];
-    // allPendingReviews đã được filter ở manager: AI_EVALUATED + no hrScore + not auto-graded
-    return allPendingReviews.map((detail) => {
-      const appInfo = applicationMap.get(detail.applicationId!);
-      return {
-        id: detail.applicationId!,
-        userId: appInfo?.userId,
-        jdId: appInfo?.jdId,
-        status: detail.status ?? "PENDING",
-        currentRoundOrder: 0,
-        overallScore: detail.finalScore ?? undefined,
-        detailId: detail.id,
-        detailStatus: detail.status,
-        detail,
-      };
-    });
-  }, [isStaff, allPendingReviews, applicationMap]);
 
   const { data: allUsers } = useUsers();
   const userMap = useMemo(() => {
@@ -933,6 +902,45 @@ export function ApplicationGradingPage({
     }
     return map;
   }, [allUsers]);
+
+  // Map of applicationId -> { userId, jdId } (dùng cho Staff để join từ
+  // reviewerDetails, vì schema ApplicationDetail không chứa 2 field này).
+  const applicationMap = useMemo(() => {
+    const map = new Map<number, { userId?: number; jdId?: number }>();
+    applications.forEach((app) => {
+      if (app.id != null) {
+        map.set(app.id, { userId: app.userId, jdId: app.jdId });
+      }
+    });
+    return map;
+  }, [applications]);
+
+  // Staff: lấy thẳng các detail từ API /reviewer.
+  // API này đã được backend filter:
+  //   - chỉ những round `isAuto = false`
+  //   - reviewerId = userId của staff hiện tại
+  // ⇒ FE render theo đúng status (AI_EVALUATED / COMPLETED).
+  // userId/jdId lấy từ `applicationMap` (lookup qua applicationId) vì
+  // `ApplicationDetail` schema không chứa 2 field này.
+  const staffItems = useMemo((): GradingListItem[] => {
+    if (!isStaff) return [];
+    return reviewerDetails.map((detail) => {
+      const appMeta =
+        detail.applicationId != null ? applicationMap.get(detail.applicationId) : undefined;
+      const userId = appMeta?.userId;
+      return {
+        id: detail.applicationId!,
+        status: detail.status ?? "PENDING",
+        overallScore: detail.finalScore ?? undefined,
+        userId,
+        userName: userId != null ? (userMap.get(userId) ?? `User #${userId}`) : undefined,
+        jdId: appMeta?.jdId,
+        detailId: detail.id,
+        detailStatus: detail.status,
+        detail,
+      };
+    });
+  }, [isStaff, reviewerDetails, applicationMap, userMap]);
 
   const filteredApplications = useMemo((): GradingListItem[] => {
     if (isStaff) {
@@ -1111,7 +1119,11 @@ export function ApplicationGradingPage({
 
           <ReloadButton
             onReload={async () => {
-              await Promise.all([refetchApps(), refetchPendingReviews()]);
+              if (isStaff) {
+                await Promise.all([refetchApps(), refetchReviewer()]);
+              } else {
+                await refetchApps();
+              }
             }}
             tooltip={t("common.reload")}
             className="h-8 w-8"

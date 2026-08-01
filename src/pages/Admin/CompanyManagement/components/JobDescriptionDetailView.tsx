@@ -4,11 +4,21 @@ import type { RoundType, UIRound } from "@/components/shared/RoundCanvasEditor";
 import {
   getAvailableRoundsTemplates,
   RoundCanvasEditorWorkspace,
+  type StaffUserOption,
 } from "@/components/shared/RoundCanvasEditor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUsers } from "@/hooks/useApplication";
 import { cn } from "@/lib/utils";
 import {
   adminApplicationManager,
@@ -231,6 +242,10 @@ export function JobDescriptionDetailView({
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  // Per-round "Change Reviewer" dialog state. Holds the round id currently
+  // being re-assigned so the dialog can render the right initial value.
+  const [changingReviewerRoundId, setChangingReviewerRoundId] = useState<number | null>(null);
+
   useEffect(() => {
     setCurrentJd(jobDescription);
     setEditFormData(jobDescription);
@@ -312,9 +327,12 @@ export function JobDescriptionDetailView({
     );
 
     return sortedRounds.map((r) => ({
+      id: r.id,
       name: r.name,
+      roundOrder: r.roundOrder,
       roundType: r.roundType as RoundType,
       passThreshold: r.passThreshold ?? 0.8,
+      reviewerId: r.reviewerId ?? null,
       configData: {
         ...r.configData,
         codingProblemsId:
@@ -331,6 +349,33 @@ export function JobDescriptionDetailView({
     }));
   }, [currentJd.rounds]);
 
+  // Load all users and filter to active STAFF only — used by the round editor
+  // dropdown so admins can pick who reviews each round.
+  const { data: allUsersData } = useUsers();
+  const staffUsers = useMemo<StaffUserOption[]>(() => {
+    const list = Array.isArray(allUsersData) ? allUsersData : [];
+    return (
+      list as Array<{
+        id?: number;
+        name?: string;
+        email?: string;
+        avatarUrl?: string | null;
+        role?: string;
+        isActive?: boolean | null;
+      }>
+    )
+      .filter((u) => u.role === "STAFF")
+      .filter((u) => u.isActive !== false)
+      .map((u) => ({
+        id: u.id as number,
+        name: u.name,
+        email: u.email,
+        avatarUrl: u.avatarUrl,
+      }))
+      .filter((u) => u.id != null)
+      .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+  }, [allUsersData]);
+
   const handleSaveRounds = async (
     rounds: UIRound[],
     _metadata?: { name: string; category: string; description: string },
@@ -339,10 +384,12 @@ export function JobDescriptionDetailView({
     setIsSaving(true);
     try {
       const payloadRounds = rounds.map((r, idx) => ({
+        id: r.id,
         name: r.name || `${t("adminApplicationManagement.roundPrefix", "Vòng ")}${idx + 1}`,
         roundOrder: idx + 1,
         roundType: r.roundType as any,
         passThreshold: Number(r.passThreshold ?? 0.8),
+        ...(r.reviewerId != null ? { reviewerId: r.reviewerId } : {}),
         configData: {
           instruction: r.configData?.instruction || "",
           submissionFormat: r.configData?.submissionFormat || "",
@@ -393,6 +440,71 @@ export function JobDescriptionDetailView({
       console.error(err);
       toast.error(t("errors.cannotUpdateInterviewRounds"));
       throw err;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  /**
+   * Change the reviewer of a single round without re-saving the whole round
+   * list. Strategy:
+   *   1. Read current `currentJd.rounds` from state (already synced with BE).
+   *   2. Mutate only the target round's `reviewerId`.
+   *   3. Send the full list via `roundManager.updateForJd` (BE merges by id).
+   *   4. Reload JD into state.
+   *
+   * `closeEditorAfter` is `true` so the dialog closes on success.
+   */
+  const handleChangeReviewer = async (
+    roundId: number,
+    newReviewerId: number | null
+  ): Promise<void> => {
+    const jdId = currentJd.id;
+    if (!jdId) return;
+    setIsSaving(true);
+    try {
+      const currentRounds = currentJd.rounds ?? [];
+      const nextRounds = currentRounds.map((r) =>
+        r.id === roundId ? { ...r, reviewerId: newReviewerId } : r
+      );
+      const res = await roundManager.updateForJd(jdId, {
+        rounds: nextRounds.map((r) => ({
+          id: r.id,
+          name: r.name ?? "",
+          roundOrder: r.roundOrder ?? 0,
+          roundType: r.roundType as any,
+          passThreshold: r.passThreshold ?? 0,
+          ...(r.reviewerId != null ? { reviewerId: r.reviewerId } : {}),
+          configData: {
+            instruction: r.configData?.instruction ?? "",
+            submissionFormat: r.configData?.submissionFormat ?? "",
+            timeLimitMinutes: r.configData?.timeLimitMinutes ?? 0,
+            maxScore: r.configData?.maxScore ?? 100,
+            aiSystemPrompt: r.configData?.aiSystemPrompt ?? "",
+            evaluationCriteria: r.configData?.evaluationCriteria ?? "",
+            quizQuestions: (r.configData?.quizQuestions ?? []).map((q: any) => ({
+              questionText: q.questionText ?? "",
+              options: q.options ?? [],
+              correctAnswer: q.correctAnswer ?? "",
+              points: Number(q.points ?? 0),
+            })),
+            codingProblemsId: r.configData?.codingProblems?.map((c: any) => c.problemId) ?? [],
+            codeReviewIds: r.configData?.codeReviewProblems?.map((c: any) => c.problemId) ?? [],
+          },
+        })),
+      });
+      if (res.success && res.data) {
+        toast.success(t("adminCompanymanagement.changeReviewerSuccess", "Đã đổi người chấm"));
+        setCurrentJd((prev) =>
+          prev ? { ...prev, rounds: res.data as unknown as typeof prev.rounds } : prev
+        );
+        setChangingReviewerRoundId(null);
+      } else {
+        toast.error(res.error || t("errors.cannotUpdateInterviewRounds"));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(t("errors.cannotUpdateInterviewRounds"));
     } finally {
       setIsSaving(false);
     }
@@ -468,6 +580,7 @@ export function JobDescriptionDetailView({
           mode="edit"
           isSaving={isSaving}
           onSave={handleSaveRounds}
+          staffUsers={staffUsers}
         />
       </div>
     );
@@ -523,6 +636,7 @@ export function JobDescriptionDetailView({
                 {initialRounds.map((round, index) => {
                   const meta = templates.find((template) => template.type === round.roundType);
                   const isLast = index === initialRounds.length - 1;
+                  const reviewer = staffUsers.find((s) => s.id === round.reviewerId);
 
                   return (
                     <div key={index} className="flex shrink-0 items-center gap-2.5">
@@ -548,6 +662,40 @@ export function JobDescriptionDetailView({
                         <h4 className="mt-2.5 truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
                           {round.name}
                         </h4>
+
+                        {/* Reviewer row — visible when staffUsers have loaded */}
+                        {staffUsers.length > 0 && (
+                          <div className="mt-2 flex items-center justify-between gap-1.5 border-t border-slate-100 pt-2 dark:border-slate-800/60">
+                            <div className="flex min-w-0 items-center gap-1.5">
+                              <Users className="h-3 w-3 shrink-0 text-slate-400" />
+                              <span
+                                className={cn(
+                                  "truncate text-[11px] font-medium",
+                                  reviewer
+                                    ? "text-slate-700 dark:text-slate-300"
+                                    : "text-amber-600 italic dark:text-amber-400"
+                                )}
+                                title={reviewer?.email ?? undefined}>
+                                {reviewer
+                                  ? `${t("adminCompanymanagement.reviewerLabel", "Reviewer")}: ${reviewer.name ?? `#${round.reviewerId}`}`
+                                  : t(
+                                      "adminCompanymanagement.reviewerStaffCardWarning",
+                                      "Chưa gán người chấm"
+                                    )}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (round.id != null) setChangingReviewerRoundId(round.id);
+                              }}
+                              disabled={round.id == null}
+                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-indigo-400 dark:hover:bg-indigo-950/40">
+                              {t("adminCompanymanagement.changeReviewer", "Đổi")}
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       {!isLast && (
@@ -1050,6 +1198,122 @@ export function JobDescriptionDetailView({
           if (currentJd.id) loadApplications(currentJd.id);
         }}
       />
+
+      {/* Dialog: change reviewer for a single round */}
+      <Dialog
+        open={changingReviewerRoundId !== null}
+        onOpenChange={(open) => {
+          if (!open) setChangingReviewerRoundId(null);
+        }}>
+        <DialogContent className="max-w-md border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              {t("adminCompanymanagement.changeReviewerTitle", "Đổi người chấm cho vòng")}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              {t(
+                "adminCompanymanagement.changeReviewerDescription",
+                "Chọn STAFF sẽ chấm các bài ứng viên nộp cho vòng này."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {(() => {
+            const round = (currentJd.rounds ?? []).find((r) => r.id === changingReviewerRoundId);
+            if (!round) return null;
+            return (
+              <div className="space-y-3">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-slate-900/50">
+                  <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                    {t("userApplicationhistory.round")} #{round.roundOrder}
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">
+                    {round.name}
+                  </p>
+                  {round.reviewerId != null && (
+                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      {t("adminCompanymanagement.currentReviewer", "Hiện tại")}:{" "}
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
+                          `#${round.reviewerId}`}
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                    {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                  </Label>
+                  <Select
+                    value={round.reviewerId != null ? String(round.reviewerId) : "__none__"}
+                    onValueChange={(val) => {
+                      // Update local state immediately so the Select reflects the change
+                      // before the BE round-trip. The actual save is triggered by
+                      // clicking the Save button below.
+                      const newId = val === "__none__" ? null : Number(val);
+                      setCurrentJd((prev) => {
+                        if (!prev) return prev;
+                        return {
+                          ...prev,
+                          rounds: (prev.rounds ?? []).map((r) =>
+                            r.id === round.id
+                              ? { ...r, reviewerId: newId as number | undefined }
+                              : r
+                          ),
+                        };
+                      });
+                    }}>
+                    <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                      <SelectValue
+                        placeholder={t(
+                          "adminCompanymanagement.reviewerStaffPlaceholder",
+                          "— Chưa gán người chấm —"
+                        )}
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+                      <SelectItem value="__none__">
+                        {t("adminCompanymanagement.reviewerStaffUnassigned", "Chưa gán người chấm")}
+                      </SelectItem>
+                      {staffUsers.map((s) => (
+                        <SelectItem key={s.id} value={String(s.id)}>
+                          {s.name ?? `User #${s.id}`}
+                          {s.email ? ` (${s.email})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            );
+          })()}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setChangingReviewerRoundId(null)}
+              disabled={isSaving}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              size="sm"
+              disabled={isSaving || changingReviewerRoundId == null}
+              onClick={() => {
+                if (changingReviewerRoundId == null) return;
+                const round = (currentJd.rounds ?? []).find(
+                  (r) => r.id === changingReviewerRoundId
+                );
+                if (!round) return;
+                void handleChangeReviewer(round.id!, round.reviewerId ?? null);
+              }}
+              className="bg-indigo-600 hover:bg-indigo-700">
+              {isSaving ? t("common.saving") : t("common.save", "Lưu")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

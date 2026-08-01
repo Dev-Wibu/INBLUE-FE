@@ -226,8 +226,12 @@ export interface MentorReview {
 
 /** Student feedback of mentor (filled by student after session) */
 export interface MentorFeedback {
+  /** Backend assigns this on POST; FE needs it to decide POST vs PUT. */
+  id?: number;
   rating?: number;
   comment?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**
