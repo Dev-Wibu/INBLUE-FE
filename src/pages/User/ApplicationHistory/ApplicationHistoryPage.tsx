@@ -308,14 +308,10 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
             </div>
 
             {/* Stage Info */}
-            <div className="min-w-0 flex-1 space-y-1">
-              <span className="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-600 uppercase dark:bg-blue-500/20 dark:text-blue-300">
-                🎯 Vòng {currentRoundOrder}
-              </span>
-              <h4 className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
+            <div className="min-w-0 flex-1">
+              <h4 className="line-clamp-2 text-xs font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
                 {stepName}
               </h4>
-              <p className="text-[10px] font-medium text-slate-400">Đang chờ bạn thực hiện</p>
             </div>
           </div>
         </div>
