@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StarRating } from "@/components/ui/star-rating";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorFeedbacksByMentor } from "@/hooks/useMentorFeedback";
 import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
@@ -53,29 +54,42 @@ export function StudentsListPage() {
   const user = useAuthStore((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
   const [studentFilter, setStudentFilter] = useState<StudentFilter>("all");
+  // 2026-08-02: kept `useSessions` (admin endpoint, GET /api/sessions)
+  //   because SecurityConfig is permitAll and the mentor in this project
+  //   can call it. Switching to `useUserSessions` returned `[]` for the
+  //   test user (userId == userId2 case). Admin endpoint returns the full
+  //   list; we narrow by Mentor.id / User.id in `isSessionMentor` below.
   const {
     data: allSessions = [],
     isLoading: sessionsLoading,
     isRefetching: sessionsRefetching,
     refetch: refetchSessions,
   } = useSessions();
+  // 2026-08-02: BE endpoints filter by `Mentor.id` (PK bảng mentor), not
+  //   `User.id` (JWT sub). The mentor record is resolved via
+  //   `useCurrentMentorProfile` (email lookup) — see docs/BE_RESPONSE_MENTOR_BUG.md.
+  const { data: mentorProfile } = useCurrentMentorProfile();
+  const mentorId = (mentorProfile as { id?: number } | null)?.id ?? 0;
+  const userIdForReviews = mentorId || user?.id || 0;
   const {
     data: feedbacks = [],
     isLoading: feedbacksLoading,
     isRefetching: feedbacksRefetching,
     refetch: refetchFeedbacks,
-  } = useMentorFeedbacksByMentor(user?.id || 0);
+  } = useMentorFeedbacksByMentor(mentorId);
   const {
     data: reviews = [],
     isLoading: reviewsLoading,
     isRefetching: reviewsRefetching,
     refetch: refetchReviews,
-  } = useMentorReviewsByMentor(user?.id || 0);
+  } = useMentorReviewsByMentor(userIdForReviews);
   const isLoading = sessionsLoading || feedbacksLoading || reviewsLoading;
 
-  // Filter sessions where current user is the mentor (mentorId/userId2)
+  // 2026-08-02: filter sessions using `Mentor.id` (BE's `session.mentorId`
+  //   field equals the Mentor PK, not the user PK) so test data where
+  //   Mentor.id != User.id still matches.
   const mentorSessions = allSessions.filter((session: Session) =>
-    isSessionMentor(session, user?.id)
+    isSessionMentor(session, mentorId || user?.id)
   );
 
   // Group sessions by student (userId)

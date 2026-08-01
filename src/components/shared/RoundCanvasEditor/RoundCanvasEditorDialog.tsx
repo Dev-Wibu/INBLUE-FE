@@ -22,6 +22,7 @@ import {
   RotateCcw,
   Save,
   Trash2,
+  Users,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -30,6 +31,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { getAvailableRoundsTemplates } from "./constants";
+import type { StaffUserOption } from "./RoundCanvasEditorWorkspace";
 import type { RoundType, UIRound, UIRoundConfig } from "./types";
 import { getBestConnection, getDistanceToSegment, getLocalizedRoundName } from "./utils";
 
@@ -44,6 +46,7 @@ export interface RoundCanvasEditorDialogProps {
   isSaving?: boolean;
   showMetadataInputs?: boolean;
   initialMetadata?: { name: string; category: string; description: string };
+  staffUsers?: StaffUserOption[];
 }
 
 export function RoundCanvasEditorDialog({
@@ -54,6 +57,7 @@ export function RoundCanvasEditorDialog({
   isSaving = false,
   showMetadataInputs = false,
   initialMetadata = { name: "", category: "", description: "" },
+  staffUsers,
 }: RoundCanvasEditorDialogProps) {
   const { t } = useTranslation();
   const AVAILABLE_ROUNDS_TEMPLATES = useMemo(() => getAvailableRoundsTemplates(t), [t]);
@@ -759,6 +763,27 @@ export function RoundCanvasEditorDialog({
                                     {Math.round((round.passThreshold ?? 0.8) * 100)}%
                                   </span>
                                 </div>
+                                {staffUsers && round.reviewerId != null && (
+                                  <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                                    <Users className="h-3 w-3" />
+                                    <span className="truncate">
+                                      {t("adminCompanymanagement.reviewerLabel", "Reviewer")}:{" "}
+                                      {staffUsers.find((s) => s.id === round.reviewerId)?.name ??
+                                        `#${round.reviewerId}`}
+                                    </span>
+                                  </div>
+                                )}
+                                {staffUsers && round.reviewerId == null && (
+                                  <div className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    <span className="truncate">
+                                      {t(
+                                        "adminCompanymanagement.reviewerStaffCardWarning",
+                                        "Chưa gán người chấm"
+                                      )}
+                                    </span>
+                                  </div>
+                                )}
 
                                 {/* Quiz warning */}
                                 {round.roundType === "QUIZ" &&
@@ -961,6 +986,57 @@ export function RoundCanvasEditorDialog({
                       </h4>
                     </div>
                     <div className="space-y-3">
+                      {staffUsers && staffUsers.length > 0 && (
+                        <div className="space-y-1.5">
+                          <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                            {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                          </Label>
+                          <Select
+                            value={
+                              selectedRound.reviewerId != null
+                                ? String(selectedRound.reviewerId)
+                                : "__none__"
+                            }
+                            onValueChange={(val) =>
+                              updateRoundField(
+                                selectedRoundIndex,
+                                "reviewerId",
+                                val === "__none__" ? null : Number(val)
+                              )
+                            }>
+                            <SelectTrigger className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                              <SelectValue
+                                placeholder={t(
+                                  "adminCompanymanagement.reviewerStaffPlaceholder",
+                                  "— Chưa gán người chấm —"
+                                )}
+                              />
+                            </SelectTrigger>
+                            <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-900 dark:text-slate-200">
+                              <SelectItem value="__none__">
+                                {t(
+                                  "adminCompanymanagement.reviewerStaffUnassigned",
+                                  "Chưa gán người chấm"
+                                )}
+                              </SelectItem>
+                              {staffUsers.map((s) => (
+                                <SelectItem key={s.id} value={String(s.id)}>
+                                  {s.name ?? `User #${s.id}`}
+                                  {s.email ? ` (${s.email})` : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {selectedRound.reviewerId == null && (
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                              {t(
+                                "adminCompanymanagement.reviewerStaffWarning",
+                                "Cảnh báo: bài sẽ không xuất hiện trong queue chấm của Staff nào."
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-start gap-4">
                         <div
                           className={cn(

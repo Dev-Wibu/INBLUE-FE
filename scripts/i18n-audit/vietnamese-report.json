@@ -897,11 +897,555 @@
   },
   {
     "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
-    "line": 167,
+    "line": 260,
     "character": 19,
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Không thể tải thông tin workspace ứng tuyển"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 537,
+    "character": 74,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Ngày nộp đơn:"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 543,
+    "character": 74,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Tổng số vòng:"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 545,
+    "character": 37,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "vòng tuyển dụng"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 549,
+    "character": 74,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Trạng thái hồ sơ:"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 577,
+    "character": 25,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Kỹ năng & Yêu cầu vị trí"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 599,
+    "character": 25,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Tiêu chuẩn đạt Vòng"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 603,
+    "character": 54,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Điểm sàn qua vòng:"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 609,
+    "character": 54,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Thời gian quy định:"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 613,
+    "character": 69,
+    "type": "TemplateLiteral",
+    "category": "vietnamese",
+    "text": "phút"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 614,
+    "character": 27,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Không giới hạn"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 624,
+    "character": 25,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Trợ giúp & Giải đáp nhanh"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 629,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "⚡ AI chấm điểm mất bao lâu?"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 632,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Hệ thống tự động chấm điểm và tổng hợp kết quả chỉ trong 30-60 giây."
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 637,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "🔒 Có được thi lại không?"
+  },
+  {
+    "file": "src/pages/User/Applications/ApplicationWorkspacePage.tsx",
+    "line": 640,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Mỗi vòng chỉ thực hiện 1 lần duy nhất trừ trường hợp sự cố được nhà tuyển dụng\r\n                      duyệt cấp lại."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
+    "line": 73,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Chấm điểm Tự tin (Behavioral) & Kỹ năng kỹ thuật (Technical Depth)"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
+    "line": 77,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Yêu cầu Micro & Thiết bị thu âm tốt"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
+    "line": 86,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Điểm AI Phỏng vấn"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
+    "line": 92,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "✓ Hoàn thành phỏng vấn"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/AiInterviewModule.tsx",
+    "line": 101,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Mở Console Phỏng vấn AI"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 32,
+    "character": 5,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "1. Lỗi dòng 3: Thiếu 'await' trước res.json() làm trả về một Promise chưa giải quyết.\n2. Lỗi dòng 6: Khai báo mảng memoryCache toàn cục và push phần tử liên tục mà không có cơ chế giải phóng, gây Memory Leak nghiêm trọng.\n3. Lỗi dòng 8: Trả về đối tượng Promise chưa được await."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 62,
+    "character": 34,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Gửi nhận xét thất bại"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 66,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Có lỗi xảy ra khi gửi nhận xét"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 98,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Điểm AI:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 120,
+    "character": 19,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Nhập phát hiện lỗi & Lời khuyên Refactor của bạn:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 128,
+    "character": 13,
+    "type": "JsxAttribute[placeholder]",
+    "category": "vietnamese",
+    "text": "Ghi rõ các dòng lỗi và phương án sửa chữa..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 128,
+    "character": 25,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Ghi rõ các dòng lỗi và phương án sửa chữa..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 140,
+    "character": 27,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Đang chấm điểm Code Review..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodeReviewModule.tsx",
+    "line": 145,
+    "character": 27,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Gửi Đánh Giá Code Review"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 75,
+    "character": 34,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Nộp bài giải thất bại"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 79,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Có lỗi xảy ra khi nộp bài giải"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 129,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Điểm Score:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 170,
+    "character": 21,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Chạy Test Mẫu"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CodingModule.tsx",
+    "line": 182,
+    "character": 21,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Nộp bài Solution"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 68,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Có lỗi xảy ra khi nộp CV"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 104,
+    "character": 19,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Hỗ trợ định dạng PDF, DOCX (Tối đa 10MB)"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 147,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Đang phân tích CV bằng AI..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 160,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Mức độ tương thích CV"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 169,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Tải CV để kích hoạt Match Score"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 197,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Docker & Kubernetes (Cần bổ sung)"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 221,
+    "character": 25,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Đang phân tích CV bằng AI..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/CvScreeningModule.tsx",
+    "line": 226,
+    "character": 25,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Gửi CV & Chấm điểm AI"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 33,
+    "character": 5,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "[Phản hồi] Báo cáo tình hình xử lý sự cố hệ thống & Đề xuất giải pháp"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 36,
+    "character": 5,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Kính gửi Anh/Chị Trưởng phòng,\n\nEm xin phép báo cáo tiến độ xử lý sự cố vừa phát sinh. Hiện tại đội ngũ kỹ thuật đã cô lập được nguyên nhân..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 69,
+    "character": 34,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Gửi email không thành công"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 73,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Có lỗi xảy ra khi gửi email"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 109,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Điểm AI:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 118,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Người nhận:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 127,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Tiêu đề:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 134,
+    "character": 15,
+    "type": "JsxAttribute[placeholder]",
+    "category": "vietnamese",
+    "text": "Nhập tiêu đề email..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 134,
+    "character": 27,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Nhập tiêu đề email..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 146,
+    "character": 15,
+    "type": "JsxAttribute[placeholder]",
+    "category": "vietnamese",
+    "text": "Soạn nội dung email ứng tuyển tại đây..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 146,
+    "character": 27,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Soạn nội dung email ứng tuyển tại đây..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 160,
+    "character": 27,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "AI Đang chấm điểm văn phong..."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/EmailSimulatorModule.tsx",
+    "line": 165,
+    "character": 27,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Gửi Email & Chấm điểm AI"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 70,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Chuyên gia 8+ năm kinh nghiệm kiến trúc hệ thống & đánh giá ứng viên"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 74,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Thời lượng phỏng vấn: 45 phút"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 83,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Đánh giá Mentor"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 89,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "✓ Hoàn thành phỏng vấn"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/MentorReviewModule.tsx",
+    "line": 98,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Đặt lịch & Vào phòng Video Call"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 70,
+    "character": 21,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Thời gian:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 70,
+    "character": 44,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "phút"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 75,
+    "character": 21,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Điểm sàn đạt:"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 98,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Điểm Trắc nghiệm"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 104,
+    "character": 17,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "✓ Đã hoàn thành"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 112,
+    "character": 23,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Vào phòng thi Quiz ngay"
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 123,
+    "character": 21,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Bạn đã hoàn thành phần thi Trắc nghiệm này."
+  },
+  {
+    "file": "src/pages/User/Applications/components/round-modules/QuizModule.tsx",
+    "line": 129,
+    "character": 15,
+    "type": "JsxText",
+    "category": "vietnamese",
+    "text": "Xem câu trả lời & Giải thích"
   },
   {
     "file": "src/pages/User/Kiosk/KioskEntryPage.tsx",
@@ -1070,14 +1614,6 @@
     "type": "StringLiteral",
     "category": "vietnamese",
     "text": "Lỗi kết nối máy chủ"
-  },
-  {
-    "file": "src/services/application-detail.manager.ts",
-    "line": 485,
-    "character": 33,
-    "type": "StringLiteral",
-    "category": "vietnamese",
-    "text": "Kính gửi"
   },
   {
     "file": "src/services/auth.manager.ts",

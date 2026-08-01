@@ -4,7 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SpinnerBlock } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { formatCurrency } from "@/lib/formatting";
+import { queryClient } from "@/lib/queryClient";
 import { mentorManager } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -24,7 +26,7 @@ import {
   Tag,
   User,
 } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { MentorProfileData } from "./MentorAccountTabs";
@@ -39,8 +41,11 @@ export function MentorAccountPage() {
   const authUser = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
 
+  // Resolve the current mentor record via email lookup (handles the User.id vs
+  // Mentor.id PK mismatch documented in `mentor.manager.ts`).
+  const { data: currentMentor, isLoading: isLoadingMentor } = useCurrentMentorProfile();
+
   const [profile, setProfile] = useState<MentorProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AccountSubTab>("profile");
 
   // Form states for Profile
@@ -68,66 +73,62 @@ export function MentorAccountPage() {
 
   const passwordId = useId();
 
-  const fetchProfile = useCallback(async () => {
-    if (!authUser?.id) return;
-    setIsLoading(true);
-    try {
-      // Call GET /api/mentors/{id} directly without calling GET /api/mentors (getAll)
-      const response = await mentorManager.getById(authUser.id);
-      if (response.success && response.data) {
-        const data = response.data;
-        setProfile({
-          id: String(data.id || authUser.id),
-          name: String(data.name || authUser.name || ""),
-          email: String(data.email || authUser.email || ""),
-          avatar: data.avatarUrl ? String(data.avatarUrl) : authUser.avatarUrl || null,
-          public_id: data.public_id ? String(data.public_id) : authUser.public_id || null,
-          bio: data.bio || "",
-          expertise: data.expertise || "",
-          yearsOfExperience: data.yearsOfExperience || 0,
-          linkedInUrl: data.linkedInUrl || "",
-          currentCompany: data.currentCompany || "",
-          pricePerMinute: data.pricePerMinute || 0,
-          averageRating: data.averageRating ?? 0,
-          totalSession: data.totalSession || 0,
-          active: data.active !== false,
-        });
-        setName(String(data.name || authUser.name || ""));
-        setBio(data.bio || "");
-        setExpertise(data.expertise || "");
-        setYearsOfExperience(data.yearsOfExperience || 0);
-        setLinkedInUrl(data.linkedInUrl || "");
-        setCurrentCompany(data.currentCompany || "");
-        setPricePerMinute(data.pricePerMinute || 0);
-      } else {
-        setProfile({
-          id: String(authUser.id),
-          name: authUser.name || "",
-          email: authUser.email || "",
-          avatar: authUser.avatarUrl || null,
-          public_id: authUser.public_id || null,
-          bio: "",
-          expertise: "",
-          yearsOfExperience: 0,
-          linkedInUrl: "",
-          currentCompany: "",
-          pricePerMinute: 0,
-          averageRating: 0,
-          totalSession: 0,
-          active: true,
-        });
-        setName(authUser.name || "");
-      }
-    } catch (error) {
-      console.error("Error fetching mentor profile:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [authUser]);
-
+  // Sync profile state from the resolved mentor record. Falls back to the
+  // logged-in user data (snapshot) if no mentor record exists yet.
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (isLoadingMentor) return;
+
+    const fallbackId = authUser?.id ? String(authUser.id) : "";
+    const fallbackName = authUser?.name ?? "";
+    const fallbackEmail = authUser?.email ?? "";
+    const fallbackAvatar = authUser?.avatarUrl ?? null;
+    const fallbackPublicId = authUser?.public_id ?? null;
+
+    if (currentMentor) {
+      const data = currentMentor;
+      setProfile({
+        id: String(data.id ?? fallbackId),
+        name: String(data.name ?? fallbackName ?? ""),
+        email: String(data.email ?? fallbackEmail ?? ""),
+        avatar: data.avatarUrl ? String(data.avatarUrl) : fallbackAvatar,
+        public_id: data.public_id ? String(data.public_id) : fallbackPublicId,
+        bio: data.bio ?? "",
+        expertise: data.expertise ?? "",
+        yearsOfExperience: data.yearsOfExperience ?? 0,
+        linkedInUrl: data.linkedInUrl ?? "",
+        currentCompany: data.currentCompany ?? "",
+        pricePerMinute: data.pricePerMinute ?? 0,
+        averageRating: data.averageRating ?? 0,
+        totalSession: data.totalSession ?? 0,
+        active: data.active !== false,
+      });
+      setName(String(data.name ?? fallbackName ?? ""));
+      setBio(data.bio ?? "");
+      setExpertise(data.expertise ?? "");
+      setYearsOfExperience(data.yearsOfExperience ?? 0);
+      setLinkedInUrl(data.linkedInUrl ?? "");
+      setCurrentCompany(data.currentCompany ?? "");
+      setPricePerMinute(data.pricePerMinute ?? 0);
+    } else {
+      setProfile({
+        id: fallbackId,
+        name: fallbackName,
+        email: fallbackEmail,
+        avatar: fallbackAvatar,
+        public_id: fallbackPublicId,
+        bio: "",
+        expertise: "",
+        yearsOfExperience: 0,
+        linkedInUrl: "",
+        currentCompany: "",
+        pricePerMinute: 0,
+        averageRating: 0,
+        totalSession: 0,
+        active: true,
+      });
+      setName(fallbackName);
+    }
+  }, [currentMentor, isLoadingMentor, authUser]);
 
   useEffect(() => {
     return () => {
@@ -178,7 +179,13 @@ export function MentorAccountPage() {
           });
         }
 
-        await fetchProfile();
+        // Invalidate the cached mentor lookup so the next render fetches
+        // the freshly-saved profile.
+        if (authUser?.email) {
+          queryClient.invalidateQueries({
+            queryKey: ["mentors", "by-email", authUser.email],
+          });
+        }
         setAvatarFile(null);
         setAvatarPreview(null);
       } else {
@@ -239,7 +246,7 @@ export function MentorAccountPage() {
     </button>
   );
 
-  if (isLoading) {
+  if (isLoadingMentor) {
     return (
       <div className="flex h-full items-center justify-center p-8">
         <SpinnerBlock size="lg" />

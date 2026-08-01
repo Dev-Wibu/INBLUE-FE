@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 import { applicationService } from "@/services/application.manager";
 import {
   ArrowLeft,
-  ArrowRight,
   Award,
   BadgeCheck,
   Bot,
@@ -23,11 +22,12 @@ import {
   Layers,
   Lock,
   Mail,
+  RefreshCw,
   RotateCw,
   Sparkles,
   UserCheck,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -203,7 +203,9 @@ export function ApplicationWorkspacePage() {
     applicationId,
     !!applicationId
   );
-  const apiCurrentRoundOrder = apiCurrentRound?.roundOrder ?? app?.currentRoundOrder ?? 1;
+  const appOrder = app?.currentRoundOrder ?? 0;
+  const apiOrder = apiCurrentRound?.roundOrder ?? 0;
+  const apiCurrentRoundOrder = appOrder || apiOrder || 1;
 
   // Load Main Data
   const loadData = async () => {
@@ -267,6 +269,20 @@ export function ApplicationWorkspacePage() {
     loadData();
   }, [applicationId]);
 
+  // Whenever the application's currentRoundOrder increases (BE moved the
+  // candidate to the next round), re-fetch the matching round from the API
+  // so the UI never lags behind. Without this, `apiCurrentRound` can stay
+  // stale while `app.currentRoundOrder` jumps ahead, making the next round
+  // appear locked even though the candidate has been unlocked.
+  const lastSeenRoundOrder = useRef<number | null>(null);
+  useEffect(() => {
+    const order = app?.currentRoundOrder;
+    if (order == null) return;
+    if (lastSeenRoundOrder.current === order) return;
+    lastSeenRoundOrder.current = order;
+    void refetchCurrentRound();
+  }, [app?.currentRoundOrder]);
+
   // Round list sorted
   const rounds = useMemo(() => {
     return [...(jdInfo?.rounds ?? [])].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
@@ -309,11 +325,22 @@ export function ApplicationWorkspacePage() {
 
   const RoundIcon = getRoundIcon(activeRound?.roundType);
   const totalRounds = rounds.length;
+  // A round is "completed from the candidate's perspective" when:
+  //   • the application has reached a terminal app-level status (PASSED/FAILED/SOFT_FAILED), OR
+  //   • the active round's ApplicationDetail has been finalised (COMPLETED), OR
+  //   • the active round's AI feedback already came back (AI_EVALUATED) — waiting
+  //     only for Staff hrScore, candidate cannot resubmit, OR
+  //   • the active round is strictly before the current round order.
+  const activeDetailStatus = activeDetail?.status as string | undefined;
+  // SOFT_FAILED means "failed one round but you may continue the next one",
+  // so we must NOT lock every round downstream. Only PASSED/FAILED end the
+  // application from the candidate's perspective.
+  const isAppCompleted = app.status === "PASSED" || app.status === "FAILED";
+
   const isRoundCompleted =
-    app.status === "PASSED" ||
-    app.status === "FAILED" ||
-    app.status === "SOFT_FAILED" ||
-    (activeDetail?.status as string) === "COMPLETED" ||
+    isAppCompleted ||
+    activeDetailStatus === "COMPLETED" ||
+    activeDetailStatus === "AI_EVALUATED" ||
     (activeRound?.roundOrder ?? 0) < apiCurrentRoundOrder;
   const isRoundCurrent = !isRoundCompleted && activeRound?.roundOrder === apiCurrentRoundOrder;
   const isRoundLocked = !isRoundCompleted && (activeRound?.roundOrder ?? 0) > apiCurrentRoundOrder;
@@ -322,7 +349,7 @@ export function ApplicationWorkspacePage() {
     <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
       {/* Top Header Navigation (Single Sleek 1-Line Breadcrumb Standard) */}
       <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
+        <div className="mx-auto flex items-center justify-between px-4 py-3.5 sm:px-6">
           {/* Sleek 1-Line Inline Breadcrumb & Title */}
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
             <Button
@@ -371,8 +398,8 @@ export function ApplicationWorkspacePage() {
         </div>
       </div>
 
-      {/* Main Centered Studio Body (Max-Width 6XL Bounded) */}
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+      {/* Main Studio Body — full-width layout for all rounds */}
+      <div className="mx-auto space-y-6 px-4 py-6 sm:px-6">
         {/* Horizontal Pipeline Bar */}
         <Card className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-3 flex items-center justify-between px-1">
@@ -400,11 +427,11 @@ export function ApplicationWorkspacePage() {
           />
         </Card>
 
-        {/* Workspace Main Grid (Left 8 Cols Workspace | Right 4 Cols Rich Sidebar) */}
+        {/* Workspace — full-width layout for all rounds */}
         {activeRound ? (
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-            {/* Main Round Content (Left 8 Cols) */}
-            <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs lg:col-span-8 dark:border-slate-800/60 dark:bg-slate-900/40">
+          <div className="grid grid-cols-1 items-start gap-6">
+            {/* Main Round Content — full width */}
+            <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
               {/* Header Vòng thi */}
               <div className="border-b border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-[#0F172A]/70">
                 <div className="flex items-start justify-between gap-4">
@@ -417,11 +444,19 @@ export function ApplicationWorkspacePage() {
                         <span className="text-xs font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
                           {t("userApplicationhistory.round", "Vòng")} {activeRound.roundOrder}
                         </span>
-                        {isRoundCompleted && (
-                          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                            ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
+                        {app.status === "SOFT_FAILED" && activeDetail?.finalResult === "FAILED" && (
+                          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+                            ⚠ {t("userApplicationhistory.needsImprove", "Cần cải thiện")}
                           </span>
                         )}
+                        {isRoundCompleted &&
+                          !(
+                            app.status === "SOFT_FAILED" && activeDetail?.finalResult === "FAILED"
+                          ) && (
+                            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                              ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
+                            </span>
+                          )}
                         {isRoundCurrent && (
                           <span className="animate-pulse rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                             ▶ {t("userApplicationhistory.currentRoundBadge", "Vòng hiện tại")}
@@ -485,32 +520,32 @@ export function ApplicationWorkspacePage() {
                   />
                 )}
 
-                {/* Report CTA when Round is completed */}
-                {isRoundCompleted && (
-                  <div className="mt-6 flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        navigate(
-                          `/user/application/${applicationId}/round/${activeRound.roundOrder}/result`
-                        )
-                      }
-                      className="h-9 gap-2 border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
-                      <span>
-                        {t(
-                          "userApplicationhistory.viewDetailedReport",
-                          "Xem báo cáo phân tích chi tiết"
-                        )}
-                      </span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Button>
+                {/* CTA row when Round is completed (or failed but needs improvement) */}
+                {(isRoundCompleted ||
+                  (app.status === "SOFT_FAILED" && activeDetail?.finalResult === "FAILED")) && (
+                  <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+                    {app.status === "SOFT_FAILED" && activeDetail?.finalResult === "FAILED" && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          // Re-select this round so the module renders as the
+                          // current round again. Submitting again will refresh
+                          // the detail and the application status will move
+                          // forward once HR/System grades the new submission.
+                          setSelectedRoundOrder(activeRound.roundOrder ?? 1);
+                        }}
+                        className="h-9 gap-2 border-amber-300 text-xs font-bold text-amber-800 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/40">
+                        <RefreshCw className="h-3.5 w-3.5" />
+                        {t("userApplicationhistory.retakeRound", "Làm lại vòng này")}
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
             </Card>
 
-            {/* Rich Sidebar Summary (Right 4 Cols - Rich Multi-Widget System) */}
-            <div className="space-y-4 lg:col-span-4">
+            {/* Rich Sidebar Summary — hidden in full-width layout */}
+            <div className="hidden space-y-4 lg:col-span-4">
               {/* Widget 1: Company & Application Meta */}
               <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
                 <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">

@@ -5,6 +5,7 @@ const t = i18n.t.bind(i18n);
  * Uses React Query for server state
  */
 
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { getNormalizedErrorMessage } from "@/lib/error-normalizer";
 import type {
   CreateMentorFeedbackRequest,
@@ -22,14 +23,6 @@ export const FEEDBACK_QUERY_KEYS = {
   byMentor: (mentorId: number) => ["mentor-feedbacks", "mentor", mentorId] as const,
   byUser: (userId: number) => ["mentor-feedbacks", "user", userId] as const,
   bySession: (sessionId: number) => ["mentor-feedbacks", "session", sessionId] as const,
-};
-const getFeedbackMentorId = (feedback: MentorFeedback): number | undefined => {
-  if (feedback.mentor?.id != null) {
-    return typeof feedback.mentor.id === "string"
-      ? parseInt(feedback.mentor.id, 10)
-      : feedback.mentor.id;
-  }
-  return undefined;
 };
 const getFeedbackUserId = (feedback: MentorFeedback): number | undefined => {
   if (feedback.user?.id != null) {
@@ -83,19 +76,39 @@ export const useMentorFeedbackById = (id: number) => {
  */
 export const useMentorFeedbacksByMentor = (mentorId: number) => {
   const numericMentorId = typeof mentorId === "string" ? parseInt(mentorId, 10) : mentorId;
+  // 2026-08-02: BE returns `mentor: null` / `user: null` for the nested
+  //   objects (lazy-loaded proxies), so the local `getFeedbackMentorId`
+  //   helper resolves to undefined and the original `.filter(...)` step
+  //   dropped every row. The endpoint already filters by mentor, so just
+  //   return what BE gave us.
+  //
+  //   ⚠️ CRITICAL — caller MUST pass the `Mentor.id` (bảng mentor PK),
+  //   NOT the `User.id` (JWT sub). See docs/BE_RESPONSE_MENTOR_BUG.md §3
+  //   and `useCurrentMentorProfile` for the resolution helper.
   return useQuery({
     queryKey: FEEDBACK_QUERY_KEYS.byMentor(numericMentorId),
     queryFn: async () => {
       const response = await mentorFeedbackManager.getByMentorId(numericMentorId);
       if (response.success && response.data) {
-        return response.data.filter(
-          (feedback: MentorFeedback) => getFeedbackMentorId(feedback) === numericMentorId
-        );
+        return response.data;
       }
       return [];
     },
     enabled: !!numericMentorId,
   });
+};
+
+/**
+ * Convenience hook that resolves the current user's `Mentor.id` (bảng
+ * mentor PK — different from `User.id` returned by JWT) and then fetches
+ * feedbacks for that mentor. Use this instead of `useMentorFeedbacksByMentor`
+ * on mentor pages so we don't silently hit `/api/mentor-feedbacks/mentor/{userId}`
+ * which always returns `[]` when `Mentor.id ≠ User.id`.
+ */
+export const useMentorFeedbacksForCurrentUser = () => {
+  const { data: profile } = useCurrentMentorProfile();
+  const mentorId = (profile as { id?: number } | null)?.id ?? 0;
+  return useMentorFeedbacksByMentor(mentorId);
 };
 
 /**
@@ -196,6 +209,10 @@ export const useUpdateMentorFeedback = () => {
       queryClient.invalidateQueries({
         queryKey: FEEDBACK_QUERY_KEYS.byId(variables.id),
       });
+      // 2026-08-02: updateCandidateMentorFeedback needs the parent session
+      //   query to refresh so `session.mentorFeedback` reflects the new
+      //   rating/comment without manual reload.
+      queryClient.invalidateQueries({ queryKey: ["sessions"] });
       toast.success(t("general.responseUpdatedSuccessfully"));
     },
     onError: (error: Error) => {

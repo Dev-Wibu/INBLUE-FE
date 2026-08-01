@@ -361,6 +361,13 @@ export function MentorSessionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [draftTimeFilter, setDraftTimeFilter] = useState<DraftTimeFilter>("all");
   const [otherStatusFilter, setOtherStatusFilter] = useState<OtherStatusFilter>("all");
+  // 2026-08-02: BE SecurityConfig permitAll + mentor also has admin role in
+  //   this project, so the admin endpoint still works for the Sessions tab
+  //   and `useSessions()` was returning data before. `useUserSessions()` was
+  //   returning `[]` for user 15 (likely BE filter behaves differently than
+  //   documented for the test case where userId == userId2). Keeping the
+  //   admin endpoint for now; FE-side mentor filter (below) still narrows to
+  //   the mentor's own sessions.
   const {
     data: allSessions = [],
     isLoading: sessionsLoading,
@@ -404,23 +411,6 @@ export function MentorSessionsPage() {
           : currentMentorProfile.id
         : undefined;
     const all = [...allSessions];
-    if (typeof window !== "undefined") {
-      // DEBUG: full data + per-record match flags so we can see WHY nothing matches.
-      console.debug("[MentorSessions] FULL DATA", {
-        userId,
-        mentorProfileId,
-        userRole: user?.role,
-        totalSessions: all.length,
-        sample: all.slice(0, 5).map((s) => ({
-          id: s.id,
-          status: s.status,
-          roomName: s.roomName,
-          userId: s.userId,
-          userId2: s.userId2,
-          mentorId: s.mentorId,
-        })),
-      });
-    }
     return all
       .filter((session: Session) => {
         const candidates = [userId, mentorProfileId].filter(

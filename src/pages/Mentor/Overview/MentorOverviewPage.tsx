@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviewsByMentor } from "@/hooks/useMentorReview";
 import { useSessions } from "@/hooks/useSession";
 import type { Session } from "@/interfaces";
@@ -205,9 +206,18 @@ export function MentorOverviewPage() {
   const defaultStatusConfig = statusConfig.SCHEDULED;
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const mentorId = user?.id;
+  // 2026-08-02: BE reviews endpoint filters by `Mentor.id` (PK bảng
+  //   mentor), not `User.id` (JWT sub). Resolve Mentor.id via email.
+  const { data: mentorProfile } = useCurrentMentorProfile();
+  const mentorPk = (mentorProfile as { id?: number } | null)?.id ?? 0;
+  const reviewsQueryMentorId = mentorPk || user?.id || 0;
+  // 2026-08-02: reverted to `useSessions` (admin endpoint) because
+  //   `useUserSessions` was returning `[]` for user 15 (BE filter behaves
+  //   differently than documented when userId == userId2). Admin endpoint
+  //   is permitAll for mentors in this project.
   const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
-  const { data: reviews = [], isLoading: reviewsLoading } = useMentorReviewsByMentor(mentorId || 0);
+  const { data: reviews = [], isLoading: reviewsLoading } =
+    useMentorReviewsByMentor(reviewsQueryMentorId);
   const now = new Date();
   const nowTimestamp = now.getTime();
   const fallbackTodayKey = toDateKeyFromParts(now.getFullYear(), now.getMonth(), now.getDate());
@@ -227,14 +237,14 @@ export function MentorOverviewPage() {
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [mobileView, setMobileView] = useState<string>(MOBILE_VIEW_AGENDA);
   const mentorSessions = useMemo(() => {
-    if (!mentorId) {
+    if (!mentorPk && !user?.id) {
       return [];
     }
-    return allSessions.filter((session) => isSessionMentor(session, mentorId));
-  }, [allSessions, mentorId]);
+    return allSessions.filter((session) => isSessionMentor(session, mentorPk || user?.id));
+  }, [allSessions, mentorPk, user]);
   const calendarItems = useMemo(() => {
-    return buildMentorCalendarSessions(allSessions, mentorId);
-  }, [allSessions, mentorId]);
+    return buildMentorCalendarSessions(allSessions, mentorPk || user?.id);
+  }, [allSessions, mentorPk, user]);
   const fromKey = useMemo(() => toFilterDateKey(fromDate), [fromDate]);
   const toKey = useMemo(() => toFilterDateKey(toDate), [toDate]);
   const filteredCalendarItems = useMemo(() => {

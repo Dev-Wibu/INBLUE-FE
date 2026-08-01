@@ -31,11 +31,17 @@ export function RoundWorkspaceDispatcher({
 }: RoundWorkspaceDispatcherProps) {
   const roundOrder = round.roundOrder ?? 1;
 
-  const isAppCompleted =
-    appStatus === "PASSED" || appStatus === "FAILED" || appStatus === "SOFT_FAILED";
+  // SOFT_FAILED means "failed one round but you may continue the next one",
+  // so we must NOT lock every round downstream. Only PASSED/FAILED end the
+  // application from the candidate's perspective.
+  const isAppCompleted = appStatus === "PASSED" || appStatus === "FAILED";
 
+  const detailStatus = detail?.status as string | undefined;
   const isCompleted =
-    isAppCompleted || (detail?.status as string) === "COMPLETED" || roundOrder < currentRoundOrder;
+    isAppCompleted ||
+    detailStatus === "COMPLETED" ||
+    detailStatus === "AI_EVALUATED" ||
+    roundOrder < currentRoundOrder;
 
   const isCurrent = !isCompleted && roundOrder === currentRoundOrder;
 

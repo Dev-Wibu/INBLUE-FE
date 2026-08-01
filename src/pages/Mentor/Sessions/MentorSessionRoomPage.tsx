@@ -180,9 +180,13 @@ export function MentorSessionRoomPage() {
   };
 
   const handlePeerCountUpdated = (_info: { participantCount: number; localIsAlone: boolean }) => {
-    if (_info.localIsAlone) {
-      void refetchSession();
-    }
+    // 2026-08-02 fix: refetch whenever peer count changes — we use this to
+    //   catch the candidate just joining (participantCount 1 -> 2) so the
+    //   right-hand "Candidate" card picks up the new `startTime1` from BE
+    //   without waiting for the 10s poll. Same goes for the peer leaving
+    //   (participantCount 2 -> 1) so `endTime1` shows up.
+    void _info;
+    void refetchSession();
   };
 
   // Redirect if session is not available
@@ -194,19 +198,21 @@ export function MentorSessionRoomPage() {
 
   // 2026-07-13 fix: polling backup — while inside the room, BE may flip
   //   status ONGOING -> COMPLETED at any moment (e.g. when peer leaves
-  //   and Daily.co webhook fires). Without a refresh we keep rendering
-  //   stale data and miss the "session ended" UI.
+  //   and Daily.co webhook fires), or may write `startTime1` / `endTime1`
+  //   for the candidate while the mentor has been sitting in the room
+  //   (status can still be SCHEDULED at that point — student join is what
+  //   flips it to ONGOING). Without a refresh we keep rendering stale
+  //   data: the right-hand "Candidate" card stays empty until F5.
+  //   Poll unconditionally every 10s while mounted (mirrors
+  //   StudentSessionRoomPage).
   useEffect(() => {
-    if (session?.status !== "ONGOING") {
-      return;
-    }
     const interval = window.setInterval(() => {
       void refetchSession();
     }, 10_000);
     return () => {
       window.clearInterval(interval);
     };
-  }, [session?.status, refetchSession]);
+  }, [refetchSession]);
 
   const sessionStatus = (session?.status ?? "DRAFT") as StatusKey;
   const statusStyle = STATUS_STYLES[sessionStatus] ?? STATUS_STYLES.DRAFT;

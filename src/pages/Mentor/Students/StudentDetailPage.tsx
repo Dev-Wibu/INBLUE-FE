@@ -41,6 +41,9 @@ export function StudentDetailPage() {
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
   const studentId = Number(userId);
+  // 2026-08-02: reverted to `useSessions` (admin endpoint) because
+  //   `useUserSessions` was returning `[]` for the test user (BE filter
+  //   behaves differently than documented when userId == userId2).
   const { data: allSessions = [], isLoading: sessionsLoading } = useSessions();
   const { data: allFeedbacks = [], isLoading: feedbacksLoading } = useMentorFeedbacks();
   const { data: allReviews = [], isLoading: reviewsLoading } = useMentorReviews();

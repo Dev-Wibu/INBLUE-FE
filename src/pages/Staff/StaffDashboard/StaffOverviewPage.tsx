@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { SpinnerBlock } from "@/components/ui/spinner";
-import { useAllPendingHRReviews } from "@/hooks/useApplicationDetails";
+import { useApplicationDetailsForReviewer } from "@/hooks/useApplicationDetails";
 import { fixUtf8Mojibake } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { ArrowRight, ClipboardCheck, Clock, Sparkles, TrendingUp } from "lucide-react";
@@ -35,7 +35,7 @@ export function StaffOverviewPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
 
-  const { data: pendingReviews = [], isLoading } = useAllPendingHRReviews(true);
+  const { data: pendingReviews = [], isLoading } = useApplicationDetailsForReviewer(true);
 
   const displayName = fixUtf8Mojibake(user?.name) || t("common.staff");
   const avatarUrl = user?.avatarUrl ?? null;
@@ -48,11 +48,13 @@ export function StaffOverviewPage() {
 
   const stats = useMemo(() => {
     const total = pendingReviews.length;
-    const submitted = pendingReviews.filter(
-      (r) => (r as { status?: string }).status === "SUBMITTED"
+    const needsGrading = pendingReviews.filter(
+      (r) => (r as { status?: string }).status === "AI_EVALUATED"
     ).length;
-    const pending = Math.max(0, total - submitted);
-    return { total, submitted, pending };
+    const completed = pendingReviews.filter(
+      (r) => (r as { status?: string }).status === "COMPLETED"
+    ).length;
+    return { total, needsGrading, completed };
   }, [pendingReviews]);
 
   const recentPending = useMemo(() => pendingReviews.slice(0, 4), [pendingReviews]);
@@ -108,7 +110,7 @@ export function StaffOverviewPage() {
                   {t("staffOverview.pendingReview")}
                 </p>
                 <p className="mt-2 text-3xl font-bold text-[#0b1c30] dark:text-white">
-                  {isLoading ? "—" : stats.total}
+                  {isLoading ? "—" : stats.needsGrading}
                 </p>
                 <p className="mt-1 text-xs text-[#45464d] dark:text-[#8f9099]">
                   {t("staffOverview.pendingReviewHint")}
@@ -126,7 +128,7 @@ export function StaffOverviewPage() {
                   {t("staffOverview.processedToday")}
                 </p>
                 <p className="mt-2 text-3xl font-bold text-[#0b1c30] dark:text-white">
-                  {isLoading ? "—" : stats.submitted}
+                  {isLoading ? "—" : stats.completed}
                 </p>
                 <p className="mt-1 text-xs text-[#45464d] dark:text-[#8f9099]">
                   {t("staffOverview.processedTodayHint")}
@@ -144,7 +146,7 @@ export function StaffOverviewPage() {
                   {t("staffOverview.pendingNow")}
                 </p>
                 <p className="mt-2 text-3xl font-bold text-[#0b1c30] dark:text-white">
-                  {isLoading ? "—" : stats.pending}
+                  {isLoading ? "—" : stats.total}
                 </p>
                 <p className="mt-1 text-xs text-[#45464d] dark:text-[#8f9099]">
                   {t("staffOverview.pendingNowHint")}
@@ -193,13 +195,16 @@ export function StaffOverviewPage() {
           ) : (
             <div className="space-y-2">
               {recentPending.map((review) => {
-                const reviewId = (review as { id?: number }).id;
+                const detailId = (review as { id?: number }).id;
+                const applicationId = (review as { applicationId?: number }).applicationId;
                 const status = (review as { status?: string }).status || "PENDING";
-                const submittedAt = (review as { createdAt?: string }).createdAt;
-                const roundOrder = (review as { currentRoundOrder?: number }).currentRoundOrder;
+                const submittedAt =
+                  (review as { updatedAt?: string }).updatedAt ??
+                  (review as { createdAt?: string }).createdAt;
+                const roundId = (review as { roundId?: number }).roundId;
                 return (
                   <button
-                    key={reviewId}
+                    key={detailId}
                     onClick={openGrading}
                     className="flex w-full items-center gap-4 rounded-xl border border-slate-200/60 bg-white p-4 text-left transition-all hover:border-[#0058be]/40 hover:bg-[#eff4ff] dark:border-slate-800/60 dark:bg-slate-900/50 dark:hover:bg-[#0058be]/10">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
@@ -208,21 +213,21 @@ export function StaffOverviewPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-[#0b1c30] dark:text-white">
                         {t("staffOverview.applicationLabel")}
-                        {reviewId ?? "—"}
+                        {applicationId ?? "—"}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#45464d] dark:text-[#8f9099]">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formatTimeAgo(submittedAt, t)}
                         </span>
-                        {typeof roundOrder === "number" && <span>• Round {roundOrder}</span>}
+                        {typeof roundId === "number" && <span>• Round {roundId}</span>}
                       </div>
                     </div>
                     <Badge
                       variant="outline"
                       className={
-                        status === "SUBMITTED"
-                          ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                        status === "COMPLETED"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
                           : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
                       }>
                       {status}
