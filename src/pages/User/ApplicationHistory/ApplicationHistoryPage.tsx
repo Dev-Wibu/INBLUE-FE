@@ -78,6 +78,48 @@ const ROUND_TYPE_STEP_LABELS: Record<string, string> = {
 };
 
 // ============================================================
+// Job Level Badge Component (Distinct Colors per Level)
+// ============================================================
+
+function JobLevelBadge({ level }: { level?: string }) {
+  const lvl = (level || "JUNIOR").toUpperCase().replace("-", "_");
+
+  let colorClass =
+    "bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30";
+
+  if (lvl.includes("INTERN")) {
+    colorClass =
+      "bg-cyan-500/10 text-cyan-600 border border-cyan-500/20 dark:bg-cyan-500/15 dark:text-cyan-300 dark:border-cyan-500/30";
+  } else if (lvl.includes("FRESH")) {
+    colorClass =
+      "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30";
+  } else if (lvl.includes("JUN")) {
+    colorClass =
+      "bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30";
+  } else if (lvl.includes("MID")) {
+    colorClass =
+      "bg-purple-500/10 text-purple-600 border border-purple-500/20 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30";
+  } else if (lvl.includes("SENIOR") || lvl.includes("SEN")) {
+    colorClass =
+      "bg-amber-500/10 text-amber-600 border border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30";
+  } else if (lvl.includes("LEAD") || lvl.includes("MANAGER") || lvl.includes("DIRECTOR")) {
+    colorClass =
+      "bg-rose-500/10 text-rose-600 border border-rose-500/20 dark:bg-rose-500/15 dark:text-rose-400 dark:border-rose-500/30";
+  }
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-extrabold tracking-wide uppercase shadow-2xs",
+        colorClass
+      )}>
+      <Briefcase className="h-3 w-3" />
+      {level || "JUNIOR"}
+    </span>
+  );
+}
+
+// ============================================================
 // Status Badge (Application level - Vietnamese)
 // ============================================================
 
@@ -293,10 +335,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
           </p>
 
           <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-            <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold tracking-wide text-blue-600 uppercase dark:bg-blue-950/60 dark:text-blue-400">
-              <Briefcase className="h-3 w-3" />
-              {application.level || "JUNIOR"}
-            </span>
+            <JobLevelBadge level={application.level} />
             {displayDate && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3 text-slate-400" />
@@ -336,7 +375,6 @@ function CompletedApplicationCard({ application }: { application: EnrichedApplic
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const totalRounds = application.rounds?.length ?? 0;
   const isValidScore =
     typeof application.overallScore === "number" &&
     application.overallScore >= 0 &&
@@ -371,10 +409,7 @@ function CompletedApplicationCard({ application }: { application: EnrichedApplic
         {/* Highlight Score / Achievement Strip */}
         <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3 dark:border-slate-800/80 dark:bg-slate-800/50">
           <div className="flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-400">
-              <Clock className="h-3.5 w-3.5 text-slate-400" />
-              {totalRounds > 0 ? `Đã hoàn tất ${totalRounds}/${totalRounds} vòng` : "Đã hoàn thành"}
-            </span>
+            <JobLevelBadge level={application.level} />
 
             {isValidScore ? (
               <div className="flex items-center gap-1 font-extrabold text-indigo-600 dark:text-indigo-400">
