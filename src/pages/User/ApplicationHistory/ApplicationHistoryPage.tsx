@@ -206,7 +206,7 @@ function CompanyAvatar({
         alt={companyName || "Logo"}
         onError={() => setImgError(true)}
         className={cn(
-          "shrink-0 rounded-xl border border-slate-200/80 bg-white object-contain p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-800",
+          "shrink-0 rounded-xl border border-slate-200/80 bg-white object-contain p-1 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800",
           className
         )}
       />
@@ -346,7 +346,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
 }
 
 // ============================================================
-// Standard Table Component for Completed Applications (Khảo thí UI Rule)
+// Standard Table Component for Completed Applications (Dark Mode Polished)
 // ============================================================
 
 function CompletedApplicationsTable({ applications }: { applications: EnrichedApplication[] }) {
@@ -354,29 +354,29 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
   const navigate = useNavigate();
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs dark:border-slate-800/90 dark:bg-slate-900">
+    <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-slate-800/90 dark:bg-slate-900/90">
       <Table>
-        <TableHeader className="bg-slate-50/70 hover:bg-slate-50/70 dark:bg-slate-800/50 dark:hover:bg-slate-800/50">
-          <TableRow className="border-b border-slate-200/80 hover:bg-transparent dark:border-slate-800 dark:hover:bg-transparent">
-            <TableHead className="h-11 pl-6 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+        <TableHeader className="border-b border-slate-200/80 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900">
+          <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
+            <TableHead className="h-11 pl-6 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               #ID
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Công ty & Vị trí ứng tuyển
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Cấp bậc
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Trạng thái
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Điểm số
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Ngày nộp
             </TableHead>
-            <TableHead className="h-11 pr-6 text-right text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+            <TableHead className="h-11 pr-6 text-right text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Thao tác
             </TableHead>
           </TableRow>
@@ -393,7 +393,7 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
               <TableRow
                 key={`completed-row-${app.id}`}
                 onClick={() => navigate(`/user/application/${app.id}`)}
-                className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/60">
+                className="group cursor-pointer border-b border-slate-100/80 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/50">
                 {/* ID Column */}
                 <TableCell className="pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
                   #{app.id}
@@ -411,7 +411,7 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                       <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
                         {app.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
                       </h4>
-                      <p className="truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                      <p className="truncate text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                         {app.companyName ?? t("userApplicationhistory.company", "Công ty")}
                       </p>
                     </div>
@@ -437,7 +437,7 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                       <span className="text-[10px] font-normal text-slate-400">/100</span>
                     </div>
                   ) : (
-                    <span className="text-xs text-slate-400">---</span>
+                    <span className="font-mono text-xs text-slate-400">---</span>
                   )}
                 </TableCell>
 
@@ -455,7 +455,7 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                     }}
                     variant="ghost"
                     size="sm"
-                    className="h-8 rounded-lg px-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/50">
+                    className="h-8 rounded-lg px-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/60">
                     <span>Xem báo cáo</span>
                     <ChevronRight className="ml-1 h-3.5 w-3.5" />
                   </Button>
@@ -656,35 +656,14 @@ export function ApplicationHistoryPage() {
 
   return (
     <div className="w-full space-y-8 px-4 py-4 pb-16 sm:px-6 lg:px-8">
-      {/* Top Bar Navigation & Controls */}
-      <div className="flex flex-col gap-4 border-b border-slate-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            {t("userApplicationhistory.pageTitle", "Lịch sử ứng tuyển")}
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Theo dõi danh sách các đơn phỏng vấn đang thực hiện và kết quả đã đạt được.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Integrated Search Bar */}
-          <div className="relative w-full sm:w-64">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 pl-9 text-xs"
-              placeholder={t("userApplicationhistory.searchPlaceholder", "Tìm kiếm nhanh...")}
-            />
-          </div>
-
-          <ReloadButton
-            onReload={() => loadApplications(true)}
-            isLoading={refetching}
-            tooltip={t("userApplicationhistory.reload", "Tải lại dữ liệu")}
-          />
-        </div>
+      {/* Top Header Title */}
+      <div className="border-b border-slate-200/80 pb-4 dark:border-slate-800">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          {t("userApplicationhistory.pageTitle", "Lịch sử ứng tuyển")}
+        </h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Theo dõi danh sách các đơn phỏng vấn đang thực hiện và kết quả đã đạt được.
+        </p>
       </div>
 
       {/* SECTION 1: Active Applications (Đơn ứng tuyển đang thực hiện) */}
@@ -734,6 +713,7 @@ export function ApplicationHistoryPage() {
 
       {/* SECTION 2: Completed / Other Applications (Lịch sử đơn đã hoàn tất) */}
       <div className="space-y-4 pt-4">
+        {/* Section Header with Integrated Controls (Search + Filter + Reload) */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -741,30 +721,51 @@ export function ApplicationHistoryPage() {
             </h2>
           </div>
 
-          {/* Status Filter Dropdown */}
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value as ApplicationStatus | "all")}>
-            <SelectTrigger className="h-8 w-full text-xs sm:w-[200px]">
-              <SelectValue
-                placeholder={t("userApplicationhistory.filterByStatus", "Lọc theo trạng thái")}
+          {/* Integrated Controls Group on Right */}
+          <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
+            {/* Integrated Search Bar */}
+            <div className="relative w-full sm:w-60">
+              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-9 text-xs"
+                placeholder={t("userApplicationhistory.searchPlaceholder", "Tìm kiếm nhanh...")}
               />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                {t("userApplicationhistory.allStatus", "Tất cả kết quả")}
-              </SelectItem>
-              <SelectItem value="PASSED">
-                {t("userApplicationhistory.statusCompleted", "Trúng tuyển")}
-              </SelectItem>
-              <SelectItem value="FAILED">
-                {t("userApplicationhistory.statusRejected", "Chưa đạt")}
-              </SelectItem>
-              <SelectItem value="SOFT_FAILED">
-                {t("userApplicationhistory.needsImprovement", "Cần cải thiện")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            </div>
+
+            {/* Status Filter Dropdown */}
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as ApplicationStatus | "all")}>
+              <SelectTrigger className="h-9 w-full text-xs sm:w-[170px]">
+                <SelectValue
+                  placeholder={t("userApplicationhistory.filterByStatus", "Lọc theo trạng thái")}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {t("userApplicationhistory.allStatus", "Tất cả kết quả")}
+                </SelectItem>
+                <SelectItem value="PASSED">
+                  {t("userApplicationhistory.statusCompleted", "Trúng tuyển")}
+                </SelectItem>
+                <SelectItem value="FAILED">
+                  {t("userApplicationhistory.statusRejected", "Chưa đạt")}
+                </SelectItem>
+                <SelectItem value="SOFT_FAILED">
+                  {t("userApplicationhistory.needsImprovement", "Cần cải thiện")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Reload Button */}
+            <ReloadButton
+              onReload={() => loadApplications(true)}
+              isLoading={refetching}
+              tooltip={t("userApplicationhistory.reload", "Tải lại dữ liệu")}
+            />
+          </div>
         </div>
 
         {/* Filter Result Count (Above table per Khảo thí rule) */}
