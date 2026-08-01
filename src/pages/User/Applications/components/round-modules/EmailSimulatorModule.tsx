@@ -59,27 +59,29 @@ export function EmailSimulatorModule({
   return (
     <div className="space-y-6">
       {/* Instruction Box */}
-      <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-700 dark:border-slate-800/80 dark:bg-[#0F172A]/90 dark:text-slate-300">
-        <span className="font-extrabold text-indigo-600 dark:text-indigo-400">
-          💡 {t("userApplicationhistory.instructionsTitle", "Hướng dẫn làm bài")}:{" "}
-        </span>
-        {round.configData?.instruction ||
-          t(
-            "userApplicationhistory.emailInstructionDefault",
-            "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng theo đúng chuẩn mực giao tiếp công sở, từ chối hoặc đề xuất giải pháp hợp lý."
-          )}
+      <div className="space-y-2">
+        <h4 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+          {t("userApplicationhistory.instructionsTitle", "Hướng dẫn làm bài")}
+        </h4>
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-700 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]/90 dark:text-slate-300">
+          {round.configData?.instruction ||
+            t(
+              "userApplicationhistory.emailInstructionDefault",
+              "Hãy đóng vai vị trí ứng tuyển để phản hồi Email của cấp trên/khách hàng theo đúng chuẩn mực giao tiếp công sở, từ chối hoặc đề xuất giải pháp hợp lý."
+            )}
+        </div>
       </div>
 
       {/* Simulated Email Client Container */}
-      <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800/60 dark:bg-slate-900/40">
+      <Card className="overflow-hidden border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
         {/* Email Header Bar */}
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-800/60">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100/70 px-6 py-3.5 dark:border-slate-800 dark:bg-slate-800/60">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-            <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            <span className="h-3 w-3 rounded-full bg-rose-500" />
+            <span className="h-3 w-3 rounded-full bg-amber-500" />
+            <span className="h-3 w-3 rounded-full bg-emerald-500" />
             <span className="ml-2 text-xs font-bold text-slate-700 dark:text-slate-300">
-              ✉️ Corporate Mail Client Simulator
+              ✉️ Inblue Corporate Mail Client Simulator
             </span>
           </div>
           {finalScore !== undefined && finalScore !== null && (
@@ -90,7 +92,7 @@ export function EmailSimulatorModule({
         </div>
 
         {/* Email Fields */}
-        <div className="space-y-4 p-5">
+        <div className="space-y-4 p-6">
           <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
             <span className="w-16 text-xs font-bold text-slate-500 dark:text-slate-400">
               Người nhận:
@@ -114,10 +116,10 @@ export function EmailSimulatorModule({
           </div>
 
           {/* Email Body Area */}
-          <div className="pt-1">
+          <div className="pt-2">
             <textarea
               disabled={isCompleted || !isCurrent}
-              rows={6}
+              rows={8}
               value={emailBody}
               onChange={(e) => setEmailBody(e.target.value)}
               className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50/50 p-4 text-xs leading-relaxed text-slate-900 focus:border-indigo-500 focus:outline-hidden dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-100"
@@ -127,11 +129,11 @@ export function EmailSimulatorModule({
 
           {/* Send CTA Button */}
           {!isCompleted && isCurrent && (
-            <div className="flex justify-end pt-1">
+            <div className="flex justify-end pt-2">
               <Button
                 onClick={handleSubmitEmail}
                 disabled={submitting}
-                className="h-9 gap-2 bg-indigo-600 px-6 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700">
+                className="h-9.5 gap-2 bg-indigo-600 px-6 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700">
                 {submitting ? (
                   <>
                     <Sparkles className="h-4 w-4 animate-spin" />

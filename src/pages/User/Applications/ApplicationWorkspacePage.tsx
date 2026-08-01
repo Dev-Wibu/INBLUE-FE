@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { RoundSubmissionDialog } from "@/components/ui/round-submission-dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentRound } from "@/hooks/useRound";
 import { fetchClient } from "@/lib/api";
@@ -13,13 +12,15 @@ import {
   ArrowLeft,
   ArrowRight,
   Award,
+  BadgeCheck,
   Bot,
   Briefcase,
   ChevronRight,
+  Clock,
   Code2,
   FileCheck2,
   HelpCircle,
-  Info,
+  Layers,
   Lock,
   Mail,
   RotateCw,
@@ -70,6 +71,40 @@ function ApplicationStatusBadge({ status }: { status?: string }) {
         item.className
       )}>
       {item.label}
+    </span>
+  );
+}
+
+function JobLevelBadge({ level }: { level?: string }) {
+  if (!level) return null;
+  const normalizedLevel = level.toUpperCase();
+
+  const levelStyles: Record<string, string> = {
+    INTERN:
+      "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800/60",
+    FRESHER:
+      "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/60",
+    JUNIOR:
+      "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60",
+    MID: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800/60",
+    MIDDLE:
+      "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800/60",
+    SENIOR:
+      "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800/60",
+    LEAD: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800/60",
+  };
+
+  const style =
+    levelStyles[normalizedLevel] ||
+    "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300";
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-extrabold uppercase",
+        style
+      )}>
+      {normalizedLevel}
     </span>
   );
 }
@@ -148,6 +183,7 @@ export function ApplicationWorkspacePage() {
     title?: string;
     companyName?: string;
     logoUrl?: string | null;
+    level?: string;
     rounds?: JdRound[];
   } | null>(null);
   const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
@@ -202,6 +238,7 @@ export function ApplicationWorkspacePage() {
               title: jd.title,
               companyName: extra.companyName,
               logoUrl,
+              level: jd.level,
               rounds: (extra.rounds as JdRound[]) ?? [],
             });
           }
@@ -246,14 +283,9 @@ export function ApplicationWorkspacePage() {
     return detailsData.find((d) => d.roundId === activeRound.id);
   }, [detailsData, activeRound]);
 
-  // Dynamic Layout Mode check
-  const activeType = (activeRound?.roundType || "").toUpperCase().replace("MENTROR", "MENTOR");
-  const isImmersiveFullWidth =
-    activeType === "CODING" || activeType === "CODE_REVIEW" || activeType === "AI_INTERVIEW";
-
   if (loading) {
     return (
-      <div className="w-full space-y-6 px-5 py-6 md:px-8">
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-28 w-full rounded-[20px]" />
         <Skeleton className="h-96 w-full rounded-[20px]" />
@@ -290,7 +322,7 @@ export function ApplicationWorkspacePage() {
     <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
       {/* Top Header Navigation (Single Sleek 1-Line Breadcrumb Standard) */}
       <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="flex w-full items-center justify-between px-5 py-3.5 md:px-8">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
           {/* Sleek 1-Line Inline Breadcrumb & Title */}
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
             <Button
@@ -325,65 +357,6 @@ export function ApplicationWorkspacePage() {
           {/* Right Header Actions */}
           <div className="flex items-center gap-3">
             <ApplicationStatusBadge status={app.status} />
-
-            {/* Quick JD Info Sheet Trigger */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5 border-indigo-200 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:border-indigo-900/60 dark:text-indigo-400 dark:hover:bg-indigo-950/40">
-                  <Info className="h-3.5 w-3.5" />
-                  <span>Thông tin JD</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full border-l border-slate-200 bg-white sm:max-w-md dark:border-slate-800 dark:bg-slate-900">
-                <SheetHeader>
-                  <SheetTitle className="text-base font-extrabold text-slate-900 dark:text-white">
-                    Chi tiết Đơn ứng tuyển
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="mt-6 space-y-4 text-xs">
-                  <div className="flex justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-                    <span className="text-slate-500">Doanh nghiệp:</span>
-                    <span className="font-bold text-slate-900 dark:text-white">
-                      {jdInfo?.companyName}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-                    <span className="text-slate-500">Vị trí tuyển dụng:</span>
-                    <span className="font-bold text-indigo-600 dark:text-indigo-400">
-                      {jdInfo?.title}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-                    <span className="text-slate-500">Ngày nộp đơn:</span>
-                    <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
-                      {app.createdAt ? formatDateTime(app.createdAt) : ""}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-                    <span className="text-slate-500">Tổng số vòng tuyển dụng:</span>
-                    <span className="font-bold text-slate-900 dark:text-white">
-                      {totalRounds} vòng
-                    </span>
-                  </div>
-
-                  {app.status === "PASSED" && (
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-center dark:border-emerald-900/50 dark:bg-emerald-950/40">
-                      <Award className="mx-auto mb-1.5 h-8 w-8 text-emerald-600" />
-                      <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                        Chúc mừng! Bạn đã trúng tuyển
-                      </h4>
-                      <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-400">
-                        Bộ phận tuyển dụng sẽ sớm liên hệ trực tiếp với bạn.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-
             <Button
               variant="outline"
               size="sm"
@@ -398,14 +371,10 @@ export function ApplicationWorkspacePage() {
         </div>
       </div>
 
-      {/* Adaptive Workspace Container Bounding */}
-      <div
-        className={cn(
-          "space-y-6 py-6 transition-all duration-300",
-          isImmersiveFullWidth ? "w-full px-5 md:px-8" : "mx-auto max-w-5xl px-4 sm:px-6"
-        )}>
+      {/* Main Centered Studio Body (Max-Width 6XL Bounded) */}
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
         {/* Horizontal Pipeline Bar */}
-        <Card className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-2xs dark:border-slate-800/60 dark:bg-slate-900/40">
+        <Card className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("userApplicationhistory.pipelineTitle", {
@@ -431,109 +400,251 @@ export function ApplicationWorkspacePage() {
           />
         </Card>
 
-        {/* Active Round Main Workspace Display */}
+        {/* Workspace Main Grid (Left 8 Cols Workspace | Right 4 Cols Rich Sidebar) */}
         {activeRound ? (
-          <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-2xs dark:border-slate-800/60 dark:bg-slate-900/40">
-            {/* Header Vòng thi */}
-            <div className="border-b border-slate-100 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-[#0F172A]/70">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white shadow-xs">
-                    <RoundIcon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
-                        {t("userApplicationhistory.round", "Vòng")} {activeRound.roundOrder}
-                      </span>
-                      {isRoundCompleted && (
-                        <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                          ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
-                        </span>
-                      )}
-                      {isRoundCurrent && (
-                        <span className="animate-pulse rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                          ▶ {t("userApplicationhistory.currentRoundBadge", "Vòng hiện tại")}
-                        </span>
-                      )}
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+            {/* Main Round Content (Left 8 Cols) */}
+            <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs lg:col-span-8 dark:border-slate-800/60 dark:bg-slate-900/40">
+              {/* Header Vòng thi */}
+              <div className="border-b border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-[#0F172A]/70">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white shadow-sm">
+                      <RoundIcon className="h-6 w-6" />
                     </div>
-                    <h2 className="mt-0.5 text-lg font-extrabold text-slate-900 dark:text-white">
-                      {activeRound.roundType
-                        ? t(
-                            `common.roundType.${activeRound.roundType.replace("MENTROR", "MENTOR")}`,
-                            activeRound.name || ""
-                          )
-                        : activeRound.name}
-                    </h2>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
+                          {t("userApplicationhistory.round", "Vòng")} {activeRound.roundOrder}
+                        </span>
+                        {isRoundCompleted && (
+                          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                            ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
+                          </span>
+                        )}
+                        {isRoundCurrent && (
+                          <span className="animate-pulse rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                            ▶ {t("userApplicationhistory.currentRoundBadge", "Vòng hiện tại")}
+                          </span>
+                        )}
+                      </div>
+                      <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
+                        {activeRound.roundType
+                          ? t(
+                              `common.roundType.${activeRound.roundType.replace("MENTROR", "MENTOR")}`,
+                              activeRound.name || ""
+                            )
+                          : activeRound.name}
+                      </h2>
+                    </div>
                   </div>
-                </div>
 
-                {activeDetail?.finalScore !== undefined && activeDetail?.finalScore !== null && (
-                  <div className="text-right">
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase">
-                      {t("userApplicationhistory.scoreLabel", "Điểm số")}
-                    </span>
-                    <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                      {activeDetail.finalScore}
-                      <span className="text-xs font-normal text-slate-400">/100</span>
+                  {activeDetail?.finalScore !== undefined && activeDetail?.finalScore !== null && (
+                    <div className="text-right">
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase">
+                        {t("userApplicationhistory.scoreLabel", "Điểm số")}
+                      </span>
+                      <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                        {activeDetail.finalScore}
+                        <span className="text-xs font-normal text-slate-400">/100</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Main Interactive Round Workspace Module */}
+              <div className="p-6">
+                {isRoundLocked ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                      <Lock className="h-7 w-7 text-slate-400" />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+                      {t(
+                        "userApplicationhistory.roundLockedTitle",
+                        "Vòng thi này chưa được mở khóa"
+                      )}
+                    </h3>
+                    <p className="mt-1 max-w-md text-xs text-slate-500">
+                      {t("userApplicationhistory.roundLockedHint", {
+                        current: apiCurrentRoundOrder,
+                        defaultValue: `Vui lòng hoàn thành vòng ${apiCurrentRoundOrder} để tiếp tục mở khóa vòng này.`,
+                      })}
                     </p>
+                  </div>
+                ) : (
+                  <RoundWorkspaceDispatcher
+                    round={activeRound}
+                    detail={activeDetail}
+                    applicationId={applicationId}
+                    jdId={app.jdId}
+                    currentRoundOrder={apiCurrentRoundOrder}
+                    appStatus={app.status}
+                    onRefresh={loadData}
+                  />
+                )}
+
+                {/* Report CTA when Round is completed */}
+                {isRoundCompleted && (
+                  <div className="mt-6 flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        navigate(
+                          `/user/application/${applicationId}/round/${activeRound.roundOrder}/result`
+                        )
+                      }
+                      className="h-9 gap-2 border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
+                      <span>
+                        {t(
+                          "userApplicationhistory.viewDetailedReport",
+                          "Xem báo cáo phân tích chi tiết"
+                        )}
+                      </span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
 
-            {/* Main Interactive Round Workspace Module */}
-            <div className="p-6">
-              {isRoundLocked ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
-                    <Lock className="h-7 w-7 text-slate-400" />
+            {/* Rich Sidebar Summary (Right 4 Cols - Rich Multi-Widget System) */}
+            <div className="space-y-4 lg:col-span-4">
+              {/* Widget 1: Company & Application Meta */}
+              <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
+                  <CompanyAvatar
+                    logoUrl={jdInfo?.logoUrl}
+                    companyName={jdInfo?.companyName}
+                    className="h-10 w-10 rounded-[12px]"
+                  />
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      {jdInfo?.companyName}
+                    </h3>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <JobLevelBadge level={jdInfo?.level} />
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {jdInfo?.title}
+                      </span>
+                    </div>
                   </div>
-                  <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-                    {t("userApplicationhistory.roundLockedTitle", "Vòng thi này chưa được mở khóa")}
-                  </h3>
-                  <p className="mt-1 max-w-md text-xs text-slate-500">
-                    {t("userApplicationhistory.roundLockedHint", {
-                      current: apiCurrentRoundOrder,
-                      defaultValue: `Vui lòng hoàn thành vòng ${apiCurrentRoundOrder} để tiếp tục mở khóa vòng này.`,
-                    })}
-                  </p>
                 </div>
-              ) : (
-                <RoundWorkspaceDispatcher
-                  round={activeRound}
-                  detail={activeDetail}
-                  applicationId={applicationId}
-                  jdId={app.jdId}
-                  currentRoundOrder={apiCurrentRoundOrder}
-                  appStatus={app.status}
-                  onRefresh={loadData}
-                />
-              )}
 
-              {/* Report CTA when Round is completed */}
-              {isRoundCompleted && (
-                <div className="mt-6 flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      navigate(
-                        `/user/application/${applicationId}/round/${activeRound.roundOrder}/result`
-                      )
-                    }
-                    className="h-9 gap-2 border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
-                    <span>
-                      {t(
-                        "userApplicationhistory.viewDetailedReport",
-                        "Xem báo cáo phân tích chi tiết"
-                      )}
+                <div className="space-y-2.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Ngày nộp đơn:</span>
+                    <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                      {app.createdAt ? formatDateTime(app.createdAt) : ""}
                     </span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Tổng số vòng:</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
+                      {totalRounds} vòng tuyển dụng
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Trạng thái hồ sơ:</span>
+                    <ApplicationStatusBadge status={app.status} />
+                  </div>
                 </div>
-              )}
+
+                {app.status === "PASSED" && (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-center dark:border-emerald-900/50 dark:bg-emerald-950/40">
+                    <Award className="mx-auto mb-1.5 h-7 w-7 text-emerald-600" />
+                    <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                      {t(
+                        "userApplicationhistory.passedCongratsTitle",
+                        "Chúc mừng! Bạn đã trúng tuyển"
+                      )}
+                    </h4>
+                    <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-400">
+                      {t(
+                        "userApplicationhistory.passedCongratsDesc",
+                        "Bộ phận tuyển dụng sẽ sớm liên hệ trực tiếp với bạn."
+                      )}
+                    </p>
+                  </div>
+                )}
+              </Card>
+
+              {/* Widget 2: Required Skills & Tech Stack */}
+              <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                  <BadgeCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <span>Kỹ năng & Yêu cầu vị trí</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    ReactJS / TypeScript
+                  </span>
+                  <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    Java Spring Boot
+                  </span>
+                  <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    PostgreSQL / Redis
+                  </span>
+                  <span className="rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    RESTful API Architecture
+                  </span>
+                </div>
+              </Card>
+
+              {/* Widget 3: Active Round Benchmark */}
+              <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                  <Layers className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>Tiêu chuẩn đạt Vòng {activeRound.roundOrder}</span>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
+                    <span className="text-slate-500">Điểm sàn qua vòng:</span>
+                    <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                      {activeRound.passThreshold ?? 70}/100
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Thời gian quy định:</span>
+                    <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                      <Clock className="h-3 w-3 text-indigo-500" />
+                      {activeRound.configData?.timeLimitMinutes
+                        ? `${activeRound.configData.timeLimitMinutes} phút`
+                        : "Không giới hạn"}
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Widget 4: Candidate Q&A & Support */}
+              <Card className="space-y-3 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white">
+                  <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <span>Trợ giúp & Giải đáp nhanh</span>
+                </div>
+                <div className="space-y-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+                  <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
+                    <p className="font-bold text-slate-800 dark:text-slate-200">
+                      ⚡ AI chấm điểm mất bao lâu?
+                    </p>
+                    <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+                      Hệ thống tự động chấm điểm và tổng hợp kết quả chỉ trong 30-60 giây.
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
+                    <p className="font-bold text-slate-800 dark:text-slate-200">
+                      🔒 Có được thi lại không?
+                    </p>
+                    <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+                      Mỗi vòng chỉ thực hiện 1 lần duy nhất trừ trường hợp sự cố được nhà tuyển dụng
+                      duyệt cấp lại.
+                    </p>
+                  </div>
+                </div>
+              </Card>
             </div>
-          </Card>
+          </div>
         ) : null}
       </div>
 
