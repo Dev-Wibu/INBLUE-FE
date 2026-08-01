@@ -341,6 +341,7 @@ export const API_ENDPOINTS = {
     CREATE: "/api/companies",
     UPDATE: "/api/companies",
     DELETE: "/api/companies/:id",
+    TOGGLE: "/api/companies/toggle/:id",
   },
 
   // Job Descriptions endpoints - Based on schema-from-be.d.ts
@@ -352,6 +353,7 @@ export const API_ENDPOINTS = {
     SEARCH: "/api/job-descriptions/search",
     BY_COMPANY: "/api/job-descriptions/company/:companyId",
     SOFT_DELETE: "/api/job-descriptions/:id/soft",
+    TOGGLE: "/api/job-descriptions/toggle/:id",
   },
 
   // Interview rounds endpoints (Job Description rounds)

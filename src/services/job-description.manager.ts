@@ -157,9 +157,14 @@ export class JobDescriptionManager {
 
   async toggleStatus(id: number | string): Promise<ApiResponse<void>> {
     try {
-      const endpoint = `/api/job-descriptions/toggle/${id}`;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (fetchClient as any).PUT(endpoint, { params: { path: { id } } });
+      const endpoint = API_ENDPOINTS?.JOB_DESCRIPTIONS?.TOGGLE
+        ? buildEndpoint(API_ENDPOINTS.JOB_DESCRIPTIONS.TOGGLE, { id })
+        : `/api/job-descriptions/toggle/${id}`;
+      // @ts-expect-error: Backend Swagger schema mismatch
+      const { error } = await fetchClient.GET(endpoint, {});
+      if (error) {
+        throw new Error(typeof error === "string" ? error : JSON.stringify(error));
+      }
       return { success: true };
     } catch (error) {
       return {
