@@ -97,7 +97,7 @@ function JobLevelBadge({ level }: { level?: string }) {
     // Teal (Ngọc lam)
     colorClass = "bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30";
   } else if (lvl.includes("FRESH")) {
-    // Purple (Tím tươi - hoàn toàn không trùng Emerald Trúng tuyển)
+    // Purple (Tím tươi - không trùng Emerald Trúng tuyển)
     colorClass =
       "bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30";
   } else if (lvl.includes("JUN")) {
@@ -185,13 +185,13 @@ function getCompanyInitials(name?: string): string {
 }
 
 // ============================================================
-// Company Avatar Component (With Image + Fallback Initials)
+// Company Avatar Component (Matching JobSearchTab Style)
 // ============================================================
 
 function CompanyAvatar({
   logoUrl,
   companyName,
-  className = "h-10 w-10 rounded-xl",
+  className = "h-11 w-11 rounded-[14px]",
   textClassName = "text-xs font-bold",
 }: {
   logoUrl?: string | null;
@@ -204,22 +204,25 @@ function CompanyAvatar({
 
   if (logoUrl && !imgError) {
     return (
-      <img
-        src={logoUrl}
-        alt={companyName || "Logo"}
-        onError={() => setImgError(true)}
+      <div
         className={cn(
-          "shrink-0 rounded-xl border border-slate-200/80 bg-white object-contain p-1 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800",
+          "flex shrink-0 items-center justify-center overflow-hidden border border-slate-100 bg-white p-1 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]",
           className
-        )}
-      />
+        )}>
+        <img
+          src={logoUrl}
+          alt={companyName || "Logo"}
+          onError={() => setImgError(true)}
+          className="h-full w-full object-contain"
+        />
+      </div>
     );
   }
 
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0047AB] via-indigo-600 to-blue-700 text-white shadow-xs",
+        "flex shrink-0 items-center justify-center border border-slate-100 bg-slate-50 text-indigo-600 shadow-xs dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400",
         className,
         textClassName
       )}>
@@ -229,7 +232,7 @@ function CompanyAvatar({
 }
 
 // ============================================================
-// Vertical Active Application Card (Option 1 Command Hub Layout)
+// Vertical Active Application Card (Matching JobSearchTab Styling)
 // ============================================================
 
 function ActiveApplicationCard({ application }: { application: EnrichedApplication }) {
@@ -258,7 +261,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
       : "";
 
   return (
-    <div className="group relative flex w-[310px] shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-blue-500/80 dark:hover:shadow-blue-950/30">
+    <div className="group relative flex w-[320px] shrink-0 flex-col justify-between overflow-hidden rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:border-indigo-500/50 dark:hover:shadow-indigo-950/30">
       <div className="space-y-4">
         {/* Top Header: Logo + Job Title + Level Badge */}
         <div className="flex items-start justify-between gap-3">
@@ -266,13 +269,13 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
             <CompanyAvatar
               logoUrl={application.logoUrl}
               companyName={application.companyName}
-              className="h-10 w-10 rounded-xl"
+              className="h-11 w-11 rounded-[14px]"
             />
             <div className="min-w-0 flex-1">
-              <h3 className="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
+              <h3 className="truncate text-sm font-bold tracking-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
                 {application.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
               </h3>
-              <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <p className="truncate text-xs font-semibold text-slate-600 dark:text-slate-300">
                 {application.companyName ?? t("userApplicationhistory.company", "Công ty")}
               </p>
             </div>
@@ -281,8 +284,8 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
           <JobLevelBadge level={application.level} />
         </div>
 
-        {/* Inner Hub Panel (Progress Gauge + Current Round Stage) */}
-        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/90 p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-slate-800/60">
+        {/* Inner Hub Panel (Matching JobSearchTab Inner Container `#0F172A`) */}
+        <div className="rounded-[16px] border border-slate-100 bg-slate-50/80 p-3.5 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]/90">
           <div className="flex items-center justify-between gap-3">
             {/* Circular Gauge */}
             <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
@@ -291,7 +294,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
                   cx="48"
                   cy="48"
                   r="36"
-                  className="stroke-slate-200 dark:stroke-slate-700"
+                  className="stroke-slate-200 dark:stroke-slate-800"
                   strokeWidth="6"
                   fill="transparent"
                 />
@@ -299,7 +302,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
                   cx="48"
                   cy="48"
                   r="36"
-                  className="stroke-blue-600 transition-all duration-700 ease-out dark:stroke-blue-500"
+                  className="stroke-indigo-600 transition-all duration-700 ease-out dark:stroke-indigo-500"
                   strokeWidth="6"
                   strokeDasharray={2 * Math.PI * 36}
                   strokeDashoffset={2 * Math.PI * 36 - (progressPercent / 100) * 2 * Math.PI * 36}
@@ -316,7 +319,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
 
             {/* Stage Info */}
             <div className="min-w-0 flex-1 space-y-0.5">
-              <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase dark:text-slate-400">
+              <p className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 Vòng hiện tại
               </p>
               <h4 className="line-clamp-2 text-xs font-extrabold text-slate-900 dark:text-slate-100">
@@ -328,7 +331,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
 
         {/* Deadline text */}
         {displayDate && (
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
             <Clock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             <span className="truncate">Hạn chót: {displayDate}</span>
           </div>
@@ -339,7 +342,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
       <div className="pt-4">
         <Button
           onClick={() => navigate(`/user/application/${application.id}`)}
-          className="h-9 w-full rounded-xl bg-blue-600 text-xs font-bold text-white shadow-xs transition-colors hover:bg-blue-700">
+          className="h-9.5 w-full rounded-xl bg-indigo-600 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500">
           <span>{t("userApplicationhistory.enterWorkspace", "Vào Workspace")}</span>
           <ArrowRight className="ml-1 h-3.5 w-3.5" />
         </Button>
@@ -349,7 +352,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
 }
 
 // ============================================================
-// Standard Table Component for Completed Applications (Dark Mode Polished)
+// Standard Table Component (Polished Dark Mode & Crisp High Contrast Text)
 // ============================================================
 
 function CompletedApplicationsTable({ applications }: { applications: EnrichedApplication[] }) {
@@ -357,32 +360,32 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
   const navigate = useNavigate();
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-slate-800/90 dark:bg-slate-900/90">
+    <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
       <Table>
-        <TableHeader className="border-b border-slate-200/80 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900">
+        <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
           <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
-            <TableHead className="h-11 pl-6 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            <TableHead className="h-11 pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               #ID
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Công ty
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Vị trí ứng tuyển
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Cấp bậc
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Trạng thái
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Điểm số
             </TableHead>
-            <TableHead className="h-11 text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Ngày nộp
             </TableHead>
-            <TableHead className="h-11 pr-6 text-right text-[11px] font-extrabold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+            <TableHead className="h-11 pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
               Thao tác
             </TableHead>
           </TableRow>
@@ -399,9 +402,9 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
               <TableRow
                 key={`completed-row-${app.id}`}
                 onClick={() => navigate(`/user/application/${app.id}`)}
-                className="group cursor-pointer border-b border-slate-100/80 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:hover:bg-slate-800/50">
+                className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-indigo-50/40 dark:border-slate-800/60 dark:hover:bg-slate-800/60">
                 {/* ID Column */}
-                <TableCell className="pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <TableCell className="pl-6 font-mono text-xs font-extrabold text-slate-800 dark:text-slate-200">
                   #{app.id}
                 </TableCell>
 
@@ -411,9 +414,9 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                     <CompanyAvatar
                       logoUrl={app.logoUrl}
                       companyName={app.companyName}
-                      className="h-8 w-8 rounded-lg"
+                      className="h-8.5 w-8.5 rounded-[10px]"
                     />
-                    <span className="truncate text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <span className="truncate text-xs font-extrabold text-slate-900 dark:text-slate-100">
                       {app.companyName ?? t("userApplicationhistory.company", "Công ty")}
                     </span>
                   </div>
@@ -421,7 +424,7 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
 
                 {/* Job Title */}
                 <TableCell className="max-w-[220px] py-3">
-                  <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
+                  <h4 className="truncate text-xs font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
                     {app.jobTitle ?? t("userApplicationhistory.noTitle", "Chưa có tiêu đề")}
                   </h4>
                 </TableCell>
@@ -450,7 +453,7 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                 </TableCell>
 
                 {/* Date */}
-                <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                <TableCell className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
                   {app.createdAt ? formatDateTime(app.createdAt) : "---"}
                 </TableCell>
 
@@ -463,7 +466,7 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                     }}
                     variant="ghost"
                     size="sm"
-                    className="h-8 rounded-lg px-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/60">
+                    className="h-8 rounded-lg px-2.5 text-xs font-extrabold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60">
                     <span>Xem báo cáo</span>
                     <ChevronRight className="ml-1 h-3.5 w-3.5" />
                   </Button>
@@ -811,7 +814,7 @@ export function ApplicationHistoryPage() {
             action={
               <Button
                 onClick={() => navigate("/enterprise/companies")}
-                className="h-9 gap-2 bg-blue-600 text-xs font-bold text-white hover:bg-blue-700">
+                className="h-9 gap-2 bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-700">
                 <Briefcase className="h-4 w-4" />
                 {t("userApplicationhistory.findAJobNow", "Tìm việc ngay")}
               </Button>
