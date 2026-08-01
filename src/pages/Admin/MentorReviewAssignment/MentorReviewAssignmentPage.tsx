@@ -1,4 +1,5 @@
 import { ReloadButton } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -11,19 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAssignMentor, useAssignMentors } from "@/hooks/useApplicationDetails";
 import { useMentors } from "@/hooks/useMentor";
 import { formatDateTime, treatZuluAsVietnamLocal } from "@/lib/formatting";
-import { Search, UserCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ChevronDown, Search, UserCheck, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -317,8 +313,8 @@ export function MentorReviewAssignmentPage() {
 
 // ============================================================
 // Assign Mentor Dialog (simplified for ApplicationDetail)
-// Supports Option 1: Assign single mentor
-// Supports Option 2: Assign multiple mentors for candidate to choose
+// Supports Option 1: Assign single mentor (Radix Popover searchable combobox)
+// Supports Option 2: Assign multiple mentors for candidate to choose (with search & selected chips)
 // ============================================================
 
 interface AssignMentorDialogProps {
@@ -344,7 +340,43 @@ function AssignMentorDialog({
   const [selectedMentorIds, setSelectedMentorIds] = useState<number[]>([]);
   const [notes, setNotes] = useState("");
 
+  // Combobox (Option 1) state
+  const [isComboOpen, setIsComboOpen] = useState(false);
+  const [mentorQuery, setMentorQuery] = useState("");
+
+  // Option 2 search state
+  const [mentorMultiQuery, setMentorMultiQuery] = useState("");
+
   const { data: mentors = [] } = useMentors();
+
+  // Filtered mentors for Option 1 combobox
+  const filteredSingleMentors = useMemo(() => {
+    if (!mentorQuery.trim()) return mentors;
+    const q = mentorQuery.toLowerCase();
+    return mentors.filter(
+      (m) => m.name?.toLowerCase().includes(q) || m.email?.toLowerCase().includes(q)
+    );
+  }, [mentors, mentorQuery]);
+
+  // Filtered mentors for Option 2 checklist
+  const filteredMultiMentors = useMemo(() => {
+    if (!mentorMultiQuery.trim()) return mentors;
+    const q = mentorMultiQuery.toLowerCase();
+    return mentors.filter(
+      (m) => m.name?.toLowerCase().includes(q) || m.email?.toLowerCase().includes(q)
+    );
+  }, [mentors, mentorMultiQuery]);
+
+  // Mentors currently selected in Option 2
+  const selectedMentorsObjects = useMemo(() => {
+    return mentors.filter((m) => m.id != null && selectedMentorIds.includes(m.id as number));
+  }, [mentors, selectedMentorIds]);
+
+  // Selected mentor name for display in trigger
+  const selectedMentorName = useMemo(() => {
+    if (!selectedMentorId) return null;
+    return mentors.find((m) => String(m.id) === selectedMentorId)?.name ?? null;
+  }, [mentors, selectedMentorId]);
 
   const handleSubmitSingle = () => {
     const mentorId = parseInt(selectedMentorId, 10);
@@ -370,6 +402,9 @@ function AssignMentorDialog({
     setSelectedMentorIds([]);
     setNotes("");
     setAssignMode("single");
+    setIsComboOpen(false);
+    setMentorQuery("");
+    setMentorMultiQuery("");
   };
 
   const handleClose = (openState: boolean) => {
@@ -442,59 +477,162 @@ function AssignMentorDialog({
             </RadioGroup>
           </div>
 
-          {/* Option 1: Single mentor selection */}
+          {/* Option 1: Radix Popover Searchable Combobox */}
           {assignMode === "single" && (
             <div className="grid gap-2">
-              <Label htmlFor="mentor-select">{t("adminMentorReviewAssignment.selectMentor")}</Label>
-              <Select value={selectedMentorId} onValueChange={setSelectedMentorId}>
-                <SelectTrigger id="mentor-select">
-                  <SelectValue placeholder={t("adminKiosk.selectMentor")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {mentors.map((mentor) => (
-                    <SelectItem key={mentor.id} value={String(mentor.id)}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{mentor.name}</span>
-                        {mentor.email && (
-                          <span className="text-xs text-slate-500">{mentor.email}</span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="mentor-combobox-trigger">
+                {t("adminMentorReviewAssignment.selectMentor")}
+              </Label>
+
+              <Popover open={isComboOpen} onOpenChange={setIsComboOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="mentor-combobox-trigger"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={isComboOpen}
+                    className={cn(
+                      "h-9 w-full justify-between px-3 text-sm font-normal shadow-sm",
+                      !selectedMentorName && "text-muted-foreground"
+                    )}>
+                    <span className="truncate">
+                      {selectedMentorName ?? t("adminMentorReviewAssignment.selectMentor")}
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 shrink-0 opacity-50 transition-transform duration-200",
+                        isComboOpen && "rotate-180"
+                      )}
+                    />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  onWheel={(e) => e.stopPropagation()}
+                  onTouchMove={(e) => e.stopPropagation()}
+                  className="w-[var(--radix-popover-trigger-width)] p-0 shadow-md"
+                  align="start">
+                  {/* Search input inside dropdown */}
+                  <div className="border-b p-2">
+                    <div className="relative">
+                      <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                      <Input
+                        autoFocus
+                        placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
+                        value={mentorQuery}
+                        onChange={(e) => setMentorQuery(e.target.value)}
+                        className="h-8 pl-8 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mentor list */}
+                  <div
+                    onWheel={(e) => e.stopPropagation()}
+                    className="max-h-52 touch-auto overflow-y-auto overscroll-contain py-1">
+                    {filteredSingleMentors.length === 0 ? (
+                      <p className="py-3 text-center text-sm text-slate-500">
+                        {t("common.noResults")}
+                      </p>
+                    ) : (
+                      filteredSingleMentors.map((mentor) => (
+                        <button
+                          key={mentor.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMentorId(String(mentor.id));
+                            setIsComboOpen(false);
+                            setMentorQuery("");
+                          }}
+                          className={cn(
+                            "flex w-full flex-col items-start px-3 py-2 text-left text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-800",
+                            selectedMentorId === String(mentor.id) &&
+                              "bg-slate-100 font-medium dark:bg-slate-800"
+                          )}>
+                          <span className="font-medium">{mentor.name}</span>
+                          {mentor.email && (
+                            <span className="text-xs text-slate-500">{mentor.email}</span>
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
 
-          {/* Option 2: Multiple mentor selection */}
+          {/* Option 2: Multiple mentor selection with search & selected chips */}
           {assignMode === "multiple" && (
-            <div className="space-y-2">
-              <Label>{t("adminMentorReviewAssignment.selectMentors")}</Label>
-              <p className="text-muted-foreground text-xs">
-                {t("adminMentorReviewAssignment.selectMentorsHint")}
-              </p>
-              <div className="max-h-60 space-y-2 overflow-y-auto rounded-lg border p-3">
-                {mentors.map((mentor) => (
-                  <div
-                    key={mentor.id}
-                    className="flex items-center gap-3 rounded-lg border p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">
-                    <Checkbox
-                      id={`mentor-${mentor.id}`}
-                      checked={selectedMentorIds.includes(mentor.id as number)}
-                      onCheckedChange={() => mentor.id && toggleMentorSelection(mentor.id)}
-                    />
-                    <Label
-                      htmlFor={`mentor-${mentor.id}`}
-                      className="flex flex-1 cursor-pointer items-center gap-3">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{mentor.name}</span>
-                        {mentor.email && (
-                          <span className="text-xs text-slate-500">{mentor.email}</span>
-                        )}
-                      </div>
-                    </Label>
-                  </div>
-                ))}
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label>{t("adminMentorReviewAssignment.selectMentors")}</Label>
+                <p className="text-muted-foreground text-xs">
+                  {t("adminMentorReviewAssignment.selectMentorsHint")}
+                </p>
+              </div>
+
+              {/* Badges / Chips list of currently selected mentors */}
+              {selectedMentorsObjects.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-indigo-100 bg-indigo-50/50 p-2.5 dark:border-indigo-900/30 dark:bg-indigo-950/20">
+                  <span className="mr-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                    {t("adminMentorReviewAssignment.selectedMentors")}:
+                  </span>
+                  {selectedMentorsObjects.map((mentor) => (
+                    <Badge
+                      key={mentor.id}
+                      variant="secondary"
+                      className="flex items-center gap-1.5 border border-indigo-200 bg-white py-1 pr-1.5 pl-2.5 text-xs font-medium text-indigo-900 shadow-xs dark:border-indigo-800 dark:bg-slate-800 dark:text-indigo-200">
+                      <span>{mentor.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => mentor.id && toggleMentorSelection(mentor.id)}
+                        className="rounded-full p-0.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-700 dark:hover:text-red-400"
+                        title={t("common.delete")}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* Search for Option 2 */}
+              <div className="relative">
+                <Search className="absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  placeholder={t("adminMentorReviewAssignment.searchMentorPlaceholder")}
+                  value={mentorMultiQuery}
+                  onChange={(e) => setMentorMultiQuery(e.target.value)}
+                  className="h-8 pl-8 text-sm"
+                />
+              </div>
+
+              {/* Checklist */}
+              <div className="max-h-60 space-y-2 overflow-y-auto overscroll-contain rounded-lg border p-3">
+                {filteredMultiMentors.length === 0 ? (
+                  <p className="py-3 text-center text-sm text-slate-500">{t("common.noResults")}</p>
+                ) : (
+                  filteredMultiMentors.map((mentor) => (
+                    <div
+                      key={mentor.id}
+                      className="flex items-center gap-3 rounded-lg border p-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <Checkbox
+                        id={`mentor-${mentor.id}`}
+                        checked={selectedMentorIds.includes(mentor.id as number)}
+                        onCheckedChange={() => mentor.id && toggleMentorSelection(mentor.id)}
+                      />
+                      <Label
+                        htmlFor={`mentor-${mentor.id}`}
+                        className="flex flex-1 cursor-pointer items-center gap-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium">{mentor.name}</span>
+                          {mentor.email && (
+                            <span className="text-xs text-slate-500">{mentor.email}</span>
+                          )}
+                        </div>
+                      </Label>
+                    </div>
+                  ))
+                )}
               </div>
               {selectedMentorIds.length > 0 && (
                 <p className="text-muted-foreground text-xs">
