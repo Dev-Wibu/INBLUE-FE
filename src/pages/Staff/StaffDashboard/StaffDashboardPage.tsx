@@ -112,18 +112,6 @@ const getSidebarMenuGroups = (t: (key: string) => string): SidebarMenuGroup[] =>
       },
     ],
   },
-  {
-    label: t("common.individual"),
-    items: [
-      {
-        type: "account",
-        icon: User,
-        label: t("common.account"),
-        color: "text-slate-500 dark:text-slate-400",
-        description: t("userAccount.updateYourProfileEducationAnd"),
-      },
-    ],
-  },
 ];
 
 const validateChromeTabsMenuConfiguration = (
@@ -361,6 +349,7 @@ export function StaffDashboardPage() {
         menuGroups={sidebarMenuGroups}
         activeTab={typedActiveTab}
         onNavigate={handleSidebarNavigate}
+        onProfileClick={() => handleSidebarNavigate("account")}
         storageKey="staff_sidebar_collapsed"
         collapsed={isSidebarCollapsed}
         onCollapsedChange={setIsSidebarCollapsed}
