@@ -73,17 +73,6 @@ interface EnrichedApplication extends Application {
   rounds?: JdRound[];
 }
 
-// Map roundType to readable step label
-const ROUND_TYPE_STEP_LABELS: Record<string, string> = {
-  CV_SCREENING: "Sơ tuyển CV",
-  EMAIL_SIMULATOR: "Mô phỏng Email",
-  QUIZ: "Bài thi Quiz",
-  CODING: "Thử thách Coding",
-  CODE_REVIEW: "Đánh giá Code",
-  MENTOR_REVIEW: "Phỏng vấn Mentor",
-  AI_INTERVIEW: "Phỏng vấn AI",
-};
-
 // ============================================================
 // Job Level Badge Component (Distinct Colors per Level)
 // ============================================================
@@ -235,10 +224,13 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
 
   // Active round type
   const activeRoundObj = application.rounds?.find((r) => r.roundOrder === currentRoundOrder);
-  const currentRoundType = activeRoundObj?.roundType;
-  const stepName =
-    ROUND_TYPE_STEP_LABELS[currentRoundType?.replace("MENTROR", "MENTOR") ?? ""] ||
-    "Đang thực hiện";
+  const currentRoundType = activeRoundObj?.roundType?.replace("MENTROR", "MENTOR") ?? "";
+  const stepName = currentRoundType
+    ? t(
+        `common.roundType.${currentRoundType}`,
+        activeRoundObj?.name || t("userApplicationhistory.roundInProgress", "Đang thực hiện")
+      )
+    : activeRoundObj?.name || t("userApplicationhistory.roundInProgress", "Đang thực hiện");
 
   const progressPercent = useMemo(() => {
     if (totalRounds <= 0) return 0;
@@ -311,7 +303,7 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
             {/* Stage Info */}
             <div className="min-w-0 flex-1 space-y-0.5">
               <p className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                Vòng hiện tại
+                {t("userApplicationhistory.currentRoundLabel", "Vòng hiện tại")}
               </p>
               <h4 className="line-clamp-2 text-xs font-extrabold text-slate-900 dark:text-slate-100">
                 {stepName}
@@ -324,7 +316,9 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
         {displayDate && (
           <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
             <Clock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-            <span className="truncate">Hạn chót: {displayDate}</span>
+            <span className="truncate">
+              {t("userApplicationhistory.deadlineLabel", "Hạn chót:")} {displayDate}
+            </span>
           </div>
         )}
       </div>
@@ -356,28 +350,28 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
         <TableHeader className="border-b border-slate-200 bg-slate-100/80 dark:border-slate-800 dark:bg-slate-800/90">
           <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
             <TableHead className="h-11 pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              #ID
+              {t("userApplicationhistory.tableHeaderId", "#ID")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Công ty
+              {t("userApplicationhistory.tableHeaderCompany", "Công ty")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Vị trí ứng tuyển
+              {t("userApplicationhistory.tableHeaderPosition", "Vị trí ứng tuyển")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Cấp bậc
+              {t("userApplicationhistory.tableHeaderLevel", "Cấp bậc")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Trạng thái
+              {t("userApplicationhistory.tableHeaderStatus", "Trạng thái")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Điểm số
+              {t("userApplicationhistory.tableHeaderScore", "Điểm số")}
             </TableHead>
             <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Ngày nộp
+              {t("userApplicationhistory.tableHeaderSubmittedDate", "Ngày nộp")}
             </TableHead>
             <TableHead className="h-11 pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-              Thao tác
+              {t("userApplicationhistory.tableHeaderActions", "Thao tác")}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -458,7 +452,7 @@ function CompletedApplicationsTable({ applications }: { applications: EnrichedAp
                     variant="ghost"
                     size="sm"
                     className="h-8 rounded-lg px-2.5 text-xs font-extrabold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60">
-                    <span>Xem báo cáo</span>
+                    <span>{t("userApplicationhistory.viewReport", "Xem báo cáo")}</span>
                     <ChevronRight className="ml-1 h-3.5 w-3.5" />
                   </Button>
                 </TableCell>

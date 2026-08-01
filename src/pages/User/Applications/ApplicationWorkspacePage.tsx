@@ -91,6 +91,7 @@ function getRoundIcon(roundType?: string) {
 }
 
 export function ApplicationWorkspacePage() {
+  const { t } = useTranslation();
   const { applicationId: appIdParam } = useParams<{ applicationId: string }>();
   const applicationId = Number(appIdParam);
   const navigate = useNavigate();
@@ -224,10 +225,10 @@ export function ApplicationWorkspacePage() {
       <div className="flex h-96 flex-col items-center justify-center gap-4 text-center">
         <Briefcase className="h-12 w-12 text-slate-400" />
         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
-          Không tìm thấy đơn ứng tuyển
+          {t("userApplicationhistory.noApplicationsYet", "Không tìm thấy đơn ứng tuyển")}
         </h2>
         <Button onClick={() => navigate("/user?tab=applicationHistory")}>
-          Quay lại Lịch sử ứng tuyển
+          {t("userApplicationhistory.allApplications", "Quay lại Lịch sử ứng tuyển")}
         </Button>
       </div>
     );
@@ -256,12 +257,12 @@ export function ApplicationWorkspacePage() {
               onClick={() => navigate("/user?tab=applicationHistory")}
               className="gap-2 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
               <ArrowLeft className="h-4 w-4" />
-              <span>Tất cả đơn ứng tuyển</span>
+              <span>{t("userApplicationhistory.allApplications", "Tất cả đơn ứng tuyển")}</span>
             </Button>
             <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
             <div className="min-w-0">
               <h1 className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
-                {jdInfo?.title ?? "Đơn ứng tuyển"}
+                {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
               </h1>
               <p className="truncate text-[11px] text-slate-500">{jdInfo?.companyName}</p>
             </div>
@@ -271,7 +272,9 @@ export function ApplicationWorkspacePage() {
             <ApplicationStatusBadge status={app.status} />
             <Button variant="outline" size="sm" onClick={loadData} className="h-8 gap-1.5 text-xs">
               <RotateCw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Làm mới</span>
+              <span className="hidden sm:inline">
+                {t("userApplicationhistory.reload", "Làm mới")}
+              </span>
             </Button>
           </div>
         </div>
@@ -282,10 +285,17 @@ export function ApplicationWorkspacePage() {
         <Card className="border border-slate-200/80 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-3 flex items-center justify-between px-1">
             <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
-              Quy trình ứng tuyển ({totalRounds} vòng)
+              {t("userApplicationhistory.pipelineTitle", {
+                total: totalRounds,
+                defaultValue: `Quy trình ứng tuyển (${totalRounds} vòng)`,
+              })}
             </h2>
             <span className="text-xs font-semibold text-[#0047AB] dark:text-blue-400">
-              Tiến độ: Vòng {apiCurrentRoundOrder}/{totalRounds}
+              {t("userApplicationhistory.progressLabel", {
+                current: apiCurrentRoundOrder,
+                total: totalRounds,
+                defaultValue: `Tiến độ: Vòng ${apiCurrentRoundOrder}/${totalRounds}`,
+              })}
             </span>
           </div>
           <HorizontalPipeline
@@ -312,21 +322,26 @@ export function ApplicationWorkspacePage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold tracking-wide text-[#0047AB] uppercase dark:text-blue-400">
-                          Vòng {activeRound.roundOrder}
+                          {t("userApplicationhistory.round", "Vòng")} {activeRound.roundOrder}
                         </span>
                         {isRoundCompleted && (
                           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                            ✓ Hoàn thành
+                            ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
                           </span>
                         )}
                         {isRoundCurrent && (
                           <span className="animate-pulse rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-                            ▶ Vòng hiện tại
+                            ▶ {t("userApplicationhistory.currentRoundBadge", "Vòng hiện tại")}
                           </span>
                         )}
                       </div>
                       <CardTitle className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">
-                        {activeRound.name || activeRound.roundType?.replace("_", " ")}
+                        {activeRound.roundType
+                          ? t(
+                              `common.roundType.${activeRound.roundType.replace("MENTROR", "MENTOR")}`,
+                              activeRound.name || ""
+                            )
+                          : activeRound.name}
                       </CardTitle>
                     </div>
                   </div>
@@ -334,7 +349,7 @@ export function ApplicationWorkspacePage() {
                   {activeDetail?.finalScore !== undefined && activeDetail?.finalScore !== null && (
                     <div className="text-right">
                       <span className="text-[10px] font-semibold text-slate-400 uppercase">
-                        Điểm số
+                        {t("userApplicationhistory.scoreLabel", "Điểm số")}
                       </span>
                       <p className="text-2xl font-black text-[#0047AB]">
                         {activeDetail.finalScore}
@@ -353,10 +368,16 @@ export function ApplicationWorkspacePage() {
                       <Lock className="h-7 w-7 text-slate-400" />
                     </div>
                     <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-                      Vòng thi này chưa được mở khóa
+                      {t(
+                        "userApplicationhistory.roundLockedTitle",
+                        "Vòng thi này chưa được mở khóa"
+                      )}
                     </h3>
                     <p className="mt-1 max-w-md text-xs text-slate-500">
-                      Vui lòng hoàn thành vòng {apiCurrentRoundOrder} để tiếp tục mở khóa vòng này.
+                      {t("userApplicationhistory.roundLockedHint", {
+                        current: apiCurrentRoundOrder,
+                        defaultValue: `Vui lòng hoàn thành vòng ${apiCurrentRoundOrder} để tiếp tục mở khóa vòng này.`,
+                      })}
                     </p>
                   </div>
                 ) : (
@@ -364,11 +385,14 @@ export function ApplicationWorkspacePage() {
                     {/* Instruction & Info */}
                     <div className="space-y-3">
                       <h4 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
-                        Hướng dẫn làm bài
+                        {t("userApplicationhistory.instructionsTitle", "Hướng dẫn làm bài")}
                       </h4>
                       <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
                         {activeRound.configData?.instruction ||
-                          "Thực hiện theo yêu cầu của hội đồng tuyển dụng để hoàn thành vòng phỏng vấn này."}
+                          t(
+                            "userApplicationhistory.defaultInstruction",
+                            "Thực hiện theo yêu cầu của hội đồng tuyển dụng để hoàn thành vòng phỏng vấn này."
+                          )}
                       </div>
                     </div>
 
@@ -378,18 +402,29 @@ export function ApplicationWorkspacePage() {
                         <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-blue-100 bg-blue-50/50 p-4 sm:flex-row dark:border-blue-900/40 dark:bg-blue-950/20">
                           <div>
                             <p className="text-xs font-bold text-[#0047AB] dark:text-blue-300">
-                              Sẵn sàng thực hiện phần thi?
+                              {t(
+                                "userApplicationhistory.readyToTakeExam",
+                                "Sẵn sàng thực hiện phần thi?"
+                              )}
                             </p>
                             <p className="mt-0.5 text-[11px] text-slate-500">
                               {activeRound.configData?.timeLimitMinutes
-                                ? `Thời gian làm bài: ${activeRound.configData.timeLimitMinutes} phút`
-                                : "Không giới hạn thời gian"}
+                                ? t("userApplicationhistory.examTimeLimit", {
+                                    minutes: activeRound.configData.timeLimitMinutes,
+                                    defaultValue: `Thời gian làm bài: ${activeRound.configData.timeLimitMinutes} phút`,
+                                  })
+                                : t(
+                                    "userApplicationhistory.noTimeLimit",
+                                    "Không giới hạn thời gian"
+                                  )}
                             </p>
                           </div>
                           <Button
                             onClick={() => handleEnterRoom(activeRound)}
                             className="w-full gap-2 bg-[#0047AB] px-6 text-xs font-semibold text-white shadow-sm hover:bg-[#003d91] sm:w-auto">
-                            <span>Bắt đầu bài thi ngay</span>
+                            <span>
+                              {t("userApplicationhistory.startExamNow", "Bắt đầu bài thi ngay")}
+                            </span>
                             <ArrowRight className="h-4 w-4" />
                           </Button>
                         </div>
@@ -397,7 +432,12 @@ export function ApplicationWorkspacePage() {
                         <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 sm:flex-row dark:border-emerald-900/40 dark:bg-emerald-950/20">
                           <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
                             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                            <span>Bạn đã hoàn thành vòng thi này</span>
+                            <span>
+                              {t(
+                                "userApplicationhistory.roundCompletedNotice",
+                                "Bạn đã hoàn thành vòng thi này"
+                              )}
+                            </span>
                           </div>
 
                           <Button
@@ -408,7 +448,12 @@ export function ApplicationWorkspacePage() {
                               )
                             }
                             className="w-full gap-1.5 border-emerald-300 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 sm:w-auto dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/40">
-                            <span>Xem báo cáo phân tích chi tiết</span>
+                            <span>
+                              {t(
+                                "userApplicationhistory.viewDetailedReport",
+                                "Xem báo cáo phân tích chi tiết"
+                              )}
+                            </span>
                             <ArrowRight className="h-3.5 w-3.5" />
                           </Button>
                         </div>
@@ -423,26 +468,35 @@ export function ApplicationWorkspacePage() {
             <div className="space-y-4 lg:col-span-4">
               <Card className="space-y-4 border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
                 <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
-                  Thông tin tổng quan
+                  {t("userApplicationhistory.overviewTitle", "Thông tin tổng quan")}
                 </h3>
 
                 <div className="space-y-3 text-xs">
                   <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <span className="text-slate-500">Doanh nghiệp:</span>
+                    <span className="text-slate-500">
+                      {t("userApplicationhistory.companyLabel", "Doanh nghiệp:")}
+                    </span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
                       {jdInfo?.companyName}
                     </span>
                   </div>
                   <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <span className="text-slate-500">Ngày nộp đơn:</span>
+                    <span className="text-slate-500">
+                      {t("userApplicationhistory.appliedDateLabel", "Ngày nộp đơn:")}
+                    </span>
                     <span className="font-mono text-slate-800 dark:text-slate-200">
                       {app.createdAt ? formatDateTime(app.createdAt) : ""}
                     </span>
                   </div>
                   <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <span className="text-slate-500">Tổng số vòng:</span>
+                    <span className="text-slate-500">
+                      {t("userApplicationhistory.totalRoundsCount", "Tổng số vòng:")}
+                    </span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
-                      {totalRounds} vòng
+                      {t("userApplicationhistory.roundsUnit", {
+                        count: totalRounds,
+                        defaultValue: `${totalRounds} vòng`,
+                      })}
                     </span>
                   </div>
                 </div>
@@ -451,10 +505,16 @@ export function ApplicationWorkspacePage() {
                   <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center dark:border-emerald-800 dark:bg-emerald-950/40">
                     <Award className="mx-auto mb-1.5 h-8 w-8 text-emerald-600" />
                     <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                      Chúc mừng! Bạn đã trúng tuyển
+                      {t(
+                        "userApplicationhistory.passedCongratsTitle",
+                        "Chúc mừng! Bạn đã trúng tuyển"
+                      )}
                     </h4>
                     <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-400">
-                      Bộ phận tuyển dụng sẽ sớm liên hệ trực tiếp với bạn.
+                      {t(
+                        "userApplicationhistory.passedCongratsDesc",
+                        "Bộ phận tuyển dụng sẽ sớm liên hệ trực tiếp với bạn."
+                      )}
                     </p>
                   </div>
                 )}

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Check, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { components } from "../../../../../schema-from-be";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
@@ -26,16 +27,6 @@ interface HorizontalPipelineProps {
   selectedRoundOrder?: number;
 }
 
-const ROUND_TYPE_LABELS: Record<string, string> = {
-  CV_SCREENING: "Lọc CV",
-  EMAIL_SIMULATOR: "Mô phỏng Email",
-  QUIZ: "Trắc nghiệm",
-  CODING: "Lập trình",
-  CODE_REVIEW: "Đánh giá Code",
-  MENTOR_REVIEW: "Đánh giá Mentor",
-  AI_INTERVIEW: "Phỏng vấn AI",
-};
-
 export function HorizontalPipeline({
   rounds,
   details,
@@ -44,6 +35,7 @@ export function HorizontalPipeline({
   onSelectRound,
   selectedRoundOrder,
 }: HorizontalPipelineProps) {
+  const { t } = useTranslation();
   const sortedRounds = [...rounds].sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0));
 
   return (
@@ -67,10 +59,13 @@ export function HorizontalPipeline({
           const isLocked = !isCompleted && roundOrder > currentRoundOrder;
           const isSelected = selectedRoundOrder === roundOrder;
 
-          const roundName =
-            ROUND_TYPE_LABELS[round.roundType?.replace("MENTROR", "MENTOR") ?? ""] ||
-            round.name ||
-            `Vòng ${roundOrder}`;
+          const roundTypeNormalized = round.roundType?.replace("MENTROR", "MENTOR") ?? "";
+          const roundName = roundTypeNormalized
+            ? t(
+                `common.roundType.${roundTypeNormalized}`,
+                round.name || `${t("userApplicationhistory.round", "Vòng")} ${roundOrder}`
+              )
+            : round.name || `${t("userApplicationhistory.round", "Vòng")} ${roundOrder}`;
 
           const score = detail?.finalScore ?? detail?.aiScore ?? detail?.hrScore;
 
@@ -126,11 +121,14 @@ export function HorizontalPipeline({
                   <span className="text-[10px] whitespace-nowrap opacity-80">
                     {isCompleted
                       ? score !== undefined && score !== null
-                        ? `Điểm: ${score}/100`
-                        : "Hoàn thành"
+                        ? t("userApplicationhistory.scoreShort", {
+                            score,
+                            defaultValue: `Điểm: ${score}/100`,
+                          })
+                        : t("userApplicationhistory.completedBadge", "Hoàn thành")
                       : isCurrent
-                        ? "Đang mở"
-                        : "Chưa mở"}
+                        ? t("userApplicationhistory.roundOpened", "Đang mở")
+                        : t("userApplicationhistory.roundUnopened", "Chưa mở")}
                   </span>
                 </div>
               </button>
