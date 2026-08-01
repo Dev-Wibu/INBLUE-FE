@@ -177,6 +177,12 @@ export function CodeReviewProblemManagementPage() {
         setProblems((prev) =>
           prev.map((p) => (p.id === problem.id ? { ...p, isDeleted: isActive } : p))
         );
+      } else {
+        toast.success(
+          isActive
+            ? t("adminCodeReviewProblem.statusActivated", "Đã bật bài tập")
+            : t("adminCodeReviewProblem.statusDeactivated", "Đã tắt bài tập")
+        );
       }
     } catch {
       toast.error(t("adminCodeReviewProblem.errorOccurred", "Đã xảy ra lỗi"));

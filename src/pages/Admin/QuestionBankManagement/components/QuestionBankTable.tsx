@@ -167,6 +167,7 @@ export function QuestionBankTable({
                   {onToggleStatus ? (
                     <Switch
                       checked={isActive}
+                      disabled={!isActive}
                       onCheckedChange={(val) => onToggleStatus(q, val)}
                       className="shadow-sm data-[state=checked]:bg-emerald-500"
                     />

@@ -109,34 +109,11 @@ export function QuestionBankManagementPage() {
     }
   };
 
-  const handleToggleStatus = async (question: QuestionBank, isActive: boolean) => {
+  const handleToggleStatus = (question: QuestionBank, isActive: boolean) => {
     if (!question.id) return;
-    const toastId = toast.loading(t("common.updating", "Đang cập nhật..."));
-
-    const categoryId =
-      (question.questionCategory as unknown as { id?: number })?.id ||
-      (question as unknown as { questionCategoryId?: number }).questionCategoryId ||
-      0;
-
-    const payload = {
-      questionCategoryId: categoryId,
-      questionLevel: question.questionLevel,
-      questionText: question.questionText,
-      options: question.options,
-      correctAnswer: question.correctAnswer,
-      isDeleted: !isActive,
-    };
-
-    try {
-      const res = await questionBankManager.update(question.id, payload);
-      if (res.success) {
-        toast.success(t("common.updateSuccess", "Cập nhật thành công!"), { id: toastId });
-        await fetchData();
-      } else {
-        toast.error(res.error || t("error.systemError"), { id: toastId });
-      }
-    } catch {
-      toast.error(t("error.systemError"), { id: toastId });
+    if (!isActive) {
+      setEditingQuestion(question);
+      setIsDeleteOpen(true);
     }
   };
 
