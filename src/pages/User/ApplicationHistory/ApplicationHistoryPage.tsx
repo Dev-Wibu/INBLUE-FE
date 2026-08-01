@@ -22,7 +22,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  MapPin,
   Search,
   Star,
   Trophy,
@@ -62,6 +61,8 @@ interface EnrichedApplication extends Application {
   jobTitle?: string;
   companyName?: string;
   logoUrl?: string | null;
+  level?: string;
+  deadlineAt?: string;
   rounds?: JdRound[];
 }
 
@@ -156,7 +157,7 @@ function CompanyAvatar({
         alt={companyName || "Logo"}
         onError={() => setImgError(true)}
         className={cn(
-          "shrink-0 border border-slate-200/80 bg-white object-contain p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-800",
+          "shrink-0 rounded-xl border border-slate-200/80 bg-white object-contain p-1 shadow-2xs dark:border-slate-800 dark:bg-slate-800",
           className
         )}
       />
@@ -166,7 +167,7 @@ function CompanyAvatar({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center bg-gradient-to-br from-[#0047AB] via-indigo-600 to-blue-700 text-white shadow-xs",
+        "flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0047AB] via-indigo-600 to-blue-700 text-white shadow-xs",
         className,
         textClassName
       )}>
@@ -262,6 +263,12 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
     return Math.min(Math.round(((currentRoundOrder - 1) / totalRounds) * 100), 100);
   }, [totalRounds, currentRoundOrder]);
 
+  const displayDate = application.deadlineAt
+    ? formatDateTime(application.deadlineAt)
+    : application.createdAt
+      ? formatDateTime(application.createdAt)
+      : "";
+
   return (
     <div className="group relative flex w-[275px] shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-blue-500/80 dark:hover:shadow-blue-950/30">
       <div className="space-y-3">
@@ -285,12 +292,17 @@ function ActiveApplicationCard({ application }: { application: EnrichedApplicati
             {application.companyName ?? t("userApplicationhistory.company", "Công ty")}
           </p>
 
-          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              Việt Nam
+          <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold tracking-wide text-blue-600 uppercase dark:bg-blue-950/60 dark:text-blue-400">
+              <Briefcase className="h-3 w-3" />
+              {application.level || "JUNIOR"}
             </span>
-            <span>{application.createdAt ? formatDateTime(application.createdAt) : ""}</span>
+            {displayDate && (
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3 text-slate-400" />
+                {displayDate}
+              </span>
+            )}
           </div>
         </div>
 
@@ -466,6 +478,8 @@ export function ApplicationHistoryPage() {
         title?: string;
         companyName?: string;
         logoUrl?: string | null;
+        level?: string;
+        deadlineAt?: string;
         rounds?: JdRound[];
         companyId?: number;
       }
@@ -498,6 +512,8 @@ export function ApplicationHistoryPage() {
             title: jd.title,
             companyName: extra.companyName,
             logoUrl,
+            level: extra.level || jd.level,
+            deadlineAt: extra.deadlineAt || jd.deadlineAt,
             rounds: extra.rounds as JdRound[],
             companyId: extra.companyId,
           };
@@ -510,6 +526,8 @@ export function ApplicationHistoryPage() {
           title?: string;
           companyName?: string;
           logoUrl?: string | null;
+          level?: string;
+          deadlineAt?: string;
           rounds?: JdRound[];
           companyId?: number;
         }
@@ -520,6 +538,8 @@ export function ApplicationHistoryPage() {
             title: r.value.title,
             companyName: r.value.companyName,
             logoUrl: r.value.logoUrl,
+            level: r.value.level,
+            deadlineAt: r.value.deadlineAt,
             rounds: r.value.rounds,
             companyId: r.value.companyId,
           });
@@ -539,6 +559,8 @@ export function ApplicationHistoryPage() {
         jobTitle: jd?.title,
         companyName: jd?.companyName,
         logoUrl: jd?.logoUrl,
+        level: jd?.level,
+        deadlineAt: jd?.deadlineAt,
         rounds: jd?.rounds,
         companyId: jd?.companyId,
       };
