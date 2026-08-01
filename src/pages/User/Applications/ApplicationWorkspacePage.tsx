@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { EmailPreviewDialog } from "@/components/ui/email-preview-dialog";
 import { RoundSubmissionDialog } from "@/components/ui/round-submission-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +14,7 @@ import {
   Award,
   Bot,
   Briefcase,
-  CheckCircle2,
+  ChevronRight,
   Code2,
   FileCheck2,
   HelpCircle,
@@ -30,6 +30,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../schema-from-be";
 import { HorizontalPipeline, type JdRound } from "./components/HorizontalPipeline";
+import { RoundWorkspaceDispatcher } from "./components/RoundWorkspaceDispatcher";
 
 type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 type JobDescription = components["schemas"]["JobDescription"];
@@ -39,29 +40,31 @@ function ApplicationStatusBadge({ status }: { status?: string }) {
   if (!status) return null;
   const config: Record<string, { label: string; className: string }> = {
     IN_PROGRESS: {
-      label: t("userApplicationhistory.statusInterviewing", "Đang ứng tuyển"),
-      className: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300",
+      label: t("userApplicationhistory.statusInterviewing", "ĐANG ỨNG TUYỂN"),
+      className:
+        "bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30",
     },
     PASSED: {
-      label: t("userApplicationhistory.statusCompleted", "Trúng tuyển"),
+      label: t("userApplicationhistory.statusCompleted", "TRÚNG TUYỂN"),
       className:
-        "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300",
+        "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30",
     },
     FAILED: {
-      label: t("userApplicationhistory.statusRejected", "Chưa đạt"),
-      className: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300",
+      label: t("userApplicationhistory.statusRejected", "CHƯA ĐẠT"),
+      className:
+        "bg-rose-500/10 text-rose-600 border border-rose-500/20 dark:bg-rose-500/15 dark:text-rose-400 dark:border-rose-500/30",
     },
     SOFT_FAILED: {
-      label: t("userApplicationhistory.needsImprovement", "Cần cải thiện"),
+      label: t("userApplicationhistory.needsImprovement", "CẦN CẢI THIỆN"),
       className:
-        "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300",
+        "bg-amber-500/10 text-amber-600 border border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30",
     },
   };
   const item = config[status] ?? { label: status, className: "" };
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider whitespace-nowrap uppercase",
         item.className
       )}>
       {item.label}
@@ -90,6 +93,48 @@ function getRoundIcon(roundType?: string) {
   }
 }
 
+// Helper: Extract Initials from Company Name
+function getCompanyInitials(name?: string): string {
+  if (!name) return "CO";
+  const words = name.trim().split(/\s+/);
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
+
+function CompanyAvatar({
+  logoUrl,
+  companyName,
+  className = "h-9 w-9 rounded-xl",
+  textClassName = "text-xs font-bold",
+}: {
+  logoUrl?: string | null;
+  companyName?: string;
+  className?: string;
+  textClassName?: string;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const initials = getCompanyInitials(companyName);
+
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center overflow-hidden border border-slate-100 bg-slate-50 text-indigo-600 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400",
+        className
+      )}>
+      {logoUrl && !imgError ? (
+        <img
+          src={logoUrl}
+          alt={companyName || "Logo"}
+          onError={() => setImgError(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span className={textClassName}>{initials}</span>
+      )}
+    </div>
+  );
+}
+
 export function ApplicationWorkspacePage() {
   const { t } = useTranslation();
   const { applicationId: appIdParam } = useParams<{ applicationId: string }>();
@@ -101,6 +146,7 @@ export function ApplicationWorkspacePage() {
   const [jdInfo, setJdInfo] = useState<{
     title?: string;
     companyName?: string;
+    logoUrl?: string | null;
     rounds?: JdRound[];
   } | null>(null);
   const [detailsData, setDetailsData] = useState<ApplicationDetail[]>([]);
@@ -111,7 +157,7 @@ export function ApplicationWorkspacePage() {
 
   // Dialog States
   const [submissionOpen, setSubmissionOpen] = useState(false);
-  const [submissionRound, setSubmissionRound] = useState<JdRound | undefined>();
+  const [submissionRound] = useState<JdRound | undefined>();
   const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
   const [emailPreviewId] = useState<number>(0);
 
@@ -143,9 +189,18 @@ export function ApplicationWorkspacePage() {
             const jd = jdRes.data as JobDescription;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const extra = jdRes.data as any;
+            const logoUrl =
+              extra.companyLogo ||
+              extra.companyLogoUrl ||
+              extra.thumbnailUrl ||
+              extra.company?.logoUrl ||
+              extra.company?.avatarUrl ||
+              null;
+
             setJdInfo({
               title: jd.title,
               companyName: extra.companyName,
+              logoUrl,
               rounds: (extra.rounds as JdRound[]) ?? [],
             });
           }
@@ -190,32 +245,12 @@ export function ApplicationWorkspacePage() {
     return detailsData.find((d) => d.roundId === activeRound.id);
   }, [detailsData, activeRound]);
 
-  // Enter Room Action
-  const handleEnterRoom = (round: JdRound) => {
-    if (round.roundType === "QUIZ") {
-      const jdId = app?.jdId ?? 0;
-      navigate(`/user/quiz/${applicationId}/round/${round.id}?jdId=${jdId}`);
-      return;
-    }
-    if (round.roundType === "MENTOR_REVIEW" || round.roundType === "MENTROR_REVIEW") {
-      navigate(`/user/application/${applicationId}/mentor-review`);
-      return;
-    }
-    if (round.roundType === "AI_INTERVIEW") {
-      navigate(`/user/application/${applicationId}/ai-interview?roundId=${round.id}`);
-      return;
-    }
-
-    setSubmissionRound(round);
-    setSubmissionOpen(true);
-  };
-
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl space-y-6 p-6">
+      <div className="w-full space-y-6 px-5 py-6 md:px-8">
         <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-32 w-full rounded-2xl" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-28 w-full rounded-[20px]" />
+        <Skeleton className="h-96 w-full rounded-[20px]" />
       </div>
     );
   }
@@ -246,31 +281,49 @@ export function ApplicationWorkspacePage() {
   const isRoundLocked = !isRoundCompleted && (activeRound?.roundOrder ?? 0) > apiCurrentRoundOrder;
 
   return (
-    <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-slate-950">
-      {/* Top Header Navigation */}
+    <div className="min-h-screen bg-slate-50/60 pb-16 dark:bg-transparent">
+      {/* Top Header Navigation (Single Sleek 1-Line Breadcrumb Standard) */}
       <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
+        <div className="flex w-full items-center justify-between px-5 py-3.5 md:px-8">
+          {/* Sleek 1-Line Inline Breadcrumb & Title */}
+          <div className="flex min-w-0 flex-wrap items-center gap-2.5">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate("/user?tab=applicationHistory")}
-              className="gap-2 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-              <ArrowLeft className="h-4 w-4" />
-              <span>{t("userApplicationhistory.allApplications", "Tất cả đơn ứng tuyển")}</span>
+              className="h-8 gap-1.5 px-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>{t("userApplicationhistory.allApplications", "Lịch sử ứng tuyển")}</span>
             </Button>
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
-            <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
-                {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
-              </h1>
-              <p className="truncate text-[11px] text-slate-500">{jdInfo?.companyName}</p>
+
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+
+            <div className="flex min-w-0 items-center gap-2">
+              <CompanyAvatar
+                logoUrl={jdInfo?.logoUrl}
+                companyName={jdInfo?.companyName}
+                className="h-7 w-7 rounded-[8px]"
+              />
+              <span className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {jdInfo?.companyName}
+              </span>
             </div>
+
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+
+            <h1 className="truncate text-sm font-extrabold text-slate-900 dark:text-white">
+              {jdInfo?.title ?? t("userApplicationhistory.applications", "Đơn ứng tuyển")}
+            </h1>
           </div>
 
+          {/* Right Header Actions */}
           <div className="flex items-center gap-3">
             <ApplicationStatusBadge status={app.status} />
-            <Button variant="outline" size="sm" onClick={loadData} className="h-8 gap-1.5 text-xs">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadData}
+              className="h-8 gap-1.5 border-slate-200 text-xs font-bold dark:border-slate-800">
               <RotateCw className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">
                 {t("userApplicationhistory.reload", "Làm mới")}
@@ -280,17 +333,17 @@ export function ApplicationWorkspacePage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
-        {/* Pipeline Bar */}
-        <Card className="border border-slate-200/80 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="w-full space-y-6 px-5 py-6 md:px-8">
+        {/* Horizontal Pipeline Bar */}
+        <Card className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
           <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+            <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
               {t("userApplicationhistory.pipelineTitle", {
                 total: totalRounds,
                 defaultValue: `Quy trình ứng tuyển (${totalRounds} vòng)`,
               })}
             </h2>
-            <span className="text-xs font-semibold text-[#0047AB] dark:text-blue-400">
+            <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400">
               {t("userApplicationhistory.progressLabel", {
                 current: apiCurrentRoundOrder,
                 total: totalRounds,
@@ -312,37 +365,38 @@ export function ApplicationWorkspacePage() {
         {activeRound ? (
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
             {/* Main Round Content (Left 8 Cols) */}
-            <Card className="overflow-hidden border border-slate-200/80 bg-white shadow-xs lg:col-span-8 dark:border-slate-800 dark:bg-slate-900">
-              <CardHeader className="border-b border-slate-100 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-900/50">
+            <Card className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-xs lg:col-span-8 dark:border-slate-800/60 dark:bg-slate-900/40">
+              {/* Header Vòng thi */}
+              <div className="border-b border-slate-100 bg-slate-50/70 p-6 dark:border-slate-800 dark:bg-[#0F172A]/70">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3.5">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0047AB] to-indigo-700 text-white shadow-sm">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white shadow-sm">
                       <RoundIcon className="h-6 w-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold tracking-wide text-[#0047AB] uppercase dark:text-blue-400">
+                        <span className="text-xs font-extrabold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
                           {t("userApplicationhistory.round", "Vòng")} {activeRound.roundOrder}
                         </span>
                         {isRoundCompleted && (
-                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                          <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                             ✓ {t("userApplicationhistory.completedBadge", "Hoàn thành")}
                           </span>
                         )}
                         {isRoundCurrent && (
-                          <span className="animate-pulse rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                          <span className="animate-pulse rounded-full bg-indigo-100 px-2.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                             ▶ {t("userApplicationhistory.currentRoundBadge", "Vòng hiện tại")}
                           </span>
                         )}
                       </div>
-                      <CardTitle className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">
+                      <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
                         {activeRound.roundType
                           ? t(
                               `common.roundType.${activeRound.roundType.replace("MENTROR", "MENTOR")}`,
                               activeRound.name || ""
                             )
                           : activeRound.name}
-                      </CardTitle>
+                      </h2>
                     </div>
                   </div>
 
@@ -351,20 +405,20 @@ export function ApplicationWorkspacePage() {
                       <span className="text-[10px] font-semibold text-slate-400 uppercase">
                         {t("userApplicationhistory.scoreLabel", "Điểm số")}
                       </span>
-                      <p className="text-2xl font-black text-[#0047AB]">
+                      <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
                         {activeDetail.finalScore}
                         <span className="text-xs font-normal text-slate-400">/100</span>
                       </p>
                     </div>
                   )}
                 </div>
-              </CardHeader>
+              </div>
 
-              <CardContent className="space-y-6 p-6">
-                {/* Round State Content */}
+              {/* Main Interactive Round Workspace Module */}
+              <div className="p-6">
                 {isRoundLocked ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
                       <Lock className="h-7 w-7 text-slate-400" />
                     </div>
                     <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
@@ -381,118 +435,70 @@ export function ApplicationWorkspacePage() {
                     </p>
                   </div>
                 ) : (
-                  <>
-                    {/* Instruction & Info */}
-                    <div className="space-y-3">
-                      <h4 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
-                        {t("userApplicationhistory.instructionsTitle", "Hướng dẫn làm bài")}
-                      </h4>
-                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-4 text-xs leading-relaxed text-slate-700 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-300">
-                        {activeRound.configData?.instruction ||
-                          t(
-                            "userApplicationhistory.defaultInstruction",
-                            "Thực hiện theo yêu cầu của hội đồng tuyển dụng để hoàn thành vòng phỏng vấn này."
-                          )}
-                      </div>
-                    </div>
-
-                    {/* Action Area */}
-                    <div className="pt-2">
-                      {isRoundCurrent ? (
-                        <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-blue-100 bg-blue-50/50 p-4 sm:flex-row dark:border-blue-900/40 dark:bg-blue-950/20">
-                          <div>
-                            <p className="text-xs font-bold text-[#0047AB] dark:text-blue-300">
-                              {t(
-                                "userApplicationhistory.readyToTakeExam",
-                                "Sẵn sàng thực hiện phần thi?"
-                              )}
-                            </p>
-                            <p className="mt-0.5 text-[11px] text-slate-500">
-                              {activeRound.configData?.timeLimitMinutes
-                                ? t("userApplicationhistory.examTimeLimit", {
-                                    minutes: activeRound.configData.timeLimitMinutes,
-                                    defaultValue: `Thời gian làm bài: ${activeRound.configData.timeLimitMinutes} phút`,
-                                  })
-                                : t(
-                                    "userApplicationhistory.noTimeLimit",
-                                    "Không giới hạn thời gian"
-                                  )}
-                            </p>
-                          </div>
-                          <Button
-                            onClick={() => handleEnterRoom(activeRound)}
-                            className="w-full gap-2 bg-[#0047AB] px-6 text-xs font-semibold text-white shadow-sm hover:bg-[#003d91] sm:w-auto">
-                            <span>
-                              {t("userApplicationhistory.startExamNow", "Bắt đầu bài thi ngay")}
-                            </span>
-                            <ArrowRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : isRoundCompleted ? (
-                        <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 sm:flex-row dark:border-emerald-900/40 dark:bg-emerald-950/20">
-                          <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                            <span>
-                              {t(
-                                "userApplicationhistory.roundCompletedNotice",
-                                "Bạn đã hoàn thành vòng thi này"
-                              )}
-                            </span>
-                          </div>
-
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              navigate(
-                                `/user/application/${applicationId}/round/${activeRound.roundOrder}/result`
-                              )
-                            }
-                            className="w-full gap-1.5 border-emerald-300 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 sm:w-auto dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/40">
-                            <span>
-                              {t(
-                                "userApplicationhistory.viewDetailedReport",
-                                "Xem báo cáo phân tích chi tiết"
-                              )}
-                            </span>
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </>
+                  <RoundWorkspaceDispatcher
+                    round={activeRound}
+                    detail={activeDetail}
+                    applicationId={applicationId}
+                    jdId={app.jdId}
+                    currentRoundOrder={apiCurrentRoundOrder}
+                    appStatus={app.status}
+                    onRefresh={loadData}
+                  />
                 )}
-              </CardContent>
+
+                {/* Report CTA when Round is completed */}
+                {isRoundCompleted && (
+                  <div className="mt-6 flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        navigate(
+                          `/user/application/${applicationId}/round/${activeRound.roundOrder}/result`
+                        )
+                      }
+                      className="h-9 gap-2 border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
+                      <span>
+                        {t(
+                          "userApplicationhistory.viewDetailedReport",
+                          "Xem báo cáo phân tích chi tiết"
+                        )}
+                      </span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </Card>
 
             {/* Sidebar Summary (Right 4 Cols) */}
             <div className="space-y-4 lg:col-span-4">
-              <Card className="space-y-4 border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+              <Card className="space-y-4 rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800/60 dark:bg-slate-900/40">
+                <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                   {t("userApplicationhistory.overviewTitle", "Thông tin tổng quan")}
                 </h3>
 
                 <div className="space-y-3 text-xs">
-                  <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <span className="text-slate-500">
+                  <div className="flex justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">
                       {t("userApplicationhistory.companyLabel", "Doanh nghiệp:")}
                     </span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
                       {jdInfo?.companyName}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <span className="text-slate-500">
+                  <div className="flex justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">
                       {t("userApplicationhistory.appliedDateLabel", "Ngày nộp đơn:")}
                     </span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200">
+                    <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
                       {app.createdAt ? formatDateTime(app.createdAt) : ""}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <span className="text-slate-500">
+                  <div className="flex justify-between border-b border-slate-100 pb-2.5 dark:border-slate-800">
+                    <span className="text-slate-500 dark:text-slate-400">
                       {t("userApplicationhistory.totalRoundsCount", "Tổng số vòng:")}
                     </span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
                       {t("userApplicationhistory.roundsUnit", {
                         count: totalRounds,
                         defaultValue: `${totalRounds} vòng`,
@@ -502,7 +508,7 @@ export function ApplicationWorkspacePage() {
                 </div>
 
                 {app.status === "PASSED" && (
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center dark:border-emerald-800 dark:bg-emerald-950/40">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-center dark:border-emerald-900/50 dark:bg-emerald-950/40">
                     <Award className="mx-auto mb-1.5 h-8 w-8 text-emerald-600" />
                     <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
                       {t(

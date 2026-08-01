@@ -89,21 +89,21 @@ export function HorizontalPipeline({
                 onClick={() => onSelectRound?.(roundOrder)}
                 disabled={isLocked}
                 className={cn(
-                  "group relative flex items-center gap-2.5 rounded-xl border px-3.5 py-2 text-xs font-medium transition-all duration-200 focus:outline-hidden",
+                  "group relative flex items-center gap-2.5 rounded-2xl border px-4 py-2.5 text-xs font-semibold transition-all duration-200 focus:outline-hidden",
                   isCompleted &&
                     "border-emerald-200 bg-emerald-50/70 text-emerald-900 shadow-2xs hover:bg-emerald-100/80 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300",
                   isCurrent &&
-                    "border-[#0047AB] bg-blue-50/90 text-[#0047AB] shadow-sm ring-2 ring-[#0047AB]/20 dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-300",
+                    "border-indigo-500 bg-indigo-50/90 text-indigo-700 shadow-xs ring-2 ring-indigo-500/20 dark:border-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300",
                   isLocked &&
                     "cursor-not-allowed border-slate-200/80 bg-slate-50 text-slate-400 dark:border-slate-800/60 dark:bg-slate-900/50 dark:text-slate-600",
-                  isSelected && "ring-2 ring-indigo-500 ring-offset-1 dark:ring-offset-slate-950"
+                  isSelected && "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-950"
                 )}>
                 {/* Node Status Icon */}
                 <div
                   className={cn(
-                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg font-mono text-[11px] font-bold transition-colors",
+                    "flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-xl font-mono text-[11px] font-extrabold transition-colors",
                     isCompleted && "bg-emerald-600 text-white dark:bg-emerald-500",
-                    isCurrent && "animate-pulse bg-[#0047AB] text-white",
+                    isCurrent && "animate-pulse bg-indigo-600 text-white dark:bg-indigo-500",
                     isLocked && "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
                   )}>
                   {isCompleted ? (
@@ -117,7 +117,7 @@ export function HorizontalPipeline({
 
                 {/* Round Info Label */}
                 <div className="flex flex-col text-left">
-                  <span className="font-semibold whitespace-nowrap">{roundName}</span>
+                  <span className="font-bold whitespace-nowrap">{roundName}</span>
                   <span className="text-[10px] whitespace-nowrap opacity-80">
                     {isCompleted
                       ? score !== undefined && score !== null
