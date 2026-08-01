@@ -202,31 +202,22 @@ function CompanyAvatar({
   const [imgError, setImgError] = useState(false);
   const initials = getCompanyInitials(companyName);
 
-  if (logoUrl && !imgError) {
-    return (
-      <div
-        className={cn(
-          "flex shrink-0 items-center justify-center overflow-hidden border border-slate-100 bg-white p-1 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A]",
-          className
-        )}>
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center overflow-hidden border border-slate-100 bg-slate-50 text-indigo-600 shadow-2xs dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400",
+        className
+      )}>
+      {logoUrl && !imgError ? (
         <img
           src={logoUrl}
           alt={companyName || "Logo"}
           onError={() => setImgError(true)}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-cover"
         />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "flex shrink-0 items-center justify-center border border-slate-100 bg-slate-50 text-indigo-600 shadow-xs dark:border-slate-800/80 dark:bg-[#0F172A] dark:text-indigo-400",
-        className,
-        textClassName
-      )}>
-      {initials}
+      ) : (
+        <span className={textClassName}>{initials}</span>
+      )}
     </div>
   );
 }
