@@ -91,27 +91,30 @@ const ROUND_TYPE_STEP_LABELS: Record<string, string> = {
 function JobLevelBadge({ level }: { level?: string }) {
   const lvl = (level || "JUNIOR").toUpperCase().replace("-", "_");
 
-  let colorClass =
-    "bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30";
+  let colorClass = "bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30";
 
   if (lvl.includes("INTERN")) {
-    colorClass =
-      "bg-cyan-500/10 text-cyan-600 border border-cyan-500/20 dark:bg-cyan-500/15 dark:text-cyan-300 dark:border-cyan-500/30";
+    // Teal (Ngọc lam)
+    colorClass = "bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30";
   } else if (lvl.includes("FRESH")) {
+    // Purple (Tím tươi - hoàn toàn không trùng Emerald Trúng tuyển)
     colorClass =
-      "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30";
+      "bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30";
   } else if (lvl.includes("JUN")) {
-    colorClass =
-      "bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30";
+    // Sky Blue (Xanh da trời tươi)
+    colorClass = "bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30";
   } else if (lvl.includes("MID")) {
+    // Fuchsia (Hồng tím)
     colorClass =
-      "bg-purple-500/10 text-purple-600 border border-purple-500/20 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30";
+      "bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300 border border-fuchsia-500/30";
   } else if (lvl.includes("SENIOR") || lvl.includes("SEN")) {
+    // Orange (Cam tươi)
     colorClass =
-      "bg-amber-500/10 text-amber-600 border border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30";
+      "bg-orange-500/15 text-orange-700 dark:text-orange-300 border border-orange-500/30";
   } else if (lvl.includes("LEAD") || lvl.includes("MANAGER") || lvl.includes("DIRECTOR")) {
+    // Indigo (Chàm đậm)
     colorClass =
-      "bg-rose-500/10 text-rose-600 border border-rose-500/20 dark:bg-rose-500/15 dark:text-rose-400 dark:border-rose-500/30";
+      "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30";
   }
 
   return (
