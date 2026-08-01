@@ -657,7 +657,7 @@ export function ApplicationHistoryPage() {
   }, [enrichedApplications, statusFilter, searchQuery]);
 
   return (
-    <div className="w-full space-y-8 px-4 py-4 pb-16 sm:px-6 lg:px-8">
+    <div className="w-full space-y-8 px-5 py-6 pb-16 md:px-8">
       {/* Top Header Title */}
       <div className="border-b border-slate-200/80 pb-4 dark:border-slate-800">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
