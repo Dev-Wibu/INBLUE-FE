@@ -736,22 +736,6 @@
     "text": "Khôi phục mặc định"
   },
   {
-    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 386,
-    "character": 45,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "bài nộp code"
-  },
-  {
-    "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 393,
-    "character": 22,
-    "type": "TemplateLiteral",
-    "category": "vietnamese",
-    "text": "Bài"
-  },
-  {
     "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",
     "line": 559,
     "character": 48,
@@ -942,6 +926,62 @@
     "type": "JsxText",
     "category": "vietnamese",
     "text": "Số ID của kiosk tại phòng phỏng vấn"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
+    "line": 58,
+    "character": 44,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Trang chủ"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
+    "line": 61,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Việc làm"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
+    "line": 67,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Tổng quan"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
+    "line": 74,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Ứng tuyển"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
+    "line": 80,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Phỏng vấn AI"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
+    "line": 86,
+    "character": 19,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Tin nhắn"
+  },
+  {
+    "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
+    "line": 90,
+    "character": 47,
+    "type": "StringLiteral",
+    "category": "vietnamese",
+    "text": "Tài khoản"
   },
   {
     "file": "src/services/admin-application.manager.ts",

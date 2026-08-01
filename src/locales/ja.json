@@ -201,6 +201,8 @@
     "option2MultipleDesc": "候補者は提案リストから1人のメンターを選びます。",
     "selectMentors": "メンターを選択",
     "selectMentorsHint": "候補者が選択できるように2人以上のメンターを選択してください。",
+    "searchMentorPlaceholder": "名前またはメールで検索...",
+    "selectedMentors": "選択されたメンター",
     "selectedCount": "選択済み: {{count}}人"
   },
   "adminCandidateprofilemanagement": {
@@ -1981,6 +1983,7 @@
     "post": "投稿",
     "posted": "投稿済み",
     "postedSuccessfully": "投稿が完了しました。",
+    "draftSubmittedNotice": "投稿が送信され、承認待ちです。",
     "prefer": "希望",
     "pressEscapeTheFirstTime": "Escapeキーを1回押すと画像がオフになり、2回押すとPostFeedModalがオフになります",
     "recentActivity": "最近のアクティビティ",
@@ -1997,6 +2000,7 @@
     "writeABriefSummaryOptional": "簡単な概要を書いてください（任意）...",
     "writeACommentCtrlEnter": "コメントを書いてください...（Ctrl+Enterで投稿）",
     "writeArticles": "記事を書く",
+    "searchComments": "内容または投稿者名でコメントを検索...",
     "youHaveReadTheEntire": "記事を最後まで読みました。"
   },
   "compReview": {
@@ -3928,6 +3932,9 @@
     "yourProfileIsReadyYou": "プロフィールの準備ができました。必要に応じて編集できます。"
   },
   "userApplicationhistory": {
+    "activeApplications": "進行中の応募",
+    "completedApplications": "完了した応募履歴",
+    "enterWorkspace": "ワークスペースに入る",
     "currentRound": "現在のラウンド：",
     "findAJobNow": "今すぐ仕事を探す",
     "findJobsAndApplyTo": "仕事を探して応募し、ここで追跡しましょう。",
@@ -4662,6 +4669,8 @@
     }
   },
   "adminCodeReviewProblem": {
+    "statusActivated": "問題が有効化されました",
+    "statusDeactivated": "問題が無効化されました",
     "pageTitle": "コードレビュー問題管理",
     "pageDescription": "コードレビュー評価問題の作成と管理",
     "searchPlaceholder": "問題を検索...",

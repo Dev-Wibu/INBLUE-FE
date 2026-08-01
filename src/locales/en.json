@@ -240,6 +240,8 @@
     "option2MultipleDesc": "Candidate will choose 1 mentor from the suggested list.",
     "selectMentors": "Select mentors",
     "selectMentorsHint": "Select 2 or more mentors for the candidate to choose from.",
+    "searchMentorPlaceholder": "Search by name or email...",
+    "selectedMentors": "Selected mentors",
     "selectedCount": "Selected: {{count}} mentor(s)"
   },
   "adminCandidateprofilemanagement": {
@@ -2019,6 +2021,7 @@
     "post": "Post",
     "posted": "Posted",
     "postedSuccessfully": "Posted successfully.",
+    "draftSubmittedNotice": "Your post has been submitted and is pending approval.",
     "prefer": "Prefer",
     "pressEscapeTheFirstTime": "Press Escape the first time to turn off the image, the second time to turn off PostFeedModal",
     "recentActivity": "Recent activity",
@@ -2035,6 +2038,7 @@
     "writeABriefSummaryOptional": "Write a brief summary (optional)...",
     "writeACommentCtrlEnter": "Write a comment... (Ctrl+Enter to post)",
     "writeArticles": "Write articles",
+    "searchComments": "Search comments by content or author name...",
     "youHaveReadTheEntire": "You have read the entire article."
   },
   "compReview": {
@@ -2456,7 +2460,7 @@
     "anErrorOccurredWhileCalling": "An error occurred while calling the API.",
     "anUnknownErrorHasOccurred": "An unknown error has occurred",
     "appliedQuickCommand": "Applied quick command {{var_0}}",
-    "areYouSureYouWant": "Are you sure you want to Delete comment: \"{{var_0}}\"?",
+    "areYouSureYouWant": "Are you sure you want to delete comment: \"{{var_0}}\"?",
     "areYouSureYouWant1": "Are you sure you want to approve interview session #{{var_0}}? The session will move to \"Scheduled\" status.",
     "areYouSureYouWant2": "Are you sure you want to reject interview session #{{var_0}}? This action cannot be undone.",
     "areYouSureYouWant3": "Are you sure you want to disable company \"{{var_0}}\"? The company will no longer be active in the system.",
@@ -3935,6 +3939,9 @@
     "yourProfileIsReadyYou": "Your profile is ready. You can edit if needed."
   },
   "userApplicationhistory": {
+    "activeApplications": "Active Applications",
+    "completedApplications": "Completed Applications",
+    "enterWorkspace": "Enter Workspace",
     "pageTitle": "Application History",
     "pageDescription": "Track progress and interview results for Software Engineering positions.",
     "reload": "Reload",
@@ -4694,6 +4701,8 @@
     }
   },
   "adminCodeReviewProblem": {
+    "statusActivated": "Problem activated",
+    "statusDeactivated": "Problem deactivated",
     "pageTitle": "Code Review Problem Management",
     "pageDescription": "Create and manage code review assessment problems",
     "searchPlaceholder": "Search problems...",

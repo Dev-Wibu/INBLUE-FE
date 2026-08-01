@@ -2113,11 +2113,11 @@
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationHistoryPage.tsx",
-    "line": 345,
-    "character": 17,
+    "line": 357,
+    "character": 15,
     "type": "JsxText",
     "category": "english",
-    "text": "Q"
+    "text": "#ID"
   },
   {
     "file": "src/pages/User/ApplicationHistory/ApplicationMentorReviewPage.tsx",
@@ -2217,8 +2217,8 @@
   },
   {
     "file": "src/pages/User/UserDashboard/components/UserHeader.tsx",
-    "line": 70,
-    "character": 17,
+    "line": 276,
+    "character": 21,
     "type": "JsxText",
     "category": "english",
     "text": "⌘K"

@@ -240,6 +240,8 @@
     "option2MultipleDesc": "Ứng viên sẽ tự chọn 1 Mentor từ danh sách đề xuất.",
     "selectMentors": "Chọn các Mentor",
     "selectMentorsHint": "Chọn từ 2 Mentor trở lên để ứng viên lựa chọn.",
+    "searchMentorPlaceholder": "Tìm theo tên hoặc email...",
+    "selectedMentors": "Mentor đã chọn",
     "selectedCount": "Đã chọn: {{count}} mentor(s)"
   },
   "adminCandidateprofilemanagement": {
@@ -2016,6 +2018,7 @@
     "post": "Đăng bài",
     "posted": "Đã đăng",
     "postedSuccessfully": "Đăng bài thành công.",
+    "draftSubmittedNotice": "Bài viết của bạn đã được gửi và đang chờ phê duyệt.",
     "prefer": "Thích",
     "pressEscapeTheFirstTime": "nhấn Escape lần 1 tắt ảnh, lần 2 mới tắt PostFeedModal",
     "recentActivity": "Hoạt động gần đây",
@@ -2032,6 +2035,7 @@
     "writeABriefSummaryOptional": "Viết tóm tắt ngắn gọn (tùy chọn)...",
     "writeACommentCtrlEnter": "Viết bình luận... (Ctrl+Enter để gửi)",
     "writeArticles": "Viết bài",
+    "searchComments": "Tìm kiếm bình luận theo nội dung hoặc tên tác giả...",
     "youHaveReadTheEntire": "Bạn đã xem hết bài viết rồi."
   },
   "compReview": {
@@ -3932,6 +3936,9 @@
     "yourProfileIsReadyYou": "Hồ sơ của bạn đã sẵn sàng. Bạn có thể chỉnh sửa nếu cần."
   },
   "userApplicationhistory": {
+    "activeApplications": "Đơn ứng tuyển đang thực hiện",
+    "completedApplications": "Lịch sử đơn đã hoàn tất",
+    "enterWorkspace": "Vào Workspace",
     "pageTitle": "Lịch sử Ứng tuyển",
     "pageDescription": "Theo dõi tiến trình và kết quả phỏng vấn các vị trí Software Engineering.",
     "reload": "Tải lại",
@@ -4691,6 +4698,8 @@
     }
   },
   "adminCodeReviewProblem": {
+    "statusActivated": "Đã bật bài tập",
+    "statusDeactivated": "Đã tắt bài tập",
     "pageTitle": "Quản lý bài tập Code Review",
     "pageDescription": "Tạo và quản lý các bài tập đánh giá code review",
     "createDescription": "Tạo bài tập đánh giá code review mới cho ứng viên",
