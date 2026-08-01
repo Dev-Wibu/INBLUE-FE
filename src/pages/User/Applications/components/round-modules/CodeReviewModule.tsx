@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { applicationDetailManager } from "@/services/application-detail.manager";
 import { Bug, FileCode2, Send, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,11 +13,20 @@ type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 interface CodeReviewModuleProps {
   round: JdRound;
   detail?: ApplicationDetail;
+  applicationId: number;
   isCompleted: boolean;
   isCurrent: boolean;
+  onSuccess?: () => void;
 }
 
-export function CodeReviewModule({ round, detail, isCompleted, isCurrent }: CodeReviewModuleProps) {
+export function CodeReviewModule({
+  round,
+  detail,
+  applicationId,
+  isCompleted,
+  isCurrent,
+  onSuccess,
+}: CodeReviewModuleProps) {
   const { t } = useTranslation();
   const [reviewNotes, setReviewNotes] = useState(
     "1. Lỗi dòng 3: Thiếu 'await' trước res.json() làm trả về một Promise chưa giải quyết.\n2. Lỗi dòng 6: Khai báo mảng memoryCache toàn cục và push phần tử liên tục mà không có cơ chế giải phóng, gây Memory Leak nghiêm trọng.\n3. Lỗi dòng 8: Trả về đối tượng Promise chưa được await."
@@ -25,7 +35,7 @@ export function CodeReviewModule({ round, detail, isCompleted, isCurrent }: Code
 
   const finalScore = detail?.finalScore ?? detail?.aiScore;
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (!reviewNotes.trim()) {
       toast.error(
         t(
@@ -35,13 +45,28 @@ export function CodeReviewModule({ round, detail, isCompleted, isCurrent }: Code
       );
       return;
     }
+
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await applicationDetailManager.submit({
+        applicationId,
+        textContent: reviewNotes,
+      });
+
+      if (res.success) {
+        toast.success(
+          t("userApplicationhistory.reviewSubmitted", "Đã gửi nhận xét Code Review thành công!")
+        );
+        onSuccess?.();
+      } else {
+        toast.error(res.error || "Gửi nhận xét thất bại");
+      }
+    } catch (err) {
+      console.error("[CodeReviewModule] Submit error:", err);
+      toast.error("Có lỗi xảy ra khi gửi nhận xét");
+    } finally {
       setSubmitting(false);
-      toast.success(
-        t("userApplicationhistory.reviewSubmitted", "Đã gửi nhận xét Code Review thành công!")
-      );
-    }, 1200);
+    }
   };
 
   return (

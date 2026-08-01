@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { applicationDetailManager } from "@/services/application-detail.manager";
 import { Code2, Play, Send, Sparkles, Terminal } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,17 +20,27 @@ type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 interface CodingModuleProps {
   round: JdRound;
   detail?: ApplicationDetail;
+  applicationId: number;
   isCompleted: boolean;
   isCurrent: boolean;
+  onSuccess?: () => void;
 }
 
-export function CodingModule({ round, detail, isCompleted, isCurrent }: CodingModuleProps) {
+export function CodingModule({
+  round,
+  detail,
+  applicationId,
+  isCompleted,
+  isCurrent,
+  onSuccess,
+}: CodingModuleProps) {
   const { t } = useTranslation();
   const [language, setLanguage] = useState("typescript");
   const [code, setCode] = useState(
     `/**\n * Problem: Two Sum - Find indices of two numbers that add up to target\n */\nfunction twoSum(nums: number[], target: number): number[] {\n  const map = new Map<number, number>();\n  for (let i = 0; i < nums.length; i++) {\n    const diff = target - nums[i];\n    if (map.has(diff)) {\n      return [map.get(diff)!, i];\n    }\n    map.set(nums[i], i);\n  }\n  return [];\n}`
   );
   const [running, setRunning] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState<string | null>(null);
 
   const finalScore = detail?.finalScore ?? detail?.aiScore;
@@ -47,10 +58,28 @@ export function CodingModule({ round, detail, isCompleted, isCurrent }: CodingMo
     }, 1200);
   };
 
-  const handleSubmitSolution = () => {
-    toast.success(
-      t("userApplicationhistory.solutionSubmitted", "Đã nộp bài giải Coding thành công!")
-    );
+  const handleSubmitSolution = async () => {
+    setSubmitting(true);
+    try {
+      const res = await applicationDetailManager.submit({
+        applicationId,
+        textContent: code,
+      });
+
+      if (res.success) {
+        toast.success(
+          t("userApplicationhistory.solutionSubmitted", "Đã nộp bài giải Coding thành công!")
+        );
+        onSuccess?.();
+      } else {
+        toast.error(res.error || "Nộp bài giải thất bại");
+      }
+    } catch (err) {
+      console.error("[CodingModule] Submit error:", err);
+      toast.error("Có lỗi xảy ra khi nộp bài giải");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -131,7 +160,7 @@ export function CodingModule({ round, detail, isCompleted, isCurrent }: CodingMo
             <Button
               variant="outline"
               onClick={handleRunCode}
-              disabled={running}
+              disabled={running || submitting}
               className="h-8.5 gap-2 border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
               {running ? (
                 <Sparkles className="h-3.5 w-3.5 animate-spin" />
@@ -143,8 +172,13 @@ export function CodingModule({ round, detail, isCompleted, isCurrent }: CodingMo
 
             <Button
               onClick={handleSubmitSolution}
+              disabled={running || submitting}
               className="h-8.5 gap-2 bg-indigo-600 px-6 text-xs font-bold text-white shadow-xs hover:bg-indigo-700">
-              <Send className="h-3.5 w-3.5" />
+              {submitting ? (
+                <Sparkles className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Send className="h-3.5 w-3.5" />
+              )}
               <span>Nộp bài Solution</span>
             </Button>
           </div>

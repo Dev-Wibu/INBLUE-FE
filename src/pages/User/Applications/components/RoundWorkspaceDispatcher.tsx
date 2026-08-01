@@ -47,6 +47,7 @@ export function RoundWorkspaceDispatcher({
         <CvScreeningModule
           round={round}
           detail={detail}
+          applicationId={applicationId}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
           onSuccess={onRefresh}
@@ -58,8 +59,10 @@ export function RoundWorkspaceDispatcher({
         <EmailSimulatorModule
           round={round}
           detail={detail}
+          applicationId={applicationId}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
+          onSuccess={onRefresh}
         />
       );
 
@@ -80,8 +83,10 @@ export function RoundWorkspaceDispatcher({
         <CodingModule
           round={round}
           detail={detail}
+          applicationId={applicationId}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
+          onSuccess={onRefresh}
         />
       );
 
@@ -90,8 +95,10 @@ export function RoundWorkspaceDispatcher({
         <CodeReviewModule
           round={round}
           detail={detail}
+          applicationId={applicationId}
           isCompleted={isCompleted}
           isCurrent={isCurrent}
+          onSuccess={onRefresh}
         />
       );
 

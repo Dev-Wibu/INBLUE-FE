@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { applicationDetailManager } from "@/services/application-detail.manager";
 import { Send, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,15 +14,19 @@ type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 interface EmailSimulatorModuleProps {
   round: JdRound;
   detail?: ApplicationDetail;
+  applicationId: number;
   isCompleted: boolean;
   isCurrent: boolean;
+  onSuccess?: () => void;
 }
 
 export function EmailSimulatorModule({
   round,
   detail,
+  applicationId,
   isCompleted,
   isCurrent,
+  onSuccess,
 }: EmailSimulatorModuleProps) {
   const { t } = useTranslation();
   const [subject, setSubject] = useState(
@@ -34,7 +39,7 @@ export function EmailSimulatorModule({
 
   const finalScore = detail?.finalScore ?? detail?.aiScore;
 
-  const handleSubmitEmail = () => {
+  const handleSubmitEmail = async () => {
     if (!subject.trim() || !emailBody.trim()) {
       toast.error(
         t(
@@ -44,16 +49,31 @@ export function EmailSimulatorModule({
       );
       return;
     }
+
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await applicationDetailManager.submit({
+        applicationId,
+        textContent: `Subject: ${subject}\n\n${emailBody}`,
+      });
+
+      if (res.success) {
+        toast.success(
+          t(
+            "userApplicationhistory.emailSubmittedSuccess",
+            "Gửi email mô phỏng thành công! Hệ thống AI đang đánh giá văn phong."
+          )
+        );
+        onSuccess?.();
+      } else {
+        toast.error(res.error || "Gửi email không thành công");
+      }
+    } catch (err) {
+      console.error("[EmailSimulatorModule] Submit error:", err);
+      toast.error("Có lỗi xảy ra khi gửi email");
+    } finally {
       setSubmitting(false);
-      toast.success(
-        t(
-          "userApplicationhistory.emailSubmittedSuccess",
-          "Gửi email mô phỏng thành công! Hệ thống AI đang đánh giá văn phong."
-        )
-      );
-    }, 1500);
+    }
   };
 
   return (

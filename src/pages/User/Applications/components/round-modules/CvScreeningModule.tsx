@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { applicationDetailManager } from "@/services/application-detail.manager";
 import { AlertCircle, CheckCircle2, FileCheck2, FileText, Sparkles, Upload } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +14,7 @@ type ApplicationDetail = components["schemas"]["ApplicationDetail"];
 interface CvScreeningModuleProps {
   round: JdRound;
   detail?: ApplicationDetail;
+  applicationId: number;
   isCompleted: boolean;
   isCurrent: boolean;
   onSuccess?: () => void;
@@ -21,34 +23,52 @@ interface CvScreeningModuleProps {
 export function CvScreeningModule({
   round,
   detail,
+  applicationId,
   isCompleted,
   isCurrent,
+  onSuccess,
 }: CvScreeningModuleProps) {
   const { t } = useTranslation();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(isCompleted);
 
-  const matchScore = detail?.finalScore ?? detail?.aiScore ?? (hasSubmitted ? 85 : null);
+  const matchScore = detail?.finalScore ?? detail?.aiScore ?? (isCompleted ? 85 : null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       setSelectedFileName(file.name);
     }
   };
 
-  const handleAnalyzeCV = () => {
-    if (!selectedFileName) {
+  const handleAnalyzeCV = async () => {
+    if (!selectedFile && !selectedFileName) {
       toast.error(t("userApplicationhistory.selectCvFirst", "Vui lòng chọn file CV để tải lên"));
       return;
     }
+
     setAnalyzing(true);
-    setTimeout(() => {
+    try {
+      const res = await applicationDetailManager.submit({
+        applicationId,
+        file: selectedFile || undefined,
+        textContent: selectedFileName || "CV Submission",
+      });
+
+      if (res.success) {
+        toast.success(t("userApplicationhistory.cvAnalyzedSuccess", "Phân tích CV thành công!"));
+        onSuccess?.();
+      } else {
+        toast.error(res.error || t("general.anUnknownErrorHasOccurred", "Gửi CV không thành công"));
+      }
+    } catch (err) {
+      console.error("[CvScreeningModule] Submit error:", err);
+      toast.error("Có lỗi xảy ra khi nộp CV");
+    } finally {
       setAnalyzing(false);
-      setHasSubmitted(true);
-      toast.success(t("userApplicationhistory.cvAnalyzedSuccess", "Phân tích CV thành công!"));
-    }, 1500);
+    }
   };
 
   return (
@@ -158,7 +178,7 @@ export function CvScreeningModule({
             {t("userApplicationhistory.skillMatchBreakdown", "Phân tích kỹ năng từ CV")}
           </h4>
 
-          {hasSubmitted || isCompleted ? (
+          {matchScore !== null ? (
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
                 <CheckCircle2 className="h-3.5 w-3.5" />
