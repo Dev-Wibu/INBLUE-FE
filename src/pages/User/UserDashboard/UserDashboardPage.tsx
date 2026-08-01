@@ -354,8 +354,10 @@ export function UserDashboardPage() {
             "flex-1 overflow-hidden",
             typedActiveTab === "messenger" ||
               typedActiveTab === "mentors" ||
-              typedActiveTab === "jobSearch"
-              ? "p-0"
+              typedActiveTab === "jobSearch" ||
+              typedActiveTab === "applicationHistory" ||
+              typedActiveTab === "aiInterview"
+              ? "overflow-auto p-0"
               : location.pathname.startsWith("/user/account") ||
                   location.pathname.startsWith("/user/settings")
                 ? "overflow-auto p-0"
